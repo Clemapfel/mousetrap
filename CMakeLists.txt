@@ -45,7 +45,7 @@ add_library(mousetrap SHARED
     include/geometric_shapes.hpp
     include/vector.hpp
     include/render_task.hpp
-        include/scale.hpp include/spin_button.hpp include/range.hpp include/entry.hpp)
+        include/scale.hpp include/spin_button.hpp include/range.hpp include/entry.hpp include/button.hpp include/box.hpp include/container.hpp include/overlay.hpp include/concepts.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
