@@ -4,7 +4,7 @@
 
 #include <include/gl_common.hpp>
 #include <include/gtk_common.hpp>
-#include <include/gl_canvas.hpp>
+#include <include/~gl_canvas.hpp>
 
 using namespace rat;
 
