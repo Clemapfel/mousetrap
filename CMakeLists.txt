@@ -38,14 +38,14 @@ add_library(mousetrap SHARED
     include/shape.hpp
     include/colors.hpp
     include/shader.hpp
-    include/gl_canvas.hpp
+        include/gl_area.hpp
     include/transform.hpp
     include/angle.hpp
     include/gtk_common.hpp
     include/geometric_shapes.hpp
     include/vector.hpp
     include/render_task.hpp
-)
+        include/scale.hpp include/spin_button.hpp include/range.hpp include/entry.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

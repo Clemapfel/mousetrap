@@ -15,6 +15,8 @@ namespace rat
     {
         public:
             GLArea();
+            ~GLArea();
+
             GtkWidget* get_native() override;
 
             void add_render_task(Shape*, Shader* = nullptr, Transform* = nullptr);
@@ -32,7 +34,7 @@ namespace rat
             static void on_shutdown_wrapper(void* area, void* instance);
             static void on_resize_wrapper(GtkGLArea* area, gint width, gint height, void* instance);
 
-            GtkGLArea* _area;
+            GtkGLArea* _native;
             std::vector<RenderTask> _render_tasks;
     };
 }
@@ -43,17 +45,22 @@ namespace rat
 {
     GtkWidget* GLArea::get_native()
     {
-        return GTK_WIDGET(_area);
+        return GTK_WIDGET(_native);
     }
 
     GLArea::GLArea()
     {
-        _area = GTK_GL_AREA(gtk_gl_area_new());
+        _native = GTK_GL_AREA(gtk_gl_area_new());
 
         connect_signal("realize", on_realize_wrapper, this);
         connect_signal("render", on_render_wrapper, this);
         connect_signal("unrealize", on_shutdown_wrapper, this);
         connect_signal("resize", on_resize_wrapper, this);
+    }
+
+    GLArea::~GLArea()
+    {
+        gtk_widget_destroy(GTK_WIDGET(_native));
     }
 
     void GLArea::add_render_task(Shape* shape, Shader* shader, Transform* transform)
@@ -116,8 +123,8 @@ namespace rat
     void GLArea::set_render_signal_blocked(bool b)
     {
         if (b)
-            g_signal_handler_block(_area, _render_signal_handler);
+            g_signal_handler_block(_native, _render_signal_handler);
         else
-            g_signal_handler_unblock(_area, _render_signal_handler);
+            g_signal_handler_unblock(_native, _render_signal_handler);
     }
 }

@@ -19,6 +19,7 @@ namespace rat
             operator GtkWidget*();
 
             void set_signal_blocked(const std::string& signal_id, bool);
+            void set_all_signals_blocked(bool);
 
             template<typename Function_t>
             void connect_signal(const std::string& signal_id, Function_t*, void* data = nullptr);
@@ -28,7 +29,7 @@ namespace rat
     };
 };
 
-// ########
+// ###############################################################################
 
 #include <iostream>
 
@@ -54,6 +55,17 @@ namespace rat
             g_signal_handler_block(get_native(), it->second);
         else
             g_signal_handler_unblock(get_native(), it->second);
+    }
+
+    void Widget::set_all_signals_blocked(bool b)
+    {
+        for (auto& pair : _signal_handlers)
+        {
+            if (b)
+                g_signal_handler_block(get_native(), pair.second);
+            else
+                g_signal_handler_unblock(get_native(), pair.second);
+        }
     }
 
     template<typename Function_t>
