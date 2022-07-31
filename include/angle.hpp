@@ -7,7 +7,7 @@
 
 #include <cmath>
 
-namespace rat
+namespace mousetrap
 {
     /// \brief class representing an angular measurement, clockwise
     struct Angle
@@ -68,86 +68,15 @@ namespace rat
             float _rads;
     };
 
-    /// \brief create a rat::Angle from degrees
+    /// \brief create a mousetrap::Angle from degrees
     /// \param degrees: may be negative
     /// \returns angle
     Angle degrees(float);
 
-    /// \brief create a rat::Angle from radians
+    /// \brief create a mousetrap::Angle from radians
     /// \param radians: may be negative
     /// \returns angle
     Angle radians(float);
 }
 
-// #############################################################################
-
-namespace rat
-{
-    Angle::Angle(float radians)
-            : _rads(radians)
-    {}
-
-    Angle degrees(float dg)
-    {
-        return Angle(dg * (M_PI / 180.f));
-    }
-
-    Angle radians(float rad)
-    {
-        return Angle(rad);
-    }
-
-    float Angle::as_degrees() const
-    {
-        return _rads * (180.f / M_PI);
-    }
-
-    float Angle::as_radians() const
-    {
-        return _rads;
-    }
-
-    Angle Angle::operator+(const Angle& other)
-    {
-        return Angle(this->_rads + other._rads);
-    }
-
-    Angle Angle::operator-(const Angle& other)
-    {
-        return Angle(this->_rads - other._rads);
-    }
-
-    Angle Angle::operator*(const Angle& other)
-    {
-        return Angle(this->_rads * other._rads);
-    }
-
-    Angle Angle::operator/(const Angle& other)
-    {
-        return Angle(this->_rads / other._rads);
-    }
-
-    Angle& Angle::operator+=(const Angle& other)
-    {
-        this->_rads += other._rads;
-        return *this;
-    }
-
-    Angle& Angle::operator-=(const Angle& other)
-    {
-        this->_rads -= other._rads;
-        return *this;
-    }
-
-    Angle& Angle::operator*=(const Angle& other)
-    {
-        this->_rads *= other._rads;
-        return *this;
-    }
-
-    Angle& Angle::operator/=(const Angle& other)
-    {
-        this->_rads /= other._rads;
-        return *this;
-    }
-}
+#include <src/angle.inl>

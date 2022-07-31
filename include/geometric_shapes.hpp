@@ -7,7 +7,7 @@
 
 #include <include/gl_common.hpp>
 
-namespace rat
+namespace mousetrap
 {
     struct Triangle
     {

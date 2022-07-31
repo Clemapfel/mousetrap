@@ -7,7 +7,7 @@
 
 #include <include/widget.hpp>
 
-namespace rat
+namespace mousetrap
 {
     class Container : public Widget
     {
@@ -17,13 +17,4 @@ namespace rat
     };
 }
 
-// ###
-
-namespace rat
-{
-    template<typename T>
-    void Container::add(T in)
-    {
-        gtk_container_add(GTK_CONTAINER(get_native()), (GtkWidget*) in);
-    }
-}
+#include <src/container.inl>

@@ -8,7 +8,7 @@
 #include <include/widget.hpp>
 #include <include/container.hpp>
 
-namespace rat
+namespace mousetrap
 {
     class Box : public Widget, public Container
     {
@@ -27,32 +27,4 @@ namespace rat
     Box VBox(float spacing);
 }
 
-// ###
-
-namespace rat
-{
-    Box::Box(GtkOrientation orientation, float spacing)
-    {
-        _box = GTK_BOX(gtk_box_new(orientation, spacing));
-    }
-
-    Box::~Box()
-    {
-        gtk_widget_destroy(GTK_WIDGET(_box));
-    }
-
-    Box HBox(float spacing)
-    {
-        return Box(GTK_ORIENTATION_HORIZONTAL, spacing);
-    }
-
-    Box VBox(float spacing)
-    {
-        return Box(GTK_ORIENTATION_VERTICAL, spacing);
-    }
-
-    GtkWidget* Box::get_native()
-    {
-        return GTK_WIDGET(_box);
-    }
-}
+#include <src/box.inl>

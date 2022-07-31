@@ -4,14 +4,14 @@
 
 #include <include/gl_common.hpp>
 #include <include/gtk_common.hpp>
-#include <include/~gl_canvas.hpp>
+#include <include/gl_area.hpp>
 
-using namespace rat;
+using namespace mousetrap;
 
-struct ShaderArea : public GLCanvas
+struct ShaderArea : public GLArea
 {
     ShaderArea()
-        : GLCanvas({100, 100})
+        : GLArea()
     {}
 
     void on_realize(GtkGLArea* area) override
@@ -21,7 +21,7 @@ struct ShaderArea : public GLCanvas
         _shape = new Shape();
         _shape->as_rectangle({0.25, 0.25}, {0.5, 0.5});
 
-        GLCanvas::register_render_task(_shape);
+        GLArea::add_render_task(_shape);
     }
 
     void on_shutdown(GtkGLArea*) {}

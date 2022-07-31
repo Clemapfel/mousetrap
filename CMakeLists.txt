@@ -33,19 +33,70 @@ configure_file(
 
 add_library(mousetrap SHARED
     include/get_resource_path.hpp
+
     include/gl_common.hpp
     src/gl_common.inl
+
     include/shape.hpp
+    src/shape.inl
+
     include/colors.hpp
+    src/colors.inl
+
     include/shader.hpp
-        include/gl_area.hpp
+    src/shader.inl
+
+    include/gl_area.hpp
+    src/gl_area.inl
+
     include/transform.hpp
+    src/transform.inl
+
+    include/widget.hpp
+    src/widget.inl
+
     include/angle.hpp
+    src/angle.inl
+
     include/gtk_common.hpp
+    src/gtk_common.inl
+
     include/geometric_shapes.hpp
+
     include/vector.hpp
+
     include/render_task.hpp
-        include/scale.hpp include/spin_button.hpp include/range.hpp include/entry.hpp include/button.hpp include/box.hpp include/container.hpp include/overlay.hpp include/concepts.hpp)
+    src/render_task.inl
+
+    include/scale.hpp
+    src/scale.inl
+
+    include/spin_button.hpp
+    src/spin_button.inl
+
+    include/range.hpp
+    src/range.inl
+
+    include/entry.hpp
+    src/entry.inl
+
+    include/button.hpp
+    src/button.inl
+
+    include/box.hpp
+    src/box.inl
+
+    include/container.hpp
+    src/container.inl
+
+    include/overlay.hpp
+    src/overlay.inl
+
+    include/toggle_button.hpp
+    src/toggle_button.inl
+
+    include/components/color_picker.hpp
+)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -66,6 +117,6 @@ target_link_libraries(mousetrap PUBLIC
 
 ### EXECUTABLE ###
 
-add_executable(debug main.cpp)
+add_executable(debug main.cpp src/render_task.inl)
 target_link_libraries(debug mousetrap)
 

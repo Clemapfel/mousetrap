@@ -7,7 +7,7 @@
 
 #include <include/widget.hpp>
 
-namespace rat
+namespace mousetrap
 {
     // cannot be instanced
     class Range : public Widget
@@ -21,20 +21,4 @@ namespace rat
     };
 }
 
-// ###
-
-namespace rat
-{
-    float Range::get_value()
-    {
-        return gtk_range_get_value(GTK_RANGE(get_native()));
-    }
-
-    void Range::set_value(float value)
-    {
-        gtk_range_set_value(GTK_RANGE(get_native()), value);
-    }
-
-    Range::Range()
-    {}
-}
+#include <src/range.inl>

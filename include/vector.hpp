@@ -5,7 +5,7 @@
 
 #pragma once
 
-namespace rat
+namespace mousetrap
 {
     template<typename T>
     using Vector2 = glm::vec<2, T>;

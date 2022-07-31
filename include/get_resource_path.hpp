@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace rat
+namespace mousetrap
 {
     namespace detail
     {

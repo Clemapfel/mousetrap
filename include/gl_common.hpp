@@ -15,7 +15,7 @@
 static inline bool GL_INITIALIZED = false;
 using GLNativeHandle = GLuint;
 
-namespace rat
+namespace mousetrap
 {
     Vector2f get_viewport_size();
 
@@ -30,6 +30,3 @@ namespace rat
 }
 
 #include <src/gl_common.inl>
-
-// #############################################################################
-

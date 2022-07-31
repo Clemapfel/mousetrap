@@ -3,7 +3,7 @@
 // Created on 7/31/22 by clem (mail@clemens-cords.com)
 //
 
-namespace rat
+namespace mousetrap
 {
     Vector2f get_viewport_size()
     {
