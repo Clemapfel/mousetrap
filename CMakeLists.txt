@@ -44,6 +44,7 @@ add_library(mousetrap SHARED
     include/gtk_common.hpp
     include/geometric_shapes.hpp
     include/vector.hpp
+    include/render_task.hpp
 )
 
 set_target_properties(mousetrap PROPERTIES
