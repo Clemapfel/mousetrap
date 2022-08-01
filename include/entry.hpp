@@ -22,7 +22,6 @@ namespace mousetrap
 
             void set_width_chars(size_t);
 
-
         protected:
             virtual void on_activate(GtkEntry* self, gpointer user_data);
             virtual void on_paste_clipboard(GtkEntry* self, gpointer user_data);

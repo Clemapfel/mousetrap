@@ -188,4 +188,12 @@ namespace mousetrap
 
         return out;
     }
+
+    void Widget::set_tooltip_text(const std::string& text)
+    {
+        if (warn_if_nullptr("set_tooltip_text"))
+            return;
+
+        gtk_widget_set_tooltip_text(get_native(), text.c_str());
+    }
 }

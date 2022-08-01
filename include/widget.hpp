@@ -43,6 +43,8 @@ namespace mousetrap
             void set_opacity(float);
             float get_opacity();
 
+            void set_tooltip_text(const std::string&);
+
         private:
             /// \returns true if get_native() == nullptr
             bool warn_if_nullptr(const std::string& function_id);

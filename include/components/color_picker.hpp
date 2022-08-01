@@ -51,6 +51,7 @@ namespace mousetrap
             static void spin_button_value_changed(GtkSpinButton* button, std::pair<ColorPicker*, char>* instance_and_which);
             static void entry_on_activate(GtkEntry* entry, ColorPicker* instance);
             static void entry_on_paste(GtkEntry* entry, ColorPicker* instance);
+            static gboolean widget_on_draw(void* , void*, ColorPicker* instance);
 
             // current color display
 
@@ -75,6 +76,22 @@ namespace mousetrap
             };
 
             CurrentColorArea* _current_color_area;
+
+            // eyedropped
+
+            struct EyedropperModeButton : public Widget
+            {
+                EyedropperModeButton();
+                ~EyedropperModeButton();
+
+                Button* _button;
+
+                GtkWidget* get_native() {
+                    return _button->get_native();
+                }
+            };
+
+            EyedropperModeButton* _eyedropper_button;
 
             // label
 
@@ -152,11 +169,9 @@ namespace mousetrap
                 virtual ~HtmlCodeElement();
 
                 Entry* _entry;
-                Button* _button;
-                Box* _hbox;
 
                 GtkWidget* get_native() override {
-                    return _hbox->get_native();
+                    return _entry->get_native();
                 }
 
                 void update();
@@ -201,7 +216,7 @@ namespace mousetrap
             Box* _html_region;
 
             Box* _all_slider_regions;
-            Overlay* _current_color_overlay;
+            Overlay* _current_color_and_eyedropper_overlay;
             Overlay* _closing_dialogue_overlay;
 
             Box* _window;
@@ -514,14 +529,6 @@ namespace mousetrap
         _entry->set_width_chars(4 * 2 + 1);
         _entry->set_expand_horizontally(true);
         _entry->set_margin_start(left_to_slider_left_margin);
-
-        _button = new Button();
-        _button->set_label("!");
-        _button->set_margin_start(scale_to_entry_spacer);
-
-        _hbox = new Box(GTK_ORIENTATION_HORIZONTAL, slider_to_slider_spacer);
-        _hbox->add(_entry);
-        _hbox->add(_button);
     }
 
     void ColorPicker::HtmlCodeElement::update()
@@ -532,8 +539,6 @@ namespace mousetrap
     ColorPicker::HtmlCodeElement::~HtmlCodeElement()
     {
         delete _entry;
-        delete _button;
-        delete _hbox;
     }
 
     std::string ColorPicker::HtmlCodeElement::sanitize_html_code(const std::string& in)
@@ -672,13 +677,35 @@ namespace mousetrap
         in.g = glm::clamp<float>(in.g, 0.f, 1.f);
         in.b = glm::clamp<float>(in.b, 0.f, 1.f);
 
-        std::stringstream str;
-        str << "#";
-        str << std::hex << int(std::round(in.r * 255))
-            << std::hex << int(std::round(in.g * 255))
-            << std::hex << int(std::round(in.b * 255));
+        std::stringstream r;
+        r << std::hex << int(std::round(in.r * 255));
 
-        return str.str();
+        auto r_string = r.str();
+        if (r_string.size() == 1)
+            r_string = "0" + r_string;
+
+        std::stringstream g;
+        g << std::hex << int(std::round(in.g * 255));
+
+        auto g_string = g.str();
+        if (g_string.size() == 1)
+            g_string = "0" + g_string;
+
+        std::stringstream b;
+        b << std::hex << int(std::round(in.b * 255));
+
+        auto b_string = b.str();
+        if (b_string.size() == 1)
+            b_string = "0" + b_string;
+
+        return "#" + r_string + g_string + b_string;
+    }
+
+    ColorPicker::EyedropperModeButton::EyedropperModeButton()
+    {
+        _button = new Button();
+        _button->set_label("O,");
+        _button->set_tooltip_text("Start Pixel Color Selection");
     }
 
     ColorPicker::LabelElement::LabelElement(const std::string& str)
@@ -696,7 +723,6 @@ namespace mousetrap
     {
         delete _hbox;
         delete _label;
-        //gtk_widget_destroy(_separator);
     }
 
     ColorPicker::ClosingDialogue::ClosingDialogue()
@@ -743,6 +769,9 @@ namespace mousetrap
         _html_label = new LabelElement("HTML Code:");
 
         _html_code_element = new HtmlCodeElement();
+        _html_code_element->set_margin_end(0.6 * width);
+        //_html_code_element->_entry->set_width_chars(6 + 2);
+        //_html_code_element->set_align_horizontally(GTK_ALIGN_START);
 
         _opacity_region = new Box(GTK_ORIENTATION_VERTICAL, slider_to_slider_spacer);
         _opacity_region->add(_opacity_label);
@@ -771,35 +800,54 @@ namespace mousetrap
         _all_slider_regions->add(_html_region);
 
         _current_color_area = new CurrentColorArea();
-        _current_color_area->set_align_vertically(GtkAlign::GTK_ALIGN_START);
+        _current_color_area->set_align_vertically(GTK_ALIGN_START);
         _current_color_area->set_expand_vertically(false);
         _current_color_area->set_expand_horizontally(true);
         _current_color_area->set_size_request({1, 4 * margin});
         _current_color_area->set_margin_start(0.6 * width);
 
+        _eyedropper_button = new EyedropperModeButton();
+        _eyedropper_button->set_align_vertically(GTK_ALIGN_END);
+        _eyedropper_button->set_align_horizontally(GTK_ALIGN_END);
+        _eyedropper_button->set_size_request({7 * margin, 5 * margin});
+
         _all_slider_regions->set_margin_top(_current_color_area->get_size_request().y - margin);
 
-        _current_color_overlay = new Overlay();
-        _current_color_overlay->set_under(_all_slider_regions);
-        _current_color_overlay->set_over(_current_color_area);
-        _current_color_overlay->set_margin_end(outer_margin);
-        _current_color_overlay->set_margin_start(0.5 * outer_margin);
-        _current_color_overlay->set_margin_top(0.5 * outer_margin);
-        _current_color_overlay->set_margin_bottom(0.5 * outer_margin);
+        _current_color_and_eyedropper_overlay = new Overlay();
+        _current_color_and_eyedropper_overlay->set_under(_all_slider_regions);
+        _current_color_and_eyedropper_overlay->set_over(_current_color_area);
+        _current_color_and_eyedropper_overlay->set_over(_eyedropper_button);
+        _current_color_and_eyedropper_overlay->set_margin_end(outer_margin);
+        _current_color_and_eyedropper_overlay->set_margin_start(0.5 * outer_margin);
+        _current_color_and_eyedropper_overlay->set_margin_top(0.5 * outer_margin);
+        _current_color_and_eyedropper_overlay->set_margin_bottom(0.5 * outer_margin);
 
         _closing_dialogue = new ClosingDialogue();
-        _closing_dialogue->set_align_horizontally(GtkAlign::GTK_ALIGN_START);
-        _closing_dialogue->set_align_vertically(GtkAlign::GTK_ALIGN_START);
+        _closing_dialogue->set_align_horizontally(GTK_ALIGN_START);
+        _closing_dialogue->set_align_vertically(GTK_ALIGN_START);
 
         _closing_dialogue_overlay = new Overlay();
-        _closing_dialogue_overlay->set_under(_current_color_overlay);
+        _closing_dialogue_overlay->set_under(_current_color_and_eyedropper_overlay);
         _closing_dialogue_overlay->set_over(_closing_dialogue);
 
         _window = new Box(GTK_ORIENTATION_VERTICAL);
-        _closing_dialogue_overlay->set_align_horizontally(GtkAlign::GTK_ALIGN_CENTER);
-        _closing_dialogue_overlay->set_align_vertically(GtkAlign::GTK_ALIGN_CENTER);
+        _closing_dialogue_overlay->set_align_horizontally(GTK_ALIGN_CENTER);
+        _closing_dialogue_overlay->set_align_vertically(GTK_ALIGN_CENTER);
 
         _window->add(_closing_dialogue_overlay);
+
+        // tooltips
+        _elements.at('A')->_overlay->set_tooltip_text("Transparency / Alpha");
+        _elements.at('H')->_overlay->set_tooltip_text("Hue");
+        _elements.at('S')->_overlay->set_tooltip_text("Saturation");
+        _elements.at('V')->_overlay->set_tooltip_text("Value");
+        _elements.at('R')->_overlay->set_tooltip_text("Red");
+        _elements.at('G')->_overlay->set_tooltip_text("Green");
+        _elements.at('B')->_overlay->set_tooltip_text("Blue");
+
+        _current_color_area->set_tooltip_text("Currently Selected Color");
+        _html_code_element->set_tooltip_text("HTML Color Code: #RGB in Hexadecimal");
+        _eyedropper_button->set_tooltip_text("Begin Eyedropper Selection");
 
         connect_signals(this);
     }
@@ -827,7 +875,7 @@ namespace mousetrap
         delete _rgb_region;
         delete _html_region;
         delete _all_slider_regions;
-        delete _current_color_overlay;
+        delete _current_color_and_eyedropper_overlay;
         delete _closing_dialogue_overlay;
         delete _window;
     }
@@ -907,11 +955,9 @@ namespace mousetrap
         instance->_html_code_element->_entry->set_all_signals_blocked(true);
 
         std::string text = HtmlCodeElement::sanitize_html_code(gtk_entry_get_text(entry));
-        std::cout << "activate called: " << text << std::endl;
-
         if (not HtmlCodeElement::is_html_code_valid(text))
         {
-            std::cerr << "[LOG] malformatted hexadecimal rgba code, ignoring input." << std::endl;
+            std::cerr << "[LOG] malformatted hexadecimal rgb code, ignoring input." << std::endl;
             return;
         }
 
@@ -927,10 +973,21 @@ namespace mousetrap
         gtk_entry_set_text(entry, HtmlCodeElement::sanitize_html_code(gtk_entry_get_text(entry)).c_str());
     }
 
+    gboolean ColorPicker::widget_on_draw(void* , void*, ColorPicker* instance)
+    {
+        static bool once = true;
+
+        if (once)
+        {
+            update_gui(instance);
+            once = false;
+        }
+
+        return FALSE;
+    }
+
     void ColorPicker::connect_signals(ColorPicker* instance)
     {
-        instance->_html_code_element->_button->connect_signal("clicked", HtmlCodeElement::on_clicked, instance);
-
         for (auto& pair : instance->_elements)
         {
             auto* data = new std::pair<ColorPicker*, char>(instance, pair.first);
@@ -940,5 +997,7 @@ namespace mousetrap
 
         instance->_html_code_element->_entry->connect_signal("activate", entry_on_activate, instance);
         instance->_html_code_element->_entry->connect_signal("paste-clipboard", entry_on_paste, instance);
+
+        instance->_window->connect_signal("draw", widget_on_draw, instance);
     }
 }
