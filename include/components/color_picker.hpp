@@ -332,6 +332,7 @@ namespace mousetrap
     void ColorPicker::Gradient::on_realize(GtkGLArea* area)
     {
         gtk_gl_area_make_current(area);
+
         _shape = new Shape();
         _shape->as_rectangle({0, 0}, {1, 1});
 
@@ -737,7 +738,7 @@ namespace mousetrap
         _opacity_label = new LabelElement("Opacity");
         _hsv_label = new LabelElement("HSV");
         _rgb_label = new LabelElement("RGB");
-        _html_label = new LabelElement("Hexadecimal");
+        _html_label = new LabelElement("HTML Code:");
 
         _html_code_element = new HtmlCodeElement();
 
