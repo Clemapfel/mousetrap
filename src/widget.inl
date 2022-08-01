@@ -174,4 +174,11 @@ namespace mousetrap
 
         return gtk_widget_get_opacity(get_native());
     }
+
+    Vector2f Widget::get_size()
+    {
+        GtkAllocation* allocation;
+        gtk_widget_get_allocation(get_native(), allocation);
+        return Vector2f{allocation->width, allocation->height};
+    }
 }

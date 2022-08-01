@@ -27,6 +27,9 @@ namespace mousetrap
 
     void GLArea::add_render_task(Shape* shape, Shader* shader, Transform* transform)
     {
+        if (shape == nullptr)
+            return;
+
         _render_tasks.emplace_back(shape, shader, transform);
     }
 
@@ -80,5 +83,10 @@ namespace mousetrap
 
         glFlush();
         return FALSE;
+    }
+
+    void GLArea::queue_render()
+    {
+        gtk_gl_area_queue_render(_native);
     }
 }

@@ -45,6 +45,7 @@ int main()
     // debug
     color_picker = new ColorPicker(150);
     gtk_container_add(GTK_CONTAINER(main_window), color_picker->get_native());
+    //ColorPicker::connect_signals(color_picker);
 
     // render loop
     gtk_widget_show_all(main_window);

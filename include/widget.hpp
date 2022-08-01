@@ -19,6 +19,8 @@ namespace mousetrap
             operator GtkWidget*();
 
             Vector2f get_size_request();
+            void set_size_request(Vector2f);
+            Vector2f get_size();
 
             void set_signal_blocked(const std::string& signal_id, bool);
             void set_all_signals_blocked(bool);
@@ -37,8 +39,6 @@ namespace mousetrap
 
             void set_align_horizontally(GtkAlign);
             void set_align_vertically(GtkAlign);
-
-            void set_size_request(Vector2f);
 
             void set_opacity(float);
             float get_opacity();
