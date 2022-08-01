@@ -24,8 +24,8 @@
 
 namespace mousetrap
 {
-    static inline RGBA current_color = RGBA(0.3, 1, 1, 1);
-    static inline RGBA last_color = RGBA(0.2, 0.8, 1, 1);
+    static inline HSVA current_color = HSVA(0.3, 1, 1, 1);
+    static inline HSVA last_color = HSVA(0.2, 0.8, 1, 1);
 
     class ColorPicker;
     static inline ColorPicker* color_picker = nullptr;
@@ -39,6 +39,8 @@ namespace mousetrap
             GtkWidget* get_native();
             
         private:
+            static inline RGBA current_color_as_rgba = RGBA(1, 1, 1, 1);
+
             // update
             static void update_color(ColorPicker* instance, char which_component, float value);
             static void update_gui(ColorPicker* instance);
@@ -343,7 +345,7 @@ namespace mousetrap
         on_resize(area, size.x, size.y);
 
         auto render_task = RenderTask(_shape, _shader, nullptr);
-        render_task.register_color("_current_color", &current_color);
+        render_task.register_color("_current_color", &current_color_as_rgba);
 
         add_render_task(render_task);
         add_render_task(_frame);
@@ -407,8 +409,8 @@ namespace mousetrap
             _gradient->_shape->set_vertex_color(3, left_color);
         };
 
-        auto rgba = current_color;
-        auto hsva = current_color.operator HSVA();
+        auto rgba = current_color.operator RGBA();
+        auto hsva = current_color;
 
         if (_component == 'A')
         {
@@ -844,34 +846,48 @@ namespace mousetrap
 
     void ColorPicker::update_color(ColorPicker* instance, char which_component, float value)
     {
-        auto as_hsva = current_color.operator HSVA();
+        auto as_hsva = current_color;
+        auto as_rgba = current_color.operator RGBA();
+
         switch (which_component)
         {
             case 'A':
-                current_color.a = value;
+                as_hsva.a = value;
                 break;
             case 'R':
-                current_color.r = value;
+                as_rgba.r = value;
+                as_hsva = as_rgba.operator HSVA();
                 break;
             case 'G':
-                current_color.g = value;
+                as_rgba.g = value;
+                as_hsva = as_rgba.operator HSVA();
                 break;
             case 'B':
-                current_color.b = value;
+                as_rgba.b = value;
+                as_hsva = as_rgba.operator HSVA();
                 break;
             case 'H':
                 as_hsva.h = value;
-                current_color = as_hsva;
                 break;
             case 'S':
                 as_hsva.s = value;
-                current_color = as_hsva;
                 break;
             case 'V':
                 as_hsva.v = value;
-                current_color = as_hsva;
                 break;
         }
+
+        if (as_hsva.s == 0 and which_component != 'H')
+            as_hsva.h = current_color.h;
+
+        if (as_hsva.h == 0 and current_color.h == 1)
+            current_color.h = 1;
+
+        if (as_hsva.h == 1 and current_color.h == 0)
+            current_color.h = 0;
+
+        current_color = as_hsva;
+        current_color_as_rgba = current_color.operator RGBA();
     }
 
     void ColorPicker::scale_value_changed(GtkRange* scale, std::pair<ColorPicker*, char>* instance_and_which)
@@ -900,7 +916,7 @@ namespace mousetrap
         }
 
         gtk_entry_set_text(entry, text.c_str());
-        current_color = HtmlCodeElement::code_to_color(text);
+        current_color = HtmlCodeElement::code_to_color(text).operator HSVA();
         update_gui(instance);
 
         instance->_html_code_element->_entry->set_all_signals_blocked(false);

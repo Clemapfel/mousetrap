@@ -106,9 +106,7 @@ namespace mousetrap
 
         auto delta = max - min;
 
-        if (delta < 0.001)
-            h = 0;
-        else if (max == r)
+        if (max == r)
             h = 60 * (fmod(((g - b) / delta), 6));
         else if (max == g)
             h = 60 * (((b - r) / delta) + 2);
@@ -122,7 +120,9 @@ namespace mousetrap
             s = delta / max;
 
         v = max;
-        h = std::fmod(h, 360.f);
+
+        if (h < 0)
+            h += 360.f;
 
         return glm::vec4(h / 360.f, s, v, a);
     }
@@ -135,7 +135,7 @@ namespace mousetrap
         const float a = in[3];
 
         float c = v * s;
-        float h_2 = h / 60;
+        float h_2 = h / 60.f;
         float x = c * (1 - std::fabs(std::fmod(h_2, 2) - 1));
 
         Vector3f rgb;
