@@ -20,6 +20,8 @@
 #include <include/spin_button.hpp>
 #include <include/label.hpp>
 
+#include <set>
+
 namespace mousetrap
 {
     static inline RGBA current_color = RGBA(0.3, 1, 1, 1);
@@ -35,12 +37,18 @@ namespace mousetrap
             virtual ~ColorPicker();
 
             GtkWidget* get_native();
-
+            
         private:
             // update
             static void update_color(ColorPicker* instance, char which_component, float value);
             static void update_gui(ColorPicker* instance);
             static void connect_signals(ColorPicker* instance);
+
+            // signal wrapper
+            static void scale_value_changed(GtkRange* scale, std::pair<ColorPicker*, char>* instance_and_which);
+            static void spin_button_value_changed(GtkSpinButton* button, std::pair<ColorPicker*, char>* instance_and_which);
+            static void entry_on_activate(GtkEntry* entry, ColorPicker* instance);
+            static void entry_on_paste(GtkEntry* entry, ColorPicker* instance);
 
             // current color display
 
@@ -151,7 +159,9 @@ namespace mousetrap
                 void update();
 
                 static std::string sanitize_html_code(const std::string&);
-                static RGBA parse_html_code(const std::string&);
+                static bool is_html_code_valid(const std::string& sanitized);
+                static RGBA code_to_color(const std::string&);
+                static std::string color_to_code(RGBA);
 
                 static void on_clicked(GtkButton*, ColorPicker* instance) {
                     // TODO: temp
@@ -377,7 +387,7 @@ namespace mousetrap
     void ColorPicker::SliderElement::update()
     {
         _entry->set_all_signals_blocked(true);
-        _entry->set_all_signals_blocked(true);
+        _scale->set_all_signals_blocked(true);
 
         auto set_gradient_color = [&](RGBA left_color, RGBA right_color)
         {
@@ -504,7 +514,7 @@ namespace mousetrap
 
     void ColorPicker::HtmlCodeElement::update()
     {
-        _entry->set_text(mousetrap::rgba_to_html_code(current_color));
+        _entry->set_text(sanitize_html_code(color_to_code(current_color)));
     }
 
     ColorPicker::HtmlCodeElement::~HtmlCodeElement()
@@ -512,6 +522,151 @@ namespace mousetrap
         delete _entry;
         delete _button;
         delete _hbox;
+    }
+
+    std::string ColorPicker::HtmlCodeElement::sanitize_html_code(const std::string& in)
+    {
+        std::string text;
+
+        if (text.front() != '#')
+            text.push_back('#');
+
+        for (size_t i = 1; i < in.size(); ++i)
+        {
+            auto c = in.at(i);
+            if (c == 'a')
+                c = 'A';
+            else if (c == 'b')
+                c = 'B';
+            else if (c == 'c')
+                c = 'C';
+            else if (c == 'd')
+                c = 'D';
+            else if (c == 'e')
+                c = 'E';
+            else if (c == 'f')
+                c = 'F';
+
+            text.push_back(c);
+        }
+
+        return text;
+    }
+
+    bool ColorPicker::HtmlCodeElement::is_html_code_valid(const std::string& in)
+    {
+        if (in.front() != '#')
+            return false;
+
+        if (in.size() != 7)
+            return false;
+
+        static std::set<char> valid = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+        for (size_t i = 1; i < in.size(); ++i)
+            if (valid.find(in.at(i)) == valid.end())
+                return false;
+
+        return true;
+    }
+
+    RGBA ColorPicker::HtmlCodeElement::code_to_color(const std::string& in)
+    {
+        static auto hex_char_to_int = [](char c) -> uint8_t
+        {
+            if (c == '0')
+                return 0;
+
+            if (c == '1')
+                return 1;
+
+            if (c == '2')
+                return 2;
+
+            if (c == '3')
+                return 3;
+
+            if (c == '4')
+                return 4;
+
+            if (c == '5')
+                return 5;
+
+            if (c == '6')
+                return 6;
+
+            if (c == '7')
+                return 7;
+
+            if (c == '8')
+                return 8;
+
+            if (c == '9')
+                return 9;
+
+            if (c == 'A')
+                return 10;
+
+            if (c == 'B')
+                return 11;
+
+            if (c == 'C')
+                return 12;
+
+            if (c == 'D')
+                return 13;
+
+            if (c == 'E')
+                return 14;
+
+            if (c == 'F')
+                return 15;
+
+            return -1; // on error
+        };
+
+        static auto hex_component_to_int = [](int left, int right) -> uint8_t
+        {
+            return left * 16 + right;
+        };
+
+        auto text = sanitize_html_code(in);
+        assert(is_html_code_valid(text));
+
+        std::vector<int> as_hex;
+        as_hex.reserve(6);
+        for (size_t i = 1; i < text.size(); ++i)
+        {
+            as_hex.push_back(hex_char_to_int(text.at(i)));
+            if (as_hex.back() == -1)
+                goto on_error;
+        }
+
+        return RGBA(
+            hex_component_to_int(as_hex.at(0), as_hex.at(1)) / 255.f,
+            hex_component_to_int(as_hex.at(2), as_hex.at(3)) / 255.f,
+            hex_component_to_int(as_hex.at(4), as_hex.at(5)) / 255.f,
+            current_color.a
+        );
+
+        on_error:
+            std::cerr << "[LOG] Unable to parse hex html code \"" << in << "\", returning RGBA(0, 0, 0, 1)" << std::endl;
+            return RGBA(0, 0, 0, 1);
+    }
+
+    std::string ColorPicker::HtmlCodeElement::color_to_code(RGBA in)
+    {
+        in.r = glm::clamp<float>(in.r, 0.f, 1.f);
+        in.g = glm::clamp<float>(in.g, 0.f, 1.f);
+        in.b = glm::clamp<float>(in.b, 0.f, 1.f);
+
+        std::stringstream str;
+        str << "#";
+        str << std::hex << int(std::round(in.r * 255))
+            << std::hex << int(std::round(in.g * 255))
+            << std::hex << int(std::round(in.b * 255));
+
+        return str.str();
     }
 
     ColorPicker::LabelElement::LabelElement(const std::string& str)
@@ -668,14 +823,96 @@ namespace mousetrap
     void ColorPicker::update_gui(ColorPicker* instance)
     {
         for (auto& pair : instance->_elements)
+        {
             pair.second->update();
+            pair.second->_gradient->queue_render();
+        }
 
         instance->_current_color_area->update();
         instance->_html_code_element->update();
     }
 
+    void ColorPicker::update_color(ColorPicker* instance, char which_component, float value)
+    {
+        auto as_hsva = current_color.operator HSVA();
+        switch (which_component)
+        {
+            case 'A':
+                current_color.a = value;
+                break;
+            case 'R':
+                current_color.r = value;
+                break;
+            case 'G':
+                current_color.g = value;
+                break;
+            case 'B':
+                current_color.b = value;
+                break;
+            case 'H':
+                as_hsva.h = value;
+                current_color = as_hsva;
+                break;
+            case 'S':
+                as_hsva.s = value;
+                current_color = as_hsva;
+                break;
+            case 'V':
+                as_hsva.v = value;
+                current_color = as_hsva;
+                break;
+        }
+    }
+
+    void ColorPicker::scale_value_changed(GtkRange* scale, std::pair<ColorPicker*, char>* instance_and_which)
+    {
+        ColorPicker::update_color(instance_and_which->first, instance_and_which->second, gtk_range_get_value(scale));
+        ColorPicker::update_gui(instance_and_which->first);
+    }
+
+    void ColorPicker::spin_button_value_changed(GtkSpinButton* button, std::pair<ColorPicker*, char>* instance_and_which)
+    {
+        ColorPicker::update_color(instance_and_which->first, instance_and_which->second, gtk_spin_button_get_value(button));
+        ColorPicker::update_gui(instance_and_which->first);
+    }
+
+    void ColorPicker::entry_on_activate(GtkEntry* entry, ColorPicker* instance)
+    {
+        instance->_html_code_element->_entry->set_all_signals_blocked(true);
+
+        std::string text = HtmlCodeElement::sanitize_html_code(gtk_entry_get_text(entry));
+        std::cout << "activate called: " << text << std::endl;
+
+        if (not HtmlCodeElement::is_html_code_valid(text))
+        {
+            std::cerr << "[LOG] malformatted hexadecimal rgba code, ignoring input." << std::endl;
+            return;
+        }
+
+        gtk_entry_set_text(entry, text.c_str());
+        current_color = HtmlCodeElement::code_to_color(text);
+        update_gui(instance);
+
+        instance->_html_code_element->_entry->set_all_signals_blocked(false);
+    }
+
+    void ColorPicker::entry_on_paste(GtkEntry* entry, ColorPicker* instance)
+    {
+        gtk_entry_set_text(entry, HtmlCodeElement::sanitize_html_code(gtk_entry_get_text(entry)).c_str());
+    }
+
     void ColorPicker::connect_signals(ColorPicker* instance)
     {
         instance->_html_code_element->_button->connect_signal("clicked", HtmlCodeElement::on_clicked, instance);
+
+        for (auto& pair : instance->_elements)
+        {
+            auto* data = new std::pair<ColorPicker*, char>(instance, pair.first);
+            pair.second->_scale->connect_signal("value-changed", scale_value_changed, data);
+            pair.second->_entry->connect_signal("value-changed", spin_button_value_changed, data);
+        }
+
+        instance->_html_code_element->_entry->connect_signal("activate", entry_on_activate, instance);
+        instance->_html_code_element->_entry->connect_signal("paste-clipboard", entry_on_paste, instance);
     }
 }
