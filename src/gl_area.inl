@@ -33,6 +33,11 @@ namespace mousetrap
         _render_tasks.emplace_back(shape, shader, transform);
     }
 
+    void GLArea::add_render_task(RenderTask task)
+    {
+        _render_tasks.push_back(task);
+    }
+
     void GLArea::on_realize_wrapper(void* area, void* instance)
     {
         ((GLArea*) instance)->on_realize(GTK_GL_AREA(area));

@@ -35,6 +35,6 @@ uniform vec4 _current_color;
 void main()
 {
     vec3 current_hsv = rgb_to_hsv(_current_color.xyz);
-    vec3 hsv = vec3((_vertex_position.x - 1) / 2, 1, 1); //current_hsv.y, current_hsv.z);
+    vec3 hsv = vec3((_vertex_position.x - 1) / 2, current_hsv.y, current_hsv.z);
     _fragment_color = vec4(hsv_to_rgb(hsv), 1);
 }

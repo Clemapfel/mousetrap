@@ -58,6 +58,10 @@ namespace mousetrap
             if (pair.second != nullptr)
                 shader->set_uniform_transform(pair.first, *pair.second);
 
+        for (auto& pair : _colors)
+            if (pair.second != nullptr)
+                shader->set_uniform_vec4(pair.first, pair.second->operator glm::vec4());
+
         _shape->render(*shader, *transform);
     }
 
@@ -89,6 +93,11 @@ namespace mousetrap
     void RenderTask::register_transform(const std::string& uniform_name, Transform* value)
     {
         _transforms.insert({uniform_name, value});
+    }
+
+    void RenderTask::register_color(const std::string& uniform_name, RGBA* value)
+    {
+        _colors.insert({uniform_name, value});
     }
 
     Shape* RenderTask::get_shape()

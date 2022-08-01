@@ -22,8 +22,8 @@
 
 namespace mousetrap
 {
-    static inline HSVA current_color = HSVA(0.3, 1, 1, 1);
-    static inline HSVA last_color = HSVA(0.2, 0.8, 1, 1);
+    static inline RGBA current_color = RGBA(0.3, 1, 1, 1);
+    static inline RGBA last_color = RGBA(0.2, 0.8, 1, 1);
 
     class ColorPicker;
     static inline ColorPicker* color_picker = nullptr;
@@ -40,6 +40,7 @@ namespace mousetrap
             // update
             static void update_color(ColorPicker* instance, char which_component, float value);
             static void update_gui(ColorPicker* instance);
+            static void connect_signals(ColorPicker* instance);
 
             // current color display
 
@@ -97,6 +98,7 @@ namespace mousetrap
 
                 Shape* _shape;
                 Shader* _shader = nullptr;
+                Shape* _frame;
             };
 
             struct SliderElement : public Widget
@@ -146,8 +148,15 @@ namespace mousetrap
                     return _hbox->get_native();
                 }
 
+                void update();
+
                 static std::string sanitize_html_code(const std::string&);
                 static RGBA parse_html_code(const std::string&);
+
+                static void on_clicked(GtkButton*, ColorPicker* instance) {
+                    // TODO: temp
+                    instance->update_gui(instance);
+                }
             };
 
             HtmlCodeElement* _html_code_element;
@@ -249,7 +258,7 @@ namespace mousetrap
         _transparency_tiling_shader = new Shader();
         _transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
 
-        auto size = get_size_request();
+        auto size = get_size();
 
         _frame = new Shape();
         float target_frame_size = 0.025;
@@ -265,9 +274,15 @@ namespace mousetrap
         update();
     }
 
-    void ColorPicker::CurrentColorArea::on_resize(GtkGLArea*, int, int)
+    void ColorPicker::CurrentColorArea::on_resize(GtkGLArea*, int width, int height)
     {
-        std::cout << _current_color_shape << std::endl;
+        if (width == 0 or height == 0)
+            return;
+
+        float target_frame_size = 1.f / height;
+        Vector2f frame_size = Vector2f(target_frame_size / (width / float(height)), target_frame_size);
+        _frame->as_frame({0, 0}, {1, 1}, frame_size.x, frame_size.y);
+        _frame->set_color(RGBA(0, 0, 0, 1));
     }
 
     void ColorPicker::CurrentColorArea::update()
@@ -301,12 +316,28 @@ namespace mousetrap
         _shape = new Shape();
         _shape->as_rectangle({0, 0}, {1, 1});
 
-        add_render_task(_shape, _shader);
+        auto size = get_size();
+
+        _frame = new Shape();
+        _frame->as_rectangle({0, 0}, {1, 1});
+        on_resize(area, size.x, size.y);
+
+        auto render_task = RenderTask(_shape, _shader, nullptr);
+        render_task.register_color("_current_color", &current_color);
+
+        add_render_task(render_task);
+        add_render_task(_frame);
     }
 
-    void ColorPicker::Gradient::on_resize(GtkGLArea*, int w, int h)
+    void ColorPicker::Gradient::on_resize(GtkGLArea*, int width, int height)
     {
-        std::cout << _shape << std::endl;
+        if (width == 0 or height == 0)
+            return;
+
+        float target_frame_size = 1.f / height;
+        Vector2f frame_size = Vector2f(target_frame_size / (width / float(height)), target_frame_size);
+        _frame->as_frame({0, 0}, {1, 1}, frame_size.x, frame_size.y);
+        _frame->set_color(RGBA(0, 0, 0, 1));
     }
 
     ColorPicker::Gradient::~Gradient()
@@ -345,6 +376,9 @@ namespace mousetrap
 
     void ColorPicker::SliderElement::update()
     {
+        _entry->set_all_signals_blocked(true);
+        _entry->set_all_signals_blocked(true);
+
         auto set_gradient_color = [&](RGBA left_color, RGBA right_color)
         {
             _gradient->_shape->set_vertex_color(0, left_color);
@@ -353,8 +387,8 @@ namespace mousetrap
             _gradient->_shape->set_vertex_color(3, left_color);
         };
 
-        auto rgba = current_color.operator RGBA();
-        auto hsva = current_color;
+        auto rgba = current_color;
+        auto hsva = current_color.operator HSVA();
 
         if (_component == 'A')
         {
@@ -364,13 +398,21 @@ namespace mousetrap
             a_1.a = 1;
 
             set_gradient_color(a_0, a_1);
-            return;
+            _entry->set_value(rgba.a);
+            _scale->set_value(rgba.a);
+            goto done;
         }
 
         hsva.a = 1;
         rgba.a = 1;
 
-        if (_component == 'S')
+        if (_component == 'H')
+        {
+            _entry->set_value(hsva.h);
+            _scale->set_value(hsva.h);
+            goto done;
+        }
+        else if (_component == 'S')
         {
             auto s_0 = hsva;
             s_0.s = 0;
@@ -378,6 +420,9 @@ namespace mousetrap
             s_1.s = 1;
 
             set_gradient_color(s_0, s_1);
+            _entry->set_value(hsva.s);
+            _scale->set_value(hsva.s);
+            goto done;
         }
         else if (_component == 'V')
         {
@@ -387,6 +432,9 @@ namespace mousetrap
             v_1.v = 1;
 
             set_gradient_color(v_0, v_1);
+            _entry->set_value(hsva.v);
+            _scale->set_value(hsva.v);
+            goto done;
         }
         else if (_component == 'R')
         {
@@ -396,6 +444,9 @@ namespace mousetrap
             r_1.r = 1;
 
             set_gradient_color(r_0, r_1);
+            _entry->set_value(rgba.r);
+            _scale->set_value(rgba.r);
+            goto done;
         }
         else if (_component == 'G')
         {
@@ -405,6 +456,9 @@ namespace mousetrap
             g_1.g = 1;
 
             set_gradient_color(g_0, g_1);
+            _entry->set_value(rgba.g);
+            _scale->set_value(rgba.g);
+            goto done;
         }
         else if (_component == 'B')
         {
@@ -414,7 +468,14 @@ namespace mousetrap
             b_1.b = 1;
 
             set_gradient_color(b_0, b_1);
+            _entry->set_value(rgba.b);
+            _scale->set_value(rgba.b);
+            goto done;
         }
+
+        done:
+            _entry->set_all_signals_blocked(false);
+            _scale->set_all_signals_blocked(false);
     }
 
     ColorPicker::SliderElement::~SliderElement()
@@ -439,6 +500,11 @@ namespace mousetrap
         _hbox = new Box(GTK_ORIENTATION_HORIZONTAL, slider_to_slider_spacer);
         _hbox->add(_entry);
         _hbox->add(_button);
+    }
+
+    void ColorPicker::HtmlCodeElement::update()
+    {
+        _entry->set_text(mousetrap::rgba_to_html_code(current_color));
     }
 
     ColorPicker::HtmlCodeElement::~HtmlCodeElement()
@@ -567,6 +633,8 @@ namespace mousetrap
         _closing_dialogue_overlay->set_align_vertically(GtkAlign::GTK_ALIGN_CENTER);
 
         _window->add(_closing_dialogue_overlay);
+
+        connect_signals(this);
     }
 
     ColorPicker::~ColorPicker()
@@ -603,5 +671,11 @@ namespace mousetrap
             pair.second->update();
 
         instance->_current_color_area->update();
+        instance->_html_code_element->update();
+    }
+
+    void ColorPicker::connect_signals(ColorPicker* instance)
+    {
+        instance->_html_code_element->_button->connect_signal("clicked", HtmlCodeElement::on_clicked, instance);
     }
 }

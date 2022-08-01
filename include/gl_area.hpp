@@ -20,6 +20,8 @@ namespace mousetrap
             GtkWidget* get_native() override;
 
             void add_render_task(Shape*, Shader* = nullptr, Transform* = nullptr);
+            void add_render_task(RenderTask);
+
             void queue_render();
 
         protected:
