@@ -5,6 +5,7 @@
 #include <include/gl_common.hpp>
 #include <include/gtk_common.hpp>
 #include <include/gl_area.hpp>
+#include <include/components/color_picker.hpp>
 
 using namespace mousetrap;
 
@@ -34,18 +35,16 @@ int main()
     gtk_init(nullptr, nullptr);
 
     // main window
-    auto *main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    GtkWidget *main_window = main;
-
+    auto *main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(main_window, "destroy", G_CALLBACK(gtk_main_quit), nullptr);
     gtk_widget_realize(main_window);
 
     // init opengl
     gtk_initialize_opengl(GTK_WINDOW(main_window));
 
-    auto* gl_area = new ShaderArea();
-    gtk_container_add(GTK_CONTAINER(main_window), gl_area->get_native());
-
+    // debug
+    color_picker = new ColorPicker(150);
+    gtk_container_add(GTK_CONTAINER(main_window), color_picker->get_native());
 
     // render loop
     gtk_widget_show_all(main_window);

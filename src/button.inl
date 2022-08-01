@@ -13,10 +13,10 @@ namespace mousetrap
 
     Button::~Button()
     {
-        gtk_widget_destroy(GTK_WIDGET(_native));
+        //gtk_widget_destroy(GTK_WIDGET(_native));
 
-        if (_icon != nullptr)
-            gtk_widget_destroy(GTK_WIDGET(_icon));
+        //if (_icon != nullptr)
+            //gtk_widget_destroy(GTK_WIDGET(_icon));
     }
 
     GtkWidget* Button::get_native()

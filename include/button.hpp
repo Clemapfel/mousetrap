@@ -13,7 +13,7 @@ namespace mousetrap
     {
         public:
             Button();
-            ~Button();
+            virtual ~Button();
 
             void set_label(const std::string&);
             void set_icon(const std::string& path);

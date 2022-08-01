@@ -13,7 +13,7 @@ namespace mousetrap
     {
         public:
             ToggleButton();
-            ~ToggleButton();
+            virtual ~ToggleButton();
 
             bool get_active() const;
             void set_active(bool b);

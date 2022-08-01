@@ -15,7 +15,7 @@ namespace mousetrap
 
     ToggleButton::~ToggleButton()
     {
-        gtk_widget_destroy(GTK_WIDGET(_native));
+        //gtk_widget_destroy(GTK_WIDGET(_native));
     }
 
     bool ToggleButton::get_active() const

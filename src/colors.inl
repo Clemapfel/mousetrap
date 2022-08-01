@@ -193,7 +193,7 @@ namespace mousetrap
         float c = in[0];
         float y = in[1];
         float m = in[2];
-        float k = in[3];
+        [[maybe_unused]] float k = in[3];
 
         return glm::vec4(
                 1 - c,

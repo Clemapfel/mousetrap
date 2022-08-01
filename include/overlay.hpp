@@ -13,15 +13,15 @@ namespace mousetrap
     {
         public:
             Overlay();
-            ~Overlay();
+            virtual ~Overlay();
 
             GtkWidget* get_native();
 
-            template<typename T>
-            void set_under(T);
+            void set_under(GtkWidget*);
+            void set_over(GtkWidget*);
 
-            template<typename T>
-            void set_over(T);
+            void set_under(Widget*);
+            void set_over(Widget*);
 
         private:
             GtkOverlay* _overlay;

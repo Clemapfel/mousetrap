@@ -16,7 +16,7 @@ namespace mousetrap
 
     SpinButton::~SpinButton()
     {
-        gtk_widget_destroy(GTK_WIDGET(_native));
+        //gtk_widget_destroy(GTK_WIDGET(_native));
     }
 
     GtkWidget* SpinButton::get_native()
@@ -55,7 +55,7 @@ namespace mousetrap
 
     gboolean SpinButton::on_output(GtkSpinButton* self, gpointer user_data)
     {
-        return TRUE;
+        return FALSE;
     }
 
     gboolean SpinButton::on_output_wrapper(GtkSpinButton* self, void* instance)

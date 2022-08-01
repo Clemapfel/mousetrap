@@ -12,18 +12,32 @@ namespace mousetrap
 
     Overlay::~Overlay()
     {
-        gtk_widget_destroy(GTK_WIDGET(_overlay));
+        //gtk_widget_destroy(GTK_WIDGET(_overlay));
     }
 
-    template<typename T>
-    void Overlay::set_under(T in)
+    GtkWidget* Overlay::get_native()
     {
-        gtk_container_add(GTK_CONTAINER(_overlay), (GtkWidget*) in);
+        return GTK_WIDGET(_overlay);
     }
 
-    template<typename T>
-    void Overlay::set_over(T in)
+    void Overlay::set_under(GtkWidget* in)
     {
-        gtk_overlay_add_overlay(_overlay, (GtkWidget*) in);
+        gtk_container_add(GTK_CONTAINER(_overlay), GTK_WIDGET(in));
     }
+
+    void Overlay::set_over(GtkWidget* in)
+    {
+        gtk_overlay_add_overlay(_overlay, GTK_WIDGET(in));
+    }
+
+    void Overlay::set_under(Widget* in)
+    {
+        gtk_container_add(GTK_CONTAINER(_overlay), GTK_WIDGET(in->get_native()));
+    }
+
+    void Overlay::set_over(Widget* in)
+    {
+        gtk_overlay_add_overlay(_overlay, GTK_WIDGET(in->get_native()));
+    }
+
 }

@@ -10,11 +10,11 @@
 
 namespace mousetrap
 {
-    class Box : public Widget, public Container
+    class Box : public Container
     {
         public:
             Box(GtkOrientation, float spacing = 0);
-            ~Box();
+            virtual ~Box();
 
             GtkWidget* get_native();
             using Container::add;

@@ -22,7 +22,7 @@ endif()
 
 ### CONFIGURE ###
 
-set(RESOURCE_PATH "${CMAKE_SOURCE_DIR}/resources")
+set(RESOURCE_PATH "${CMAKE_SOURCE_DIR}/resources/")
 configure_file(
     "${CMAKE_SOURCE_DIR}/src/get_resource_path.hpp.in"
     "${CMAKE_SOURCE_DIR}/include/get_resource_path.hpp"
@@ -96,7 +96,7 @@ add_library(mousetrap SHARED
     src/toggle_button.inl
 
     include/components/color_picker.hpp
-)
+        include/label.hpp src/label.inl)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

@@ -18,6 +18,6 @@ namespace mousetrap
 
     Scale::~Scale()
     {
-        gtk_widget_destroy(GTK_WIDGET(_native));
+        //gtk_widget_destroy(GTK_WIDGET(_native));
     }
 }

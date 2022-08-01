@@ -14,7 +14,7 @@ namespace mousetrap
     {
         public:
             SpinButton(float min, float max, float step);
-            ~SpinButton();
+            virtual ~SpinButton();
 
            void set_value(float);
            float get_value();

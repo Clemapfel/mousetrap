@@ -22,7 +22,7 @@ namespace mousetrap
 
     GLArea::~GLArea()
     {
-        gtk_widget_destroy(GTK_WIDGET(_native));
+        //gtk_widget_destroy(GTK_WIDGET(_native));
     }
 
     void GLArea::add_render_task(Shape* shape, Shader* shader, Transform* transform)

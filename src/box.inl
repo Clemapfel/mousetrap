@@ -14,7 +14,7 @@ namespace mousetrap
 
     Box::~Box()
     {
-        gtk_widget_destroy(GTK_WIDGET(_box));
+        //gtk_widget_destroy(GTK_WIDGET(_box));
     }
 
     Box HBox(float spacing)

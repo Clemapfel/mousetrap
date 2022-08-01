@@ -17,21 +17,27 @@
 #include <include/entry.hpp>
 #include <include/scale.hpp>
 #include <include/button.hpp>
+#include <include/spin_button.hpp>
+#include <include/label.hpp>
 
 namespace mousetrap
 {
     static inline HSVA current_color = HSVA(0.3, 1, 1, 1);
     static inline HSVA last_color = HSVA(0.2, 0.8, 1, 1);
 
-    struct ColorPicker : public Widget
+    class ColorPicker;
+    static inline ColorPicker* color_picker = nullptr;
+
+    class ColorPicker : public Widget
     {
         public:
             ColorPicker(float width);
+            virtual ~ColorPicker();
+
             GtkWidget* get_native();
 
         private:
             // update
-
             static void update_color(ColorPicker* instance, char which_component, float value);
             static void update_gui();
 
@@ -40,7 +46,7 @@ namespace mousetrap
             struct CurrentColorArea : public GLArea
             {
                 CurrentColorArea() = default;
-                ~CurrentColorArea();
+                virtual ~CurrentColorArea();
 
                 void on_realize(GtkGLArea*) override;
 
@@ -53,14 +59,35 @@ namespace mousetrap
                 Shape* _frame;
             };
 
-            CurrentColorArea _current_color_area;
+            CurrentColorArea* _current_color_area;
+
+            // label
+
+            struct LabelElement : public Widget
+            {
+                LabelElement(const std::string&);
+                virtual ~LabelElement();
+
+                Label* _label;
+                Box* _hbox;
+                GtkWidget* _separator;
+
+                GtkWidget* get_native() {
+                    return _hbox->get_native();
+                }
+            };
+
+            LabelElement* _opacity_label;
+            LabelElement* _hsv_label;
+            LabelElement* _rgb_label;
+            LabelElement* _html_label;
 
             // slider element
 
             struct Gradient : public GLArea
             {
                 Gradient(const std::string& shader_path = "");
-                ~Gradient();
+                virtual ~Gradient();
 
                 void on_realize(GtkGLArea*) override;
 
@@ -70,13 +97,17 @@ namespace mousetrap
 
             struct SliderElement : public Widget
             {
-                SliderElement(const std::string& shader_path = "");
-                ~SliderElement();
+                SliderElement(char component, const std::string& shader_path = "");
+                virtual ~SliderElement();
 
                 Gradient* _gradient;
                 Scale* _scale;
+                SpinButton* _entry;
+
+                Overlay* _overlay;
                 Box* _hbox;
-                Entry* _entry;
+
+                char _component;
 
                 GtkWidget* get_native() override {
                     return _hbox->get_native();
@@ -99,7 +130,7 @@ namespace mousetrap
             struct HtmlCodeElement : public Widget
             {
                 HtmlCodeElement();
-                ~HtmlCodeElement();
+                virtual ~HtmlCodeElement();
 
                 Entry* _entry;
                 Button* _button;
@@ -113,20 +144,39 @@ namespace mousetrap
                 static RGBA parse_html_code(const std::string&);
             };
 
-            HtmlCodeElement _html_code_element;
+            HtmlCodeElement* _html_code_element;
+
+            // closing dialogue placeholder
+
+            struct ClosingDialogue : public Widget
+            {
+                ClosingDialogue();
+                virtual ~ClosingDialogue();
+
+                Button* _left;
+                Button* _center;
+                Button* _right;
+                Box* _hbox;
+
+                GtkWidget* get_native() override {
+                    return _hbox->get_native();
+                }
+            };
+
+            ClosingDialogue* _closing_dialogue;
 
             // global containers
 
-            Box _opacity_region;
-            Box _hsv_region;
-            Box _rgb_region;
-            Box _html_region;
+            Box* _opacity_region;
+            Box* _hsv_region;
+            Box* _rgb_region;
+            Box* _html_region;
 
-            Box _all_slider_regions;
-            Box _current_color_overlay;
-            Box _close_dialogue_overlay;
+            Box* _all_slider_regions;
+            Overlay* _current_color_overlay;
+            Overlay* _closing_dialogue_overlay;
 
-            Box _window;
+            Box* _window;
 
             // global config
 
@@ -134,7 +184,7 @@ namespace mousetrap
 
             static inline const float left_to_slider_left_margin = 1.5 * margin;
             // left of window to left of slider
-d
+
             static inline const float left_to_label_left_margin = 1 * margin;
             // left of window to left of label
 
@@ -240,10 +290,32 @@ namespace mousetrap
         delete _shape;
     }
 
-    ColorPicker::SliderElement::SliderElement(const std::string& shader_path)
+    ColorPicker::SliderElement::SliderElement(char component, const std::string& shader_path)
     {
+        _component = component;
+
+        _scale = new Scale(0, 1, 0.001);
+        _entry = new SpinButton(0, 1, 0.001);
+
+        _scale->set_opacity(0.25);
+
         _gradient = new ColorPicker::Gradient(shader_path);
-        TODO
+
+        _overlay = new Overlay();
+        _overlay->set_under(_gradient);
+        _overlay->set_over(_scale);
+
+        _gradient->set_margin_top(0.5 * margin);
+        _gradient->set_margin_bottom(0.5 * margin);
+        _gradient->set_margin_start(0.25 * margin);
+        _gradient->set_margin_end(0.25 * margin);
+
+        _overlay->set_margin_start(left_to_slider_left_margin);
+        _overlay->set_margin_end(scale_to_entry_spacer);
+
+        _hbox = new Box(GTK_ORIENTATION_HORIZONTAL);
+        _hbox->add(_overlay);
+        _hbox->add(_entry);
     }
 
     ColorPicker::SliderElement::~SliderElement()
@@ -254,8 +326,180 @@ namespace mousetrap
         delete _entry;
     }
 
+    ColorPicker::HtmlCodeElement::HtmlCodeElement()
+    {
+        _entry = new Entry();
+        _entry->set_width_chars(4 * 2 + 1);
+        _entry->set_expand_horizontally(true);
+        _entry->set_margin_start(left_to_slider_left_margin);
+
+        _button = new Button();
+        _button->set_label("!");
+        _button->set_margin_start(scale_to_entry_spacer);
+
+        _hbox = new Box(GTK_ORIENTATION_HORIZONTAL, slider_to_slider_spacer);
+        _hbox->add(_entry);
+        _hbox->add(_button);
+    }
+
+    ColorPicker::HtmlCodeElement::~HtmlCodeElement()
+    {
+        delete _entry;
+        delete _button;
+        delete _hbox;
+    }
+
+    ColorPicker::LabelElement::LabelElement(const std::string& str)
+    {
+        _label = new Label(str);
+        _hbox = new Box(GTK_ORIENTATION_HORIZONTAL, scale_to_entry_spacer);
+        _separator = gtk_separator_menu_item_new();
+
+        _hbox->add(_label);
+        _hbox->add(_separator);
+        _hbox->set_margin_start(left_to_label_left_margin);
+    }
+
+    ColorPicker::LabelElement::~LabelElement()
+    {
+        delete _hbox;
+        delete _label;
+        //gtk_widget_destroy(_separator);
+    }
+
+    ColorPicker::ClosingDialogue::ClosingDialogue()
+    {
+        _left = new Button();
+        _center = new Button();
+        _right = new Button();
+        _hbox = new Box(GTK_ORIENTATION_HORIZONTAL);
+
+        _hbox->add(_left);
+        _hbox->add(_center);
+        _hbox->add(_right);
+    }
+
+    ColorPicker::ClosingDialogue::~ClosingDialogue()
+    {
+        delete _left;
+        delete _center;
+        delete _right;
+        delete _hbox;
+    }
+
     GtkWidget* ColorPicker::get_native()
     {
-        return _window.get_native();
+        return _window->get_native();
+    }
+
+    ColorPicker::ColorPicker(float width)
+    {
+        _elements.at('H') = new SliderElement('H', get_resource_path() + "shaders/color_picker_hue_gradient.frag");
+
+        for (char c : {'A', 'S', 'V', 'R', 'G', 'B'})
+            _elements.at(c) = new SliderElement(c);
+
+        for (auto& pair : _elements)
+        {
+            pair.second->_gradient->set_size_request({width, margin});
+            pair.second->_gradient->set_expand_horizontally(true);
+        }
+
+        _opacity_label = new LabelElement("Opacity");
+        _hsv_label = new LabelElement("HSV");
+        _rgb_label = new LabelElement("RGB");
+        _html_label = new LabelElement("Hexadecimal");
+
+        _html_code_element = new HtmlCodeElement();
+
+        _opacity_region = new Box(GTK_ORIENTATION_VERTICAL, slider_to_slider_spacer);
+        _opacity_region->add(_opacity_label);
+        _opacity_region->add(_elements.at('A'));
+
+        _hsv_region = new Box(GTK_ORIENTATION_VERTICAL, slider_to_slider_spacer);
+        _hsv_region->add(_hsv_label);
+        _hsv_region->add(_elements.at('H'));
+        _hsv_region->add(_elements.at('S'));
+        _hsv_region->add(_elements.at('V'));
+
+        _rgb_region = new Box(GTK_ORIENTATION_VERTICAL, slider_to_slider_spacer);
+        _rgb_region->add(_rgb_label);
+        _rgb_region->add(_elements.at('R'));
+        _rgb_region->add(_elements.at('G'));
+        _rgb_region->add(_elements.at('B'));
+
+        _html_region = new Box(GTK_ORIENTATION_VERTICAL, slider_to_slider_spacer);
+        _html_region->add(_html_label);
+        _html_region->add(_html_code_element);
+
+        _all_slider_regions = new Box(GTK_ORIENTATION_VERTICAL, margin);
+        _all_slider_regions->add(_opacity_region);
+        _all_slider_regions->add(_hsv_region);
+        _all_slider_regions->add(_rgb_region);
+        _all_slider_regions->add(_html_region);
+
+        _current_color_area = new CurrentColorArea();
+        _current_color_area->set_align_vertically(GtkAlign::GTK_ALIGN_START);
+        _current_color_area->set_expand_vertically(false);
+        _current_color_area->set_expand_horizontally(true);
+        _current_color_area->set_size_request({1, 4 * margin});
+        _current_color_area->set_margin_start(0.6 * width);
+
+        _all_slider_regions->set_margin_top(_current_color_area->get_size_request().y - margin);
+
+        _current_color_overlay = new Overlay();
+        _current_color_overlay->set_under(_all_slider_regions);
+        _current_color_overlay->set_over(_current_color_area);
+        _current_color_overlay->set_margin_end(outer_margin);
+        _current_color_overlay->set_margin_start(0.5 * outer_margin);
+        _current_color_overlay->set_margin_top(0.5 * outer_margin);
+        _current_color_overlay->set_margin_bottom(0.5 * outer_margin);
+
+        _closing_dialogue = new ClosingDialogue();
+        _closing_dialogue->set_align_horizontally(GtkAlign::GTK_ALIGN_START);
+        _closing_dialogue->set_align_vertically(GtkAlign::GTK_ALIGN_START);
+
+        _closing_dialogue_overlay = new Overlay();
+        _closing_dialogue_overlay->set_under(_current_color_overlay);
+        _closing_dialogue_overlay->set_over(_closing_dialogue);
+
+        _window = new Box(GTK_ORIENTATION_VERTICAL);
+        _closing_dialogue_overlay->set_align_horizontally(GtkAlign::GTK_ALIGN_CENTER);
+        _closing_dialogue_overlay->set_align_vertically(GtkAlign::GTK_ALIGN_CENTER);
+
+        _window->add(_closing_dialogue_overlay);
+    }
+
+    ColorPicker::~ColorPicker()
+    {
+        delete _current_color_area;
+
+        delete _opacity_label;
+        delete _hsv_label;
+        delete _rgb_label;
+        delete _html_label;
+
+        for (auto& pair : _elements)
+        {
+            delete pair.second;
+            pair.second = nullptr;
+        }
+
+        delete _html_code_element;
+        delete _closing_dialogue;
+
+        delete _opacity_region;
+        delete _hsv_region;
+        delete _rgb_region;
+        delete _html_region;
+        delete _all_slider_regions;
+        delete _current_color_overlay;
+        delete _closing_dialogue_overlay;
+        delete _window;
+    }
+
+    void ColorPicker::update_gui()
+    {
+
     }
 }

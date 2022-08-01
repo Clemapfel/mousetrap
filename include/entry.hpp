@@ -13,10 +13,12 @@ namespace mousetrap
     {
         public:
             Entry();
-            ~Entry();
+            virtual ~Entry();
 
             std::string get_text() const;
             GtkWidget* get_native() override;
+
+            void set_width_chars(size_t);
 
         protected:
             virtual void on_activate(GtkEntry* self, gpointer user_data);

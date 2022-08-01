@@ -15,7 +15,7 @@ namespace mousetrap
     {
         public:
             GLArea();
-            ~GLArea();
+            virtual ~GLArea();
 
             GtkWidget* get_native() override;
 

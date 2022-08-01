@@ -5,9 +5,13 @@
 
 namespace mousetrap
 {
-    template<typename T>
-    void Container::add(T in)
+    void Container::add(GtkWidget* in)
     {
-        gtk_container_add(GTK_CONTAINER(get_native()), (GtkWidget*) in);
+        gtk_container_add(GTK_CONTAINER(get_native()), GTK_WIDGET(in));
+    }
+
+    void Container::add(Widget* in)
+    {
+        gtk_container_add(GTK_CONTAINER(get_native()), GTK_WIDGET(in->get_native()));
     }
 }

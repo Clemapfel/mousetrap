@@ -12,8 +12,8 @@ namespace mousetrap
     class Container : public Widget
     {
         public:
-            template<typename T>
-            void add(T);
+            void add(GtkWidget*);
+            void add(Widget*);
     };
 }
 

@@ -11,11 +11,11 @@
 
 namespace mousetrap
 {
-    class Scale : public Widget, public Range
+    class Scale : public Range
     {
         public:
             Scale(float min, float max, float step, GtkOrientation orientation = GTK_ORIENTATION_HORIZONTAL);
-            ~Scale();
+            virtual ~Scale();
 
             GtkWidget* get_native() override;
 

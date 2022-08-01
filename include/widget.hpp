@@ -26,7 +26,27 @@ namespace mousetrap
             template<typename Function_t>
             void connect_signal(const std::string& signal_id, Function_t*, void* data = nullptr);
 
+            void set_margin_top(float);
+            void set_margin_bottom(float);
+            void set_margin_start(float);
+            void set_margin_end(float);
+            void set_margin(float);
+
+            void set_expand_horizontally(bool should_expand);
+            void set_expand_vertically(bool should_expand);
+
+            void set_align_horizontally(GtkAlign);
+            void set_align_vertically(GtkAlign);
+
+            void set_size_request(Vector2f);
+
+            void set_opacity(float);
+            float get_opacity();
+
         private:
+            /// \returns true if get_native() == nullptr
+            bool warn_if_nullptr(const std::string& function_id);
+
             std::map<std::string, size_t> _signal_handlers;
     };
 };

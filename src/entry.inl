@@ -18,8 +18,8 @@ namespace mousetrap
 
     Entry::~Entry()
     {
-        gtk_widget_destroy(GTK_WIDGET(_entry));
-        gtk_widget_destroy(GTK_WIDGET(_buffer));
+        //gtk_widget_destroy(GTK_WIDGET(_entry));
+        //gtk_widget_destroy(GTK_WIDGET(_buffer));
     };
 
     GtkWidget* Entry::get_native()
@@ -70,5 +70,10 @@ namespace mousetrap
     void Entry::on_copy_clipboard_wrapper(GtkEntry* self, void* instance)
     {
         ((Entry*) instance)->on_copy_clipboard(self, nullptr);
+    }
+
+    void Entry::set_width_chars(size_t n)
+    {
+        gtk_entry_set_width_chars(_entry, n);
     }
 }
