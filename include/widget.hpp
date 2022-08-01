@@ -18,6 +18,8 @@ namespace mousetrap
             virtual GtkWidget* get_native() = 0;
             operator GtkWidget*();
 
+            Vector2f get_size_request();
+
             void set_signal_blocked(const std::string& signal_id, bool);
             void set_all_signals_blocked(bool);
 

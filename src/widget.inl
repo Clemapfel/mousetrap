@@ -46,4 +46,11 @@ namespace mousetrap
         auto handler_id = g_signal_connect(get_native(), signal_id.c_str(), G_CALLBACK(function), data);
         _signal_handlers.insert_or_assign(signal_id, handler_id);
     }
+
+    Vector2f Widget::get_size_request()
+    {
+        int w, h;
+        gtk_widget_get_size_request(get_native(), &w, &h);
+        return Vector2f(w, h);
+    }
 }
