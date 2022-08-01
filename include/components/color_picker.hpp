@@ -49,6 +49,7 @@ namespace mousetrap
                 virtual ~CurrentColorArea();
 
                 void on_realize(GtkGLArea*) override;
+                void on_resize(GtkGLArea*, int, int) override;
 
                 void update();
 
@@ -92,6 +93,7 @@ namespace mousetrap
                 virtual ~Gradient();
 
                 void on_realize(GtkGLArea*) override;
+                void on_resize(GtkGLArea*, int, int) override;
 
                 Shape* _shape;
                 Shader* _shader = nullptr;
@@ -263,6 +265,11 @@ namespace mousetrap
         update();
     }
 
+    void ColorPicker::CurrentColorArea::on_resize(GtkGLArea*, int, int)
+    {
+        std::cout << _current_color_shape << std::endl;
+    }
+
     void ColorPicker::CurrentColorArea::update()
     {
         _last_color_shape->set_color(last_color);
@@ -295,6 +302,11 @@ namespace mousetrap
         _shape->as_rectangle({0, 0}, {1, 1});
 
         add_render_task(_shape, _shader);
+    }
+
+    void ColorPicker::Gradient::on_resize(GtkGLArea*, int w, int h)
+    {
+        std::cout << _shape << std::endl;
     }
 
     ColorPicker::Gradient::~Gradient()
