@@ -69,6 +69,7 @@ namespace mousetrap
                 Shader* _transparency_tiling_shader;
 
                 Shape* _frame;
+                Vector2f* _canvas_size;
             };
 
             CurrentColorArea* _current_color_area;
@@ -276,7 +277,11 @@ namespace mousetrap
         _frame->as_frame({0, 0}, {1, 1}, frame_size.x, frame_size.y);
         _frame->set_color(RGBA(0, 0, 0, 1));
 
-        add_render_task(_transparency_tiling, _transparency_tiling_shader);
+        _canvas_size = new Vector2f(size);
+        auto tiling_task = RenderTask(_transparency_tiling, _transparency_tiling_shader);
+        tiling_task.register_vec2("_canvas_size", _canvas_size);
+
+        add_render_task(tiling_task);
         add_render_task(_current_color_shape);
         add_render_task(_last_color_shape);
         add_render_task(_frame);
@@ -293,6 +298,9 @@ namespace mousetrap
         Vector2f frame_size = Vector2f(target_frame_size / (width / float(height)), target_frame_size);
         _frame->as_frame({0, 0}, {1, 1}, frame_size.x, frame_size.y);
         _frame->set_color(RGBA(0, 0, 0, 1));
+
+        _canvas_size->x = width;
+        _canvas_size->y = height;
     }
 
     void ColorPicker::CurrentColorArea::update()
@@ -309,6 +317,7 @@ namespace mousetrap
         delete _transparency_tiling;
         delete _transparency_tiling_shader;
         delete _frame;
+        delete _canvas_size;
     }
 
     // slider element

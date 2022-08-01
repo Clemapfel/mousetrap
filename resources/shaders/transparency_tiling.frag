@@ -9,8 +9,7 @@ out vec4 _fragment_color;
 uniform int _texture_set;
 uniform sampler2D _texture;
 
-uniform float _canvas_width;
-uniform float _canvas_height;
+uniform vec2 _canvas_size;
 
 void main()
 {
@@ -18,7 +17,7 @@ void main()
     const vec4 dark = vec4(vec3(0.6), 1);
 
     vec2 pos = _vertex_position.xy;
-    pos.x *= (_canvas_width / (_canvas_height));
+    pos.x *= (_canvas_size.x / _canvas_size.y);
 
     float y_index = fract(pos.x);
     float x_index = fract(pos.y);
