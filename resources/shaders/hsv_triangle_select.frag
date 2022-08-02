@@ -32,7 +32,18 @@ uniform vec2 _canvas_size;
 
 void main()
 {
-    _fragment_color = vec4(1, 0, 1, 1); //vec4(hsv_to_rgb(_current_color_hsv.rgb), 1);
+    vec2 pos = _vertex_position.xy;
+    pos = (pos + 1) / 2;
+    pos.y = 1 - pos.y;
+
+    vec3 color_hsv = _current_color_hsv.xyz;
+
+    if (pos.y < pos.x * 2 && pos.y < (1 - pos.x) * 2)
+        color_hsv.x = distance(pos, vec2(0.5, 1));
+
+
+    _fragment_color = vec4(vec3(hsv_to_rgb(color_hsv)), 1);//vec4(hsv_to_rgb(_current_color_hsv.rgb), 1);
+
     /*
     vec2 pos = _vertex_position.xy;
     pos.x *= (_canvas_width / (_canvas_height));
