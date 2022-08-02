@@ -25,6 +25,7 @@ namespace mousetrap
             void register_vec4(const std::string& uniform_name, Vector4f*);
             void register_transform(const std::string& uniform_name, Transform*);
             void register_color(const std::string& uniform_name, RGBA*);
+            void register_color(const std::string& uniform_name, HSVA* will_not_be_converted);
 
             void render();
 
@@ -46,7 +47,8 @@ namespace mousetrap
             std::map<std::string, Vector3f*> _vec3s;
             std::map<std::string, Vector4f*> _vec4s;
             std::map<std::string, Transform*> _transforms;
-            std::map<std::string, RGBA*> _colors;
+            std::map<std::string, RGBA*> _colors_rgba;
+            std::map<std::string, HSVA*> _colors_hsva;
     };
 }
 

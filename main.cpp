@@ -6,29 +6,16 @@
 #include <include/gtk_common.hpp>
 #include <include/gl_area.hpp>
 #include <include/components/color_picker.hpp>
+#include <include/components/hsv_triangle_select.hpp>
 
 using namespace mousetrap;
 
-struct ShaderArea : public GLArea
+
+static void button_aux()
 {
-    ShaderArea()
-        : GLArea()
-    {}
-
-    void on_realize(GtkGLArea* area) override
-    {
-        gtk_gl_area_make_current(area);
-
-        _shape = new Shape();
-        _shape->as_rectangle({0.25, 0.25}, {0.5, 0.5});
-
-        GLArea::add_render_task(_shape);
-    }
-
-    void on_shutdown(GtkGLArea*) {}
-
-    Shape* _shape;
-};
+    hsv_triangle_select->_triangle_area->_shader->create_from_file(get_resource_path() + "shaders/hsv_triangle_select.frag", ShaderType::FRAGMENT);
+    hsv_triangle_select->_triangle_area->queue_render();
+}
 
 int main()
 {
@@ -37,15 +24,27 @@ int main()
     // main window
     auto *main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(main_window, "destroy", G_CALLBACK(gtk_main_quit), nullptr);
-    gtk_widget_realize(main_window);
 
     // init opengl
+    gtk_widget_realize(main_window);
     gtk_initialize_opengl(GTK_WINDOW(main_window));
+
+    // debug button
+    Button button;
+    button.set_align_vertically(GTK_ALIGN_END);
+    button.set_align_horizontally(GTK_ALIGN_END);
+    button.connect_signal("clicked", button_aux);
+
+    auto overlay = Overlay();
+    overlay.set_over(button);
 
     // debug
     color_picker = new ColorPicker(150);
-    gtk_container_add(GTK_CONTAINER(main_window), color_picker->get_native());
-    //ColorPicker::connect_signals(color_picker);
+    hsv_triangle_select = new HsvTriangleSelect(500);
+
+    //
+    overlay.set_under(hsv_triangle_select);
+    gtk_container_add(GTK_CONTAINER(main_window), overlay);
 
     // render loop
     gtk_widget_show_all(main_window);

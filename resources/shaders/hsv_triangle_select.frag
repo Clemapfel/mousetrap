@@ -27,11 +27,13 @@ out vec4 _fragment_color;
 uniform int _texture_set;
 uniform sampler2D _texture;
 
-uniform float _canvas_width;
-uniform float _canvas_height;
+uniform vec4 _current_color_hsv;
+uniform vec2 _canvas_size;
 
 void main()
 {
+    _fragment_color = vec4(1, 0, 1, 1); //vec4(hsv_to_rgb(_current_color_hsv.rgb), 1);
+    /*
     vec2 pos = _vertex_position.xy;
     pos.x *= (_canvas_width / (_canvas_height));
     float dist = distance(pos, vec2(0,0));
@@ -50,12 +52,10 @@ void main()
     {
         dist *= 1 / 0.66;
 
-        /*
         const float n_steps = 10;
         dist *= n_steps;
         dist = float(int(round(dist)));
         dist /= n_steps;
-        */
 
         vec3 s_ramp = vec3(hue, dist, 1);
         vec3 v_ramp = vec3(hue, 1, 0.95 - dist);
@@ -75,4 +75,5 @@ void main()
         else
         _fragment_color = vec4(hsv_to_rgb(hsv), 1);
     }
+*/
 }

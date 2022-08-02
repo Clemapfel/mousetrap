@@ -20,16 +20,12 @@
 #include <include/spin_button.hpp>
 #include <include/label.hpp>
 
+#include <include/components/global_state.hpp>
+
 #include <set>
 
 namespace mousetrap
 {
-    static inline HSVA current_color = HSVA(0.3, 1, 1, 1);
-    static inline HSVA last_color = HSVA(0.2, 0.8, 1, 1);
-
-    class ColorPicker;
-    static inline ColorPicker* color_picker = nullptr;
-
     class ColorPicker : public Widget
     {
         public:
