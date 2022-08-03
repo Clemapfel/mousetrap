@@ -30,6 +30,21 @@ uniform sampler2D _texture;
 uniform vec4 _current_color_hsv;
 uniform vec2 _canvas_size;
 
+bool compare_eps(float current, float target, float eps)
+{
+    return abs(current - target) < eps;
+}
+
+float sign (vec2 p1, vec2 p2, vec2 p3)
+{
+    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+
+vec2 translate_by_angle(vec2 center, float radius, float as_radians)
+{
+    return vec2(center.x + cos(as_radians) * radius,  center.y + sin(as_radians) * radius);
+}
+
 void main()
 {
     vec2 pos = _vertex_position.xy;
@@ -38,11 +53,25 @@ void main()
 
     vec3 color_hsv = _current_color_hsv.xyz;
 
-    if (pos.y < pos.x * 2 && pos.y < (1 - pos.x) * 2)
-        color_hsv.x = distance(pos, vec2(0.5, 1));
+    float rotation_offset = 90;
+    const vec2 center = vec2(0.5, 0.30);
+    const float radius = 0.5;
 
+    vec2 p1 = translate_by_angle(center, radius, radians(rotation_offset + 1/3.f * 360));
+    vec2 p2 = translate_by_angle(center, radius, radians(rotation_offset + 2/3.f * 360));
+    vec2 p3 = translate_by_angle(center, radius, radians(rotation_offset + 3/3.f * 360));
 
-    _fragment_color = vec4(vec3(hsv_to_rgb(color_hsv)), 1);//vec4(hsv_to_rgb(_current_color_hsv.rgb), 1);
+    float d1 = sign(pos, p1, p2);
+    float d2 = sign(pos, p2, p3);
+    float d3 = sign(pos, p3, p1);
+
+    bool has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    bool has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+    if (!(has_neg && has_pos))
+        _fragment_color = vec4(hsv_to_rgb(color_hsv), 1);
+    else
+        _fragment_color = vec4(0);
 
     /*
     vec2 pos = _vertex_position.xy;
