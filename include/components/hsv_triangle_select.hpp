@@ -30,6 +30,8 @@ namespace mousetrap
                 ~ShapeArea();
 
                 void on_realize(GtkGLArea* area);
+                void on_resize(GtkGLArea* area, int, int);
+
                 void update();
 
                 Shape* _hsv_triangle;
@@ -43,12 +45,19 @@ namespace mousetrap
                 Shape* _hue_bar;
                 Shape* _hue_bar_frame;
                 Shader* _hue_bar_shader;
-                HSVA _shader_dummy = HSVA(1, 1, 1, 1);
+                HSVA* _shader_color = new HSVA(1, 1, 1, 1);
+                Vector2f* _shader_canvas_size = new Vector2f(1, 1);
+
+                Shape* _hue_bar_cursor_frame_inner;
+                Shape* _hue_bar_cursor;
+                Shape* _hue_bar_cursor_frame_outer;
 
                 Shape* _cursor_hcross;
                 Shape* _cursor_hcross_frame;
                 Shape* _cursor_vcross;
                 Shape* _cursor_vcross_frame;
+
+                Vector2f one_px;
             };
 
             ShapeArea* _shape_area;
@@ -80,6 +89,11 @@ namespace mousetrap
         delete _hue_bar;
         delete _hue_bar_frame;
         delete _hue_bar_shader;
+        delete _shader_color;
+        delete _shader_canvas_size;
+        delete _hue_bar_cursor;
+        delete _hue_bar_cursor_frame_outer;
+        delete _hue_bar_cursor_frame_inner;
 
         delete _cursor_hcross;
         delete _cursor_hcross_frame;
@@ -96,7 +110,6 @@ namespace mousetrap
             return Vector2f(center.x + cos(as_radians) * radius,  center.y + sin(as_radians) * radius);
         };
 
-        float one_px = 0.01;
         float hue_bar_x_margin = 0.05;
         float hue_bar_y_margin = hue_bar_x_margin;
 
@@ -107,7 +120,7 @@ namespace mousetrap
 
         float hsv_triangle_frame_radius_factor = 1.1;
         _hsv_triangle_frame = new Shape();
-        _hsv_triangle_frame->as_circle(hsv_triangle_center, hsv_triangle_radius + one_px, 3);
+        _hsv_triangle_frame->as_circle(hsv_triangle_center, hsv_triangle_radius + 1 * std::max<float>(one_px.x, one_px.y), 3);
         _hsv_triangle_frame->set_color(RGBA(0, 0, 0, 1));
 
         auto hsv_triangle_rotation_offset = degrees(270);
@@ -135,28 +148,50 @@ namespace mousetrap
         _hue_bar = new Shape();
         _hue_bar->as_rectangle(hue_bar_pos, hue_bar_size);
 
-        float frame_x_thickness = one_px;
-        float frame_y_thickness = one_px;
+        float frame_x_thickness = one_px.x;
+        float frame_y_thickness = one_px.y;
 
         _hue_bar_frame = new Shape();
         _hue_bar_frame->as_frame(hue_bar_pos, hue_bar_size, frame_x_thickness, frame_y_thickness);
         _hue_bar_frame->set_color(RGBA(0, 0, 0, 1));
 
         _hue_bar_shader = new Shader();
-        _hue_bar_shader->create_from_file(get_resource_path() + "shaders/color_picker_hue_gradient.frag", ShaderType::FRAGMENT);
+        _hue_bar_shader->create_from_file(get_resource_path() + "shaders/hsv_triangle_hue_bar.frag", ShaderType::FRAGMENT);
+
+        float hue_bar_cursor_height = hue_bar_height + 4 * one_px.y;
+
+        float hue_bar_cursor_frame_width_base = std::max<float>(0.075 * hue_bar_height, one_px.x * 7);
+        float cursor_width = std::max<float>(0.05, hue_bar_cursor_frame_width_base * 2 + one_px.x * 7);
+        auto hue_bar_cursor_frame_width = Vector2f(hue_bar_cursor_frame_width_base, hue_bar_cursor_frame_width_base * (one_px.y / one_px.x));
+
+        Vector2f hue_bar_cursor_size = {cursor_width, hue_bar_cursor_height};
+        _hue_bar_cursor = new Shape();
+        _hue_bar_cursor->as_frame({0, 0}, hue_bar_cursor_size, hue_bar_cursor_frame_width.x, hue_bar_cursor_frame_width.y);
+        _hue_bar_cursor->set_color(RGBA(1, 1, 1, 1));
+
+        _hue_bar_cursor_frame_inner = new Shape();
+        _hue_bar_cursor_frame_inner->as_frame({0, 0}, hue_bar_cursor_size - hue_bar_cursor_frame_width * Vector2f(2), one_px.x, one_px.y);
+        _hue_bar_cursor_frame_inner->set_color(RGBA(0, 0, 0, 1));
+
+        _hue_bar_cursor_frame_outer = new Shape();
+        _hue_bar_cursor_frame_outer->as_frame({0, 0}, hue_bar_cursor_size, one_px.x, one_px.y);
+        _hue_bar_cursor_frame_outer->set_color(RGBA(0, 0, 0, 1));
+
+        for (auto* shape : {_hue_bar_cursor_frame_inner, _hue_bar_cursor_frame_outer, _hue_bar_cursor})
+            shape->set_centroid(Vector2f(0.5, _hue_bar->get_centroid().y));
 
         float hue_triangle_radius = hue_bar_height;
         Vector2f hue_triangle_right_centroid = {1 - hue_bar_x_margin - hue_triangle_radius, 1 - hue_bar_y_margin - hue_bar_height - hue_bar_y_margin - (1 / sqrt(2)) * hue_triangle_radius};
 
         _hue_triangle_right_frame = new Shape();
-        _hue_triangle_right_frame->as_circle(hue_triangle_right_centroid, hue_triangle_radius + one_px, 3);
+        _hue_triangle_right_frame->as_circle(hue_triangle_right_centroid, hue_triangle_radius + 1 * std::max<float>(one_px.x, one_px.y), 3);
         _hue_triangle_right_frame->set_color(RGBA(0, 0, 0, 1));
 
         _hue_triangle_right = new Shape();
         _hue_triangle_right->as_circle(hue_triangle_right_centroid, hue_triangle_radius, 3);
 
         _hue_triangle_left_frame = new Shape();
-        _hue_triangle_left_frame->as_circle(hue_triangle_right_centroid, hue_triangle_radius + one_px, 3);
+        _hue_triangle_left_frame->as_circle(hue_triangle_right_centroid, hue_triangle_radius + 1 * std::max<float>(one_px.x, one_px.y), 3);
         _hue_triangle_left_frame->set_color(RGBA(0, 0, 0, 1));
 
         _hue_triangle_left = new Shape();
@@ -174,21 +209,21 @@ namespace mousetrap
         _hue_triangle_left->set_centroid(hue_triangle_left_centroid);
         _hue_triangle_left_frame->set_centroid(hue_triangle_left_centroid);
 
-        float cross_length = 0.05;
-        float cross_height = 0.01;
+        float cross_length = 0.5 * hue_bar_height;
+        float cross_height = 0.1 * hue_bar_height;
 
         _cursor_hcross = new Shape();
         _cursor_hcross->as_rectangle({0, 0}, {cross_length, cross_height});
 
         _cursor_hcross_frame = new Shape();
-        _cursor_hcross_frame->as_frame({0, 0}, {cross_length, cross_height}, frame_x_thickness, frame_y_thickness);
+        _cursor_hcross_frame->as_frame({0, 0}, {cross_length, cross_height}, one_px.x, one_px.y);
         _cursor_hcross_frame->set_color(RGBA(0, 0, 0, 1));
 
         _cursor_vcross = new Shape();
         _cursor_vcross->as_rectangle({0, 0}, {cross_height, cross_length});
 
         _cursor_vcross_frame = new Shape();
-        _cursor_vcross_frame->as_frame({0, 0}, {cross_height, cross_length}, frame_x_thickness, frame_y_thickness);
+        _cursor_vcross_frame->as_frame({0, 0}, {cross_height, cross_length}, one_px.x, one_px.y);
         _cursor_vcross_frame->set_color(RGBA(0, 0, 0, 1));
 
         for (auto* shape : {_cursor_hcross, _cursor_hcross_frame, _cursor_vcross, _cursor_vcross_frame})
@@ -198,9 +233,16 @@ namespace mousetrap
         add_render_task(_hsv_triangle);
 
         auto hue_bar_render_task = RenderTask(_hue_bar, _hue_bar_shader);
-        hue_bar_render_task.register_color("_current_color_hsva", &_shader_dummy);
+        hue_bar_render_task.register_color("_current_color_hsva", _shader_color);
+        hue_bar_render_task.register_float("_hue_offset", &_shader_color->h);
+        hue_bar_render_task.register_vec2("_canvas_size", _shader_canvas_size);
+
         add_render_task(hue_bar_render_task);
         add_render_task(_hue_bar_frame);
+
+        add_render_task(_hue_bar_cursor);
+        add_render_task(_hue_bar_cursor_frame_inner);
+        add_render_task(_hue_bar_cursor_frame_outer);
 
         add_render_task(_hue_triangle_right_frame);
         add_render_task(_hue_triangle_right);
@@ -216,8 +258,22 @@ namespace mousetrap
         update();
     }
 
+    void HsvTriangleSelect::ShapeArea::on_resize(GtkGLArea* area, int w, int h)
+    {
+        _shader_canvas_size->x = w;
+        _shader_canvas_size->y = h;
+
+        Vector2f now = {1.f / w, 1.f / h};
+        if (now != one_px)
+        {
+            one_px = now;
+            on_realize(area);
+        }
+    }
+
     void HsvTriangleSelect::ShapeArea::update()
     {
+        _shader_color->h = current_color.h;
         _hue_triangle_right->set_color(current_color);
 
         _hsv_triangle->set_vertex_color(0, HSVA(current_color.h, 1, 1, 1));
@@ -227,6 +283,9 @@ namespace mousetrap
 
     HsvTriangleSelect::HsvTriangleSelect(float width)
     {
+        if (int(width) % 2 == 0)
+            width += 1;
+
         _shape_area = new ShapeArea();
         _shape_area->set_size_request({width, width});
     }

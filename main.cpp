@@ -13,8 +13,8 @@ using namespace mousetrap;
 
 static void button_aux()
 {
-    //hsv_triangle_select->_triangle_area->_shader->create_from_file(get_resource_path() + "shaders/hsv_triangle_select.frag", ShaderType::FRAGMENT);
-    //hsv_triangle_select->_triangle_area->queue_render();
+    hsv_triangle_select->_shape_area->_hue_bar_shader->create_from_file(get_resource_path() + "shaders/hsv_triangle_hue_bar.frag", ShaderType::FRAGMENT);
+    hsv_triangle_select->_shape_area->queue_render();
 }
 
 int main()
@@ -40,7 +40,7 @@ int main()
 
     // debug
     color_picker = new ColorPicker(150);
-    hsv_triangle_select = new HsvTriangleSelect(500);
+    hsv_triangle_select = new HsvTriangleSelect(300);
 
     //
     overlay.set_under(hsv_triangle_select);

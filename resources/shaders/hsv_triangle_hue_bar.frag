@@ -24,12 +24,35 @@ in vec3 _vertex_position;
 
 out vec4 _fragment_color;
 
+uniform int _texture_set;
+uniform sampler2D _texture;
+
+uniform vec2 _canvas_size;
+
 uniform vec4 _current_color_hsva;
+uniform float _hue_offset;
 
 void main()
 {
     vec3 current_hsv = _current_color_hsva.xyz;
     vec2 pos = (_vertex_position.xy + vec2(1)) / 2;
+    pos.x -= (0.5 - _hue_offset);
+
+    const float cursor_width = 0.01;
+    float cursor_frame_width = 1.f / _canvas_size.x;
+
+    /*
+    float cursor_value = abs(pos.x - _hue_offset);
+    if (cursor_value < cursor_width)
+    {
+        if (cursor_value < cursor_width - cursor_frame_width)
+        _fragment_color = vec4(1);
+        else
+        _fragment_color = vec4(0, 0, 0, 1);
+
+        return;
+    }
+    */
 
     vec3 hsv = vec3(pos.x, current_hsv.y, current_hsv.z);
     _fragment_color = vec4(hsv_to_rgb(hsv), 1);
