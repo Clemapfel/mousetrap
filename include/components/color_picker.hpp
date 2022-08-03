@@ -356,7 +356,7 @@ namespace mousetrap
         on_resize(area, size.x, size.y);
 
         auto render_task = RenderTask(_shape, _shader, nullptr);
-        render_task.register_color("_current_color", &current_color_as_rgba);
+        render_task.register_color("_current_color_hsva", &current_color);
 
         add_render_task(render_task);
         add_render_task(_frame);

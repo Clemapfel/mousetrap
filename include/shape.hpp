@@ -56,6 +56,8 @@ namespace mousetrap
             void set_top_left(Vector2f);
             Vector2f get_top_left() const;
 
+            void rotate(Angle);
+
         protected:
             struct Vertex
             {

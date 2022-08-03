@@ -13,8 +13,8 @@ using namespace mousetrap;
 
 static void button_aux()
 {
-    hsv_triangle_select->_triangle_area->_shader->create_from_file(get_resource_path() + "shaders/hsv_triangle_select.frag", ShaderType::FRAGMENT);
-    hsv_triangle_select->_triangle_area->queue_render();
+    //hsv_triangle_select->_triangle_area->_shader->create_from_file(get_resource_path() + "shaders/hsv_triangle_select.frag", ShaderType::FRAGMENT);
+    //hsv_triangle_select->_triangle_area->queue_render();
 }
 
 int main()

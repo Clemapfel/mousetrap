@@ -9,13 +9,25 @@
 
 namespace mousetrap
 {
+    class Angle;
+
+    /// \brief create a mousetrap::Angle from degrees
+    /// \param degrees: may be negative
+    /// \returns angle
+    Angle degrees(float);
+
+    /// \brief create a mousetrap::Angle from radians
+    /// \param radians: may be negative
+    /// \returns angle
+    Angle radians(float);
+
     /// \brief class representing an angular measurement, clockwise
     struct Angle
     {
-        public:
-            /// no docs
-            explicit Angle(float radians);
+        friend Angle degrees(float);
+        friend Angle radians(float);
 
+        public:
             /// \brief convert the angle to degrees
             /// \returns degrees
             float as_degrees() const;
@@ -65,18 +77,10 @@ namespace mousetrap
             Angle& operator/=(const Angle&);
 
         private:
+            explicit Angle(float radians);
+
             float _rads;
     };
-
-    /// \brief create a mousetrap::Angle from degrees
-    /// \param degrees: may be negative
-    /// \returns angle
-    Angle degrees(float);
-
-    /// \brief create a mousetrap::Angle from radians
-    /// \param radians: may be negative
-    /// \returns angle
-    Angle radians(float);
 }
 
 #include <src/angle.inl>

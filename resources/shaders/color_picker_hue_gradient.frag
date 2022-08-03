@@ -30,11 +30,11 @@ uniform sampler2D _texture;
 uniform float _canvas_width;
 uniform float _canvas_height;
 
-uniform vec4 _current_color;
+uniform vec4 _current_color_hsva;
 
 void main()
 {
-    vec3 current_hsv = rgb_to_hsv(_current_color.xyz);
+    vec3 current_hsv = _current_color_hsva.xyz;
     vec3 hsv = vec3((_vertex_position.x - 1) / 2, current_hsv.y, current_hsv.z);
     _fragment_color = vec4(hsv_to_rgb(hsv), 1);
 }

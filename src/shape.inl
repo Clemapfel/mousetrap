@@ -4,6 +4,7 @@
 //
 
 #include <include/shader.hpp>
+#include <include/gl_common.hpp>
 
 namespace mousetrap
 {
@@ -188,11 +189,11 @@ namespace mousetrap
     void Shape::as_triangle(Vector2f a, Vector2f b, Vector2f c)
     {
         _vertices =
-                {
-                        Vertex(a.x, b.y),
-                        Vertex(b.x, b.y),
-                        Vertex(c.x, c.y)
-                };
+        {
+            Vertex(a.x, a.y),
+            Vertex(b.x, b.y),
+            Vertex(c.x, c.y)
+        };
 
         _indices = {0, 1, 2};
         _render_type = GL_TRIANGLES;
@@ -468,6 +469,24 @@ namespace mousetrap
         {
             v.position.x += delta.x;
             v.position.y += delta.y;
+        }
+
+        update_position();
+        update_data(true, false, false);
+    }
+
+    void Shape::rotate(Angle angle)
+    {
+        auto transform = Transform();
+        transform.rotate(angle, to_gl_position(get_centroid()));
+
+        for (auto& v : _vertices)
+        {
+            auto pos = v.position;
+            pos = to_gl_position(pos);
+            pos = transform.apply_to(pos);
+            pos = from_gl_position(pos);
+            v.position = pos;
         }
 
         update_position();
