@@ -30,7 +30,6 @@ namespace mousetrap
             /// \param only_handle_in_bounds: should cursor move even pointer is outside of triangle
             void set_hsv_triangle_cursor_position(float x, float y);
             bool is_in_hsv_triangle_bounds(float x, float y);
-            void update_color_from_cursor();
 
             bool button_press_active = false;
 
@@ -38,6 +37,9 @@ namespace mousetrap
             {
                 ShapeArea();
                 ~ShapeArea();
+
+                void update_color_from_cursor();
+                void update_cursor_from_color();
 
                 void on_realize(GtkGLArea* area);
                 void on_resize(GtkGLArea* area, int, int);
@@ -317,27 +319,8 @@ namespace mousetrap
         _hsv_triangle->set_vertex_color(1, RGBA(1, 1, 1, 1));
         _hsv_triangle->set_vertex_color(2, RGBA(0, 0, 0, 1));
 
-        Vector2f a = _hsv_triangle->get_vertex_position(0); // value 1 saturation 1
-        Vector2f b = _hsv_triangle->get_vertex_position(1); // value 1 saturation 0
-        Vector2f c = _hsv_triangle->get_vertex_position(2); // value 0 saturation 1
-
-        if (not update_cursor_too)
-            return;
-
-        Vector2f pos = a;
-
-        // saturation axis
-        float angle = std::atan2(b.y - pos.y, b.x - pos.x);
-        float d = current_color.s * glm::distance(a, b);
-        pos += Vector2f(cos(angle) * d, sin(angle) * d);
-
-        // value axis
-        angle = std::atan2(c.y - pos.y, c.x - pos.x);
-        d = current_color.v * glm::distance(pos, c);
-        pos += Vector2f(cos(angle) * d, sin(angle) * d);
-
-        for (auto* shape : {_cursor, _cursor_frame})
-            shape->set_centroid(pos);
+        if (update_cursor_too)
+            update_cursor_from_color();
     }
 
     bool HsvTriangleSelect::is_in_hsv_triangle_bounds(float x, float y)
@@ -403,9 +386,49 @@ namespace mousetrap
             set_cursor_pos(point);
     }
 
-    void HsvTriangleSelect::update_color_from_cursor()
+    void HsvTriangleSelect::ShapeArea::update_cursor_from_color()
     {
-        mousetrap::set_current_color(HSVA(glm::fract(current_color.h + 0.1), 1, 1, 1));
+        Vector2f a = _hsv_triangle->get_vertex_position(0); // value 1 saturation 1
+        Vector2f b = _hsv_triangle->get_vertex_position(1); // value 1 saturation 0
+        Vector2f c = _hsv_triangle->get_vertex_position(2); // value 0 saturation 1
+
+        Vector2f pos = a;
+
+        // saturation axis
+        float angle = std::atan2(b.y - pos.y, b.x - pos.x);
+        float d = current_color.s * glm::distance(a, b);
+        pos += Vector2f(cos(angle) * d, sin(angle) * d);
+
+        // value axis
+        angle = std::atan2(c.y - pos.y, c.x - pos.x);
+        d = current_color.v * glm::distance(pos, c);
+        pos += Vector2f(cos(angle) * d, sin(angle) * d);
+
+        for (auto* shape : {_cursor, _cursor_frame})
+            shape->set_centroid(pos);
+    }
+
+    void HsvTriangleSelect::ShapeArea::update_color_from_cursor()
+    {
+        Vector2f a = _hsv_triangle->get_vertex_position(0); // value 1 saturation 1
+        Vector2f b = _hsv_triangle->get_vertex_position(1); // value 1 saturation 0
+        Vector2f c = _hsv_triangle->get_vertex_position(2); // value 0 saturation 1
+
+        Line saturation_plane = Line{a, b};
+        Vector2f pos = _cursor->get_centroid();
+
+        float value_plane_angle = atan2(pos.y - c.y, pos.x - c.x);
+
+        auto value_plane_start = c;
+        auto value_plane_end = Vector2f(c.x + cos(value_plane_angle), c.y + sin(value_plane_angle));
+
+        Vector2f intersect;
+        intersecting(Line{value_plane_start, value_plane_end}, saturation_plane, &intersect);
+
+        float saturation = 1 - glm::distance(intersect, a) / glm::distance(a, b);
+
+        current_color.s = saturation;
+        update(false);
     }
 
     void HsvTriangleSelect::on_pointer_motion(GtkWidget *widget, GdkEventMotion *event, HsvTriangleSelect* instance)
@@ -415,7 +438,7 @@ namespace mousetrap
             int width, height;
             gtk_widget_get_allocated_size(widget, &width, &height);
             instance->set_hsv_triangle_cursor_position(event->x / width, event->y / height);
-            instance->update_color_from_cursor();
+            instance->_shape_area->update_color_from_cursor();
         }
     }
 
@@ -430,7 +453,7 @@ namespace mousetrap
             // TODO: set cursor to crosshair
             instance->button_press_active = true;
             instance->set_hsv_triangle_cursor_position(event->x / width, event->y / height);
-            instance->update_color_from_cursor();
+            instance->_shape_area->update_color_from_cursor();
         }
     }
 
