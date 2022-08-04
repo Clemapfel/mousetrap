@@ -26,6 +26,7 @@ namespace mousetrap
             static void on_pointer_motion(GtkWidget *widget, GdkEventMotion *event, HsvTriangleSelect* instance);
             static void on_button_press(GtkWidget* widget, GdkEventButton* event, HsvTriangleSelect* instance);
             static void on_button_release(GtkWidget* widget, GdkEventButton* event, HsvTriangleSelect* instance);
+            static void on_scale_value_changed(GtkScale* scale, HsvTriangleSelect* instance);
 
             /// \param only_handle_in_bounds: should cursor move even pointer is outside of triangle
             void set_hsv_triangle_cursor_position(float x, float y);
@@ -74,6 +75,9 @@ namespace mousetrap
             };
 
             ShapeArea* _shape_area;
+
+            Scale* _hue_scale;
+            Overlay* _hue_scale_overlay;
     };
 }
 
@@ -83,7 +87,7 @@ namespace mousetrap
 {
     GtkWidget* HsvTriangleSelect::get_native()
     {
-        return _shape_area->get_native();
+        return _hue_scale_overlay->get_native();
     }
 
     HsvTriangleSelect::ShapeArea::ShapeArea()
@@ -465,6 +469,28 @@ namespace mousetrap
             instance->button_press_active = false;
     }
 
+    void HsvTriangleSelect::on_scale_value_changed(GtkScale* scale, HsvTriangleSelect* instance)
+    {
+        float value = gtk_range_get_value(GTK_RANGE(scale));
+        current_color.h = value;
+        instance->update();
+
+        /*
+        if (value == 1)
+        {
+            instance->_hue_scale->set_all_signals_blocked(true);
+            instance->_hue_scale->set_value(0);
+            instance->_hue_scale->set_all_signals_blocked(false);
+        }
+        else if (value == 0)
+        {
+            instance->_hue_scale->set_all_signals_blocked(true);
+            instance->_hue_scale->set_value(1);
+            instance->_hue_scale->set_all_signals_blocked(false);
+        }
+         */
+    }
+
     HsvTriangleSelect::HsvTriangleSelect(float width)
     {
         if (int(width) % 2 == 0)
@@ -480,6 +506,19 @@ namespace mousetrap
         _shape_area->connect_signal("motion-notify-event", on_pointer_motion, this);
         _shape_area->connect_signal("button-press-event", on_button_press, this);
         _shape_area->connect_signal("button-release-event", on_button_release, this);
+
+        _hue_scale = new Scale(0, 1, 0.01);
+        _hue_scale_overlay = new Overlay();
+
+        auto size = _shape_area->get_size_request();
+        _hue_scale->set_size_request({size.x, size.y * 0.1});
+        _hue_scale->set_halign(GTK_ALIGN_CENTER);
+        _hue_scale->set_valign(GTK_ALIGN_END);
+
+        _hue_scale_overlay->set_under(_shape_area);
+        _hue_scale_overlay->set_over(_hue_scale);
+
+        _hue_scale->connect_signal("value-changed", on_scale_value_changed, this);
     }
 
     void HsvTriangleSelect::update()
