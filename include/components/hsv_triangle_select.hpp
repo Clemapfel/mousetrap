@@ -52,10 +52,8 @@ namespace mousetrap
                 Shape* _hue_bar_cursor;
                 Shape* _hue_bar_cursor_frame_outer;
 
-                Shape* _cursor_hcross;
-                Shape* _cursor_hcross_frame;
-                Shape* _cursor_vcross;
-                Shape* _cursor_vcross_frame;
+                Shape* _cursor;
+                Shape* _cursor_frame;
 
                 Vector2f one_px;
             };
@@ -95,10 +93,8 @@ namespace mousetrap
         delete _hue_bar_cursor_frame_outer;
         delete _hue_bar_cursor_frame_inner;
 
-        delete _cursor_hcross;
-        delete _cursor_hcross_frame;
-        delete _cursor_vcross;
-        delete _cursor_vcross_frame;
+        delete _cursor;
+        delete _cursor_frame;
     }
 
     void HsvTriangleSelect::ShapeArea::on_realize(GtkGLArea* area)
@@ -120,15 +116,6 @@ namespace mousetrap
 
         float hsv_triangle_frame_radius_factor = 1.1;
         auto hsv_triangle_rotation_offset = degrees(270);
-
-        /*
-        _hsv_triangle_frame = new Shape();
-        _hsv_triangle_frame->as_circle(hsv_triangle_center, hsv_triangle_radius + 1 * std::max<float>(one_px.x, one_px.y), 3);
-        _hsv_triangle_frame->set_color(RGBA(0, 0, 0, 1));
-
-        _hsv_triangle_frame->rotate(hsv_triangle_rotation_offset);
-        _hsv_triangle_frame->set_centroid(hsv_triangle_center);
-         */
 
         {
             // creating circle shape and reading vertices is easier than calcing position
@@ -224,6 +211,16 @@ namespace mousetrap
         });
         _hue_triangle_right_frame->set_color(RGBA(0, 0, 0, 1));
 
+
+        float cursor_radius = std::max<float>(5 * one_px.x, 0.1 * hue_bar_height);
+        _cursor = new Shape();
+        _cursor->as_circle({0, 0}, cursor_radius, 8);
+
+        _cursor_frame = new Shape();
+        _cursor_frame->as_circle({0, 0}, cursor_radius + one_px.x, 8);
+        _cursor_frame->set_color(RGBA(0, 0, 0, 1));
+
+        /*
         float cross_length = 0.5 * hue_bar_height;
         float cross_height = 0.1 * hue_bar_height;
 
@@ -243,6 +240,7 @@ namespace mousetrap
 
         for (auto* shape : {_cursor_hcross, _cursor_hcross_frame, _cursor_vcross, _cursor_vcross_frame})
             shape->set_centroid(hsv_triangle_center);
+            */
 
         add_render_task(_hsv_triangle);
         add_render_task(_hsv_triangle_frame);
@@ -265,10 +263,8 @@ namespace mousetrap
         add_render_task(_hue_triangle_right_frame);
         add_render_task(_hue_triangle_left_frame);
 
-        add_render_task(_cursor_hcross);
-        add_render_task(_cursor_vcross);
-        add_render_task(_cursor_hcross_frame);
-        add_render_task(_cursor_vcross_frame);
+        add_render_task(_cursor_frame);
+        add_render_task(_cursor);
 
         update();
     }
@@ -298,20 +294,6 @@ namespace mousetrap
         _hsv_triangle->set_vertex_color(1, RGBA(1, 1, 1, 1));
         _hsv_triangle->set_vertex_color(2, RGBA(0, 0, 0, 1));
 
-        float min_x = std::numeric_limits<float>::max();
-        float min_y = std::numeric_limits<float>::max();
-        float max_x = std::numeric_limits<float>::min();
-        float max_y = std::numeric_limits<float>::min();
-
-        for (size_t i = 0; i < _hsv_triangle->get_n_vertices(); ++i)
-        {
-            auto pos = _hsv_triangle->get_vertex_position(i);
-            min_x = std::min<float>(min_x, pos.x);
-            min_y = std::min<float>(min_y, pos.y);
-            max_x = std::max<float>(max_x, pos.x);
-            max_y = std::max<float>(max_y, pos.y);
-        }
-
         Vector2f a = _hsv_triangle->get_vertex_position(0); // value 1 saturation 1
         Vector2f b = _hsv_triangle->get_vertex_position(1); // value 1 saturation 0
         Vector2f c = _hsv_triangle->get_vertex_position(2); // value 0 saturation 1
@@ -328,7 +310,7 @@ namespace mousetrap
         d = current_color.v * glm::distance(pos, c);
         pos += Vector2f(cos(angle) * d, sin(angle) * d);
 
-        for (auto* shape : {_cursor_vcross, _cursor_vcross_frame, _cursor_hcross_frame, _cursor_hcross})
+        for (auto* shape : {_cursor, _cursor_frame})
             shape->set_centroid(pos);
     }
 
