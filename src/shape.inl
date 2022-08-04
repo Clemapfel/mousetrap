@@ -382,6 +382,7 @@ namespace mousetrap
         return _vertices.at(i).position;
     }
 
+
     void Shape::set_vertex_texture_coordinate(size_t i, Vector2f coordinates)
     {
         _vertices.at(i).texture_coordinates = coordinates;
@@ -392,6 +393,11 @@ namespace mousetrap
     Vector2f Shape::get_vertex_texture_coordinate(size_t i) const
     {
         return _vertices.at(i).texture_coordinates;
+    }
+
+    size_t Shape::get_n_vertices() const
+    {
+        return _vertices.size();
     }
 
     void Shape::set_color(RGBA color)

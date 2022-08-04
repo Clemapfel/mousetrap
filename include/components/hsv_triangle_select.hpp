@@ -119,13 +119,16 @@ namespace mousetrap
         auto hsv_triangle_center = Vector2f(0.5, 1 - hue_bar_y_margin - hue_bar_height - hsv_triangle_radius);
 
         float hsv_triangle_frame_radius_factor = 1.1;
+        auto hsv_triangle_rotation_offset = degrees(270);
+
+        /*
         _hsv_triangle_frame = new Shape();
         _hsv_triangle_frame->as_circle(hsv_triangle_center, hsv_triangle_radius + 1 * std::max<float>(one_px.x, one_px.y), 3);
         _hsv_triangle_frame->set_color(RGBA(0, 0, 0, 1));
 
-        auto hsv_triangle_rotation_offset = degrees(270);
         _hsv_triangle_frame->rotate(hsv_triangle_rotation_offset);
         _hsv_triangle_frame->set_centroid(hsv_triangle_center);
+         */
 
         {
             // creating circle shape and reading vertices is easier than calcing position
@@ -141,6 +144,14 @@ namespace mousetrap
                 temp.get_vertex_position(3)
             );
         }
+
+        _hsv_triangle_frame = new Shape();
+        _hsv_triangle_frame->as_wireframe({
+            _hsv_triangle->get_vertex_position(0),
+            _hsv_triangle->get_vertex_position(1),
+            _hsv_triangle->get_vertex_position(2)
+        });
+        _hsv_triangle_frame->set_color(RGBA(0, 0, 0, 1));
 
         Vector2f hue_bar_pos = {hue_bar_x_margin, 1 - hue_bar_y_margin - hue_bar_height};
         Vector2f hue_bar_size = {1 - 2*hue_bar_x_margin, hue_bar_height};
@@ -159,7 +170,6 @@ namespace mousetrap
         _hue_bar_shader->create_from_file(get_resource_path() + "shaders/hsv_triangle_hue_bar.frag", ShaderType::FRAGMENT);
 
         float hue_bar_cursor_height = hue_bar_height + 4 * one_px.y;
-
         float hue_bar_cursor_frame_width_base = std::max<float>(0.075 * hue_bar_height, one_px.x * 7);
         float cursor_width = std::max<float>(0.05, hue_bar_cursor_frame_width_base * 2 + one_px.x * 7);
         auto hue_bar_cursor_frame_width = Vector2f(hue_bar_cursor_frame_width_base, hue_bar_cursor_frame_width_base * (one_px.y / one_px.x));
@@ -181,33 +191,38 @@ namespace mousetrap
             shape->set_centroid(Vector2f(0.5, _hue_bar->get_centroid().y));
 
         float hue_triangle_radius = hue_bar_height;
-        Vector2f hue_triangle_right_centroid = {1 - hue_bar_x_margin - hue_triangle_radius, 1 - hue_bar_y_margin - hue_bar_height - hue_bar_y_margin - (1 / sqrt(2)) * hue_triangle_radius};
-
-        _hue_triangle_right_frame = new Shape();
-        _hue_triangle_right_frame->as_circle(hue_triangle_right_centroid, hue_triangle_radius + 1 * std::max<float>(one_px.x, one_px.y), 3);
-        _hue_triangle_right_frame->set_color(RGBA(0, 0, 0, 1));
+        Vector2f hue_triangle_right_centroid = {1 - hue_bar_x_margin - hue_triangle_radius, 1 - hue_bar_y_margin - hue_bar_height - 1.5*hue_bar_y_margin - (1 / sqrt(2)) * hue_triangle_radius};
+        Vector2f hue_triangle_left_centroid = {1 - hue_triangle_right_centroid.x, hue_triangle_right_centroid.y};
 
         _hue_triangle_right = new Shape();
         _hue_triangle_right->as_circle(hue_triangle_right_centroid, hue_triangle_radius, 3);
-
-        _hue_triangle_left_frame = new Shape();
-        _hue_triangle_left_frame->as_circle(hue_triangle_right_centroid, hue_triangle_radius + 1 * std::max<float>(one_px.x, one_px.y), 3);
-        _hue_triangle_left_frame->set_color(RGBA(0, 0, 0, 1));
 
         _hue_triangle_left = new Shape();
         _hue_triangle_left->as_circle(hue_triangle_right_centroid, hue_triangle_radius, 3);
 
         auto hue_triangle_rotation_offset = degrees(90);
 
-        for (auto* shape : {_hue_triangle_left, _hue_triangle_right, _hue_triangle_left_frame, _hue_triangle_right_frame})
+        for (auto* shape : {_hue_triangle_left, _hue_triangle_right})
             shape->rotate(hue_triangle_rotation_offset);
 
         _hue_triangle_right->set_centroid(hue_triangle_right_centroid);
-        _hue_triangle_right_frame->set_centroid(hue_triangle_right_centroid);
-
-        Vector2f hue_triangle_left_centroid = {1 - hue_triangle_right_centroid.x, hue_triangle_right_centroid.y};
         _hue_triangle_left->set_centroid(hue_triangle_left_centroid);
-        _hue_triangle_left_frame->set_centroid(hue_triangle_left_centroid);
+
+        _hue_triangle_left_frame = new Shape();
+        _hue_triangle_left_frame->as_wireframe({
+            _hue_triangle_left->get_vertex_position(1),
+            _hue_triangle_left->get_vertex_position(2),
+            _hue_triangle_left->get_vertex_position(3),
+        });
+        _hue_triangle_left_frame->set_color(RGBA(0, 0, 0, 1));
+
+        _hue_triangle_right_frame = new Shape();
+        _hue_triangle_right_frame->as_wireframe({
+           _hue_triangle_right->get_vertex_position(1),
+           _hue_triangle_right->get_vertex_position(2),
+           _hue_triangle_right->get_vertex_position(3),
+        });
+        _hue_triangle_right_frame->set_color(RGBA(0, 0, 0, 1));
 
         float cross_length = 0.5 * hue_bar_height;
         float cross_height = 0.1 * hue_bar_height;
@@ -229,8 +244,8 @@ namespace mousetrap
         for (auto* shape : {_cursor_hcross, _cursor_hcross_frame, _cursor_vcross, _cursor_vcross_frame})
             shape->set_centroid(hsv_triangle_center);
 
-        add_render_task(_hsv_triangle_frame);
         add_render_task(_hsv_triangle);
+        add_render_task(_hsv_triangle_frame);
 
         auto hue_bar_render_task = RenderTask(_hue_bar, _hue_bar_shader);
         hue_bar_render_task.register_color("_current_color_hsva", _shader_color);
@@ -244,11 +259,11 @@ namespace mousetrap
         add_render_task(_hue_bar_cursor_frame_inner);
         add_render_task(_hue_bar_cursor_frame_outer);
 
-        add_render_task(_hue_triangle_right_frame);
         add_render_task(_hue_triangle_right);
-
-        add_render_task(_hue_triangle_left_frame);
         add_render_task(_hue_triangle_left);
+
+        add_render_task(_hue_triangle_right_frame);
+        add_render_task(_hue_triangle_left_frame);
 
         add_render_task(_cursor_hcross);
         add_render_task(_cursor_vcross);
@@ -269,6 +284,9 @@ namespace mousetrap
             one_px = now;
             on_realize(area);
         }
+
+        update();
+        gtk_gl_area_queue_render(area);
     }
 
     void HsvTriangleSelect::ShapeArea::update()
@@ -279,6 +297,39 @@ namespace mousetrap
         _hsv_triangle->set_vertex_color(0, HSVA(current_color.h, 1, 1, 1));
         _hsv_triangle->set_vertex_color(1, RGBA(1, 1, 1, 1));
         _hsv_triangle->set_vertex_color(2, RGBA(0, 0, 0, 1));
+
+        float min_x = std::numeric_limits<float>::max();
+        float min_y = std::numeric_limits<float>::max();
+        float max_x = std::numeric_limits<float>::min();
+        float max_y = std::numeric_limits<float>::min();
+
+        for (size_t i = 0; i < _hsv_triangle->get_n_vertices(); ++i)
+        {
+            auto pos = _hsv_triangle->get_vertex_position(i);
+            min_x = std::min<float>(min_x, pos.x);
+            min_y = std::min<float>(min_y, pos.y);
+            max_x = std::max<float>(max_x, pos.x);
+            max_y = std::max<float>(max_y, pos.y);
+        }
+
+        Vector2f a = _hsv_triangle->get_vertex_position(0); // value 1 saturation 1
+        Vector2f b = _hsv_triangle->get_vertex_position(1); // value 1 saturation 0
+        Vector2f c = _hsv_triangle->get_vertex_position(2); // value 0 saturation 1
+
+        Vector2f pos = a;
+
+        // saturation axis
+        float angle = std::atan2(b.y - pos.y, b.x - pos.x);
+        float d = current_color.s * glm::distance(a, b);
+        pos += Vector2f(cos(angle) * d, sin(angle) * d);
+
+        // value axis
+        angle = std::atan2(c.y - pos.y, c.x - pos.x);
+        d = current_color.v * glm::distance(pos, c);
+        pos += Vector2f(cos(angle) * d, sin(angle) * d);
+
+        for (auto* shape : {_cursor_vcross, _cursor_vcross_frame, _cursor_hcross_frame, _cursor_hcross})
+            shape->set_centroid(pos);
     }
 
     HsvTriangleSelect::HsvTriangleSelect(float width)

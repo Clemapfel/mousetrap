@@ -9,7 +9,7 @@
 
 namespace mousetrap
 {
-    static inline HSVA current_color = HSVA(0.3, 1, 1, 1);
+    static inline HSVA current_color = HSVA(0.5, 0.5, 0.5, 1);
     static inline HSVA last_color = HSVA(0.2, 0.8, 1, 1);
 
     class ColorPicker;

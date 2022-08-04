@@ -41,18 +41,6 @@ void main()
     const float cursor_width = 0.01;
     float cursor_frame_width = 1.f / _canvas_size.x;
 
-    /*
-    float cursor_value = abs(pos.x - _hue_offset);
-    if (cursor_value < cursor_width)
-    {
-        if (cursor_value < cursor_width - cursor_frame_width)
-        _fragment_color = vec4(1);
-        else
-        _fragment_color = vec4(0, 0, 0, 1);
-
-        return;
-    }
-    */
 
     vec3 hsv = vec3(pos.x, current_hsv.y, current_hsv.z);
     _fragment_color = vec4(hsv_to_rgb(hsv), 1);

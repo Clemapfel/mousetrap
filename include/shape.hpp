@@ -31,6 +31,7 @@ namespace mousetrap
             void as_line_strip(std::vector<Vector2f>);
             void as_polygon(std::vector<Vector2f> positions); // bounding polygon
             void as_wireframe(std::vector<Vector2f>);         // bounding polygon
+
             void as_frame(Vector2f top_left, Vector2f size, float x_width, float y_width);
 
             void render(Shader& shader, Transform transform);
@@ -43,6 +44,8 @@ namespace mousetrap
 
             void set_vertex_position(size_t, Vector3f);
             Vector3f get_vertex_position(size_t) const;
+
+            size_t get_n_vertices() const;
 
             void set_color(RGBA);
 
