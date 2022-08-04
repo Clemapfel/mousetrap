@@ -23,6 +23,10 @@ namespace mousetrap
 
             GtkWidget* get_native();
 
+            static void on_pointer_motion(GtkWidget *widget, GdkEventMotion *event, HsvTriangleSelect* instance);
+            static void on_button_press(GtkWidget* widget, GdkEventButton* event, HsvTriangleSelect* instance);
+            static void on_button_release(GtkWidget* widget, GdkEventButton* event, HsvTriangleSelect* instance);
+
         //private:
             struct ShapeArea : public GLArea
             {
@@ -150,7 +154,12 @@ namespace mousetrap
         float frame_y_thickness = one_px.y;
 
         _hue_bar_frame = new Shape();
-        _hue_bar_frame->as_frame(hue_bar_pos, hue_bar_size, frame_x_thickness, frame_y_thickness);
+        _hue_bar_frame->as_wireframe({
+             _hue_bar->get_vertex_position(0),
+             _hue_bar->get_vertex_position(1),
+             _hue_bar->get_vertex_position(2),
+             _hue_bar->get_vertex_position(3)
+         });
         _hue_bar_frame->set_color(RGBA(0, 0, 0, 1));
 
         _hue_bar_shader = new Shader();
@@ -167,11 +176,21 @@ namespace mousetrap
         _hue_bar_cursor->set_color(RGBA(1, 1, 1, 1));
 
         _hue_bar_cursor_frame_inner = new Shape();
-        _hue_bar_cursor_frame_inner->as_frame({0, 0}, hue_bar_cursor_size - hue_bar_cursor_frame_width * Vector2f(2), one_px.x, one_px.y);
+        _hue_bar_cursor_frame_inner->as_wireframe({
+              {hue_bar_cursor_frame_width.x, hue_bar_cursor_frame_width.y},
+              {hue_bar_cursor_size.x - hue_bar_cursor_frame_width.x, hue_bar_cursor_frame_width.y},
+              {hue_bar_cursor_size.x - hue_bar_cursor_frame_width.x, hue_bar_cursor_size.y - hue_bar_cursor_frame_width.y},
+              {hue_bar_cursor_frame_width.x, hue_bar_cursor_size.y - hue_bar_cursor_frame_width.y}
+        });
         _hue_bar_cursor_frame_inner->set_color(RGBA(0, 0, 0, 1));
 
         _hue_bar_cursor_frame_outer = new Shape();
-        _hue_bar_cursor_frame_outer->as_frame({0, 0}, hue_bar_cursor_size, one_px.x, one_px.y);
+        _hue_bar_cursor_frame_outer->as_wireframe({
+            {0, 0},
+            {hue_bar_cursor_size.x, 0},
+            {hue_bar_cursor_size.x, hue_bar_cursor_size.y},
+            {0, hue_bar_cursor_size.y},
+        });
         _hue_bar_cursor_frame_outer->set_color(RGBA(0, 0, 0, 1));
 
         for (auto* shape : {_hue_bar_cursor_frame_inner, _hue_bar_cursor_frame_outer, _hue_bar_cursor})
@@ -220,27 +239,8 @@ namespace mousetrap
         _cursor_frame->as_circle({0, 0}, cursor_radius + one_px.x, 8);
         _cursor_frame->set_color(RGBA(0, 0, 0, 1));
 
-        /*
         float cross_length = 0.5 * hue_bar_height;
         float cross_height = 0.1 * hue_bar_height;
-
-        _cursor_hcross = new Shape();
-        _cursor_hcross->as_rectangle({0, 0}, {cross_length, cross_height});
-
-        _cursor_hcross_frame = new Shape();
-        _cursor_hcross_frame->as_frame({0, 0}, {cross_length, cross_height}, one_px.x, one_px.y);
-        _cursor_hcross_frame->set_color(RGBA(0, 0, 0, 1));
-
-        _cursor_vcross = new Shape();
-        _cursor_vcross->as_rectangle({0, 0}, {cross_height, cross_length});
-
-        _cursor_vcross_frame = new Shape();
-        _cursor_vcross_frame->as_frame({0, 0}, {cross_height, cross_length}, one_px.x, one_px.y);
-        _cursor_vcross_frame->set_color(RGBA(0, 0, 0, 1));
-
-        for (auto* shape : {_cursor_hcross, _cursor_hcross_frame, _cursor_vcross, _cursor_vcross_frame})
-            shape->set_centroid(hsv_triangle_center);
-            */
 
         add_render_task(_hsv_triangle);
         add_render_task(_hsv_triangle_frame);
@@ -314,6 +314,18 @@ namespace mousetrap
             shape->set_centroid(pos);
     }
 
+    void HsvTriangleSelect::on_pointer_motion(GtkWidget *widget, GdkEventMotion *event, HsvTriangleSelect* instance)
+    {
+        std::cout << event->x << " " << event->y << std::endl;
+    }
+
+    void HsvTriangleSelect::on_button_press(GtkWidget* widget, GdkEventButton* event, HsvTriangleSelect* instance)
+    {}
+
+    void HsvTriangleSelect::on_button_release(GtkWidget* widget, GdkEventButton* event, HsvTriangleSelect* instance)
+    {}
+
+
     HsvTriangleSelect::HsvTriangleSelect(float width)
     {
         if (int(width) % 2 == 0)
@@ -321,6 +333,14 @@ namespace mousetrap
 
         _shape_area = new ShapeArea();
         _shape_area->set_size_request({width, width});
+
+        _shape_area->add_events(GDK_BUTTON_PRESS_MASK);
+        _shape_area->add_events(GDK_BUTTON_RELEASE_MASK);
+        _shape_area->add_events(GDK_POINTER_MOTION_MASK);
+
+        _shape_area->connect_signal("motion-notify-event", on_pointer_motion, this);
+        _shape_area->connect_signal("button-press-event", on_button_press, this);
+        _shape_area->connect_signal("button-release-event", on_button_release, this);
     }
 
     /*
