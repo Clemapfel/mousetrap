@@ -34,16 +34,18 @@ namespace mousetrap
             void set_margin_end(float);
             void set_margin(float);
 
-            void set_expand_horizontally(bool should_expand);
-            void set_expand_vertically(bool should_expand);
+            void set_hexpand(bool should_expand);
+            void set_vexpand(bool should_expand);
 
-            void set_align_horizontally(GtkAlign);
-            void set_align_vertically(GtkAlign);
+            void set_halign(GtkAlign);
+            void set_valign(GtkAlign);
 
             void set_opacity(float);
             float get_opacity();
 
             void set_tooltip_text(const std::string&);
+
+            void add_events(GdkEventMask);
 
         private:
             /// \returns true if get_native() == nullptr

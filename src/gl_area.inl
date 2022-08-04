@@ -14,6 +14,7 @@ namespace mousetrap
     {
         _native = GTK_GL_AREA(gtk_gl_area_new());
         gtk_gl_area_set_has_alpha(_native, TRUE);
+        gtk_gl_area_set_auto_render(_native, TRUE);
 
         connect_signal("realize", on_realize_wrapper, this);
         connect_signal("render", on_render_wrapper, this);
@@ -78,17 +79,18 @@ namespace mousetrap
     {
         gtk_gl_area_make_current(area);
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         for (auto& task : _render_tasks)
             task.render();
 
         glFlush();
-        return TRUE;
+        gtk_gl_area_queue_render(area);
+        return FALSE;
     }
 
     void GLArea::queue_render()

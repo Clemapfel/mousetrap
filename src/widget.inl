@@ -119,33 +119,33 @@ namespace mousetrap
         gtk_widget_set_margin_end(get_native(), value);
     }
 
-    void Widget::set_expand_horizontally(bool should_expand)
+    void Widget::set_hexpand(bool should_expand)
     {
-        if (warn_if_nullptr("set_expand_horizontally"))
+        if (warn_if_nullptr("set_hexpand"))
             return;
 
         gtk_widget_set_hexpand(get_native(), should_expand == TRUE);
     }
 
-    void Widget::set_expand_vertically(bool should_expand)
+    void Widget::set_vexpand(bool should_expand)
     {
-        if (warn_if_nullptr("set_expand_vertically"))
+        if (warn_if_nullptr("set_vexpand"))
             return;
 
         gtk_widget_set_vexpand(get_native(), should_expand == TRUE);
     }
 
-    void Widget::set_align_horizontally(GtkAlign alignment)
+    void Widget::set_halign(GtkAlign alignment)
     {
-        if (warn_if_nullptr("set_align_horizontally"))
+        if (warn_if_nullptr("set_halign"))
             return;
 
         gtk_widget_set_halign(get_native(), alignment);
     }
 
-    void Widget::set_align_vertically(GtkAlign alignment)
+    void Widget::set_valign(GtkAlign alignment)
     {
-        if (warn_if_nullptr("set_align_vertically"))
+        if (warn_if_nullptr("set_valign"))
             return;
 
         gtk_widget_set_valign(get_native(), alignment);
@@ -195,5 +195,13 @@ namespace mousetrap
             return;
 
         gtk_widget_set_tooltip_text(get_native(), text.c_str());
+    }
+
+    void Widget::add_events(GdkEventMask event)
+    {
+        if (warn_if_nullptr("add_events"))
+            return;
+
+        gtk_widget_add_events(get_native(), event);
     }
 }

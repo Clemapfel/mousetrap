@@ -524,7 +524,7 @@ namespace mousetrap
     {
         _entry = new Entry();
         _entry->set_width_chars(4 * 2 + 1);
-        _entry->set_expand_horizontally(true);
+        _entry->set_hexpand(true);
         _entry->set_margin_start(left_to_slider_left_margin);
     }
 
@@ -757,7 +757,7 @@ namespace mousetrap
         for (auto& pair : _elements)
         {
             pair.second->_gradient->set_size_request({width, margin});
-            pair.second->_gradient->set_expand_horizontally(true);
+            pair.second->_gradient->set_hexpand(true);
         }
 
         _opacity_label = new LabelElement("Opacity");
@@ -768,7 +768,7 @@ namespace mousetrap
         _html_code_element = new HtmlCodeElement();
         _html_code_element->set_margin_end(0.6 * width);
         //_html_code_element->_entry->set_width_chars(6 + 2);
-        //_html_code_element->set_align_horizontally(GTK_ALIGN_START);
+        //_html_code_element->set_halign(GTK_ALIGN_START);
 
         _opacity_region = new Box(GTK_ORIENTATION_VERTICAL, slider_to_slider_spacer);
         _opacity_region->add(_opacity_label);
@@ -797,15 +797,15 @@ namespace mousetrap
         _all_slider_regions->add(_html_region);
 
         _current_color_area = new CurrentColorArea();
-        _current_color_area->set_align_vertically(GTK_ALIGN_START);
-        _current_color_area->set_expand_vertically(false);
-        _current_color_area->set_expand_horizontally(true);
+        _current_color_area->set_valign(GTK_ALIGN_START);
+        _current_color_area->set_vexpand(false);
+        _current_color_area->set_hexpand(true);
         _current_color_area->set_size_request({1, 4 * margin});
         _current_color_area->set_margin_start(0.6 * width);
 
         _eyedropper_button = new EyedropperModeButton();
-        _eyedropper_button->set_align_vertically(GTK_ALIGN_END);
-        _eyedropper_button->set_align_horizontally(GTK_ALIGN_END);
+        _eyedropper_button->set_valign(GTK_ALIGN_END);
+        _eyedropper_button->set_halign(GTK_ALIGN_END);
         _eyedropper_button->set_size_request({7 * margin, 5 * margin});
 
         _all_slider_regions->set_margin_top(_current_color_area->get_size_request().y - margin);
@@ -820,16 +820,16 @@ namespace mousetrap
         _current_color_and_eyedropper_overlay->set_margin_bottom(0.5 * outer_margin);
 
         _closing_dialogue = new ClosingDialogue();
-        _closing_dialogue->set_align_horizontally(GTK_ALIGN_START);
-        _closing_dialogue->set_align_vertically(GTK_ALIGN_START);
+        _closing_dialogue->set_halign(GTK_ALIGN_START);
+        _closing_dialogue->set_valign(GTK_ALIGN_START);
 
         _closing_dialogue_overlay = new Overlay();
         _closing_dialogue_overlay->set_under(_current_color_and_eyedropper_overlay);
         _closing_dialogue_overlay->set_over(_closing_dialogue);
 
         _window = new Box(GTK_ORIENTATION_VERTICAL);
-        _closing_dialogue_overlay->set_align_horizontally(GTK_ALIGN_CENTER);
-        _closing_dialogue_overlay->set_align_vertically(GTK_ALIGN_CENTER);
+        _closing_dialogue_overlay->set_halign(GTK_ALIGN_CENTER);
+        _closing_dialogue_overlay->set_valign(GTK_ALIGN_CENTER);
 
         _window->add(_closing_dialogue_overlay);
 

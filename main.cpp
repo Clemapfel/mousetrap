@@ -31,8 +31,8 @@ int main()
 
     // debug button
     Button button;
-    button.set_align_vertically(GTK_ALIGN_END);
-    button.set_align_horizontally(GTK_ALIGN_END);
+    button.set_valign(GTK_ALIGN_END);
+    button.set_halign(GTK_ALIGN_END);
     button.connect_signal("clicked", button_aux);
 
     auto overlay = Overlay();
