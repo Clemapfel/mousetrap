@@ -424,10 +424,12 @@ namespace mousetrap
 
         Vector2f intersect;
         intersecting(Line{value_plane_start, value_plane_end}, saturation_plane, &intersect);
-
         float saturation = 1 - glm::distance(intersect, a) / glm::distance(a, b);
 
+        float value = glm::distance(pos, c) / glm::distance(intersect, c);
+
         current_color.s = saturation;
+        current_color.v = value;
         update(false);
     }
 
