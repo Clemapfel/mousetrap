@@ -25,15 +25,15 @@ void main()
     if (y_index > 0.5)
     {
         if (x_index > 0.5)
-        _fragment_color = dark;
+            _fragment_color = dark;
         else if (x_index < 0.5)
-        _fragment_color = light;
+            _fragment_color = light;
     }
     else if (y_index < 0.5)
     {
         if (x_index > 0.5)
-        _fragment_color = light;
+            _fragment_color = light;
         else if (x_index < 0.5)
-        _fragment_color = dark;
+            _fragment_color = dark;
     }
 }

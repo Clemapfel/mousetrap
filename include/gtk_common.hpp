@@ -7,10 +7,14 @@
 
 #include <gtk/gtk.h>
 
-namespace mousetrap
+extern "C"
 {
     ///
     bool gtk_initialize_opengl(GtkWindow* window);
+
+    ///
+    void gtk_widget_get_allocate_size(GtkWidget*, int*, int*);
 }
+
 
 #include <src/gtk_common.inl>

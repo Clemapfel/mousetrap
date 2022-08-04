@@ -26,13 +26,14 @@
 
 namespace mousetrap
 {
-    class ColorPicker : public Widget
+    class ColorPicker : public Widget, public ColorModifierWidget
     {
         public:
             ColorPicker(float width);
             virtual ~ColorPicker();
 
             GtkWidget* get_native();
+            void update() override;
             
         private:
             static inline RGBA current_color_as_rgba = RGBA(1, 1, 1, 1);
@@ -997,4 +998,7 @@ namespace mousetrap
 
         instance->_window->connect_signal("draw", widget_on_draw, instance);
     }
+
+    void ColorPicker::update()
+    {}
 }

@@ -6,7 +6,7 @@
 #include <include/gl_common.hpp>
 #include <iostream>
 
-bool mousetrap::gtk_initialize_opengl(GtkWindow* window)
+bool gtk_initialize_opengl(GtkWindow* window)
 {
     bool failed = false;
     auto *gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
@@ -41,4 +41,16 @@ bool mousetrap::gtk_initialize_opengl(GtkWindow* window)
 
     GL_INITIALIZED = not failed;
     return not failed;
+}
+
+void gtk_widget_get_allocated_size(GtkWidget* widget, int* w, int* h)
+{
+    GtkAllocation* allocation = new GtkAllocation();
+    gtk_widget_get_allocation(widget, allocation);
+
+    if (w != nullptr)
+        *w = allocation->width;
+
+    if (h != nullptr)
+        *h = allocation->height;
 }

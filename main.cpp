@@ -11,12 +11,6 @@
 using namespace mousetrap;
 
 
-static void button_aux()
-{
-    hsv_triangle_select->_shape_area->_hue_bar_shader->create_from_file(get_resource_path() + "shaders/hsv_triangle_hue_bar.frag", ShaderType::FRAGMENT);
-    hsv_triangle_select->_shape_area->queue_render();
-}
-
 int main()
 {
     gtk_init(nullptr, nullptr);
@@ -33,7 +27,7 @@ int main()
     Button button;
     button.set_valign(GTK_ALIGN_END);
     button.set_halign(GTK_ALIGN_END);
-    button.connect_signal("clicked", button_aux);
+    //button.connect_signal("clicked", button_aux);
 
     auto overlay = Overlay();
     overlay.set_over(button);
@@ -43,7 +37,8 @@ int main()
     hsv_triangle_select = new HsvTriangleSelect(300);
 
     //
-    overlay.set_under(hsv_triangle_select);
+    // overlay.set_under((ColorPicker*) color_picker);
+    overlay.set_under((HsvTriangleSelect*) hsv_triangle_select);
     gtk_container_add(GTK_CONTAINER(main_window), overlay);
 
     // render loop

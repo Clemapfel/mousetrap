@@ -7,27 +7,33 @@
 
 #include <include/gl_area.hpp>
 #include <include/get_resource_path.hpp>
+#include <include/geometric_shapes.hpp>
 
 #include <include/components/global_state.hpp>
 
 namespace mousetrap
 {
-    class HsvTriangleSelect;
-    static inline HsvTriangleSelect* hsv_triangle_select = nullptr;
-
-    struct HsvTriangleSelect : public Widget
+    struct HsvTriangleSelect : public Widget, public ColorModifierWidget
     {
         public:
             HsvTriangleSelect(float width);
             ~HsvTriangleSelect();
 
             GtkWidget* get_native();
+            void update() override;
 
+        private:
             static void on_pointer_motion(GtkWidget *widget, GdkEventMotion *event, HsvTriangleSelect* instance);
             static void on_button_press(GtkWidget* widget, GdkEventButton* event, HsvTriangleSelect* instance);
             static void on_button_release(GtkWidget* widget, GdkEventButton* event, HsvTriangleSelect* instance);
 
-        //private:
+            /// \param only_handle_in_bounds: should cursor move even pointer is outside of triangle
+            void set_hsv_triangle_cursor_position(float x, float y);
+            bool is_in_hsv_triangle_bounds(float x, float y);
+            void update_color_from_cursor();
+
+            bool button_press_active = false;
+
             struct ShapeArea : public GLArea
             {
                 ShapeArea();
@@ -36,7 +42,7 @@ namespace mousetrap
                 void on_realize(GtkGLArea* area);
                 void on_resize(GtkGLArea* area, int, int);
 
-                void update();
+                void update(bool update_cursor_too);
 
                 Shape* _hsv_triangle;
                 Shape* _hsv_triangle_frame;
@@ -45,6 +51,9 @@ namespace mousetrap
                 Shape* _hue_triangle_right_frame;
                 Shape* _hue_triangle_left;
                 Shape* _hue_triangle_left_frame;
+
+                Shape* _hue_triangle_left_alpha_tiling;
+                Shader* _alpha_tiling_shader;
 
                 Shape* _hue_bar;
                 Shape* _hue_bar_frame;
@@ -85,6 +94,7 @@ namespace mousetrap
 
         delete _hue_triangle_left;
         delete _hue_triangle_left_frame;
+        delete _hue_triangle_left_alpha_tiling;
         delete _hue_triangle_right;
         delete _hue_triangle_right_frame;
 
@@ -93,6 +103,7 @@ namespace mousetrap
         delete _hue_bar_shader;
         delete _shader_color;
         delete _shader_canvas_size;
+        delete _alpha_tiling_shader;
         delete _hue_bar_cursor;
         delete _hue_bar_cursor_frame_outer;
         delete _hue_bar_cursor_frame_inner;
@@ -203,16 +214,24 @@ namespace mousetrap
         _hue_triangle_right = new Shape();
         _hue_triangle_right->as_circle(hue_triangle_right_centroid, hue_triangle_radius, 3);
 
+
         _hue_triangle_left = new Shape();
-        _hue_triangle_left->as_circle(hue_triangle_right_centroid, hue_triangle_radius, 3);
+        _hue_triangle_left->as_circle(hue_triangle_left_centroid, hue_triangle_radius, 3);
+
+        _hue_triangle_left_alpha_tiling = new Shape();
+        _hue_triangle_left_alpha_tiling->as_circle(hue_triangle_left_centroid, hue_triangle_radius, 3);
 
         auto hue_triangle_rotation_offset = degrees(90);
 
-        for (auto* shape : {_hue_triangle_left, _hue_triangle_right})
+        for (auto* shape : {_hue_triangle_left, _hue_triangle_right, _hue_triangle_left_alpha_tiling})
             shape->rotate(hue_triangle_rotation_offset);
 
         _hue_triangle_right->set_centroid(hue_triangle_right_centroid);
         _hue_triangle_left->set_centroid(hue_triangle_left_centroid);
+        _hue_triangle_left_alpha_tiling->set_centroid(hue_triangle_left_centroid);
+
+        _alpha_tiling_shader = new Shader();
+        _alpha_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
 
         _hue_triangle_left_frame = new Shape();
         _hue_triangle_left_frame->as_wireframe({
@@ -229,7 +248,6 @@ namespace mousetrap
            _hue_triangle_right->get_vertex_position(3),
         });
         _hue_triangle_right_frame->set_color(RGBA(0, 0, 0, 1));
-
 
         float cursor_radius = std::max<float>(5 * one_px.x, 0.1 * hue_bar_height);
         _cursor = new Shape();
@@ -257,8 +275,12 @@ namespace mousetrap
         add_render_task(_hue_bar_cursor_frame_inner);
         add_render_task(_hue_bar_cursor_frame_outer);
 
-        add_render_task(_hue_triangle_right);
+        auto hue_triangle_alpha_tiling_task = RenderTask(_hue_triangle_left_alpha_tiling, _alpha_tiling_shader);
+        hue_triangle_alpha_tiling_task.register_vec2("_canvas_size", _shader_canvas_size);
+
+        add_render_task(hue_triangle_alpha_tiling_task);
         add_render_task(_hue_triangle_left);
+        add_render_task(_hue_triangle_right);
 
         add_render_task(_hue_triangle_right_frame);
         add_render_task(_hue_triangle_left_frame);
@@ -266,7 +288,7 @@ namespace mousetrap
         add_render_task(_cursor_frame);
         add_render_task(_cursor);
 
-        update();
+        update(true);
     }
 
     void HsvTriangleSelect::ShapeArea::on_resize(GtkGLArea* area, int w, int h)
@@ -281,14 +303,15 @@ namespace mousetrap
             on_realize(area);
         }
 
-        update();
+        update(false);
         gtk_gl_area_queue_render(area);
     }
 
-    void HsvTriangleSelect::ShapeArea::update()
+    void HsvTriangleSelect::ShapeArea::update(bool update_cursor_too)
     {
         _shader_color->h = current_color.h;
-        _hue_triangle_right->set_color(current_color);
+        _hue_triangle_right->set_color(HSVA(current_color.h, current_color.s, current_color.v, 1));
+        _hue_triangle_left->set_color(current_color);
 
         _hsv_triangle->set_vertex_color(0, HSVA(current_color.h, 1, 1, 1));
         _hsv_triangle->set_vertex_color(1, RGBA(1, 1, 1, 1));
@@ -297,6 +320,9 @@ namespace mousetrap
         Vector2f a = _hsv_triangle->get_vertex_position(0); // value 1 saturation 1
         Vector2f b = _hsv_triangle->get_vertex_position(1); // value 1 saturation 0
         Vector2f c = _hsv_triangle->get_vertex_position(2); // value 0 saturation 1
+
+        if (not update_cursor_too)
+            return;
 
         Vector2f pos = a;
 
@@ -314,17 +340,105 @@ namespace mousetrap
             shape->set_centroid(pos);
     }
 
+    bool HsvTriangleSelect::is_in_hsv_triangle_bounds(float x, float y)
+    {
+        static auto sign = [](Vector2f p1, Vector2f p2, Vector2f p3){
+            return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+        };
+
+        auto p1 = _shape_area->_hsv_triangle->get_vertex_position(0);
+        auto p2 = _shape_area->_hsv_triangle->get_vertex_position(1);
+        auto p3 = _shape_area->_hsv_triangle->get_vertex_position(2);
+
+        Vector2f pos = {x, y};
+
+        float d1 = sign(pos, p1, p2);
+        float d2 = sign(pos, p2, p3);
+        float d3 = sign(pos, p3, p1);
+
+        bool has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+        bool has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+        return !(has_neg && has_pos);
+    }
+
+    void HsvTriangleSelect::set_hsv_triangle_cursor_position(float x, float y)
+    {
+        auto set_cursor_pos = [&](Vector2f pos) -> void
+        {
+            _shape_area->_cursor->set_centroid(pos);
+            _shape_area->_cursor_frame->set_centroid(pos);
+            _shape_area->queue_render();
+        };
+
+        Vector2f pos = {x, y};
+
+        if (is_in_hsv_triangle_bounds(x, y))
+        {
+            set_cursor_pos(pos);
+            return;
+        }
+
+        // if outside of triangle and click began from within triangle, interpolate outside position
+
+        auto centroid = _shape_area->_hsv_triangle->get_centroid();
+        auto cursor_line = Line{centroid, pos};
+
+        auto p1 = _shape_area->_hsv_triangle->get_vertex_position(0);
+        auto p2 = _shape_area->_hsv_triangle->get_vertex_position(1);
+        auto p3 = _shape_area->_hsv_triangle->get_vertex_position(2);
+
+        auto triangle_line_12 = Line{p1, p2};
+        auto triangle_line_23 = Line{p2, p3};
+        auto triangle_line_31 = Line{p3, p1};
+
+        Vector2f point;
+        if (intersecting(cursor_line, triangle_line_12, &point))
+            set_cursor_pos(point);
+
+        else if (intersecting(cursor_line, triangle_line_23, &point))
+            set_cursor_pos(point);
+
+        else if (intersecting(cursor_line, triangle_line_31, &point))
+            set_cursor_pos(point);
+    }
+
+    void HsvTriangleSelect::update_color_from_cursor()
+    {
+        mousetrap::set_current_color(HSVA(glm::fract(current_color.h + 0.1), 1, 1, 1));
+    }
+
     void HsvTriangleSelect::on_pointer_motion(GtkWidget *widget, GdkEventMotion *event, HsvTriangleSelect* instance)
     {
-        std::cout << event->x << " " << event->y << std::endl;
+        if (instance->button_press_active)
+        {
+            int width, height;
+            gtk_widget_get_allocated_size(widget, &width, &height);
+            instance->set_hsv_triangle_cursor_position(event->x / width, event->y / height);
+            instance->update_color_from_cursor();
+        }
     }
 
     void HsvTriangleSelect::on_button_press(GtkWidget* widget, GdkEventButton* event, HsvTriangleSelect* instance)
-    {}
+    {
+        int width, height;
+        gtk_widget_get_allocated_size(widget, &width, &height);
+        auto pos = Vector2f(event->x / width, event->y / height);
+
+        if (event->button == 1 and instance->is_in_hsv_triangle_bounds(pos.x, pos.y))
+        {
+            // TODO: set cursor to crosshair
+            instance->button_press_active = true;
+            instance->set_hsv_triangle_cursor_position(event->x / width, event->y / height);
+            instance->update_color_from_cursor();
+        }
+    }
 
     void HsvTriangleSelect::on_button_release(GtkWidget* widget, GdkEventButton* event, HsvTriangleSelect* instance)
-    {}
-
+    {
+        if (event->button == 1)
+            instance->button_press_active = false;
+    }
 
     HsvTriangleSelect::HsvTriangleSelect(float width)
     {
@@ -343,54 +457,8 @@ namespace mousetrap
         _shape_area->connect_signal("button-release-event", on_button_release, this);
     }
 
-    /*
-    HsvTriangleSelect::HsvTriangleSelect(float width)
+    void HsvTriangleSelect::update()
     {
-        _triangle_area = new TriangleShaderArea();
-        _triangle_area->set_size_request(Vector2f{width, width});
+        _shape_area->update(false);
     }
-
-    HsvTriangleSelect::~HsvTriangleSelect()
-    {
-        delete _triangle_area;
-    }
-
-    HsvTriangleSelect::TriangleShaderArea::TriangleShaderArea()
-    {
-        _shader = new Shader();
-        _shader->create_from_file(get_resource_path() + "shaders/hsv_triangle_select.frag", ShaderType::FRAGMENT);
-    }
-
-    HsvTriangleSelect::TriangleShaderArea::~TriangleShaderArea()
-    {
-        delete _shader;
-        delete _shape;
-    }
-
-    void HsvTriangleSelect::TriangleShaderArea::on_realize(GtkGLArea* area)
-    {
-        gtk_gl_area_make_current(area);
-
-        _shape = new Shape();
-        _shape->as_rectangle({0, 0}, {1, 1});
-
-        auto size = get_size();
-        _canvas_size = new Vector2f();
-        on_resize(area, size.x, size.y);
-
-        auto task = RenderTask(_shape, _shader);
-        task.register_vec2("_canvas_size", _canvas_size);
-        task.register_color("_current_color_hsv", &current_color);
-
-        add_render_task(task);
-    }
-
-    void HsvTriangleSelect::TriangleShaderArea::on_resize(GtkGLArea* area, int w, int h)
-    {
-        _canvas_size->x = w;
-        _canvas_size->y = h;
-
-        gtk_gl_area_queue_render(area);
-    }
-     */
 }

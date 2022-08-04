@@ -9,9 +9,21 @@
 
 namespace mousetrap
 {
-    static inline HSVA current_color = HSVA(0.5, 0.5, 0.5, 1);
+    static inline HSVA current_color = HSVA(0.5, 0.5, 0.5, 0.75);
     static inline HSVA last_color = HSVA(0.2, 0.8, 1, 1);
 
-    class ColorPicker;
-    static inline ColorPicker* color_picker = nullptr;
+    struct ColorModifierWidget
+    {
+        virtual void update() = 0;
+    };
+
+    static inline ColorModifierWidget* color_picker = nullptr;
+    static inline ColorModifierWidget* hsv_triangle_select = nullptr;
+
+    static void set_current_color(HSVA color)
+    {
+        current_color = color;
+        color_picker->update();
+        hsv_triangle_select->update();
+    }
 }
