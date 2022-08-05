@@ -35,11 +35,14 @@ int main()
     // debug
     color_picker = new ColorPicker(150);
     hsv_triangle_select = new HsvTriangleSelect();
-    ((HsvTriangleSelect*) hsv_triangle_select)->set_size_request({150, 200});
+    ((HsvTriangleSelect*) hsv_triangle_select)->set_size_request({150, 150});
 
-    //
-    // overlay.set_under((ColorPicker*) color_picker);
-    overlay.set_under((HsvTriangleSelect*) hsv_triangle_select);
+    Box box = HBox(50);
+    box.set_size_request({300, 350});
+    box.add((ColorPicker*) color_picker);
+    box.add((HsvTriangleSelect*) hsv_triangle_select);
+
+    overlay.set_under(box);
     gtk_container_add(GTK_CONTAINER(main_window), overlay);
 
     // render loop

@@ -250,7 +250,7 @@ namespace mousetrap
 
             Vector2f hue_triangle_centroid = Vector2f{
                 hue_bar_pos.x + hue_bar_size.x - abs(centroid.x - right.x),
-                hue_bar_pos.y - margin - abs(centroid.y - right.y)
+                hue_bar_pos.y - 1.5 * margin - abs(centroid.y - right.y)
             };
 
             _hue_triangle->set_centroid(hue_triangle_centroid);
@@ -451,14 +451,14 @@ namespace mousetrap
             instance->_hsv_triangle_active = true;
             instance->_shape_area->set_hsv_triangle_cursor(pos);
             current_color = instance->_shape_area->color_from_cursor_positions();
-            instance->_shape_area->update();
+            signal_color_updated();
         }
         else if (instance->_shape_area->is_point_in_hue_bar(pos))
         {
             instance->_hue_bar_active = true;
             instance->_shape_area->set_hue_bar_cursor(pos);
             current_color = instance->_shape_area->color_from_cursor_positions();
-            instance->_shape_area->update();
+            signal_color_updated();
         }
     }
 
@@ -483,13 +483,13 @@ namespace mousetrap
         {
             instance->_shape_area->set_hsv_triangle_cursor(pos);
             current_color = instance->_shape_area->color_from_cursor_positions();
-            instance->_shape_area->update();
+            signal_color_updated();
         }
         else if (instance->_hue_bar_active)
         {
             instance->_shape_area->set_hue_bar_cursor(pos);
             current_color = instance->_shape_area->color_from_cursor_positions();
-            instance->_shape_area->update();
+            signal_color_updated();
         }
     }
 
@@ -509,5 +509,7 @@ namespace mousetrap
     void HsvTriangleSelect::update()
     {
         _shape_area->update();
+        _shape_area->set_hue_bar_cursor(_shape_area->color_to_hue_bar_cursor_position(current_color));
+        _shape_area->set_hsv_triangle_cursor(_shape_area->color_to_hsv_triangle_cursor_position(current_color));
     }
 }

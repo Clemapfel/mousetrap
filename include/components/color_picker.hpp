@@ -934,6 +934,7 @@ namespace mousetrap
 
         current_color = as_hsva;
         current_color_as_rgba = current_color.operator RGBA();
+        signal_color_updated();
     }
 
     void ColorPicker::scale_value_changed(GtkRange* scale, std::pair<ColorPicker*, char>* instance_and_which)
@@ -962,6 +963,7 @@ namespace mousetrap
         gtk_entry_set_text(entry, text.c_str());
         current_color = HtmlCodeElement::code_to_color(text).operator HSVA();
         update_gui(instance);
+        signal_color_updated();
 
         instance->_html_code_element->_entry->set_all_signals_blocked(false);
     }
@@ -1000,5 +1002,7 @@ namespace mousetrap
     }
 
     void ColorPicker::update()
-    {}
+    {
+        update_gui(this);
+    }
 }

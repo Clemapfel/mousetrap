@@ -20,9 +20,8 @@ namespace mousetrap
     static inline ColorModifierWidget* color_picker = nullptr;
     static inline ColorModifierWidget* hsv_triangle_select = nullptr;
 
-    static void set_current_color(HSVA color)
+    static void signal_color_updated()
     {
-        current_color = color;
         color_picker->update();
         hsv_triangle_select->update();
     }
