@@ -7,6 +7,7 @@
 #include <include/gl_area.hpp>
 #include <include/components/color_picker.hpp>
 #include <include/components/hsv_triangle_select.hpp>
+#include <include/window.hpp>
 
 using namespace mousetrap;
 
@@ -32,18 +33,19 @@ int main()
     auto overlay = Overlay();
     overlay.set_over(button);
 
-    // debug
+    // color picker
+
     color_picker = new ColorPicker(150);
+    auto color_picker_window = Window(GTK_WINDOW_TOPLEVEL);
+    color_picker_window.add(get_color_picker());
+    get_color_picker()->set_size_request({200, 300});
+
+    TODO: add initialized flags to disabled updating
+
     hsv_triangle_select = new HsvTriangleSelect();
-    ((HsvTriangleSelect*) hsv_triangle_select)->set_size_request({150, 150});
-
-    Box box = HBox(50);
-    box.set_size_request({300, 350});
-    box.add((ColorPicker*) color_picker);
-    box.add((HsvTriangleSelect*) hsv_triangle_select);
-
-    overlay.set_under(box);
-    gtk_container_add(GTK_CONTAINER(main_window), overlay);
+    auto hsv_triangle_select_window = Window(GTK_WINDOW_TOPLEVEL);
+    hsv_triangle_select_window.add(get_hsv_triangle_select());
+    get_hsv_triangle_select()->set_size_request({200, 200});
 
     // render loop
     gtk_widget_show_all(main_window);

@@ -26,7 +26,7 @@
 
 namespace mousetrap
 {
-    class ColorPicker : public Widget, public ColorModifierWidget
+    class ColorPicker : public Widget, public Updatable
     {
         public:
             ColorPicker(float width);
@@ -271,7 +271,7 @@ namespace mousetrap
 
         _last_color_shape = new Shape();
         _last_color_shape->as_rectangle({0, 0}, {last_width, 1});
-        _last_color_shape->set_color(last_color);
+        _last_color_shape->set_color(current_color);
 
         _current_color_shape = new Shape();
         _current_color_shape->as_rectangle({last_width, 0}, {1 - last_width, 1});
@@ -319,7 +319,7 @@ namespace mousetrap
 
     void ColorPicker::CurrentColorArea::update()
     {
-        _last_color_shape->set_color(last_color);
+        _last_color_shape->set_color(current_color);
         _current_color_shape->set_color(current_color);
         queue_render();
     }
@@ -886,8 +886,11 @@ namespace mousetrap
             pair.second->_gradient->queue_render();
         }
 
-        instance->_current_color_area->update();
-        instance->_html_code_element->update();
+        if (instance->_current_color_area != nullptr)
+            instance->_current_color_area->update();
+
+        if (instance->_current_color_area != nullptr)
+            instance->_html_code_element->update();
     }
 
     void ColorPicker::update_color(ColorPicker* instance, char which_component, float value)

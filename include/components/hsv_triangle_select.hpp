@@ -13,7 +13,7 @@
 
 namespace mousetrap
 {
-    struct HsvTriangleSelect : public Widget, public ColorModifierWidget
+    struct HsvTriangleSelect : public Widget, public Updatable
     {
         public:
             HsvTriangleSelect();
