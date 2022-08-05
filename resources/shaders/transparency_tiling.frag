@@ -17,23 +17,25 @@ void main()
     const vec4 dark = vec4(vec3(0.6), 1);
 
     vec2 pos = _vertex_position.xy;
-    pos.x *= (_canvas_size.x / _canvas_size.y);
+    pos *= _canvas_size;
 
-    float y_index = fract(pos.x);
-    float x_index = fract(pos.y);
+    float square_size = 20;
 
-    if (y_index > 0.5)
+    float y_index = mod(pos.x / square_size, 2);
+    float x_index = mod(pos.y / square_size, 2);
+
+    if (y_index > 1)
     {
-        if (x_index > 0.5)
+        if (x_index > 1)
             _fragment_color = dark;
-        else if (x_index < 0.5)
+        else if (x_index < 1)
             _fragment_color = light;
     }
-    else if (y_index < 0.5)
+    else if (y_index < 1)
     {
-        if (x_index > 0.5)
+        if (x_index > 1)
             _fragment_color = light;
-        else if (x_index < 0.5)
+        else if (x_index < 1)
             _fragment_color = dark;
     }
 }

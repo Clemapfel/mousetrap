@@ -34,6 +34,7 @@ namespace mousetrap
 
             GtkWidget* get_native();
             void update() override;
+            bool is_initialized() const override;
             
         private:
             static inline RGBA current_color_as_rgba = RGBA(1, 1, 1, 1);
@@ -255,6 +256,11 @@ namespace mousetrap
             static inline const float close_dialogue_height = 0.5 * margin;
             // closed dialogue = 3*h x h
     };
+
+    ColorPicker* get_color_picker()
+    {
+        return (ColorPicker*) color_picker;
+    }
 }
 
 // ###
@@ -1006,6 +1012,15 @@ namespace mousetrap
 
     void ColorPicker::update()
     {
+        if (not is_initialized())
+            return;
+
         update_gui(this);
+    }
+
+    bool ColorPicker::is_initialized() const
+    {
+        std::cerr << "ColorPicker::is_initialized: TODO" << std::endl;
+        return false;
     }
 }

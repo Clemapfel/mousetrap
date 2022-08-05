@@ -34,18 +34,15 @@ int main()
     overlay.set_over(button);
 
     // color picker
-
     color_picker = new ColorPicker(150);
-    auto color_picker_window = Window(GTK_WINDOW_TOPLEVEL);
-    color_picker_window.add(get_color_picker());
-    get_color_picker()->set_size_request({200, 300});
-
-    TODO: add initialized flags to disabled updating
+    auto* color_picker_instance = (ColorPicker*) color_picker;
+    color_picker_instance->set_size_request({200, 300});
+    //gtk_container_add(GTK_CONTAINER(main_window), color_picker_instance->get_native());
 
     hsv_triangle_select = new HsvTriangleSelect();
-    auto hsv_triangle_select_window = Window(GTK_WINDOW_TOPLEVEL);
-    hsv_triangle_select_window.add(get_hsv_triangle_select());
-    get_hsv_triangle_select()->set_size_request({200, 200});
+    auto* hsv_triangle_select_instance = (HsvTriangleSelect*) hsv_triangle_select;
+    gtk_container_add(GTK_CONTAINER(main_window), hsv_triangle_select_instance->get_native());
+    hsv_triangle_select_instance->set_size_request({200, 200});
 
     // render loop
     gtk_widget_show_all(main_window);

@@ -18,6 +18,7 @@ namespace mousetrap
         public:
             HsvTriangleSelect();
             void update();
+            bool is_initialized() const override;
 
             GtkWidget* get_native() {
                 return _shape_area->get_native();
@@ -421,7 +422,7 @@ namespace mousetrap
         Vector2f intersect;
         intersecting(Line{value_plane_start, value_plane_end}, saturation_plane, &intersect);
 
-        float saturation = 1 - glm::distance(intersect, a) / glm::distance(a, b);
+        float saturation = glm::distance(intersect, a) / glm::distance(a, b);
         float value = glm::distance(pos, c) / glm::distance(intersect, c);
 
         return HSVA(hue, saturation, value, current_color.a);
@@ -508,8 +509,16 @@ namespace mousetrap
 
     void HsvTriangleSelect::update()
     {
+        if (not is_initialized())
+            return;
+
         _shape_area->update();
         _shape_area->set_hue_bar_cursor(_shape_area->color_to_hue_bar_cursor_position(current_color));
         _shape_area->set_hsv_triangle_cursor(_shape_area->color_to_hsv_triangle_cursor_position(current_color));
+    }
+
+    bool HsvTriangleSelect::is_initialized() const
+    {
+        return gtk_widget_get_realized(_shape_area->get_native());
     }
 }
