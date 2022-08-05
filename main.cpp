@@ -35,7 +35,7 @@ int main()
     // debug
     color_picker = new ColorPicker(150);
     hsv_triangle_select = new HsvTriangleSelect();
-    ((HsvTriangleSelect*) hsv_triangle_select)->set_size_request({300, 300});
+    ((HsvTriangleSelect*) hsv_triangle_select)->set_size_request({150, 200});
 
     //
     // overlay.set_under((ColorPicker*) color_picker);

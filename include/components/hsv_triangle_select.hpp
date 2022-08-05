@@ -346,7 +346,7 @@ namespace mousetrap
         auto set_cursor_pos = [&](Vector2f pos) -> void
         {
             _hsv_triangle_cursor->set_centroid(pos);
-            _hsv_triangle_cursor->set_centroid(pos);
+            _hsv_triangle_cursor_frame->set_centroid(pos);
         };
 
         if (is_point_in_hsv_triangle(pos))
@@ -387,7 +387,7 @@ namespace mousetrap
         {
             auto centroid = _hue_bar->get_centroid();
 
-            for (auto* shape : {_hue_bar_cursor, _hue_bar_cursor_frame_inner, _hue_bar_cursor_frame_inner})
+            for (auto* shape : {_hue_bar_cursor, _hue_bar_cursor_frame_inner, _hue_bar_cursor_frame_outer})
                 shape->set_centroid({x, centroid.y});
         };
 
@@ -435,23 +435,75 @@ namespace mousetrap
         _hsv_triangle->set_vertex_color(1, RGBA(1, 1, 1, 1));
         _hsv_triangle->set_vertex_color(2, RGBA(0, 0, 0, 1));
 
-        return;
-
-        auto hsv_cursor = color_to_hsv_triangle_cursor_position(current_color);
-        _hsv_triangle_cursor->set_centroid(hsv_cursor);
-        _hsv_triangle_cursor_frame->set_centroid(hsv_cursor);
-
-        auto bar_cursor = color_to_hue_bar_cursor_position(current_color);
-        _hue_bar_cursor->set_centroid(bar_cursor);
-        _hue_bar_cursor_frame_outer->set_centroid(bar_cursor);
-        _hue_bar_cursor_frame_outer->set_centroid(bar_cursor);
-
         queue_render();
+    }
+
+    void HsvTriangleSelect::on_button_press(GtkWidget* widget, GdkEventButton* event, HsvTriangleSelect* instance)
+    {
+        auto pos = Vector2f(event->x, event->y);
+        pos /= instance->_shape_area->get_size();
+
+        if (event->button != 1)
+            return;
+
+        if (instance->_shape_area->is_point_in_hsv_triangle(pos))
+        {
+            instance->_hsv_triangle_active = true;
+            instance->_shape_area->set_hsv_triangle_cursor(pos);
+            current_color = instance->_shape_area->color_from_cursor_positions();
+            instance->_shape_area->update();
+        }
+        else if (instance->_shape_area->is_point_in_hue_bar(pos))
+        {
+            instance->_hue_bar_active = true;
+            instance->_shape_area->set_hue_bar_cursor(pos);
+            current_color = instance->_shape_area->color_from_cursor_positions();
+            instance->_shape_area->update();
+        }
+    }
+
+    void HsvTriangleSelect::on_button_release(GtkWidget* widget, GdkEventButton* event, HsvTriangleSelect* instance)
+    {
+        auto pos = Vector2f(event->x, event->y);
+        pos /= instance->_shape_area->get_size();
+
+        if (event->button != 1)
+            return;
+
+        instance->_hsv_triangle_active = false;
+        instance->_hue_bar_active = false;
+    }
+
+    void HsvTriangleSelect::on_pointer_motion(GtkWidget* widget, GdkEventMotion* event, HsvTriangleSelect* instance)
+    {
+        auto pos = Vector2f(event->x, event->y);
+        pos /= instance->_shape_area->get_size();
+
+        if (instance->_hsv_triangle_active)
+        {
+            instance->_shape_area->set_hsv_triangle_cursor(pos);
+            current_color = instance->_shape_area->color_from_cursor_positions();
+            instance->_shape_area->update();
+        }
+        else if (instance->_hue_bar_active)
+        {
+            instance->_shape_area->set_hue_bar_cursor(pos);
+            current_color = instance->_shape_area->color_from_cursor_positions();
+            instance->_shape_area->update();
+        }
     }
 
     HsvTriangleSelect::HsvTriangleSelect()
     {
         _shape_area = new ShapeArea();
+
+        _shape_area->add_events(GDK_BUTTON_PRESS_MASK);
+        _shape_area->add_events(GDK_BUTTON_RELEASE_MASK);
+        _shape_area->add_events(GDK_POINTER_MOTION_MASK);
+
+        _shape_area->connect_signal("motion-notify-event", on_pointer_motion, this);
+        _shape_area->connect_signal("button-press-event", on_button_press, this);
+        _shape_area->connect_signal("button-release-event", on_button_release, this);
     }
 
     void HsvTriangleSelect::update()
