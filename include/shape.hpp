@@ -77,8 +77,6 @@ namespace mousetrap
             std::vector<int> _indices;
             GLenum _render_type = GL_TRIANGLE_STRIP;
 
-            std::mutex _data_lock;
-
             void update_position();
             void update_color();
             void update_texture_coordinate();
