@@ -5,17 +5,27 @@
 #include <include/gl_common.hpp>
 #include <include/gtk_common.hpp>
 #include <include/gl_area.hpp>
-#include <include/components/color_picker.hpp>
-#include <include/components/hsv_triangle_select.hpp>
+#include <include/widgets/color_picker.hpp>
+#include <include/widgets/hsv_triangle_select.hpp>
 #include <include/window.hpp>
-#include <include/components/brush_selection.hpp>
+#include <include/widgets/brush_selection.hpp>
 #include <include/image.hpp>
+#include <include/brush.hpp>
 
 using namespace mousetrap;
 
 
 int main()
 {
+
+    auto brush_str = "Brush(0.121, 0.1414, 0, 1)";
+    auto brush = Brush();
+    brush.create_from_string(brush_str);
+
+    std::cout << brush.to_string() << std::endl;
+
+    return 0;
+
     gtk_init(nullptr, nullptr);
 
     // main window

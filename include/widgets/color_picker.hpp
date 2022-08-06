@@ -20,7 +20,7 @@
 #include <include/spin_button.hpp>
 #include <include/label.hpp>
 
-#include <include/components/global_state.hpp>
+#include <include/widgets/global_state.hpp>
 
 #include <set>
 

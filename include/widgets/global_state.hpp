@@ -17,7 +17,8 @@ namespace mousetrap
     static void signal_color_updated();
 
     static inline Updatable* color_picker = nullptr;
-    static inline Updatable* hsv_triangle_select = nullptr;}
+    static inline Updatable* hsv_triangle_select = nullptr;
+}
 
 // ###
 

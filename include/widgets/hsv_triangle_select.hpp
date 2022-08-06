@@ -9,7 +9,7 @@
 #include <include/get_resource_path.hpp>
 #include <include/geometric_shapes.hpp>
 
-#include <include/components/global_state.hpp>
+#include <include/widgets/global_state.hpp>
 
 namespace mousetrap
 {
