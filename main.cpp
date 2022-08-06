@@ -8,6 +8,8 @@
 #include <include/components/color_picker.hpp>
 #include <include/components/hsv_triangle_select.hpp>
 #include <include/window.hpp>
+#include <include/components/brush_selection.hpp>
+#include <include/image.hpp>
 
 using namespace mousetrap;
 
@@ -33,7 +35,6 @@ int main()
     auto overlay = Overlay();
     overlay.set_over(button);
 
-    // color picker
     color_picker = new ColorPicker(150);
     auto* color_picker_instance = (ColorPicker*) color_picker;
     color_picker_instance->set_size_request({200, 300});
@@ -41,8 +42,18 @@ int main()
 
     hsv_triangle_select = new HsvTriangleSelect();
     auto* hsv_triangle_select_instance = (HsvTriangleSelect*) hsv_triangle_select;
-    gtk_container_add(GTK_CONTAINER(main_window), hsv_triangle_select_instance->get_native());
     hsv_triangle_select_instance->set_size_request({200, 200});
+    //gtk_container_add(GTK_CONTAINER(main_window), hsv_triangle_select_instance->get_native());
+
+    auto brush_selection = BrushSelection();
+    brush_selection.set_size_request({200, 200});
+    gtk_container_add(GTK_CONTAINER(main_window), brush_selection.get_native());
+
+    auto image = Image();
+    image.create_from_file("/home/clem/Workspace/mousetrap/mole.png");
+
+    auto* pixbuf = gtk_image_new_from_pixbuf(image.to_pixbuf());
+    //gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(pixbuf));
 
     // render loop
     gtk_widget_show_all(main_window);

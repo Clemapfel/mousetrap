@@ -12,15 +12,15 @@
 
 namespace mousetrap
 {
-    class Transform
+    class GLTransform
     {
         public:
-            Transform();
+            GLTransform();
 
             Vector2f apply_to(Vector2f gl_coords);
             Vector3f apply_to(Vector3f gl_coords);
 
-            Transform combine_with(Transform);
+            GLTransform combine_with(GLTransform);
 
             void rotate(Angle, Vector2f gl_coords);
             void set_rotation(Angle);

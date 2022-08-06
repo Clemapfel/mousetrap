@@ -5,7 +5,7 @@
 
 namespace mousetrap
 {
-    RenderTask::RenderTask(Shape* shape, Shader* shader, Transform* transform)
+    RenderTask::RenderTask(Shape* shape, Shader* shader, GLTransform* transform)
     {
         if (shape == nullptr)
             throw std::invalid_argument("In RenderTask::RenderTask: shape == nullptr");
@@ -14,7 +14,7 @@ namespace mousetrap
             noop_shader = new Shader();
 
         if (noop_transform == nullptr)
-            noop_transform = new Transform();
+            noop_transform = new GLTransform();
 
         _shape = shape;
         _shader = shader;
@@ -94,7 +94,7 @@ namespace mousetrap
         _vec4s.insert({uniform_name, value});
     }
 
-    void RenderTask::register_transform(const std::string& uniform_name, Transform* value)
+    void RenderTask::register_transform(const std::string& uniform_name, GLTransform* value)
     {
         _transforms.insert({uniform_name, value});
     }
@@ -119,7 +119,7 @@ namespace mousetrap
         return _shader == nullptr ? noop_shader : _shader;
     }
 
-    Transform* RenderTask::get_transform()
+    GLTransform* RenderTask::get_transform()
     {
         return _transform == nullptr ? noop_transform : _transform;
     }

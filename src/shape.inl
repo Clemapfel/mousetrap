@@ -144,13 +144,15 @@ namespace mousetrap
         update_data(false, false, true);
     }
 
-    void Shape::render(Shader& shader, Transform transform)
+    void Shape::render(Shader& shader, GLTransform transform)
     {
         glUseProgram(shader.get_program_id());
         glUniformMatrix4fv(shader.get_uniform_location("_transform"), 1, GL_FALSE, &(transform.transform[0][0]));
 
-        glUniform1i(shader.get_uniform_location("_texture_set"), GL_FALSE);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glUniform1i(shader.get_uniform_location("_texture_set"), _texture != nullptr ? GL_TRUE : GL_FALSE);
+
+        if (_texture != nullptr)
+            _texture->bind();
 
         glBindVertexArray(_vertex_array_id);
         glDrawElements(_render_type, _indices.size(), GL_UNSIGNED_INT, _indices.data());
@@ -483,7 +485,7 @@ namespace mousetrap
 
     void Shape::rotate(Angle angle)
     {
-        auto transform = Transform();
+        auto transform = GLTransform();
         transform.rotate(angle, to_gl_position(get_centroid()));
 
         for (auto& v : _vertices)
@@ -497,5 +499,15 @@ namespace mousetrap
 
         update_position();
         update_data(true, false, false);
+    }
+
+    Texture* Shape::get_texture()
+    {
+        return _texture;
+    }
+
+    void Shape::set_texture(Texture* texture)
+    {
+        _texture = texture;
     }
 }

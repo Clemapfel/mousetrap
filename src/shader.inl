@@ -177,7 +177,7 @@ namespace mousetrap
         glUniform4f(get_uniform_location(uniform_name), value.x, value.y, value.z, value.w);
     }
 
-    void Shader::set_uniform_transform(const std::string& uniform_name, Transform value)
+    void Shader::set_uniform_transform(const std::string& uniform_name, GLTransform value)
     {
         glUniformMatrix4fv(get_uniform_location(uniform_name), 1, false, &value.transform[0][0]);
     }

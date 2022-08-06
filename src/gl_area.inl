@@ -26,7 +26,7 @@ namespace mousetrap
         //gtk_widget_destroy(GTK_WIDGET(_native));
     }
 
-    void GLArea::add_render_task(Shape* shape, Shader* shader, Transform* transform)
+    void GLArea::add_render_task(Shape* shape, Shader* shader, GLTransform* transform)
     {
         if (shape == nullptr)
             return;

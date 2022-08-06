@@ -40,7 +40,7 @@ namespace mousetrap
             void set_uniform_vec2(const std::string& uniform_name, Vector2f);
             void set_uniform_vec3(const std::string& uniform_name, Vector3f);
             void set_uniform_vec4(const std::string& uniform_name, Vector4f);
-            void set_uniform_transform(const std::string& uniform_name, Transform);
+            void set_uniform_transform(const std::string& uniform_name, GLTransform);
 
             //
             static int get_vertex_position_location();

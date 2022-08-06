@@ -14,6 +14,7 @@
 #include <include/shader.hpp>
 #include <include/colors.hpp>
 #include <include/geometric_shapes.hpp>
+#include <include/texture.hpp>
 
 namespace mousetrap
 {
@@ -34,7 +35,7 @@ namespace mousetrap
 
             void as_frame(Vector2f top_left, Vector2f size, float x_width, float y_width);
 
-            void render(Shader& shader, Transform transform);
+            void render(Shader& shader, GLTransform transform);
 
             RGBA get_vertex_color(size_t) const;
             void set_vertex_color(size_t, RGBA);
@@ -60,6 +61,9 @@ namespace mousetrap
             Vector2f get_top_left() const;
 
             void rotate(Angle);
+
+            void set_texture(Texture*);
+            Texture* get_texture();
 
         protected:
             struct Vertex
@@ -103,6 +107,7 @@ namespace mousetrap
             GLNativeHandle _vertex_array_id = 0,
                     _vertex_buffer_id = 0;
 
+            Texture* _texture = nullptr;
     };
 }
 
