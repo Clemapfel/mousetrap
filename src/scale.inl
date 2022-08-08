@@ -20,4 +20,9 @@ namespace mousetrap
     {
         //gtk_widget_destroy(GTK_WIDGET(_native));
     }
+
+    void Scale::set_draw_value(bool b)
+    {
+        gtk_scale_set_draw_value(_native, b);
+    }
 }

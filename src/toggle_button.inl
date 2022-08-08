@@ -28,6 +28,11 @@ namespace mousetrap
         gtk_toggle_button_set_active(_native, b ? TRUE : FALSE);
     }
 
+    void ToggleButton::set_label(const std::string& str)
+    {
+        gtk_button_set_label(GTK_BUTTON(_native), str.c_str());
+    }
+
     GtkWidget* ToggleButton::get_native()
     {
         return GTK_WIDGET(_native);

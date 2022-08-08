@@ -18,6 +18,8 @@ namespace mousetrap
             bool get_active() const;
             void set_active(bool b);
 
+            void set_label(const std::string&);
+
             GtkWidget* get_native() override;
 
         protected:

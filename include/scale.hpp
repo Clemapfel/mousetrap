@@ -19,6 +19,8 @@ namespace mousetrap
 
             GtkWidget* get_native() override;
 
+            void set_draw_value(bool);
+
         private:
             GtkScale* _native;
     };
