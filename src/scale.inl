@@ -17,12 +17,21 @@ namespace mousetrap
     }
 
     Scale::~Scale()
-    {
-        //gtk_widget_destroy(GTK_WIDGET(_native));
-    }
+    {}
 
     void Scale::set_draw_value(bool b)
     {
         gtk_scale_set_draw_value(_native, b);
     }
+
+    void Scale::add_mark(float value, GtkPositionType pos, const std::string& text)
+    {
+        gtk_scale_add_mark(_native, value, pos, (text.empty() ? nullptr : text.c_str()));
+    }
+
+    void Scale::clear_marks()
+    {
+        gtk_scale_clear_marks(_native);
+    }
+
 }

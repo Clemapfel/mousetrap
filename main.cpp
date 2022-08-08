@@ -51,7 +51,7 @@ int main()
     brush_selection.set_size_request({200, 200});
     //gtk_container_add(GTK_CONTAINER(main_window), brush_selection.get_native());
 
-    auto* brush_designer = new BrushDesigner(300, 16, 16);
+    auto* brush_designer = new BrushDesigner(300, 128, 128);
     gtk_container_add(GTK_CONTAINER(main_window), brush_designer->get_native());
 
     // render loop

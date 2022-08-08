@@ -36,9 +36,11 @@ namespace mousetrap
 
             void set_hexpand(bool should_expand);
             void set_vexpand(bool should_expand);
+            void set_expand(bool both);
 
             void set_halign(GtkAlign);
             void set_valign(GtkAlign);
+            void set_align(GtkAlign both);
 
             void set_opacity(float);
             float get_opacity();

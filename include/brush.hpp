@@ -19,6 +19,8 @@ namespace mousetrap
             template<typename... Floats> requires (std::is_same_v<Floats, float> && ...)
             Brush(Floats...);
 
+            Brush(std::vector<float> values);
+
             std::string to_string();
             void create_from_string(const std::string&);
 
@@ -120,6 +122,11 @@ namespace mousetrap
     Brush::Brush(Floats... in)
     {
         _data = {in ...};
+    }
+
+    Brush::Brush(std::vector<float> data)
+    {
+        _data = data;
     }
 
     Image Brush::to_image()

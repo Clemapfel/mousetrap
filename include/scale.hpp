@@ -20,6 +20,8 @@ namespace mousetrap
             GtkWidget* get_native() override;
 
             void set_draw_value(bool);
+            void add_mark(float at, GtkPositionType pos, const std::string& label = "");
+            void clear_marks();
 
         private:
             GtkScale* _native;

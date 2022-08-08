@@ -135,6 +135,15 @@ namespace mousetrap
         gtk_widget_set_vexpand(get_native(), should_expand == TRUE);
     }
 
+    void Widget::set_expand(bool both)
+    {
+        if (warn_if_nullptr("set_expand"))
+            return;
+
+        gtk_widget_set_hexpand(get_native(), both == TRUE);
+        gtk_widget_set_vexpand(get_native(), both == TRUE);
+    }
+
     void Widget::set_halign(GtkAlign alignment)
     {
         if (warn_if_nullptr("set_halign"))
@@ -149,6 +158,15 @@ namespace mousetrap
             return;
 
         gtk_widget_set_valign(get_native(), alignment);
+    }
+
+    void Widget::set_align(GtkAlign both)
+    {
+        if (warn_if_nullptr("set_align"))
+            return;
+
+        gtk_widget_set_halign(get_native(), both);
+        gtk_widget_set_valign(get_native(), both);
     }
 
     void Widget::set_size_request(Vector2f size)

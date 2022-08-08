@@ -7,6 +7,7 @@
 
 #include <include/gl_area.hpp>
 #include <include/toggle_button.hpp>
+#include <include/brush.hpp>
 
 namespace mousetrap
 {
@@ -17,7 +18,7 @@ namespace mousetrap
             ~BrushDesigner();
 
             GtkWidget* get_native() {
-                return _main_over->get_native();
+                return _main->get_native();
             }
 
         private:
@@ -25,9 +26,14 @@ namespace mousetrap
             static void on_pointer_motion(GtkWidget *widget, GdkEventMotion *event, BrushDesigner* instance);
             static void on_mouse_release(GtkWidget* widget, GdkEventButton* event, BrushDesigner* instance);
             
-            static void on_button_toggled(GtkToggleButton* button, BrushDesigner* instance);
+            static void on_draw_erase_toggle(GtkToggleButton* button, BrushDesigner* instance);
+            static void on_crosshair_toggle(GtkToggleButton* button, BrushDesigner* instance);
+            static void on_clear_clicked(GtkButton* button, BrushDesigner* instance);
             static void on_scale_value_changed(GtkRange* range, BrushDesigner* instance);
-            
+
+            static void on_import(void*, BrushDesigner* instance);
+            static void on_export(void*, BrushDesigner* instance);
+
             bool _button_active = false;
 
             enum DrawingMode : bool
@@ -36,8 +42,8 @@ namespace mousetrap
                 DRAW = true
             };
 
-            static inline const std::string _draw_mode_label =  "DRAW ";
-            static inline const std::string _erase_mode_label = "ERASE";
+            std::string to_string();
+            void from_string(const std::string&);
 
             struct RenderArea : public GLArea
             {
@@ -58,24 +64,34 @@ namespace mousetrap
                 std::vector<Shape*> _squares;
                 std::vector<Shape*> _lines;
                 Shape* _background;
+                Shape* _center_line_v;
+                Shape* _center_line_h;
 
                 std::set<Shape*> _already_modified; // resets after button release
             };
 
             RenderArea* _draw_area;
+            GtkAspectFrame* _draw_area_aspect_frame;
 
             Scale* _alpha_scale;
             ToggleButton* _draw_erase_toggle;
+            ToggleButton* _show_crosshair_toggle;
+            Button* _clear;
+
+            static inline const std::string _draw_toggle_active_tooltip = "draw";
+            static inline const std::string _draw_toggle_inactive_tooltip = "erase";
+
+            static inline const std::string _crosshair_toggle_active_tooltip = "hide crosshair";
+            static inline const std::string _crosshair_toggle_inactive_tooltip = "show crosshair";
 
             Entry* _brush_name;
             Button* _import_button;
             Button* _export_button;
 
-            Box* _name_import_export_hbox;
-            Box* _toggle_alpha_hbox;
+            Box* _top_box;
+            Box* _bottom_box;
 
-            Overlay* _main_under; // import export over area
-            Overlay* _main_over;  // toggle alpha over (import export over area)
+            Box* _main;
     };
 }
 
@@ -137,8 +153,18 @@ namespace mousetrap
 
         _background = new Shape();
         _background->as_rectangle({0, 0}, {1, 1});
-        _background->set_color(RGBA(1, 1, 1, 0.5));
+        _background->set_color(RGBA(0.5, 0.5, 0.5, 1));
         add_render_task(_background);
+
+        float center_line_value = 0.9;
+
+        _center_line_v = new Shape();
+        _center_line_v->as_line({0.5, 0}, {0.5, 1});
+        _center_line_v->set_color(RGBA(center_line_value, center_line_value, center_line_value, 1));
+
+        _center_line_h = new Shape();
+        _center_line_h->as_line({0, 0.5}, {1, 0.5});
+        _center_line_h->set_color(RGBA(center_line_value, center_line_value, center_line_value, 1));
 
         for (auto* s : _squares)
             add_render_task(s);
@@ -149,11 +175,13 @@ namespace mousetrap
             add_render_task(l);
         }
 
+        add_render_task(_center_line_v);
+        add_render_task(_center_line_h);
     }
 
     void BrushDesigner::RenderArea::on_resize(GtkGLArea* area, int w, int h)
     {
-        _size = Vector2f(w, h);
+        _size = {w, h};
         queue_render();
     }
 
@@ -199,6 +227,26 @@ namespace mousetrap
         }
     }
 
+    std::string BrushDesigner::to_string()
+    {
+        std::vector<float> values;
+        values.reserve(_draw_area->_squares.size());
+
+        for (auto* s : _draw_area->_squares)
+            values.push_back(s->get_vertex_color(0).a);
+
+        auto out = Brush(values);
+        return _brush_name->get_text() + " = " + out.to_string();
+    }
+
+    void BrushDesigner::from_string(const std::string& string)
+    {
+        auto brush = Brush();
+        brush.create_from_string(string);
+
+        std::cerr << "[WARNING] In BrushDesigner::from_string: TODO" << std::endl;
+    }
+
     void BrushDesigner::on_mouse_press(GtkWidget* widget, GdkEventButton* event, BrushDesigner* instance)
     {
         if (event->button == 1)
@@ -230,18 +278,44 @@ namespace mousetrap
         }
     }
 
-    void BrushDesigner::on_button_toggled(GtkToggleButton* button, BrushDesigner* instance)
+    void BrushDesigner::on_draw_erase_toggle(GtkToggleButton* button, BrushDesigner* instance)
     {
         if (gtk_toggle_button_get_active(button))
         {
             instance->_draw_area->_mode = ERASE;
-            instance->_draw_erase_toggle->set_label(_erase_mode_label);
+            instance->_draw_erase_toggle->set_tooltip_text(_draw_toggle_active_tooltip);
         }
         else
         {
             instance->_draw_area->_mode = DRAW;
-            instance->_draw_erase_toggle->set_label(_draw_mode_label);
+            instance->_draw_erase_toggle->set_tooltip_text(_draw_toggle_inactive_tooltip);
         }
+    }
+
+    void BrushDesigner::on_crosshair_toggle(GtkToggleButton* button, BrushDesigner* instance)
+    {
+        if (gtk_toggle_button_get_active(button))
+        {
+            auto color = instance->_draw_area->_center_line_h->get_vertex_color(0);
+            color.a = 1;
+            instance->_draw_area->_center_line_h->set_color(color);
+            instance->_draw_area->_center_line_v->set_color(color);
+            instance->_show_crosshair_toggle->set_tooltip_text(_crosshair_toggle_inactive_tooltip);
+        }
+        else
+        {
+            auto color = instance->_draw_area->_center_line_h->get_vertex_color(0);
+            color.a = 0;
+            instance->_draw_area->_center_line_h->set_color(color);
+            instance->_draw_area->_center_line_v->set_color(color);
+            instance->_show_crosshair_toggle->set_tooltip_text(_crosshair_toggle_inactive_tooltip);
+        }
+    }
+
+    void BrushDesigner::on_clear_clicked(GtkButton* button, BrushDesigner* instance)
+    {
+        for (auto* s : instance->_draw_area->_squares)
+            s->set_color(RGBA(0, 0, 0, 0));
     }
 
     void BrushDesigner::on_scale_value_changed(GtkRange* range, BrushDesigner* instance)
@@ -249,18 +323,25 @@ namespace mousetrap
         instance->_draw_area->_alpha = gtk_range_get_value(range);
     }
 
+    void BrushDesigner::on_import(void*, BrushDesigner* instance)
+    {
+        instance->from_string("");
+    }
+
+    void BrushDesigner::on_export(void*, BrushDesigner* instance)
+    {
+        std::cout << instance->to_string() << std::endl;
+    }
+
     BrushDesigner::BrushDesigner(float width, size_t n_cols, size_t n_rows)
     {
-        float margin = width / std::max(n_cols, n_rows);
-        
+        float margin = 0.05 * width;
+
         _draw_area = new RenderArea(n_cols, n_rows);
+        _draw_area->set_expand(true);
 
-        _draw_area->set_hexpand(true);
-        _draw_area->set_vexpand(true);
-        _draw_area->set_size_request(Vector2f(std::max(n_cols * margin, n_rows * margin)));
-
-        _draw_area->set_halign(GTK_ALIGN_CENTER);
-        _draw_area->set_valign(GTK_ALIGN_CENTER);
+        float square_size = std::max<float>(5, 1.f / std::max(n_cols, n_rows));
+        _draw_area->set_size_request({square_size * n_cols, square_size* n_rows});
 
         _draw_area->add_events(GDK_BUTTON_PRESS_MASK);
         _draw_area->add_events(GDK_BUTTON_RELEASE_MASK);
@@ -269,54 +350,90 @@ namespace mousetrap
         _draw_area->connect_signal("motion-notify-event", on_pointer_motion, this);
         _draw_area->connect_signal("button-press-event", on_mouse_press, this);
         _draw_area->connect_signal("button-release-event", on_mouse_release, this);
-        
+
+        _draw_area_aspect_frame = GTK_ASPECT_FRAME(gtk_aspect_frame_new("", 0.5, 0.5, 1, false));
+        gtk_container_add(GTK_CONTAINER(_draw_area_aspect_frame), _draw_area->get_native());
+        gtk_frame_set_shadow_type(GTK_FRAME(_draw_area_aspect_frame), GtkShadowType::GTK_SHADOW_NONE);
+
         _brush_name = new Entry();
-        _brush_name->set_text("new_brush");
-        
+        _brush_name->set_text("untitled.brush");
+        _brush_name->set_hexpand(true);
+        _brush_name->set_halign(GTK_ALIGN_START);
+        _brush_name->set_margin_end(margin);
+
         _import_button = new Button();
         _import_button->set_label("import");
-        
+        _import_button->set_tooltip_text("load from file");
+        _import_button->connect_signal("clicked", on_import, this);
+
         _export_button = new Button();
         _export_button->set_label("export");
-        
-        _name_import_export_hbox = new Box(GTK_ORIENTATION_HORIZONTAL, margin);
-        _name_import_export_hbox->add(_brush_name);
-        _name_import_export_hbox->add(_import_button);
-        _name_import_export_hbox->add(_export_button);
-        _name_import_export_hbox->set_valign(GTK_ALIGN_START);
+        _export_button->set_tooltip_text("save to file");
+        _export_button->connect_signal("clicked", on_export, this);
+
+        _import_button->set_halign(GTK_ALIGN_END);
+        _export_button->set_halign(GTK_ALIGN_END);
+
+        _top_box = new Box(GTK_ORIENTATION_HORIZONTAL, 0);
+        _top_box->add(_brush_name);
+        _top_box->add(_import_button);
+        _top_box->add(_export_button);
+        _top_box->set_valign(GTK_ALIGN_START);
         
         _draw_erase_toggle = new ToggleButton();
+        _draw_erase_toggle->set_label("D/E");
+        _draw_erase_toggle->set_active(false);
+        _draw_erase_toggle->set_tooltip_text(_draw_toggle_inactive_tooltip);
+        _draw_erase_toggle->connect_signal("toggled", on_draw_erase_toggle, this);
 
-        if (_draw_area->_mode == DRAW)
-            _draw_erase_toggle->set_label(_draw_mode_label);
-        else
-            _draw_erase_toggle->set_label(_erase_mode_label);;
+        _show_crosshair_toggle = new ToggleButton();
+        _show_crosshair_toggle->set_label("+");
+        _show_crosshair_toggle->set_active(true);
+        _show_crosshair_toggle->set_tooltip_text(_crosshair_toggle_active_tooltip);
+        _show_crosshair_toggle->connect_signal("toggled", on_crosshair_toggle, this);
 
-        _draw_erase_toggle->set_tooltip_text("Draw / Erase");
-        _draw_erase_toggle->connect_signal("toggled", on_button_toggled, this);
+        _clear = new Button();
+        _clear->set_label("C");
+        _clear->set_tooltip_text("clear");
+        _clear->connect_signal("clicked", on_clear_clicked, this);
         
-        _alpha_scale = new Scale(0, 1, 1.f / 16);
+        _alpha_scale = new Scale(0, 1, 0.1);
         _alpha_scale->set_value(_draw_area->_alpha);
         _alpha_scale->set_tooltip_text("opacity");
         _alpha_scale->set_draw_value(true);
 
+        for (size_t i = 0; i <= 10; ++i)
+        {
+            _alpha_scale->add_mark(i / 10.f, GTK_POS_LEFT);
+            _alpha_scale->add_mark(i / 10.f, GTK_POS_RIGHT);
+        }
+
+        _alpha_scale->set_hexpand(true);
+        _alpha_scale->set_margin_bottom(margin);
+        _alpha_scale->set_valign(GTK_ALIGN_CENTER);
+
         _alpha_scale->set_hexpand(true);
         _alpha_scale->connect_signal("value-changed", on_scale_value_changed, this);
-        
-        _toggle_alpha_hbox = new Box(GTK_ORIENTATION_HORIZONTAL, margin);
-        _toggle_alpha_hbox->add(_draw_erase_toggle);
-        _toggle_alpha_hbox->add(_alpha_scale);
-        _toggle_alpha_hbox->set_valign(GTK_ALIGN_END);
-        _toggle_alpha_hbox->set_margin_end(margin);
-        
-        _main_under = new Overlay();
-        _main_under->set_under(_name_import_export_hbox);
-        _main_under->set_over(_draw_area);
 
-        _main_over = new Overlay();
-        _main_over->set_under(_main_under);
-        _main_over->set_over(_toggle_alpha_hbox);
+        _bottom_box = new Box(GTK_ORIENTATION_HORIZONTAL, 0);
+        _bottom_box->add(_draw_erase_toggle);
+        _bottom_box->set_expand(false);
 
+        _alpha_scale->set_margin_start(margin);
+        _alpha_scale->set_margin_end(margin);
+
+        _bottom_box->add(_alpha_scale);
+        _bottom_box->add(_show_crosshair_toggle);
+        _bottom_box->add(_clear);
+        _bottom_box->set_margin_top(margin);
+
+        _top_box->set_valign(GTK_ALIGN_START);
+        _bottom_box->set_valign(GTK_ALIGN_END);
+
+        _main = new Box(GTK_ORIENTATION_VERTICAL);
+        _main->add(_top_box);
+        _main->add(GTK_WIDGET(_draw_area_aspect_frame));
+        _main->add(_bottom_box);
     }
 
     BrushDesigner::~BrushDesigner()
