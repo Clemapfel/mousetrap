@@ -80,7 +80,7 @@ namespace mousetrap
 
     size_t Image::to_linear_index(size_t x, size_t y)
     {
-        return y * _size.x + x;
+        return y * (_size.y * 4) + x;
     }
 
     void Image::set_pixel(size_t x, size_t y, RGBA color)
@@ -110,11 +110,11 @@ namespace mousetrap
         }
 
         return RGBA
-                (
-                        _data.at(i),
-                        _data.at(i+1),
-                        _data.at(i+2),
-                        _data.at(i+3)
-                );
+        (
+                _data.at(i),
+                _data.at(i+1),
+                _data.at(i+2),
+                _data.at(i+3)
+        );
     }
 }

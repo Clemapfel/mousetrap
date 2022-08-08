@@ -9,6 +9,7 @@
 #include <include/widgets/hsv_triangle_select.hpp>
 #include <include/window.hpp>
 #include <include/widgets/brush_selection.hpp>
+#include <include/widgets/brush_designer.hpp>
 #include <include/image.hpp>
 #include <include/brush.hpp>
 
@@ -17,15 +18,6 @@ using namespace mousetrap;
 
 int main()
 {
-
-    auto brush_str = "Brush(0.121, 0.1414, 0, 1)";
-    auto brush = Brush();
-    brush.create_from_string(brush_str);
-
-    std::cout << brush.to_string() << std::endl;
-
-    return 0;
-
     gtk_init(nullptr, nullptr);
 
     // main window
@@ -57,13 +49,10 @@ int main()
 
     auto brush_selection = BrushSelection();
     brush_selection.set_size_request({200, 200});
-    gtk_container_add(GTK_CONTAINER(main_window), brush_selection.get_native());
+    //gtk_container_add(GTK_CONTAINER(main_window), brush_selection.get_native());
 
-    auto image = Image();
-    image.create_from_file("/home/clem/Workspace/mousetrap/mole.png");
-
-    auto* pixbuf = gtk_image_new_from_pixbuf(image.to_pixbuf());
-    //gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(pixbuf));
+    auto* brush_designer = new BrushDesigner(3, 3);
+    gtk_container_add(GTK_CONTAINER(main_window), brush_designer->get_native());
 
     // render loop
     gtk_widget_show_all(main_window);

@@ -96,7 +96,7 @@ add_library(mousetrap SHARED
     src/toggle_button.inl
 
     include/widgets/color_picker.hpp
-        include/label.hpp src/label.inl include/widgets/hsv_triangle_select.hpp include/widgets/global_state.hpp include/window.hpp include/updatable.hpp include/widgets/brush_selection.hpp include/texture.hpp include/image.hpp src/texture.inl src/image.inl include/brush.hpp include/concepts.hpp)
+        include/label.hpp src/label.inl include/widgets/hsv_triangle_select.hpp include/widgets/global_state.hpp include/window.hpp include/updatable.hpp include/widgets/brush_selection.hpp include/texture.hpp include/image.hpp src/texture.inl src/image.inl include/brush.hpp include/widgets/brush_designer.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

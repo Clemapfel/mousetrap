@@ -13,7 +13,7 @@ namespace mousetrap
     RGBA::operator std::string()
     {
         std::stringstream out;
-        out << "RGBA(" << r << ", " << g << ", " << b << " ," << a << ")";
+        out << "RGBA(" << r << ", " << g << ", " << b << ", " << a << ")";
 
         return out.str();
     }
