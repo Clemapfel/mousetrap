@@ -88,4 +88,9 @@ namespace mousetrap
     {
         return _size;
     }
+
+    GLNativeHandle Texture::get_native_handle() const
+    {
+        return _native_handle;
+    }
 }

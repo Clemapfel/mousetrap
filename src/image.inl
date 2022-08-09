@@ -78,6 +78,11 @@ namespace mousetrap
         return (void*) _data.data();
     }
 
+    size_t Image::get_data_size() const
+    {
+        return _data.size();
+    }
+
     size_t Image::to_linear_index(size_t x, size_t y)
     {
         return y * (_size.y * 4) + x;

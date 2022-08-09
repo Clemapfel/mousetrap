@@ -37,6 +37,8 @@ namespace mousetrap
 
             Vector2i get_size() const;
 
+            GLNativeHandle get_native_handle() const;
+
         private:
             GLNativeHandle _native_handle = 0;
             TextureWrapMode _wrap_mode = STRETCH;

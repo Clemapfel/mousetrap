@@ -19,6 +19,8 @@ namespace mousetrap
             void create_from_pixbuf(GdkPixbuf*);
 
             void* data() const;
+            size_t get_data_size() const;
+
             GdkPixbuf* to_pixbuf() const;
 
             Vector2i get_size() const;
