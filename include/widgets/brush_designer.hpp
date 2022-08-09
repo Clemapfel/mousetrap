@@ -8,6 +8,7 @@
 #include <include/gl_area.hpp>
 #include <include/toggle_button.hpp>
 #include <include/brush.hpp>
+#include <include/frame.hpp>
 
 #include <eigen3/Eigen/Dense>
 #include <unordered_set>
@@ -77,7 +78,7 @@ namespace mousetrap
             };
 
             RenderArea* _draw_area;
-            GtkAspectFrame* _draw_area_aspect_frame;
+            Frame* _draw_area_aspect_frame;
 
             Scale* _alpha_scale;
             ToggleButton* _draw_erase_toggle;
@@ -402,9 +403,9 @@ namespace mousetrap
         _draw_area->connect_signal("button-press-event", on_mouse_press, this);
         _draw_area->connect_signal("button-release-event", on_mouse_release, this);
 
-        _draw_area_aspect_frame = GTK_ASPECT_FRAME(gtk_aspect_frame_new("", 0.5, 0.5, 1, false));
-        gtk_container_add(GTK_CONTAINER(_draw_area_aspect_frame), _draw_area->get_native());
-        gtk_frame_set_shadow_type(GTK_FRAME(_draw_area_aspect_frame), GtkShadowType::GTK_SHADOW_NONE);
+        _draw_area_aspect_frame = new Frame(1);
+        _draw_area_aspect_frame->add(_draw_area->get_native());
+        _draw_area_aspect_frame->set_shadow_type(GtkShadowType::GTK_SHADOW_NONE);
 
         _brush_name = new Entry();
         _brush_name->set_text("untitled.brush");
@@ -483,7 +484,7 @@ namespace mousetrap
 
         _main = new Box(GTK_ORIENTATION_VERTICAL);
         _main->add(_top_box);
-        _main->add(GTK_WIDGET(_draw_area_aspect_frame));
+        _main->add(GTK_WIDGET(_draw_area_aspect_frame->get_native()));
         _main->add(_bottom_box);
     }
 
