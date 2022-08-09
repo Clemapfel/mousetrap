@@ -10,6 +10,7 @@
 #include <include/window.hpp>
 #include <include/widgets/brush_selection.hpp>
 #include <include/widgets/brush_designer.hpp>
+#include <include/widgets/canvas.hpp>
 #include <include/image.hpp>
 #include <include/brush.hpp>
 
@@ -52,7 +53,10 @@ int main()
     //gtk_container_add(GTK_CONTAINER(main_window), brush_selection.get_native());
 
     auto* brush_designer = new BrushDesigner(300, 16, 16);
-    gtk_container_add(GTK_CONTAINER(main_window), brush_designer->get_native());
+    //gtk_container_add(GTK_CONTAINER(main_window), brush_designer->get_native());
+
+    auto* canvas = new Canvas(64, 64);
+    gtk_container_add(GTK_CONTAINER(main_window), canvas->get_native());
 
     // render loop
     gtk_widget_show_all(main_window);

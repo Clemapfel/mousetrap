@@ -6,9 +6,6 @@ in vec3 _vertex_position;
 
 out vec4 _fragment_color;
 
-uniform int _texture_set;
-uniform sampler2D _texture;
-
 uniform vec2 _canvas_size;
 
 void main()

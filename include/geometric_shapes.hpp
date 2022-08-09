@@ -146,7 +146,7 @@ namespace mousetrap
             int y = pos.y;
 
             bool north = is_present(x, y - 1);
-            bool north_east = is_present(x + 1, y - 1);
+            bool nort_east = is_present(x + 1, y - 1);
             bool east = is_present(x + 1, y);
             bool south_east = is_present(x + 1, y + 1);
             bool south = is_present(x, y + 1);

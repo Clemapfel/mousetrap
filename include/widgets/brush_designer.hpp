@@ -243,9 +243,9 @@ namespace mousetrap
 
         std::vector<Vector2i> to_switch_pre = {};
 
-        for (int x = 0; x < _w; ++x)
+        for (int x = 0; x < int(_w); ++x)
         {
-            for (int y = 0; y < _h; ++y)
+            for (int y = 0; y < int(_h); ++y)
             {
                 auto* s = _squares(x, y);
                 if (_already_modified.find(s) != _already_modified.end())
