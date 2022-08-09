@@ -9,6 +9,9 @@
 #include <include/toggle_button.hpp>
 #include <include/brush.hpp>
 
+#include <eigen3/Eigen/Dense>
+#include <unordered_set>
+
 namespace mousetrap
 {
     class BrushDesigner : public Widget
@@ -63,7 +66,8 @@ namespace mousetrap
                 size_t _w, _h;
                 Vector2f _size = {1, 1};
 
-                std::vector<Shape*> _squares;
+                Eigen::MatrixX<Shape*> _squares;
+
                 std::vector<Shape*> _lines;
                 Shape* _background;
                 Shape* _center_line_v;
@@ -114,15 +118,16 @@ namespace mousetrap
 
         Vector2f size = {1 / float(_w), 1 / float(_h)};
 
-        _squares.reserve(_w * _h);
+        _squares.resize(_w, _h);
 
         for (size_t y = 0; y < _h; ++y)
         {
             for (size_t x = 0; x < _w; ++x)
             {
-                _squares.push_back(new Shape());
-                _squares.back()->as_rectangle({x * size.x, y * size.y}, {size.x, size.y});
-                _squares.back()->set_color(RGBA(0, 0, 0, 0));
+                auto* shape = new Shape();
+                _squares(x, y) = shape;
+                shape->as_rectangle({x * size.x, y * size.y}, {size.x, size.y});
+                shape->set_color(RGBA(0, 0, 0, 0));
             }
         }
 
@@ -168,8 +173,8 @@ namespace mousetrap
         _center_line_h->as_line({0, 0.5}, {1, 0.5});
         _center_line_h->set_color(RGBA(center_line_value, center_line_value, center_line_value, 1));
 
-        for (auto* s : _squares)
-            add_render_task(s);
+        for (size_t i = 0; i < static_cast<size_t>(_squares.size()); ++i)
+            add_render_task(_squares.data()[i]);
 
         for (auto* l : _lines)
         {
@@ -189,8 +194,8 @@ namespace mousetrap
 
     BrushDesigner::RenderArea::~RenderArea()
     {
-        for (auto* s : _squares)
-            delete s;
+        for (size_t i = 0; i < _w * _h; ++i)
+            delete _squares.data()[i];
 
         for (auto* l : _lines)
             delete l;
@@ -205,8 +210,9 @@ namespace mousetrap
         float x_bounds = 1.f / _w;
         float y_bounds = 1.f / _h;
 
-        for (auto* s : _squares)
+        for (size_t i = 0; i < static_cast<size_t>(_squares.size()); ++i)
         {
+            auto* s = _squares.data()[i];
             auto top_left = s->get_vertex_position(0);
 
             if (_already_modified.find(s) != _already_modified.end())
@@ -234,26 +240,34 @@ namespace mousetrap
         line.a /= _size;
         line.b /= _size;
 
-        std::vector<Shape*> modified;
+        std::vector<Vector2i> to_switch_pre = {};
 
-        for (auto* s : _squares)
+        for (int x = 0; x < _w; ++x)
         {
-            if (_already_modified.find(s) != _already_modified.end())
-                continue;
-
-            if (intersecting(line, Rectangle{s->get_top_left(), s->get_size()}))
+            for (int y = 0; y < _h; ++y)
             {
-                auto color = s->get_vertex_color(0);
+                auto* s = _squares(x, y);
+                if (_already_modified.find(s) != _already_modified.end())
+                    continue;
 
-                if (_mode == ERASE)
-                    color.a = 0;
-                else
-                    color.a = _alpha;
-
-                s->set_color(color);
-                modified.push_back(s);
-                _already_modified.insert(s);
+                if (intersecting(line, Rectangle{s->get_top_left(), s->get_size()}))
+                    to_switch_pre.push_back(Vector2i(x, y));
             }
+        }
+
+        std::vector<Vector2i> to_switch = to_switch_pre;//smooth_line(to_switch_pre);
+        for (auto& pos : to_switch)
+        {
+            auto* s = _squares(pos.x, pos.y);
+            auto color = s->get_vertex_color(0);
+
+            if (_mode == ERASE)
+                color.a = 0;
+            else
+                color.a = _alpha;
+
+            s->set_color(color);
+            _already_modified.insert(s);
         }
     }
 
@@ -262,8 +276,11 @@ namespace mousetrap
         std::vector<float> values;
         values.reserve(_draw_area->_squares.size());
 
-        for (auto* s : _draw_area->_squares)
+        for (size_t i = 0; i < static_cast<size_t>(_draw_area->_squares.size()); ++i)
+        {
+            auto* s = _draw_area->_squares.data()[i];
             values.push_back(s->get_vertex_color(0).a);
+        }
 
         auto out = Brush(values);
         return _brush_name->get_text() + " = " + out.to_string();
@@ -348,8 +365,8 @@ namespace mousetrap
 
     void BrushDesigner::on_clear_clicked(GtkButton* button, BrushDesigner* instance)
     {
-        for (auto* s : instance->_draw_area->_squares)
-            s->set_color(RGBA(0, 0, 0, 0));
+        for (size_t i = 0; i < static_cast<size_t>(instance->_draw_area->_squares.size()); ++i)
+            instance->_draw_area->_squares.data()[i]->set_color(RGBA(0, 0, 0, 0));
     }
 
     void BrushDesigner::on_scale_value_changed(GtkRange* range, BrushDesigner* instance)

@@ -7,6 +7,8 @@
 
 #include <include/gl_common.hpp>
 
+#include <unordered_set>
+
 namespace mousetrap
 {
     struct Triangle
@@ -128,5 +130,90 @@ namespace mousetrap
             return false;
         else
             return not intersections->empty();
+    }
+
+    std::vector<Vector2i> smooth_line(const std::vector<Vector2i>& in)
+    {
+        std::vector<Vector2i> out;
+
+        auto is_present = [&](int x, int y) -> bool {
+            return std::find(out.begin(), out.end(), Vector2i(x, y)) != out.end();
+        };
+
+        for (auto& pos : in)
+        {
+            int x = pos.x;
+            int y = pos.y;
+
+            bool north = is_present(x, y - 1);
+            bool north_east = is_present(x + 1, y - 1);
+            bool east = is_present(x + 1, y);
+            bool south_east = is_present(x + 1, y + 1);
+            bool south = is_present(x, y + 1);
+            bool south_west = is_present(x - 1, y + 1);
+            bool west = is_present(x - 1, y);
+            bool north_west = is_present(x - 1, y + 1);
+
+            if (north or east or south or west)
+                continue;
+
+            out.push_back({x, y});
+        }
+
+        if (out.empty())
+            return out;
+
+        std::vector<Vector2i> fill_in;
+        for (size_t i = 0; i < out.size() - 1; ++i)
+        {
+           auto current = out.at(i);
+           auto next = out.at(i+1);
+
+           if (abs(current.x - next.x) == 1 or abs(current.y - next.y) == 1)
+               continue;
+           else
+           {
+               Vector2i to_push = current;
+
+                if (next.x == current.x)
+                {
+                    if (next.y == current.y + 2)
+                        to_push = {current.x, current.y + 1};
+                    else if (next.y == current.y - 2)
+                        to_push = {current.x, current.y - 1};
+                }
+                else if (next.y == current.y)
+                {
+                    if (next.x == current.x + 2)
+                        to_push = {current.x + 1, current.y};
+                    else if (next.x == current.y - 2)
+                        to_push = {current.x - 1, current.y};
+                }
+                else
+                {
+                    if (next.x > current.x)
+                    {
+                        if (next.y < current.y)
+                            to_push = {current.x + 1, current.y - 1};
+                        else if (next.y > current.y)
+                            to_push = {current.x + 1, current.y + 1};
+                    }
+                    else if (next.x < current.x)
+                    {
+                        if (next.y < current.y)
+                            to_push = {current.x - 1, current.y - 1};
+                        else if (next.y > current.y)
+                            to_push = {current.x - 1, current.y + 1};
+                    }
+                }
+
+               fill_in.push_back(to_push);
+           }
+        }
+
+        for (auto& v : fill_in)
+            out.push_back(v);
+
+        return out;
     }
 }
