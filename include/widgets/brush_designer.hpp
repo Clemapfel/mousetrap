@@ -35,6 +35,7 @@ namespace mousetrap
             static void on_export(void*, BrushDesigner* instance);
 
             bool _button_active = false;
+            Vector2f previous_pointer_pos;
 
             enum DrawingMode : bool
             {
@@ -54,6 +55,7 @@ namespace mousetrap
                 void on_resize(GtkGLArea*, int, int);
 
                 void switch_shape(Vector2f cursor_position);
+                void switch_shape(Line line);
 
                 DrawingMode _mode = DRAW;
                 float _alpha = 1;
@@ -227,6 +229,34 @@ namespace mousetrap
         }
     }
 
+    void BrushDesigner::RenderArea::switch_shape(Line line)
+    {
+        line.a /= _size;
+        line.b /= _size;
+
+        std::vector<Shape*> modified;
+
+        for (auto* s : _squares)
+        {
+            if (_already_modified.find(s) != _already_modified.end())
+                continue;
+
+            if (intersecting(line, Rectangle{s->get_top_left(), s->get_size()}))
+            {
+                auto color = s->get_vertex_color(0);
+
+                if (_mode == ERASE)
+                    color.a = 0;
+                else
+                    color.a = _alpha;
+
+                s->set_color(color);
+                modified.push_back(s);
+                _already_modified.insert(s);
+            }
+        }
+    }
+
     std::string BrushDesigner::to_string()
     {
         std::vector<float> values;
@@ -253,6 +283,8 @@ namespace mousetrap
         {
             instance->_button_active = true;
             Vector2f pos = {event->x, event->y};
+            instance->previous_pointer_pos = pos;
+
             instance->_draw_area->switch_shape(pos);
             instance->_draw_area->queue_render();
         }
@@ -263,6 +295,7 @@ namespace mousetrap
         if (event->button == 1)
         {
             instance->_button_active = false;
+
             instance->_draw_area->_already_modified.clear();
             instance->_draw_area->queue_render();
         }
@@ -273,7 +306,8 @@ namespace mousetrap
         if (instance->_button_active)
         {
             Vector2f pos = {event->x, event->y};
-            instance->_draw_area->switch_shape(pos);
+            instance->_draw_area->switch_shape(Line{instance->previous_pointer_pos, pos});
+            instance->previous_pointer_pos = pos;
             instance->_draw_area->queue_render();
         }
     }
