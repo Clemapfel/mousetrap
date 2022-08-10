@@ -43,6 +43,14 @@ namespace mousetrap
             bool _show_grid = true;     // depends on scale
             std::vector<Shape*> _grid;
 
+            // guides
+            static inline const RGBA _guide_color = RGBA(0.9, 0.9, 0.9, 1);
+            Shape* _canvas_frame;
+            Shape* _half_guide_x;
+            Shape* _half_guide_y;
+
+            std::array<Shape*, 4> _infinity_frame_overlay;
+
             struct Layer
             {
                 Layer(size_t width, size_t height);
@@ -137,10 +145,34 @@ namespace mousetrap
         for (auto* s : instance->_grid)
             s->set_color(RGBA(0, 0, 0, 1));
 
+        // guides
+
+        instance->_canvas_frame = new Shape();
+        float eps = 0.001;
+        instance->_canvas_frame->as_wireframe({
+            {eps, eps}, {eps, 1 - eps}, {1 - eps, 1 - eps}, {1 - eps, eps}
+        });
+        instance->_canvas_frame->set_color(_guide_color);
+
+        // infinity frame overlay
+
+        for (size_t i = 0; i < 4; ++i)
+            instance->_infinity_frame_overlay[i] = new Shape();
+
+        float dist = 100000; // simulates infinite plane
+
+        instance->_infinity_frame_overlay[0]->as_rectangle({-dist, -dist}, {1 + dist, -dist}, {1 + dist, 0}, {-dist, 0});
+        instance->_infinity_frame_overlay[1]->as_rectangle({1, 0}, {1 + dist, 0}, {1 + dist, 1}, {1, 1});
+        instance->_infinity_frame_overlay[2]->as_rectangle({-dist, 1}, {1 + dist, 1}, {1 + dist, 1 + dist}, {-dist, 1 + dist});
+        instance->_infinity_frame_overlay[3]->as_rectangle({-dist, 0}, {0, 0}, {0, 1}, {-dist, 1});
+
+        for (auto* s : instance->_infinity_frame_overlay)
+            s->set_color(RGBA(0, 0, 0, 0));
+
         instance->_layer = new Layer(instance->_resolution.x, instance->_resolution.y);
 
         // TODO
-        instance->_transform.scale(0.25, 0.25);
+        instance->_transform.scale(0.75, 0.75);
     }
 
     gboolean Canvas::on_render(GtkGLArea* area, GdkGLContext*, Canvas* instance)
@@ -173,9 +205,17 @@ namespace mousetrap
         // grid
         if (instance->_grid_enabled and instance->_show_grid)
         {
-            for (auto* line: instance->_grid)
+            for (auto* line : instance->_grid)
                 line->render(noop_shader, instance->_transform);
         }
+
+        instance->_canvas_frame->render(noop_shader, instance->_transform);
+
+        // inf frame
+        glBlendFunc(GL_SRC_COLOR, GL_ZERO); // override source with overlay, which is fully transparent
+
+        for (auto& shape : instance->_infinity_frame_overlay)
+            shape->render(noop_shader, instance->_transform);
 
         glFlush();
         return FALSE;

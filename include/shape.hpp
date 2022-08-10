@@ -27,6 +27,7 @@ namespace mousetrap
 
             void as_triangle(Vector2f a, Vector2f b, Vector2f c);
             void as_rectangle(Vector2f top_left, Vector2f size);
+            void as_rectangle(Vector2f, Vector2f, Vector2f, Vector2f);
             void as_circle(Vector2f center, float radius, size_t n_outer_vertices);
             void as_line(Vector2f a, Vector2f b);
             void as_line_strip(std::vector<Vector2f>);

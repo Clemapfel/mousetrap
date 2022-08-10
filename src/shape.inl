@@ -225,6 +225,25 @@ namespace mousetrap
         initialize();
     }
 
+    void Shape::as_rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d)
+    {
+        _vertices = {
+            Vertex(a.x, a.y),
+            Vertex(b.x, b.y),
+            Vertex(c.x, c.y),
+            Vertex(d.x, d.y)
+        };
+
+        _vertices.at(0).texture_coordinates = {0, 0};
+        _vertices.at(1).texture_coordinates = {1, 0};
+        _vertices.at(2).texture_coordinates = {1, 1};
+        _vertices.at(3).texture_coordinates = {0, 1};
+
+        _indices = {0, 1, 2, 3};
+        _render_type = GL_TRIANGLE_FAN;
+        initialize();
+    }
+
     void Shape::as_line(Vector2f a, Vector2f b)
     {
         _vertices =
