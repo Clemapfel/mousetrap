@@ -85,7 +85,7 @@ namespace mousetrap
 
     size_t Image::to_linear_index(size_t x, size_t y)
     {
-        return y * (_size.y * 4) + x;
+        return y * (_size.x * 4) + (x * 4);
     }
 
     void Image::set_pixel(size_t x, size_t y, RGBA color)

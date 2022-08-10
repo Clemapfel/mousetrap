@@ -57,6 +57,7 @@ int main()
 
     auto* canvas = new Canvas(64, 64);
     gtk_container_add(GTK_CONTAINER(main_window), canvas->get_native());
+    gtk_widget_set_size_request(main_window, 800, 600);
 
     // render loop
     gtk_widget_show_all(main_window);

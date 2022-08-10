@@ -61,6 +61,9 @@ namespace mousetrap
 
         _cache = (float*) cache_maybe;
 
+        for (size_t i = 0; i < width * height * 4; ++i)
+            _cache[i] = 0;
+
         unbind();
     }
 
@@ -76,6 +79,14 @@ namespace mousetrap
 
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _native_handle);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, _size.x, _size.y, 0, GL_RGBA, GL_FLOAT, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        static float zero_border[] = {0.f, 0.f, 0.f, 0.f};
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, zero_border);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
         _bound = true;
     }
 
@@ -99,7 +110,7 @@ namespace mousetrap
 
     size_t PixelBuffer::to_linear_index(size_t x, size_t y)
     {
-        return y * (_size.y * 4) + x;
+        return y * (_size.x * 4) + (x * 4);
     }
 
     void PixelBuffer::set_pixel(size_t x, size_t y, RGBA color)
