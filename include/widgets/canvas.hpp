@@ -27,7 +27,7 @@ namespace mousetrap
             static void on_resize(GtkGLArea*, int, int, Canvas* instance);
             static void on_realize(GtkGLArea*, Canvas* instance);
 
-            static gboolean on_scroll(GtkWidget*, GdkEventScroll*, Canvas* instance);
+            static gboolean on_scroll_event(GtkWidget*, GdkEventScroll*, Canvas* instance);
 
             Vector2ui _resolution;
             GLTransform _transform;
@@ -117,6 +117,9 @@ namespace mousetrap
         _gl_area->connect_signal("resize", on_resize, this);
         _gl_area->connect_signal("render", on_render, this);
         _gl_area->connect_signal("realize", on_realize, this);
+
+        _gl_area->add_events(GDK_SCROLL_MASK);
+        _gl_area->connect_signal("scroll-event", on_scroll_event, this);
     }
 
     void Canvas::set_guide_color(RGBA color)
@@ -281,6 +284,16 @@ namespace mousetrap
             instance->_show_grid = true;
 
         gtk_gl_area_queue_render(instance->_gl_area->_native);
+    }
+
+    gboolean Canvas::on_scroll_event(GtkWidget*, GdkEventScroll* event, Canvas* instance)
+    {
+        Vector2f pointer_coord = {event->x_root, event->y_root}; // relative to widget
+
+        std::cout << "root: " << event->x_root << " " << event->y_root << std::endl;
+        std::cout << "xy  : " << event->x << " " << event->y << std::endl;
+        std::cout << "delta  : " << event->delta_x << " " << event->delta_y << std::endl;
+
     }
 
 }
