@@ -27,13 +27,14 @@ namespace mousetrap
             static void on_resize(GtkGLArea*, int, int, Canvas* instance);
             static void on_realize(GtkGLArea*, Canvas* instance);
 
+            static gboolean on_scroll(GtkWidget*, GdkEventScroll*, Canvas* instance);
+
             Vector2ui _resolution;
             GLTransform _transform;
 
             Frame* _frame;
-            GtkScrolledWindow* _main;
 
-            GtkGLArea* _gl_area;
+            WidgetWrapper<GtkGLArea>* _gl_area;
             Vector2f _widget_size;
 
             Shape* _transparency_tiling;
@@ -44,10 +45,16 @@ namespace mousetrap
             std::vector<Shape*> _grid;
 
             // guides
-            static inline const RGBA _guide_color = RGBA(0.9, 0.9, 0.9, 1);
+            static inline const RGBA _default_guide_color = RGBA(0.9, 0.9, 0.9, 1);
+            void set_guide_color(RGBA);
+
             Shape* _canvas_frame;
-            Shape* _half_guide_x;
-            Shape* _half_guide_y;
+            std::array<Shape*, 2> _half_guides;
+            std::array<Shape*, 4> _third_guides;
+
+            bool _draw_canvas_frame = true;
+            bool _draw_half_guides = true;
+            bool _draw_third_guides = true;
 
             std::array<Shape*, 4> _infinity_frame_overlay;
 
@@ -98,18 +105,29 @@ namespace mousetrap
     Canvas::Canvas(size_t width, size_t height)
         : _resolution(width, height)
     {
-        _gl_area = GTK_GL_AREA(gtk_gl_area_new());
-        gtk_gl_area_set_has_alpha(_gl_area, TRUE);
-        gtk_widget_set_size_request(GTK_WIDGET(_gl_area), width * 3, height * 3);
+        _gl_area = new WidgetWrapper<GtkGLArea>(GTK_GL_AREA(gtk_gl_area_new()));
+        gtk_gl_area_set_has_alpha(_gl_area->_native, TRUE);
+        _gl_area->set_size_request({width * 3, height * 3});
 
         _frame = new Frame(float(width) / height, 0.0, 0.5, true);
-        _frame->add(GTK_WIDGET(_gl_area));
-        _frame->set_shadow_type(GtkShadowType::GTK_SHADOW_NONE);
+        _frame->add(_gl_area->get_native());
+        _frame->set_shadow_type(GtkShadowType::GTK_SHADOW_IN);
         _frame->set_margin(10);
 
-        g_signal_connect(_gl_area, "resize", G_CALLBACK(on_resize), this);
-        g_signal_connect(_gl_area, "render", G_CALLBACK(on_render), this);
-        g_signal_connect(_gl_area, "realize", G_CALLBACK(on_realize), this);
+        _gl_area->connect_signal("resize", on_resize, this);
+        _gl_area->connect_signal("render", on_render, this);
+        _gl_area->connect_signal("realize", on_realize, this);
+    }
+
+    void Canvas::set_guide_color(RGBA color)
+    {
+        _canvas_frame->set_color(color);
+
+        for (auto* s : _half_guides)
+            s->set_color(color);
+
+        for (auto* s : _third_guides)
+            s->set_color(color);
     }
 
     void Canvas::on_realize(GtkGLArea* area, Canvas* instance)
@@ -152,7 +170,22 @@ namespace mousetrap
         instance->_canvas_frame->as_wireframe({
             {eps, eps}, {eps, 1 - eps}, {1 - eps, 1 - eps}, {1 - eps, eps}
         });
-        instance->_canvas_frame->set_color(_guide_color);
+
+        for (size_t i = 0; i < instance->_third_guides.size(); ++i)
+            instance->_half_guides[i] = new Shape();
+
+        instance->_half_guides[0]->as_line({0, 0.5}, {1, 0.5});
+        instance->_half_guides[1]->as_line({0.5, 0}, {0.5, 1});
+
+        for (size_t i = 0; i < instance->_third_guides.size(); ++i)
+            instance->_third_guides[i] = new Shape();
+
+        instance->_third_guides[0]->as_line({1/3.f, 0}, {1/3.f, 1});
+        instance->_third_guides[1]->as_line({2/3.f, 0}, {2/3.f, 1});
+        instance->_third_guides[2]->as_line({0, 1/3.f}, {1, 1/3.f});
+        instance->_third_guides[3]->as_line({0, 2/3.f}, {1, 2/3.f});
+
+        instance->set_guide_color(_default_guide_color);
 
         // infinity frame overlay
 
@@ -209,7 +242,18 @@ namespace mousetrap
                 line->render(noop_shader, instance->_transform);
         }
 
-        instance->_canvas_frame->render(noop_shader, instance->_transform);
+        // guides
+
+        if (instance->_draw_canvas_frame)
+            instance->_canvas_frame->render(noop_shader, instance->_transform);
+
+        if (instance->_draw_half_guides)
+            for (auto* s : instance->_half_guides)
+                s->render(noop_shader, instance->_transform);
+
+        if (instance->_draw_third_guides)
+            for (auto* s : instance->_third_guides)
+                s->render(noop_shader, instance->_transform);
 
         // inf frame
         glBlendFunc(GL_SRC_COLOR, GL_ZERO); // override source with overlay, which is fully transparent
@@ -236,7 +280,7 @@ namespace mousetrap
         else
             instance->_show_grid = true;
 
-        gtk_gl_area_queue_render(instance->_gl_area);
+        gtk_gl_area_queue_render(instance->_gl_area->_native);
     }
 
 }

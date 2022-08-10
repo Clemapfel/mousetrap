@@ -55,6 +55,21 @@ namespace mousetrap
 
             std::map<std::string, size_t> _signal_handlers;
     };
+
+    template<typename T>
+    struct WidgetWrapper : public Widget
+    {
+        WidgetWrapper(T* in)
+            : _native(in)
+        {}
+
+        GtkWidget* get_native() override {
+            return GTK_WIDGET(_native);
+        };
+
+
+        T* _native;
+    };
 };
 
 #include <src/widget.inl>
