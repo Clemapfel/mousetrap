@@ -9,6 +9,7 @@
 #include <include/frame.hpp>
 #include <include/shape.hpp>
 #include <include/get_resource_path.hpp>
+#include <include/pixel_buffer.hpp>
 
 namespace mousetrap
 {
@@ -45,10 +46,9 @@ namespace mousetrap
                 Layer(size_t width, size_t height);
 
                 Shape* _shape;
-                Texture* _texture;
+                static inline Texture* dummy_texture = new Texture();
 
-                GLNativeHandle _pixel_buffer;
-                void* _pixel_buffer_data;
+                PixelBuffer* _pixel_buffer;
             };
 
             Layer* _layer;
@@ -63,9 +63,7 @@ namespace mousetrap
     {
         _shape = new Shape();
         _shape->as_rectangle({0, 0}, {1, 1});
-
-        _texture = new Texture();
-        _shape->set_texture(_texture);
+        _shape->set_texture(dummy_texture);
 
         size_t n = width * height * 4;
 
