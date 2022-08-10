@@ -157,6 +157,9 @@ namespace mousetrap
         glBindVertexArray(_vertex_array_id);
         glDrawElements(_render_type, _indices.size(), GL_UNSIGNED_INT, _indices.data());
 
+        if (_texture != nullptr)
+            _texture->unbind();
+
         glBindVertexArray(0);
         glUseProgram(0);
     }

@@ -74,6 +74,11 @@ namespace mousetrap
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
+    void Texture::unbind()
+    {
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
     void Texture::set_wrap_mode(TextureWrapMode wrap_mode)
     {
         _wrap_mode = wrap_mode;

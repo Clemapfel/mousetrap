@@ -46,8 +46,7 @@ namespace mousetrap
                 Layer(size_t width, size_t height);
 
                 Shape* _shape;
-                static inline Texture* dummy_texture = new Texture();
-
+                Texture* _texture;
                 PixelBuffer* _pixel_buffer;
             };
 
@@ -63,26 +62,19 @@ namespace mousetrap
     {
         _shape = new Shape();
         _shape->as_rectangle({0, 0}, {1, 1});
-        _shape->set_texture(dummy_texture);
 
-        size_t n = width * height * 4;
+        _texture = new Texture();
+        _shape->set_texture(_texture);
 
-        glGenBuffers(1, &_pixel_buffer);
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _pixel_buffer);
-        glBufferData(GL_PIXEL_UNPACK_BUFFER, n * sizeof(float), nullptr, GL_STREAM_DRAW);
-        auto* buffer_data = (float*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+        _pixel_buffer = new PixelBuffer(width, height);
 
-        for (size_t i = 0; i < 4 * n; i += 4)
+        for (size_t i = 0; i < width * height * 4; i += 4)
         {
-            buffer_data[i] = rand() / float(RAND_MAX);
-            buffer_data[i+1] = rand() / float(RAND_MAX);
-            buffer_data[i+2] = rand() / float(RAND_MAX);
-            buffer_data[i+3] = 1;
+            _pixel_buffer->set_pixel(i, HSVA(rand() / float(RAND_MAX), 1, 1, 0.2));
         }
 
-        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+        _pixel_buffer->flush();
+        _pixel_buffer->unbind();
     }
 
     Canvas::Canvas(size_t width, size_t height)
@@ -132,10 +124,7 @@ namespace mousetrap
         for (auto* s : instance->_grid)
             s->set_color(RGBA(0, 0, 0, 1));
 
-        // TODO
         instance->_layer = new Layer(instance->_resolution.x, instance->_resolution.y);
-        // TODO
-
     }
 
     gboolean Canvas::on_render(GtkGLArea* area, GdkGLContext*, Canvas* instance)
@@ -155,14 +144,17 @@ namespace mousetrap
         glUseProgram(instance->_transparency_tiling_shader->get_program_id());
         instance->_transparency_tiling_shader->set_uniform_vec2("_canvas_size", instance->_widget_size);
         instance->_transparency_tiling->render(*(instance->_transparency_tiling_shader), noop_transform);
-
+        glUseProgram(0);
         // layers
 
-        // TODO
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, instance->_layer->_pixel_buffer);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, instance->_resolution.x, instance->_resolution.y, 0, GL_RGBA, GL_FLOAT, 0);
 
+        // TODO
+        instance->_layer->_texture->bind();
+        instance->_layer->_pixel_buffer->bind();
         instance->_layer->_shape->render(noop_shader, noop_transform);
+        instance->_layer->_pixel_buffer->unbind();
+        instance->_layer->_texture->unbind();
+
         // TODO
         // grid
 

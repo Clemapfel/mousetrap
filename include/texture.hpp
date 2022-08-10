@@ -28,6 +28,7 @@ namespace mousetrap
             ~Texture();
 
             void bind(size_t texture_unit = 0);
+            void unbind();
 
             void create_from_file(const std::string& path);
             void create_from_image(const Image&);
