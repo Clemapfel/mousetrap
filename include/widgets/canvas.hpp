@@ -10,6 +10,7 @@
 #include <include/shape.hpp>
 #include <include/get_resource_path.hpp>
 #include <include/pixel_buffer.hpp>
+#include <include/scrollbar.hpp>
 
 namespace mousetrap
 {
@@ -19,7 +20,7 @@ namespace mousetrap
             Canvas(size_t width, size_t height);
 
             GtkWidget* get_native() override {
-                return GTK_WIDGET(_frame->get_native());
+                return GTK_WIDGET(_scrollbar_overlay->get_native());
             }
 
         private:
@@ -27,12 +28,31 @@ namespace mousetrap
             static void on_resize(GtkGLArea*, int, int, Canvas* instance);
             static void on_realize(GtkGLArea*, Canvas* instance);
 
+            static inline float scroll_speed_factor = 0.1;
+            static inline bool scroll_y_inverted = false;
+            static inline bool scroll_x_inverted = true;
             static gboolean on_scroll_event(GtkWidget*, GdkEventScroll*, Canvas* instance);
 
+            static void on_horizontal_scroll_value_changed(GtkRange* range, Canvas* instance);
+            static void on_vertical_scroll_value_changed(GtkRange* range, Canvas* instance);
+
             Vector2ui _resolution;
-            GLTransform _transform;
+            
+            // transform
+            void translate_transform(float x, float y, bool update_gui);
+            Vector2f _translation_offset = {0, 0};
+            
+            // containers
 
             Frame* _frame;
+            Overlay* _scrollbar_overlay;
+
+            Box* _scrollbar_box;
+
+            static inline const float max_scroll_value = 1.9;
+
+            Scrollbar* _scrollbar_horizontal;
+            Scrollbar* _scrollbar_vertical;
 
             WidgetWrapper<GtkGLArea>* _gl_area;
             Vector2f _widget_size;
@@ -40,7 +60,7 @@ namespace mousetrap
             Shape* _transparency_tiling;
             Shader* _transparency_tiling_shader;
 
-            bool _grid_enabled = true; // application interface
+            bool _grid_enabled = false; // application interface
             bool _show_grid = true;     // depends on scale
             std::vector<Shape*> _grid;
 
@@ -52,9 +72,9 @@ namespace mousetrap
             std::array<Shape*, 2> _half_guides;
             std::array<Shape*, 4> _third_guides;
 
-            bool _draw_canvas_frame = true;
-            bool _draw_half_guides = true;
-            bool _draw_third_guides = true;
+            bool _draw_canvas_frame = false;
+            bool _draw_half_guides = false;
+            bool _draw_third_guides = false;
 
             std::array<Shape*, 4> _infinity_frame_overlay;
 
@@ -105,20 +125,43 @@ namespace mousetrap
     Canvas::Canvas(size_t width, size_t height)
         : _resolution(width, height)
     {
+        float scrollbar_width = 15;
+
         _gl_area = new WidgetWrapper<GtkGLArea>(GTK_GL_AREA(gtk_gl_area_new()));
         gtk_gl_area_set_has_alpha(_gl_area->_native, TRUE);
         _gl_area->set_size_request({width * 3, height * 3});
 
-        _frame = new Frame(float(width) / height, 0.0, 0.5, true);
+        _frame = new Frame(float(width) / height, 0.5, 0.5, false);
         _frame->add(_gl_area->get_native());
-        _frame->set_shadow_type(GtkShadowType::GTK_SHADOW_IN);
-        _frame->set_margin(10);
+        _frame->set_shadow_type(GtkShadowType::GTK_SHADOW_OUT);
+        _frame->set_margin(scrollbar_width);
+
+        // scroll bars
+      
+        _scrollbar_vertical = new Scrollbar(Adjustment(0, -max_scroll_value, +max_scroll_value, 0.001, 0, 0), GTK_ORIENTATION_VERTICAL);
+        _scrollbar_horizontal = new Scrollbar(Adjustment(0, -max_scroll_value, +max_scroll_value, 0.001, 0, 0), GTK_ORIENTATION_HORIZONTAL);
+
+        _scrollbar_horizontal->set_valign(GTK_ALIGN_END);
+        _scrollbar_horizontal->set_size_request({1, scrollbar_width});
+        _scrollbar_vertical->set_halign(GTK_ALIGN_END);
+        _scrollbar_vertical->set_size_request({1, scrollbar_width});
+
+        _scrollbar_overlay = new Overlay();
+        _scrollbar_overlay->set_under(_frame);
+        _scrollbar_overlay->set_over(_scrollbar_horizontal);
+        _scrollbar_overlay->set_over(_scrollbar_vertical);
+
+        _scrollbar_horizontal->connect_signal("value-changed", on_horizontal_scroll_value_changed, this);
+        _scrollbar_vertical->connect_signal("value-changed", on_vertical_scroll_value_changed, this);
+
+        // gl area
 
         _gl_area->connect_signal("resize", on_resize, this);
         _gl_area->connect_signal("render", on_render, this);
         _gl_area->connect_signal("realize", on_realize, this);
 
-        _gl_area->add_events(GDK_SCROLL_MASK);
+        //_gl_area->add_events(GDK_SCROLL_MASK);
+        _gl_area->add_events(GDK_SMOOTH_SCROLL_MASK);
         _gl_area->connect_signal("scroll-event", on_scroll_event, this);
     }
 
@@ -208,7 +251,7 @@ namespace mousetrap
         instance->_layer = new Layer(instance->_resolution.x, instance->_resolution.y);
 
         // TODO
-        instance->_transform.scale(0.75, 0.75);
+        //instance->_transform.scale(0.75, 0.75);
     }
 
     gboolean Canvas::on_render(GtkGLArea* area, GdkGLContext*, Canvas* instance)
@@ -222,6 +265,9 @@ namespace mousetrap
 
         static auto noop_transform = GLTransform();
         static auto noop_shader = Shader();
+        
+        auto transform = GLTransform();
+        transform.translate(instance->_translation_offset);
 
         // tiling
 
@@ -233,7 +279,7 @@ namespace mousetrap
         // TODO
         instance->_layer->_texture->bind();
         instance->_layer->_pixel_buffer->bind();
-        instance->_layer->_shape->render(noop_shader, instance->_transform);
+        instance->_layer->_shape->render(noop_shader, transform);
         instance->_layer->_pixel_buffer->unbind();
         instance->_layer->_texture->unbind();
         // TODO
@@ -242,27 +288,27 @@ namespace mousetrap
         if (instance->_grid_enabled and instance->_show_grid)
         {
             for (auto* line : instance->_grid)
-                line->render(noop_shader, instance->_transform);
+                line->render(noop_shader, transform);
         }
 
         // guides
 
         if (instance->_draw_canvas_frame)
-            instance->_canvas_frame->render(noop_shader, instance->_transform);
+            instance->_canvas_frame->render(noop_shader, transform);
 
         if (instance->_draw_half_guides)
             for (auto* s : instance->_half_guides)
-                s->render(noop_shader, instance->_transform);
+                s->render(noop_shader, transform);
 
         if (instance->_draw_third_guides)
             for (auto* s : instance->_third_guides)
-                s->render(noop_shader, instance->_transform);
+                s->render(noop_shader, transform);
 
         // inf frame
         glBlendFunc(GL_SRC_COLOR, GL_ZERO); // override source with overlay, which is fully transparent
 
         for (auto& shape : instance->_infinity_frame_overlay)
-            shape->render(noop_shader, instance->_transform);
+            shape->render(noop_shader, transform);
 
         glFlush();
         return FALSE;
@@ -290,10 +336,48 @@ namespace mousetrap
     {
         Vector2f pointer_coord = {event->x_root, event->y_root}; // relative to widget
 
-        std::cout << "root: " << event->x_root << " " << event->y_root << std::endl;
-        std::cout << "xy  : " << event->x << " " << event->y << std::endl;
-        std::cout << "delta  : " << event->delta_x << " " << event->delta_y << std::endl;
+        double x, y;
+        gdk_event_get_scroll_deltas((GdkEvent*) event, &x, &y);
 
+        instance->_translation_offset += Vector2f{
+               scroll_speed_factor * (scroll_x_inverted ? -1 : 1) * x,
+               scroll_speed_factor * (scroll_y_inverted ? -1 : 1) * y
+        };
+
+        instance->_translation_offset = glm::clamp(instance->_translation_offset,
+               Vector2f(-max_scroll_value, -max_scroll_value),
+               Vector2f(+max_scroll_value, +max_scroll_value)
+        );
+
+        instance->_scrollbar_horizontal->set_all_signals_blocked(true);
+        instance->_scrollbar_vertical->set_all_signals_blocked(true);
+
+        instance->_scrollbar_horizontal->get_adjustment().set_value(
+                (scroll_x_inverted ? -1 : 1) * instance->_translation_offset.x
+        );
+
+        instance->_scrollbar_vertical->get_adjustment().set_value(
+                (scroll_y_inverted ? -1 : 1) * instance->_translation_offset.y
+        );
+
+        instance->_scrollbar_horizontal->set_all_signals_blocked(false);
+        instance->_scrollbar_vertical->set_all_signals_blocked(false);
+
+        gtk_gl_area_queue_render(instance->_gl_area->_native);
+        return false;
     }
 
+    void Canvas::on_horizontal_scroll_value_changed(GtkRange* range, Canvas* instance)
+    {
+        auto value = gtk_range_get_value(range);
+        instance->_translation_offset.x = (scroll_x_inverted ? -1 : 1) * value;
+        gtk_gl_area_queue_render(instance->_gl_area->_native);
+    }
+
+    void Canvas::on_vertical_scroll_value_changed(GtkRange* range, Canvas* instance)
+    {
+        auto value = gtk_range_get_value(range);
+        instance->_translation_offset.y = (scroll_y_inverted ? -1 : 1) * value;
+        gtk_gl_area_queue_render(instance->_gl_area->_native);
+    }
 }

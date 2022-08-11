@@ -13,7 +13,7 @@ namespace mousetrap
     Frame::Frame(float ratio, float x_align, float y_align, bool obey_child)
             : _ratio(ratio), _x_align(x_align), _y_align(y_align), _obey_child(obey_child)
     {
-        _native = GTK_ASPECT_FRAME(gtk_aspect_frame_new("", x_align, y_align, ratio, obey_child));
+        _native = GTK_ASPECT_FRAME(gtk_aspect_frame_new(nullptr, x_align, y_align, ratio, obey_child));
     }
 
     void Frame::set_ratio(float new_ratio)
