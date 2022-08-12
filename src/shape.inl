@@ -208,12 +208,12 @@ namespace mousetrap
     void Shape::as_rectangle(Vector2f top_left, Vector2f size)
     {
         _vertices =
-                {
-                        Vertex(top_left.x, top_left.y, _color),
-                        Vertex(top_left.x + size.x, top_left.y, _color),
-                        Vertex(top_left.x + size.x, top_left.y + size.y, _color),
-                        Vertex(top_left.x, top_left.y + size.y, _color)
-                };
+        {
+                Vertex(top_left.x, top_left.y, _color),
+                Vertex(top_left.x + size.x, top_left.y, _color),
+                Vertex(top_left.x + size.x, top_left.y + size.y, _color),
+                Vertex(top_left.x, top_left.y + size.y, _color)
+        };
 
         _vertices.at(0).texture_coordinates = {0, 0};
         _vertices.at(1).texture_coordinates = {1, 0};

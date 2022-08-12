@@ -29,6 +29,8 @@ namespace mousetrap
             static void on_resize(GtkGLArea*, int, int, Canvas* instance);
             static void on_realize(GtkGLArea*, Canvas* instance);
 
+            static void on_pointer_motion(GtkWidget *widget, GdkEventMotion *event, Canvas* instance);
+
             static inline float scroll_speed_factor = 0.1;
             static inline bool scroll_y_inverted = false;
             static inline bool scroll_x_inverted = true;
@@ -90,6 +92,10 @@ namespace mousetrap
 
             // overlay
             std::array<Shape*, 4> _infinity_frame_overlay;
+
+            // cursor
+            bool _selected_pixel_cursor_hidden = false;
+            Shape* _selected_pixel_frame;
 
             // layer
             struct Layer
@@ -173,6 +179,9 @@ namespace mousetrap
 
         _gl_area->add_events(GDK_SMOOTH_SCROLL_MASK);
         _gl_area->connect_signal("scroll-event", on_scroll_event, this);
+
+        _gl_area->add_events(GDK_POINTER_MOTION_MASK);
+        _gl_area->connect_signal("motion-notify-event", on_pointer_motion, this);
     }
 
     Canvas::~Canvas()
@@ -280,6 +289,11 @@ namespace mousetrap
 
         set_grid_color(RGBA(0, 0, 0, 0.5));
 
+        _selected_pixel_frame->as_rectangle(
+            {0.5, 0.5}, {(2.f / _resolution.x) * size.x , (2.f / _resolution.y) * size.y}
+        );
+        _selected_pixel_frame->set_color(RGBA(1, 0, 1, 1));
+
         float eps = 0.001;
         _canvas_frame->as_wireframe({
               {top_left.x + eps, top_left.y + eps},
@@ -368,7 +382,13 @@ namespace mousetrap
         for (size_t i = 0; i < 4; ++i)
             instance->_infinity_frame_overlay[i] = new Shape();
 
+        // selected pixel shape
+        instance->_selected_pixel_frame = new Shape();
+
+        // layer
         instance->_layer = new Layer(instance->_resolution.x, instance->_resolution.y);
+
+        // format
         instance->reformat();
     }
 
@@ -431,6 +451,10 @@ namespace mousetrap
 
         for (auto& shape : instance->_infinity_frame_overlay)
             shape->render(noop_shader, transform);
+
+        // cursor
+        if (not instance->_selected_pixel_cursor_hidden)
+            instance->_selected_pixel_frame->render(noop_shader, noop_transform);
 
         glFlush();
         return FALSE;
@@ -505,5 +529,28 @@ namespace mousetrap
         auto value = gtk_range_get_value(range);
         instance->_translation_offset.y = (scroll_y_inverted ? -1 : 1) * value;
         gtk_gl_area_queue_render(instance->_gl_area->_native);
+    }
+
+    void Canvas::on_pointer_motion(GtkWidget* widget, GdkEventMotion* event, Canvas* instance)
+    {
+        Vector2f pos = Vector2f{event->x, event->y} / instance->_widget_size;
+
+        auto layer_shape = Rectangle {
+            instance->_layer->_shape->get_top_left(),
+            instance->_layer->_shape->get_size()
+        };
+
+        if (is_point_in_rectangle(pos, layer_shape))
+        {
+            if (instance->_selected_pixel_cursor_hidden)
+            {
+                instance->_selected_pixel_cursor_hidden = false;
+                instance->_selected_pixel_frame->set_centroid(pos);
+                gtk_gl_area_queue_render(instance->_gl_area->_native);
+            }
+        }
+        else
+            instance->_selected_pixel_cursor_hidden = true;
+
     }
 }
