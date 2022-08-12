@@ -195,9 +195,9 @@ namespace mousetrap
     {
         _vertices =
         {
-            Vertex(a.x, a.y),
-            Vertex(b.x, b.y),
-            Vertex(c.x, c.y)
+            Vertex(a.x, a.y, _color),
+            Vertex(b.x, b.y, _color),
+            Vertex(c.x, c.y, _color)
         };
 
         _indices = {0, 1, 2};
@@ -209,10 +209,10 @@ namespace mousetrap
     {
         _vertices =
                 {
-                        Vertex(top_left.x, top_left.y),
-                        Vertex(top_left.x + size.x, top_left.y),
-                        Vertex(top_left.x + size.x, top_left.y + size.y),
-                        Vertex(top_left.x, top_left.y + size.y)
+                        Vertex(top_left.x, top_left.y, _color),
+                        Vertex(top_left.x + size.x, top_left.y, _color),
+                        Vertex(top_left.x + size.x, top_left.y + size.y, _color),
+                        Vertex(top_left.x, top_left.y + size.y, _color)
                 };
 
         _vertices.at(0).texture_coordinates = {0, 0};
@@ -228,10 +228,10 @@ namespace mousetrap
     void Shape::as_rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d)
     {
         _vertices = {
-            Vertex(a.x, a.y),
-            Vertex(b.x, b.y),
-            Vertex(c.x, c.y),
-            Vertex(d.x, d.y)
+            Vertex(a.x, a.y, _color),
+            Vertex(b.x, b.y, _color),
+            Vertex(c.x, c.y, _color),
+            Vertex(d.x, d.y, _color)
         };
 
         _vertices.at(0).texture_coordinates = {0, 0};
@@ -248,8 +248,8 @@ namespace mousetrap
     {
         _vertices =
                 {
-                        Vertex(a.x, a.y),
-                        Vertex(b.x, b.y)
+                        Vertex(a.x, a.y, _color),
+                        Vertex(b.x, b.y, _color)
                 };
 
         _indices = {0, 1};
@@ -262,14 +262,15 @@ namespace mousetrap
         const float step = 360.f / n_outer_vertices;
 
         _vertices.clear();
-        _vertices.push_back(Vertex(center.x, center.y));
+        _vertices.push_back(Vertex(center.x, center.y, _color));
 
         for (float angle = 0; angle < 360; angle += step)
         {
             auto as_radians = angle * M_PI / 180.f;
             _vertices.emplace_back(
                     center.x + cos(as_radians) * radius,
-                    center.y + sin(as_radians) * radius
+                    center.y + sin(as_radians) * radius,
+                    _color
             );
         }
 
@@ -291,7 +292,7 @@ namespace mousetrap
         size_t i = 0;
         for (auto& position : positions)
         {
-            _vertices.emplace_back(position.x, position.y);
+            _vertices.emplace_back(position.x, position.y, _color);
             _indices.push_back(i++);
         }
 
@@ -309,7 +310,7 @@ namespace mousetrap
         size_t i = 0;
         for (auto& position : positions)
         {
-            _vertices.emplace_back(position.x, position.y);
+            _vertices.emplace_back(position.x, position.y, _color);
             _indices.push_back(i++);
         }
 
@@ -327,7 +328,7 @@ namespace mousetrap
         size_t i = 0;
         for (auto& position : positions)
         {
-            _vertices.emplace_back(position.x, position.y);
+            _vertices.emplace_back(position.x, position.y, _color);
             _indices.push_back(i++);
         }
 
@@ -343,7 +344,7 @@ namespace mousetrap
         // hard-coded minimum vertex decomposition
 
         auto push_vertex = [&](float x, float y) {
-            _vertices.emplace_back(x, y);
+            _vertices.emplace_back(x, y, _color);
         };
 
         float x = top_left.x;
@@ -426,6 +427,8 @@ namespace mousetrap
 
     void Shape::set_color(RGBA color)
     {
+        _color = color;
+
         for (auto& v : _vertices)
             v.color = color;
 

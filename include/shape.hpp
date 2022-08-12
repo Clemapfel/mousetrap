@@ -69,14 +69,16 @@ namespace mousetrap
         protected:
             struct Vertex
             {
-                Vertex(float x, float y)
-                        : position(x, y, 0), color(1, 1, 1, 1), texture_coordinates(0, 0)
+                Vertex(float x, float y, RGBA rgba)
+                        : position(x, y, 0), color(rgba), texture_coordinates(0, 0)
                 {}
 
                 Vector3f position;
                 RGBA color;
                 Vector2f texture_coordinates;
             };
+
+            RGBA _color = RGBA(1, 1, 1, 1);
 
             std::vector<Vertex> _vertices;
             std::vector<int> _indices;
