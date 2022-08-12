@@ -58,6 +58,7 @@ int main()
 
     auto* canvas = new Canvas(64, 64);
     gtk_container_add(GTK_CONTAINER(main_window), canvas->get_native());
+
     // render loop
     gtk_widget_show_all(main_window);
     gtk_window_present((GtkWindow*) main_window);
