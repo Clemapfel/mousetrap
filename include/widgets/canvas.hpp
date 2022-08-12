@@ -18,6 +18,7 @@ namespace mousetrap
     {
         public:
             Canvas(size_t width, size_t height);
+            ~Canvas();
 
             GtkWidget* get_native() override {
                 return GTK_WIDGET(_scrollbar_overlay->get_native());
@@ -36,17 +37,17 @@ namespace mousetrap
             static void on_horizontal_scroll_value_changed(GtkRange* range, Canvas* instance);
             static void on_vertical_scroll_value_changed(GtkRange* range, Canvas* instance);
 
-            Vector2ui _resolution;
+            void reformat();
+
+            Vector2f _widget_size = {1, 1};
+            Vector2f _resolution;
             
             // transform
             void translate_transform(float x, float y, bool update_gui);
             Vector2f _translation_offset = {0, 0};
             
-            // containers
-
-            Frame* _frame;
+            // scrollbar
             Overlay* _scrollbar_overlay;
-
             Box* _scrollbar_box;
 
             static inline const float max_scroll_value = 1.9;
@@ -54,11 +55,17 @@ namespace mousetrap
             Scrollbar* _scrollbar_horizontal;
             Scrollbar* _scrollbar_vertical;
 
+            // gl area
             WidgetWrapper<GtkGLArea>* _gl_area;
-            Vector2f _widget_size;
 
+            // transparency background
             Shape* _transparency_tiling;
             Shader* _transparency_tiling_shader;
+
+            // grid
+            static inline const RGBA _default_grid_color = RGBA(0.0, 0.0, 0.0, 1);
+            RGBA _grid_color = _default_grid_color;
+            void set_grid_color(RGBA);
 
             bool _grid_enabled = false; // application interface
             bool _show_grid = true;     // depends on scale
@@ -66,6 +73,7 @@ namespace mousetrap
 
             // guides
             static inline const RGBA _default_guide_color = RGBA(0.9, 0.9, 0.9, 1);
+            RGBA _guide_color = _default_grid_color;
             void set_guide_color(RGBA);
 
             Shape* _canvas_frame;
@@ -76,8 +84,10 @@ namespace mousetrap
             bool _draw_half_guides = false;
             bool _draw_third_guides = false;
 
+            // overlay
             std::array<Shape*, 4> _infinity_frame_overlay;
 
+            // layer
             struct Layer
             {
                 Layer(size_t width, size_t height);
@@ -131,13 +141,7 @@ namespace mousetrap
         gtk_gl_area_set_has_alpha(_gl_area->_native, TRUE);
         _gl_area->set_size_request({width * 3, height * 3});
 
-        _frame = new Frame(float(width) / height, 0.5, 0.5, false);
-        _frame->add(_gl_area->get_native());
-        _frame->set_shadow_type(GtkShadowType::GTK_SHADOW_OUT);
-        _frame->set_margin(scrollbar_width);
-
         // scroll bars
-      
         _scrollbar_vertical = new Scrollbar(Adjustment(0, -max_scroll_value, +max_scroll_value, 0.001, 0, 0), GTK_ORIENTATION_VERTICAL);
         _scrollbar_horizontal = new Scrollbar(Adjustment(0, -max_scroll_value, +max_scroll_value, 0.001, 0, 0), GTK_ORIENTATION_HORIZONTAL);
 
@@ -147,26 +151,58 @@ namespace mousetrap
         _scrollbar_vertical->set_size_request({1, scrollbar_width});
 
         _scrollbar_overlay = new Overlay();
-        _scrollbar_overlay->set_under(_frame);
+        _scrollbar_overlay->set_under(_gl_area);
         _scrollbar_overlay->set_over(_scrollbar_horizontal);
         _scrollbar_overlay->set_over(_scrollbar_vertical);
 
         _scrollbar_horizontal->connect_signal("value-changed", on_horizontal_scroll_value_changed, this);
         _scrollbar_vertical->connect_signal("value-changed", on_vertical_scroll_value_changed, this);
 
-        // gl area
+        // shaders
+        _transparency_tiling_shader = new Shader();
+        _transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
 
+        // gl area
         _gl_area->connect_signal("resize", on_resize, this);
         _gl_area->connect_signal("render", on_render, this);
         _gl_area->connect_signal("realize", on_realize, this);
 
-        //_gl_area->add_events(GDK_SCROLL_MASK);
         _gl_area->add_events(GDK_SMOOTH_SCROLL_MASK);
         _gl_area->connect_signal("scroll-event", on_scroll_event, this);
     }
 
+    Canvas::~Canvas()
+    {
+        delete _scrollbar_overlay;
+        delete _scrollbar_box;
+        delete _scrollbar_horizontal;
+        delete _scrollbar_vertical;
+
+        delete _gl_area;
+
+        delete _transparency_tiling;
+        delete _transparency_tiling_shader;
+
+        for (auto* s : _grid)
+            delete s;
+
+        delete _canvas_frame;
+
+        for (auto* s : _half_guides)
+            delete s;
+
+        for (auto* s : _third_guides)
+            delete s;
+
+        for (auto* s : _infinity_frame_overlay)
+            delete s;
+
+        delete _layer;
+    }
+
     void Canvas::set_guide_color(RGBA color)
     {
+        _guide_color = color;
         _canvas_frame->set_color(color);
 
         for (auto* s : _half_guides)
@@ -174,6 +210,81 @@ namespace mousetrap
 
         for (auto* s : _third_guides)
             s->set_color(color);
+    }
+
+    void Canvas::set_grid_color(RGBA color)
+    {
+        _grid_color = color;
+
+        for (auto* s : _grid)
+            s->set_color(color);
+    }
+
+    void Canvas::reformat()
+    {
+        _transparency_tiling->as_rectangle({0, 0}, {1, 1});
+
+        float lower_bound = -1;
+        float upper_bound = +2;
+
+        for (size_t i = 1; i < _resolution.x; ++i)
+        {
+            _grid.at(i)->as_line(
+                {i * (1.f / _resolution.x), 0},
+                {i * (1.f / _resolution.x), 1}
+            );
+        }
+
+        for (size_t i = 1; i < _resolution.x; ++i)
+        {
+            _grid.at(i)->as_line(
+                {0, i * (1.f / _resolution.y)},
+                {1, i * (1.f / _resolution.y)}
+            );
+        }
+
+        float eps = 0.001;
+        _canvas_frame->as_wireframe({
+              {eps, eps}, {eps, 1 - eps}, {1 - eps, 1 - eps}, {1 - eps, eps}
+        });
+
+        _half_guides[0]->as_line({0, 0.5}, {1, 0.5});
+        _half_guides[1]->as_line({0.5, 0}, {0.5, 1});
+
+        _third_guides[0]->as_line({1/3.f, 0}, {1/3.f, 1});
+        _third_guides[1]->as_line({2/3.f, 0}, {2/3.f, 1});
+        _third_guides[2]->as_line({0, 1/3.f}, {1, 1/3.f});
+        _third_guides[3]->as_line({0, 2/3.f}, {1, 2/3.f});
+
+        set_guide_color(_guide_color);
+
+        for (size_t i = 0; i < 4; ++i)
+            _infinity_frame_overlay[i] = new Shape();
+
+        static const float dist = 100000; // simulates infinite plane
+
+        _infinity_frame_overlay[0]->as_rectangle(
+            {-dist, -dist}, {1 + dist, -dist}, {1 + dist, 0}, {-dist, 0}
+        );
+
+        _infinity_frame_overlay[1]->as_rectangle(
+            {1, 0}, {1 + dist, 0}, {1 + dist, 1}, {1, 1}
+        );
+
+        _infinity_frame_overlay[2]->as_rectangle(
+            {-dist, 1}, {1 + dist, 1}, {1 + dist, 1 + dist}, {-dist, 1 + dist}
+        );
+
+        _infinity_frame_overlay[3]->as_rectangle(
+            {-dist, 0}, {0, 0}, {0, 1}, {-dist, 1}
+        );
+
+        for (auto* s : _infinity_frame_overlay)
+            s->set_color(RGBA(0, 0, 0, 0));
+
+        _layer->_shape->as_rectangle(
+            {0, 0}, {1, 1}
+        );
     }
 
     void Canvas::on_realize(GtkGLArea* area, Canvas* instance)
@@ -184,27 +295,12 @@ namespace mousetrap
         assert(instance->_resolution.x > 1 and instance->_resolution.y > 1);
 
         instance->_transparency_tiling = new Shape();
-        instance->_transparency_tiling->as_rectangle({0, 0}, {1, 1});
-
-        instance->_transparency_tiling_shader = new Shader();
-        instance->_transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
-
-        Vector2f one_pixel = {1.f / instance->_resolution.x, 1.f / instance->_resolution.y};
-
-        float lower_bound = -1;
-        float upper_bound = +2;
 
         for (size_t i = 1; i < instance->_resolution.x; ++i)
-        {
             instance->_grid.push_back(new Shape());
-            instance->_grid.back()->as_line({i * one_pixel.x, lower_bound}, {i * one_pixel.x, upper_bound});
-        }
 
         for (size_t i = 1; i < instance->_resolution.y; ++i)
-        {
             instance->_grid.push_back(new Shape());
-            instance->_grid.back()->as_line({lower_bound, i * one_pixel.y}, {upper_bound, i * one_pixel.y});
-        }
 
         for (auto* s : instance->_grid)
             s->set_color(RGBA(0, 0, 0, 1));
@@ -212,46 +308,20 @@ namespace mousetrap
         // guides
 
         instance->_canvas_frame = new Shape();
-        float eps = 0.001;
-        instance->_canvas_frame->as_wireframe({
-            {eps, eps}, {eps, 1 - eps}, {1 - eps, 1 - eps}, {1 - eps, eps}
-        });
 
         for (size_t i = 0; i < instance->_third_guides.size(); ++i)
             instance->_half_guides[i] = new Shape();
 
-        instance->_half_guides[0]->as_line({0, 0.5}, {1, 0.5});
-        instance->_half_guides[1]->as_line({0.5, 0}, {0.5, 1});
-
         for (size_t i = 0; i < instance->_third_guides.size(); ++i)
             instance->_third_guides[i] = new Shape();
-
-        instance->_third_guides[0]->as_line({1/3.f, 0}, {1/3.f, 1});
-        instance->_third_guides[1]->as_line({2/3.f, 0}, {2/3.f, 1});
-        instance->_third_guides[2]->as_line({0, 1/3.f}, {1, 1/3.f});
-        instance->_third_guides[3]->as_line({0, 2/3.f}, {1, 2/3.f});
-
-        instance->set_guide_color(_default_guide_color);
 
         // infinity frame overlay
 
         for (size_t i = 0; i < 4; ++i)
             instance->_infinity_frame_overlay[i] = new Shape();
 
-        float dist = 100000; // simulates infinite plane
-
-        instance->_infinity_frame_overlay[0]->as_rectangle({-dist, -dist}, {1 + dist, -dist}, {1 + dist, 0}, {-dist, 0});
-        instance->_infinity_frame_overlay[1]->as_rectangle({1, 0}, {1 + dist, 0}, {1 + dist, 1}, {1, 1});
-        instance->_infinity_frame_overlay[2]->as_rectangle({-dist, 1}, {1 + dist, 1}, {1 + dist, 1 + dist}, {-dist, 1 + dist});
-        instance->_infinity_frame_overlay[3]->as_rectangle({-dist, 0}, {0, 0}, {0, 1}, {-dist, 1});
-
-        for (auto* s : instance->_infinity_frame_overlay)
-            s->set_color(RGBA(0, 0, 0, 0));
-
         instance->_layer = new Layer(instance->_resolution.x, instance->_resolution.y);
-
-        // TODO
-        //instance->_transform.scale(0.75, 0.75);
+        instance->reformat();
     }
 
     gboolean Canvas::on_render(GtkGLArea* area, GdkGLContext*, Canvas* instance)
@@ -314,8 +384,10 @@ namespace mousetrap
         return FALSE;
     }
 
-    void Canvas::on_resize(GtkGLArea*, int w, int h, Canvas* instance)
+    void Canvas::on_resize(GtkGLArea* area, int w, int h, Canvas* instance)
     {
+        gtk_gl_area_make_current(area);
+
         if (h % 2 != 0)
             h -= 1;
 
@@ -323,6 +395,7 @@ namespace mousetrap
             w -= 1;
 
         instance->_widget_size = {w, h};
+        instance->reformat();
 
         if (std::min(float(w) / instance->_resolution.x, float(h) / instance->_resolution.y) < 7)
             instance->_show_grid = false;
