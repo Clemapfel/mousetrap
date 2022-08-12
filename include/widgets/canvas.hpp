@@ -30,6 +30,7 @@ namespace mousetrap
             static void on_realize(GtkGLArea*, Canvas* instance);
 
             static void on_pointer_motion(GtkWidget *widget, GdkEventMotion *event, Canvas* instance);
+            static gboolean on_frameclock_tick_callback(GtkWidget* widget, GdkFrameClock* frame_clock, Canvas* instance);
 
             static inline float scroll_speed_factor = 0.1;
             static inline bool scroll_y_inverted = false;
@@ -46,6 +47,11 @@ namespace mousetrap
             Vector2f _resolution;
 
             static inline float _scrollbar_size = 15;
+
+            // frame clcok
+            bool _limit_fps = true;
+            static inline size_t _target_fps = 60;
+            GdkFrameClock* _frame_clock;
             
             // transform
             Vector2f _translation_offset = {0, 0};
@@ -182,6 +188,9 @@ namespace mousetrap
 
         _gl_area->add_events(GDK_POINTER_MOTION_MASK);
         _gl_area->connect_signal("motion-notify-event", on_pointer_motion, this);
+
+        gtk_gl_area_set_auto_render(_gl_area->_native, false);
+        gtk_widget_add_tick_callback(GTK_WIDGET(_gl_area->_native), (GtkTickCallback) on_frameclock_tick_callback, this, nullptr);
     }
 
     Canvas::~Canvas()
@@ -290,7 +299,7 @@ namespace mousetrap
         set_grid_color(RGBA(0, 0, 0, 0.5));
 
         _selected_pixel_frame->as_rectangle(
-            {0.5, 0.5}, {(2.f / _resolution.x) * size.x , (2.f / _resolution.y) * size.y}
+            {0.5, 0.5}, {1.f / _resolution.x , 1.f / _resolution.y}
         );
         _selected_pixel_frame->set_color(RGBA(1, 0, 1, 1));
 
@@ -395,6 +404,9 @@ namespace mousetrap
     gboolean Canvas::on_render(GtkGLArea* area, GdkGLContext*, Canvas* instance)
     {
         gtk_gl_area_make_current(area);
+
+        static size_t i = 0;
+        //std::cout << "render: " << i++ << std::endl;
 
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -540,17 +552,32 @@ namespace mousetrap
             instance->_layer->_shape->get_size()
         };
 
-        if (is_point_in_rectangle(pos, layer_shape))
-        {
-            if (instance->_selected_pixel_cursor_hidden)
-            {
-                instance->_selected_pixel_cursor_hidden = false;
-                instance->_selected_pixel_frame->set_centroid(pos);
-                gtk_gl_area_queue_render(instance->_gl_area->_native);
-            }
-        }
-        else
-            instance->_selected_pixel_cursor_hidden = true;
+        pos.x = int(pos.x * instance->_resolution.x) / instance->_resolution.x;
+        pos.y = int(pos.y * instance->_resolution.y) / instance->_resolution.y;
 
+        instance->_selected_pixel_frame->set_top_left(pos);
+        instance->_selected_pixel_cursor_hidden = is_point_in_rectangle(pos, layer_shape);
+
+        gtk_gl_area_queue_render(instance->_gl_area->_native);
+        // immediately trigger redraw
+        //instance->on_render(instance->_gl_area->_native, gtk_gl_area_get_context(instance->_gl_area->_native), instance);
+    }
+
+    gboolean Canvas::on_frameclock_tick_callback(GtkWidget* widget, GdkFrameClock* frame_clock, Canvas* instance)
+    {
+        static gint64 last = 0;
+        auto current = gdk_frame_clock_get_frame_time(frame_clock);
+
+        if (not instance->_limit_fps)
+        {
+            gtk_gl_area_queue_render(instance->_gl_area->_native);
+        }
+        else if (current - last > (1.f / instance->_target_fps) * 1e+6)
+        {
+            gtk_gl_area_queue_render(instance->_gl_area->_native);
+            last = current;
+        }
+
+        return G_SOURCE_CONTINUE;
     }
 }
