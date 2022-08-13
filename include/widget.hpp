@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
+#include <gtk-4.0/gtk/gtk.h>
 
 #include <map>
 #include <string>

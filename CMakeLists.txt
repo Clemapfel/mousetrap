@@ -11,7 +11,7 @@ find_library(GLEW REQUIRED NAMES GLEW)
 
 # GTK
 find_package(PkgConfig)
-pkg_check_modules(GTKMM gtkmm-3.0)
+pkg_check_modules(GTKMM gtkmm-4.0)
 
 # GLM
 include(CheckIncludeFileCXX)
