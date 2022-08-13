@@ -20,8 +20,8 @@ namespace mousetrap
             Adjustment& get_adjustment();
 
         private:
-            Adjustment _adjustment;
             GtkScrollbar* _native;
+            Adjustment _adjustment;
     };
 }
 

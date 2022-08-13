@@ -23,8 +23,8 @@ namespace mousetrap
             GtkBox* _box;
     };
 
-    Box HBox(float spacing);
-    Box VBox(float spacing);
+    Box HBox(float spacing = 0);
+    Box VBox(float spacing = 0);
 }
 
 #include <src/box.inl>

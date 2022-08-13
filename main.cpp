@@ -11,24 +11,34 @@
 #include <include/widgets/brush_selection.hpp>
 #include <include/widgets/brush_designer.hpp>
 #include <include/widgets/canvas.hpp>
+#include <include/widgets/palette_view.hpp>
 #include <include/image.hpp>
 #include <include/brush.hpp>
 #include <include/adjustment.hpp>
 
+#include <include/window.hpp>
+
 using namespace mousetrap;
 
+
+static void test()
+{
+    std::cout << "test" << std::endl;
+}
 
 int main()
 {
     gtk_init(nullptr, nullptr);
 
-    // main window
-    auto *main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    g_signal_connect(main_window, "destroy", G_CALLBACK(gtk_main_quit), nullptr);
+    auto main_window = Window(GTK_WINDOW_TOPLEVEL);
+    main_window.connect_signal("destroy", gtk_main_quit, nullptr);
+
+    main_window.add_events(GDK_KEY_PRESS_MASK);
+    main_window.add_events(GDK_KEY_RELEASE_MASK);
 
     // init opengl
-    gtk_widget_realize(main_window);
-    gtk_initialize_opengl(GTK_WINDOW(main_window));
+    gtk_widget_realize(main_window.get_native());
+    gtk_initialize_opengl(GTK_WINDOW(main_window.get_native()));
 
     // debug button
     Button button;
@@ -57,11 +67,49 @@ int main()
     //gtk_container_add(GTK_CONTAINER(main_window), brush_designer->get_native());
 
     auto* canvas = new Canvas(64, 64);
-    gtk_container_add(GTK_CONTAINER(main_window), canvas->get_native());
+    //main_window.add(canvas);
+
+    auto* palette_view = new PaletteView(GTK_ORIENTATION_HORIZONTAL);
+    //main_window.add(palette_view);
+
+    // TODO
+    std::vector<GtkImage*> images;
+    auto image = Image();
+    image.create(128, 128);
+
+    for (size_t i = 0; i < 16; ++i)
+    {
+       for (size_t x = 0; x < image.get_size().x; ++x)
+           for (size_t y = 0; y < image.get_size().y; ++y)
+               image.set_pixel(x, y, HSVA(rand() / float(RAND_MAX), 1, 1, 1));
+
+       images.push_back((GtkImage*) gtk_image_new_from_pixbuf(image.to_pixbuf()));
+    }
+
+    auto* stack = GTK_STACK(gtk_stack_new());
+
+    size_t i = 0;
+    for (auto* img : images)
+        gtk_stack_add_titled(stack, GTK_WIDGET(img), std::to_string(i).c_str(), std::to_string(i++).c_str());
+
+    auto* stack_switcher = GTK_STACK_SWITCHER(gtk_stack_switcher_new());
+    gtk_stack_switcher_set_stack(stack_switcher, stack);
+
+    auto* stack_sidebar = GTK_STACK_SIDEBAR(gtk_stack_sidebar_new());
+    gtk_stack_sidebar_set_stack(stack_sidebar, stack);
+
+    auto box = VBox();
+
+    box.add(GTK_WIDGET(stack));
+    box.add(GTK_WIDGET(stack_switcher));
+
+    main_window.add(box);
+
+    // TODO
 
     // render loop
-    gtk_widget_show_all(main_window);
-    gtk_window_present((GtkWindow*) main_window);
+    gtk_widget_show_all(main_window.get_native());
+    main_window.present();
     gtk_main();
 
     return 0;

@@ -189,6 +189,10 @@ namespace mousetrap
         _gl_area->add_events(GDK_POINTER_MOTION_MASK);
         _gl_area->connect_signal("motion-notify-event", on_pointer_motion, this);
 
+        _scrollbar_overlay->add_events(GDK_KEY_PRESS_MASK);
+        _scrollbar_overlay->add_events(GDK_KEY_RELEASE_MASK);
+        _scrollbar_overlay->connect_signal("key-press-event", on_key_press_event, this);
+
         gtk_gl_area_set_auto_render(_gl_area->_native, false);
         gtk_widget_add_tick_callback(GTK_WIDGET(_gl_area->_native), (GtkTickCallback) on_frameclock_tick_callback, this, nullptr);
     }
@@ -382,10 +386,10 @@ namespace mousetrap
 
         instance->_transparency_tiling = new Shape();
 
-        for (size_t i = 1; i < instance->_resolution.x; ++i)
+        for (size_t i = 1; i <= instance->_resolution.x; ++i)
             instance->_horizontal_grid.push_back(new Shape());
 
-        for (size_t i = 1; i < instance->_resolution.y; ++i)
+        for (size_t i = 1; i <= instance->_resolution.y; ++i)
             instance->_vertical_grid.push_back(new Shape());
 
         instance->set_grid_color(_default_grid_color);
@@ -462,7 +466,6 @@ namespace mousetrap
         }
 
         // guides
-
         if (instance->_draw_canvas_frame)
             instance->_canvas_frame->render(noop_shader, transform);
 
@@ -545,6 +548,19 @@ namespace mousetrap
         return false;
     }
 
+    gboolean Canvas::on_key_press_event(GtkWidget* widget, GdkEventKey* key, Canvas* instance)
+    {
+        std::cout << "called" << std::endl;
+
+        if (key->keyval == GDK_KEY_plus)
+            instance->_scale += Vector2f(0.1);
+
+        if (key->keyval == GDK_KEY_minus)
+            instance->_scale -= Vector2f(0.1);
+
+        return false;
+    }
+
     void Canvas::on_horizontal_scroll_value_changed(GtkRange* range, Canvas* instance)
     {
         auto value = gtk_range_get_value(range);
@@ -568,14 +584,13 @@ namespace mousetrap
             instance->_layer->_shape->get_size()
         };
 
-        auto transform = GLTransform();
-        transform.translate(instance->_translation_offset);
-        transform.scale(instance->_scale.x, instance->_scale.y);
+        auto size = instance->_layer->_shape->get_size() / instance->_resolution;
 
-        pos += transform.apply_to({0, 0});
+        pos.x = layer_shape.top_left.x + int(pos.x * size.x) / size.x;
+        pos.y = layer_shape.top_left.y + int(pos.y * size.y) / size.y;
 
         instance->_selected_pixel_frame->set_top_left(pos);
-        instance->_selected_pixel_cursor_hidden = is_point_in_rectangle(pos, layer_shape);
+        instance->_selected_pixel_cursor_hidden = false; //is_point_in_rectangle(pos, layer_shape);
 
         gtk_gl_area_queue_render(instance->_gl_area->_native);
     }
