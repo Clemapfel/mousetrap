@@ -15,6 +15,7 @@
 #include <include/image.hpp>
 #include <include/brush.hpp>
 #include <include/adjustment.hpp>
+#include <include/stack.hpp>
 
 #include <include/window.hpp>
 
@@ -73,7 +74,7 @@ int main()
     //main_window.add(palette_view);
 
     // TODO
-    std::vector<GtkImage*> images;
+    std::vector<WidgetWrapper<GtkImage>> images;
     auto image = Image();
     image.create(128, 128);
 
@@ -86,22 +87,20 @@ int main()
        images.push_back((GtkImage*) gtk_image_new_from_pixbuf(image.to_pixbuf()));
     }
 
-    auto* stack = GTK_STACK(gtk_stack_new());
+    auto stack = Stack();
+
 
     size_t i = 0;
-    for (auto* img : images)
-        gtk_stack_add_titled(stack, GTK_WIDGET(img), std::to_string(i).c_str(), std::to_string(i++).c_str());
+    for (auto img : images)
+        stack.add_child(&img, std::to_string(i++));
 
-    auto* stack_switcher = GTK_STACK_SWITCHER(gtk_stack_switcher_new());
-    gtk_stack_switcher_set_stack(stack_switcher, stack);
-
-    auto* stack_sidebar = GTK_STACK_SIDEBAR(gtk_stack_sidebar_new());
-    gtk_stack_sidebar_set_stack(stack_sidebar, stack);
+    auto stack_switcher = StackSwitcher(&stack);
+    auto stack_sidebar = StackSidebar(&stack);
 
     auto box = VBox();
 
-    box.add(GTK_WIDGET(stack));
-    box.add(GTK_WIDGET(stack_switcher));
+    box.add(stack);
+    box.add(stack_switcher);
 
     main_window.add(box);
 

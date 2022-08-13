@@ -37,10 +37,10 @@ namespace mousetrap
             GtkStack* _native;
     };
 
-    class StackSideBar : public Widget
+    class StackSidebar : public Widget
     {
         public:
-            StackSideBar(Stack*);
+            StackSidebar(Stack*);
             GtkWidget* get_native() override;
 
         private:
@@ -62,13 +62,13 @@ namespace mousetrap
 
 namespace mousetrap
 {
-    StackSideBar::StackSideBar(Stack* stack)
+    StackSidebar::StackSidebar(Stack* stack)
     {
         _native = GTK_STACK_SIDEBAR(gtk_stack_sidebar_new());
         gtk_stack_sidebar_set_stack(_native, GTK_STACK(stack->get_native()));
     }
 
-    GtkWidget* StackSideBar::get_native()
+    GtkWidget* StackSidebar::get_native()
     {
         return GTK_WIDGET(_native);
     }
@@ -104,7 +104,7 @@ namespace mousetrap
 
     void Stack::remove_child(StackID id)
     {
-        gtk_stack_remove(_native, _id_to_widget.at(id)->get_native());
+        gtk_container_remove(GTK_CONTAINER(_native), _id_to_widget.at(id)->get_native());
         _id_to_widget.erase(id);
     }
 
