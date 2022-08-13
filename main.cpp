@@ -71,7 +71,7 @@ int main()
     //main_window.add(canvas);
 
     auto* palette_view = new PaletteView(GTK_ORIENTATION_HORIZONTAL);
-    //main_window.add(palette_view);
+    main_window.add(palette_view);
 
     // TODO
     std::vector<WidgetWrapper<GtkImage>> images;
@@ -89,7 +89,6 @@ int main()
 
     auto stack = Stack();
 
-
     size_t i = 0;
     for (auto img : images)
         stack.add_child(&img, std::to_string(i++));
@@ -102,7 +101,7 @@ int main()
     box.add(stack);
     box.add(stack_switcher);
 
-    main_window.add(box);
+    //main_window.add(box);
 
     // TODO
 

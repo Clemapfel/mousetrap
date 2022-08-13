@@ -26,6 +26,7 @@ namespace mousetrap
             Vector2i get_size() const;
 
             void set_pixel(size_t, size_t, RGBA);
+            void set_pixel(size_t, size_t, HSVA);
             RGBA get_pixel(size_t, size_t);
 
         private:

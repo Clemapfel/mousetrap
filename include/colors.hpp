@@ -60,11 +60,12 @@ namespace mousetrap
         explicit operator std::string();
     };
 
-
     glm::vec4 rgba_to_hsva(glm::vec4);
     glm::vec4 hsva_to_rgba(glm::vec4);
 
     RGBA html_code_to_rgba(const std::string& code);
+
+    static inline const RGBA YELLOW = RGBA(1, 232 / 255.f, 15 / 255.f, 1);
 }
 
 #include <src/colors.inl>

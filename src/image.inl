@@ -104,6 +104,11 @@ namespace mousetrap
         _data.at(i+3) = color.a;
     }
 
+    void Image::set_pixel(size_t x, size_t y, HSVA color)
+    {
+        set_pixel(x, y, color.operator RGBA());
+    }
+
     RGBA Image::get_pixel(size_t x, size_t y)
     {
         auto i = to_linear_index(x, y);
