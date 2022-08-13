@@ -298,10 +298,26 @@ namespace mousetrap
 
         set_grid_color(RGBA(0, 0, 0, 0.5));
 
-        _selected_pixel_frame->as_rectangle(
-            {0.5, 0.5}, {1.f / _resolution.x , 1.f / _resolution.y}
-        );
-        _selected_pixel_frame->set_color(RGBA(1, 0, 1, 1));
+        {
+            float w = (1.f / _resolution.x) * size.x;
+            float h = (1.f / _resolution.y) * size.y;
+
+            w *= _scale.x;
+            h *= _scale.y;
+
+            _selected_pixel_frame->as_wireframe({
+                {0, 0}, {w, 0}, {w, h}, {0, h}
+            });
+
+            bool which = false;
+            for (size_t i = 0; i < _selected_pixel_frame->get_n_vertices(); ++i)
+            {
+                _selected_pixel_frame->set_vertex_color(i, which ? RGBA(1, 0, 1, 1) : RGBA(0, 1, 0, 1));
+                which = not which;
+            }
+
+            _selected_pixel_frame->set_centroid({0.5, 0.5});
+        }
 
         float eps = 0.001;
         _canvas_frame->as_wireframe({
@@ -552,15 +568,16 @@ namespace mousetrap
             instance->_layer->_shape->get_size()
         };
 
-        pos.x = int(pos.x * instance->_resolution.x) / instance->_resolution.x;
-        pos.y = int(pos.y * instance->_resolution.y) / instance->_resolution.y;
+        auto transform = GLTransform();
+        transform.translate(instance->_translation_offset);
+        transform.scale(instance->_scale.x, instance->_scale.y);
+
+        pos += transform.apply_to({0, 0});
 
         instance->_selected_pixel_frame->set_top_left(pos);
         instance->_selected_pixel_cursor_hidden = is_point_in_rectangle(pos, layer_shape);
 
         gtk_gl_area_queue_render(instance->_gl_area->_native);
-        // immediately trigger redraw
-        //instance->on_render(instance->_gl_area->_native, gtk_gl_area_get_context(instance->_gl_area->_native), instance);
     }
 
     gboolean Canvas::on_frameclock_tick_callback(GtkWidget* widget, GdkFrameClock* frame_clock, Canvas* instance)
