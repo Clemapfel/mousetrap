@@ -43,7 +43,7 @@ bool gtk_initialize_opengl(GtkWindow* window)
     return not failed;
 }
 
-void gtk_widget_get_allocated_size(GtkWidget* widget, int* w, int* h)
+void gtk_widget_get_size(GtkWidget* widget, int* w, int* h)
 {
     GtkAllocation* allocation = new GtkAllocation();
     gtk_widget_get_allocation(widget, allocation);

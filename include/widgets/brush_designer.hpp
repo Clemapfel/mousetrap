@@ -7,7 +7,6 @@
 
 #include <include/gl_area.hpp>
 #include <include/toggle_button.hpp>
-#include <include/brush.hpp>
 #include <include/frame.hpp>
 
 #include <eigen3/Eigen/Dense>
@@ -283,14 +282,14 @@ namespace mousetrap
             values.push_back(s->get_vertex_color(0).a);
         }
 
-        auto out = Brush(values);
-        return _brush_name->get_text() + " = " + out.to_string();
+        //auto out = Brush(values);
+        return ""; // _brush_name->get_text() + " = " + out.to_string();
     }
 
     void BrushDesigner::from_string(const std::string& string)
     {
-        auto brush = Brush();
-        brush.create_from_string(string);
+        //auto brush = Brush();
+        //brush.create_from_string(string);
 
         std::cerr << "[WARNING] In BrushDesigner::from_string: TODO" << std::endl;
     }

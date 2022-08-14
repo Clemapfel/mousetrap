@@ -7,18 +7,18 @@
 
 #include <include/gl_area.hpp>
 #include <include/get_resource_path.hpp>
-#include <include/geometric_shapes.hpp>
+#include <include/geometry.hpp>
 
 #include <include/widgets/global_state.hpp>
 
 namespace mousetrap
 {
-    struct HsvTriangleSelect : public Widget, public Updatable
+    struct HsvTriangleSelect : public Widget
     {
         public:
             HsvTriangleSelect();
             void update();
-            bool is_initialized() const override;
+            bool is_initialized() const;
 
             GtkWidget* get_native() {
                 return _shape_area->get_native();

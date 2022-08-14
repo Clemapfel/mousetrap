@@ -6,7 +6,6 @@
 #pragma once
 
 #include <include/colors.hpp>
-#include <include/updatable.hpp>
 
 namespace mousetrap
 {
@@ -14,22 +13,5 @@ namespace mousetrap
 
     static inline HSVA current_color = HSVA(0.5, 0.5, 0.5, 1);
 
-    static void signal_color_updated();
-
-    static inline Updatable* color_picker = nullptr;
-    static inline Updatable* hsv_triangle_select = nullptr;
-}
-
-// ###
-
-namespace mousetrap
-{
-    static void signal_color_updated()
-    {
-        if (color_picker != nullptr)
-            color_picker->update();
-
-        if (hsv_triangle_select != nullptr)
-            hsv_triangle_select->update();
-    }
+    static void signal_color_updated() {};
 }

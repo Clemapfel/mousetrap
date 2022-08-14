@@ -11,13 +11,17 @@ find_library(GLEW REQUIRED NAMES GLEW)
 
 # GTK
 find_package(PkgConfig)
-pkg_check_modules(GTKMM gtkmm-4.0)
+pkg_check_modules(GTKMM gtkmm-3.0)
+
+if (NOT GTKMM_FOUND)
+    message(FATAL_ERROR "Missing Dependency: unable to locate gtkmm")
+endif()
 
 # GLM
 include(CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX("glm/glm.hpp" GLM_FOUND)
 if(NOT GLM_FOUND)
-    message(FATAL_ERROR "Missing Dependency: glm")
+    message(FATAL_ERROR "Missing Dependency: glm headers were not detected")
 endif()
 
 ### CONFIGURE ###
@@ -61,7 +65,8 @@ add_library(mousetrap SHARED
     include/gtk_common.hpp
     src/gtk_common.inl
 
-    include/geometric_shapes.hpp
+    include/geometry.hpp
+    src/geometry.inl
 
     include/vector.hpp
 
@@ -95,8 +100,49 @@ add_library(mousetrap SHARED
     include/toggle_button.hpp
     src/toggle_button.inl
 
-    include/widgets/color_picker.hpp
-        include/label.hpp src/label.inl include/widgets/hsv_triangle_select.hpp include/widgets/global_state.hpp include/window.hpp include/updatable.hpp include/widgets/brush_selection.hpp include/texture.hpp include/image.hpp src/texture.inl src/image.inl include/brush.hpp include/widgets/brush_designer.hpp include/widgets/canvas.hpp include/frame.hpp src/frame.inl include/pixel_buffer.hpp include/scrollbar.hpp include/adjustment.hpp src/scrollbar.inl src/adjustment.inl include/gestures.hpp include/widgets/palette_view.hpp include/flow_box.hpp include/scrolled_window.hpp include/stack.hpp include/time.hpp src/stack.inl)
+    include/label.hpp
+    src/label.inl
+
+    include/texture.hpp
+    src/texture.inl
+
+    include/image.hpp
+    src/image.inl
+
+    include/frame.hpp
+    src/frame.inl
+
+    include/pixel_buffer.hpp
+    src/pixel_buffer.inl
+
+    include/scrollbar.hpp
+    src/scrollbar.inl
+
+    include/adjustment.hpp
+    src/adjustment.inl
+
+    include/gestures.hpp
+
+    include/flow_box.hpp
+    src/flow_box.inl
+
+    include/stack.hpp
+    src/stack.inl
+
+    include/scrolled_window.hpp
+    src/scrolled_window.inl
+
+    include/time.hpp
+    src/time.inl
+
+    include/window.hpp
+    src/window.inl
+
+        include/widgets/color_picker.hpp
+
+        include/widgets/hsv_triangle_select.hpp
+        include/widgets/global_state.hpp  include/widgets/brush_selection.hpp    include/widgets/brush_designer.hpp include/widgets/canvas.hpp  include/widgets/palette_view.hpp )
+
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -117,6 +163,6 @@ target_link_libraries(mousetrap PUBLIC
 
 ### EXECUTABLE ###
 
-add_executable(debug main.cpp src/render_task.inl)
+add_executable(debug main.cpp)
 target_link_libraries(debug mousetrap)
 

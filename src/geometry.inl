@@ -1,45 +1,17 @@
 // 
 // Copyright 2022 Clemens Cords
-// Created on 6/27/22 by clem (mail@clemens-cords.com)
+// Created on 8/14/22 by clem (mail@clemens-cords.com)
 //
-
-#pragma once
-
-#include <include/gl_common.hpp>
-
-#include <unordered_set>
 
 namespace mousetrap
 {
-    struct Triangle
-    {
-        Vector2f a, b, c;
-    };
-
-    struct Rectangle
-    {
-        Vector2f top_left;
-        Vector2f size;
-    };
-
-    struct Circle
-    {
-        Vector2f center;
-        float radius;
-    };
-
-    struct Line
-    {
-        Vector2f a, b;
-    };
-
     bool is_point_in_rectangle(Vector2f point, Rectangle rectangle)
     {
         return point.x >= rectangle.top_left.x and point.x <= rectangle.top_left.x + rectangle.size.x and
                point.y >= rectangle.top_left.y and point.y <= rectangle.top_left.y + rectangle.size.y;
     }
 
-    bool intersecting(Line first, Line second, Vector2f* intersect = nullptr)
+    bool intersecting(Line first, Line second, Vector2f* intersect)
     {
         // source: https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
 
@@ -72,7 +44,7 @@ namespace mousetrap
         return false;
     }
 
-    bool intersecting(Line line, Rectangle rectangle, std::vector<Vector2f>* intersections = nullptr)
+    bool intersecting(Line line, Rectangle rectangle, std::vector<Vector2f>* intersections)
     {
         if (is_point_in_rectangle(line.a, rectangle) and is_point_in_rectangle(line.b, rectangle))
             return true;
@@ -166,14 +138,14 @@ namespace mousetrap
         std::vector<Vector2i> fill_in;
         for (size_t i = 0; i < out.size() - 1; ++i)
         {
-           auto current = out.at(i);
-           auto next = out.at(i+1);
+            auto current = out.at(i);
+            auto next = out.at(i+1);
 
-           if (abs(current.x - next.x) == 1 or abs(current.y - next.y) == 1)
-               continue;
-           else
-           {
-               Vector2i to_push = current;
+            if (abs(current.x - next.x) == 1 or abs(current.y - next.y) == 1)
+                continue;
+            else
+            {
+                Vector2i to_push = current;
 
                 if (next.x == current.x)
                 {
@@ -207,8 +179,8 @@ namespace mousetrap
                     }
                 }
 
-               fill_in.push_back(to_push);
-           }
+                fill_in.push_back(to_push);
+            }
         }
 
         for (auto& v : fill_in)

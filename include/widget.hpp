@@ -67,7 +67,6 @@ namespace mousetrap
             return GTK_WIDGET(_native);
         };
 
-
         T* _native;
     };
 };

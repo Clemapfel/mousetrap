@@ -12,6 +12,7 @@
 
 namespace mousetrap
 {
+    /// \brief transform, operates in gl coordinate system
     class GLTransform
     {
         public:

@@ -40,6 +40,37 @@ struct Layer {
 
 ---
 
+# Frames
+
+onion skin
+
+## Frame View
+
+matrix of layer images
+
+scroll bar left/right
+ 
+## Frame View Settings
+
+thumbnail size
+
+---
+
+# Preview
+
+fps-speed slider
+pixel size: 1, 2, 3, ...
+pause / unpause
+frame select left/right
+always shows fully flattened image
+
+### Preview Settings
+
+min and max fps
+default: 0.5 and 144
+
+---
+
 # Palette
 
 ## Palette Settings
@@ -56,9 +87,16 @@ struct Layer {
 + lock palette
 + sort by hue
 
+## Palette Editor
+
+
 ---
 
 # Toolbox
 
 ## Toolbox Settings
 + keybinds for each tool
+
+---
+
+

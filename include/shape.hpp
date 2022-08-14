@@ -13,7 +13,7 @@
 #include <include/gl_common.hpp>
 #include <include/shader.hpp>
 #include <include/colors.hpp>
-#include <include/geometric_shapes.hpp>
+#include <include/geometry.hpp>
 #include <include/texture.hpp>
 
 namespace mousetrap
