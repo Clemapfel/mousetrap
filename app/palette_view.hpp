@@ -73,11 +73,11 @@ namespace mousetrap
 
             std::vector<ColorTile*> _tiles;
 
-            static inline const std::string _tooltip = R"(
-                Palette View
-                + / - : Increase / Decrease Tile Size
-                1 - 9 : Select Color
-            )";
+            static inline const std::string _tooltip = {
+                    "<u><b>Palette View</b></u>\n"
+                    "<b><tt>+ / -</tt></b> : Increase / Decrease Tile Size\n"
+                    "<b><tt>1 - 9</tt></b> : Select Color"
+            };
     };
 
     namespace state
@@ -115,8 +115,10 @@ namespace mousetrap
         _main->connect_signal("enter-notify-event", on_enter_notify_event, this);
         _main->connect_signal("leave-notify-event", on_enter_notify_event, this);
         _main->connect_signal("key-press-event", on_key_press_event, this);
+        _main->set_tooltip_text(_tooltip);
 
         update();
+
     }
 
     PaletteView::~PaletteView()
@@ -283,17 +285,37 @@ namespace mousetrap
     gboolean PaletteView::on_key_press_event(GtkWidget* self, GdkEventKey* event, PaletteView* instance)
     {
         if (not instance->_keypress_mode_active)
-            return false;
+        {
 
-        if (event->keyval == GDK_KEY_plus)
-        {
-            instance->set_tile_size(_tile_size + 4);
+            if (event->keyval == GDK_KEY_plus)
+            {
+                instance->set_tile_size(_tile_size + 4);
+            }
+            else if (event->keyval == GDK_KEY_minus)
+            {
+                if (instance->_tile_size > 8)
+                    instance->set_tile_size(_tile_size - 4);
+            }
         }
-        else if (event->keyval == GDK_KEY_minus)
-        {
-            if (instance->_tile_size > 8)
-                instance->set_tile_size(_tile_size - 4);
-        }
+
+        if (event->keyval == GDK_KEY_1)
+            instance->select(0);
+        else if (event->keyval == GDK_KEY_2)
+            instance->select(1);
+        else if (event->keyval == GDK_KEY_3)
+            instance->select(2);
+        else if (event->keyval == GDK_KEY_4)
+            instance->select(3);
+        else if (event->keyval == GDK_KEY_5)
+            instance->select(4);
+        else if (event->keyval == GDK_KEY_6)
+            instance->select(5);
+        else if (event->keyval == GDK_KEY_7)
+            instance->select(6);
+        else if (event->keyval == GDK_KEY_8)
+            instance->select(7);
+        else if (event->keyval == GDK_KEY_9)
+            instance->select(8);
 
         return true;
     }

@@ -212,7 +212,7 @@ namespace mousetrap
         if (warn_if_nullptr("set_tooltip_text"))
             return;
 
-        gtk_widget_set_tooltip_text(get_native(), text.c_str());
+        gtk_widget_set_tooltip_markup(get_native(), text.c_str());
     }
 
     void Widget::add_events(GdkEventMask event)
