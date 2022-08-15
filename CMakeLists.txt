@@ -137,12 +137,7 @@ add_library(mousetrap SHARED
 
     include/window.hpp
     src/window.inl
-
-        include/widgets/color_picker.hpp
-
-        include/widgets/hsv_triangle_select.hpp
-        include/widgets/global_state.hpp  include/widgets/brush_selection.hpp    include/widgets/brush_designer.hpp include/widgets/canvas.hpp  include/widgets/palette_view.hpp )
-
+)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -163,6 +158,17 @@ target_link_libraries(mousetrap PUBLIC
 
 ### EXECUTABLE ###
 
+add_library(app STATIC
+        include/widgets/color_picker.hpp
+
+        include/widgets/hsv_triangle_select.hpp
+        include/widgets/global_state.hpp  include/widgets/brush_selection.hpp    include/widgets/brush_designer.hpp include/widgets/canvas.hpp  include/widgets/palette_view.hpp app/global_state.hpp app/layer.hpp app/palette.hpp)
+
+target_link_libraries(app PRIVATE mousetrap)
+set_target_properties(app PROPERTIES
+    LINKER_LANGUAGE CXX
+)
+
 add_executable(debug main.cpp)
-target_link_libraries(debug mousetrap)
+target_link_libraries(debug app mousetrap)
 
