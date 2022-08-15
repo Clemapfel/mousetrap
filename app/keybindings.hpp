@@ -11,10 +11,10 @@
 #include <string>
 #include <iostream>
 
+using GdkKey = size_t;
+
 namespace mousetrap
 {
-    using GdkKey = size_t;
-
     namespace state
     {
         std::map<std::string, GdkKey> keybindings = {
@@ -46,5 +46,40 @@ namespace mousetrap
         }
 
         return it->second;
+    }
+
+    std::string key_to_string(GdkKey key)
+    {
+        switch (key)
+        {
+            case GDK_KEY_plus:
+                return "+";
+            case GDK_KEY_minus:
+                return "-";
+            case GDK_KEY_0:
+                return "0";
+            case GDK_KEY_1:
+                return "1";
+            case GDK_KEY_2:
+                return "2";
+            case GDK_KEY_3:
+                return "3";
+            case GDK_KEY_4:
+                return "4";
+            case GDK_KEY_5:
+                return "5";
+            case GDK_KEY_6:
+                return "6";
+            case GDK_KEY_7:
+                return "7";
+            case GDK_KEY_8:
+                return "8";
+            case GDK_KEY_9:
+                return "9";
+
+            default:
+                std::cerr << "[ERROR] In key_to_string: key with code \"" << std::dec << key << "\" no recognized." << std::endl;
+                return "";
+        }
     }
 }

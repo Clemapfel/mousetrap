@@ -73,12 +73,6 @@ namespace mousetrap
             };
 
             std::vector<ColorTile*> _tiles;
-
-            static inline const std::string _tooltip = {
-                    "<u><b>Palette View</b></u>\n"
-                    "<b><tt>+ / -</tt></b> : Increase / Decrease Tile Size\n"
-                    "<b><tt>1 - 9</tt></b> : Select Color"
-            };
     };
 
     namespace state
@@ -233,6 +227,15 @@ namespace mousetrap
         _selected_palette_id = state::active_palette_id;
 
         gtk_widget_show_all(_box->get_native());
+
+        std::stringstream tooltip_str;
+        tooltip_str << "<u><b>Palette View</b></u>" << std::endl
+                    << "<b><tt>" << key_to_string(get_keybinding("palette_view_increase_tile_size")) << " / "
+                    << key_to_string(get_keybinding("palette_view_decrease_tile_size")) << "</tt></b> : Increase / Decrease Tile Size\n"
+                    << "<b><tt>" << key_to_string(get_keybinding("palette_view_select_1")) << " - " << key_to_string(get_keybinding("palette_view_select_9"))
+                    << "</tt></b> : Select Color";
+
+        _main->set_tooltip_text(tooltip_str.str());
     }
 
     void PaletteView::set_tile_size(size_t size)
