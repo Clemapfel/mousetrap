@@ -15,6 +15,7 @@
 #include <vector>
 
 #include <app/global_state.hpp>
+#include <app/keybindings.hpp>
 
 namespace mousetrap
 {
@@ -286,35 +287,34 @@ namespace mousetrap
     {
         if (not instance->_keypress_mode_active)
         {
-
-            if (event->keyval == GDK_KEY_plus)
+            if (event->keyval == get_keybinding("palette_view_increase_tile_size"))
             {
                 instance->set_tile_size(_tile_size + 4);
             }
-            else if (event->keyval == GDK_KEY_minus)
+            else if (event->keyval == get_keybinding("palette_view_decrease_tile_size"))
             {
                 if (instance->_tile_size > 8)
                     instance->set_tile_size(_tile_size - 4);
             }
         }
 
-        if (event->keyval == GDK_KEY_1)
+        if (event->keyval == get_keybinding("palette_view_select_1"))
             instance->select(0);
-        else if (event->keyval == GDK_KEY_2)
+        else if (event->keyval == get_keybinding("palette_view_select_2"))
             instance->select(1);
-        else if (event->keyval == GDK_KEY_3)
+        else if (event->keyval == get_keybinding("palette_view_select_3"))
             instance->select(2);
-        else if (event->keyval == GDK_KEY_4)
+        else if (event->keyval == get_keybinding("palette_view_select_4"))
             instance->select(3);
-        else if (event->keyval == GDK_KEY_5)
+        else if (event->keyval == get_keybinding("palette_view_select_5"))
             instance->select(4);
-        else if (event->keyval == GDK_KEY_6)
+        else if (event->keyval == get_keybinding("palette_view_select_6"))
             instance->select(5);
-        else if (event->keyval == GDK_KEY_7)
+        else if (event->keyval == get_keybinding("palette_view_select_7"))
             instance->select(6);
-        else if (event->keyval == GDK_KEY_8)
+        else if (event->keyval == get_keybinding("palette_view_select_8"))
             instance->select(7);
-        else if (event->keyval == GDK_KEY_9)
+        else if (event->keyval == get_keybinding("palette_view_select_9"))
             instance->select(8);
 
         return true;
