@@ -16,7 +16,15 @@ namespace mousetrap
     }
 
     Label::~Label()
+    {}
+
+    void Label::set_text(const std::string& text)
     {
-        //gtk_widget_destroy(get_native());
+        gtk_label_set_text(_native, text.c_str());
+    }
+
+    void Label::set_use_markup(bool b)
+    {
+        gtk_label_set_use_markup(_native, b);
     }
 }

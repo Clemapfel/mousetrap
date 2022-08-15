@@ -7,6 +7,7 @@
 
 #include <include/gl_area.hpp>
 #include <include/frame.hpp>
+#include <include/label.hpp>
 
 #include <app/global_state.hpp>
 
@@ -25,7 +26,7 @@ namespace mousetrap
 
             static void on_button_press_event(GtkWidget* self, GdkEventButton* event, PrimarySecondaryColorSwapper* instance);
             static void on_gl_area_realize(GtkGLArea* self, PrimarySecondaryColorSwapper* instance);
-
+            static void on_gl_area_resize(GtkGLArea* self, int, int, PrimarySecondaryColorSwapper* instance);
             void swap_colors();
 
             Frame* _frame;
@@ -38,6 +39,10 @@ namespace mousetrap
 
             Shape* _primary_color_shape_frame = nullptr;
             Shape* _secondary_color_shape_frame = nullptr;
+
+            Label* _arrow;
+
+            Overlay* _arrow_overlay;
 
             static inline const std::string _tooltip = {
                 "<u>Primary / Secondary Color</u>\n"
@@ -60,15 +65,24 @@ namespace mousetrap
     {
         _render_area = new GLArea();
         _render_area->connect_signal("realize", on_gl_area_realize, this);
+        _render_area->connect_signal("resize", on_gl_area_resize, this);
         _render_area->add_events(GDK_BUTTON_PRESS_MASK);
         _render_area->connect_signal("button-press-event", on_button_press_event, this);
 
+        _arrow = new Label("UNINITIALIZED");
+        _arrow->set_use_markup(true);
+        _arrow->set_halign(GTK_ALIGN_START);
+        _arrow->set_valign(GTK_ALIGN_END);
+
+        _arrow_overlay = new Overlay();
+        _arrow_overlay->set_under(_render_area);
+        _arrow_overlay->set_over(_arrow);
+
         _frame = new Frame(1);
         _frame->set_shadow_type(GTK_SHADOW_IN);
-        _frame->add(_render_area);
         _frame->set_margin(state::margin_unit);
-
         _frame->set_tooltip_text(_tooltip);
+        _frame->add(_arrow_overlay);
     }
 
     PrimarySecondaryColorSwapper::~PrimarySecondaryColorSwapper()
@@ -107,6 +121,17 @@ namespace mousetrap
         gtk_gl_area_queue_render(self);
     }
 
+    void
+    PrimarySecondaryColorSwapper::on_gl_area_resize(GtkGLArea* self, int w, int h, PrimarySecondaryColorSwapper* instance)
+    {
+        auto min = std::min(w, h);
+        std::string spacer = std::to_string(0.105 * min);
+        std::string arrow_size = std::to_string(0.18 * min);
+
+        instance->_arrow->set_text("<span font_size=\"" + spacer + "pt\"> </span><span font_size=\"" + arrow_size + "pt\"><tt>&#8635;</tt></span>");
+        instance->_arrow->set_use_markup(true);
+    }
+
     void PrimarySecondaryColorSwapper::initialize_render_area()
     {
         delete _primary_color_shape;
@@ -142,7 +167,7 @@ namespace mousetrap
             _secondary_color_shape_frame->set_color(RGBA(0, 0, 0, 1));
         }
 
-        _secondary_color_shape->set_color(state::primary_color);
+        _primary_color_shape->set_color(state::primary_color);
         _secondary_color_shape->set_color(state::secondary_color);
 
         _render_area->add_render_task(_secondary_color_shape);
