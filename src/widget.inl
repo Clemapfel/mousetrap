@@ -215,11 +215,12 @@ namespace mousetrap
         gtk_widget_set_tooltip_markup(get_native(), text.c_str());
     }
 
-    void Widget::add_events(GdkEventMask event)
+    template<typename... GdkEventMask_t> requires (std::is_same_v<GdkEventMask_t, GdkEventMask> && ...)
+    void Widget::add_events(GdkEventMask_t... events)
     {
         if (warn_if_nullptr("add_events"))
             return;
 
-        gtk_widget_add_events(get_native(), event);
+        gtk_widget_add_events(get_native(), (events | ...));
     }
 }

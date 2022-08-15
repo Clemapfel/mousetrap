@@ -51,7 +51,8 @@ namespace mousetrap
 
             void set_tooltip_text(const std::string&);
 
-            void add_events(GdkEventMask);
+            template<typename... GdkEventMask_t> requires (std::is_same_v<GdkEventMask_t, GdkEventMask> && ...)
+            void add_events(GdkEventMask_t...);
 
         private:
             /// \returns true if get_native() == nullptr

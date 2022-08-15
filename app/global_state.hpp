@@ -22,8 +22,8 @@ namespace mousetrap::state
 
     // ### COLORS #####################################
 
-    HSVA primary_color,
-         secondary_color;
+    HSVA primary_color = HSVA(0.3, 1, 1, 1);
+    HSVA secondary_color = HSVA(0.31, 1, 1, 1);
 
     // ### PALETTES ###################################
 
@@ -37,12 +37,23 @@ namespace mousetrap::state
     PaletteID active_palette_id = "debug";
 
     // ### FRAMES / LAYERS ############################
+
+    // ### FORMATING ##################################
+
+    float margin_unit = 10; //px
 }
+
+// ###
 
 namespace mousetrap
 {
     void set_primary_color(HSVA color)
     {
         state::primary_color = color;
+    }
+
+    void set_secondary_color(HSVA color)
+    {
+        state::secondary_color = color;
     }
 }

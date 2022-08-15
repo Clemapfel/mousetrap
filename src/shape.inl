@@ -36,10 +36,10 @@ namespace mousetrap
             data._position[1] = as_gl_position[1];
             data._position[2] = as_gl_position[2];
 
-            data._color_tile[0] = v.color.r;
-            data._color_tile[1] = v.color.g;
-            data._color_tile[2] = v.color.b;
-            data._color_tile[3] = v.color.a;
+            data._color[0] = v.color.r;
+            data._color[1] = v.color.g;
+            data._color[2] = v.color.b;
+            data._color[3] = v.color.a;
 
             data._texture_coordinates[0] = v.texture_coordinates[0];
             data._texture_coordinates[1] = v.texture_coordinates[1];
@@ -121,10 +121,10 @@ namespace mousetrap
             auto& v = _vertices.at(i);
             auto& data = _vertex_data.at(i);
 
-            data._color_tile[0] = v.color.r;
-            data._color_tile[1] = v.color.g;
-            data._color_tile[2] = v.color.b;
-            data._color_tile[3] = v.color.a;
+            data._color[0] = v.color.r;
+            data._color[1] = v.color.g;
+            data._color[2] = v.color.b;
+            data._color[3] = v.color.a;
         }
 
         update_data(false, true, false);

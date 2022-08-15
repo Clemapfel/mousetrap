@@ -55,6 +55,7 @@ namespace mousetrap
 
             size_t _selected_index = 0;
             void select(size_t);
+            void select_none();
 
             std::string _selected_palette_id = "";
             PaletteSortMode _sort_mode = PaletteSortMode::NONE;
@@ -110,7 +111,6 @@ namespace mousetrap
         _main->connect_signal("enter-notify-event", on_enter_notify_event, this);
         _main->connect_signal("leave-notify-event", on_enter_notify_event, this);
         _main->connect_signal("key-press-event", on_key_press_event, this);
-        _main->set_tooltip_text(_tooltip);
 
         update();
 
@@ -270,6 +270,11 @@ namespace mousetrap
         _selected_index = i;
     }
 
+    void PaletteView::select_none()
+    {
+        gtk_widget_set_opacity(GTK_WIDGET(_tiles.at(_selected_index)->_selection_frame), 0);
+    }
+
     void PaletteView::on_child_activated(GtkFlowBox* self, GtkFlowBoxChild* child, PaletteView* instance)
     {
         instance->select(gtk_flow_box_child_get_index(child));
@@ -326,8 +331,15 @@ namespace mousetrap
     void PaletteView::select_color(HSVA color)
     {
         for (size_t i = 0; i < _tiles.size(); ++i)
+        {
             if (_tiles.at(i)->_color == color)
+            {
                 select(i);
+                return;
+            }
+            }
+
+        select_none();
     }
 
     void PaletteView::set_selection_frame_color(RGBA color)
