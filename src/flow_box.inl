@@ -45,4 +45,16 @@ namespace mousetrap
     {
         gtk_flow_box_set_selection_mode(_native, mode);
     }
+
+    GtkFlowBoxChild* FlowBox::get_child_at_index(size_t i)
+    {
+        return gtk_flow_box_get_child_at_index(_native, i);
+    }
+
+    GtkFlowBoxChild* FlowBox::get_child_at_pos(int x, int y)
+    {
+        return gtk_flow_box_get_child_at_pos(_native, x, y);
+    }
+
+
 }

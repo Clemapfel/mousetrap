@@ -35,6 +35,9 @@ namespace mousetrap
 
         float to_grayscale() const;
         explicit operator std::string();
+
+        bool operator==(const RGBA& other);
+        bool operator!=(const RGBA& other);
     };
 
     struct HSVA
@@ -58,6 +61,9 @@ namespace mousetrap
 
         float to_grayscale() const;
         explicit operator std::string();
+
+        bool operator==(const HSVA& other);
+        bool operator!=(const HSVA& other);
     };
 
     glm::vec4 rgba_to_hsva(glm::vec4);

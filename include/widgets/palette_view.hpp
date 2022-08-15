@@ -40,12 +40,12 @@ namespace mousetrap
 
             struct ColorTile
             {
-                GtkImage* _color;
+                GtkImage* _color_tile;
                 GtkImage* _selection_frame;
                 Overlay* _overlay;
 
                 ~ColorTile() {
-                    delete _color;
+                    delete _color_tile;
                     delete _selection_frame;
                     delete _overlay;
                 }
@@ -147,12 +147,12 @@ namespace mousetrap
             _tiles.push_back(new ColorTile());
             auto* tile = _tiles.back();
 
-            tile->_color = GTK_IMAGE(gtk_image_new_from_pixbuf(color_image.to_pixbuf()));
+            tile->_color_tile = GTK_IMAGE(gtk_image_new_from_pixbuf(color_image.to_pixbuf()));
             tile->_selection_frame = GTK_IMAGE(gtk_image_new_from_pixbuf(selection_frame.to_pixbuf()));
             gtk_widget_set_opacity(GTK_WIDGET(tile->_selection_frame), 0);
 
             tile->_overlay = new Overlay();
-            tile->_overlay->set_under(GTK_WIDGET(tile->_color));
+            tile->_overlay->set_under(GTK_WIDGET(tile->_color_tile));
             tile->_overlay->set_over(GTK_WIDGET(tile->_selection_frame));
         }
 

@@ -36,7 +36,7 @@ namespace mousetrap
     {
         std::vector<HSVA> colors;
 
-        const size_t n_steps = 16;
+        const size_t n_steps = 8;
         for (size_t i = 0; i < n_steps; ++i)
         {
             float h = i / float(n_steps);
@@ -47,7 +47,7 @@ namespace mousetrap
         }
 
         for (size_t i = 0; i < n_steps; ++i)
-            colors.push_back(HSVA(0, 1, i / float(n_steps), 1));
+            colors.push_back(HSVA(0, 0, i / float(n_steps), 1));
 
         return Palette(colors);
     }();
@@ -115,7 +115,15 @@ namespace mousetrap
     {
         auto out = get_colors_by_hue();
         std::sort(out.begin(), out.end(), [](HSVA a, HSVA b) -> bool {
-            return a.s < b.s;
+            if (a.s == b.s)
+            {
+                if (a.v == b.v)
+                    return a.h < b.h;
+                else
+                    return a.v < b.v;
+            }
+            else
+                return a.s < b.s;
         });
 
         return out;
@@ -125,7 +133,15 @@ namespace mousetrap
     {
         auto out = get_colors_by_hue();
         std::sort(out.begin(), out.end(), [](HSVA a, HSVA b) -> bool {
-            return a.v < b.v;
+            if (a.v == b.v)
+            {
+                if (a.s == b.s)
+                    return a.h < b.h;
+                else
+                    return a.s > b.s;
+            }
+            else
+                return a.v > b.v;
         });
 
         return out;

@@ -45,6 +45,16 @@ namespace mousetrap
         a = out[4];
     }
 
+    bool RGBA::operator==(const RGBA& other)
+    {
+        return r == other.r and g == other.g and b == other.b and a == other.a;
+    }
+
+    bool RGBA::operator!=(const RGBA& other)
+    {
+        return not (*this == other);
+    }
+
     RGBA::operator HSVA() const
     {
         return HSVA(rgba_to_hsva(this->operator glm::vec4()));
@@ -87,6 +97,16 @@ namespace mousetrap
     HSVA::operator RGBA() const
     {
         return RGBA(hsva_to_rgba(this->operator glm::vec4()));
+    }
+
+    bool HSVA::operator==(const HSVA& other)
+    {
+        return h == other.h and s == other.s and v == other.v and a == other.a;
+    }
+
+    bool HSVA::operator!=(const HSVA& other)
+    {
+        return not (*this == other);
     }
 
     glm::vec4 rgba_to_hsva(glm::vec4 in)

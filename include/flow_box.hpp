@@ -26,6 +26,9 @@ namespace mousetrap
 
             void set_selection_mode(GtkSelectionMode);
 
+            GtkFlowBoxChild* get_child_at_index(size_t i);
+            GtkFlowBoxChild* get_child_at_pos(int x, int y);
+
         private:
             GtkFlowBox* _native;
     };

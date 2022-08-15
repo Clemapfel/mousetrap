@@ -37,6 +37,12 @@ namespace mousetrap::state
     PaletteID active_palette_id = "debug";
 
     // ### FRAMES / LAYERS ############################
+}
 
-
+namespace mousetrap
+{
+    void set_primary_color(HSVA color)
+    {
+        state::primary_color = color;
+    }
 }

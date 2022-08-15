@@ -7,6 +7,8 @@
 
 #include <gtk-4.0/gtk/gtk.h>
 
+#include <include/vector.hpp>
+
 #include <map>
 #include <string>
 
@@ -16,6 +18,8 @@ namespace mousetrap
     {
         public:
             virtual GtkWidget* get_native() = 0;
+            virtual void update(){};
+
             operator GtkWidget*();
 
             Vector2f get_size_request();

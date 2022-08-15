@@ -14,6 +14,11 @@ namespace mousetrap
         public:
             void add(GtkWidget*);
             void add(Widget*);
+
+            void remove(GtkWidget*);
+            void remove(Widget*);
+
+            void clear();
     };
 }
 

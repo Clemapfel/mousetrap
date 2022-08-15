@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <glm/glm.hpp>
+
 namespace mousetrap
 {
     template<typename T>
