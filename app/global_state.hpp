@@ -8,16 +8,15 @@
 #include <map>
 #include <vector>
 #include <list>
+#include <deque>
 
 #include <include/colors.hpp>
+#include <include/pixel_buffer.hpp>
 
 #include <app/palette.hpp>
 
 namespace mousetrap::state
 {
-    struct Layer {};
-    struct Frame {};
-
     using namespace mousetrap;
 
     // ### COLORS #####################################
@@ -37,6 +36,24 @@ namespace mousetrap::state
     PaletteID active_palette_id = "debug";
 
     // ### FRAMES / LAYERS ############################
+
+    struct Layer
+    {
+        bool is_hidden = false;
+        bool is_locked = false;
+
+        std::string name;
+        float opacity = 1;
+
+        PixelBuffer* pixels = nullptr;
+    };
+
+    struct Frame
+    {
+        std::vector<Layer> layers;
+    };
+
+    std::deque<Frame> frames;
 
     // ### FORMATING ##################################
 

@@ -29,6 +29,11 @@ namespace mousetrap
         unbind();
     }
 
+    PixelBuffer::~PixelBuffer()
+    {
+        glDeleteBuffers(1, &_native_handle);
+    }
+
     float* PixelBuffer::get_data()
     {
         return _cache;

@@ -7,13 +7,15 @@
 
 #include <include/gl_common.hpp>
 
+#include <atomic>
+
 namespace mousetrap
 {
     class PixelBuffer
     {
         public:
             PixelBuffer(size_t width, size_t height);
-            ~PixelBuffer();
+            virtual ~PixelBuffer();
 
             void bind() const;
             void unbind() const;

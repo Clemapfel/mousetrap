@@ -105,8 +105,10 @@ namespace mousetrap
             _secondary_color_shape->set_color(state::secondary_color);
     }
 
-    void PrimarySecondaryColorSwapper::on_button_press_event(GtkWidget* self, GdkEventButton* event,
-                                                             PrimarySecondaryColorSwapper* instance)
+    void PrimarySecondaryColorSwapper::on_button_press_event(
+        GtkWidget* self,
+        GdkEventButton* event,
+        PrimarySecondaryColorSwapper* instance)
     {
         if (event->button == 1)
             instance->swap_colors();
@@ -121,8 +123,7 @@ namespace mousetrap
         gtk_gl_area_queue_render(self);
     }
 
-    void
-    PrimarySecondaryColorSwapper::on_gl_area_resize(GtkGLArea* self, int w, int h, PrimarySecondaryColorSwapper* instance)
+    void PrimarySecondaryColorSwapper::on_gl_area_resize(GtkGLArea* self, int w, int h, PrimarySecondaryColorSwapper* instance)
     {
         auto min = std::min(w, h);
         std::string spacer = std::to_string(0.105 * min);
@@ -130,6 +131,8 @@ namespace mousetrap
 
         instance->_arrow->set_text("<span font_size=\"" + spacer + "pt\"> </span><span font_size=\"" + arrow_size + "pt\"><tt>&#8635;</tt></span>");
         instance->_arrow->set_use_markup(true);
+
+        gtk_gl_area_queue_render(self);
     }
 
     void PrimarySecondaryColorSwapper::initialize_render_area()
@@ -174,6 +177,8 @@ namespace mousetrap
         _render_area->add_render_task(_secondary_color_shape_frame);
         _render_area->add_render_task(_primary_color_shape);
         _render_area->add_render_task(_primary_color_shape_frame);
+
+        _render_area->queue_render();
     }
 
     void PrimarySecondaryColorSwapper::swap_colors()
@@ -186,6 +191,8 @@ namespace mousetrap
 
         _primary_color_shape->set_color(current_secondary);
         _secondary_color_shape->set_color(current_primary);
+
+        _render_area->queue_render();
     }
 }
 
