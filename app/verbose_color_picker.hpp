@@ -75,7 +75,7 @@ namespace mousetrap
                 Vector2f* _canvas_size;
                 static inline Shader* _transparency_shader = nullptr;
 
-                static inline float _width_to_slider_width_ratio = 0.05;
+                static inline float _width_to_cursor_width_ratio = 0.025;
 
                 ~Slider() {
                     delete _bar_shader;
@@ -111,10 +111,16 @@ namespace mousetrap
 
             struct HtmlRegion
             {
-                Box* _main;
+                Box* _label_hbox;
                 Label* _label;
+                GtkSeparatorMenuItem* _label_separator;
+
+                Box* _entry_hbox;
                 Entry* _entry;
+                GtkSeparatorMenuItem* _entry_to_button_separator;
                 Button* _button; // TODO
+
+                Box* _main;
             };
 
             HtmlRegion* _html_region;
@@ -200,6 +206,8 @@ namespace mousetrap
         _rgb_region->_label_separator_box->add((GtkWidget*) _rgb_region->_separator);
         _rgb_region->_main->add(_rgb_region->_label_separator_box);
 
+        static float slider_double_indent = 2 * state::margin_unit;
+
         for (char c : {'A', 'H', 'S', 'V', 'R', 'G', 'B'})
         {
             _sliders[c] = new Slider{
@@ -211,7 +219,7 @@ namespace mousetrap
                 nullptr,
                 new GLArea(),
                 new SpinButton(0, 1, 0.001),
-                new Box(GTK_ORIENTATION_VERTICAL),
+                new Box(GTK_ORIENTATION_HORIZONTAL),
                 new Vector2f(1, 1)
             };
 
@@ -225,14 +233,20 @@ namespace mousetrap
 
             _sliders[c]->_canvas->connect_signal("realize", on_slider_realize, new std::tuple(c, this));
             _sliders[c]->_canvas->connect_signal("resize", on_slider_resize, new std::tuple(c, this));
-
-            _sliders[c]->_main->add(_sliders[c]->_canvas);
-            _sliders[c]->_main->add(_sliders[c]->_spin_button);
+            _sliders[c]->_canvas->set_expand(true);
+            //_sliders[c]->_canvas->set_margin_top(0.25 * state::margin_unit);
+            //_sliders[c]->_canvas->set_margin_bottom(0.25 * state::margin_unit);
 
             _sliders[c]->_spin_button->set_expand(false);
             _sliders[c]->_spin_button->set_digits(3);
-            _sliders[c]->_spin_button->set_width_chars(2 * 3);
+            _sliders[c]->_spin_button->set_width_chars(3 + 2);
             _sliders[c]->_spin_button->set_halign(GTK_ALIGN_END);
+            _sliders[c]->_spin_button->set_margin_start(0.75 * state::margin_unit);
+
+            _sliders[c]->_main->add(_sliders[c]->_canvas);
+            _sliders[c]->_main->add(_sliders[c]->_spin_button);
+            _sliders[c]->_main->set_margin(0.25 * state::margin_unit);
+            _sliders[c]->_main->set_margin_start(slider_double_indent);
         }
 
         _opacity_region->_main->add(_sliders['A']->_main);
@@ -251,19 +265,45 @@ namespace mousetrap
             ShaderType::FRAGMENT
         );
 
+        // make hue wrappable
+        _sliders['H']->_spin_button->set_wrap(true);
+
         _html_region = new HtmlRegion{
             new Box(GTK_ORIENTATION_HORIZONTAL),
-            new Label("HTML Code:"),
+            new Label("HTML"),
+            GTK_SEPARATOR_MENU_ITEM(gtk_separator_menu_item_new()),
+            new Box(GTK_ORIENTATION_HORIZONTAL),
             new Entry(),
-            new Button()
+            GTK_SEPARATOR_MENU_ITEM(gtk_separator_menu_item_new()),
+            new Button(),
+            new Box(GTK_ORIENTATION_VERTICAL)
         };
 
         _html_region->_entry->connect_signal("activate", on_entry_activate, this);
         _html_region->_entry->connect_signal("paste-clipboard", on_entry_paste, this);
 
-        _html_region->_main->add(_html_region->_label);
-        _html_region->_main->add(_html_region->_entry);
-        _html_region->_main->add(_html_region->_button);
+        _html_region->_entry_hbox->add(_html_region->_entry);
+        _html_region->_entry_hbox->add(GTK_WIDGET(_html_region->_entry_to_button_separator));
+        _html_region->_entry_hbox->add(_html_region->_button);
+        _html_region->_entry_hbox->set_margin_top(0.25 * state::margin_unit);
+
+        _html_region->_label_hbox->add(_html_region->_label);
+        _html_region->_label_hbox->add(GTK_WIDGET(_html_region->_label_separator));
+
+
+        _html_region->_main->add(_html_region->_label_hbox);
+        _html_region->_main->add(_html_region->_entry_hbox);
+
+        //_html_region->_entry_hbox->set_hexpand(false);
+        _html_region->_entry->set_margin_start(slider_double_indent);
+        _html_region->_entry->set_halign(GTK_ALIGN_START);
+        _html_region->_entry->set_margin_end(0.5 * state::margin_unit);
+
+        _html_region->_button->set_halign(GTK_ALIGN_END);
+        _html_region->_button->set_margin_start(0.5 * state::margin_unit);
+        _html_region->_button->set_margin_end(state::margin_unit);
+
+        gtk_widget_set_hexpand(GTK_WIDGET(_html_region->_entry_to_button_separator), true);
 
         _current_color_region = new CurrentColorRegion{
             new GLArea(),
@@ -275,9 +315,23 @@ namespace mousetrap
             new Box(GTK_ORIENTATION_VERTICAL)
         };
 
+        _current_color_region->_transparency_shader = new Shader();
+        _current_color_region->_transparency_shader->create_from_file(
+                get_resource_path() + "shaders/transparency_tiling.frag",
+                ShaderType::FRAGMENT
+        );
+
+        static float current_color_height = 3 * state::margin_unit;
+
         _current_color_region->_canvas->connect_signal("realize", on_current_color_region_realize, this);
         _current_color_region->_canvas->connect_signal("resize", on_current_color_region_resize, this);
+        _current_color_region->_canvas->set_hexpand(true);
+        _current_color_region->_canvas->set_size_request({1, current_color_height});
+        _current_color_region->_canvas->set_valign(GTK_ALIGN_START);
+        _current_color_region->_canvas->set_margin_start(7 * state::margin_unit);
+
         _current_color_region->_main->add(_current_color_region->_canvas);
+        _current_color_region->_main->set_margin_top(0.1 * state::margin_unit);
 
         _all_regions_box = new Box(GTK_ORIENTATION_VERTICAL);
         _all_regions_box->add(_opacity_region->_main);
@@ -285,9 +339,19 @@ namespace mousetrap
         _all_regions_box->add(_rgb_region->_main);
         _all_regions_box->add(_html_region->_main);
 
+        static float regions_bottom_margin = 0.5 * state::margin_unit;
+
+        _opacity_region->_main->set_margin_bottom(regions_bottom_margin);
+        _hsv_region->_main->set_margin_bottom(regions_bottom_margin);
+        _rgb_region->_main->set_margin_bottom(regions_bottom_margin);
+
+        _all_regions_box->set_margin_top(0.5 * current_color_height + state::margin_unit);
+        _all_regions_box->set_margin_bottom(state::margin_unit);
+
         _main = new Overlay();
         _main->set_under(_all_regions_box);
         _main->set_over(_current_color_region->_main);
+        _main->set_pass_through(_current_color_region->_main, true);
     }
 
     GtkWidget* VerboseColorPicker::get_native()
@@ -320,11 +384,12 @@ namespace mousetrap
         auto& self = instance->_sliders.at(c);
 
         self->_cursor = new Shape();
-        self->_cursor->as_rectangle({0.5, 0}, {self->_width_to_slider_width_ratio, 1});
+        self->_cursor->as_rectangle({0.5, 0}, {self->_width_to_cursor_width_ratio, 1});
 
         {
-            auto size = self->_cursor->get_size() - Vector2f(0.01);
-            auto top_left = self->_cursor->get_size();
+            auto size = self->_cursor->get_size();
+            size.y -= 0.001;
+            auto top_left = self->_cursor->get_top_left();
 
             std::vector<Vector2f> vertices = {
                     {top_left.x , top_left.y},
@@ -338,12 +403,16 @@ namespace mousetrap
             self->_cursor_frame->set_color(RGBA(0, 0, 0, 1));
         }
 
+        static float bar_margin = 0.15;
+
         self->_bar = new Shape();
-        self->_bar->as_rectangle({0, 0}, {1, 1});
+        self->_bar->as_rectangle({0, bar_margin}, {1, 1 - 2 * bar_margin});
 
         {
-            auto size = self->_bar->get_size() - Vector2f(0.01);
-            auto top_left = self->_bar->get_size();
+            auto size = self->_bar->get_size();
+            auto top_left = self->_bar->get_top_left();
+            size.x -= 0.0002;
+            top_left.x += 0.0001;
 
             std::vector<Vector2f> vertices = {
                 {top_left.x , top_left.y},
@@ -358,12 +427,17 @@ namespace mousetrap
         }
 
         self->_transparency_background = new Shape();
-        self->_transparency_background->as_rectangle({0, 0}, {1, 1});
+        self->_transparency_background->as_rectangle(self->_bar->get_top_left(), self->_bar->get_size());
         auto transparency_render_task = RenderTask(self->_transparency_background, self->_transparency_shader);
         transparency_render_task.register_vec2("_canvas_size", self->_canvas_size);
 
         self->_canvas->add_render_task(transparency_render_task);
-        self->_canvas->add_render_task(self->_bar, self->_bar_shader);
+
+        auto bar_render_task = RenderTask(self->_bar, self->_bar_shader);
+        bar_render_task.register_vec2("_canvas_size", self->_canvas_size);
+        bar_render_task.register_color("_current_color_hsva", &state::primary_color);
+
+        self->_canvas->add_render_task(bar_render_task);
         self->_canvas->add_render_task(self->_bar_frame);
         self->_canvas->add_render_task(self->_cursor);
         self->_canvas->add_render_task(self->_cursor_frame);
@@ -397,14 +471,24 @@ namespace mousetrap
 
         self->_last_color_shape = new Shape();
         self->_last_color_shape->as_rectangle({0, 0}, {self->_width_to_last_color_width_ration, 1});
+        self->_last_color_shape->set_color(RGBA(0, 1, 0, 1));
 
         self->_current_color_shape = new Shape();
         self->_current_color_shape->as_rectangle({self->_width_to_last_color_width_ration, 0}, {1 - self->_width_to_last_color_width_ration, 1});
+        self->_current_color_shape->set_color(RGBA(1, 0, 1, 1));
 
         {
-            std::vector<Vector2f> vertices;
-            for (size_t i = 0; i < self->_transparency_background->get_n_vertices(); ++i)
-                vertices.push_back(self->_transparency_background->get_vertex_position(i));
+            auto size = self->_transparency_background->get_size();
+            size.y -= 0.0001;
+            auto top_left = self->_transparency_background->get_top_left();
+            top_left.x += 0.0001;
+
+            std::vector<Vector2f> vertices = {
+                    {top_left.x , top_left.y},
+                    {top_left.x + size.x, top_left.y},
+                    {top_left.x + size.x, top_left.y + size.y},
+                    {top_left.x, top_left.y + size.y}
+            };
 
             self->_frame = new Shape();
             self->_frame->as_wireframe(vertices);

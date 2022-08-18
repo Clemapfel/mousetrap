@@ -14,6 +14,7 @@ namespace mousetrap
     {
         _native = GTK_GL_AREA(gtk_gl_area_new());
         gtk_gl_area_set_has_alpha(_native, TRUE);
+        gtk_widget_set_size_request(GTK_WIDGET(_native), 1, 1);
 
         connect_signal("realize", on_realize_wrapper, this);
         connect_signal("render", on_render_wrapper, this);

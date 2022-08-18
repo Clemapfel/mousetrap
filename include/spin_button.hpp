@@ -21,6 +21,7 @@ namespace mousetrap
 
            void set_digits(size_t);
 
+           void set_wrap(bool);
            GtkWidget* get_native() override;
 
         protected:

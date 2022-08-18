@@ -23,6 +23,8 @@ namespace mousetrap
             void set_under(Widget*);
             void set_over(Widget*);
 
+            void set_pass_through(Widget*, bool b);
+
         private:
             GtkOverlay* _overlay;
     };

@@ -21,6 +21,7 @@ namespace mousetrap
             GtkWidget* get_native() override;
 
             void set_width_chars(size_t);
+            void set_has_frame(bool);
 
         protected:
             virtual void on_activate(GtkEntry* self, gpointer user_data);

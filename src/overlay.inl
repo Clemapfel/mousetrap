@@ -40,4 +40,8 @@ namespace mousetrap
         gtk_overlay_add_overlay(_overlay, GTK_WIDGET(in->get_native()));
     }
 
+    void Overlay::set_pass_through(Widget* widget, bool b)
+    {
+        gtk_overlay_set_overlay_pass_through(_overlay, widget->get_native(), b);
+    }
 }

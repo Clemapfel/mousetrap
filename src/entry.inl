@@ -27,6 +27,11 @@ namespace mousetrap
         return GTK_WIDGET(_entry);
     }
 
+    void Entry::set_has_frame(bool b)
+    {
+        gtk_entry_set_has_frame(GTK_ENTRY(get_native()), b);
+    }
+
     std::string Entry::get_text() const
     {
         return gtk_entry_get_text(GTK_ENTRY(const_cast<Entry*>(this)->get_native()));
