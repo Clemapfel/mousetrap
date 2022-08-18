@@ -58,7 +58,7 @@ namespace mousetrap
             /// \returns true if get_native() == nullptr
             bool warn_if_nullptr(const std::string& function_id);
 
-            std::map<std::string, size_t> _signal_handlers;
+            std::map<std::string, size_t> _signal_handlers = {};
     };
 
     template<typename T>

@@ -146,6 +146,9 @@ namespace mousetrap
                 GtkWidget* get_native() override {
                     return _hbox->get_native();
                 }
+
+                float value = 0.5;
+                void set_value(float);
             };
 
             std::map<char, SliderElement*> _elements = {
@@ -156,7 +159,6 @@ namespace mousetrap
                     {'R', nullptr},
                     {'G', nullptr},
                     {'B', nullptr},
-
             };
 
             // html code

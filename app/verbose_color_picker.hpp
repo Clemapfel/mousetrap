@@ -77,6 +77,9 @@ namespace mousetrap
 
                 static inline float _width_to_cursor_width_ratio = 0.025;
 
+                float value;
+                void set_value(float x);
+
                 ~Slider() {
                     delete _bar_shader;
                     delete _cursor;
@@ -290,11 +293,9 @@ namespace mousetrap
         _html_region->_label_hbox->add(_html_region->_label);
         _html_region->_label_hbox->add(GTK_WIDGET(_html_region->_label_separator));
 
-
         _html_region->_main->add(_html_region->_label_hbox);
         _html_region->_main->add(_html_region->_entry_hbox);
 
-        //_html_region->_entry_hbox->set_hexpand(false);
         _html_region->_entry->set_margin_start(slider_double_indent);
         _html_region->_entry->set_halign(GTK_ALIGN_START);
         _html_region->_entry->set_margin_end(0.5 * state::margin_unit);
@@ -328,7 +329,7 @@ namespace mousetrap
         _current_color_region->_canvas->set_hexpand(true);
         _current_color_region->_canvas->set_size_request({1, current_color_height});
         _current_color_region->_canvas->set_valign(GTK_ALIGN_START);
-        _current_color_region->_canvas->set_margin_start(7 * state::margin_unit);
+        _current_color_region->_canvas->set_margin_start(8 * state::margin_unit);
 
         _current_color_region->_main->add(_current_color_region->_canvas);
         _current_color_region->_main->set_margin_top(0.1 * state::margin_unit);
@@ -380,7 +381,6 @@ namespace mousetrap
 
         char c = std::get<0>(*char_and_instance);
         auto* instance = std::get<1>(*char_and_instance);
-
         auto& self = instance->_sliders.at(c);
 
         self->_cursor = new Shape();
@@ -442,17 +442,38 @@ namespace mousetrap
         self->_canvas->add_render_task(self->_cursor);
         self->_canvas->add_render_task(self->_cursor_frame);
 
+        instance->update();
         gtk_gl_area_queue_render(area);
     }
 
     void VerboseColorPicker::on_slider_resize(GtkGLArea* area, int w, int h, SliderTuple_t* char_and_instance)
     {
-        return;
         gtk_gl_area_make_current(area);
 
         char c = std::get<0>(*char_and_instance);
         auto* instance = std::get<1>(*char_and_instance);
         auto& self = instance->_sliders.at(c);
+
+        float width = (state::margin_unit * 0.75) / w;
+
+        self->_cursor->as_rectangle({0.5, 0}, {width, 1});
+
+        {
+            auto size = self->_cursor->get_size();
+            size.y -= 0.001;
+            auto top_left = self->_cursor->get_top_left();
+
+            std::vector<Vector2f> vertices = {
+                    {top_left.x , top_left.y},
+                    {top_left.x + size.x, top_left.y},
+                    {top_left.x + size.x, top_left.y + size.y},
+                    {top_left.x, top_left.y + size.y}
+            };
+
+            self->_cursor_frame->as_wireframe(vertices);
+        }
+
+        self->set_value(self->value);
 
         self->_canvas_size->x = w;
         self->_canvas_size->y = h;
@@ -521,6 +542,115 @@ namespace mousetrap
     void VerboseColorPicker::on_entry_paste(GtkEntry*, VerboseColorPicker* instance)
     {}
 
+    void VerboseColorPicker::Slider::set_value(float x)
+    {
+        if (_cursor == nullptr or _cursor_frame == nullptr)
+            return;
+
+        value = x;
+
+        Vector2f centroid = {x, 0.5};
+
+        if (centroid.x < _cursor->get_size().x * 0.5)
+            centroid.x = _cursor->get_size().x * 0.5;
+
+        if (centroid.x > 1 - _cursor->get_size().x * 0.5)
+            centroid.x = 1 - _cursor->get_size().x * 0.5;
+
+        _cursor->set_centroid(centroid);
+        _cursor_frame->set_centroid(centroid);
+
+        //_spin_button->set_all_signals_blocked(true);
+        _spin_button->set_value(x);
+        //_spin_button->set_all_signals_blocked(false);
+    }
+
     void VerboseColorPicker::update()
-    {}
+    {
+        auto set_left_right_color = [](Shape* shape, RGBA color_left, RGBA color_right)
+        {
+            if (shape == nullptr)
+                return;
+
+            shape->set_vertex_color(0, color_left);
+            shape->set_vertex_color(1, color_right);
+            shape->set_vertex_color(2, color_right);
+            shape->set_vertex_color(3, color_left);
+        };
+
+        const auto color = state::primary_color;
+
+        auto* slider = _sliders.at('A');
+        slider->set_value(color.a);
+        set_left_right_color(
+            slider->_bar,
+            HSVA(color.h, color.s, color.v, 0),
+            HSVA(color.h, color.s, color.v, 1)
+        );
+        slider->_canvas->queue_render();
+
+        slider = _sliders.at('H');
+        slider->set_value(color.h);
+        set_left_right_color(
+                slider->_bar,
+                HSVA(0, color.s, color.v, color.a),
+                HSVA(1, color.s, color.v, color.a)
+        );
+        slider->_canvas->queue_render();
+
+        slider = _sliders.at('S');
+        slider->set_value(color.s);
+        set_left_right_color(
+                slider->_bar,
+                HSVA(color.h, 0, color.v, color.a),
+                HSVA(color.h, 1, color.v, color.a)
+        );
+        slider->_canvas->queue_render();
+
+        slider = _sliders.at('V');
+        slider->set_value(color.v);
+        set_left_right_color(
+                slider->_bar,
+                HSVA(color.h, color.s, 0, color.a),
+                HSVA(color.h, color.s, 1, color.a)
+        );
+        slider->_canvas->queue_render();
+
+        auto as_rgba = color.operator RGBA();
+
+        slider = _sliders.at('R');
+        slider->set_value(as_rgba.r);
+        set_left_right_color(
+                slider->_bar,
+                RGBA(0, as_rgba.g, as_rgba.b, as_rgba.a),
+                RGBA(1, as_rgba.g, as_rgba.b, as_rgba.a)
+        );
+        slider->_canvas->queue_render();
+
+        slider = _sliders.at('G');
+        slider->set_value(as_rgba.g);
+        set_left_right_color(
+                slider->_bar,
+                RGBA(as_rgba.r, 0, as_rgba.b, as_rgba.a),
+                RGBA(as_rgba.r, 1, as_rgba.b, as_rgba.a)
+        );
+        slider->_canvas->queue_render();
+
+        slider = _sliders.at('B');
+        slider->set_value(as_rgba.b);
+        set_left_right_color(
+                slider->_bar,
+                RGBA(as_rgba.r, as_rgba.g, 0, as_rgba.a),
+                RGBA(as_rgba.r, as_rgba.g, 1, as_rgba.a)
+        );
+        slider->_canvas->queue_render();
+
+        if (_current_color_region->_current_color_shape != nullptr)
+            _current_color_region->_current_color_shape->set_color(color);
+
+        if (_current_color_region->_last_color_shape != nullptr)
+            _current_color_region->_last_color_shape->set_color(color);
+
+        _current_color_region->_canvas->queue_render();
+    }
 }
