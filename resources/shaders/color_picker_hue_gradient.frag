@@ -32,5 +32,5 @@ void main()
     vec2 pos = (_vertex_position.xy + vec2(1)) / 2;
 
     vec3 hsv = vec3(pos.x, current_hsv.y, current_hsv.z);
-    _fragment_color = vec4(hsv_to_rgb(hsv), 1);
+    _fragment_color = vec4(hsv_to_rgb(hsv), _current_color_hsva.a);
 }

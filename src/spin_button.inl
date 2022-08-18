@@ -39,6 +39,11 @@ namespace mousetrap
         gtk_spin_button_set_digits(_native, n);
     }
 
+    void SpinButton::set_width_chars(size_t n)
+    {
+        gtk_entry_set_width_chars(GTK_ENTRY(_native), n);
+    }
+
     void SpinButton::set_wrap(bool b)
     {
         gtk_spin_button_set_wrap(_native, b);

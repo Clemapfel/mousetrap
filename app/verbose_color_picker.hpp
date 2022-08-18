@@ -76,6 +76,7 @@ namespace mousetrap
                 static inline Shader* _transparency_shader = nullptr;
 
                 static inline float _width_to_cursor_width_ratio = 0.025;
+                bool _drag_active = false;
 
                 float value;
                 void set_value(float x);
@@ -92,6 +93,8 @@ namespace mousetrap
                     delete _main;
                     delete _canvas_size;
                 }
+
+                static HSVA get_color_with_component_set_to(HSVA color, char component, float value);
             };
 
             std::map<char, Slider*> _sliders
@@ -106,9 +109,13 @@ namespace mousetrap
             };
 
             using SliderTuple_t = std::tuple<char, VerboseColorPicker*>;
-            static void on_slider_realize(GtkGLArea* area, SliderTuple_t* char_and_instance);
-            static void on_slider_resize(GtkGLArea* area, int w, int h, SliderTuple_t* char_and_instance);
-            static void on_slider_spin_button_value_changed(GtkSpinButton*, SliderTuple_t* char_and_instance);
+            static void on_slider_realize(GtkGLArea* area, SliderTuple_t*);
+            static void on_slider_resize(GtkGLArea* area, int w, int h, SliderTuple_t*);
+            static void on_slider_spin_button_value_changed(GtkSpinButton*, SliderTuple_t*);
+
+            static void on_slider_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, SliderTuple_t*);
+            static void on_slider_button_press_event(GtkWidget* widget, GdkEventButton* event, SliderTuple_t*);
+            static void on_slider_button_release_event(GtkWidget* widget, GdkEventButton* event, SliderTuple_t*);
 
             // html region
 
@@ -234,17 +241,24 @@ namespace mousetrap
                 );
             }
 
-            _sliders[c]->_canvas->connect_signal("realize", on_slider_realize, new std::tuple(c, this));
-            _sliders[c]->_canvas->connect_signal("resize", on_slider_resize, new std::tuple(c, this));
+            SliderTuple_t* which = new std::tuple(c, this); // intentional memory leak
+
+            _sliders[c]->_canvas->connect_signal("realize", on_slider_realize, which);
+            _sliders[c]->_canvas->connect_signal("resize", on_slider_resize, which);
             _sliders[c]->_canvas->set_expand(true);
-            //_sliders[c]->_canvas->set_margin_top(0.25 * state::margin_unit);
-            //_sliders[c]->_canvas->set_margin_bottom(0.25 * state::margin_unit);
+
+            _sliders[c]->_canvas->add_events(GDK_BUTTON_PRESS_MASK, GDK_BUTTON_RELEASE_MASK, GDK_POINTER_MOTION_MASK);
+            _sliders[c]->_canvas->connect_signal("motion_notify_event", on_slider_motion_notify_event, which);
+            _sliders[c]->_canvas->connect_signal("button-press-event", on_slider_button_press_event, which);
+            _sliders[c]->_canvas->connect_signal("button-release-event", on_slider_button_release_event, which);
 
             _sliders[c]->_spin_button->set_expand(false);
             _sliders[c]->_spin_button->set_digits(3);
             _sliders[c]->_spin_button->set_width_chars(3 + 2);
             _sliders[c]->_spin_button->set_halign(GTK_ALIGN_END);
             _sliders[c]->_spin_button->set_margin_start(0.75 * state::margin_unit);
+
+            _sliders[c]->_spin_button->connect_signal("value-changed", on_slider_spin_button_value_changed, new std::tuple(c, this));
 
             _sliders[c]->_main->add(_sliders[c]->_canvas);
             _sliders[c]->_main->add(_sliders[c]->_spin_button);
@@ -267,9 +281,6 @@ namespace mousetrap
             get_resource_path() + "shaders/transparency_tiling.frag",
             ShaderType::FRAGMENT
         );
-
-        // make hue wrappable
-        _sliders['H']->_spin_button->set_wrap(true);
 
         _html_region = new HtmlRegion{
             new Box(GTK_ORIENTATION_HORIZONTAL),
@@ -315,12 +326,6 @@ namespace mousetrap
             new Vector2f(1, 1),
             new Box(GTK_ORIENTATION_VERTICAL)
         };
-
-        _current_color_region->_transparency_shader = new Shader();
-        _current_color_region->_transparency_shader->create_from_file(
-                get_resource_path() + "shaders/transparency_tiling.frag",
-                ShaderType::FRAGMENT
-        );
 
         static float current_color_height = 3 * state::margin_unit;
 
@@ -492,11 +497,11 @@ namespace mousetrap
 
         self->_last_color_shape = new Shape();
         self->_last_color_shape->as_rectangle({0, 0}, {self->_width_to_last_color_width_ration, 1});
-        self->_last_color_shape->set_color(RGBA(0, 1, 0, 1));
+        self->_last_color_shape->set_color(state::primary_color);
 
         self->_current_color_shape = new Shape();
         self->_current_color_shape->as_rectangle({self->_width_to_last_color_width_ration, 0}, {1 - self->_width_to_last_color_width_ration, 1});
-        self->_current_color_shape->set_color(RGBA(1, 0, 1, 1));
+        self->_current_color_shape->set_color(state::primary_color);
 
         {
             auto size = self->_transparency_background->get_size();
@@ -516,7 +521,16 @@ namespace mousetrap
             self->_frame->set_color(RGBA(0, 0, 0, 1));
         }
 
+        self->_transparency_background = new Shape();
         self->_transparency_background->as_rectangle({0, 0}, {1, 1});
+        self->_transparency_shader = new Shader();
+
+        self->_transparency_shader = new Shader();
+        self->_transparency_shader->create_from_file(
+                get_resource_path() + "shaders/transparency_tiling.frag",
+                ShaderType::FRAGMENT
+        );
+
         auto transparency_render_task = RenderTask(self->_transparency_background, self->_transparency_shader);
         transparency_render_task.register_vec2("_canvas_size", self->_canvas_size);
 
@@ -524,6 +538,9 @@ namespace mousetrap
         self->_canvas->add_render_task(self->_current_color_shape);
         self->_canvas->add_render_task(self->_last_color_shape);
         self->_canvas->add_render_task(self->_frame);
+
+        instance->update();
+        gtk_gl_area_queue_render(area);
     }
 
     void VerboseColorPicker::on_current_color_region_resize(GtkGLArea* area, int w, int h, VerboseColorPicker* instance)
@@ -531,10 +548,48 @@ namespace mousetrap
         auto* self = instance->_current_color_region;
         self->_canvas_size->x = w;
         self->_canvas_size->y = h;
+
+        self->_last_color_shape->set_top_left({0, 0}); //TODO: find vertex array bug that makes this necessary
     }
 
-    void VerboseColorPicker::on_slider_spin_button_value_changed(GtkSpinButton*, SliderTuple_t* char_and_instance)
-    {}
+    HSVA VerboseColorPicker::Slider::get_color_with_component_set_to(HSVA color, char c, float value)
+    {
+        float h_before = color.h;
+
+        if (c == 'A')
+            color.a = value;
+        else if (c == 'H')
+            color.h = value;
+        else if (c == 'S')
+            color.s = value;
+        else if (c == 'V')
+            color.v = value;
+        else
+        {
+            auto as_rgba = color.operator RGBA();
+            if (c == 'R')
+                as_rgba.r = value;
+            else if (c == 'G')
+                as_rgba.g = value;
+            else if (c == 'B')
+                as_rgba.b = value;
+
+            color = as_rgba.operator HSVA();
+            if (color.s == 0)
+                color.h = h_before;
+        }
+
+        return color;
+    }
+
+    void VerboseColorPicker::on_slider_spin_button_value_changed(GtkSpinButton* button, SliderTuple_t* char_and_instance)
+    {
+        char c = std::get<0>(*char_and_instance);
+        VerboseColorPicker* instance = std::get<1>(*char_and_instance);
+
+        set_primary_color(Slider::get_color_with_component_set_to(state::primary_color, c, gtk_spin_button_get_value(button)));
+        instance->update();
+    }
 
     void VerboseColorPicker::on_entry_activate(GtkEntry*, VerboseColorPicker* instance)
     {}
@@ -557,12 +612,16 @@ namespace mousetrap
         if (centroid.x > 1 - _cursor->get_size().x * 0.5)
             centroid.x = 1 - _cursor->get_size().x * 0.5;
 
+        // align to pixelgrid
+        //centroid.x -= std::fmod(centroid.x, 1.f / _canvas_size->x);
+
         _cursor->set_centroid(centroid);
         _cursor_frame->set_centroid(centroid);
 
-        //_spin_button->set_all_signals_blocked(true);
+        _spin_button->set_all_signals_blocked(true);
         _spin_button->set_value(x);
-        //_spin_button->set_all_signals_blocked(false);
+        _spin_button->update();
+        _spin_button->set_all_signals_blocked(false);
     }
 
     void VerboseColorPicker::update()
@@ -649,8 +708,72 @@ namespace mousetrap
             _current_color_region->_current_color_shape->set_color(color);
 
         if (_current_color_region->_last_color_shape != nullptr)
+        {
             _current_color_region->_last_color_shape->set_color(color);
+        }
 
         _current_color_region->_canvas->queue_render();
+    }
+
+    void VerboseColorPicker::on_slider_button_press_event(GtkWidget* widget, GdkEventButton* event, SliderTuple_t* component_and_instance)
+    {
+        char c = std::get<0>(*component_and_instance);
+        auto* instance = std::get<1>(*component_and_instance);
+        auto* slider = instance->_sliders.at(c);
+
+        auto pos = Vector2f{event->x, event->y};
+        pos.x /= slider->_canvas_size->x;
+        pos.y /= slider->_canvas_size->y;
+
+        if (event->button == 1)
+        {
+            slider->_drag_active = true;
+            auto value = pos.x;
+
+            slider->set_value(value);
+            auto color = Slider::get_color_with_component_set_to(state::primary_color, c, value);
+            instance->_current_color_region->_current_color_shape->set_color(color);
+        }
+    }
+
+    void VerboseColorPicker::on_slider_button_release_event(GtkWidget* widget, GdkEventButton* event,
+                                                            SliderTuple_t* component_and_instance)
+    {
+        char c = std::get<0>(*component_and_instance);
+        auto* instance = std::get<1>(*component_and_instance);
+        auto* slider = instance->_sliders.at(c);
+
+        auto pos = Vector2f{event->x, event->y};
+        pos.x /= slider->_canvas_size->x;
+        pos.y /= slider->_canvas_size->y;
+
+        if (slider->_drag_active)
+        {
+            auto value = pos.x;
+            auto color = state::primary_color;
+
+            set_primary_color(Slider::get_color_with_component_set_to(color, c, value));
+            instance->update();
+
+            slider->_drag_active = false;
+        }
+    }
+
+    void VerboseColorPicker::on_slider_motion_notify_event(GtkWidget* widget, GdkEventMotion* event, SliderTuple_t* component_and_instance)
+    {
+        char c = std::get<0>(*component_and_instance);
+        auto* instance = std::get<1>(*component_and_instance);
+        auto* slider = instance->_sliders.at(c);
+
+        if (slider->_drag_active)
+        {
+            auto pos = Vector2f(event->x, event->y);
+            pos.x /= slider->_canvas_size->x;
+            pos.y /= slider->_canvas_size->y;
+
+            slider->set_value(pos.x);
+            auto color = Slider::get_color_with_component_set_to(state::primary_color, c, pos.x);
+            instance->_current_color_region->_current_color_shape->set_color(color);
+        }
     }
 }

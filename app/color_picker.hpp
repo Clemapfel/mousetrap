@@ -10,6 +10,5 @@ namespace mousetrap
     class ColorPicker
     {
         public:
-
     };
 }

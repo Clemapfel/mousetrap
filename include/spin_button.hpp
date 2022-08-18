@@ -10,7 +10,7 @@
 
 namespace mousetrap
 {
-    class SpinButton : public Entry
+    class SpinButton : public Widget
     {
         public:
             SpinButton(float min, float max, float step);
@@ -20,6 +20,7 @@ namespace mousetrap
            float get_value();
 
            void set_digits(size_t);
+           void set_width_chars(size_t);
 
            void set_wrap(bool);
            GtkWidget* get_native() override;
