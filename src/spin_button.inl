@@ -34,6 +34,11 @@ namespace mousetrap
         return gtk_spin_button_get_value(_native);
     }
 
+    void SpinButton::set_digits(size_t n)
+    {
+        gtk_spin_button_set_digits(_native, n);
+    }
+
     gint SpinButton::on_input_wrapper(GtkSpinButton* self, gdouble* new_value, void* instance)
     {
         return ((SpinButton*) instance)->on_input(self, new_value, nullptr);

@@ -29,12 +29,12 @@ namespace mousetrap
 
     std::string Entry::get_text() const
     {
-        return gtk_entry_get_text(_entry);
+        return gtk_entry_get_text(GTK_ENTRY(const_cast<Entry*>(this)->get_native()));
     }
 
     void Entry::set_text(const std::string& text)
     {
-        gtk_entry_set_text(_entry, text.c_str());
+        gtk_entry_set_text(GTK_ENTRY(get_native()), text.c_str());
     }
 
     void Entry::on_activate(GtkEntry* self, gpointer user_data)
@@ -79,6 +79,6 @@ namespace mousetrap
 
     void Entry::set_width_chars(size_t n)
     {
-        gtk_entry_set_width_chars(_entry, n);
+        gtk_entry_set_width_chars(GTK_ENTRY(get_native()), n);
     }
 }
