@@ -97,7 +97,6 @@ namespace mousetrap
                 }
 
                 static inline HSVA _hue_gradient_shader_current_color = state::primary_color;
-                static HSVA get_color_with_component_set_to(HSVA color, char component, float value);
             };
 
             std::map<char, Slider*> _sliders
@@ -110,6 +109,8 @@ namespace mousetrap
                 {'G', nullptr},
                 {'B', nullptr}
             };
+
+            static HSVA get_color_with_component_set_to(HSVA color, char component, float value);
 
             using SliderTuple_t = std::tuple<char, VerboseColorPicker*>;
             static void on_slider_realize(GtkGLArea* area, SliderTuple_t*);
@@ -124,7 +125,7 @@ namespace mousetrap
 
             struct HtmlRegion
             {
-                Box* _label_hbox;
+                Box * _label_hbox;
                 Label* _label;
                 GtkSeparatorMenuItem* _label_separator;
 
@@ -139,6 +140,10 @@ namespace mousetrap
             HtmlRegion* _html_region;
             static void on_entry_activate(GtkEntry*, VerboseColorPicker* instance);
             static void on_entry_paste(GtkEntry*, VerboseColorPicker* instance);
+
+            std::string sanitize_html_code(const std::string&);
+            std::string color_to_html_code(RGBA);
+            RGBA html_code_to_color(const std::string&);
 
             // current color
 
@@ -555,7 +560,7 @@ namespace mousetrap
         self->_last_color_shape->set_top_left({0, 0}); //TODO: find vertex array bug that makes this necessary
     }
 
-    HSVA VerboseColorPicker::Slider::get_color_with_component_set_to(HSVA color, char c, float value)
+    HSVA VerboseColorPicker::get_color_with_component_set_to(HSVA color, char c, float value)
     {
         float h_before = color.h;
 
@@ -590,7 +595,7 @@ namespace mousetrap
         char c = std::get<0>(*char_and_instance);
         VerboseColorPicker* instance = std::get<1>(*char_and_instance);
 
-        set_primary_color(Slider::get_color_with_component_set_to(state::primary_color, c, gtk_spin_button_get_value(button)));
+        set_primary_color(get_color_with_component_set_to(state::primary_color, c, gtk_spin_button_get_value(button)));
         instance->update();
     }
 
@@ -739,7 +744,7 @@ namespace mousetrap
             auto value = pos.x;
 
             slider->set_value(value);
-            auto color = Slider::get_color_with_component_set_to(state::primary_color, c, value);
+            auto color = get_color_with_component_set_to(state::primary_color, c, value);
             instance->update(color);
             instance->_current_color_region->_last_color_shape->set_color(state::primary_color);
         }
@@ -761,7 +766,7 @@ namespace mousetrap
             auto value = pos.x;
             auto color = state::primary_color;
 
-            set_primary_color(Slider::get_color_with_component_set_to(color, c, value));
+            set_primary_color(get_color_with_component_set_to(color, c, value));
             instance->update();
             slider->_drag_active = false;
         }
@@ -780,7 +785,7 @@ namespace mousetrap
             pos.y /= slider->_canvas_size->y;
 
             slider->set_value(pos.x);
-            auto color = Slider::get_color_with_component_set_to(state::primary_color, c, pos.x);
+            auto color = get_color_with_component_set_to(state::primary_color, c, pos.x);
             instance->update(color);
             instance->_current_color_region->_last_color_shape->set_color(state::primary_color);
         }
