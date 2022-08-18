@@ -31,6 +31,8 @@ namespace mousetrap
             void update() override;
 
         private:
+            void update(HSVA color);
+
             Box* _all_regions_box;
             Overlay* _main;
 
@@ -94,6 +96,7 @@ namespace mousetrap
                     delete _canvas_size;
                 }
 
+                static inline HSVA _hue_gradient_shader_current_color = state::primary_color;
                 static HSVA get_color_with_component_set_to(HSVA color, char component, float value);
             };
 
@@ -440,7 +443,7 @@ namespace mousetrap
 
         auto bar_render_task = RenderTask(self->_bar, self->_bar_shader);
         bar_render_task.register_vec2("_canvas_size", self->_canvas_size);
-        bar_render_task.register_color("_current_color_hsva", &state::primary_color);
+        bar_render_task.register_color("_current_color_hsva", &Slider::_hue_gradient_shader_current_color);
 
         self->_canvas->add_render_task(bar_render_task);
         self->_canvas->add_render_task(self->_bar_frame);
@@ -626,6 +629,13 @@ namespace mousetrap
 
     void VerboseColorPicker::update()
     {
+        update(state::primary_color);
+    }
+
+    void VerboseColorPicker::update(HSVA color)
+    {
+        Slider::_hue_gradient_shader_current_color = color;
+
         auto set_left_right_color = [](Shape* shape, RGBA color_left, RGBA color_right)
         {
             if (shape == nullptr)
@@ -636,8 +646,6 @@ namespace mousetrap
             shape->set_vertex_color(2, color_right);
             shape->set_vertex_color(3, color_left);
         };
-
-        const auto color = state::primary_color;
 
         auto* slider = _sliders.at('A');
         slider->set_value(color.a);
@@ -732,7 +740,8 @@ namespace mousetrap
 
             slider->set_value(value);
             auto color = Slider::get_color_with_component_set_to(state::primary_color, c, value);
-            instance->_current_color_region->_current_color_shape->set_color(color);
+            instance->update(color);
+            instance->_current_color_region->_last_color_shape->set_color(state::primary_color);
         }
     }
 
@@ -754,7 +763,6 @@ namespace mousetrap
 
             set_primary_color(Slider::get_color_with_component_set_to(color, c, value));
             instance->update();
-
             slider->_drag_active = false;
         }
     }
@@ -773,7 +781,8 @@ namespace mousetrap
 
             slider->set_value(pos.x);
             auto color = Slider::get_color_with_component_set_to(state::primary_color, c, pos.x);
-            instance->_current_color_region->_current_color_shape->set_color(color);
+            instance->update(color);
+            instance->_current_color_region->_last_color_shape->set_color(state::primary_color);
         }
     }
 }
