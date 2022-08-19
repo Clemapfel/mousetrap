@@ -21,7 +21,7 @@ namespace mousetrap::state
 
     // ### COLORS #####################################
 
-    HSVA primary_color = RGBA(1, 0, 1, 0.5).operator HSVA();
+    HSVA primary_color = RGBA(1, 0, 1, 1).operator HSVA();
     HSVA secondary_color = RGBA(0, 1, 0, 1).operator HSVA();
 
     // ### PALETTES ###################################

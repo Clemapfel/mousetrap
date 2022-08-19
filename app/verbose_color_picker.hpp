@@ -7,6 +7,8 @@
 
 #include <gtk/gtk.h>
 
+#include <set>
+
 #include <include/box.hpp>
 #include <include/spin_button.hpp>
 #include <include/shader.hpp>
@@ -144,6 +146,7 @@ namespace mousetrap
             std::string sanitize_html_code(const std::string&);
             std::string color_to_html_code(RGBA);
             RGBA html_code_to_color(const std::string&);
+            bool is_html_code_valid(const std::string&);
 
             // current color
 
@@ -274,6 +277,8 @@ namespace mousetrap
             _sliders[c]->_main->set_margin_start(slider_double_indent);
         }
 
+        _sliders['H']->_spin_button->set_wrap(true);
+
         _opacity_region->_main->add(_sliders['A']->_main);
 
         _hsv_region->_main->add(_sliders['H']->_main);
@@ -292,7 +297,7 @@ namespace mousetrap
 
         _html_region = new HtmlRegion{
             new Box(GTK_ORIENTATION_HORIZONTAL),
-            new Label("HTML"),
+            new Label("HTML Color Code"),
             GTK_SEPARATOR_MENU_ITEM(gtk_separator_menu_item_new()),
             new Box(GTK_ORIENTATION_HORIZONTAL),
             new Entry(),
@@ -301,6 +306,7 @@ namespace mousetrap
             new Box(GTK_ORIENTATION_VERTICAL)
         };
 
+        _html_region->_entry->set_width_chars(1 + 6 + 2);
         _html_region->_entry->connect_signal("activate", on_entry_activate, this);
         _html_region->_entry->connect_signal("paste-clipboard", on_entry_paste, this);
 
@@ -311,11 +317,13 @@ namespace mousetrap
 
         _html_region->_label_hbox->add(_html_region->_label);
         _html_region->_label_hbox->add(GTK_WIDGET(_html_region->_label_separator));
+        _html_region->_label_hbox->set_margin_bottom(0.25 * state::margin_unit);
 
         _html_region->_main->add(_html_region->_label_hbox);
         _html_region->_main->add(_html_region->_entry_hbox);
 
         _html_region->_entry->set_margin_start(slider_double_indent);
+        _html_region->_entry->set_margin_top(0.25 * state::margin_unit);
         _html_region->_entry->set_halign(GTK_ALIGN_START);
         _html_region->_entry->set_margin_end(0.5 * state::margin_unit);
 
@@ -339,7 +347,7 @@ namespace mousetrap
 
         _current_color_region->_canvas->connect_signal("realize", on_current_color_region_realize, this);
         _current_color_region->_canvas->connect_signal("resize", on_current_color_region_resize, this);
-        _current_color_region->_canvas->set_hexpand(true);
+        _current_color_region->_canvas->set_expand(true);
         _current_color_region->_canvas->set_size_request({1, current_color_height});
         _current_color_region->_canvas->set_valign(GTK_ALIGN_START);
         _current_color_region->_canvas->set_margin_start(8 * state::margin_unit);
@@ -347,7 +355,7 @@ namespace mousetrap
         _current_color_region->_main->add(_current_color_region->_canvas);
         _current_color_region->_main->set_margin_top(0.1 * state::margin_unit);
 
-        _all_regions_box = new Box(GTK_ORIENTATION_VERTICAL);
+        _all_regions_box = new Box(GTK_ORIENTATION_VERTICAL, 0.1 * state::margin_unit);
         _all_regions_box->add(_opacity_region->_main);
         _all_regions_box->add(_hsv_region->_main);
         _all_regions_box->add(_rgb_region->_main);
@@ -366,6 +374,8 @@ namespace mousetrap
         _main->set_under(_all_regions_box);
         _main->set_over(_current_color_region->_main);
         _main->set_pass_through(_current_color_region->_main, true);
+
+        _html_region->_button->connect_signal("clicked", )
     }
 
     GtkWidget* VerboseColorPicker::get_native()
@@ -599,11 +609,27 @@ namespace mousetrap
         instance->update();
     }
 
-    void VerboseColorPicker::on_entry_activate(GtkEntry*, VerboseColorPicker* instance)
-    {}
+    void VerboseColorPicker::on_entry_activate(GtkEntry* entry, VerboseColorPicker* instance)
+    {
+        std::string text = instance->sanitize_html_code(gtk_entry_get_text(entry));
+        if (instance->is_html_code_valid(text))
+        {
+            auto color = instance->html_code_to_color(text);
+            color.a = state::primary_color.a;
 
-    void VerboseColorPicker::on_entry_paste(GtkEntry*, VerboseColorPicker* instance)
-    {}
+            if (color == state::primary_color)
+                return;
+
+            set_primary_color(color.operator HSVA());
+            instance->update(color.operator HSVA());
+        }
+    }
+
+    void VerboseColorPicker::on_entry_paste(GtkEntry* entry, VerboseColorPicker* instance)
+    {
+        std::string text = gtk_entry_get_text(entry);
+        gtk_entry_set_text(entry, instance->sanitize_html_code(text).c_str());
+    }
 
     void VerboseColorPicker::Slider::set_value(float x)
     {
@@ -612,7 +638,13 @@ namespace mousetrap
 
         value = x;
 
-        Vector2f centroid = {x, 0.5};
+        if (value < 0.001)
+            value = 0;
+
+        if (value > 1 - 0.001)
+            value = 1;
+
+        Vector2f centroid = {value, 0.5};
 
         if (centroid.x < _cursor->get_size().x * 0.5)
             centroid.x = _cursor->get_size().x * 0.5;
@@ -726,6 +758,10 @@ namespace mousetrap
         }
 
         _current_color_region->_canvas->queue_render();
+
+        _html_region->_entry->set_all_signals_blocked(true);
+        _html_region->_entry->set_text(color_to_html_code(color.operator RGBA()));
+        _html_region->_entry->set_all_signals_blocked(false);
     }
 
     void VerboseColorPicker::on_slider_button_press_event(GtkWidget* widget, GdkEventButton* event, SliderTuple_t* component_and_instance)
@@ -741,8 +777,7 @@ namespace mousetrap
         if (event->button == 1)
         {
             slider->_drag_active = true;
-            auto value = pos.x;
-
+            auto value = glm::clamp<float>(pos.x, 0, 1);
             slider->set_value(value);
             auto color = get_color_with_component_set_to(state::primary_color, c, value);
             instance->update(color);
@@ -763,7 +798,7 @@ namespace mousetrap
 
         if (slider->_drag_active)
         {
-            auto value = pos.x;
+            auto value = glm::clamp<float>(pos.x, 0, 1);
             auto color = state::primary_color;
 
             set_primary_color(get_color_with_component_set_to(color, c, value));
@@ -783,11 +818,172 @@ namespace mousetrap
             auto pos = Vector2f(event->x, event->y);
             pos.x /= slider->_canvas_size->x;
             pos.y /= slider->_canvas_size->y;
+            auto value = glm::clamp<float>(pos.x, 0, 1);
 
-            slider->set_value(pos.x);
-            auto color = get_color_with_component_set_to(state::primary_color, c, pos.x);
+            slider->set_value(value);
+            auto color = get_color_with_component_set_to(state::primary_color, c, value);
             instance->update(color);
             instance->_current_color_region->_last_color_shape->set_color(state::primary_color);
         }
+    }
+
+    std::string VerboseColorPicker::sanitize_html_code(const std::string& in)
+    {
+        std::string text;
+
+        if (text.front() != '#')
+            text.push_back('#');
+
+        for (size_t i = 1; i < in.size(); ++i)
+        {
+            auto c = in.at(i);
+            if (c == 'a')
+                c = 'A';
+            else if (c == 'b')
+                c = 'B';
+            else if (c == 'c')
+                c = 'C';
+            else if (c == 'd')
+                c = 'D';
+            else if (c == 'e')
+                c = 'E';
+            else if (c == 'f')
+                c = 'F';
+
+            text.push_back(c);
+        }
+
+        return text;
+    }
+
+    bool VerboseColorPicker::is_html_code_valid(const std::string& in)
+    {
+        if (in.front() != '#')
+            return false;
+
+        if (in.size() != 7)
+            return false;
+
+        static std::set<char> valid = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+        for (size_t i = 1; i < in.size(); ++i)
+            if (valid.find(in.at(i)) == valid.end())
+                return false;
+
+        return true;
+    }
+
+    RGBA VerboseColorPicker::html_code_to_color(const std::string& in)
+    {
+        static auto hex_char_to_int = [](char c) -> uint8_t
+        {
+            if (c == '0')
+                return 0;
+
+            if (c == '1')
+                return 1;
+
+            if (c == '2')
+                return 2;
+
+            if (c == '3')
+                return 3;
+
+            if (c == '4')
+                return 4;
+
+            if (c == '5')
+                return 5;
+
+            if (c == '6')
+                return 6;
+
+            if (c == '7')
+                return 7;
+
+            if (c == '8')
+                return 8;
+
+            if (c == '9')
+                return 9;
+
+            if (c == 'A')
+                return 10;
+
+            if (c == 'B')
+                return 11;
+
+            if (c == 'C')
+                return 12;
+
+            if (c == 'D')
+                return 13;
+
+            if (c == 'E')
+                return 14;
+
+            if (c == 'F')
+                return 15;
+
+            return -1; // on error
+        };
+
+        static auto hex_component_to_int = [](int left, int right) -> uint8_t
+        {
+            return left * 16 + right;
+        };
+
+        auto text = sanitize_html_code(in);
+        assert(is_html_code_valid(text));
+
+        std::vector<int> as_hex;
+        as_hex.reserve(6);
+        for (size_t i = 1; i < text.size(); ++i)
+        {
+            as_hex.push_back(hex_char_to_int(text.at(i)));
+            if (as_hex.back() == -1)
+                goto on_error;
+        }
+
+        return RGBA(
+                hex_component_to_int(as_hex.at(0), as_hex.at(1)) / 255.f,
+                hex_component_to_int(as_hex.at(2), as_hex.at(3)) / 255.f,
+                hex_component_to_int(as_hex.at(4), as_hex.at(5)) / 255.f,
+                1
+        );
+
+        on_error:
+        std::cerr << "[LOG] Unable to parse hex html code \"" << in << "\", returning RGBA(0, 0, 0, 1)" << std::endl;
+        return RGBA(0, 0, 0, 1);
+    }
+
+    std::string VerboseColorPicker::color_to_html_code(RGBA in)
+    {
+        in.r = glm::clamp<float>(in.r, 0.f, 1.f);
+        in.g = glm::clamp<float>(in.g, 0.f, 1.f);
+        in.b = glm::clamp<float>(in.b, 0.f, 1.f);
+
+        std::stringstream r;
+        r << std::hex << int(std::round(in.r * 255));
+
+        auto r_string = r.str();
+        if (r_string.size() == 1)
+            r_string = "0" + r_string;
+
+        std::stringstream g;
+        g << std::hex << int(std::round(in.g * 255));
+
+        auto g_string = g.str();
+        if (g_string.size() == 1)
+            g_string = "0" + g_string;
+
+        std::stringstream b;
+        b << std::hex << int(std::round(in.b * 255));
+
+        auto b_string = b.str();
+        if (b_string.size() == 1)
+            b_string = "0" + b_string;
+
+        return sanitize_html_code("#" + r_string + g_string + b_string);
     }
 }
