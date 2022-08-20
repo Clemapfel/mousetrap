@@ -162,7 +162,7 @@ add_library(app STATIC
         include/widgets/color_picker.hpp
 
         include/widgets/hsv_triangle_select.hpp
-        include/widgets/global_state.hpp  include/widgets/brush_selection.hpp    include/widgets/brush_designer.hpp include/widgets/canvas.hpp  include/widgets/palette_view.hpp app/global_state.hpp app/layer.hpp app/palette.hpp app/palette_view.hpp "app/initialize.hpp" app/keybindings.hpp app/primary_secondary_color_swapper.hpp app/verbose_color_picker.hpp app/color_picker.hpp)
+        include/widgets/global_state.hpp  include/widgets/brush_selection.hpp    include/widgets/brush_designer.hpp include/widgets/canvas.hpp  include/widgets/palette_view.hpp app/global_state.hpp app/layer.hpp app/palette.hpp app/palette_view.hpp "app/initialize.hpp" app/keybindings.hpp app/primary_secondary_color_swapper.hpp app/verbose_color_picker.hpp app/color_picker.hpp resources/shaders/color_picker_hsv_square.frag)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

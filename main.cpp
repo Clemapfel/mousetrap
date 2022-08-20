@@ -33,7 +33,6 @@ int main()
     state::verbose_color_picker_instance = new VerboseColorPicker();
 
     auto color_picker = ColorPicker();
-    color_picker.update();
     main_window.add(color_picker);
 
     if (false) {
