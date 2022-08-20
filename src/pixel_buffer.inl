@@ -82,9 +82,7 @@ namespace mousetrap
 
     void PixelBuffer::set_pixel(size_t x, size_t y, RGBA color)
     {
-        static size_t max_i = 0;
         auto i = to_linear_index(x, y);
-
         if (i >= _size.x * _size.y * 4)
         {
             std::cerr << "[ERROR] In Image::set_pixel: indices " << x << " " << y << " are out of bounds for an image of size " << _size.x << "x" << _size.y << std::endl;

@@ -318,6 +318,26 @@ namespace mousetrap
         initialize();
     }
 
+    void Shape::as_wireframe(const Shape& shape)
+    {
+        _vertices.clear();
+        _indices.clear();
+
+        std::vector<Vector2f> vertices;
+        for (size_t i = 0; i < shape.get_n_vertices(); ++i)
+            vertices.push_back(shape.get_vertex_position(i));
+
+        size_t i = 0;
+        for (auto& position : vertices)
+        {
+            _vertices.emplace_back(position.x, position.y, _color);
+            _indices.push_back(i++);
+        }
+
+        _render_type = GL_LINE_LOOP;
+        initialize();
+    }
+
     void Shape::as_polygon(std::vector<Vector2f> positions)
     {
         _vertices.clear();

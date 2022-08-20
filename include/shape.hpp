@@ -32,7 +32,9 @@ namespace mousetrap
             void as_line(Vector2f a, Vector2f b);
             void as_line_strip(std::vector<Vector2f>);
             void as_polygon(std::vector<Vector2f> positions); // bounding polygon
+
             void as_wireframe(std::vector<Vector2f>);         // bounding polygon
+            void as_wireframe(const Shape&);
 
             void as_frame(Vector2f top_left, Vector2f size, float x_width, float y_width);
 

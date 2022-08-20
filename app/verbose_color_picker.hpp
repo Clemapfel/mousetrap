@@ -374,8 +374,6 @@ namespace mousetrap
         _main->set_under(_all_regions_box);
         _main->set_over(_current_color_region->_main);
         _main->set_pass_through(_current_color_region->_main, true);
-
-        _html_region->_button->connect_signal("clicked", )
     }
 
     GtkWidget* VerboseColorPicker::get_native()

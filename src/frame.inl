@@ -18,17 +18,8 @@ namespace mousetrap
 
     void Frame::set_ratio(float new_ratio)
     {
+        _ratio = new_ratio;
         gtk_aspect_frame_set(_native, new_ratio, _x_align, _y_align, _obey_child);
-    }
-
-    void Frame::set_xalign(float new_align)
-    {
-        gtk_aspect_frame_set(_native, _ratio, new_align, _y_align, _obey_child);
-    }
-
-    void Frame::set_yalign(float new_align)
-    {
-        gtk_aspect_frame_set(_native, _ratio, _x_align, new_align, _obey_child);
     }
 
     void Frame::set_label(const std::string& text, float xalign, float yalign)

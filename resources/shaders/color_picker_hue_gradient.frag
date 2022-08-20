@@ -25,12 +25,13 @@ in vec3 _vertex_position;
 out vec4 _fragment_color;
 
 uniform vec4 _current_color_hsva;
+uniform int _vertical;
 
 void main()
 {
     vec3 current_hsv = _current_color_hsva.xyz;
     vec2 pos = (_vertex_position.xy + vec2(1)) / 2;
 
-    vec3 hsv = vec3(pos.x, current_hsv.y, current_hsv.z);
+    vec3 hsv = vec3(_vertical == 1 ? pos.y : pos.x, current_hsv.y, current_hsv.z);
     _fragment_color = vec4(hsv_to_rgb(hsv), _current_color_hsva.a);
 }

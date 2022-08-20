@@ -12,6 +12,7 @@
 #include <app/palette_view.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
 #include <app/verbose_color_picker.hpp>
+#include <app/color_picker.hpp>
 
 using namespace mousetrap;
 
@@ -30,7 +31,10 @@ int main()
 
     state::primary_secondary_color_swapper_instance = new PrimarySecondaryColorSwapper();
     state::verbose_color_picker_instance = new VerboseColorPicker();
-    main_window.add(state::verbose_color_picker_instance);
+
+    auto color_picker = ColorPicker();
+    color_picker.update();
+    main_window.add(color_picker);
 
     if (false) {
         auto* tree_store = gtk_tree_store_new(2, G_TYPE_STRING, GDK_TYPE_PIXBUF);
