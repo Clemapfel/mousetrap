@@ -38,6 +38,9 @@ void main()
     float x_dist = distance(pos.x, _square_top_left.x) / _square_size.x;
     float y_dist = distance(pos.y, _square_top_left.y) / _square_size.y;
 
-    vec3 hsv = vec3(current_hsv.x, y_dist, 1 - x_dist);
+    vec3 left_right = vec3(_current_color_hsva.x, 0, 1  - x_dist);
+    vec3 top_bottom = vec3(_current_color_hsva.x, y_dist, 1);
+
+    vec3 hsv = mix(left_right, top_bottom, distance(pos.y, _square_top_left.y));
     _fragment_color = vec4(hsv_to_rgb(hsv), 1);
 }
