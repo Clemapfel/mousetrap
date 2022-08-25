@@ -5,9 +5,9 @@
 
 namespace mousetrap
 {
-    Window::Window(GtkWindowType type)
+    Window::Window()
     {
-        _native = GTK_WINDOW(gtk_window_new(type));
+        _native = GTK_WINDOW(gtk_window_new());
     }
 
     Window::~Window()
@@ -37,5 +37,22 @@ namespace mousetrap
             gtk_window_fullscreen(_native);
         else
             gtk_window_unfullscreen(_native);
+    }
+
+    void Window::add(GtkWidget* widget)
+    {
+        gtk_window_set_child(_native, widget);
+    }
+
+    void Window::remove(GtkWidget* widget)
+    {
+        if (gtk_window_get_child(_native) != widget)
+        {
+            std::cerr << "[WARNING] In Window::remove: Widget " << widget
+                      << " is not the child of this window. No removal will take place" << std::endl;
+            return;
+        }
+
+        gtk_window_set_child(_native, nullptr);
     }
 }

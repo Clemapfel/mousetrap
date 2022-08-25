@@ -7,7 +7,7 @@ namespace mousetrap
 {
     ScrolledWindow::ScrolledWindow()
     {
-        _native = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(nullptr, nullptr));
+        _native = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new());
     }
 
     GtkWidget* ScrolledWindow::get_native()
@@ -45,9 +45,9 @@ namespace mousetrap
         gtk_scrolled_window_set_placement(_native, type);
     }
 
-    void ScrolledWindow::set_shadow_type(GtkShadowType type)
+    void ScrolledWindow::set_has_frame(bool b)
     {
-        gtk_scrolled_window_set_shadow_type(_native, type);
+        gtk_scrolled_window_set_has_frame(_native, b);
     }
 
     void ScrolledWindow::set_kinetic_scrolling_enabled(bool b)

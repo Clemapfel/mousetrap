@@ -22,7 +22,7 @@ namespace mousetrap
 
     void Overlay::set_under(GtkWidget* in)
     {
-        gtk_container_add(GTK_CONTAINER(_overlay), GTK_WIDGET(in));
+        gtk_overlay_set_child(_overlay, in);
     }
 
     void Overlay::set_over(GtkWidget* in)
@@ -30,18 +30,13 @@ namespace mousetrap
         gtk_overlay_add_overlay(_overlay, GTK_WIDGET(in));
     }
 
-    void Overlay::set_under(Widget* in)
+    void Overlay::remove_over(GtkWidget* in)
     {
-        gtk_container_add(GTK_CONTAINER(_overlay), GTK_WIDGET(in->get_native()));
+        gtk_overlay_remove_overlay(_overlay, in);
     }
 
-    void Overlay::set_over(Widget* in)
+    void Overlay::remove_under()
     {
-        gtk_overlay_add_overlay(_overlay, GTK_WIDGET(in->get_native()));
-    }
-
-    void Overlay::set_pass_through(Widget* widget, bool b)
-    {
-        gtk_overlay_set_overlay_pass_through(_overlay, widget->get_native(), b);
+        gtk_overlay_set_child(_overlay, nullptr);
     }
 }

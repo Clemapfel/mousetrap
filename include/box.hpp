@@ -17,7 +17,9 @@ namespace mousetrap
             virtual ~Box();
 
             GtkWidget* get_native();
-            using Container::add;
+
+            void add(GtkWidget*) override;
+            void remove(GtkWidget*) override;
 
         private:
             GtkBox* _box;

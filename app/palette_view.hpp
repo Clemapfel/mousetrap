@@ -19,6 +19,7 @@
 
 namespace mousetrap
 {
+    /*
     enum class PaletteSortMode
     {
         NONE,
@@ -353,4 +354,5 @@ namespace mousetrap
         _sort_mode = mode;
         update();
     }
+     */
 }

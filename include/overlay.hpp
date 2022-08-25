@@ -9,7 +9,7 @@
 
 namespace mousetrap
 {
-    class Overlay : public Container
+    class Overlay
     {
         public:
             Overlay();
@@ -20,10 +20,8 @@ namespace mousetrap
             void set_under(GtkWidget*);
             void set_over(GtkWidget*);
 
-            void set_under(Widget*);
-            void set_over(Widget*);
-
-            void set_pass_through(Widget*, bool b);
+            void remove_under();
+            void remove_over(GtkWidget*);
 
         private:
             GtkOverlay* _overlay;

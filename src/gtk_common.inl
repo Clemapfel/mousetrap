@@ -9,10 +9,10 @@
 bool gtk_initialize_opengl(GtkWindow* window)
 {
     bool failed = false;
-    auto *gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
+    auto *gdk_window = gtk_widget_get_display(GTK_WIDGET(window));
 
     GError *error_maybe = nullptr;
-    auto *context = gdk_window_create_gl_context(gdk_window, &error_maybe);
+    auto *context = gdk_display_create_gl_context(gdk_window, &error_maybe);
     if (error_maybe != nullptr)
     {
         failed = true;
@@ -20,9 +20,8 @@ bool gtk_initialize_opengl(GtkWindow* window)
     }
 
     gdk_gl_context_set_required_version(context, 3, 2);
-    gdk_gl_context_set_use_es(context, TRUE);
-
     gdk_gl_context_realize(context, &error_maybe);
+
     if (error_maybe != nullptr)
     {
         failed = true;
@@ -43,6 +42,7 @@ bool gtk_initialize_opengl(GtkWindow* window)
     return not failed;
 }
 
+/*
 void gtk_widget_get_size(GtkWidget* widget, int* w, int* h)
 {
     GtkAllocation* allocation = new GtkAllocation();
@@ -54,3 +54,4 @@ void gtk_widget_get_size(GtkWidget* widget, int* w, int* h)
     if (h != nullptr)
         *h = allocation->height;
 }
+*/

@@ -19,10 +19,10 @@ namespace mousetrap
 {
     Window initialize()
     {
-        gtk_init(nullptr, nullptr);
+        gtk_init();
 
-        auto out = Window(GTK_WINDOW_TOPLEVEL);
-        out.connect_signal("destroy", gtk_main_quit, nullptr);
+        auto out = Window();
+        //out.connect_signal("destroy", gtk_quit, nullptr);
 
         gtk_widget_realize(out.get_native());
         gtk_initialize_opengl(GTK_WINDOW(out.get_native()));

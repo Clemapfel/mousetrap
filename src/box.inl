@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <vector>
+
 namespace mousetrap
 {
     Box::Box(GtkOrientation orientation, float spacing)
@@ -13,9 +15,7 @@ namespace mousetrap
     }
 
     Box::~Box()
-    {
-        //gtk_widget_destroy(GTK_WIDGET(_box));
-    }
+    {}
 
     Box HBox(float spacing)
     {
@@ -30,5 +30,15 @@ namespace mousetrap
     GtkWidget* Box::get_native()
     {
         return GTK_WIDGET(_box);
+    }
+
+    void Box::add(GtkWidget* widget)
+    {
+        gtk_box_append(_box, widget);
+    }
+
+    void Box::remove(GtkWidget* widget)
+    {
+        gtk_box_remove(_box, widget);
     }
 }

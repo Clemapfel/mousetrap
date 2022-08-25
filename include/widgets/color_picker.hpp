@@ -527,7 +527,7 @@ namespace mousetrap
     ColorPicker::HtmlCodeElement::HtmlCodeElement()
     {
         _entry = new Entry();
-        _entry->set_width_chars(4 * 2 + 1);
+        _entry->set_n_chars(4 * 2 + 1);
         _entry->set_hexpand(true);
         _entry->set_margin_start(left_to_slider_left_margin);
     }

@@ -14,7 +14,6 @@ namespace mousetrap
     {
         _native = GTK_GL_AREA(gtk_gl_area_new());
         gtk_gl_area_set_auto_render(_native, TRUE);
-        gtk_gl_area_set_has_alpha(_native, TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(_native), 1, 1);
 
         connect_signal("realize", on_realize_wrapper, this);
@@ -24,9 +23,7 @@ namespace mousetrap
     }
 
     GLArea::~GLArea()
-    {
-        //gtk_widget_destroy(GTK_WIDGET(_native));
-    }
+    {}
 
     void GLArea::add_render_task(Shape* shape, Shader* shader, GLTransform* transform)
     {

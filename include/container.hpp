@@ -12,10 +12,10 @@ namespace mousetrap
     class Container : public Widget
     {
         public:
-            void add(GtkWidget*);
+            virtual void add(GtkWidget*) = 0;
             void add(Widget*);
 
-            void remove(GtkWidget*);
+            virtual void remove(GtkWidget*) = 0;
             void remove(Widget*);
 
             void clear();

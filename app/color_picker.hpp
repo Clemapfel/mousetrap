@@ -96,6 +96,8 @@ namespace mousetrap
         _main = new Frame(1);
         _main->set_shadow_type(GTK_SHADOW_NONE);
         _main->add(_render_area);
+
+        gtk_widget_set_cur(_main->get_native(), gdk_cursor_new_from_name(nullptr, "cell"));
     }
 
     ColorPicker::~ColorPicker()

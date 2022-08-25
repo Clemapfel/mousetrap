@@ -11,10 +11,10 @@ find_library(GLEW REQUIRED NAMES GLEW)
 
 # GTK
 find_package(PkgConfig)
-pkg_check_modules(GTKMM gtkmm-3.0)
+pkg_check_modules(GTK gtk4)
 
-if (NOT GTKMM_FOUND)
-    message(FATAL_ERROR "Missing Dependency: unable to locate gtkmm")
+if (NOT GTK_FOUND)
+    message(FATAL_ERROR "Missing Dependency: unable to locate gtk4")
 endif()
 
 # GLM
@@ -146,23 +146,23 @@ set_target_properties(mousetrap PROPERTIES
 
 target_include_directories(mousetrap PUBLIC
     ${CMAKE_SOURCE_DIR}
-    ${GTKMM_INCLUDE_DIRS}
+    ${GTK_INCLUDE_DIRS}
 )
 
 target_link_libraries(mousetrap PUBLIC
     ${OpenGL}
     ${GLEW}
     ${GLU}
-    ${GTKMM_LIBRARIES}
+    ${GTK_LIBRARIES}
 )
 
 ### EXECUTABLE ###
 
 add_library(app STATIC
-        include/widgets/color_picker.hpp
-
-        include/widgets/hsv_triangle_select.hpp
-        include/widgets/global_state.hpp  include/widgets/brush_selection.hpp    include/widgets/brush_designer.hpp include/widgets/canvas.hpp  include/widgets/palette_view.hpp app/global_state.hpp app/layer.hpp app/palette.hpp app/palette_view.hpp "app/initialize.hpp" app/keybindings.hpp app/primary_secondary_color_swapper.hpp app/verbose_color_picker.hpp app/color_picker.hpp resources/shaders/color_picker_hsv_square.frag)
+    app/color_picker.hpp
+    #include/widgets/hsv_triangle_select.hpp
+    #include/widgets/global_state.hpp  include/widgets/brush_selection.hpp    include/widgets/brush_designer.hpp include/widgets/canvas.hpp  include/widgets/palette_view.hpp app/global_state.hpp app/layer.hpp app/palette.hpp app/palette_view.hpp "app/initialize.hpp" app/keybindings.hpp app/primary_secondary_color_swapper.hpp app/verbose_color_picker.hpp app/color_picker.hpp resources/shaders/color_picker_hsv_square.frag)
+)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

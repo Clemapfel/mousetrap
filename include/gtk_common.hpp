@@ -11,9 +11,6 @@ extern "C"
 {
     ///
     bool gtk_initialize_opengl(GtkWindow* window);
-
-    ///
-    void gtk_widget_get_size(GtkWidget*, int*, int*);
 }
 
 

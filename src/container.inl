@@ -3,35 +3,34 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
+#include <vector>
+
 namespace mousetrap
 {
-    void Container::add(GtkWidget* in)
-    {
-        gtk_container_add(GTK_CONTAINER(get_native()), GTK_WIDGET(in));
-    }
-
     void Container::add(Widget* in)
     {
-        gtk_container_add(GTK_CONTAINER(get_native()), GTK_WIDGET(in->get_native()));
-    }
-
-    void Container::remove(GtkWidget* out)
-    {
-        gtk_container_remove(GTK_CONTAINER(get_native()), GTK_WIDGET(out));
+        add(in->get_native());
     }
 
     void Container::remove(Widget* out)
     {
-        gtk_container_remove(GTK_CONTAINER(get_native()), GTK_WIDGET(out->get_native()));
+        remove(out->get_native());
     }
 
     void Container::clear()
     {
-        auto* glist = gtk_container_get_children(GTK_CONTAINER(get_native()));
-        for (auto it = glist; it != nullptr; it = g_list_next(it))
-            gtk_widget_destroy(GTK_WIDGET(it->data));
-            //gtk_container_remove(GTK_CONTAINER(get_native()), GTK_WIDGET(it->data));
+        std::vector<GtkWidget*> to_remove;
 
-        g_list_free(glist);
+        auto* current = gtk_widget_get_first_child(get_native());
+        to_remove.push_back(current);
+
+        while (current != nullptr)
+        {
+            current = gtk_widget_get_next_sibling(current);
+            to_remove.push_back(current);
+        }
+
+        for (auto* w : to_remove)
+            remove(w);
     }
 }

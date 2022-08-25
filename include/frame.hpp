@@ -19,16 +19,12 @@ namespace mousetrap
             void set_yalign(float);
 
             void set_label(const std::string&, float xalign, float yalign);
-            void set_shadow_type(GtkShadowType);
 
             GtkWidget* get_native();
 
-        private:
-            float _ratio;
-            float _x_align;
-            float _y_align;
-            bool _obey_child;
+            TODO SPLIT FRAMES AND ASPECT FRAMES
 
+        private:
             GtkAspectFrame* _native;
     };
 }

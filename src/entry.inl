@@ -9,18 +9,10 @@ namespace mousetrap
     {
         _buffer = gtk_entry_buffer_new(nullptr, 0);
         _entry = GTK_ENTRY(gtk_entry_new_with_buffer(_buffer));
-
-        connect_signal("activate", on_activate_wrapper, this);
-        connect_signal("paste-clipboard", on_paste_clipboard_wrapper, this);
-        connect_signal("copy-clipboard", on_copy_clipboard_wrapper, this);
-        connect_signal("cut-clipboard", on_cut_clipboard_wrapper, this);
     }
 
     Entry::~Entry()
-    {
-        //gtk_widget_destroy(GTK_WIDGET(_entry));
-        //gtk_widget_destroy(GTK_WIDGET(_buffer));
-    };
+    {};
 
     GtkWidget* Entry::get_native()
     {
@@ -34,56 +26,18 @@ namespace mousetrap
 
     std::string Entry::get_text() const
     {
-        return gtk_entry_get_text(GTK_ENTRY(const_cast<Entry*>(this)->get_native()));
+        auto* buffer = gtk_entry_get_buffer(_entry);
+        return gtk_entry_buffer_get_text(buffer);
     }
 
     void Entry::set_text(const std::string& text)
     {
-        gtk_entry_set_text(GTK_ENTRY(get_native()), text.c_str());
+        auto* buffer = gtk_entry_get_buffer(_entry);
+        gtk_entry_buffer_set_text(buffer, text.c_str(), text.size());
     }
 
-    void Entry::on_activate(GtkEntry* self, gpointer user_data)
+    void Entry::set_n_chars(size_t n)
     {
-        // noop
-    }
-
-    void Entry::on_paste_clipboard(GtkEntry* self, gpointer user_data)
-    {
-        // noop
-    }
-
-    void Entry::on_copy_clipboard(GtkEntry* self, gpointer user_data)
-    {
-        // noop
-    }
-
-    void Entry::on_cut_clipboard(GtkEntry* self, gpointer user_data)
-    {
-        // noop
-    }
-
-    void Entry::on_activate_wrapper(GtkEntry* self, void* instance)
-    {
-        ((Entry*) instance)->on_activate(self, nullptr);
-    }
-
-    void Entry::on_paste_clipboard_wrapper(GtkEntry* self, void* instance)
-    {
-        ((Entry*) instance)->on_paste_clipboard(self, nullptr);
-    }
-
-    void Entry::on_cut_clipboard_wrapper(GtkEntry* self, void* instance)
-    {
-        ((Entry*) instance)->on_cut_clipboard(self, nullptr);
-    }
-
-    void Entry::on_copy_clipboard_wrapper(GtkEntry* self, void* instance)
-    {
-        ((Entry*) instance)->on_copy_clipboard(self, nullptr);
-    }
-
-    void Entry::set_width_chars(size_t n)
-    {
-        gtk_entry_set_width_chars(GTK_ENTRY(get_native()), n);
+        gtk_entry_set_max_length(_entry, n);
     }
 }

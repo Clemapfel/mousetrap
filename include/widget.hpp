@@ -5,8 +5,7 @@
 
 #pragma once
 
-#include <gtk-4.0/gtk/gtk.h>
-
+#include <gtk-4.0/gdk/gdk.h>
 #include <include/vector.hpp>
 
 #include <map>
@@ -51,7 +50,7 @@ namespace mousetrap
 
             void set_tooltip_text(const std::string&);
 
-            template<typename... GdkEventMask_t> requires (std::is_same_v<GdkEventMask_t, GdkEventMask> && ...)
+            template<typename... GdkEventMask_t> requires (std::is_same_v<GdkEventMask_t, gint> && ...)
             void add_events(GdkEventMask_t...);
 
         private:

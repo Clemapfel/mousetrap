@@ -14,7 +14,7 @@ namespace mousetrap
     class Window : public Container
     {
         public:
-            Window(GtkWindowType);
+            Window();
             ~Window();
 
             GtkWidget* get_native() override;
@@ -23,6 +23,9 @@ namespace mousetrap
             void set_fullscreen(bool);
 
             void present();
+
+            void add(GtkWidget*) override;
+            void remove(GtkWidget*) override;
 
         private:
             GtkWindow* _native;

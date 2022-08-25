@@ -306,7 +306,7 @@ namespace mousetrap
             new Box(GTK_ORIENTATION_VERTICAL)
         };
 
-        _html_region->_entry->set_width_chars(1 + 6 + 2);
+        _html_region->_entry->set_n_chars(1 + 6 + 2);
         _html_region->_entry->connect_signal("activate", on_entry_activate, this);
         _html_region->_entry->connect_signal("paste-clipboard", on_entry_paste, this);
 

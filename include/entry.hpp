@@ -20,21 +20,10 @@ namespace mousetrap
 
             GtkWidget* get_native() override;
 
-            void set_width_chars(size_t);
+            void set_n_chars(size_t);
             void set_has_frame(bool);
 
-        protected:
-            virtual void on_activate(GtkEntry* self, gpointer user_data);
-            virtual void on_paste_clipboard(GtkEntry* self, gpointer user_data);
-            virtual void on_cut_clipboard(GtkEntry* self, gpointer user_data);
-            virtual void on_copy_clipboard(GtkEntry* self, gpointer user_data);
-
         private:
-            static void on_activate_wrapper(GtkEntry* self, void* instance);
-            static void on_paste_clipboard_wrapper(GtkEntry* self, void* instance);
-            static void on_cut_clipboard_wrapper(GtkEntry* self, void* instance);
-            static void on_copy_clipboard_wrapper(GtkEntry* self, void* instance);
-
             GtkEntry* _entry;
             GtkEntryBuffer* _buffer;
     };

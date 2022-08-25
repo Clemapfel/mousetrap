@@ -23,7 +23,7 @@ namespace mousetrap
 
             void set_policy(GtkPolicyType horizontal, GtkPolicyType vertical);
             void set_placement(GtkCornerType content_relative_to_scrollbars);
-            void set_shadow_type(GtkShadowType);
+            void set_has_frame(bool);
 
             void set_kinetic_scrolling_enabled(bool);
 
