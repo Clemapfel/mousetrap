@@ -30,6 +30,16 @@ namespace mousetrap
             static void on_render_area_button_press_event(GtkWidget* widget, GdkEventButton* event, ColorPicker* instance);
             static void on_render_area_button_release_event(GtkWidget* widget, GdkEventButton* event, ColorPicker* instance);
 
+            bool _hue_bar_active = false;
+            void set_hue_bar_cursor(Vector2f);
+            void update_hue_bar(HSVA);
+
+            bool _hsv_shape_active = false;
+            void set_hsv_shape_cursor(Vector2f);
+            void update_hsv_shape(HSVA);
+
+            Vector2f align_to_pixelgrid(Vector2f);
+
             Frame* _main;
             GLArea* _render_area;
 
@@ -73,7 +83,6 @@ namespace mousetrap
         _render_area->connect_signal("realize", on_render_area_realize, this);
         _render_area->connect_signal("resize", on_render_area_resize, this);
 
-        /*
         _render_area->add_events(
             GDK_POINTER_MOTION_MASK,
             GDK_BUTTON_PRESS_MASK,
@@ -81,22 +90,51 @@ namespace mousetrap
         );
 
         _render_area->connect_signal("motion-notify-event", on_render_area_motion_notify_event, this);
-        _render_area->connect_signal("button-press-event", on_render_area_motion_notify_event, this);
-        _render_area->connect_signal("button-release-event", on_render_area_motion_notify_event, this);
-        */
+        _render_area->connect_signal("button-press-event", on_render_area_button_press_event, this);
+        _render_area->connect_signal("button-release-event", on_render_area_button_release_event, this);
 
         _main = new Frame(1);
+        _main->set_shadow_type(GTK_SHADOW_NONE);
         _main->add(_render_area);
     }
 
     ColorPicker::~ColorPicker()
     {
-        std::cerr << "In ColorPicker::~ColorPicker: TODO" << std::endl;
+        delete _hue_bar_shader;
+        delete _hue_bar_shape;
+        delete _hue_bar_frame;
+
+        delete _hue_bar_cursor;
+        delete _hue_bar_cursor_frame;
+        delete _hue_bar_cursor_window;
+        delete _hue_bar_cursor_window_frame;
+
+        delete _hsv_shape_shader;
+        delete _hsv_shape;
+        delete _hsv_shape_frame;
+
+        delete _hsv_shape_cursor;
+        delete _hsv_shape_cursor_frame;
+
+        delete _hsv_shape_cursor_window;
+        delete _hsv_shape_cursor_window_frame;
+
+        delete _canvas_size;
+        delete _current_color_hsva;
+        delete _square_top_left;
+        delete _square_size;
     }
 
     GtkWidget* ColorPicker::get_native()
     {
         return _main->get_native();
+    }
+
+    Vector2f ColorPicker::align_to_pixelgrid(Vector2f in)
+    {
+        in.x = int(in.x * _canvas_size->x) / float(_canvas_size->x);
+        in.y = int(in.y * _canvas_size->y) / float(_canvas_size->y);
+        return in;
     }
 
     void ColorPicker::on_render_area_realize(GtkGLArea* area, ColorPicker* instance)
@@ -122,7 +160,7 @@ namespace mousetrap
         instance->_hsv_shape_cursor_window_frame = new Shape();
 
         instance->_hue_bar_shader = new Shader();
-        instance->_hue_bar_shader->create_from_file(get_resource_path() + "shaders/color_picker_hue_gradient.frag", ShaderType::FRAGMENT);
+        instance->_hue_bar_shader->create_from_file(get_resource_path() + "shaders/color_picker_hue_bar.frag", ShaderType::FRAGMENT);
 
         instance->_hsv_shape_shader = new Shader();
         instance->_hsv_shape_shader->create_from_file(get_resource_path() + "shaders/color_picker_hsv_square.frag", ShaderType::FRAGMENT);
@@ -135,7 +173,6 @@ namespace mousetrap
         auto* self = instance->_render_area;
 
         auto hue_bar_task = RenderTask(instance->_hue_bar_shape, instance->_hue_bar_shader);
-        hue_bar_task.register_int("_vertical", new int(1));
         hue_bar_task.register_color("_current_color_hsva", instance->_current_color_hsva);
         self->add_render_task(hue_bar_task);
 
@@ -156,13 +193,13 @@ namespace mousetrap
 
         self->add_render_task(instance->_hsv_shape_frame);
 
-        /*
         self->add_render_task(instance->_hsv_shape_cursor);
         self->add_render_task(instance->_hsv_shape_cursor_frame);
 
         self->add_render_task(instance->_hsv_shape_cursor_window);
         self->add_render_task(instance->_hsv_shape_cursor_window_frame);
-         */
+
+        instance->reformat();
 
         gtk_gl_area_queue_render(area);
     }
@@ -198,16 +235,33 @@ namespace mousetrap
             {1 - hsv_shape_x, hsv_shape_size}
         );
 
+        Vector2f cursor_frame_width = {
+            4 * 1 / _canvas_size->x,
+            4 * 1 / _canvas_size->y
+        };
+
+        if (int(cursor_frame_width.x) % 2 != 0)
+            cursor_frame_width -= 1;
+
+        if (int(cursor_frame_width.y) % 2 != 0)
+            cursor_frame_width -= 1;
+
         _hsv_shape_cursor->as_rectangle({0, 0}, {cursor_size, cursor_size * (_canvas_size->x / _canvas_size->y)});
-        _hsv_shape_cursor_window->as_rectangle({0, 0}, {
-            _hsv_shape_cursor->get_size().x * 0.8,
-            _hsv_shape_cursor->get_size().y * 0.8
+        _hsv_shape_cursor_window->as_rectangle({0, 0},
+            _hsv_shape_cursor->get_size() - cursor_frame_width
+        );
+
+        _hue_bar_cursor->as_rectangle({0, 0}, {
+            _hsv_shape_cursor->get_size().x,
+            _hsv_shape_cursor->get_size().y * (2 / (1 + sqrt(5)))
         });
 
-        _hue_bar_cursor->as_rectangle({0, 0}, _hsv_shape_cursor->get_size());
-        _hue_bar_cursor_window->as_rectangle({0, 0}, {
-                _hsv_shape_cursor_window->get_size()
-        });
+        _hue_bar_cursor_window->as_rectangle({0, 0},
+            _hue_bar_cursor->get_size() - cursor_frame_width
+        );
+
+        _hue_bar_cursor->set_centroid(align_to_pixelgrid(_hue_bar_cursor->get_centroid()));
+        _hsv_shape_cursor->set_centroid(align_to_pixelgrid(_hsv_shape_cursor->get_centroid()));
 
         _hue_bar_cursor->set_centroid(_hue_bar_shape->get_centroid());
         _hue_bar_cursor_window->set_centroid(_hue_bar_cursor->get_centroid());
@@ -231,31 +285,129 @@ namespace mousetrap
 
         *_square_top_left = _hsv_shape->get_top_left();
         *_square_size = _hsv_shape->get_size();
+
         update();
-    }
-
-    void ColorPicker::update()
-    {
-        update(state::primary_color);
-    }
-
-    void ColorPicker::update(HSVA color)
-    {
-        *_current_color_hsva = color;
-
-        _hsv_shape_cursor_window->set_color(HSVA(color.h, color.s, color.v, 1));
-        _hue_bar_cursor_window->set_color(HSVA(color.h, 1, 1, 1));
 
         _render_area->queue_render();
     }
 
+    void ColorPicker::update()
+    {
+        update_hue_bar(state::primary_color);
+        update_hsv_shape(state::primary_color);
+        _render_area->queue_render();
+    }
+
+    void ColorPicker::update_hue_bar(HSVA color)
+    {
+        set_hue_bar_cursor(Vector2f(0, color.h));
+    }
+
+    void ColorPicker::update_hsv_shape(HSVA color)
+    {
+        set_hsv_shape_cursor({
+             _hsv_shape->get_top_left().x + color.v * _hsv_shape->get_size().x,
+             _hsv_shape->get_top_left().y + color.s * _hsv_shape->get_size().y
+        });
+    }
+
+    void ColorPicker::set_hue_bar_cursor(Vector2f pos)
+    {
+        float hue = (pos.y - _hue_bar_shape->get_top_left().y) / _hue_bar_shape->get_size().y;
+        hue = glm::clamp<float>(hue, 0, 1);
+        _current_color_hsva->h = 1 - hue;
+
+        _hue_bar_cursor_window->set_color(HSVA(_current_color_hsva->h, 1, 1, 1));
+        _hsv_shape_cursor_window->set_color(*_current_color_hsva);
+
+        float y = glm::clamp<float>(pos.y,
+             _hue_bar_shape->get_top_left().y + _hue_bar_cursor->get_size().y * 0.5,
+             _hue_bar_shape->get_top_left().y + _hue_bar_shape->get_size().y - _hue_bar_cursor->get_size().y * 0.5
+        );
+
+        _hue_bar_cursor->set_centroid(align_to_pixelgrid({_hue_bar_shape->get_centroid().x, y}));
+
+        auto centroid = _hue_bar_cursor->get_centroid();
+        _hue_bar_cursor_frame->set_centroid(centroid);
+        _hue_bar_cursor_window->set_centroid(centroid);
+        _hue_bar_cursor_window_frame->set_centroid(centroid);
+    }
+
+    void ColorPicker::set_hsv_shape_cursor(Vector2f pos)
+    {
+        auto top_left = _hsv_shape->get_top_left();
+        auto size = _hsv_shape->get_size();
+
+        pos = glm::clamp(pos, top_left, top_left + size);
+
+        float value = 1 - glm::distance(pos.x, top_left.x + size.x) / size.x;
+        float saturation = 1 - glm::distance(pos.y, top_left.y) / size.y;
+
+        _current_color_hsva->v = value;
+        _current_color_hsva->s = saturation;
+
+        auto half_cursor = Vector2f(_hsv_shape_cursor->get_size() * Vector2f(0.5));
+        pos = glm::clamp(pos,
+             _hsv_shape->get_top_left() + half_cursor,
+             _hsv_shape->get_top_left() + _hsv_shape->get_size() - half_cursor
+        );
+
+        _hsv_shape_cursor_window->set_color(*_current_color_hsva);
+
+        _hsv_shape_cursor->set_centroid(align_to_pixelgrid(pos));
+        _hsv_shape_cursor_frame->set_centroid(_hsv_shape_cursor->get_centroid());
+        _hsv_shape_cursor_window->set_centroid(_hsv_shape_cursor->get_centroid());
+        _hsv_shape_cursor_window_frame->set_centroid(_hsv_shape_cursor->get_centroid());
+    }
+
     void ColorPicker::on_render_area_button_press_event(GtkWidget* widget, GdkEventButton* event, ColorPicker* instance)
-    {}
+    {
+        if (event->button != 1)
+            return;
+
+        auto pos = Vector2f(event->x / instance->_canvas_size->x, event->y / instance->_canvas_size->y);
+
+        if (is_point_in_rectangle(pos, Rectangle{instance->_hue_bar_shape->get_top_left(), instance->_hue_bar_shape->get_size()}))
+        {
+            instance->_hue_bar_active = true;
+            instance->set_hue_bar_cursor(pos);
+            instance->_render_area->queue_render();
+        }
+        else if (is_point_in_rectangle(pos, Rectangle{instance->_hsv_shape->get_top_left(), instance->_hsv_shape->get_size()}))
+        {
+            instance->_hsv_shape_active = true;
+            instance->set_hsv_shape_cursor(pos);
+            instance->_render_area->queue_render();
+        }
+    }
+
+    void ColorPicker::update(HSVA color)
+    {
+        update_hue_bar(color);
+        update_hsv_shape(color);
+        _render_area->queue_render();
+    }
 
     void ColorPicker::on_render_area_button_release_event(GtkWidget* widget, GdkEventButton* event, ColorPicker* instance)
-    {}
+    {
+        instance->_hue_bar_active = false;
+        instance->_hsv_shape_active = false;
+    }
 
     void ColorPicker::on_render_area_motion_notify_event(GtkWidget * widget, GdkEventMotion * event,
                                                          ColorPicker * instance)
-    {}
+    {
+        auto pos = Vector2f(event->x / instance->_canvas_size->x, event->y / instance->_canvas_size->y);
+
+        if (instance->_hue_bar_active)
+        {
+            instance->set_hue_bar_cursor(pos);
+            instance->_render_area->queue_render();
+        }
+        else if (instance->_hsv_shape_active)
+        {
+            instance->set_hsv_shape_cursor(pos);
+            instance->_render_area->queue_render();
+        }
+    }
 }

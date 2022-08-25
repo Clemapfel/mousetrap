@@ -128,7 +128,7 @@ namespace mousetrap
 
         if (not _hue_bar_shader)
             _hue_bar_shader = new Shader();
-        _hue_bar_shader->create_from_file(get_resource_path() + "shaders/color_picker_hue_gradient.frag", ShaderType::FRAGMENT);
+        _hue_bar_shader->create_from_file(get_resource_path() + "shaders/verbose_color_picker_hue_gradient.frag", ShaderType::FRAGMENT);
 
         auto hue_bar_task = RenderTask(_hue_bar, _hue_bar_shader);
 

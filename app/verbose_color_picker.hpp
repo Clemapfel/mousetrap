@@ -247,7 +247,7 @@ namespace mousetrap
             if (c == 'H')
             {
                 _sliders[c]->_bar_shader->create_from_file(
-                    get_resource_path() + "shaders/color_picker_hue_gradient.frag",
+                    get_resource_path() + "shaders/verbose_color_picker_hue_gradient.frag",
                     ShaderType::FRAGMENT
                 );
             }

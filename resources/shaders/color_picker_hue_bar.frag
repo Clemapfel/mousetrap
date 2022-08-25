@@ -25,24 +25,12 @@ in vec3 _vertex_position;
 out vec4 _fragment_color;
 
 uniform vec4 _current_color_hsva;
-uniform int _vertical;
-
-uniform vec2 _square_top_left;
-uniform vec2 _square_size;
 
 void main()
 {
     vec3 current_hsv = _current_color_hsva.xyz;
     vec2 pos = (_vertex_position.xy + vec2(1)) / 2;
 
-    vec2 dist = vec2(
-        distance(pos.x, _square_top_left.x + _square_size.x) / _square_size.x,
-        distance(pos.y, _square_top_left.y) / _square_size.y
-    );
-
-    vec3 left_right = vec3(_current_color_hsva.x, 0, 1  - dist.x);
-    vec3 top_bottom = vec3(_current_color_hsva.x, dist.y, 1 - dist.x);
-
-    vec3 hsv = mix(left_right, top_bottom, dist.y);
-    _fragment_color = vec4(hsv_to_rgb(hsv), 1);
+    vec3 hsv = vec3(pos.y, 1, 1);
+    _fragment_color = vec4(hsv_to_rgb(hsv), _current_color_hsva.a);
 }

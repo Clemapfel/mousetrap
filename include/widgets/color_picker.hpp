@@ -753,7 +753,7 @@ namespace mousetrap
 
     ColorPicker::ColorPicker(float width)
     {
-        _elements.at('H') = new SliderElement('H', get_resource_path() + "shaders/color_picker_hue_gradient.frag");
+        _elements.at('H') = new SliderElement('H', get_resource_path() + "shaders/verbose_color_picker_hue_gradient.frag");
 
         for (char c : {'A', 'S', 'V', 'R', 'G', 'B'})
             _elements.at(c) = new SliderElement(c);
