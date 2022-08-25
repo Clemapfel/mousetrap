@@ -80,9 +80,6 @@ namespace mousetrap
     {
         gtk_gl_area_make_current(area);
 
-        static size_t i = 0;
-        std::cout << i++ << std::endl;
-
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
