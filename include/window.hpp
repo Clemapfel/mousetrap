@@ -15,7 +15,7 @@ namespace mousetrap
     {
         public:
             Window();
-            ~Window();
+            Window(GtkWindow*);
 
             GtkWidget* get_native() override;
 

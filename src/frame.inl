@@ -5,29 +5,49 @@
 
 namespace mousetrap
 {
+    Frame::Frame()
+    {
+        _native = gtk_frame_new(nullptr);
+    }
+
+    void Frame::add(GtkWidget* child)
+    {
+        gtk_frame_set_child(GTK_FRAME(_native), child);
+    }
+
+    void Frame::remove(GtkWidget* child)
+    {
+        if (gtk_frame_get_child(GTK_FRAME(_native)) == child)
+            gtk_frame_set_child(GTK_FRAME(_native), nullptr);
+    }
+
     GtkWidget* Frame::get_native()
     {
         return GTK_WIDGET(_native);
     }
 
-    Frame::Frame(float ratio, float x_align, float y_align, bool obey_child)
+    void Frame::set_label(const std::string& label)
     {
-        _native = GTK_ASPECT_FRAME(gtk_aspect_frame_new(x_align, y_align, ratio, obey_child));
+        gtk_frame_set_label(GTK_FRAME(_native), label.c_str());
     }
 
-    void Frame::set_ratio(float new_ratio)
+    AspectFrame::AspectFrame(float ratio, float x_align, float y_align, bool obey_child)
     {
-        gtk_aspect_frame_set_ratio(_native, new_ratio);
+        _native = gtk_aspect_frame_new(x_align, y_align, ratio, obey_child);
     }
 
-    void Frame::set_label(const std::string& text, float xalign, float yalign)
+    void AspectFrame::set_ratio(float new_ratio)
     {
-        gtk_frame_set_label(GTK_FRAME(_native), text.c_str());
-        gtk_frame_set_label_align(GTK_FRAME(_native), xalign, yalign);
+        gtk_aspect_frame_set_ratio(GTK_ASPECT_FRAME(_native), new_ratio);
     }
 
-    void Frame::set_shadow_type(GtkShadowType type)
+    void AspectFrame::set_child_xalign(float x)
     {
-        gtk_frame_set_shadow_type(GTK_FRAME(_native), type);
+        gtk_aspect_frame_set_xalign(GTK_ASPECT_FRAME(_native), x);
+    }
+
+    void AspectFrame::set_child_yalign(float x)
+    {
+        gtk_aspect_frame_set_yalign(GTK_ASPECT_FRAME(_native), x);
     }
 }

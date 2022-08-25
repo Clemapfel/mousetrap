@@ -12,20 +12,28 @@ namespace mousetrap
     class Frame : public Container
     {
         public:
-            Frame(float ratio, float x_align = 0.5, float y_align = 0.5, bool obey_child = false);
+            Frame();
+
+            void add(GtkWidget*) override;
+            void remove(GtkWidget*) override;
+
+            void set_label(const std::string&);
+            GtkWidget* get_native() override;
+
+        protected:
+            GtkWidget* _native;
+    };
+
+    class AspectFrame : public Frame
+    {
+        public:
+            AspectFrame(float ratio, float x_align = 0.5, float y_align = 0.5, bool obey_child = false);
 
             void set_ratio(float);
-            void set_xalign(float);
-            void set_yalign(float);
+            void set_child_xalign(float);
+            void set_child_yalign(float);
 
-            void set_label(const std::string&, float xalign, float yalign);
-
-            GtkWidget* get_native();
-
-            TODO SPLIT FRAMES AND ASPECT FRAMES
-
-        private:
-            GtkAspectFrame* _native;
+            using Frame::set_label;
     };
 }
 

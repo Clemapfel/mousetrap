@@ -38,7 +38,7 @@ namespace mousetrap
     bool intersecting(Line first, Line second, Vector2f* intersect = nullptr);
     bool intersecting(Line line, Rectangle rectangle, std::vector<Vector2f>* intersections = nullptr);
 
-    std::vector<Vector2i> smooth_line(const std::vector<Vector2i>& in);
+    //std::vector<Vector2i> smooth_line(const std::vector<Vector2i>& in);
 }
 
 #include <src/geometry.inl>

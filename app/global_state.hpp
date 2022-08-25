@@ -19,6 +19,10 @@ namespace mousetrap::state
 {
     using namespace mousetrap;
 
+    // ### GTK INSTANCES ##############################
+
+    Window* main_window = nullptr;
+
     // ### COLORS #####################################
 
     HSVA primary_color = RGBA(1, 0, 1, 1).operator HSVA();

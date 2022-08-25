@@ -53,6 +53,8 @@ namespace mousetrap
             template<typename... GdkEventMask_t> requires (std::is_same_v<GdkEventMask_t, gint> && ...)
             void add_events(GdkEventMask_t...);
 
+            void show();
+
         private:
             /// \returns true if get_native() == nullptr
             bool warn_if_nullptr(const std::string& function_id);

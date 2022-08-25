@@ -104,6 +104,7 @@ namespace mousetrap
             return not intersections->empty();
     }
 
+    /*
     std::vector<Vector2i> smooth_line(const std::vector<Vector2i>& in)
     {
         std::vector<Vector2i> out;
@@ -188,4 +189,5 @@ namespace mousetrap
 
         return out;
     }
+     */
 }

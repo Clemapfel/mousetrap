@@ -223,4 +223,9 @@ namespace mousetrap
 
         gtk_widget_add_events(get_native(), (events | ...));
     }
+
+    void Widget::show()
+    {
+        gtk_widget_show(get_native());
+    }
 }

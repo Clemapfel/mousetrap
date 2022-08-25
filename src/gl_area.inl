@@ -16,9 +16,7 @@ namespace mousetrap
         gtk_gl_area_set_auto_render(_native, TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(_native), 1, 1);
 
-        connect_signal("realize", on_realize_wrapper, this);
         connect_signal("render", on_render_wrapper, this);
-        connect_signal("unrealize", on_shutdown_wrapper, this);
         connect_signal("resize", on_resize_wrapper, this);
     }
 
@@ -38,19 +36,9 @@ namespace mousetrap
         _render_tasks.push_back(task);
     }
 
-    void GLArea::on_realize_wrapper(void* area, void* instance)
-    {
-        ((GLArea*) instance)->on_realize(GTK_GL_AREA(area));
-    }
-
     gboolean GLArea::on_render_wrapper(void* area, void* context, void* instance)
     {
         return ((GLArea*) instance)->on_render(GTK_GL_AREA(area), GDK_GL_CONTEXT(context));
-    }
-
-    void GLArea::on_shutdown_wrapper(void* area, void* instance)
-    {
-        ((GLArea*) instance)->on_shutdown(GTK_GL_AREA(area));
     }
 
     void GLArea::on_resize_wrapper(GtkGLArea* area, gint width, gint height, void* instance)
@@ -58,19 +46,9 @@ namespace mousetrap
         ((GLArea*) instance)->on_resize(area, width, height);
     }
 
-    void GLArea::on_realize(GtkGLArea* area)
-    {
-        // noop
-    }
-
     void GLArea::on_resize(GtkGLArea* area, gint width, gint height)
     {
         gtk_gl_area_queue_render(area);
-    }
-
-    void GLArea::on_shutdown(GtkGLArea*)
-    {
-        // noop
     }
 
     gboolean GLArea::on_render(GtkGLArea* area, GdkGLContext* context)

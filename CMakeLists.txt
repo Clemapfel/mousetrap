@@ -137,7 +137,7 @@ add_library(mousetrap SHARED
 
     include/window.hpp
     src/window.inl
-        include/tree_view.hpp)
+    include/tree_view.hpp include/application.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

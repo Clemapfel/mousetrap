@@ -10,8 +10,10 @@ namespace mousetrap
         _native = GTK_WINDOW(gtk_window_new());
     }
 
-    Window::~Window()
-    {}
+    Window::Window(GtkWindow* window)
+    {
+        _native = window;
+    }
 
     GtkWidget* Window::get_native()
     {
