@@ -13,9 +13,11 @@
 #include <app/initialize.hpp>
 #include <app/global_state.hpp>
 
+#include <app/primary_secondary_color_swapper.hpp>
+
+
 /*
 #include <app/palette_view.hpp>
-#include <app/primary_secondary_color_swapper.hpp>
 #include <app/verbose_color_picker.hpp>
 #include <app/color_picker.hpp>
  */
@@ -26,6 +28,10 @@ static void activate(GtkApplication* app, void*)
 {
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->get_native()));
+
+    state::primary_secondary_color_swapper_instance = new PrimarySecondaryColorSwapper();
+    state::main_window->add(state::primary_secondary_color_swapper_instance->get_native());
+
     state::main_window->show();
     state::main_window->present();
 }

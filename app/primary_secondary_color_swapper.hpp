@@ -6,8 +6,9 @@
 #pragma once
 
 #include <include/gl_area.hpp>
-#include <include/frame.hpp>
+#include <include/aspect_frame.hpp>
 #include <include/label.hpp>
+#include <include/overlay.hpp>
 
 #include <app/global_state.hpp>
 
@@ -24,12 +25,11 @@ namespace mousetrap
         private:
             void update();
 
-            static void on_button_press_event(GtkWidget* self, GdkEventButton* event, PrimarySecondaryColorSwapper* instance);
             static void on_gl_area_realize(GtkGLArea* self, PrimarySecondaryColorSwapper* instance);
             static void on_gl_area_resize(GtkGLArea* self, int, int, PrimarySecondaryColorSwapper* instance);
             void swap_colors();
 
-            Frame* _frame;
+            AspectFrame* _frame;
             GLArea* _render_area;
 
             void initialize_render_area();
@@ -66,8 +66,8 @@ namespace mousetrap
         _render_area = new GLArea();
         _render_area->connect_signal("realize", on_gl_area_realize, this);
         _render_area->connect_signal("resize", on_gl_area_resize, this);
-        _render_area->add_events(GDK_BUTTON_PRESS_MASK);
-        _render_area->connect_signal("button-press-event", on_button_press_event, this);
+        //_render_area->add_events(GDK_BUTTON_PRESS_MASK);
+        //_render_area->connect_signal("button-press-event", on_button_press_event, this);
 
         _arrow = new Label("UNINITIALIZED");
         _arrow->set_use_markup(true);
@@ -78,11 +78,10 @@ namespace mousetrap
         _arrow_overlay->set_under(_render_area);
         _arrow_overlay->set_over(_arrow);
 
-        _frame = new Frame(1);
-        _frame->set_shadow_type(GTK_SHADOW_IN);
+        _frame = new AspectFrame(1);
         _frame->set_margin(state::margin_unit);
         _frame->set_tooltip_text(_tooltip);
-        _frame->add(_arrow_overlay);
+        _frame->add(_arrow_overlay->get_native());
     }
 
     PrimarySecondaryColorSwapper::~PrimarySecondaryColorSwapper()
@@ -105,6 +104,7 @@ namespace mousetrap
             _secondary_color_shape->set_color(state::secondary_color);
     }
 
+    /*
     void PrimarySecondaryColorSwapper::on_button_press_event(
         GtkWidget* self,
         GdkEventButton* event,
@@ -115,6 +115,7 @@ namespace mousetrap
         else if (event->button == 2)
             std::cerr << "[ERROR] In PrimarySecondaryColorSwapper::on_button_press_event: right-click should open color selection, but it has not yet been implemented" << std::endl;
     }
+     */
 
     void PrimarySecondaryColorSwapper::on_gl_area_realize(GtkGLArea* self, PrimarySecondaryColorSwapper* instance)
     {

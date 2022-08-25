@@ -20,20 +20,8 @@ namespace mousetrap
             void set_label(const std::string&);
             GtkWidget* get_native() override;
 
-        protected:
-            GtkWidget* _native;
-    };
-
-    class AspectFrame : public Frame
-    {
-        public:
-            AspectFrame(float ratio, float x_align = 0.5, float y_align = 0.5, bool obey_child = false);
-
-            void set_ratio(float);
-            void set_child_xalign(float);
-            void set_child_yalign(float);
-
-            using Frame::set_label;
+        private:
+            GtkFrame* _native;
     };
 }
 

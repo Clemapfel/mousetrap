@@ -22,7 +22,7 @@ namespace mousetrap
 
     void Overlay::set_over(Widget* in)
     {
-        gtk_overlay_add_overlay(_overlay, GTK_WIDGET(in));
+        gtk_overlay_add_overlay(_overlay, in->get_native());
     }
 
     void Overlay::remove_over(Widget* in)
