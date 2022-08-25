@@ -13,6 +13,7 @@ namespace mousetrap
     GLArea::GLArea()
     {
         _native = GTK_GL_AREA(gtk_gl_area_new());
+        gtk_gl_area_set_auto_render(_native, TRUE);
         gtk_gl_area_set_has_alpha(_native, TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(_native), 1, 1);
 
@@ -79,6 +80,9 @@ namespace mousetrap
     {
         gtk_gl_area_make_current(area);
 
+        static size_t i = 0;
+        std::cout << i++ << std::endl;
+
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -89,12 +93,12 @@ namespace mousetrap
             task.render();
 
         glFlush();
-        gtk_gl_area_queue_render(area);
         return FALSE;
     }
 
     void GLArea::queue_render()
     {
         gtk_gl_area_queue_render(_native);
+        gtk_widget_queue_draw(GTK_WIDGET(_native));
     }
 }

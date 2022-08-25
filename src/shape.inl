@@ -500,8 +500,8 @@ namespace mousetrap
         }
 
         return Rectangle{
-                {min_x, min_y},
-                {max_x - min_x, max_y - min_y}
+            {min_x, min_y},
+            {max_x - min_x, max_y - min_y}
         };
     }
 

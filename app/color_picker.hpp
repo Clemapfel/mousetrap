@@ -295,6 +295,7 @@ namespace mousetrap
     {
         update_hue_bar(state::primary_color);
         update_hsv_shape(state::primary_color);
+
         _render_area->queue_render();
     }
 
