@@ -29,6 +29,8 @@ namespace mousetrap
             static void on_gl_area_resize(GtkGLArea* self, int, int, PrimarySecondaryColorSwapper* instance);
             void swap_colors();
 
+            static void on_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, PrimarySecondaryColorSwapper* instance);
+
             AspectFrame* _frame;
             GLArea* _render_area;
 
@@ -49,6 +51,8 @@ namespace mousetrap
                 "<tt>Left-Click</tt> : Swap Colors\n"
                 "<tt>Right-Click</tt> : Start Color Selection"
             };
+
+            GtkEventController* _button_event_controller;
     };
 
     namespace state
@@ -66,8 +70,6 @@ namespace mousetrap
         _render_area = new GLArea();
         _render_area->connect_signal("realize", on_gl_area_realize, this);
         _render_area->connect_signal("resize", on_gl_area_resize, this);
-        //_render_area->add_events(GDK_BUTTON_PRESS_MASK);
-        //_render_area->connect_signal("button-press-event", on_button_press_event, this);
 
         _arrow = new Label("UNINITIALIZED");
         _arrow->set_use_markup(true);
@@ -75,13 +77,17 @@ namespace mousetrap
         _arrow->set_valign(GTK_ALIGN_END);
 
         _arrow_overlay = new Overlay();
-        _arrow_overlay->set_under(_render_area);
-        _arrow_overlay->set_over(_arrow);
+        _arrow_overlay->set_over(_render_area);
+        _arrow_overlay->set_under(_arrow);
 
         _frame = new AspectFrame(1);
         _frame->set_margin(state::margin_unit);
         _frame->set_tooltip_text(_tooltip);
         _frame->add(_arrow_overlay->get_native());
+
+        _button_event_controller = GTK_EVENT_CONTROLLER(gtk_gesture_click_new());
+        gtk_widget_add_controller(_render_area->get_native(), GTK_EVENT_CONTROLLER(_button_event_controller));
+        g_signal_connect(_button_event_controller, "pressed", G_CALLBACK(on_pressed), this);
     }
 
     PrimarySecondaryColorSwapper::~PrimarySecondaryColorSwapper()
@@ -104,23 +110,11 @@ namespace mousetrap
             _secondary_color_shape->set_color(state::secondary_color);
     }
 
-    /*
-    void PrimarySecondaryColorSwapper::on_button_press_event(
-        GtkWidget* self,
-        GdkEventButton* event,
-        PrimarySecondaryColorSwapper* instance)
-    {
-        if (event->button == 1)
-            instance->swap_colors();
-        else if (event->button == 2)
-            std::cerr << "[ERROR] In PrimarySecondaryColorSwapper::on_button_press_event: right-click should open color selection, but it has not yet been implemented" << std::endl;
-    }
-     */
-
     void PrimarySecondaryColorSwapper::on_gl_area_realize(GtkGLArea* self, PrimarySecondaryColorSwapper* instance)
     {
         gtk_gl_area_make_current(self);
         instance->initialize_render_area();
+        instance->on_gl_area_resize(self, 1, 1, instance);
         gtk_gl_area_queue_render(self);
     }
 
@@ -195,5 +189,11 @@ namespace mousetrap
 
         _render_area->queue_render();
     }
+
+    void PrimarySecondaryColorSwapper::on_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, PrimarySecondaryColorSwapper* instance)
+    {
+        instance->swap_colors();
+    }
+
 }
 
