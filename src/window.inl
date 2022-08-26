@@ -50,4 +50,9 @@ namespace mousetrap
     {
         gtk_window_set_child(_native, nullptr);
     }
+
+    void Window::set_focused_widget(Widget* widget)
+    {
+        gtk_window_set_focus(_native, widget->operator GtkWidget*());
+    }
 }

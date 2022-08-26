@@ -6,7 +6,11 @@
 #pragma once
 
 #include <include/gl_area.hpp>
-#include <include/frame.hpp>
+#include <include/aspect_frame.hpp>
+#include <include/event_controller.hpp>
+#include <include/get_resource_path.hpp>
+
+#include <app/global_state.hpp>
 
 namespace mousetrap
 {
@@ -26,10 +30,6 @@ namespace mousetrap
             static void on_render_area_realize(GtkGLArea*, ColorPicker* instance);
             static void on_render_area_resize(GtkGLArea*, int, int , ColorPicker* instance);
 
-            static void on_render_area_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, ColorPicker* instance);
-            static void on_render_area_button_press_event(GtkWidget* widget, GdkEventButton* event, ColorPicker* instance);
-            static void on_render_area_button_release_event(GtkWidget* widget, GdkEventButton* event, ColorPicker* instance);
-
             bool _hue_bar_active = false;
             void set_hue_bar_cursor(Vector2f);
             void update_hue_bar(HSVA);
@@ -40,7 +40,7 @@ namespace mousetrap
 
             Vector2f align_to_pixelgrid(Vector2f);
 
-            Frame* _main;
+            AspectFrame* _main;
             GLArea* _render_area;
 
             Shader* _hue_bar_shader;
@@ -67,6 +67,14 @@ namespace mousetrap
             Vector2f* _square_top_left;
             Vector2f* _square_size;
 
+            static void on_render_area_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data);
+            static void on_render_area_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data);
+            static void on_render_area_button_press_event(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
+            static void on_render_area_button_release_event(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
+
+            ClickEventController* _render_area_button_event_controller;
+            MotionEventController* _render_area_motion_event_controller;
+
             void reformat();
     };
 }
@@ -80,24 +88,19 @@ namespace mousetrap
         _hue_bar_shader = new Shader();
         _render_area = new GLArea();
 
+        _render_area_motion_event_controller = new MotionEventController();
+        _render_area_button_event_controller = new ClickEventController();
+
         _render_area->connect_signal("realize", on_render_area_realize, this);
         _render_area->connect_signal("resize", on_render_area_resize, this);
 
-        _render_area->add_events(
-            GDK_POINTER_MOTION_MASK,
-            GDK_BUTTON_PRESS_MASK,
-            GDK_BUTTON_RELEASE_MASK
-        );
+        _render_area_motion_event_controller->connect_enter(on_render_area_motion_enter, this);
+        _render_area_motion_event_controller->connect_motion(on_render_area_motion, this);
+        _render_area_button_event_controller->connect_pressed(on_render_area_button_press_event, this);
+        _render_area_button_event_controller->connect_released(on_render_area_button_release_event, this);
 
-        _render_area->connect_signal("motion-notify-event", on_render_area_motion_notify_event, this);
-        _render_area->connect_signal("button-press-event", on_render_area_button_press_event, this);
-        _render_area->connect_signal("button-release-event", on_render_area_button_release_event, this);
-
-        _main = new Frame(1);
-        _main->set_shadow_type(GTK_SHADOW_NONE);
-        _main->add(_render_area);
-
-        gtk_widget_set_cur(_main->get_native(), gdk_cursor_new_from_name(nullptr, "cell"));
+        _main = new AspectFrame(1);
+        _main->set_child(_render_area);
     }
 
     ColorPicker::~ColorPicker()
@@ -127,9 +130,9 @@ namespace mousetrap
         delete _square_size;
     }
 
-    GtkWidget* ColorPicker::operator GtkWidget*()
+    ColorPicker::operator GtkWidget*()
     {
-        return _main->get_native();
+        return _main->operator GtkWidget*();
     }
 
     Vector2f ColorPicker::align_to_pixelgrid(Vector2f in)
@@ -282,9 +285,7 @@ namespace mousetrap
         for (auto* frame : {_hue_bar_frame, _hue_bar_cursor_frame, _hue_bar_cursor_window_frame, _hsv_shape_frame, _hsv_shape_cursor_frame, _hsv_shape_cursor_window_frame})
             frame->set_color(RGBA(0, 0, 0, 1));
 
-        float ratio = _hsv_shape->get_size().y / _hsv_shape->get_size().x;
-        gtk_aspect_frame_set(GTK_ASPECT_FRAME(_main->get_native()), 0.5, 0.5, ratio, false);
-
+        _main->set_ratio(_hsv_shape->get_size().y / _hsv_shape->get_size().x);
         *_square_top_left = _hsv_shape->get_top_left();
         *_square_size = _hsv_shape->get_size();
 
@@ -363,6 +364,23 @@ namespace mousetrap
         _hsv_shape_cursor_window_frame->set_centroid(_hsv_shape_cursor->get_centroid());
     }
 
+    void ColorPicker::update(HSVA color)
+    {
+        update_hue_bar(color);
+        update_hsv_shape(color);
+        _render_area->queue_render();
+    }
+
+    void ColorPicker::on_render_area_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data)
+    {
+        auto* instance = (ColorPicker*) user_data;
+
+        auto pos = Vector2f(x / instance->_canvas_size->x, y / instance->_canvas_size->y);
+        if (is_point_in_rectangle(pos, Rectangle{instance->_hue_bar_shape->get_top_left(), instance->_hue_bar_shape->get_size()}))
+            instance->_main->set_cursor(GtkCursorType::GRAB);
+        else
+    }
+
     void ColorPicker::on_render_area_button_press_event(GtkWidget* widget, GdkEventButton* event, ColorPicker* instance)
     {
         if (event->button != 1)
@@ -382,13 +400,6 @@ namespace mousetrap
             instance->set_hsv_shape_cursor(pos);
             instance->_render_area->queue_render();
         }
-    }
-
-    void ColorPicker::update(HSVA color)
-    {
-        update_hue_bar(color);
-        update_hsv_shape(color);
-        _render_area->queue_render();
     }
 
     void ColorPicker::on_render_area_button_release_event(GtkWidget* widget, GdkEventButton* event, ColorPicker* instance)

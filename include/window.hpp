@@ -26,6 +26,8 @@ namespace mousetrap
             void set_child(Widget*);
             void remove_child();
 
+            void set_focused_widget(Widget*);
+
         private:
             GtkWindow* _native;
     };

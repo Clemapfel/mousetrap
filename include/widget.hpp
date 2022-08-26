@@ -9,6 +9,7 @@
 #include <include/vector.hpp>
 #include <include/gtk_common.hpp>
 #include <include/signal_emitter.hpp>
+#include <include/event_controller.hpp>
 
 #include <map>
 #include <string>
@@ -48,6 +49,8 @@ namespace mousetrap
             void set_cursor(GtkCursorType type);
 
             void show();
+
+            void add_controller(EventController*);
     };
 
     template<typename T>

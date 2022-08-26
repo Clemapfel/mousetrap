@@ -117,6 +117,93 @@ namespace mousetrap
 
     void Widget::set_cursor(GtkCursorType cursor)
     {
+        switch (cursor)
+        {
+            case GtkCursorType::NONE:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "none");
 
+            case GtkCursorType::DEFAULT:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "default");
+
+            case GtkCursorType::HELP:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "help");
+
+            case GtkCursorType::POINTER:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "pointer");
+
+            case GtkCursorType::CONTEXT_MENU:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "context-menu");
+
+            case GtkCursorType::PROGRESS:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "progress");
+
+            case GtkCursorType::WAIT:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "wait");
+
+            case GtkCursorType::CELL:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "cell");
+
+            case GtkCursorType::CROSSHAIR:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "crosshair");
+
+            case GtkCursorType::TEXT:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "text");
+
+            case GtkCursorType::MOVE:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "move");
+
+            case GtkCursorType::NOT_ALLOWED:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "not-allowed");
+
+            case GtkCursorType::GRAB:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "grab");
+
+            case GtkCursorType::GRABBING:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "grabbing");
+
+            case GtkCursorType::ALL_SCROLL:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "all-scroll");
+
+            case GtkCursorType::ZOOM_IN:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "zoom-in");
+
+            case GtkCursorType::ZOOM_OUT:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "zoom-out");
+
+            case GtkCursorType::COLUMN_RESIZE:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "col-resize");
+
+            case GtkCursorType::ROW_RESIZE:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "row-resize");
+
+            case GtkCursorType::NORTH_RESIZE:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "n-resize");
+
+            case GtkCursorType::NORTH_EAST_RESIZE:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "ne-resize");
+
+            case GtkCursorType::EAST_RESIZE:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "e-resize");
+
+            case GtkCursorType::SOUTH_EAST_RESIZE:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "se-resize");
+
+            case GtkCursorType::SOUTH_RESIZE:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "s-resize");
+
+            case GtkCursorType::SOUTH_WEST_RESIZE:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "sw-resize");
+
+            case GtkCursorType::WEST_RESIZE:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "w-resize");
+
+            case GtkCursorType::NORTH_WEST_RESIZE:
+                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "nw-resize");
+          }
+    }
+
+    void Widget::add_controller(EventController* controller)
+    {
+        gtk_widget_add_controller(this->operator GtkWidget*(), controller->operator GtkEventController*());
     }
 }
