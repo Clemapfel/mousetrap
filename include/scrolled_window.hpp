@@ -5,16 +5,16 @@
 
 #pragma once
 
-#include <include/container.hpp>
+#include <include/widget.hpp>
 
 namespace mousetrap
 {
-    class ScrolledWindow : public Container
+    class ScrolledWindow : public Widget
     {
         public:
             ScrolledWindow();
 
-            GtkWidget* get_native() override;
+            operator GtkWidget*() override;
 
             void set_min_content_width(float);
             void set_min_content_height(float);

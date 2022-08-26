@@ -8,29 +8,24 @@
 #include <gtk-4.0/gdk/gdk.h>
 #include <include/vector.hpp>
 #include <include/gtk_common.hpp>
+#include <include/signal_emitter.hpp>
 
 #include <map>
 #include <string>
 
 namespace mousetrap
 {
-    class Widget
+    class Widget : public SignalEmitter
     {
         public:
-            virtual GtkWidget* get_native() = 0;
             virtual void update(){};
 
-            operator GtkWidget*();
+            virtual operator GtkWidget*() = 0;
+            operator GObject*() override;
 
             Vector2f get_size_request();
             void set_size_request(Vector2f);
             Vector2f get_size();
-
-            void set_signal_blocked(const std::string& signal_id, bool);
-            void set_all_signals_blocked(bool);
-
-            template<typename Function_t>
-            void connect_signal(const std::string& signal_id, Function_t*, void* data = nullptr);
 
             void set_margin_top(float);
             void set_margin_bottom(float);
@@ -50,19 +45,9 @@ namespace mousetrap
             float get_opacity();
 
             void set_tooltip_text(const std::string&);
-
-            template<typename... GdkEventMask_t> requires (std::is_same_v<GdkEventMask_t, gint> && ...)
-            void add_events(GdkEventMask_t...);
-
             void set_cursor(GtkCursorType type);
 
             void show();
-
-        private:
-            /// \returns true if get_native() == nullptr
-            bool warn_if_nullptr(const std::string& function_id);
-
-            std::map<std::string, size_t> _signal_handlers = {};
     };
 
     template<typename T>
@@ -72,7 +57,7 @@ namespace mousetrap
             : _native(in)
         {}
 
-        GtkWidget* get_native() override {
+        operator GtkWidget*() override {
             return GTK_WIDGET(_native);
         };
 

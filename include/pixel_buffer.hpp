@@ -20,7 +20,6 @@ namespace mousetrap
             void bind() const;
             void unbind() const;
 
-            /// \brief trigger stream of cache to gpu-side buffer
             void flush() const;
             Vector2ui get_size() const;
 

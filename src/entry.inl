@@ -11,17 +11,14 @@ namespace mousetrap
         _entry = GTK_ENTRY(gtk_entry_new_with_buffer(_buffer));
     }
 
-    Entry::~Entry()
-    {};
-
-    GtkWidget* Entry::get_native()
+    Entry::operator GtkWidget*()
     {
         return GTK_WIDGET(_entry);
     }
 
     void Entry::set_has_frame(bool b)
     {
-        gtk_entry_set_has_frame(GTK_ENTRY(get_native()), b);
+        gtk_entry_set_has_frame(_entry, b);
     }
 
     std::string Entry::get_text() const

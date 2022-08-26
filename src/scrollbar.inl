@@ -5,7 +5,7 @@
 
 namespace mousetrap
 {
-    GtkWidget* Scrollbar::get_native()
+    Scrollbar::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
     }

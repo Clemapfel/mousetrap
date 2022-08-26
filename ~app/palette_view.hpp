@@ -34,7 +34,7 @@ namespace mousetrap
             PaletteView();
             virtual ~PaletteView();
 
-            GtkWidget* get_native() override;
+            operator GtkWidget*() override;
             void update() override;
 
             void set_tile_size(size_t);
@@ -87,7 +87,7 @@ namespace mousetrap
 
 namespace mousetrap
 {
-    GtkWidget* PaletteView::get_native()
+    GtkWidget* PaletteView::operator GtkWidget*()
     {
         return _main->get_native();
     }

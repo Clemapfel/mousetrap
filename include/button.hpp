@@ -13,19 +13,14 @@ namespace mousetrap
     {
         public:
             Button();
-            virtual ~Button();
 
             void set_label(const std::string&);
             void set_icon(const std::string& path);
-            void set_relief_active(bool b);
+            void set_has_frame(bool b);
 
-            GtkWidget* get_native();
-
-        protected:
-            void on_clicked(GtkButton* self, gpointer user_data);
+            operator GtkWidget*() override;
 
         private:
-            static void on_clicked_wrapper(GtkButton* self, void* instance);
             GtkButton* _native;
             GtkImage* _icon;
     };

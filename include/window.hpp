@@ -7,25 +7,24 @@
 
 #include <gdk/gdk.h>
 #include <include/widget.hpp>
-#include <include/container.hpp>
 
 namespace mousetrap
 {
-    class Window : public Container
+    class Window : public Widget
     {
         public:
             Window();
             Window(GtkWindow*);
 
-            GtkWidget* get_native() override;
+            operator GtkWidget*() override;
 
             void set_maximized(bool);
             void set_fullscreen(bool);
 
             void present();
 
-            void add(GtkWidget*) override;
-            void remove(GtkWidget*) override;
+            void set_child(Widget*);
+            void remove_child();
 
         private:
             GtkWindow* _native;

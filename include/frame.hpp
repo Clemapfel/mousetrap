@@ -5,20 +5,20 @@
 
 #pragma once
 
-#include <include/container.hpp>
+#include <include/widget.hpp>
 
 namespace mousetrap
 {
-    class Frame : public Container
+    class Frame : public Widget
     {
         public:
             Frame();
 
-            void add(GtkWidget*) override;
-            void remove(GtkWidget*) override;
+            void set_child(Widget*);
+            void remove_child();
 
             void set_label(const std::string&);
-            GtkWidget* get_native() override;
+            operator GtkWidget*() override;
 
         private:
             GtkFrame* _native;

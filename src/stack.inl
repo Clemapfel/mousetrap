@@ -11,7 +11,7 @@ namespace mousetrap
         gtk_stack_sidebar_set_stack(_native, GTK_STACK(stack->get_native()));
     }
 
-    GtkWidget* StackSidebar::get_native()
+    StackSidebar::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
     }
@@ -22,7 +22,7 @@ namespace mousetrap
         gtk_stack_switcher_set_stack(_native, GTK_STACK(stack->get_native()));
     }
 
-    GtkWidget* StackSwitcher::get_native()
+    StackSwitcher::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
     }
@@ -32,7 +32,7 @@ namespace mousetrap
         _native = GTK_STACK(gtk_stack_new());
     }
 
-    GtkWidget* Stack::get_native()
+    Stack::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
     }

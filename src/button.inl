@@ -8,18 +8,9 @@ namespace mousetrap
     Button::Button()
     {
         _native = GTK_BUTTON(gtk_button_new());
-        connect_signal("clicked", on_clicked_wrapper);
     }
 
-    Button::~Button()
-    {
-        //gtk_widget_destroy(GTK_WIDGET(_native));
-
-        //if (_icon != nullptr)
-            //gtk_widget_destroy(GTK_WIDGET(_icon));
-    }
-
-    GtkWidget* Button::get_native()
+    Button::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
     }
@@ -35,19 +26,8 @@ namespace mousetrap
         gtk_button_set_image(_native, GTK_WIDGET(_icon));
     }
 
-    void Button::set_relief_active(bool b)
+    void Button::set_has_frame(bool b)
     {
-        if (b)
-            gtk_button_set_relief(_native, GTK_RELIEF_NONE);
-        else
-            gtk_button_set_relief(_native, GTK_RELIEF_NORMAL);
-    }
-
-    void Button::on_clicked(GtkButton* self, gpointer user_data)
-    {}
-
-    void Button::on_clicked_wrapper(GtkButton* self, void* instance)
-    {
-        ((Button*) instance)->on_clicked(self, nullptr);
+        gtk_button_set_has_frame(_native, b);
     }
 }

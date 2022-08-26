@@ -5,25 +5,25 @@
 
 #pragma once
 
-#include <include/container.hpp>
+#include <include/widget.hpp>
 
 namespace mousetrap
 {
-    class Overlay
+    class Overlay : public Widget
     {
         public:
             Overlay();
 
-            GtkWidget* get_native();
+            operator GtkWidget*() override;
 
-            void set_under(Widget*);
-            void set_over(Widget*);
+            void set_child(Widget*);
+            void add_overlay(Widget*);
 
-            void remove_under();
-            void remove_over(Widget*);
+            void remove_child();
+            void remove_overlay(Widget*);
 
         private:
-            GtkOverlay* _overlay;
+            GtkOverlay* _native;
     };
 }
 

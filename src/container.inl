@@ -7,15 +7,18 @@
 
 namespace mousetrap
 {
-    void Container::add(Widget* in)
+    template<typename Widget_t> requires (not std::is_same_v<Widget_t, GtkWidget>)
+    void Container::add(Widget_t* in)
     {
         add(in->get_native());
     }
 
+    /*
     void Container::remove(Widget* out)
     {
         remove(out->get_native());
     }
+     */
 
     void Container::clear()
     {

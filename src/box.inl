@@ -11,11 +11,8 @@ namespace mousetrap
 {
     Box::Box(GtkOrientation orientation, float spacing)
     {
-        _box = GTK_BOX(gtk_box_new(orientation, spacing));
+        _native = GTK_BOX(gtk_box_new(orientation, spacing));
     }
-
-    Box::~Box()
-    {}
 
     Box HBox(float spacing)
     {
@@ -27,18 +24,41 @@ namespace mousetrap
         return Box(GTK_ORIENTATION_VERTICAL, spacing);
     }
 
-    GtkWidget* Box::get_native()
+    Box::operator GtkWidget*()
     {
-        return GTK_WIDGET(_box);
+        return GTK_WIDGET(_native);
     }
 
-    void Box::add(GtkWidget* widget)
+    void Box::push_back(Widget* widget)
     {
-        gtk_box_append(_box, widget);
+        gtk_box_append(_native, widget->operator GtkWidget*());
     }
 
-    void Box::remove(GtkWidget* widget)
+    void Box::push_front(Widget* widget)
     {
-        gtk_box_remove(_box, widget);
+        gtk_box_prepend(_native, widget->operator GtkWidget*());
+    }
+
+    void Box::insert_after(Widget* to_append, Widget* after)
+    {
+        gtk_box_insert_child_after(
+            _native,
+            to_append->operator GtkWidget*(),
+            after->operator GtkWidget*()
+        );
+    }
+
+    void Box::reorder_after(Widget* to_reorder, Widget* after)
+    {
+        gtk_box_reorder_child_after(
+                _native,
+                to_reorder->operator GtkWidget*(),
+                after->operator GtkWidget*()
+        );
+    }
+
+    void Box::remove(Widget* widget)
+    {
+        gtk_box_remove(_native, widget->operator GtkWidget *());
     }
 }

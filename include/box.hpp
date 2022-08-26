@@ -6,23 +6,25 @@
 #pragma once
 
 #include <include/widget.hpp>
-#include <include/container.hpp>
 
 namespace mousetrap
 {
-    class Box : public Container
+    class Box : public Widget
     {
         public:
             Box(GtkOrientation, float spacing = 0);
-            virtual ~Box();
 
-            GtkWidget* get_native();
+            operator GtkWidget*() override;
 
-            void add(GtkWidget*) override;
-            void remove(GtkWidget*) override;
+            void push_back(Widget*);
+            void push_front(Widget*);
+            void insert_after(Widget* to_append, Widget* after);
+            void reorder_after(Widget* to_move, Widget* after);
+
+            void remove(Widget*);
 
         private:
-            GtkBox* _box;
+            GtkBox* _native;
     };
 
     Box HBox(float spacing = 0);

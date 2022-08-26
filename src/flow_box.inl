@@ -3,6 +3,8 @@
 // Created on 8/14/22 by clem (mail@clemens-cords.com)
 //
 
+#include <include/flow_box.hpp> // TODO
+
 namespace mousetrap
 {
     FlowBox::FlowBox()
@@ -11,7 +13,7 @@ namespace mousetrap
         set_selection_mode(GTK_SELECTION_NONE);
     }
 
-    GtkWidget* FlowBox::get_native()
+    FlowBox::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
     }
@@ -56,5 +58,23 @@ namespace mousetrap
         return gtk_flow_box_get_child_at_pos(_native, x, y);
     }
 
+    void FlowBox::push_back(Widget* widget)
+    {
+        gtk_flow_box_append(_native, widget->operator GtkWidget*());
+    }
 
+    void FlowBox::push_front(Widget* widget)
+    {
+        gtk_flow_box_prepend(_native, widget->operator GtkWidget*());
+    }
+
+    void FlowBox::insert_at(Widget* widget, size_t i)
+    {
+        gtk_flow_box_insert(_native, widget->operator GtkWidget *(), i);
+    }
+
+    void FlowBox::remove(Widget* widget)
+    {
+        gtk_flow_box_remove(_native, widget->operator GtkWidget*());
+    }
 }

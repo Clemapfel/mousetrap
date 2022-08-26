@@ -53,7 +53,7 @@ add_library(mousetrap SHARED
     include/gl_area.hpp
     src/gl_area.inl
 
-    include/transform.hpp
+        include/gl_transform.hpp
     src/transform.inl
 
     include/widget.hpp
@@ -90,9 +90,6 @@ add_library(mousetrap SHARED
 
     include/box.hpp
     src/box.inl
-
-    include/container.hpp
-    src/container.inl
 
     include/overlay.hpp
     src/overlay.inl
@@ -137,7 +134,21 @@ add_library(mousetrap SHARED
 
     include/window.hpp
     src/window.inl
-    include/tree_view.hpp include/application.hpp include/aspect_frame.hpp src/aspect_frame.inl)
+
+    include/tree_view.hpp
+
+    include/application.hpp
+    src/application.inl
+
+    include/aspect_frame.hpp
+    src/aspect_frame.inl
+
+    include/signal_emitter.hpp
+    src/signal_emitter.inl
+
+    include/image_display.hpp
+    src/image_display.inl
+)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -159,7 +170,7 @@ target_link_libraries(mousetrap PUBLIC
 ### EXECUTABLE ###
 
 add_library(app STATIC
-    app/color_picker.hpp
+    app/global_state.hpp
     #include/widgets/hsv_triangle_select.hpp
     #include/widgets/global_state.hpp  include/widgets/brush_selection.hpp    include/widgets/brush_designer.hpp include/widgets/canvas.hpp  include/widgets/palette_view.hpp app/global_state.hpp app/layer.hpp app/palette.hpp app/palette_view.hpp "app/initialize.hpp" app/keybindings.hpp app/primary_secondary_color_swapper.hpp app/verbose_color_picker.hpp app/color_picker.hpp resources/shaders/color_picker_hsv_square.frag)
 )

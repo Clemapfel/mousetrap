@@ -5,16 +5,16 @@
 
 #pragma once
 
-#include <include/container.hpp>
+#include <include/widget.hpp>
 
 namespace mousetrap
 {
-    class FlowBox : public Container
+    class FlowBox : public Widget
     {
         public:
             FlowBox();
 
-            GtkWidget* get_native();
+            operator GtkWidget*() override;
 
             void set_activate_on_single_click(bool);
 
@@ -28,6 +28,11 @@ namespace mousetrap
 
             GtkFlowBoxChild* get_child_at_index(size_t i);
             GtkFlowBoxChild* get_child_at_pos(int x, int y);
+
+            void push_back(Widget*);
+            void push_front(Widget*);
+            void insert_at(Widget*, size_t);
+            void remove(Widget*);
 
         private:
             GtkFlowBox* _native;

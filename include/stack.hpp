@@ -5,22 +5,23 @@
 
 #pragma once
 
-#include <include/container.hpp>
+#include <include/widget.hpp>
 #include <include/time.hpp>
 
 namespace mousetrap
 {
     using StackID = size_t;
 
-    class Stack : public Container
+    class Stack : public Widget
     {
         public:
             Stack();
 
-            GtkWidget* get_native() override;
+            operator GtkWidget*() override;
 
             StackID add_child(Widget*, const std::string& title);
             void remove_child(StackID);
+
             StackID get_visible_child();
             void set_visible_child(StackID);
 
@@ -41,7 +42,7 @@ namespace mousetrap
     {
         public:
             StackSidebar(Stack*);
-            GtkWidget* get_native() override;
+            operator GtkWidget*() override;
 
         private:
             GtkStackSidebar* _native;
@@ -51,7 +52,7 @@ namespace mousetrap
     {
         public:
             StackSwitcher(Stack*);
-            GtkWidget* get_native() override;
+            operator GtkWidget*() override;
 
         private:
             GtkStackSwitcher* _native;

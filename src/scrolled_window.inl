@@ -10,7 +10,7 @@ namespace mousetrap
         _native = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new());
     }
 
-    GtkWidget* ScrolledWindow::get_native()
+    ScrolledWindow::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
     }

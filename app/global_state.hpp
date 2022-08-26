@@ -11,6 +11,7 @@
 #include <deque>
 
 #include <include/colors.hpp>
+#include <include/window.hpp>
 #include <include/pixel_buffer.hpp>
 
 #include <app/palette.hpp>
@@ -62,19 +63,4 @@ namespace mousetrap::state
     // ### FORMATING ##################################
 
     float margin_unit = 10; //px
-}
-
-// ###
-
-namespace mousetrap
-{
-    void set_primary_color(HSVA color)
-    {
-        state::primary_color = color;
-    }
-
-    void set_secondary_color(HSVA color)
-    {
-        state::secondary_color = color;
-    }
 }

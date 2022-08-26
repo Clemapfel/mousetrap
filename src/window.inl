@@ -15,7 +15,7 @@ namespace mousetrap
         _native = window;
     }
 
-    GtkWidget* Window::get_native()
+    Window::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
     }
@@ -41,20 +41,13 @@ namespace mousetrap
             gtk_window_unfullscreen(_native);
     }
 
-    void Window::add(GtkWidget* widget)
+    void Window::set_child(Widget* widget)
     {
-        gtk_window_set_child(_native, widget);
+        gtk_window_set_child(_native, widget->operator GtkWidget *());
     }
 
-    void Window::remove(GtkWidget* widget)
+    void Window::remove_child()
     {
-        if (gtk_window_get_child(_native) != widget)
-        {
-            std::cerr << "[WARNING] In Window::remove: Widget " << widget
-                      << " is not the child of this window. No removal will take place" << std::endl;
-            return;
-        }
-
         gtk_window_set_child(_native, nullptr);
     }
 }

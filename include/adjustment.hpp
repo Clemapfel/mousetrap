@@ -15,7 +15,7 @@ namespace mousetrap
             Adjustment(GtkAdjustment*);
             Adjustment(float current, float lower, float upper, float increment, float page_size = 0, float page_increment = 0);
 
-            GtkAdjustment* get_native();
+            operator Adjustment*();
 
             void clamp_page(float lower, float upper);
             void configure(float current, float lower, float upper, float increment, float page_size, float page_increment);

@@ -15,9 +15,8 @@ namespace mousetrap
     {
         public:
             GLArea();
-            virtual ~GLArea();
 
-            GtkWidget* get_native() override;
+            operator GtkWidget*() override;
 
             void add_render_task(Shape*, Shader* = nullptr, GLTransform* = nullptr);
             void add_render_task(RenderTask);

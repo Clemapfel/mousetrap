@@ -28,7 +28,7 @@ namespace mousetrap
             VerboseColorPicker();
             ~VerboseColorPicker();
 
-            GtkWidget* get_native() override;
+            operator GtkWidget*() override;
 
             void update() override;
 
@@ -376,7 +376,7 @@ namespace mousetrap
         _main->set_pass_through(_current_color_region->_main, true);
     }
 
-    GtkWidget* VerboseColorPicker::get_native()
+    GtkWidget* VerboseColorPicker::operator GtkWidget*()
     {
         return _main->get_native();
     }

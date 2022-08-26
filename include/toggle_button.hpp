@@ -13,20 +13,16 @@ namespace mousetrap
     {
         public:
             ToggleButton();
-            virtual ~ToggleButton();
+
+            operator GtkWidget*() override;
 
             bool get_active() const;
             void set_active(bool b);
 
             void set_label(const std::string&);
 
-            GtkWidget* get_native() override;
-
-        protected:
-            void on_toggled(GtkToggleButton* self, gpointer userdata);
 
         private:
-            static void on_toggled_wrapper(GtkToggleButton* self, void* instance);
             GtkToggleButton* _native;
     };
 }

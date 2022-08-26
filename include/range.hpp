@@ -9,7 +9,6 @@
 
 namespace mousetrap
 {
-    // cannot be instanced
     class Range : public Widget
     {
         public:

@@ -7,7 +7,7 @@
 
 #include <string>
 #include <include/gl_common.hpp>
-#include <include/transform.hpp>
+#include <include/gl_transform.hpp>
 
 namespace mousetrap
 {

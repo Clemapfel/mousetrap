@@ -11,13 +11,10 @@ namespace mousetrap
         gtk_scale_set_draw_value(_native, false);
     }
 
-    GtkWidget* Scale::get_native()
+    Scale::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
     }
-
-    Scale::~Scale()
-    {}
 
     void Scale::set_draw_value(bool b)
     {

@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include <include/container.hpp>
+#include <include/widget.hpp>
 
 namespace mousetrap
 {
-    class AspectFrame : public Container
+    class AspectFrame : public Widget
     {
         public:
             AspectFrame(float ratio, float x_align = 0.5, float y_align = 0.5, bool obey_child = false);
@@ -18,13 +18,13 @@ namespace mousetrap
             void set_child_xalign(float);
             void set_child_yalign(float);
 
-            void add(GtkWidget*) override;
-            void remove(GtkWidget*) override;
-            GtkWidget* get_native() override;
+            void set_child(Widget*);
+            void remove_child();
+
+            operator GtkWidget*() override;
 
         private:
             GtkAspectFrame* _native;
-
     };
 }
 

@@ -10,12 +10,6 @@ namespace mousetrap
     ToggleButton::ToggleButton()
     {
         _native = GTK_TOGGLE_BUTTON(gtk_toggle_button_new());
-        connect_signal("toggled", on_toggled_wrapper);
-    }
-
-    ToggleButton::~ToggleButton()
-    {
-        //gtk_widget_destroy(GTK_WIDGET(_native));
     }
 
     bool ToggleButton::get_active() const
@@ -33,18 +27,8 @@ namespace mousetrap
         gtk_button_set_label(GTK_BUTTON(_native), str.c_str());
     }
 
-    GtkWidget* ToggleButton::get_native()
+    ToggleButton::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
-    }
-
-    void ToggleButton::on_toggled_wrapper(GtkToggleButton* self, void* instance)
-    {
-        ((ToggleButton*) instance)->on_toggled(self, nullptr);
-    }
-
-    void ToggleButton::on_toggled(GtkToggleButton* self, gpointer userdata)
-    {
-        // noop
     }
 }

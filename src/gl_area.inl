@@ -5,7 +5,7 @@
 
 namespace mousetrap
 {
-    GtkWidget* GLArea::get_native()
+    GLArea::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
     }
@@ -19,9 +19,6 @@ namespace mousetrap
         connect_signal("render", on_render_wrapper, this);
         connect_signal("resize", on_resize_wrapper, this);
     }
-
-    GLArea::~GLArea()
-    {}
 
     void GLArea::add_render_task(Shape* shape, Shader* shader, GLTransform* transform)
     {

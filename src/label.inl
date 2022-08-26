@@ -10,13 +10,10 @@ namespace mousetrap
         _native = GTK_LABEL(gtk_label_new(str.c_str()));
     }
 
-    GtkWidget* Label::get_native()
+    Label::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
     }
-
-    Label::~Label()
-    {}
 
     void Label::set_text(const std::string& text)
     {

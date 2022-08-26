@@ -89,11 +89,11 @@ namespace mousetrap
         _frame->set_tooltip_text(_tooltip);
         _frame->add(_arrow_overlay->get_native());
 
-        _button_event_controller = GTK_EVENT_CONTROLLER(gtk_gesture_click_new());
-        _button_event_controller = GTK_EVENT_CONTROLLER(gtk_event_controller_key_new());
-        gtk_widget_add_controller(_render_area->get_native(), GTK_EVENT_CONTROLLER(_button_event_controller));
+        //_button_event_controller = GTK_EVENT_CONTROLLER(gtk_gesture_click_new());
+        //_button_event_controller = GTK_EVENT_CONTROLLER_KEY(gtk_event_controller_key_new());
+        //gtk_widget_add_controller(_frame->get_native(), GTK_EVENT_CONTROLLER(_button_event_controller));
         //g_signal_connect(_button_event_controller, "pressed", G_CALLBACK(on_pressed), this);
-        g_signal_connect(_button_event_controller, "key-pressed", G_CALLBACK(on_key_pressed), this);
+        //g_signal_connect(_button_event_controller, "key-pressed", G_CALLBACK(on_key_pressed), this);
     }
 
     PrimarySecondaryColorSwapper::~PrimarySecondaryColorSwapper()
@@ -102,7 +102,7 @@ namespace mousetrap
         delete _secondary_color_shape;
     }
 
-    GtkWidget* PrimarySecondaryColorSwapper::get_native()
+    GtkWidget* PrimarySecondaryColorSwapper::operator GtkWidget*()
     {
         return _frame->get_native();
     }
@@ -132,7 +132,6 @@ namespace mousetrap
 
         instance->_arrow->set_text("<span font_size=\"" + spacer + "pt\"> </span><span font_size=\"" + arrow_size + "pt\"><tt>&#8635;</tt></span>");
         instance->_arrow->set_use_markup(true);
-
         gtk_gl_area_queue_render(self);
     }
 

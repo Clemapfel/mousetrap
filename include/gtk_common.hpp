@@ -18,30 +18,22 @@ extern "C"
         NONE,
         DEFAULT,
         HELP,
-
         POINTER,
         CONTEXT_MENU,
-
         PROGRESS,
         WAIT,
-
         CELL,
         CROSSHAIR,
         TEXT,
-
         MOVE,
         NOT_ALLOWED,
-
         GRAB,
         GRABBING,
         ALL_SCROLL,
-
         ZOOM_IN,
         ZOOM_OUT,
-
         COLUMN_RESIZE,
         ROW_RESIZE,
-
         NORTH_RESIZE,
         NORTH_EAST_RESIZE,
         EAST_RESIZE,
@@ -50,7 +42,6 @@ extern "C"
         SOUTH_WEST_RESIZE,
         WEST_RESIZE,
         NORTH_WEST_RESIZE,
-
         HORIZONTAL_RESIZE = COLUMN_RESIZE,
         VERTICAL_RESIZE = ROW_RESIZE,
     };

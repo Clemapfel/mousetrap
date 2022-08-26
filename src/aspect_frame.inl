@@ -5,18 +5,17 @@
 
 namespace mousetrap
 {
-    void AspectFrame::add(GtkWidget* child)
+    void AspectFrame::set_child(Widget* child)
     {
-        gtk_aspect_frame_set_child(_native, child);
+        gtk_aspect_frame_set_child(_native, child->operator GtkWidget*());
     }
 
-    void AspectFrame::remove(GtkWidget* child)
+    void AspectFrame::remove_child()
     {
-        if (gtk_aspect_frame_get_child(_native) == child)
-            gtk_aspect_frame_set_child(_native, nullptr);
+        gtk_aspect_frame_set_child(_native, nullptr);
     }
 
-    GtkWidget* AspectFrame::get_native()
+    AspectFrame::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
     }

@@ -7,11 +7,13 @@
 
 #include <gtk/gtk.h>
 
+#include <include/signal_emitter.hpp>
+
 #include <string>
 
 namespace mousetrap
 {
-    class Application
+    class Application : public SignalEmitter
     {
         public:
             template<typename InitializeFunction_t>
@@ -21,29 +23,11 @@ namespace mousetrap
 
             int run();
 
+            operator GObject*() override;
+
         private:
             GtkApplication* _native;
     };
 }
 
-// ###
-
-namespace mousetrap
-{
-    template<typename InitializeFunction_t>
-    Application::Application(InitializeFunction_t* initialize, void* data)
-    {
-        _native = gtk_application_new(nullptr, G_APPLICATION_FLAGS_NONE);
-        g_signal_connect(_native, "activate", G_CALLBACK(initialize), data);
-    }
-
-    Application::~Application()
-    {
-        g_object_unref(_native);
-    }
-
-    int Application::run()
-    {
-        return g_application_run(G_APPLICATION(_native), 0, nullptr);
-    }
-}
+#include <src/application.inl>

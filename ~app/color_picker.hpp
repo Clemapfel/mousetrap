@@ -16,7 +16,7 @@ namespace mousetrap
             ColorPicker();
             ~ColorPicker();
 
-            GtkWidget* get_native() override;
+            operator GtkWidget*() override;
 
             void update() override;
 
@@ -127,7 +127,7 @@ namespace mousetrap
         delete _square_size;
     }
 
-    GtkWidget* ColorPicker::get_native()
+    GtkWidget* ColorPicker::operator GtkWidget*()
     {
         return _main->get_native();
     }

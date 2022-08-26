@@ -15,9 +15,8 @@ namespace mousetrap
     {
         public:
             Scale(float min, float max, float step, GtkOrientation orientation = GTK_ORIENTATION_HORIZONTAL);
-            virtual ~Scale();
 
-            GtkWidget* get_native() override;
+            operator GtkWidget*() override;
 
             void set_draw_value(bool);
             void add_mark(float at, GtkPositionType pos, const std::string& label = "");

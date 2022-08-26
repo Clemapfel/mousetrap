@@ -5,7 +5,7 @@
 
 namespace mousetrap
 {
-    GtkAdjustment* Adjustment::get_native()
+    Adjustment::operator Adjustment*()
     {
         return _native;
     }

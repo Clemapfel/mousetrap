@@ -16,7 +16,7 @@ namespace mousetrap
             Scrollbar(Adjustment, GtkOrientation = GTK_ORIENTATION_HORIZONTAL);
             Scrollbar(GtkOrientation = GTK_ORIENTATION_HORIZONTAL);
 
-            GtkWidget* get_native() override;
+            operator GtkWidget*() override;
             Adjustment& get_adjustment();
 
         private:
