@@ -30,7 +30,11 @@ namespace mousetrap
             void swap_colors();
 
             static void on_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, PrimarySecondaryColorSwapper* instance);
-
+            static void on_key_pressed(GtkEventControllerKey* self,
+                                       guint keyval,
+                                       guint keycode,
+                                       GdkModifierType state,
+                                       PrimarySecondaryColorSwapper* user_data);
             AspectFrame* _frame;
             GLArea* _render_area;
 
@@ -86,8 +90,10 @@ namespace mousetrap
         _frame->add(_arrow_overlay->get_native());
 
         _button_event_controller = GTK_EVENT_CONTROLLER(gtk_gesture_click_new());
+        _button_event_controller = GTK_EVENT_CONTROLLER(gtk_event_controller_key_new());
         gtk_widget_add_controller(_render_area->get_native(), GTK_EVENT_CONTROLLER(_button_event_controller));
-        g_signal_connect(_button_event_controller, "pressed", G_CALLBACK(on_pressed), this);
+        //g_signal_connect(_button_event_controller, "pressed", G_CALLBACK(on_pressed), this);
+        g_signal_connect(_button_event_controller, "key-pressed", G_CALLBACK(on_key_pressed), this);
     }
 
     PrimarySecondaryColorSwapper::~PrimarySecondaryColorSwapper()
@@ -192,6 +198,13 @@ namespace mousetrap
 
     void PrimarySecondaryColorSwapper::on_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, PrimarySecondaryColorSwapper* instance)
     {
+        instance->swap_colors();
+    }
+
+    void PrimarySecondaryColorSwapper::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode,
+                                                      GdkModifierType state, PrimarySecondaryColorSwapper* instance)
+    {
+        std::cout << keyval << std::endl;
         instance->swap_colors();
     }
 

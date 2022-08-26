@@ -228,4 +228,9 @@ namespace mousetrap
     {
         gtk_widget_show(get_native());
     }
+
+    void Widget::set_cursor(GtkCursorType cursor)
+    {
+
+    }
 }

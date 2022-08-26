@@ -7,6 +7,7 @@
 
 #include <gtk-4.0/gdk/gdk.h>
 #include <include/vector.hpp>
+#include <include/gtk_common.hpp>
 
 #include <map>
 #include <string>
@@ -52,6 +53,8 @@ namespace mousetrap
 
             template<typename... GdkEventMask_t> requires (std::is_same_v<GdkEventMask_t, gint> && ...)
             void add_events(GdkEventMask_t...);
+
+            void set_cursor(GtkCursorType type);
 
             void show();
 
