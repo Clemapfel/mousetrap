@@ -29,6 +29,16 @@ namespace mousetrap::state
     HSVA primary_color = RGBA(1, 0, 1, 1).operator HSVA();
     HSVA secondary_color = RGBA(0, 1, 0, 1).operator HSVA();
 
+    Widget* color_picker = nullptr;
+    Widget* primary_secondary_color_swapper = nullptr;
+
+    void set_primary_color(HSVA color)
+    {
+        primary_color = color;
+        color_picker->update();
+        primary_secondary_color_swapper->update();
+    }
+
     // ### PALETTES ###################################
 
     using PaletteID = std::string;

@@ -9,6 +9,7 @@
 #include <include/aspect_frame.hpp>
 #include <include/label.hpp>
 #include <include/overlay.hpp>
+#include <include/event_controller.hpp>
 
 #include <app/global_state.hpp>
 
@@ -20,21 +21,18 @@ namespace mousetrap
             PrimarySecondaryColorSwapper();
             ~PrimarySecondaryColorSwapper();
 
-            GtkWidget* get_native();
+            operator GtkWidget*();
+            void update() override;
 
         private:
-            void update();
 
             static void on_gl_area_realize(GtkGLArea* self, PrimarySecondaryColorSwapper* instance);
             static void on_gl_area_resize(GtkGLArea* self, int, int, PrimarySecondaryColorSwapper* instance);
             void swap_colors();
 
-            static void on_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, PrimarySecondaryColorSwapper* instance);
-            static void on_key_pressed(GtkEventControllerKey* self,
-                                       guint keyval,
-                                       guint keycode,
-                                       GdkModifierType state,
-                                       PrimarySecondaryColorSwapper* user_data);
+            ClickEventController* _click_event_controller;
+            static void on_button_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
+
             AspectFrame* _frame;
             GLArea* _render_area;
 
@@ -58,11 +56,6 @@ namespace mousetrap
 
             GtkEventController* _button_event_controller;
     };
-
-    namespace state
-    {
-        static inline PrimarySecondaryColorSwapper* primary_secondary_color_swapper_instance = nullptr;
-    }
 }
 
 // ###
@@ -75,26 +68,25 @@ namespace mousetrap
         _render_area->connect_signal("realize", on_gl_area_realize, this);
         _render_area->connect_signal("resize", on_gl_area_resize, this);
 
-        _arrow = new Label("UNINITIALIZED");
+        _arrow = new Label("");
         _arrow->set_use_markup(true);
         _arrow->set_halign(GTK_ALIGN_START);
         _arrow->set_valign(GTK_ALIGN_END);
 
         _arrow_overlay = new Overlay();
-        _arrow_overlay->set_over(_render_area);
-        _arrow_overlay->set_under(_arrow);
+        _arrow_overlay->set_child(_arrow);
+        _arrow_overlay->add_overlay(_render_area);
 
         _frame = new AspectFrame(1);
         _frame->set_margin(state::margin_unit);
         _frame->set_tooltip_text(_tooltip);
-        _frame->add(_arrow_overlay->get_native());
+        _frame->set_child(_arrow_overlay);
 
-        //_button_event_controller = GTK_EVENT_CONTROLLER(gtk_gesture_click_new());
-        //_button_event_controller = GTK_EVENT_CONTROLLER_KEY(gtk_event_controller_key_new());
-        //gtk_widget_add_controller(_frame->get_native(), GTK_EVENT_CONTROLLER(_button_event_controller));
-        //g_signal_connect(_button_event_controller, "pressed", G_CALLBACK(on_pressed), this);
-        //g_signal_connect(_button_event_controller, "key-pressed", G_CALLBACK(on_key_pressed), this);
-    }
+        _click_event_controller = new ClickEventController();
+        _click_event_controller->connect_pressed(on_button_release, this);
+
+        _render_area->add_controller(_click_event_controller);
+   }
 
     PrimarySecondaryColorSwapper::~PrimarySecondaryColorSwapper()
     {
@@ -102,9 +94,9 @@ namespace mousetrap
         delete _secondary_color_shape;
     }
 
-    GtkWidget* PrimarySecondaryColorSwapper::operator GtkWidget*()
+    PrimarySecondaryColorSwapper::operator GtkWidget*()
     {
-        return _frame->get_native();
+        return _frame->operator GtkWidget *();
     }
 
     void PrimarySecondaryColorSwapper::update()
@@ -114,14 +106,15 @@ namespace mousetrap
 
         if (_secondary_color_shape != nullptr)
             _secondary_color_shape->set_color(state::secondary_color);
+
+        _render_area->queue_render();
     }
 
     void PrimarySecondaryColorSwapper::on_gl_area_realize(GtkGLArea* self, PrimarySecondaryColorSwapper* instance)
     {
         gtk_gl_area_make_current(self);
         instance->initialize_render_area();
-        instance->on_gl_area_resize(self, 1, 1, instance);
-        gtk_gl_area_queue_render(self);
+        instance->_render_area->queue_render();
     }
 
     void PrimarySecondaryColorSwapper::on_gl_area_resize(GtkGLArea* self, int w, int h, PrimarySecondaryColorSwapper* instance)
@@ -129,10 +122,10 @@ namespace mousetrap
         auto min = std::min(w, h);
         std::string spacer = std::to_string(0.105 * min);
         std::string arrow_size = std::to_string(0.18 * min);
-
         instance->_arrow->set_text("<span font_size=\"" + spacer + "pt\"> </span><span font_size=\"" + arrow_size + "pt\"><tt>&#8635;</tt></span>");
         instance->_arrow->set_use_markup(true);
-        gtk_gl_area_queue_render(self);
+
+        instance->_render_area->queue_render();
     }
 
     void PrimarySecondaryColorSwapper::initialize_render_area()
@@ -186,26 +179,21 @@ namespace mousetrap
         auto current_primary = state::primary_color;
         auto current_secondary = state::secondary_color;
 
-        set_secondary_color(current_primary);
-        set_primary_color(current_secondary);
-
         _primary_color_shape->set_color(current_secondary);
         _secondary_color_shape->set_color(current_primary);
+
+        state::primary_color = current_secondary;
+        state::secondary_color = current_primary;
+
+        state::color_picker->update();
 
         _render_area->queue_render();
     }
 
-    void PrimarySecondaryColorSwapper::on_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, PrimarySecondaryColorSwapper* instance)
+    void PrimarySecondaryColorSwapper::on_button_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y,
+                                                         void* instance)
     {
-        instance->swap_colors();
+        ((PrimarySecondaryColorSwapper*) instance)->swap_colors();
     }
-
-    void PrimarySecondaryColorSwapper::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode,
-                                                      GdkModifierType state, PrimarySecondaryColorSwapper* instance)
-    {
-        std::cout << keyval << std::endl;
-        instance->swap_colors();
-    }
-
 }
 

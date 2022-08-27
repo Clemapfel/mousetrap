@@ -75,13 +75,9 @@ namespace mousetrap
             ClickEventController* _render_area_button_event_controller;
             MotionEventController* _render_area_motion_event_controller;
 
+            void update_primary_color(double x, double y);
             void reformat();
     };
-
-    namespace state
-    {
-        ColorPicker* color_picker = nullptr;
-    }
 }
 
 // ###
@@ -312,7 +308,7 @@ namespace mousetrap
 
     void ColorPicker::update_hue_bar(HSVA color)
     {
-        set_hue_bar_cursor(Vector2f(0, color.h));
+        set_hue_bar_cursor({_hue_bar_shape->get_centroid().x, _hue_bar_shape->get_top_left().y + color.h * _hue_bar_shape->get_size().y});
     }
 
     void ColorPicker::update_hsv_shape(HSVA color)
@@ -376,6 +372,7 @@ namespace mousetrap
     {
         update_hue_bar(color);
         update_hsv_shape(color);
+
         _render_area->queue_render();
     }
 
@@ -395,6 +392,7 @@ namespace mousetrap
             instance->set_hue_bar_cursor(pos);
             instance->_render_area->queue_render();
             instance->_render_area->set_cursor(GtkCursorType::GRABBING);
+            instance->update_primary_color(x, y);
             return;
         }
         else if (instance->_hsv_shape_active)
@@ -402,6 +400,7 @@ namespace mousetrap
             instance->set_hsv_shape_cursor(pos);
             instance->_render_area->queue_render();
             instance->_render_area->set_cursor(GtkCursorType::NONE);
+            instance->update_primary_color(x, y);
             return;
         }
         else if (in_hue_bar)
@@ -423,6 +422,7 @@ namespace mousetrap
             instance->_render_area->set_cursor(GtkCursorType::GRABBING);
             instance->set_hue_bar_cursor(pos);
             instance->_render_area->queue_render();
+            instance->update_primary_color(x, y);
         }
         else if (is_point_in_rectangle(pos, Rectangle{instance->_hsv_shape->get_top_left(), instance->_hsv_shape->get_size()}))
         {
@@ -430,6 +430,7 @@ namespace mousetrap
             instance->_render_area->set_cursor(GtkCursorType::NONE);
             instance->set_hsv_shape_cursor(pos);
             instance->_render_area->queue_render();
+            instance->update_primary_color(x, y);
         }
     }
 
@@ -437,6 +438,7 @@ namespace mousetrap
                                                     void* user_data)
     {
         auto* instance = (ColorPicker*) user_data;
+
         instance->_hue_bar_active = false;
         instance->_hsv_shape_active = false;
 
@@ -447,5 +449,32 @@ namespace mousetrap
             instance->_render_area->set_cursor(GtkCursorType::CELL);
         else
             instance->_render_area->set_cursor(GtkCursorType::DEFAULT);
+    }
+
+    void ColorPicker::update_primary_color(double x, double y)
+    {
+        if (_hue_bar_active)
+        {
+            float hue = y / _canvas_size->y;
+            hue = glm::clamp<float>(hue, 0, 1);
+
+            auto color = state::primary_color;
+            color.h = 1 - (hue - _hue_bar_shape->get_top_left().y) / _hue_bar_shape->get_size().y;
+
+            state::primary_color = color;
+            state::primary_secondary_color_swapper->update();
+        }
+        else if (_hsv_shape_active)
+        {
+            float value = ((x / _canvas_size->x) - _hsv_shape->get_top_left().x) / _hsv_shape->get_size().x;
+            float saturation = 1 - ((y / _canvas_size->y) - _hsv_shape->get_top_left().y / _hsv_shape->get_size().y);
+
+            auto color = state::primary_color;
+            color.v = value;
+            color.s = saturation;
+
+            state::primary_color = color;
+            state::primary_secondary_color_swapper->update();
+        }
     }
 }
