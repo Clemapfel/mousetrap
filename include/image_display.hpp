@@ -24,4 +24,4 @@ namespace mousetrap
     };
 }
 
-#include <src/image_display.hpp>
+#include <src/image_display.inl>

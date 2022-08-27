@@ -13,7 +13,7 @@ extern "C"
     bool gtk_initialize_opengl(GtkWindow* window);
 
     ///
-    enum GtkCursorType
+    enum class GtkCursorType
     {
         NONE,
         DEFAULT,

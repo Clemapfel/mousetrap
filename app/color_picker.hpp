@@ -69,14 +69,19 @@ namespace mousetrap
 
             static void on_render_area_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data);
             static void on_render_area_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data);
-            static void on_render_area_button_press_event(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
-            static void on_render_area_button_release_event(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
+            static void on_render_area_button_press(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
+            static void on_render_area_button_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
 
             ClickEventController* _render_area_button_event_controller;
             MotionEventController* _render_area_motion_event_controller;
 
             void reformat();
     };
+
+    namespace state
+    {
+        ColorPicker* color_picker = nullptr;
+    }
 }
 
 // ###
@@ -96,8 +101,11 @@ namespace mousetrap
 
         _render_area_motion_event_controller->connect_enter(on_render_area_motion_enter, this);
         _render_area_motion_event_controller->connect_motion(on_render_area_motion, this);
-        _render_area_button_event_controller->connect_pressed(on_render_area_button_press_event, this);
-        _render_area_button_event_controller->connect_released(on_render_area_button_release_event, this);
+        _render_area_button_event_controller->connect_pressed(on_render_area_button_press, this);
+        _render_area_button_event_controller->connect_released(on_render_area_button_release, this);
+
+        _render_area->add_controller(_render_area_motion_event_controller);
+        _render_area->add_controller(_render_area_button_event_controller);
 
         _main = new AspectFrame(1);
         _main->set_child(_render_area);
@@ -372,56 +380,72 @@ namespace mousetrap
     }
 
     void ColorPicker::on_render_area_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data)
+    {}
+
+    void ColorPicker::on_render_area_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data)
     {
         auto* instance = (ColorPicker*) user_data;
-
         auto pos = Vector2f(x / instance->_canvas_size->x, y / instance->_canvas_size->y);
-        if (is_point_in_rectangle(pos, Rectangle{instance->_hue_bar_shape->get_top_left(), instance->_hue_bar_shape->get_size()}))
-            instance->_main->set_cursor(GtkCursorType::GRAB);
+
+        bool in_hue_bar = is_point_in_rectangle(pos, Rectangle{instance->_hue_bar_shape->get_top_left(), instance->_hue_bar_shape->get_size()});
+        bool in_hsv_shape = is_point_in_rectangle(pos, Rectangle{instance->_hsv_shape->get_top_left(), instance->_hsv_shape->get_size()});
+
+        if (instance->_hue_bar_active)
+        {
+            instance->set_hue_bar_cursor(pos);
+            instance->_render_area->queue_render();
+            instance->_render_area->set_cursor(GtkCursorType::GRABBING);
+            return;
+        }
+        else if (instance->_hsv_shape_active)
+        {
+            instance->set_hsv_shape_cursor(pos);
+            instance->_render_area->queue_render();
+            instance->_render_area->set_cursor(GtkCursorType::NONE);
+            return;
+        }
+        else if (in_hue_bar)
+            instance->_render_area->set_cursor(GtkCursorType::GRAB);
+        else if (in_hsv_shape)
+            instance->_render_area->set_cursor(GtkCursorType::CELL);
         else
+            instance->_render_area->set_cursor(GtkCursorType::DEFAULT);
     }
 
-    void ColorPicker::on_render_area_button_press_event(GtkWidget* widget, GdkEventButton* event, ColorPicker* instance)
+    void ColorPicker::on_render_area_button_press(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data)
     {
-        if (event->button != 1)
-            return;
-
-        auto pos = Vector2f(event->x / instance->_canvas_size->x, event->y / instance->_canvas_size->y);
+        auto* instance = (ColorPicker*) user_data;
+        auto pos = Vector2f(x / instance->_canvas_size->x, y / instance->_canvas_size->y);
 
         if (is_point_in_rectangle(pos, Rectangle{instance->_hue_bar_shape->get_top_left(), instance->_hue_bar_shape->get_size()}))
         {
             instance->_hue_bar_active = true;
+            instance->_render_area->set_cursor(GtkCursorType::GRABBING);
             instance->set_hue_bar_cursor(pos);
             instance->_render_area->queue_render();
         }
         else if (is_point_in_rectangle(pos, Rectangle{instance->_hsv_shape->get_top_left(), instance->_hsv_shape->get_size()}))
         {
             instance->_hsv_shape_active = true;
+            instance->_render_area->set_cursor(GtkCursorType::NONE);
             instance->set_hsv_shape_cursor(pos);
             instance->_render_area->queue_render();
         }
     }
 
-    void ColorPicker::on_render_area_button_release_event(GtkWidget* widget, GdkEventButton* event, ColorPicker* instance)
+    void ColorPicker::on_render_area_button_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y,
+                                                    void* user_data)
     {
+        auto* instance = (ColorPicker*) user_data;
         instance->_hue_bar_active = false;
         instance->_hsv_shape_active = false;
-    }
 
-    void ColorPicker::on_render_area_motion_notify_event(GtkWidget * widget, GdkEventMotion * event,
-                                                         ColorPicker * instance)
-    {
-        auto pos = Vector2f(event->x / instance->_canvas_size->x, event->y / instance->_canvas_size->y);
-
-        if (instance->_hue_bar_active)
-        {
-            instance->set_hue_bar_cursor(pos);
-            instance->_render_area->queue_render();
-        }
-        else if (instance->_hsv_shape_active)
-        {
-            instance->set_hsv_shape_cursor(pos);
-            instance->_render_area->queue_render();
-        }
+        auto pos = Vector2f(x / instance->_canvas_size->x, y / instance->_canvas_size->y);
+        if (is_point_in_rectangle(pos, Rectangle{instance->_hue_bar_shape->get_top_left(), instance->_hue_bar_shape->get_size()}))
+            instance->_render_area->set_cursor(GtkCursorType::GRAB);
+        else if (is_point_in_rectangle(pos, Rectangle{instance->_hsv_shape->get_top_left(), instance->_hsv_shape->get_size()}))
+            instance->_render_area->set_cursor(GtkCursorType::CELL);
+        else
+            instance->_render_area->set_cursor(GtkCursorType::DEFAULT);
     }
 }

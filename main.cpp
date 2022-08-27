@@ -9,15 +9,33 @@
 #include <include/entry.hpp>
 #include <include/application.hpp>
 #include <include/gl_area.hpp>
+#include <include/image_display.hpp>
+#include <include/event_controller.hpp>
 
 #include <app/global_state.hpp>
+#include <app/color_picker.hpp>
 
 using namespace mousetrap;
+
+void test(GtkGestureZoom* self, gdouble scale, void* user_data)
+{
+    std::cout << scale << std::endl;
+}
 
 static void activate(GtkApplication* app, void*)
 {
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
+    state::main_window->set_size_request({400, 300});
+
+    // TODO
+
+    static auto image = Image();
+    image.create(100, 100, RGBA(1, 0, 1, 1));
+
+    state::color_picker = new ColorPicker();
+    state::main_window->set_child(state::color_picker);
+    // TODO
 
     state::main_window->show();
     state::main_window->present();
