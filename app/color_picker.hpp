@@ -32,11 +32,9 @@ namespace mousetrap
 
             bool _hue_bar_active = false;
             void set_hue_bar_cursor(Vector2f);
-            void update_hue_bar(HSVA);
 
             bool _hsv_shape_active = false;
             void set_hsv_shape_cursor(Vector2f);
-            void update_hsv_shape(HSVA);
 
             Vector2f align_to_pixelgrid(Vector2f);
 
@@ -209,6 +207,7 @@ namespace mousetrap
         self->add_render_task(instance->_hsv_shape_cursor_window_frame);
 
         instance->reformat();
+        instance->update();
 
         gtk_gl_area_queue_render(area);
     }
@@ -300,23 +299,18 @@ namespace mousetrap
 
     void ColorPicker::update()
     {
-        update_hue_bar(state::primary_color);
-        update_hsv_shape(state::primary_color);
+        update(state::primary_color);
+    }
+
+    void ColorPicker::update(HSVA color)
+    {
+        set_hue_bar_cursor({0, _hue_bar_shape->get_top_left().y + (1 - color.h) * _hue_bar_shape->get_size().y});
+        set_hsv_shape_cursor({
+            _hsv_shape->get_top_left().x + (color.v) * _hsv_shape->get_size().x,
+            _hsv_shape->get_top_left().y + (1 - color.s) * _hsv_shape->get_size().y,
+        });
 
         _render_area->queue_render();
-    }
-
-    void ColorPicker::update_hue_bar(HSVA color)
-    {
-        set_hue_bar_cursor({_hue_bar_shape->get_centroid().x, _hue_bar_shape->get_top_left().y + color.h * _hue_bar_shape->get_size().y});
-    }
-
-    void ColorPicker::update_hsv_shape(HSVA color)
-    {
-        set_hsv_shape_cursor({
-             _hsv_shape->get_top_left().x + color.v * _hsv_shape->get_size().x,
-             _hsv_shape->get_top_left().y + color.s * _hsv_shape->get_size().y
-        });
     }
 
     void ColorPicker::set_hue_bar_cursor(Vector2f pos)
@@ -366,14 +360,6 @@ namespace mousetrap
         _hsv_shape_cursor_frame->set_centroid(_hsv_shape_cursor->get_centroid());
         _hsv_shape_cursor_window->set_centroid(_hsv_shape_cursor->get_centroid());
         _hsv_shape_cursor_window_frame->set_centroid(_hsv_shape_cursor->get_centroid());
-    }
-
-    void ColorPicker::update(HSVA color)
-    {
-        update_hue_bar(color);
-        update_hsv_shape(color);
-
-        _render_area->queue_render();
     }
 
     void ColorPicker::on_render_area_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data)

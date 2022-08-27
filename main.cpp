@@ -34,6 +34,7 @@ static void activate(GtkApplication* app, void*)
     box->push_back(state::primary_secondary_color_swapper);
     state::main_window->set_child(box);
 
+    state::main_window->set_size_request({800, 600});
     state::main_window->show();
     state::main_window->present();
 }

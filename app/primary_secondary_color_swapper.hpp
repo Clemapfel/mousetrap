@@ -124,7 +124,7 @@ namespace mousetrap
         std::string arrow_size = std::to_string(0.18 * min);
         instance->_arrow->set_text("<span font_size=\"" + spacer + "pt\"> </span><span font_size=\"" + arrow_size + "pt\"><tt>&#8635;</tt></span>");
         instance->_arrow->set_use_markup(true);
-
+        instance->update();
         instance->_render_area->queue_render();
     }
 
