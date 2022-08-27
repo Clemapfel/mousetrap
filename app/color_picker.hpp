@@ -277,11 +277,33 @@ namespace mousetrap
         _hsv_shape_cursor->set_centroid(_hsv_shape->get_centroid());
         _hsv_shape_cursor_window->set_centroid(_hsv_shape_cursor->get_centroid());
 
-        _hue_bar_frame->as_wireframe(*_hue_bar_shape);
+        {
+            auto top_left = _hsv_shape->get_vertex_position(0);
+            auto size = _hsv_shape->get_size();
+            std::vector<Vector2f> vertices = {
+                top_left,
+                {top_left.x + size.x, top_left.y},
+                {top_left.x + size.x, top_left.y + size.y - 0.001},
+                {top_left.x, top_left.y + size.y - 0.001}
+            };
+            _hsv_shape_frame->as_wireframe(vertices);
+        }
+
+        {
+            auto top_left = _hue_bar_shape->get_vertex_position(0);
+            auto size = _hue_bar_shape->get_size();
+            std::vector<Vector2f> vertices = {
+                    top_left,
+                    {top_left.x + size.x, top_left.y},
+                    {top_left.x + size.x, top_left.y + size.y - 0.001},
+                    {top_left.x, top_left.y + size.y - 0.001}
+            };
+            _hue_bar_frame->as_wireframe(vertices);
+        }
+
         _hue_bar_cursor_frame->as_wireframe(*_hue_bar_cursor);
         _hue_bar_cursor_window_frame->as_wireframe(*_hue_bar_cursor_window);
 
-        _hsv_shape_frame->as_wireframe(*_hsv_shape);
         _hsv_shape_cursor_frame->as_wireframe(*_hsv_shape_cursor);
         _hsv_shape_cursor_window_frame->as_wireframe(*_hsv_shape_cursor_window);
 
@@ -310,6 +332,7 @@ namespace mousetrap
             _hsv_shape->get_top_left().y + (1 - color.s) * _hsv_shape->get_size().y,
         });
 
+        _hsv_shape_cursor_window->set_color(color);
         _render_area->queue_render();
     }
 

@@ -146,20 +146,28 @@ namespace mousetrap
 
         _primary_color_shape_frame = new Shape;
         {
-            auto vertices = std::vector<Vector2f>();
-            for (size_t i = 0; i < _primary_color_shape->get_n_vertices(); ++i)
-                vertices.push_back(_primary_color_shape->get_vertex_position(i));
-
+            auto top_left = _primary_color_shape->get_vertex_position(0);
+            auto size = _primary_color_shape->get_size();
+            std::vector<Vector2f> vertices = {
+                    {top_left.x + 0.001, top_left.y},
+                    {top_left.x + size.x, top_left.y},
+                    {top_left.x + size.x, top_left.y + size.y},
+                    {top_left.x + 0.001, top_left.y + size.y}
+            };
             _primary_color_shape_frame->as_wireframe(vertices);
             _primary_color_shape_frame->set_color(RGBA(0, 0, 0, 1));
         }
 
         _secondary_color_shape_frame = new Shape;
         {
-            auto vertices = std::vector<Vector2f>();
-            for (size_t i = 0; i < _secondary_color_shape->get_n_vertices(); ++i)
-                vertices.push_back(_secondary_color_shape->get_vertex_position(i));
-
+            auto top_left = _secondary_color_shape->get_vertex_position(0);
+            auto size = _secondary_color_shape->get_size();
+            std::vector<Vector2f> vertices = {
+                    top_left,
+                    {top_left.x + size.x, top_left.y},
+                    {top_left.x + size.x, top_left.y + size.y - 0.001},
+                    {top_left.x, top_left.y + size.y - 0.001}
+            };
             _secondary_color_shape_frame->as_wireframe(vertices);
             _secondary_color_shape_frame->set_color(RGBA(0, 0, 0, 1));
         }
