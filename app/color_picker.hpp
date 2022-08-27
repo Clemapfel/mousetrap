@@ -340,21 +340,11 @@ namespace mousetrap
         auto top_left = _hsv_shape->get_top_left();
         auto size = _hsv_shape->get_size();
 
-        pos = glm::clamp(pos, top_left, top_left + size);
-
-        float value = 1 - glm::distance(pos.x, top_left.x + size.x) / size.x;
-        float saturation = 1 - glm::distance(pos.y, top_left.y) / size.y;
-
-        _current_color_hsva->v = value;
-        _current_color_hsva->s = saturation;
-
         auto half_cursor = Vector2f(_hsv_shape_cursor->get_size() * Vector2f(0.5));
         pos = glm::clamp(pos,
              _hsv_shape->get_top_left() + half_cursor,
              _hsv_shape->get_top_left() + _hsv_shape->get_size() - half_cursor
         );
-
-        _hsv_shape_cursor_window->set_color(*_current_color_hsva);
 
         _hsv_shape_cursor->set_centroid(align_to_pixelgrid(pos));
         _hsv_shape_cursor_frame->set_centroid(_hsv_shape_cursor->get_centroid());
@@ -459,8 +449,14 @@ namespace mousetrap
             color.v = value;
             color.s = saturation;
 
+            color.v = glm::clamp<float>(color.v, 0, 1);
+            color.s = glm::clamp<float>(color.s, 0, 1);
+
             state::primary_color = color;
             state::primary_secondary_color_swapper->update();
         }
+
+        _hsv_shape_cursor_window->set_color(state::primary_color);
+        *_current_color_hsva = state::primary_color;
     }
 }

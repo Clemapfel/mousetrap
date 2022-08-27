@@ -40,8 +40,8 @@ void main()
         distance(pos.y, _square_top_left.y) / _square_size.y
     );
 
-    vec3 left_right = vec3(_current_color_hsva.x, 0, 1  - dist.x);
-    vec3 top_bottom = vec3(_current_color_hsva.x, dist.y, 1 - dist.x);
+    vec3 left_right = vec3(_current_color_hsva.x, 0, _square_top_left.x + _square_size.x  - dist.x);
+    vec3 top_bottom = vec3(_current_color_hsva.x, dist.y, _square_top_left.x + _square_size.x - dist.x);
 
     vec3 hsv = mix(left_right, top_bottom, dist.y);
     _fragment_color = vec4(hsv_to_rgb(hsv), 1);

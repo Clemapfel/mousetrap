@@ -67,6 +67,7 @@ namespace mousetrap
         _render_area = new GLArea();
         _render_area->connect_signal("realize", on_gl_area_realize, this);
         _render_area->connect_signal("resize", on_gl_area_resize, this);
+        _render_area->set_cursor(GtkCursorType::POINTER);
 
         _arrow = new Label("");
         _arrow->set_use_markup(true);
