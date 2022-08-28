@@ -23,7 +23,7 @@ namespace mousetrap
     void Button::set_icon(const std::string& path)
     {
         _icon = GTK_IMAGE(gtk_image_new_from_file(path.c_str()));
-        gtk_button_set_image(_native, GTK_WIDGET(_icon));
+        gtk_button_set_child(_native, GTK_WIDGET(_icon));
     }
 
     void Button::set_has_frame(bool b)

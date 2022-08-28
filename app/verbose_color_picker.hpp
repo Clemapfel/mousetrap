@@ -19,6 +19,9 @@
 #include <include/button.hpp>
 #include <include/get_resource_path.hpp>
 #include <include/overlay.hpp>
+#include <include/separator_line.hpp>
+
+#include <app/global_state.hpp>
 
 namespace mousetrap
 {
@@ -43,7 +46,7 @@ namespace mousetrap
             struct SliderRegion
             {
                 Label* _label;
-                GtkSeparatorMenuItem* _separator;
+                SeparatorLine* _separator;
                 Box* _label_separator_box;
                 Box* _main;
 
@@ -92,9 +95,6 @@ namespace mousetrap
                     delete _bar;
                     delete _bar_frame;
                     delete _transparency_background;
-                    delete _canvas;
-                    delete _spin_button;
-                    delete _main;
                     delete _canvas_size;
                 }
 
@@ -119,9 +119,9 @@ namespace mousetrap
             static void on_slider_resize(GtkGLArea* area, int w, int h, SliderTuple_t*);
             static void on_slider_spin_button_value_changed(GtkSpinButton*, SliderTuple_t*);
 
-            static void on_slider_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, SliderTuple_t*);
-            static void on_slider_button_press_event(GtkWidget* widget, GdkEventButton* event, SliderTuple_t*);
-            static void on_slider_button_release_event(GtkWidget* widget, GdkEventButton* event, SliderTuple_t*);
+            //static void on_slider_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, SliderTuple_t*);
+            //static void on_slider_button_press_event(GtkWidget* widget, GdkEventButton* event, SliderTuple_t*);
+            //static void on_slider_button_release_event(GtkWidget* widget, GdkEventButton* event, SliderTuple_t*);
 
             // html region
 
@@ -129,11 +129,11 @@ namespace mousetrap
             {
                 Box * _label_hbox;
                 Label* _label;
-                GtkSeparatorMenuItem* _label_separator;
+                SeparatorLine* _label_separator;
 
                 Box* _entry_hbox;
                 Entry* _entry;
-                GtkSeparatorMenuItem* _entry_to_button_separator;
+                SeparatorLine* _entry_to_button_separator;
                 Button* _button; // TODO
 
                 Box* _main;
@@ -166,13 +166,11 @@ namespace mousetrap
 
                 ~CurrentColorRegion()
                 {
-                    delete _canvas;
                     delete _current_color_shape;
                     delete _last_color_shape;
                     delete _frame;
                     delete _transparency_background;
                     delete _canvas_size;
-                    delete _main;
                 }
             };
 
@@ -181,11 +179,6 @@ namespace mousetrap
             static void on_current_color_region_realize(GtkGLArea* area, VerboseColorPicker* instance);
             static void on_current_color_region_resize(GtkGLArea* area, int w, int h, VerboseColorPicker* instance);
     };
-
-    namespace state
-    {
-        static inline VerboseColorPicker* verbose_color_picker_instance = nullptr;
-    }
 }
 
 // ###
@@ -196,36 +189,36 @@ namespace mousetrap
     {
         _opacity_region = new SliderRegion {
             new Label("Opacity"),
-            GTK_SEPARATOR_MENU_ITEM(gtk_separator_menu_item_new()),
+            new SeparatorLine(),
             new Box(GTK_ORIENTATION_HORIZONTAL),
             new Box(GTK_ORIENTATION_VERTICAL)
         };
 
-        _opacity_region->_label_separator_box->add(_opacity_region->_label);
-        _opacity_region->_label_separator_box->add((GtkWidget*) _opacity_region->_separator);
-        _opacity_region->_main->add(_opacity_region->_label_separator_box);
+        _opacity_region->_label_separator_box->push_back(_opacity_region->_label);
+        _opacity_region->_label_separator_box->push_back(_opacity_region->_separator);
+        _opacity_region->_main->push_back(_opacity_region->_label_separator_box);
 
         _hsv_region = new SliderRegion {
                 new Label("HSV"),
-                GTK_SEPARATOR_MENU_ITEM(gtk_separator_menu_item_new()),
+                new SeparatorLine(),
                 new Box(GTK_ORIENTATION_HORIZONTAL),
                 new Box(GTK_ORIENTATION_VERTICAL)
         };
 
-        _hsv_region->_label_separator_box->add(_hsv_region->_label);
-        _hsv_region->_label_separator_box->add((GtkWidget*) _hsv_region->_separator);
-        _hsv_region->_main->add(_hsv_region->_label_separator_box);
+        _hsv_region->_label_separator_box->push_back(_hsv_region->_label);
+        _hsv_region->_label_separator_box->push_back(_hsv_region->_separator);
+        _hsv_region->_main->push_back(_hsv_region->_label_separator_box);
 
         _rgb_region = new SliderRegion {
                 new Label("RGB"),
-                GTK_SEPARATOR_MENU_ITEM(gtk_separator_menu_item_new()),
+                new SeparatorLine(),
                 new Box(GTK_ORIENTATION_HORIZONTAL),
                 new Box(GTK_ORIENTATION_VERTICAL)
         };
 
-        _rgb_region->_label_separator_box->add(_rgb_region->_label);
-        _rgb_region->_label_separator_box->add((GtkWidget*) _rgb_region->_separator);
-        _rgb_region->_main->add(_rgb_region->_label_separator_box);
+        _rgb_region->_label_separator_box->push_back(_rgb_region->_label);
+        _rgb_region->_label_separator_box->push_back(_rgb_region->_separator);
+        _rgb_region->_main->push_back(_rgb_region->_label_separator_box);
 
         static float slider_double_indent = 2 * state::margin_unit;
 
@@ -258,36 +251,31 @@ namespace mousetrap
             _sliders[c]->_canvas->connect_signal("resize", on_slider_resize, which);
             _sliders[c]->_canvas->set_expand(true);
 
-            _sliders[c]->_canvas->add_events(GDK_BUTTON_PRESS_MASK, GDK_BUTTON_RELEASE_MASK, GDK_POINTER_MOTION_MASK);
-            _sliders[c]->_canvas->connect_signal("motion_notify_event", on_slider_motion_notify_event, which);
-            _sliders[c]->_canvas->connect_signal("button-press-event", on_slider_button_press_event, which);
-            _sliders[c]->_canvas->connect_signal("button-release-event", on_slider_button_release_event, which);
-
             _sliders[c]->_spin_button->set_expand(false);
             _sliders[c]->_spin_button->set_digits(3);
-            _sliders[c]->_spin_button->set_width_chars(3 + 2);
+            //_sliders[c]->_spin_button->set_width_chars(3 + 2);
             _sliders[c]->_spin_button->set_halign(GTK_ALIGN_END);
             _sliders[c]->_spin_button->set_margin_start(0.75 * state::margin_unit);
 
             _sliders[c]->_spin_button->connect_signal("value-changed", on_slider_spin_button_value_changed, new std::tuple(c, this));
 
-            _sliders[c]->_main->add(_sliders[c]->_canvas);
-            _sliders[c]->_main->add(_sliders[c]->_spin_button);
+            _sliders[c]->_main->push_back(_sliders[c]->_canvas);
+            _sliders[c]->_main->push_back(_sliders[c]->_spin_button);
             _sliders[c]->_main->set_margin(0.25 * state::margin_unit);
             _sliders[c]->_main->set_margin_start(slider_double_indent);
         }
 
         _sliders['H']->_spin_button->set_wrap(true);
 
-        _opacity_region->_main->add(_sliders['A']->_main);
+        _opacity_region->_main->push_back(_sliders['A']->_main);
 
-        _hsv_region->_main->add(_sliders['H']->_main);
-        _hsv_region->_main->add(_sliders['S']->_main);
-        _hsv_region->_main->add(_sliders['V']->_main);
+        _hsv_region->_main->push_back(_sliders['H']->_main);
+        _hsv_region->_main->push_back(_sliders['S']->_main);
+        _hsv_region->_main->push_back(_sliders['V']->_main);
 
-        _rgb_region->_main->add(_sliders['R']->_main);
-        _rgb_region->_main->add(_sliders['G']->_main);
-        _rgb_region->_main->add(_sliders['B']->_main);
+        _rgb_region->_main->push_back(_sliders['R']->_main);
+        _rgb_region->_main->push_back(_sliders['G']->_main);
+        _rgb_region->_main->push_back(_sliders['B']->_main);
 
         Slider::_transparency_shader = new Shader();
         Slider::_transparency_shader->create_from_file(
@@ -298,29 +286,28 @@ namespace mousetrap
         _html_region = new HtmlRegion{
             new Box(GTK_ORIENTATION_HORIZONTAL),
             new Label("HTML Color Code"),
-            GTK_SEPARATOR_MENU_ITEM(gtk_separator_menu_item_new()),
+            new SeparatorLine(),
             new Box(GTK_ORIENTATION_HORIZONTAL),
             new Entry(),
-            GTK_SEPARATOR_MENU_ITEM(gtk_separator_menu_item_new()),
+            new SeparatorLine(),
             new Button(),
             new Box(GTK_ORIENTATION_VERTICAL)
         };
 
         _html_region->_entry->set_n_chars(1 + 6 + 2);
         _html_region->_entry->connect_signal("activate", on_entry_activate, this);
-        _html_region->_entry->connect_signal("paste-clipboard", on_entry_paste, this);
 
-        _html_region->_entry_hbox->add(_html_region->_entry);
-        _html_region->_entry_hbox->add(GTK_WIDGET(_html_region->_entry_to_button_separator));
-        _html_region->_entry_hbox->add(_html_region->_button);
+        _html_region->_entry_hbox->push_back(_html_region->_entry);
+        _html_region->_entry_hbox->push_back(_html_region->_entry_to_button_separator);
+        _html_region->_entry_hbox->push_back(_html_region->_button);
         _html_region->_entry_hbox->set_margin_top(0.25 * state::margin_unit);
 
-        _html_region->_label_hbox->add(_html_region->_label);
-        _html_region->_label_hbox->add(GTK_WIDGET(_html_region->_label_separator));
+        _html_region->_label_hbox->push_back(_html_region->_label);
+        _html_region->_label_hbox->push_back(_html_region->_label_separator);
         _html_region->_label_hbox->set_margin_bottom(0.25 * state::margin_unit);
 
-        _html_region->_main->add(_html_region->_label_hbox);
-        _html_region->_main->add(_html_region->_entry_hbox);
+        _html_region->_main->push_back(_html_region->_label_hbox);
+        _html_region->_main->push_back(_html_region->_entry_hbox);
 
         _html_region->_entry->set_margin_start(slider_double_indent);
         _html_region->_entry->set_margin_top(0.25 * state::margin_unit);
@@ -331,7 +318,7 @@ namespace mousetrap
         _html_region->_button->set_margin_start(0.5 * state::margin_unit);
         _html_region->_button->set_margin_end(state::margin_unit);
 
-        gtk_widget_set_hexpand(GTK_WIDGET(_html_region->_entry_to_button_separator), true);
+        _html_region->_entry_to_button_separator->set_hexpand(true);
 
         _current_color_region = new CurrentColorRegion{
             new GLArea(),
@@ -352,14 +339,14 @@ namespace mousetrap
         _current_color_region->_canvas->set_valign(GTK_ALIGN_START);
         _current_color_region->_canvas->set_margin_start(8 * state::margin_unit);
 
-        _current_color_region->_main->add(_current_color_region->_canvas);
+        _current_color_region->_main->push_back(_current_color_region->_canvas);
         _current_color_region->_main->set_margin_top(0.1 * state::margin_unit);
 
         _all_regions_box = new Box(GTK_ORIENTATION_VERTICAL, 0.1 * state::margin_unit);
-        _all_regions_box->add(_opacity_region->_main);
-        _all_regions_box->add(_hsv_region->_main);
-        _all_regions_box->add(_rgb_region->_main);
-        _all_regions_box->add(_html_region->_main);
+        _all_regions_box->push_back(_opacity_region->_main);
+        _all_regions_box->push_back(_hsv_region->_main);
+        _all_regions_box->push_back(_rgb_region->_main);
+        _all_regions_box->push_back(_html_region->_main);
 
         static float regions_bottom_margin = 0.5 * state::margin_unit;
 
@@ -371,14 +358,13 @@ namespace mousetrap
         _all_regions_box->set_margin_bottom(state::margin_unit);
 
         _main = new Overlay();
-        _main->set_under(_all_regions_box);
-        _main->set_over(_current_color_region->_main);
-        _main->set_pass_through(_current_color_region->_main, true);
+        _main->add_overlay(_all_regions_box);
+        _main->set_child(_current_color_region->_main);
     }
 
-    GtkWidget* VerboseColorPicker::operator GtkWidget*()
+    VerboseColorPicker::operator GtkWidget*()
     {
-        return _main->get_native();
+        return _main->operator GtkWidget*();
     }
 
     VerboseColorPicker::~VerboseColorPicker()
@@ -603,13 +589,14 @@ namespace mousetrap
         char c = std::get<0>(*char_and_instance);
         VerboseColorPicker* instance = std::get<1>(*char_and_instance);
 
-        set_primary_color(get_color_with_component_set_to(state::primary_color, c, gtk_spin_button_get_value(button)));
+        state::primary_color = get_color_with_component_set_to(state::primary_color, c, gtk_spin_button_get_value(button));
+        // TODO: update others
         instance->update();
     }
 
     void VerboseColorPicker::on_entry_activate(GtkEntry* entry, VerboseColorPicker* instance)
     {
-        std::string text = instance->sanitize_html_code(gtk_entry_get_text(entry));
+        std::string text = instance->sanitize_html_code(gtk_entry_buffer_get_text(gtk_entry_get_buffer(entry)));
         if (instance->is_html_code_valid(text))
         {
             auto color = instance->html_code_to_color(text);
@@ -618,15 +605,18 @@ namespace mousetrap
             if (color == state::primary_color)
                 return;
 
-            set_primary_color(color.operator HSVA());
+            state::primary_color = color.operator HSVA();
+            // TODO: update others
             instance->update(color.operator HSVA());
         }
     }
 
     void VerboseColorPicker::on_entry_paste(GtkEntry* entry, VerboseColorPicker* instance)
     {
-        std::string text = gtk_entry_get_text(entry);
-        gtk_entry_set_text(entry, instance->sanitize_html_code(text).c_str());
+        auto* buffer = gtk_entry_get_buffer(entry);
+        std::string text = gtk_entry_buffer_get_text(buffer);
+        text = instance->sanitize_html_code(text);
+        gtk_entry_buffer_set_text(buffer, text.c_str(), text.size());
     }
 
     void VerboseColorPicker::Slider::set_value(float x)
@@ -760,69 +750,6 @@ namespace mousetrap
         _html_region->_entry->set_all_signals_blocked(true);
         _html_region->_entry->set_text(color_to_html_code(color.operator RGBA()));
         _html_region->_entry->set_all_signals_blocked(false);
-    }
-
-    void VerboseColorPicker::on_slider_button_press_event(GtkWidget* widget, GdkEventButton* event, SliderTuple_t* component_and_instance)
-    {
-        char c = std::get<0>(*component_and_instance);
-        auto* instance = std::get<1>(*component_and_instance);
-        auto* slider = instance->_sliders.at(c);
-
-        auto pos = Vector2f{event->x, event->y};
-        pos.x /= slider->_canvas_size->x;
-        pos.y /= slider->_canvas_size->y;
-
-        if (event->button == 1)
-        {
-            slider->_drag_active = true;
-            auto value = glm::clamp<float>(pos.x, 0, 1);
-            slider->set_value(value);
-            auto color = get_color_with_component_set_to(state::primary_color, c, value);
-            instance->update(color);
-            instance->_current_color_region->_last_color_shape->set_color(state::primary_color);
-        }
-    }
-
-    void VerboseColorPicker::on_slider_button_release_event(GtkWidget* widget, GdkEventButton* event,
-                                                            SliderTuple_t* component_and_instance)
-    {
-        char c = std::get<0>(*component_and_instance);
-        auto* instance = std::get<1>(*component_and_instance);
-        auto* slider = instance->_sliders.at(c);
-
-        auto pos = Vector2f{event->x, event->y};
-        pos.x /= slider->_canvas_size->x;
-        pos.y /= slider->_canvas_size->y;
-
-        if (slider->_drag_active)
-        {
-            auto value = glm::clamp<float>(pos.x, 0, 1);
-            auto color = state::primary_color;
-
-            set_primary_color(get_color_with_component_set_to(color, c, value));
-            instance->update();
-            slider->_drag_active = false;
-        }
-    }
-
-    void VerboseColorPicker::on_slider_motion_notify_event(GtkWidget* widget, GdkEventMotion* event, SliderTuple_t* component_and_instance)
-    {
-        char c = std::get<0>(*component_and_instance);
-        auto* instance = std::get<1>(*component_and_instance);
-        auto* slider = instance->_sliders.at(c);
-
-        if (slider->_drag_active)
-        {
-            auto pos = Vector2f(event->x, event->y);
-            pos.x /= slider->_canvas_size->x;
-            pos.y /= slider->_canvas_size->y;
-            auto value = glm::clamp<float>(pos.x, 0, 1);
-
-            slider->set_value(value);
-            auto color = get_color_with_component_set_to(state::primary_color, c, value);
-            instance->update(color);
-            instance->_current_color_region->_last_color_shape->set_color(state::primary_color);
-        }
     }
 
     std::string VerboseColorPicker::sanitize_html_code(const std::string& in)
@@ -984,4 +911,70 @@ namespace mousetrap
 
         return sanitize_html_code("#" + r_string + g_string + b_string);
     }
+
+    /*
+
+    void VerboseColorPicker::on_slider_button_press_event(GtkWidget* widget, GdkEventButton* event, SliderTuple_t* component_and_instance)
+    {
+        char c = std::get<0>(*component_and_instance);
+        auto* instance = std::get<1>(*component_and_instance);
+        auto* slider = instance->_sliders.at(c);
+
+        auto pos = Vector2f{event->x, event->y};
+        pos.x /= slider->_canvas_size->x;
+        pos.y /= slider->_canvas_size->y;
+
+        if (event->button == 1)
+        {
+            slider->_drag_active = true;
+            auto value = glm::clamp<float>(pos.x, 0, 1);
+            slider->set_value(value);
+            auto color = get_color_with_component_set_to(state::primary_color, c, value);
+            instance->update(color);
+            instance->_current_color_region->_last_color_shape->set_color(state::primary_color);
+        }
+    }
+
+    void VerboseColorPicker::on_slider_button_release_event(GtkWidget* widget, GdkEventButton* event,
+                                                            SliderTuple_t* component_and_instance)
+    {
+        char c = std::get<0>(*component_and_instance);
+        auto* instance = std::get<1>(*component_and_instance);
+        auto* slider = instance->_sliders.at(c);
+
+        auto pos = Vector2f{event->x, event->y};
+        pos.x /= slider->_canvas_size->x;
+        pos.y /= slider->_canvas_size->y;
+
+        if (slider->_drag_active)
+        {
+            auto value = glm::clamp<float>(pos.x, 0, 1);
+            auto color = state::primary_color;
+
+            set_primary_color(get_color_with_component_set_to(color, c, value));
+            instance->update();
+            slider->_drag_active = false;
+        }
+    }
+
+    void VerboseColorPicker::on_slider_motion_notify_event(GtkWidget* widget, GdkEventMotion* event, SliderTuple_t* component_and_instance)
+    {
+        char c = std::get<0>(*component_and_instance);
+        auto* instance = std::get<1>(*component_and_instance);
+        auto* slider = instance->_sliders.at(c);
+
+        if (slider->_drag_active)
+        {
+            auto pos = Vector2f(event->x, event->y);
+            pos.x /= slider->_canvas_size->x;
+            pos.y /= slider->_canvas_size->y;
+            auto value = glm::clamp<float>(pos.x, 0, 1);
+
+            slider->set_value(value);
+            auto color = get_color_with_component_set_to(state::primary_color, c, value);
+            instance->update(color);
+            instance->_current_color_region->_last_color_shape->set_color(state::primary_color);
+        }
+    }
+     */
 }

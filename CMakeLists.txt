@@ -118,8 +118,6 @@ add_library(mousetrap SHARED
     include/adjustment.hpp
     src/adjustment.inl
 
-    include/gestures.hpp
-
     include/flow_box.hpp
     src/flow_box.inl
 
@@ -148,7 +146,7 @@ add_library(mousetrap SHARED
 
     include/image_display.hpp
     src/image_display.inl
-        include/event_controller.hpp)
+        include/event_controller.hpp include/separator_line.hpp src/separator_line.inl)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -174,6 +172,7 @@ add_library(app STATIC
     app/color_picker.hpp
     app/palette.hpp
     app/primary_secondary_color_swapper.hpp
+    app/verbose_color_picker.hpp
 )
 
 target_link_libraries(app PRIVATE mousetrap)

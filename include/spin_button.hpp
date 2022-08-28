@@ -21,8 +21,6 @@ namespace mousetrap
             float get_value();
 
             void set_digits(size_t);
-            void set_width_chars(size_t);
-
             void set_wrap(bool);
 
         private:

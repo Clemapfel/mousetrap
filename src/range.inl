@@ -7,12 +7,12 @@ namespace mousetrap
 {
     float Range::get_value()
     {
-        return gtk_range_get_value(GTK_RANGE(get_native()));
+        return gtk_range_get_value(GTK_RANGE(this->operator GtkWidget*()));
     }
 
     void Range::set_value(float value)
     {
-        gtk_range_set_value(GTK_RANGE(get_native()), value);
+        gtk_range_set_value(GTK_RANGE(this->operator GtkWidget*()), value);
     }
 
     Range::Range()

@@ -31,6 +31,7 @@ namespace mousetrap::state
 
     Widget* color_picker = nullptr;
     Widget* primary_secondary_color_swapper = nullptr;
+    Widget* verbose_color_picker = nullptr;
 
     void set_primary_color(HSVA color)
     {
