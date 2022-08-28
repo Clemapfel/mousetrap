@@ -376,6 +376,24 @@ namespace mousetrap
         _main = new Overlay();
         _main->add_overlay(_all_regions_box);
         _main->set_child(_current_color_region->_main);
+
+        _current_color_region->_canvas->set_tooltip_text("<b>Current Primary Color</b>");
+
+        static auto set_slider_tooltip = [&](char c, const std::string& component) {
+            auto* slider = _sliders[c];
+            slider->_canvas->set_tooltip_text("<b>" + component + "</b>\n<tt>Left-Click-Drag</tt>: Change Value");
+            slider->_spin_button->set_tooltip_text("<b>" + component + "</b>\n<tt>Left-Click</tt>: Increase/Decrease Value\n<tt>Enter</tt>: Apply Value");
+        };
+
+        set_slider_tooltip('A', "Opacity");
+        set_slider_tooltip('H', "Hue");
+        set_slider_tooltip('S', "Saturation");
+        set_slider_tooltip('V', "Value");
+        set_slider_tooltip('R', "Red Component");
+        set_slider_tooltip('G', "Green Component");
+        set_slider_tooltip('B', "Blue Component");
+
+        _html_region->_entry->set_tooltip_text("<b>HTML Color Code</b>\n<tt>Enter</tt>: Apply Value");
     }
 
     VerboseColorPicker::operator GtkWidget*()

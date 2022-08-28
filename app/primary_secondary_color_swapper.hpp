@@ -44,14 +44,19 @@ namespace mousetrap
             Shape* _primary_color_shape_frame = nullptr;
             Shape* _secondary_color_shape_frame = nullptr;
 
+            Shape* _primary_color_shape_transparency_tiling = nullptr;
+            Shape* _secondary_color_shape_transparency_tiling = nullptr;
+
+            Shader* _transparency_tiling_shader = nullptr;
+            Vector2f* _canvas_size;
+
             Label* _arrow;
 
             Overlay* _arrow_overlay;
 
             static inline const std::string _tooltip = {
-                "<u>Primary / Secondary Color</u>\n"
-                "<tt>Left-Click</tt> : Swap Colors\n"
-                "<tt>Right-Click</tt> : Start Color Selection"
+                "<b>Primary / Secondary Color</b>\n"
+                "<tt>Left-Click</tt> : Swap Colors"
             };
 
             GtkEventController* _button_event_controller;
@@ -120,6 +125,9 @@ namespace mousetrap
 
     void PrimarySecondaryColorSwapper::on_gl_area_resize(GtkGLArea* self, int w, int h, PrimarySecondaryColorSwapper* instance)
     {
+        instance->_canvas_size->x = w;
+        instance->_canvas_size->y = h;
+
         auto min = std::min(w, h);
         std::string spacer = std::to_string(0.105 * min);
         std::string arrow_size = std::to_string(0.18 * min);
@@ -135,14 +143,26 @@ namespace mousetrap
         delete _secondary_color_shape;
         delete _primary_color_shape_frame;
         delete _secondary_color_shape_frame;
+        delete _primary_color_shape_transparency_tiling;
+        delete _secondary_color_shape_transparency_tiling;
+
+        _canvas_size = new Vector2f(1, 1);
+
+        _transparency_tiling_shader = new Shader();
+        _transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
 
         _primary_color_shape = new Shape();
         _secondary_color_shape = new Shape();
+        _primary_color_shape_transparency_tiling = new Shape();
+        _secondary_color_shape_transparency_tiling = new Shape();
 
         Vector2f size = {0.75, 0.75};
 
         _secondary_color_shape->as_rectangle({0.25, 0.25}, size);
         _primary_color_shape->as_rectangle({0, 0}, size);
+
+        _secondary_color_shape_transparency_tiling->as_rectangle({0.25, 0.25}, size);
+        _primary_color_shape_transparency_tiling->as_rectangle({0, 0}, size);
 
         _primary_color_shape_frame = new Shape;
         {
@@ -175,8 +195,16 @@ namespace mousetrap
         _primary_color_shape->set_color(state::primary_color);
         _secondary_color_shape->set_color(state::secondary_color);
 
+        auto primary_transparency_render_task = RenderTask(_primary_color_shape_transparency_tiling, _transparency_tiling_shader);
+        primary_transparency_render_task.register_vec2("_canvas_size", _canvas_size);
+
+        auto secondary_transparency_render_task = RenderTask(_secondary_color_shape_transparency_tiling, _transparency_tiling_shader);
+        secondary_transparency_render_task.register_vec2("_canvas_size", _canvas_size);
+
+        _render_area->add_render_task(secondary_transparency_render_task);
         _render_area->add_render_task(_secondary_color_shape);
         _render_area->add_render_task(_secondary_color_shape_frame);
+        _render_area->add_render_task(primary_transparency_render_task);
         _render_area->add_render_task(_primary_color_shape);
         _render_area->add_render_task(_primary_color_shape_frame);
 
