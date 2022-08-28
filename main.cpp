@@ -27,20 +27,18 @@ static void activate(GtkApplication* app, void*)
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
 
-    /*
     state::color_picker = new ColorPicker();
     state::color_picker->set_expand(true);
 
     state::primary_secondary_color_swapper = new PrimarySecondaryColorSwapper();
     state::primary_secondary_color_swapper->set_expand(true);
-    */
 
     state::verbose_color_picker = new VerboseColorPicker();
     state::verbose_color_picker->set_expand(true);
 
     static auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
-    //box->push_back(state::color_picker);
-    //box->push_back(state::primary_secondary_color_swapper);
+    box->push_back(state::color_picker);
+    box->push_back(state::primary_secondary_color_swapper);
     box->push_back(state::verbose_color_picker);
     state::main_window->set_child(box);
 

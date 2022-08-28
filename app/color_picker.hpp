@@ -332,7 +332,11 @@ namespace mousetrap
             _hsv_shape->get_top_left().y + (1 - color.s) * _hsv_shape->get_size().y,
         });
 
-        _hsv_shape_cursor_window->set_color(color);
+        auto window_color = color;
+        window_color.a = 1;
+        _hsv_shape_cursor_window->set_color(window_color);
+        *_current_color_hsva = window_color;
+
         _render_area->queue_render();
     }
 
@@ -462,6 +466,8 @@ namespace mousetrap
 
             state::primary_color = color;
             state::primary_secondary_color_swapper->update();
+            state::verbose_color_picker->update();
+
         }
         else if (_hsv_shape_active)
         {
@@ -477,9 +483,12 @@ namespace mousetrap
 
             state::primary_color = color;
             state::primary_secondary_color_swapper->update();
+            state::verbose_color_picker->update();
         }
 
-        _hsv_shape_cursor_window->set_color(state::primary_color);
-        *_current_color_hsva = state::primary_color;
+        auto window_color = state::primary_color;
+        window_color.a = 1;
+        _hsv_shape_cursor_window->set_color(window_color);
+        *_current_color_hsva = window_color;
     }
 }

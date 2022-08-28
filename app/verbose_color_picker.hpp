@@ -20,6 +20,7 @@
 #include <include/get_resource_path.hpp>
 #include <include/overlay.hpp>
 #include <include/separator_line.hpp>
+#include <include/event_controller.hpp>
 
 #include <app/global_state.hpp>
 
@@ -79,6 +80,9 @@ namespace mousetrap
 
                 Box* _main;
 
+                MotionEventController* _motion_controller;
+                ClickEventController* _click_controller;
+
                 Vector2f* _canvas_size;
                 static inline Shader* _transparency_shader = nullptr;
 
@@ -118,6 +122,10 @@ namespace mousetrap
             static void on_slider_realize(GtkGLArea* area, SliderTuple_t*);
             static void on_slider_resize(GtkGLArea* area, int w, int h, SliderTuple_t*);
             static void on_slider_spin_button_value_changed(GtkSpinButton*, SliderTuple_t*);
+
+            static void on_slider_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void*);
+            static void on_slider_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void*);
+            static void on_slider_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void*);
 
             //static void on_slider_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, SliderTuple_t*);
             //static void on_slider_button_press_event(GtkWidget* widget, GdkEventButton* event, SliderTuple_t*);
@@ -234,6 +242,8 @@ namespace mousetrap
                 new GLArea(),
                 new SpinButton(0, 1, 0.001),
                 new Box(GTK_ORIENTATION_HORIZONTAL),
+                new MotionEventController(),
+                new ClickEventController(),
                 new Vector2f(1, 1)
             };
 
@@ -253,7 +263,6 @@ namespace mousetrap
 
             _sliders[c]->_spin_button->set_expand(false);
             _sliders[c]->_spin_button->set_digits(3);
-            //_sliders[c]->_spin_button->set_width_chars(3 + 2);
             _sliders[c]->_spin_button->set_halign(GTK_ALIGN_END);
             _sliders[c]->_spin_button->set_margin_start(0.75 * state::margin_unit);
 
@@ -263,6 +272,13 @@ namespace mousetrap
             _sliders[c]->_main->push_back(_sliders[c]->_spin_button);
             _sliders[c]->_main->set_margin(0.25 * state::margin_unit);
             _sliders[c]->_main->set_margin_start(slider_double_indent);
+
+            _sliders[c]->_main->add_controller(_sliders[c]->_motion_controller);
+            _sliders[c]->_main->add_controller(_sliders[c]->_click_controller);
+
+            _sliders[c]->_click_controller->connect_pressed(on_slider_pressed, new std::tuple(c, this));
+            _sliders[c]->_click_controller->connect_released(on_slider_release, new std::tuple(c, this));
+            _sliders[c]->_motion_controller->connect_motion(on_slider_motion, new std::tuple(c, this));
         }
 
         _sliders['H']->_spin_button->set_wrap(true);
@@ -910,6 +926,70 @@ namespace mousetrap
             b_string = "0" + b_string;
 
         return sanitize_html_code("#" + r_string + g_string + b_string);
+    }
+
+    void VerboseColorPicker::on_slider_pressed(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* tuple)
+    {
+        SliderTuple_t* component_and_instance = reinterpret_cast<SliderTuple_t*>(tuple);
+        auto* instance = std::get<1>(*component_and_instance);
+        char c = std::get<0>(*component_and_instance);
+        auto* slider = instance->_sliders.at(c);
+
+        auto pos = Vector2f{x, y};
+        pos.x /= slider->_canvas_size->x;
+        pos.y /= slider->_canvas_size->y;
+
+        slider->_drag_active = true;
+        auto value = glm::clamp<float>(pos.x, 0, 1);
+        slider->set_value(value);
+        auto color = get_color_with_component_set_to(state::primary_color, c, value);
+        instance->update(color);
+        instance->_current_color_region->_last_color_shape->set_color(state::primary_color);
+    }
+
+    void VerboseColorPicker::on_slider_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* tuple)
+    {
+        SliderTuple_t* component_and_instance = reinterpret_cast<SliderTuple_t*>(tuple);
+        auto* instance = std::get<1>(*component_and_instance);
+        char c = std::get<0>(*component_and_instance);
+        auto* slider = instance->_sliders.at(c);
+
+        auto pos = Vector2f{x, y};
+        pos.x /= slider->_canvas_size->x;
+        pos.y /= slider->_canvas_size->y;
+
+        if (slider->_drag_active)
+        {
+            auto value = glm::clamp<float>(pos.x, 0, 1);
+            auto color = state::primary_color;
+
+            state::primary_color = get_color_with_component_set_to(color, c, value);
+            instance->update();
+            state::color_picker->update();
+            state::primary_secondary_color_swapper->update();
+            slider->_drag_active = false;
+        }
+    }
+
+    void VerboseColorPicker::on_slider_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void* tuple)
+    {
+        SliderTuple_t* component_and_instance = reinterpret_cast<SliderTuple_t*>(tuple);
+        auto* instance = std::get<1>(*component_and_instance);
+        char c = std::get<0>(*component_and_instance);
+        auto* slider = instance->_sliders.at(c);
+
+        if (slider->_drag_active)
+        {
+            auto pos = Vector2f(x, y);
+            pos.x /= slider->_canvas_size->x;
+            pos.y /= slider->_canvas_size->y;
+            auto value = glm::clamp<float>(pos.x, 0, 1);
+
+            slider->set_value(value);
+            auto color = get_color_with_component_set_to(state::primary_color, c, value);
+            instance->update(color);
+            instance->_current_color_region->_last_color_shape->set_color(state::primary_color);
+        }
     }
 
     /*

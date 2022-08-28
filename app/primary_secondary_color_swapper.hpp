@@ -195,6 +195,7 @@ namespace mousetrap
         state::secondary_color = current_primary;
 
         state::color_picker->update();
+        state::verbose_color_picker->update();
 
         _render_area->queue_render();
     }
