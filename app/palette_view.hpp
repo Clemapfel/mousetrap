@@ -274,9 +274,9 @@ namespace mousetrap
         _selected_index = i;
 
         state::primary_color = _tiles.at(i)->_color;
-        state::color_picker.update();
-        state::primary_secondary_color_swapper.update();
-        state::verbose_color_picker.update();
+        state::color_picker->update();
+        state::primary_secondary_color_swapper->update();
+        state::verbose_color_picker->update();
     }
 
     void PaletteView::select_none()

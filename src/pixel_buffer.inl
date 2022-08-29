@@ -120,10 +120,10 @@ namespace mousetrap
         }
 
         return RGBA(
-                _cache[i],
-                _cache[i+1],
-                _cache[i+2],
-                _cache[i+3]
+            _cache[i],
+            _cache[i+1],
+            _cache[i+2],
+            _cache[i+3]
         );
     }
 }

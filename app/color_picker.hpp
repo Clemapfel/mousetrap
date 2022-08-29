@@ -328,6 +328,9 @@ namespace mousetrap
 
     void ColorPicker::update(HSVA color)
     {
+        if (not gtk_widget_get_realized(_render_area->operator GtkWidget *()))
+            return;
+
         set_hue_bar_cursor({0, _hue_bar_shape->get_top_left().y + (1 - color.h) * _hue_bar_shape->get_size().y});
         set_hsv_shape_cursor({
             _hsv_shape->get_top_left().x + (color.v) * _hsv_shape->get_size().x,
