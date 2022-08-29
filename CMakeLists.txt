@@ -146,7 +146,7 @@ add_library(mousetrap SHARED
 
     include/image_display.hpp
     src/image_display.inl
-        include/event_controller.hpp include/separator_line.hpp src/separator_line.inl)
+        include/event_controller.hpp include/separator_line.hpp src/separator_line.inl include/menu_button.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

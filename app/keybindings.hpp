@@ -21,8 +21,6 @@ namespace mousetrap
 
             // palette view
 
-            {"palette_view_increase_tile_size", GDK_KEY_plus},
-            {"palette_view_decrease_tile_size", GDK_KEY_minus},
             {"palette_view_select_1",           GDK_KEY_1},
             {"palette_view_select_2",           GDK_KEY_2},
             {"palette_view_select_3",           GDK_KEY_3},

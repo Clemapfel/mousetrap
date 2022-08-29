@@ -146,6 +146,8 @@ namespace mousetrap
 
     void Shape::render(Shader& shader, GLTransform transform)
     {
+        update_data(false, true, false); // TODO: optimize this away
+
         glUseProgram(shader.get_program_id());
         glUniformMatrix4fv(shader.get_uniform_location("_transform"), 1, GL_FALSE, &(transform.transform[0][0]));
 

@@ -11,6 +11,8 @@
 #include <include/scrolled_window.hpp>
 #include <include/overlay.hpp>
 #include <include/image.hpp>
+#include <include/image_display.hpp>
+#include <include/menu_button.hpp>
 
 #include <vector>
 
@@ -19,7 +21,6 @@
 
 namespace mousetrap
 {
-    /*
     enum class PaletteSortMode
     {
         NONE,
@@ -48,11 +49,9 @@ namespace mousetrap
             static inline RGBA _selection_frame_color = mousetrap::YELLOW;
 
             static void on_child_activated(GtkFlowBox* self, GtkFlowBoxChild* child, PaletteView* instance);
-            static gboolean on_enter_notify_event(GtkWidget* self, GdkEventCrossing* event, PaletteView* instance);
-            static gboolean on_key_press_event(GtkWidget* self, GdkEventKey* event, PaletteView* instance);
 
-            bool _keypress_mode_active = false;
-            bool _update_disabled = false;
+            static gboolean on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void* instance);
+            KeyEventController* _key_event_controller;
 
             size_t _selected_index = 0;
             void select(size_t);
@@ -62,34 +61,32 @@ namespace mousetrap
             PaletteSortMode _sort_mode = PaletteSortMode::NONE;
 
             FlowBox* _box;
-            ScrolledWindow* _main;
+            ScrolledWindow* _scrolled_window;
+            Label* _menu_button_label;
+            MenuButton* _menu_button;
+            Box* _main;
 
             struct ColorTile
             {
                 ColorTile() = default;
 
                 HSVA _color;
-                GtkImage* _color_tile = nullptr;
-                GtkImage* _selection_frame = nullptr;
+                ImageDisplay* _color_tile = nullptr;
+                ImageDisplay* _selection_frame = nullptr;
                 Overlay* _overlay = nullptr;
             };
 
             std::vector<ColorTile*> _tiles;
     };
-
-    namespace state
-    {
-        static inline PaletteView* palette_view_instance = nullptr;
-    }
 }
 
 // ###
 
 namespace mousetrap
 {
-    GtkWidget* PaletteView::operator GtkWidget*()
+    PaletteView::operator GtkWidget*()
     {
-        return _main->get_native();
+        return _main->operator GtkWidget*();
     }
 
     PaletteView::PaletteView()
@@ -97,24 +94,31 @@ namespace mousetrap
         _box = new FlowBox();
         _box->connect_signal("child-activated", on_child_activated, this);
         _box->set_selection_mode(GTK_SELECTION_SINGLE);
+        _box->set_column_spacing(0);
+        _box->set_row_spacing(0);
 
-        _main = new ScrolledWindow();
-        _main->set_policy(GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-        _main->set_placement(GTK_CORNER_BOTTOM_RIGHT);
-        _main->set_kinetic_scrolling_enabled(false);
-        _main->add(_box);
-        _main->set_size_request({_tile_size, 1});
+        _scrolled_window = new ScrolledWindow();
+        _scrolled_window->set_policy(GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+        _scrolled_window->set_placement(GTK_CORNER_BOTTOM_RIGHT);
+        _scrolled_window->set_kinetic_scrolling_enabled(false);
+        _scrolled_window->set_child(_box);
+        _scrolled_window->set_size_request({_tile_size, 1});
+        _scrolled_window->set_vexpand(true);
 
-        _main->add_events(GDK_POINTER_MOTION_MASK);
-        _main->add_events(GDK_ENTER_NOTIFY_MASK);
-        _main->add_events(GDK_LEAVE_NOTIFY_MASK);
-        _main->add_events(GDK_KEY_PRESS_MASK);
-        _main->connect_signal("enter-notify-event", on_enter_notify_event, this);
-        _main->connect_signal("leave-notify-event", on_enter_notify_event, this);
-        _main->connect_signal("key-press-event", on_key_press_event, this);
+        _menu_button = new MenuButton();
+        _menu_button_label = new Label("Palette >");
+        _menu_button->set_child(_menu_button_label);
+        _menu_button->set_vexpand(false);
+
+        _main = new Box(GTK_ORIENTATION_VERTICAL);
+        _main->push_back(_menu_button);
+        _main->push_back(_scrolled_window);
+
+        _key_event_controller = new KeyEventController();
+        _key_event_controller->connect_key_pressed(on_key_pressed, this);
+        _main->add_controller(_key_event_controller);
 
         update();
-
     }
 
     PaletteView::~PaletteView()
@@ -128,9 +132,6 @@ namespace mousetrap
 
     void PaletteView::update()
     {
-        if (_update_disabled)
-            return;
-
         for (auto* tile : _tiles)
             delete tile;
         
@@ -182,6 +183,8 @@ namespace mousetrap
 
         std::vector<HSVA> palette;
 
+        _menu_button_label->set_text(state::active_palette_id + " >");
+
         if (_sort_mode == PaletteSortMode::NONE)
             palette = state::palettes.at(state::active_palette_id).get_colors();
         else if (_sort_mode == PaletteSortMode::BY_HUE)
@@ -211,30 +214,30 @@ namespace mousetrap
             auto& tile = _tiles.back();
 
             tile->_color = color;
-            tile->_color_tile = GTK_IMAGE(gtk_image_new_from_pixbuf(color_image.to_pixbuf()));
-            tile->_selection_frame = GTK_IMAGE(gtk_image_new_from_pixbuf(selection_frame.to_pixbuf()));
-            gtk_widget_set_opacity(GTK_WIDGET(tile->_selection_frame), 0);
+            tile->_color_tile = new ImageDisplay(color_image);
+            tile->_selection_frame = new ImageDisplay(selection_frame);
+            tile->_selection_frame->set_visible(false);
 
             tile->_overlay = new Overlay();
-            tile->_overlay->set_under(GTK_WIDGET(tile->_color_tile));
-            tile->_overlay->set_over(GTK_WIDGET(tile->_selection_frame));
+            tile->_overlay->set_child(tile->_color_tile);
+            tile->_overlay->add_overlay(tile->_selection_frame);
             tile->_overlay->set_size_request({_tile_size, _tile_size});
         }
 
         for (auto& tile : _tiles)
-            _box->add(tile->_overlay);
+            _box->push_back(tile->_overlay);
+
+        _box->set_homogeneous(false);
 
         select(_selected_index);
         _selected_palette_id = state::active_palette_id;
 
-        gtk_widget_show_all(_box->get_native());
+        _box->show();
 
         std::stringstream tooltip_str;
-        tooltip_str << "<u><b>Palette View</b></u>" << std::endl
-                    << "<b><tt>" << key_to_string(get_keybinding("palette_view_increase_tile_size")) << " / "
-                    << key_to_string(get_keybinding("palette_view_decrease_tile_size")) << "</tt></b> : Increase / Decrease Tile Size\n"
-                    << "<b><tt>" << key_to_string(get_keybinding("palette_view_select_1")) << " - " << key_to_string(get_keybinding("palette_view_select_9"))
-                    << "</tt></b> : Select Color";
+        tooltip_str << "<u><b>Palette View</b></u>\n"
+                    << "<tt>+/-</tt>: Increase / Decrease Tile Size\n"
+                    << "<tt>1-9</tt>: Select Color";
 
         _main->set_tooltip_text(tooltip_str.str());
     }
@@ -262,8 +265,8 @@ namespace mousetrap
             return;
         }
 
-        gtk_widget_set_opacity(GTK_WIDGET(_tiles.at(_selected_index)->_selection_frame), 0);
-        gtk_widget_set_opacity(GTK_WIDGET(_tiles.at(i)->_selection_frame), 1);
+        _tiles.at(_selected_index)->_selection_frame->set_visible(false);
+        _tiles.at(i)->_selection_frame->set_visible(true);
 
         _box->set_all_signals_blocked(true);
         gtk_widget_activate(GTK_WIDGET(_box->get_child_at_index(i)));
@@ -273,7 +276,7 @@ namespace mousetrap
 
     void PaletteView::select_none()
     {
-        gtk_widget_set_opacity(GTK_WIDGET(_tiles.at(_selected_index)->_selection_frame), 0);
+        _tiles.at(_selected_index)->_selection_frame->set_visible(false);
     }
 
     void PaletteView::on_child_activated(GtkFlowBox* self, GtkFlowBoxChild* child, PaletteView* instance)
@@ -281,6 +284,65 @@ namespace mousetrap
         instance->select(gtk_flow_box_child_get_index(child));
     }
 
+    void PaletteView::select_color(HSVA color)
+    {
+        for (size_t i = 0; i < _tiles.size(); ++i)
+        {
+            if (_tiles.at(i)->_color == color)
+            {
+                select(i);
+                return;
+            }
+        }
+
+        select_none();
+    }
+
+    void PaletteView::set_selection_frame_color(RGBA color)
+    {
+        _selection_frame_color = color;
+        update();
+    }
+
+    void PaletteView::set_sort_mode(PaletteSortMode mode)
+    {
+        _sort_mode = mode;
+        update();
+    }
+
+    gboolean PaletteView::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state,
+                                void* data)
+    {
+        PaletteView* instance = reinterpret_cast<PaletteView*>(data);
+
+        if (keyval == get_keybinding("palette_view_select_1"))
+            instance->select(0);
+        else if (keyval == get_keybinding("palette_view_select_2"))
+            instance->select(1);
+        else if (keyval == get_keybinding("palette_view_select_3"))
+            instance->select(2);
+        else if (keyval == get_keybinding("palette_view_select_4"))
+            instance->select(3);
+        else if (keyval == get_keybinding("palette_view_select_5"))
+            instance->select(4);
+        else if (keyval == get_keybinding("palette_view_select_6"))
+            instance->select(5);
+        else if (keyval == get_keybinding("palette_view_select_7"))
+            instance->select(6);
+        else if (keyval == get_keybinding("palette_view_select_8"))
+            instance->select(7);
+        else if (keyval == get_keybinding("palette_view_select_9"))
+            instance->select(8);
+
+        if (keyval == GDK_KEY_plus)
+            instance->set_tile_size(instance->_tile_size + 8);
+        else if (keyval == GDK_KEY_minus)
+            instance->set_tile_size(instance->_tile_size - 8);
+
+        return true;
+    }
+
+    /*
     gboolean PaletteView::on_enter_notify_event(GtkWidget* self, GdkEventCrossing* event, PaletteView* instance)
     {
         if (event->type == GDK_ENTER_NOTIFY)
@@ -327,32 +389,6 @@ namespace mousetrap
             instance->select(8);
 
         return true;
-    }
-
-    void PaletteView::select_color(HSVA color)
-    {
-        for (size_t i = 0; i < _tiles.size(); ++i)
-        {
-            if (_tiles.at(i)->_color == color)
-            {
-                select(i);
-                return;
-            }
-            }
-
-        select_none();
-    }
-
-    void PaletteView::set_selection_frame_color(RGBA color)
-    {
-        _selection_frame_color = color;
-        update();
-    }
-
-    void PaletteView::set_sort_mode(PaletteSortMode mode)
-    {
-        _sort_mode = mode;
-        update();
     }
      */
 }

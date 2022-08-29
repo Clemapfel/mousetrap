@@ -61,4 +61,18 @@ namespace mousetrap
     {
         gtk_box_remove(_native, widget->operator GtkWidget *());
     }
+
+    void Box::clear()
+    {
+        std::vector<GtkWidget*> to_remove;
+        GtkWidget* current = gtk_widget_get_first_child(GTK_WIDGET(_native));
+        while (current != nullptr)
+        {
+            to_remove.push_back(current);
+            current = gtk_widget_get_next_sibling(current);
+        }
+
+        for (auto* w : to_remove)
+            gtk_box_remove(_native, w);
+    }
 }

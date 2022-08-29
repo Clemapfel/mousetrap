@@ -15,6 +15,11 @@ namespace mousetrap
         return GTK_WIDGET(_native);
     }
 
+    void ScrolledWindow::set_child(Widget* widget)
+    {
+        gtk_scrolled_window_set_child(_native, widget->operator GtkWidget*());
+    }
+
     void ScrolledWindow::set_min_content_width(float v)
     {
         gtk_scrolled_window_set_min_content_width(_native, v);

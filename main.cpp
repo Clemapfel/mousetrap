@@ -16,6 +16,7 @@
 #include <app/color_picker.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
 #include <app/verbose_color_picker.hpp>
+#include <app/palette_view.hpp>
 
 using namespace mousetrap;
 
@@ -36,13 +37,17 @@ static void activate(GtkApplication* app, void*)
     state::verbose_color_picker = new VerboseColorPicker();
     state::verbose_color_picker->set_expand(true);
 
-    static auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
-    box->push_back(state::color_picker);
-    box->push_back(state::primary_secondary_color_swapper);
-    box->push_back(state::verbose_color_picker);
-    state::main_window->set_child(box);
+    state::palette_view = new PaletteView();
+    state::palette_view->set_expand(true);
+    state::palette_view->show();
 
-    state::main_window->set_size_request({800, 600});
+    static auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
+    //box->push_back(state::color_picker);
+    //box->push_back(state::primary_secondary_color_swapper);
+    //box->push_back(state::verbose_color_picker);
+    box->push_back(state::palette_view);
+
+    state::main_window->set_child(box);
     state::main_window->show();
     state::main_window->present();
 }

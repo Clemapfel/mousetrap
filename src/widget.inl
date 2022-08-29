@@ -110,6 +110,11 @@ namespace mousetrap
         gtk_widget_set_tooltip_markup(this->operator GtkWidget*(), text.c_str());
     }
 
+    void Widget::set_visible(bool b)
+    {
+        gtk_widget_set_visible(this->operator GtkWidget*(), b);
+    }
+
     void Widget::show()
     {
         gtk_widget_show(this->operator GtkWidget*());

@@ -22,6 +22,7 @@ namespace mousetrap
             void reorder_after(Widget* to_move, Widget* after);
 
             void remove(Widget*);
+            void clear();
 
         private:
             GtkBox* _native;

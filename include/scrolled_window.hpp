@@ -27,6 +27,8 @@ namespace mousetrap
 
             void set_kinetic_scrolling_enabled(bool);
 
+            void set_child(Widget*);
+
         private:
             GtkScrolledWindow* _native;
     };

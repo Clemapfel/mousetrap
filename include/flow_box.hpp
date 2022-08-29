@@ -26,6 +26,8 @@ namespace mousetrap
 
             void set_selection_mode(GtkSelectionMode);
 
+            void set_homogeneous(bool);
+
             GtkFlowBoxChild* get_child_at_index(size_t i);
             GtkFlowBoxChild* get_child_at_pos(int x, int y);
 
@@ -33,6 +35,8 @@ namespace mousetrap
             void push_front(Widget*);
             void insert_at(Widget*, size_t);
             void remove(Widget*);
+
+            void clear();
 
         private:
             GtkFlowBox* _native;
