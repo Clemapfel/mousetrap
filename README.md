@@ -1,6 +1,6 @@
 # Mousetrap: GTK4-based GUI Library
 
-(This repo is under rapid active development and not intended to be forked or worked with by third parties, as of August 2022)
+> **NOTE**: This repo is under rapid active development and not intended to be forked or worked with by third parties, as of August 2022)
 
 ## Features
 + OpenGL-based canvas, replaces Cairo entirely resulting in improved performance and hardware-accelerated rendering of widgets
