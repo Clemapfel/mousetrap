@@ -23,6 +23,7 @@ namespace mousetrap::state
     // ### GTK INSTANCES ##############################
 
     Window* main_window = nullptr;
+    Application* app = nullptr;
 
     // ### COLORS #####################################
 

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <include/widget.hpp>
+#include <include/menu_model.hpp>
 
 namespace mousetrap
 {
@@ -16,6 +17,7 @@ namespace mousetrap
 
             operator GtkWidget*();
             void set_child(Widget*);
+            void set_model(MenuModel*);
 
         private:
             GtkMenuButton* _native;
@@ -39,5 +41,10 @@ namespace mousetrap
     void MenuButton::set_child(Widget* widget)
     {
         gtk_menu_button_set_child(_native, widget->operator GtkWidget*());
+    }
+
+    void MenuButton::set_model(MenuModel* model)
+    {
+        gtk_menu_button_set_menu_model(_native, model->operator GMenuModel*());
     }
 }

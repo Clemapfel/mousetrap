@@ -22,8 +22,10 @@ namespace mousetrap
             virtual ~Application();
 
             int run();
-
             operator GObject*() override;
+
+            using ActionSignature = void(*)(GSimpleAction* self, GVariant*, void* user_data);
+            void add_action(const std::string& id, ActionSignature, void* user_data);
 
         private:
             GtkApplication* _native;

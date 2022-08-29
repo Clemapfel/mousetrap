@@ -11,6 +11,8 @@
 #include <include/gl_area.hpp>
 #include <include/image_display.hpp>
 #include <include/event_controller.hpp>
+#include <include/menu_model.hpp>
+#include <include/menu_button.hpp>
 
 #include <app/global_state.hpp>
 #include <app/color_picker.hpp>
@@ -22,6 +24,16 @@ using namespace mousetrap;
 
 static void on_setup(GtkSignalListItemFactory* self, GObject* object, void*)
 {}
+
+static void item01(GSimpleAction* self, GVariant*, gpointer in)
+{
+    std::cout << *((std::string*) in) << std::endl;
+}
+
+static void item02(GSimpleAction* self, GVariant*, gpointer in)
+{
+    std::cout << *((std::string*) in) << std::endl;
+}
 
 static void activate(GtkApplication* app, void*)
 {
@@ -42,10 +54,53 @@ static void activate(GtkApplication* app, void*)
     state::palette_view->show();
 
     static auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
-    //box->push_back(state::color_picker);
-    //box->push_back(state::primary_secondary_color_swapper);
-    //box->push_back(state::verbose_color_picker);
+    box->push_back(state::color_picker);
+    box->push_back(state::primary_secondary_color_swapper);
+    box->push_back(state::verbose_color_picker);
     box->push_back(state::palette_view);
+
+    // TODO
+    /*
+    auto* action = g_simple_action_new("test", nullptr);
+    g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(test), new std::string("test"));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(action));
+
+    auto* variant = g_variant_new_boolean(false);
+    auto* state_action = g_simple_action_new_stateful("state_test", G_VARIANT_TYPE_VARIANT, variant);
+    g_simple_action_set_enabled(state_action, true);
+    g_simple_action_set_state(state_action, variant);
+
+    g_signal_connect(G_OBJECT(state_action), "change-state", G_CALLBACK(test_state), new std::string("test"));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(state_action));
+
+    GtkMenuButton* menu_button = GTK_MENU_BUTTON(gtk_menu_button_new());
+    GMenu* menu_model = g_menu_new();
+    g_menu_append(menu_model, "app.test", "app.test");
+    g_menu_append(menu_model, "app.state_test", "app.state_test");
+    gtk_menu_button_set_menu_model(menu_button, G_MENU_MODEL(menu_model));
+    //gtk_box_append(GTK_BOX(box->operator GtkWidget*()), GTK_WIDGET(menu_button));
+    */
+    // TODO
+
+    state::app->add_action("action01", item01, new std::string("01"));
+    state::app->add_action("action02", item02, new std::string("02"));
+
+    auto* model = new MenuModel();
+    auto* section01 = new MenuModel();
+    section01->add_action("01 first", "app.action01");
+    section01->add_action("01 second", "app.action02");
+
+    auto* section02 = new MenuModel();
+    section02->add_action("02 first", "app.action01");
+    section02->add_action("02 second", "app.action02");
+
+    model->add_section("section01", section01);
+    model->add_section("section02", section02);
+
+    auto* menu_button = new MenuButton();
+    menu_button->set_model(model);
+
+    box->push_back(menu_button);
 
     state::main_window->set_child(box);
     state::main_window->show();
@@ -54,8 +109,8 @@ static void activate(GtkApplication* app, void*)
 
 int main()
 {
-    auto app = Application(activate);
-    return app.run();
+    state::app = new Application(activate);
+    return state::app->run();
 }
 
 /*

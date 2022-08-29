@@ -133,8 +133,6 @@ add_library(mousetrap SHARED
     include/window.hpp
     src/window.inl
 
-    include/tree_view.hpp
-
     include/application.hpp
     src/application.inl
 
@@ -153,7 +151,7 @@ add_library(mousetrap SHARED
     src/separator_line.inl
 
     include/menu_button.hpp
-)
+        include/menu_model.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -167,6 +165,7 @@ target_include_directories(mousetrap PUBLIC
 
 target_link_libraries(mousetrap PUBLIC
     ${OpenGL}
+    ${GLEW}
     ${GTK_LIBRARIES}
 )
 

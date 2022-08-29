@@ -28,4 +28,11 @@ namespace mousetrap
     {
         return G_OBJECT(_native);
     }
+
+    void Application::add_action(const std::string& id, ActionSignature f, void* user_data)
+    {
+        auto* action = g_simple_action_new(id.c_str(), nullptr);
+        g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(f), user_data);
+        g_action_map_add_action(G_ACTION_MAP(_native), G_ACTION(action));
+    }
 }
