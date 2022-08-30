@@ -13,6 +13,7 @@
 #include <include/colors.hpp>
 #include <include/window.hpp>
 #include <include/pixel_buffer.hpp>
+#include <include/shortcut_map.hpp>
 
 #include <app/palette.hpp>
 
@@ -24,6 +25,7 @@ namespace mousetrap::state
 
     Window* main_window = nullptr;
     Application* app = nullptr;
+    ShortcutMap* shortcut_map = nullptr;
 
     // ### COLORS #####################################
 

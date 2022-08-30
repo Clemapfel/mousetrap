@@ -356,8 +356,6 @@ namespace mousetrap
     gboolean PaletteView::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state,
                                 void* data)
     {
-        return TRUE;
-
         PaletteView* instance = reinterpret_cast<PaletteView*>(data);
 
         if (keyval == get_keybinding("palette_view_select_1"))
@@ -383,6 +381,8 @@ namespace mousetrap
             instance->set_tile_size(instance->_tile_size + 8);
         else if (keyval == GDK_KEY_minus)
             instance->set_tile_size(instance->_tile_size - 8);
+
+
 
         return true;
     }

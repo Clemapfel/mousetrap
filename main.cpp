@@ -38,7 +38,9 @@ static void item02(GSimpleAction* self, GVariant*, gpointer in)
 
 static void activate(GtkApplication* app, void*)
 {
-    //state::app->load_shortcuts("/home/clem/Workspace/mousetrap/app/keybinding.conf");
+    state::shortcut_map = new ShortcutMap();
+    state::shortcut_map->load_from_file("/home/clem/Workspace/mousetrap/app/keybinding.conf");
+
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
 
