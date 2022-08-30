@@ -210,5 +210,16 @@ namespace mousetrap
     void Widget::add_controller(EventController* controller)
     {
         gtk_widget_add_controller(this->operator GtkWidget*(), controller->operator GtkEventController*());
+        gtk_widget_set_focusable(this->operator GtkWidget*(), true);
+    }
+
+    void Widget::set_focusable(bool b)
+    {
+        gtk_widget_set_focusable(this->operator GtkWidget*(), b);
+    }
+
+    void Widget::grab_focus()
+    {
+        gtk_widget_grab_focus(this->operator GtkWidget*());
     }
 }

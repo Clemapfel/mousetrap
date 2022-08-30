@@ -52,6 +52,9 @@ namespace mousetrap
 
             void show();
             void add_controller(EventController*);
+
+            void set_focusable(bool);
+            void grab_focus();
     };
 
     template<typename T>

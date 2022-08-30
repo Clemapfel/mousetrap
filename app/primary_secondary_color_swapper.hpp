@@ -36,6 +36,9 @@ namespace mousetrap
             KeyEventController* _key_event_controller;
             static gboolean on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void* user_data);
 
+            MotionEventController* _motion_event_controller;
+            static void on_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data);
+
             AspectFrame* _frame;
             GLArea* _render_area;
 
@@ -90,7 +93,12 @@ namespace mousetrap
         _key_event_controller = new KeyEventController();
         _key_event_controller->connect_key_pressed(on_key_pressed, this);
 
+        _motion_event_controller = new MotionEventController;
+        _motion_event_controller->connect_enter(on_motion_enter, this);
+
         _render_area->add_controller(_click_event_controller);
+        _render_area->add_controller(_key_event_controller);
+        _render_area->add_controller(_motion_event_controller);
    }
 
     PrimarySecondaryColorSwapper::~PrimarySecondaryColorSwapper()
@@ -231,14 +239,22 @@ namespace mousetrap
                                                         void* instance)
     {
         ((PrimarySecondaryColorSwapper*) instance)->swap_colors();
-        TODO FOCUS
+        gtk_widget_grab_focus(((PrimarySecondaryColorSwapper*) instance)->operator GtkWidget*());
     }
 
     gboolean PrimarySecondaryColorSwapper::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode,
                                                           GdkModifierType state, void* instance)
     {
+        std::cout << "called" << std::endl;
         if (state::shortcut_map->should_trigger(gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self)), "color_swapper.swap"))
             ((PrimarySecondaryColorSwapper*) instance)->swap_colors();
+
+        return TRUE;
+    }
+
+    void PrimarySecondaryColorSwapper::on_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* instance)
+    {
+        ((PrimarySecondaryColorSwapper*) instance)->_render_area->grab_focus();
     }
 }
 

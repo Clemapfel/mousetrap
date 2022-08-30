@@ -384,8 +384,10 @@ namespace mousetrap
         _hsv_shape_cursor_window_frame->set_centroid(_hsv_shape_cursor->get_centroid());
     }
 
-    void ColorPicker::on_render_area_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data)
-    {}
+    void ColorPicker::on_render_area_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* instance)
+    {
+        ((ColorPicker*) instance)->grab_focus();
+    }
 
     void ColorPicker::on_render_area_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data)
     {
