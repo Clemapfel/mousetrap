@@ -158,6 +158,9 @@ namespace mousetrap
         _key_event_controller->connect_key_pressed(on_key_pressed, this);
         _main->add_controller(_key_event_controller);
 
+        state::app->add_action("palette_view.increase_tile_size", on_menu_sort_by_hue, this);
+        Widget::add_shortcut(state::app->get_shortcuts("palette_view").at(0));
+
         update();
     }
 
@@ -356,6 +359,8 @@ namespace mousetrap
     gboolean PaletteView::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state,
                                 void* data)
     {
+        return TRUE;
+
         PaletteView* instance = reinterpret_cast<PaletteView*>(data);
 
         if (keyval == get_keybinding("palette_view_select_1"))

@@ -151,7 +151,7 @@ add_library(mousetrap SHARED
     src/separator_line.inl
 
     include/menu_button.hpp
-        include/menu_model.hpp)
+        include/menu_model.hpp include/shortcuts.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

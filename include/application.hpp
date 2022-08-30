@@ -27,8 +27,13 @@ namespace mousetrap
             using ActionSignature = void(*)(GSimpleAction* self, GVariant*, void* user_data);
             void add_action(const std::string& id, ActionSignature, void* user_data);
 
+            void load_shortcuts(const std::string& config_file);
+            void add_shortcut(const std::string& region, GtkShortcut* shortcut);
+            std::vector<GtkShortcut*>& get_shortcuts(const std::string& region);
+
         private:
             GtkApplication* _native;
+            std::map<std::string, std::vector<GtkShortcut*>> _shortcuts;
     };
 }
 
