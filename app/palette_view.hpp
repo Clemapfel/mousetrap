@@ -17,7 +17,6 @@
 #include <vector>
 
 #include <app/global_state.hpp>
-#include <app/keybindings.hpp>
 
 namespace mousetrap
 {
@@ -358,31 +357,33 @@ namespace mousetrap
     {
         PaletteView* instance = reinterpret_cast<PaletteView*>(data);
 
-        if (keyval == get_keybinding("palette_view_select_1"))
+        GdkEvent* event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self));
+
+        if (state::shortcut_map->should_trigger(event, "palette_view.select_color_0"))
             instance->select(0);
-        else if (keyval == get_keybinding("palette_view_select_2"))
+        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_1"))
             instance->select(1);
-        else if (keyval == get_keybinding("palette_view_select_3"))
+        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_2"))
             instance->select(2);
-        else if (keyval == get_keybinding("palette_view_select_4"))
+        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_3"))
             instance->select(3);
-        else if (keyval == get_keybinding("palette_view_select_5"))
+        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_4"))
             instance->select(4);
-        else if (keyval == get_keybinding("palette_view_select_6"))
+        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_5"))
             instance->select(5);
-        else if (keyval == get_keybinding("palette_view_select_7"))
+        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_6"))
             instance->select(6);
-        else if (keyval == get_keybinding("palette_view_select_8"))
+        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_7"))
             instance->select(7);
-        else if (keyval == get_keybinding("palette_view_select_9"))
+        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_8"))
             instance->select(8);
+        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_9"))
+            instance->select(9);
 
-        if (keyval == GDK_KEY_plus)
+        if (state::shortcut_map->should_trigger(event, "palette_view.increase_tile_size"))
             instance->set_tile_size(instance->_tile_size + 8);
-        else if (keyval == GDK_KEY_minus)
+        else if (state::shortcut_map->should_trigger(event, "palette_view.decrease_tile_size"))
             instance->set_tile_size(instance->_tile_size - 8);
-
-
 
         return true;
     }

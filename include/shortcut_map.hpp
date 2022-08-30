@@ -18,13 +18,12 @@ namespace mousetrap
             ShortcutMap() = default;
 
             void load_from_file(const std::string&);
-            GtkShortcut* get_shortcut(const std::string&);
 
             /// \brief does current event fit shortcut
             bool should_trigger(GdkEvent* event, const std::string& action_id);
 
         private:
-            std::map<std::string, GtkShortcut*> _bindings;
+            std::map<std::string, GtkShortcutTrigger*> _bindings;
     };
 }
 
@@ -110,10 +109,7 @@ namespace mousetrap
 
             _bindings.insert({
                 current_region + "." + action_name,
-                gtk_shortcut_new(
-                    gtk_shortcut_trigger_parse_string(trigger_name.c_str()),
-                    gtk_shortcut_action_parse_string((current_region + "." + action_name).c_str())
-                )
+                gtk_shortcut_trigger_parse_string(trigger_name.c_str())
             });
 
             line_i += 1;
@@ -127,23 +123,20 @@ namespace mousetrap
             };
         }
     }
-    
-    GtkShortcut* ShortcutMap::get_shortcut(const std::string& id)
+
+
+    bool ShortcutMap::should_trigger(GdkEvent* event, const std::string& id)
     {
         auto it = _bindings.find(id);
         if (it == _bindings.end())
         {
-            std::cerr << "[WARNING] In ShortcutBindingMap::get_shortcut: No shortcut with id \"" << id << "\" registered." << std::endl;
-            return nullptr;
+            std::cerr << "[WARNING] In ShortcutBindingMap::should_trigger: No shortcut with id \"" << id << "\" registered." << std::endl;
+            return false;
         }
-        
-        return it->second;
-    }
 
-    bool ShortcutMap::should_trigger(GdkEvent* event, const std::string& action_id)
-    {
-        auto* shortcut = get_shortcut(action_id);
-        if (shortcut != nullptr)
-            return gtk_shortcut_trigger_trigger(gtk_shortcut_get_trigger(shortcut), event, false);
+        auto* trigger = it->second;
+
+        if (trigger != nullptr)
+            return gtk_shortcut_trigger_trigger(trigger, event, false);
     }
 }
