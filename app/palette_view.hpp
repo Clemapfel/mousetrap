@@ -63,7 +63,6 @@ namespace mousetrap
             FlowBox* _box;
             ScrolledWindow* _scrolled_window;
             Label* _menu_button_label;
-            MenuButton* _menu_button;
             Box* _main;
 
             struct ColorTile
@@ -77,6 +76,20 @@ namespace mousetrap
             };
 
             std::vector<ColorTile*> _tiles;
+
+            MenuModel* _menu;
+            static void on_menu_load_default(GSimpleAction*, GVariant*, void* data);
+            static void on_menu_load(GSimpleAction*, GVariant*, void* data);
+            static void on_menu_save_as(GSimpleAction*, GVariant*, void* data);
+            static void on_menu_save_as_default(GSimpleAction*, GVariant*, void* data);
+            
+            MenuModel* _sort_submenu;
+            static void on_menu_sort_by_default(GSimpleAction*, GVariant*, void* data);
+            static void on_menu_sort_by_hue(GSimpleAction*, GVariant*, void* data);
+            static void on_menu_sort_by_saturation(GSimpleAction*, GVariant*, void* data);
+            static void on_menu_sort_by_value(GSimpleAction*, GVariant*, void* data);
+
+            MenuButton* _menu_button;
     };
 }
 
@@ -106,9 +119,36 @@ namespace mousetrap
         _scrolled_window->set_vexpand(true);
 
         _menu_button = new MenuButton();
-        _menu_button_label = new Label("Palette >");
+        _menu_button_label = new Label("Palette");
         _menu_button->set_child(_menu_button_label);
         _menu_button->set_vexpand(false);
+
+        state::app->add_action("palette_view.load", on_menu_load, this);
+        state::app->add_action("palette_view.load_default", on_menu_load_default, this);
+
+        state::app->add_action("palette_view.save_as", on_menu_save_as, this);
+        state::app->add_action("palette_view.save_as_default", on_menu_save_as_default, this);
+
+        state::app->add_action("palette_view.sort_by_default", on_menu_sort_by_default, this);
+        state::app->add_action("palette_view.sort_by_hue", on_menu_sort_by_hue, this);
+        state::app->add_action("palette_view.sort_by_saturation", on_menu_sort_by_saturation, this);
+        state::app->add_action("palette_view.sort_by_value", on_menu_sort_by_value, this);
+
+        _menu = new MenuModel();
+        _menu->add_action("Load...", "app.palette_view.load");
+        _menu->add_action("Load Default", "app.palette_view.load_default");
+        _menu->add_action("Save As...", "app.palette_view.save_as");
+        _menu->add_action("Save As Default", "app.palette_view.save_as_default");
+
+        _sort_submenu = new MenuModel();
+        _sort_submenu->add_action("None", "app.palette_view.sort_by_default");
+        _sort_submenu->add_action("Hue", "app.palette_view.sort_by_hue");
+        _sort_submenu->add_action("Saturation", "app.palette_view.sort_by_saturation");
+        _sort_submenu->add_action("Value", "app.palette_view.sort_by_saturation");
+
+        _menu->add_submenu("Sort By...", _sort_submenu);
+        _menu_button->set_model(_menu);
+        _menu_button->set_popover_position(GTK_POS_RIGHT);
 
         _main = new Box(GTK_ORIENTATION_VERTICAL);
         _main->push_back(_menu_button);
@@ -183,8 +223,6 @@ namespace mousetrap
 
         std::vector<HSVA> palette;
 
-        _menu_button_label->set_text(state::active_palette_id + " >");
-
         if (_sort_mode == PaletteSortMode::NONE)
             palette = state::palettes.at(state::active_palette_id).get_colors();
         else if (_sort_mode == PaletteSortMode::BY_HUE)
@@ -235,7 +273,7 @@ namespace mousetrap
         _box->show();
 
         std::stringstream tooltip_str;
-        tooltip_str << "<u><b>Palette View</b></u>\n"
+        tooltip_str << "<b>Palette View</b>\n"
                     << "<tt>+/-</tt>: Increase / Decrease Tile Size\n"
                     << "<tt>1-9</tt>: Select Color";
 
@@ -347,53 +385,43 @@ namespace mousetrap
         return true;
     }
 
-    /*
-    gboolean PaletteView::on_enter_notify_event(GtkWidget* self, GdkEventCrossing* event, PaletteView* instance)
+    void PaletteView::on_menu_load_default(GSimpleAction*, GVariant*, void* data) 
     {
-        if (event->type == GDK_ENTER_NOTIFY)
-            instance->_keypress_mode_active = true;
-
-        else if (event->type == GDK_LEAVE_NOTIFY)
-            instance->_keypress_mode_active = false;
-
-        return true;
+        std::cerr << "In PaletteView::on_menu_load_default: TODO" << std::endl;
+    }
+    
+    void PaletteView::on_menu_load(GSimpleAction*, GVariant*, void* data)
+    {
+        std::cerr << "In PaletteView::on_menu_load: TODO" << std::endl;
     }
 
-    gboolean PaletteView::on_key_press_event(GtkWidget* self, GdkEventKey* event, PaletteView* instance)
+    void PaletteView::on_menu_save_as(GSimpleAction*, GVariant*, void* data)
     {
-        if (not instance->_keypress_mode_active)
-        {
-            if (event->keyval == get_keybinding("palette_view_increase_tile_size"))
-            {
-                instance->set_tile_size(_tile_size + 4);
-            }
-            else if (event->keyval == get_keybinding("palette_view_decrease_tile_size"))
-            {
-                if (instance->_tile_size > 8)
-                    instance->set_tile_size(_tile_size - 4);
-            }
-        }
-
-        if (event->keyval == get_keybinding("palette_view_select_1"))
-            instance->select(0);
-        else if (event->keyval == get_keybinding("palette_view_select_2"))
-            instance->select(1);
-        else if (event->keyval == get_keybinding("palette_view_select_3"))
-            instance->select(2);
-        else if (event->keyval == get_keybinding("palette_view_select_4"))
-            instance->select(3);
-        else if (event->keyval == get_keybinding("palette_view_select_5"))
-            instance->select(4);
-        else if (event->keyval == get_keybinding("palette_view_select_6"))
-            instance->select(5);
-        else if (event->keyval == get_keybinding("palette_view_select_7"))
-            instance->select(6);
-        else if (event->keyval == get_keybinding("palette_view_select_8"))
-            instance->select(7);
-        else if (event->keyval == get_keybinding("palette_view_select_9"))
-            instance->select(8);
-
-        return true;
+        std::cerr << "In PaletteView::on_menu_save_as: TODO" << std::endl;
     }
-     */
+
+    void PaletteView::on_menu_save_as_default(GSimpleAction*, GVariant*, void* data)
+    {
+        std::cerr << "In PaletteView::on_menu_save_as_default: TODO" << std::endl;
+    }
+
+    void PaletteView::on_menu_sort_by_default(GSimpleAction*, GVariant*, void* data)
+    {
+        ((PaletteView*) data)->set_sort_mode(PaletteSortMode::NONE);
+    }
+
+    void PaletteView::on_menu_sort_by_hue(GSimpleAction*, GVariant*, void* data)
+    {
+        ((PaletteView*) data)->set_sort_mode(PaletteSortMode::BY_HUE);
+    }
+
+    void PaletteView::on_menu_sort_by_saturation(GSimpleAction*, GVariant*, void* data)
+    {
+        ((PaletteView*) data)->set_sort_mode(PaletteSortMode::BY_SATURATION);
+    }
+
+    void PaletteView::on_menu_sort_by_value(GSimpleAction*, GVariant*, void* data)
+    {
+        ((PaletteView*) data)->set_sort_mode(PaletteSortMode::BY_VALUE);
+    }
 }

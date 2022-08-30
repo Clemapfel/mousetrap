@@ -91,7 +91,7 @@ namespace mousetrap
             if (pair.second.s == 0)
                 grayscale.push_back(pair.second);
             else
-                grayscale.push_back(pair.second);
+                non_grayscale.push_back(pair.second);
 
         std::sort(grayscale.begin(), grayscale.end(), [](HSVA a, HSVA b) -> bool {
             return a.v < b.v;
@@ -102,10 +102,10 @@ namespace mousetrap
         });
 
         std::vector<HSVA> out;
-        for (auto& c : grayscale)
+        for (auto& c : non_grayscale)
             out.push_back(c);
 
-        for (auto& c : non_grayscale)
+        for (auto& c : grayscale)
             out.push_back(c);
 
         return out;
