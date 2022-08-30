@@ -68,6 +68,9 @@ static void activate(GtkApplication* app, void*)
     state::main_window->set_child(box);
     state::main_window->show();
     state::main_window->present();
+
+    state::main_window->set_focusable(true);
+    state::main_window->grab_focus();
 }
 
 int main()

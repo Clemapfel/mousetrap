@@ -6,13 +6,20 @@
 namespace mousetrap
 {
     Window::Window()
-    {
-        _native = GTK_WINDOW(gtk_window_new());
-    }
+        : Window(GTK_WINDOW(gtk_window_new()))
+    {}
 
     Window::Window(GtkWindow* window)
     {
         _native = window;
+
+        if (_global_shortcut_controller == nullptr)
+        {
+            _global_shortcut_controller = new KeyEventController();
+            _global_shortcut_controller->connect_key_pressed(on_key_pressed);
+        }
+
+        add_controller(_global_shortcut_controller);
     }
 
     Window::operator GtkWidget*()
@@ -54,5 +61,29 @@ namespace mousetrap
     void Window::set_focused_widget(Widget* widget)
     {
         gtk_window_set_focus(_native, widget->operator GtkWidget*());
+    }
+
+    gboolean Window::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void*)
+    {
+        for (auto& tuple : _global_shortcuts)
+            if (gtk_shortcut_trigger_trigger(tuple.trigger, gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self)), false))
+               tuple.action(tuple.argument);
+    }
+
+    void Window::register_global_shortcut(ShortcutMap* map, const std::string& shortcut_id, std::function<void(void*)> action, void* data)
+    {
+        _global_shortcuts.push_back({
+            shortcut_id,
+            map->_bindings.at(shortcut_id),
+            action,
+            data
+        });
+    }
+
+    void Window::unregister_global_shortcut(const std::string& shortcut_id)
+    {
+        for (size_t i = 0; i < _global_shortcuts.size(); ++i)
+            if (_global_shortcuts.at(i).id == shortcut_id)
+                _global_shortcuts.erase(_global_shortcuts.begin() + i);
     }
 }

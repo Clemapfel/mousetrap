@@ -14,6 +14,8 @@ namespace mousetrap
 {
     class ShortcutMap
     {
+        friend class Window;
+
         public:
             ShortcutMap() = default;
 
@@ -26,7 +28,7 @@ namespace mousetrap
             /// \note description for each binding will be generated from the variable name of the action in the .conf file
             std::string generate_control_tooltip(const std::string& action_prefix, const std::string& description_optional = "");
 
-        private:
+        protected:
             std::map<std::string, GtkShortcutTrigger*> _bindings;
     };
 }
@@ -35,6 +37,7 @@ namespace mousetrap
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 namespace mousetrap
 {

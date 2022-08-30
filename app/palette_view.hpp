@@ -382,7 +382,7 @@ namespace mousetrap
         else if (state::shortcut_map->should_trigger(event, "palette_view.decrease_tile_size"))
             instance->set_tile_size(instance->_tile_size - 8);
 
-        return true;
+        return false;
     }
 
     void PaletteView::on_menu_load_default(void* data) 

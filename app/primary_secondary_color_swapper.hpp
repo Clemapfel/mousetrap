@@ -32,9 +32,7 @@ namespace mousetrap
 
             ClickEventController* _click_event_controller;
             static void on_click_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
-
-            KeyEventController* _key_event_controller;
-            static gboolean on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void* user_data);
+            static void on_global_key_pressed(void* instance);
 
             MotionEventController* _motion_event_controller;
             static void on_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data);
@@ -90,15 +88,13 @@ namespace mousetrap
         _click_event_controller = new ClickEventController();
         _click_event_controller->connect_pressed(on_click_release, this);
 
-        _key_event_controller = new KeyEventController();
-        _key_event_controller->connect_key_pressed(on_key_pressed, this);
-
         _motion_event_controller = new MotionEventController;
         _motion_event_controller->connect_enter(on_motion_enter, this);
 
         _render_area->add_controller(_click_event_controller);
-        _render_area->add_controller(_key_event_controller);
         _render_area->add_controller(_motion_event_controller);
+
+        state::main_window->register_global_shortcut(state::shortcut_map, "color_swapper.swap", on_global_key_pressed, this);
    }
 
     PrimarySecondaryColorSwapper::~PrimarySecondaryColorSwapper()
@@ -242,14 +238,9 @@ namespace mousetrap
         gtk_widget_grab_focus(((PrimarySecondaryColorSwapper*) instance)->operator GtkWidget*());
     }
 
-    gboolean PrimarySecondaryColorSwapper::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode,
-                                                          GdkModifierType state, void* instance)
+    void PrimarySecondaryColorSwapper::on_global_key_pressed(void* instance)
     {
-        std::cout << "called" << std::endl;
-        if (state::shortcut_map->should_trigger(gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self)), "color_swapper.swap"))
-            ((PrimarySecondaryColorSwapper*) instance)->swap_colors();
-
-        return TRUE;
+        ((PrimarySecondaryColorSwapper*) instance)->swap_colors();
     }
 
     void PrimarySecondaryColorSwapper::on_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* instance)
