@@ -279,6 +279,8 @@ namespace mousetrap
             _sliders[c]->_click_controller->connect_pressed(on_slider_pressed, new std::tuple(c, this));
             _sliders[c]->_click_controller->connect_released(on_slider_release, new std::tuple(c, this));
             _sliders[c]->_motion_controller->connect_motion(on_slider_motion, new std::tuple(c, this));
+
+            _sliders[c]->_canvas->set_cursor(GtkCursorType::GRAB);
         }
 
         _sliders['H']->_spin_button->set_wrap(true);
@@ -381,8 +383,8 @@ namespace mousetrap
 
         static auto set_slider_tooltip = [&](char c, const std::string& component) {
             auto* slider = _sliders[c];
-            slider->_canvas->set_tooltip_text("<b>" + component + "</b>\n<tt>Left-Click-Drag</tt>: Change Value");
-            slider->_spin_button->set_tooltip_text("<b>" + component + "</b>\n<tt>Left-Click</tt>: Increase/Decrease Value\n<tt>Enter</tt>: Apply Value");
+            slider->_canvas->set_tooltip_text("<b>" + component + "</b>");
+            slider->_spin_button->set_tooltip_text("<b>" + component + "</b>");
         };
 
         set_slider_tooltip('A', "Opacity");
@@ -393,7 +395,7 @@ namespace mousetrap
         set_slider_tooltip('G', "Green Component");
         set_slider_tooltip('B', "Blue Component");
 
-        _html_region->_entry->set_tooltip_text("<b>HTML Color Code</b>\n<tt>Enter</tt>: Apply Value");
+        _html_region->_entry->set_tooltip_text("<b>HTML Color Code</b>");
     }
 
     VerboseColorPicker::operator GtkWidget*()
@@ -958,6 +960,7 @@ namespace mousetrap
         pos.y /= slider->_canvas_size->y;
 
         slider->_drag_active = true;
+        slider->_canvas->set_cursor(GtkCursorType::GRABBING);
         auto value = glm::clamp<float>(pos.x, 0, 1);
         slider->set_value(value);
         auto color = get_color_with_component_set_to(state::primary_color, c, value);
@@ -986,6 +989,7 @@ namespace mousetrap
             state::color_picker->update();
             state::primary_secondary_color_swapper->update();
             slider->_drag_active = false;
+            slider->_canvas->set_cursor(GtkCursorType::GRAB);
         }
     }
 

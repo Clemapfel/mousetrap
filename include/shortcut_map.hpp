@@ -22,6 +22,10 @@ namespace mousetrap
             /// \brief does current event fit shortcut
             bool should_trigger(GdkEvent* event, const std::string& action_id);
 
+            /// \param action_prefix: "palette_view" will query all "palette_view.*" actions
+            /// \note description for each binding will be generated from the variable name of the action in the .conf file
+            std::string generate_control_tooltip(const std::string& action_prefix, const std::string& description_optional = "");
+
         private:
             std::map<std::string, GtkShortcutTrigger*> _bindings;
     };
@@ -107,36 +111,135 @@ namespace mousetrap
                 goto on_error;
             }
 
-            _bindings.insert({
-                current_region + "." + action_name,
-                gtk_shortcut_trigger_parse_string(trigger_name.c_str())
-            });
+            if (trigger_name != "nothing")
+            {
+                auto* trigger = gtk_shortcut_trigger_parse_string(trigger_name.c_str());
+
+                if (trigger == nullptr)
+                    std::cerr << "[ERROR] In ShortcutMap::load_from_file: Key code \"" << trigger_name << "\" in line " << line_i << " is invalid." << std::endl;
+
+                _bindings.insert({
+                    (current_region != "" ?  current_region + "." : "") + action_name,
+                    trigger
+                });
+            }
 
             line_i += 1;
             continue;
 
             on_error:
             {
-                std::cerr << "In mousetrap::load_shortcuts: Error when parsing " << config_file << " at line " << line_i << ":\n"
+                std::cerr << "In ShortcutMap::load_from_file: Error when parsing " << config_file << " at line " << line_i << ":\n"
                           << line << std::endl;
                 return;
             };
         }
     }
 
-
     bool ShortcutMap::should_trigger(GdkEvent* event, const std::string& id)
     {
         auto it = _bindings.find(id);
         if (it == _bindings.end())
-        {
-            std::cerr << "[WARNING] In ShortcutBindingMap::should_trigger: No shortcut with id \"" << id << "\" registered." << std::endl;
             return false;
-        }
 
         auto* trigger = it->second;
-
         if (trigger != nullptr)
             return gtk_shortcut_trigger_trigger(trigger, event, false);
+    }
+
+    std::string ShortcutMap::generate_control_tooltip(const std::string& action_prefix, const std::string& description)
+    {
+        static auto id_to_cleartext = [](const std::string& in) -> std::string
+        {
+            std::stringstream out;
+            bool capitalize = true;
+            for (char c : in)
+            {
+                if (c == '_')
+                {
+                    out << ' ';
+                    capitalize = true;
+                    continue;
+                }
+
+                if (capitalize)
+                {
+                    out << std::string{static_cast<char>(std::toupper(c))};
+                    capitalize = false;
+                    continue;
+                }
+
+                out << c;
+            }
+
+            return out.str();
+        };
+
+        static auto trigger_to_string = [](GtkShortcutTrigger* trigger) -> std::string
+        {
+            std::stringstream out;
+            for (char c : std::string(gtk_shortcut_trigger_to_string(trigger)))
+            {
+                if (c == '<')
+                    continue;
+                else if (c == '>')
+                    out << "+";
+                else
+                    out << (char) std::tolower(c);
+            }
+
+            return out.str();
+        };
+
+        std::vector<std::string> left;
+        std::vector<std::string> right;
+
+        size_t left_max = 0;
+        size_t right_max = 0;
+        for (auto& pair : _bindings)
+        {
+            for (size_t i = 0; i < action_prefix.size(); ++i)
+                if (i >= pair.first.size() or pair.first.at(i) != action_prefix.at(i))
+                    goto skip;
+
+            left.push_back(trigger_to_string(pair.second));
+            right.push_back(id_to_cleartext(pair.first.substr(action_prefix.size() + 1, std::string::npos)));
+
+            left_max = std::max(left.back().size(), left_max);
+            right_max = std::max(right.back().size(), right_max);
+            skip:;
+        }
+
+        for (auto& l : left) // equally distributes spaces on both ends
+        {
+            bool flip_flop = true;
+            l.reserve(left_max);
+            while (l.size() < left_max)
+            {
+                if (flip_flop)
+                    l.push_back(' ');
+                else
+                    l = " " + l;
+
+                flip_flop = not flip_flop;
+            }
+        }
+
+        std::stringstream out;
+        out << "<b>" << id_to_cleartext(action_prefix) << "</b>\n\n";
+
+        if (not description.empty())
+            out << description << "\n";
+
+        out << "<span foreground=\"#777777\">";
+        for (size_t i = 0; i < left_max; ++i)
+            out << "―";
+
+        out << "</span>\n";
+
+        for (size_t i = 0; i < left.size(); ++i)
+            out << "<tt><b><span foreground=\"#BBBBBB\">" << left.at(i) << "</span></b></tt><span foreground=\"#777777\"> - " << right.at(i) << "</span>" << (i < left.size() - 1 ? "\n" : "");
+
+        return out.str();
     }
 }

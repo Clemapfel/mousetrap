@@ -31,7 +31,10 @@ namespace mousetrap
             void swap_colors();
 
             ClickEventController* _click_event_controller;
-            static void on_button_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
+            static void on_click_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
+
+            KeyEventController* _key_event_controller;
+            static gboolean on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void* user_data);
 
             AspectFrame* _frame;
             GLArea* _render_area;
@@ -53,13 +56,6 @@ namespace mousetrap
             Label* _arrow;
 
             Overlay* _arrow_overlay;
-
-            static inline const std::string _tooltip = {
-                "<b>Primary / Secondary Color</b>\n"
-                "<tt>Left-Click</tt> : Swap Colors"
-            };
-
-            GtkEventController* _button_event_controller;
     };
 }
 
@@ -85,11 +81,14 @@ namespace mousetrap
 
         _frame = new AspectFrame(1);
         _frame->set_margin(state::margin_unit);
-        _frame->set_tooltip_text(_tooltip);
+        _frame->set_tooltip_text(state::shortcut_map->generate_control_tooltip("color_swapper", "Swap Primary and Secondary Color"));
         _frame->set_child(_arrow_overlay);
 
         _click_event_controller = new ClickEventController();
-        _click_event_controller->connect_pressed(on_button_release, this);
+        _click_event_controller->connect_pressed(on_click_release, this);
+
+        _key_event_controller = new KeyEventController();
+        _key_event_controller->connect_key_pressed(on_key_pressed, this);
 
         _render_area->add_controller(_click_event_controller);
    }
@@ -228,10 +227,18 @@ namespace mousetrap
         _render_area->queue_render();
     }
 
-    void PrimarySecondaryColorSwapper::on_button_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y,
-                                                         void* instance)
+    void PrimarySecondaryColorSwapper::on_click_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y,
+                                                        void* instance)
     {
         ((PrimarySecondaryColorSwapper*) instance)->swap_colors();
+        TODO FOCUS
+    }
+
+    gboolean PrimarySecondaryColorSwapper::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode,
+                                                          GdkModifierType state, void* instance)
+    {
+        if (state::shortcut_map->should_trigger(gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self)), "color_swapper.swap"))
+            ((PrimarySecondaryColorSwapper*) instance)->swap_colors();
     }
 }
 

@@ -41,6 +41,8 @@ static void activate(GtkApplication* app, void*)
     state::shortcut_map = new ShortcutMap();
     state::shortcut_map->load_from_file("/home/clem/Workspace/mousetrap/app/keybinding.conf");
 
+    std::cout << gdk_keyval_name(GDK_KEY_Pointer_Button1) << std::endl;
+
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
 
@@ -58,9 +60,9 @@ static void activate(GtkApplication* app, void*)
     state::palette_view->show();
 
     static auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
-    //box->push_back(state::color_picker);
-    //box->push_back(state::primary_secondary_color_swapper);
-    //box->push_back(state::verbose_color_picker);
+    box->push_back(state::color_picker);
+    box->push_back(state::primary_secondary_color_swapper);
+    box->push_back(state::verbose_color_picker);
     box->push_back(state::palette_view);
 
     state::main_window->set_child(box);

@@ -270,13 +270,10 @@ namespace mousetrap
         _selected_palette_id = state::active_palette_id;
 
         _box->show();
-
-        std::stringstream tooltip_str;
-        tooltip_str << "<b>Palette View</b>\n"
-                    << "<tt>+/-</tt>: Increase / Decrease Tile Size\n"
-                    << "<tt>1-9</tt>: Select Color";
-
-        _main->set_tooltip_text(tooltip_str.str());
+        _main->set_tooltip_text(state::shortcut_map->generate_control_tooltip("palette_view",
+              "Select Primary Color from Palette"
+        ));
+        _main->set_cursor(GtkCursorType::POINTER);
     }
 
     void PaletteView::set_tile_size(size_t size)
