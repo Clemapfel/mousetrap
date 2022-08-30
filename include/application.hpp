@@ -24,16 +24,15 @@ namespace mousetrap
             int run();
             operator GObject*() override;
 
-            using ActionSignature = void(*)(GSimpleAction* self, GVariant*, void* user_data);
+            using ActionSignature = void(*)(void* user_data);
             void add_action(const std::string& id, ActionSignature, void* user_data);
-
-            void load_shortcuts(const std::string& config_file);
-            void add_shortcut(const std::string& region, GtkShortcut* shortcut);
-            std::vector<GtkShortcut*>& get_shortcuts(const std::string& region);
+            void activate_action(const std::string& id);
+            GAction* get_action(const std::string& id);
 
         private:
+            static void action_wrapper(GSimpleAction*, GVariant*, std::pair<ActionSignature, void*>*);
+
             GtkApplication* _native;
-            std::map<std::string, std::vector<GtkShortcut*>> _shortcuts;
     };
 }
 

@@ -211,12 +211,4 @@ namespace mousetrap
     {
         gtk_widget_add_controller(this->operator GtkWidget*(), controller->operator GtkEventController*());
     }
-
-    void Widget::add_shortcut(GtkShortcut* shortcut)
-    {
-        if (_shortcut_controller == nullptr)
-            _shortcut_controller = GTK_SHORTCUT_CONTROLLER(gtk_shortcut_controller_new());
-
-        gtk_shortcut_controller_add_shortcut(_shortcut_controller, shortcut);
-    }
 }

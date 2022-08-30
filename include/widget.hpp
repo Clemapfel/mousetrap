@@ -51,7 +51,6 @@ namespace mousetrap
             void set_cursor(GtkCursorType type);
 
             void show();
-
             void add_controller(EventController*);
     };
 

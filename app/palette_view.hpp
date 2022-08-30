@@ -78,16 +78,16 @@ namespace mousetrap
             std::vector<ColorTile*> _tiles;
 
             MenuModel* _menu;
-            static void on_menu_load_default(GSimpleAction*, GVariant*, void* data);
-            static void on_menu_load(GSimpleAction*, GVariant*, void* data);
-            static void on_menu_save_as(GSimpleAction*, GVariant*, void* data);
-            static void on_menu_save_as_default(GSimpleAction*, GVariant*, void* data);
+            static void on_menu_load_default(void* data);
+            static void on_menu_load(void* data);
+            static void on_menu_save_as(void* data);
+            static void on_menu_save_as_default(void* data);
             
             MenuModel* _sort_submenu;
-            static void on_menu_sort_by_default(GSimpleAction*, GVariant*, void* data);
-            static void on_menu_sort_by_hue(GSimpleAction*, GVariant*, void* data);
-            static void on_menu_sort_by_saturation(GSimpleAction*, GVariant*, void* data);
-            static void on_menu_sort_by_value(GSimpleAction*, GVariant*, void* data);
+            static void on_menu_sort_by_default(void* data);
+            static void on_menu_sort_by_hue(void* data);
+            static void on_menu_sort_by_saturation(void* data);
+            static void on_menu_sort_by_value(void* data);
 
             MenuButton* _menu_button;
     };
@@ -157,9 +157,6 @@ namespace mousetrap
         _key_event_controller = new KeyEventController();
         _key_event_controller->connect_key_pressed(on_key_pressed, this);
         _main->add_controller(_key_event_controller);
-
-        state::app->add_action("palette_view.increase_tile_size", on_menu_sort_by_hue, this);
-        Widget::add_shortcut(state::app->get_shortcuts("palette_view").at(0));
 
         update();
     }
@@ -390,42 +387,42 @@ namespace mousetrap
         return true;
     }
 
-    void PaletteView::on_menu_load_default(GSimpleAction*, GVariant*, void* data) 
+    void PaletteView::on_menu_load_default(void* data) 
     {
         std::cerr << "In PaletteView::on_menu_load_default: TODO" << std::endl;
     }
     
-    void PaletteView::on_menu_load(GSimpleAction*, GVariant*, void* data)
+    void PaletteView::on_menu_load(void* data)
     {
         std::cerr << "In PaletteView::on_menu_load: TODO" << std::endl;
     }
 
-    void PaletteView::on_menu_save_as(GSimpleAction*, GVariant*, void* data)
+    void PaletteView::on_menu_save_as(void* data)
     {
         std::cerr << "In PaletteView::on_menu_save_as: TODO" << std::endl;
     }
 
-    void PaletteView::on_menu_save_as_default(GSimpleAction*, GVariant*, void* data)
+    void PaletteView::on_menu_save_as_default(void* data)
     {
         std::cerr << "In PaletteView::on_menu_save_as_default: TODO" << std::endl;
     }
 
-    void PaletteView::on_menu_sort_by_default(GSimpleAction*, GVariant*, void* data)
+    void PaletteView::on_menu_sort_by_default(void* data)
     {
         ((PaletteView*) data)->set_sort_mode(PaletteSortMode::NONE);
     }
 
-    void PaletteView::on_menu_sort_by_hue(GSimpleAction*, GVariant*, void* data)
+    void PaletteView::on_menu_sort_by_hue(void* data)
     {
         ((PaletteView*) data)->set_sort_mode(PaletteSortMode::BY_HUE);
     }
 
-    void PaletteView::on_menu_sort_by_saturation(GSimpleAction*, GVariant*, void* data)
+    void PaletteView::on_menu_sort_by_saturation(void* data)
     {
         ((PaletteView*) data)->set_sort_mode(PaletteSortMode::BY_SATURATION);
     }
 
-    void PaletteView::on_menu_sort_by_value(GSimpleAction*, GVariant*, void* data)
+    void PaletteView::on_menu_sort_by_value(void* data)
     {
         ((PaletteView*) data)->set_sort_mode(PaletteSortMode::BY_VALUE);
     }

@@ -31,13 +31,35 @@ namespace mousetrap
         return G_OBJECT(_native);
     }
 
+    void Application::action_wrapper(GSimpleAction*, GVariant*, std::pair<ActionSignature, void*>* data)
+    {
+        (*data->first)(data->second);
+    }
+
     void Application::add_action(const std::string& id, ActionSignature f, void* user_data)
     {
         auto* action = g_simple_action_new(id.c_str(), nullptr);
-        g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(f), user_data);
+        g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(action_wrapper), (void*) (new std::pair<ActionSignature, void*>(f, user_data)));
         g_action_map_add_action(G_ACTION_MAP(_native), G_ACTION(action));
     }
 
+    void Application::activate_action(const std::string& id)
+    {
+        auto* action = g_action_map_lookup_action(G_ACTION_MAP(_native), id.c_str());
+        if (action == nullptr)
+        {
+            std::cerr << "[ERROR] In Application::trigger_action: No action with id \"" << id << "\"." << std::endl;
+            return;
+        }
+        g_action_activate(action, nullptr);
+    }
+
+    GAction* Application::get_action(const std::string& id)
+    {
+        return g_action_map_lookup_action(G_ACTION_MAP(_native), id.c_str());
+    }
+
+    /*
     void Application::add_shortcut(const std::string& region, GtkShortcut* shortcut)
     {
         auto it = _shortcuts.find(region);
@@ -151,4 +173,5 @@ namespace mousetrap
         else
             return it->second;
     }
+     */
 }

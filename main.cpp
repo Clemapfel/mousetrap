@@ -38,8 +38,7 @@ static void item02(GSimpleAction* self, GVariant*, gpointer in)
 
 static void activate(GtkApplication* app, void*)
 {
-    state::app->load_shortcuts("/home/clem/Workspace/mousetrap/app/keybinding.conf");
-
+    //state::app->load_shortcuts("/home/clem/Workspace/mousetrap/app/keybinding.conf");
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
 
@@ -69,8 +68,6 @@ static void activate(GtkApplication* app, void*)
 
 int main()
 {
-    std::cout << gdk_keyval_from_name("plus") << std::endl;
-
     state::app = new Application(activate);
     return state::app->run();
 }
