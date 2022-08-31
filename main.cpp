@@ -14,6 +14,8 @@
 #include <include/menu_model.hpp>
 #include <include/menu_button.hpp>
 #include <include/shortcuts.hpp>
+#include <include/column_view.hpp>
+#include <include/image_display.hpp>
 
 #include <app/global_state.hpp>
 #include <app/color_picker.hpp>
@@ -60,15 +62,43 @@ static void activate(GtkApplication* app, void*)
     state::palette_view->show();
 
     static auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
+    /*
     box->push_back(state::color_picker);
     box->push_back(state::primary_secondary_color_swapper);
     box->push_back(state::verbose_color_picker);
     box->push_back(state::palette_view);
+     */
+
+    // TODO
+    auto* factory = new ListItemFactory();
+    auto* model = new ListStore();
+
+    std::cout << GTK_IS_LIST_STORE(model->operator GListModel *()) << std::endl;
+    
+    auto image = Image();
+    
+    image.create(100, 100, RGBA(0, 1, 1, 1));
+    auto img01 = ImageDisplay(image);
+
+    image.create(100, 100, RGBA(1, 0, 1, 1));
+    auto img02 = ImageDisplay(image);
+
+    image.create(100, 100, RGBA(0, 1, 0, 1));
+    auto img03 = ImageDisplay(image);
+
+    model->append(&img01);
+    model->append(&img02);
+    model->append(&img03);
+
+    auto column_view = ColumnView(model);
+    column_view.append_column("col1", factory);
+    
+    box->push_back(&column_view);
+    // TODO
 
     state::main_window->set_child(box);
     state::main_window->show();
     state::main_window->present();
-
     state::main_window->set_focusable(true);
     state::main_window->grab_focus();
 }
