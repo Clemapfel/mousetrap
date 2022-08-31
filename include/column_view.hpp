@@ -14,7 +14,7 @@ namespace mousetrap
             operator GtkListItemFactory*();
             operator GObject*() override;
 
-            using SignalSignature = void(*)(GtkSignalListItemFactory* self, GObject* object, void*);
+            using SignalSignature = void(*)(GtkSignalListItemFactory* self, GtkListItem* object, void*);
             void connect_bind(SignalSignature, void*);
             void connect_unbind(SignalSignature, void*);
             void connect_setup(SignalSignature, void*);
@@ -93,6 +93,34 @@ namespace mousetrap
 }
 
 // #include <src/column_view.inl>
+
+// declare void pointer wrapper to inject data into g_list_store
+// c.f. https://gitlab.gnome.org/GNOME/gtk/-/blob/main/demos/gtk-demo/listview_ucd.c
+#define G_TYPE_VOID_POINTER_WRAPPER (void_pointer_wrapper_get_type())
+G_DECLARE_FINAL_TYPE (VoidPointerWrapper, void_pointer_wrapper, G, VOID_POINTER_WRAPPER, GObject)
+
+struct _VoidPointerWrapper
+{
+    GObject parent_instance;
+    void* data;
+};
+
+struct _VoidPointerWrapperClass
+{
+    GObjectClass parent_class;
+};
+
+G_DEFINE_TYPE (VoidPointerWrapper, void_pointer_wrapper, G_TYPE_OBJECT)
+
+static void void_pointer_wrapper_init(VoidPointerWrapper*) {}
+static void void_pointer_wrapper_class_init(VoidPointerWrapperClass*) {}
+
+static VoidPointerWrapper* void_pointer_wrapper_new(void* data)
+{
+    auto* item = (VoidPointerWrapper*) g_object_new(G_TYPE_VOID_POINTER_WRAPPER, NULL);
+    item->data = data;
+    return item;
+}
 
 namespace mousetrap
 {
@@ -232,40 +260,8 @@ namespace mousetrap
         return g_list_model_get_n_items(G_LIST_MODEL(_native));
     }
 
-}
-
-#define UCD_TYPE_ITEM (ucd_item_get_type ())
-G_DECLARE_FINAL_TYPE (UcdItem, ucd_item, UCD, ITEM, GObject)
-
-struct _UcdItem
-{
-    GObject parent_instance;
-    void* data;
-};
-
-struct _UcdItemClass
-{
-    GObjectClass parent_class;
-};
-
-G_DEFINE_TYPE (UcdItem, ucd_item, G_TYPE_OBJECT)
-
-static void ucd_item_init(UcdItem*)
-{}
-
-static void ucd_item_class_init(UcdItemClass*)
-{}
-
-static UcdItem* ucd_item_new(void* data)
-{
-    auto* item = (UcdItem*) g_object_new(UCD_TYPE_ITEM, NULL);
-    item->data = data;
-    return item;
-}
-
-namespace mousetrap {
-
     // ### LIST STORE ###
+
     ListStore::ListStore()
     {
         _native = g_list_store_new(G_TYPE_OBJECT);
@@ -274,7 +270,7 @@ namespace mousetrap {
 
     void ListStore::append(void* ptr)
     {
-        auto* item = ucd_item_new(ptr);
+        auto* item = void_pointer_wrapper_new(ptr);
         g_list_store_append(_native, item);
         g_object_unref(item);
     }

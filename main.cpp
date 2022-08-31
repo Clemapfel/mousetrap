@@ -38,6 +38,13 @@ static void item02(GSimpleAction* self, GVariant*, gpointer in)
     std::cout << *((std::string*) in) << std::endl;
 }
 
+static void on_list_item_factory(GtkSignalListItemFactory* self, GtkListItem* item, void*)
+{
+    size_t row_i =  gtk_list_item_get_position(item);
+    void* data = ((VoidPointerWrapper*) gtk_list_item_get_item(item))->data;
+    gtk_list_item_set_child(item, (GtkWidget*) data);
+}
+
 static void activate(GtkApplication* app, void*)
 {
     state::shortcut_map = new ShortcutMap();
@@ -71,27 +78,29 @@ static void activate(GtkApplication* app, void*)
 
     // TODO
     auto* factory = new ListItemFactory();
-    auto* model = new ListStore();
+    factory->connect_bind(on_list_item_factory, nullptr);
 
+    auto* model = new ListStore();
     std::cout << GTK_IS_LIST_STORE(model->operator GListModel *()) << std::endl;
     
     auto image = Image();
     
     image.create(100, 100, RGBA(0, 1, 1, 1));
-    auto img01 = ImageDisplay(image);
+    auto* img01 = new ImageDisplay(image);
 
     image.create(100, 100, RGBA(1, 0, 1, 1));
-    auto img02 = ImageDisplay(image);
+    auto* img02 = new ImageDisplay(image);
 
     image.create(100, 100, RGBA(0, 1, 0, 1));
-    auto img03 = ImageDisplay(image);
+    auto* img03 = new ImageDisplay(image);
 
-    model->append(&img01);
-    model->append(&img02);
-    model->append(&img03);
+    model->append(img01->operator GtkWidget *());
+    model->append(img02->operator GtkWidget *());
+    model->append(img03->operator GtkWidget *());
 
     auto column_view = ColumnView(model);
     column_view.append_column("col1", factory);
+    //column_view.append_column("col2", factory);
     
     box->push_back(&column_view);
     // TODO
