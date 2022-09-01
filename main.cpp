@@ -81,7 +81,12 @@ static void activate(GtkApplication* app, void*)
     column_view->append_row({img01, img02});
     column_view->append_row({img03, img04});
 
-    column_view->move_row_to(0, 1);
+    auto* column_view_2 = new ColumnView({"first", "second"});
+
+    auto* label3 = new Label("inner");
+    auto* label4 = new Label("inner 2");
+
+    column_view_2->append_row({label3, label4});
 
     box->push_back(column_view);
 

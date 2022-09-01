@@ -26,7 +26,7 @@ namespace mousetrap::detail
     struct _RowItem
     {
         GObject parent_instance;
-        std::vector<GtkWidget*>* widgets;
+        std::vector<Widget*>* widgets;
     };
 
     struct _RowItemClass
@@ -38,11 +38,11 @@ namespace mousetrap::detail
 
     static void row_item_init(RowItem* item)
     {
-        item->widgets = new std::vector<GtkWidget*>();
+        item->widgets = new std::vector<Widget*>();
     }
     static void row_item_class_init(RowItemClass*) {}
 
-    static RowItem* row_item_new(std::vector<GtkWidget*> in)
+    static RowItem* row_item_new(std::vector<Widget*> in)
     {
         auto* item = (RowItem*) g_object_new(G_TYPE_ROW_ITEM, NULL);
         row_item_init(item);
@@ -84,9 +84,9 @@ namespace mousetrap
             size_t get_n_columns() const;
             size_t get_n_rows() const;
 
-            std::vector<GtkWidget*> get_widgets_in_row(size_t i);
-            std::vector<GtkWidget*> get_widgets_in_column(size_t i);
-            GtkWidget* at(size_t row_i, size_t col_i);
+            std::vector<Widget*> get_widgets_in_row(size_t i);
+            std::vector<Widget*> get_widgets_in_column(size_t i);
+            Widget* at(size_t row_i, size_t col_i);
 
         private:
             GtkColumnView* _native;
@@ -98,10 +98,13 @@ namespace mousetrap
                     operator GListModel*();
                     operator GListStore*();
 
-                    void append(std::vector<GtkWidget*>);
-                    void insert(size_t position,  std::vector<GtkWidget*>);
+                    void append(std::vector<Widget*>);
+                    void insert(size_t position,  std::vector<Widget*>);
                     void remove(size_t position);
                     void clear();
+
+                    detail::RowItem* at(size_t);
+                    size_t get_n_items();
 
                 private:
                     GListStore* _native;
@@ -147,14 +150,14 @@ namespace mousetrap
         _native = g_list_store_new(G_TYPE_OBJECT);
     }
 
-    void ColumnView::RowListStore::append(std::vector<GtkWidget*> in)
+    void ColumnView::RowListStore::append(std::vector<Widget*> in)
     {
         auto* item = detail::row_item_new(in);
         g_list_store_append(_native, item);
         g_object_unref(item);
     }
 
-    void ColumnView::RowListStore::insert(size_t i, std::vector<GtkWidget*> in)
+    void ColumnView::RowListStore::insert(size_t i, std::vector<Widget*> in)
     {
         auto* item = detail::row_item_new(in);
         g_list_store_insert(_native, i, item);
@@ -179,6 +182,16 @@ namespace mousetrap
     void ColumnView::RowListStore::clear()
     {
         g_list_store_remove_all(_native);
+    }
+
+    detail::RowItem* ColumnView::RowListStore::at(size_t i)
+    {
+        return (detail::RowItem*) g_list_model_get_item(G_LIST_MODEL(_native), i);
+    }
+
+    size_t ColumnView::RowListStore::get_n_items()
+    {
+        g_list_model_get_n_items(G_LIST_MODEL(_native));
     }
 
     // ### FACTORY ###
@@ -218,7 +231,7 @@ namespace mousetrap
         size_t col_i = *((size_t*) col_data);
         detail::RowItem* row_item = (detail::RowItem*) gtk_list_item_get_item(item);
 
-        gtk_list_item_set_child(item, row_item->widgets->at(col_i));
+        gtk_list_item_set_child(item, row_item->widgets->at(col_i)->operator GtkWidget *());
     };
 
     void ColumnView::ColumnFactory::on_unbind(GtkSignalListItemFactory* self, GtkListItem* item, void*)
@@ -267,22 +280,14 @@ namespace mousetrap
         return GTK_WIDGET(_native);
     }
 
-    void ColumnView::append_row(std::vector<Widget*> widget)
+    void ColumnView::append_row(std::vector<Widget*> widgets)
     {
-        std::vector<GtkWidget*> to_append;
-        for (size_t i = 0; i < widget.size(); ++i)
-            to_append.push_back(widget.at(i)->operator GtkWidget*());
-
-        _row_list_store->append(to_append);
+        _row_list_store->append(widgets);
     }
 
-    void ColumnView::insert_row(size_t i, std::vector<Widget*> widget)
+    void ColumnView::insert_row(size_t i, std::vector<Widget*> widgets)
     {
-        std::vector<GtkWidget*> to_append;
-        for (size_t i = 0; i < widget.size(); ++i)
-            to_append.push_back(widget.at(i)->operator GtkWidget*());
-
-        _row_list_store->insert(i, to_append);
+       _row_list_store->insert(i, widgets);
     }
 
     void ColumnView::remove_row(size_t i)
@@ -361,30 +366,33 @@ namespace mousetrap
         _row_list_store->insert(new_position, widgets);
     }
 
-    std::vector<GtkWidget*> ColumnView::get_widgets_in_row(size_t i)
+    std::vector<Widget*> ColumnView::get_widgets_in_row(size_t i)
     {
-        auto* list_store = _row_list_store->operator GListStore*();
-        detail::RowItem* item = (detail::RowItem*) g_list_model_get_item(G_LIST_MODEL(list_store), i);
+        auto* item = _row_list_store->at(i);
 
-        std::vector<GtkWidget*> widgets;
+        std::vector<Widget*> widgets;
         for (size_t i = 0; i < item->widgets->size(); ++i)
             widgets.push_back(item->widgets->at(i));
 
         return widgets;
     }
 
-    std::vector<GtkWidget*> ColumnView::get_widgets_in_column(size_t column_i)
+    std::vector<Widget*> ColumnView::get_widgets_in_column(size_t column_i)
     {
-        std::vector<GtkWidget*> out;
+        std::vector<Widget*> out;
 
-        auto* list_store = _row_list_store->operator GListStore*();
-        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(list_store)); ++i)
+        for (size_t i = 0; i < _row_list_store->get_n_items(); ++i)
         {
-            detail::RowItem* item = (detail::RowItem*) g_list_model_get_item(G_LIST_MODEL(list_store), i);
+            auto* item = _row_list_store->at(i);
             out.push_back(item->widgets->at(column_i));
         }
+
+        return out;
     }
 
-
+    Widget* ColumnView::at(size_t row_i, size_t col_i)
+    {
+        return _row_list_store->at(row_i)->widgets->at(col_i);
+    }
 }
 
