@@ -41,6 +41,7 @@ namespace mousetrap
             void set_column_fixed_width(size_t i, int);
             void set_column_title(size_t i, const std::string&);
             void set_column_header_menu(size_t i, MenuModel*);
+            void set_column_visible(size_t i, bool b);
 
             void set_column_resizable(size_t i, bool);
 
@@ -194,7 +195,7 @@ namespace mousetrap
 
     size_t ColumnView::RowListStore::get_n_items()
     {
-        g_list_model_get_n_items(G_LIST_MODEL(_native));
+        return g_list_model_get_n_items(G_LIST_MODEL(_native));
     }
 
     // ### FACTORY ###
@@ -268,13 +269,12 @@ namespace mousetrap
             _column_factories.push_back(new ColumnView::ColumnFactory(i));
             static std::vector<GtkColumnViewColumn*> temp;
 
-            gtk_column_view_append_column(
-                _native,
-                gtk_column_view_column_new(
-                        titles.at(i).c_str(),
-                        _column_factories.back()->operator GtkListItemFactory*()
-                )
+            auto* column = gtk_column_view_column_new(
+                titles.at(i).c_str(),
+                _column_factories.back()->operator GtkListItemFactory*()
             );
+            gtk_column_view_column_set_expand(column, true);
+            gtk_column_view_append_column(_native, column);
         }
     }
 
@@ -305,7 +305,7 @@ namespace mousetrap
 
     void ColumnView::set_enable_rubberband_selection(bool b)
     {
-        gtk_column_view_set_enable_rubberband_selection(_native, b);
+        gtk_column_view_set_enable_rubberband(_native, b);
     }
 
     void ColumnView::set_show_column_separator(bool b)
@@ -336,6 +336,11 @@ namespace mousetrap
     void ColumnView::set_column_header_menu(size_t i, MenuModel* model)
     {
         gtk_column_view_column_set_header_menu(get_column(i), model->operator GMenuModel*());
+    }
+
+    void ColumnView::set_column_visible(size_t i, bool b)
+    {
+        gtk_column_view_column_set_visible(get_column(i), b);
     }
 
     void ColumnView::set_column_resizable(size_t i, bool b)

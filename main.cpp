@@ -88,7 +88,9 @@ static void activate(GtkApplication* app, void*)
     list_view->push_back(label4);
 
     column_view->set_widget_at(1, 0, list_view);
-
+    column_view->set_show_row_separator(true);
+    column_view->set_show_column_separator(true);
+    column_view->set_expand(true);
     box->push_back(column_view);
 
     // TODO
