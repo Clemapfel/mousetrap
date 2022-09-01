@@ -66,8 +66,13 @@ namespace mousetrap
     gboolean Window::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void*)
     {
         for (auto& tuple : _global_shortcuts)
-            if (gtk_shortcut_trigger_trigger(tuple.trigger, gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self)), false))
+        {
+            auto* event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self));
+            if (GDK_IS_EVENT(event) and gtk_shortcut_trigger_trigger(tuple.trigger, event, false))
                tuple.action(tuple.argument);
+        }
+
+        return true;
     }
 
     void Window::register_global_shortcut(ShortcutMap* map, const std::string& shortcut_id, std::function<void(void*)> action, void* data)

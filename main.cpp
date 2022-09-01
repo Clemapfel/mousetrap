@@ -42,17 +42,10 @@ static void on_list_item_factory(GtkSignalListItemFactory* self, GtkListItem* it
 {
     size_t row_i =  gtk_list_item_get_position(item);
     size_t col_i = *((size_t*) factory_data);
-    void* data = ((VoidPointerWrapper*) gtk_list_item_get_item(item))->data;
+    GtkWidget* data = (GtkWidget*) ((VoidPointerWrapper*) gtk_list_item_get_item(item))->data;
 
-    if (col_i == 0)
-    {
-        gtk_list_item_set_child(item, (GtkWidget*) data);
-    }
-    else
-    {
-        auto label = gtk_label_new(std::to_string((size_t) data).c_str());
-        gtk_list_item_set_child(item, label);
-    }
+    gtk_widget_set_overflow(data, GTK_OVERFLOW_HIDDEN);
+    gtk_list_item_set_child(item,  data);
 }
 
 static void activate(GtkApplication* app, void*)
@@ -114,7 +107,20 @@ static void activate(GtkApplication* app, void*)
     auto column_view = ColumnView(model);
     column_view.append_column("col1", col1_factory);
     column_view.append_column("col2", col2_factory);
-    
+    //column_view.append_column("", col1_factory);
+
+    column_view.set_expand(true);
+    //column_view.set_reorderable(true);
+    column_view.set_enable_rubberband(true);
+    column_view.set_show_column_separator(true);
+    column_view.set_show_row_separator(true);
+
+    for (size_t i = 0; i < column_view.get_n_columns(); ++i)
+    {
+        column_view.set_column_expand(i, true);
+        column_view.set_column_resizable(i, true);
+    }
+
     box->push_back(&column_view);
     // TODO
 

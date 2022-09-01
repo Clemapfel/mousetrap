@@ -79,12 +79,27 @@ namespace mousetrap
     class ColumnView : public Widget
     {
         public:
-            ColumnView(ListStore* model, GtkSelectionMode = GtkSelectionMode::GTK_SELECTION_SINGLE);
+            ColumnView(ListStore* model, GtkSelectionMode = GtkSelectionMode::GTK_SELECTION_MULTIPLE);
             operator GtkWidget*() override;
 
             void append_column(const std::string& label, ListItemFactory* factor);
+            void set_columns_reorderable(bool);
+            void set_enable_rubberband(bool);
+
+            void set_show_column_separator(bool);
+            void set_show_row_separator(bool);
+
+            void set_column_expand(size_t i, bool);
+            void set_column_fixed_width(size_t i, int);
+            void set_column_resizable(size_t i, bool);
+            void set_column_title(size_t i, const std::string&);
+            void set_column_header_menu(size_t i, MenuModel*);
+
+            size_t get_n_columns() const;
 
         private:
+            GtkColumnViewColumn* get_column(size_t i);
+
             GtkSelectionModel* _selection_model;
             GtkColumnView* _native;
 
@@ -318,5 +333,60 @@ namespace mousetrap
     {
         _columns.push_back(gtk_column_view_column_new(label.c_str(), factor->operator GtkListItemFactory *()));
         gtk_column_view_append_column(_native, _columns.back());
+    }
+
+    void ColumnView::set_columns_reorderable(bool b)
+    {
+        gtk_column_view_set_reorderable(_native, b);
+    }
+
+    void ColumnView::set_enable_rubberband(bool b)
+    {
+        gtk_column_view_set_enable_rubberband(_native, b);
+    }
+
+    void ColumnView::set_show_column_separator(bool b)
+    {
+        gtk_column_view_set_show_column_separators(_native, b);
+    }
+
+    void ColumnView::set_show_row_separator(bool b)
+    {
+        gtk_column_view_set_show_row_separators(_native, b);
+    }
+
+    GtkColumnViewColumn* ColumnView::get_column(size_t i)
+    {
+        return (GtkColumnViewColumn*) g_list_model_get_item(gtk_column_view_get_columns(_native), i);
+    }
+
+    void ColumnView::set_column_expand(size_t i, bool b)
+    {
+        gtk_column_view_column_set_expand(get_column(i), b);
+    }
+
+    void ColumnView::set_column_fixed_width(size_t i, int width)
+    {
+        gtk_column_view_column_set_fixed_width(get_column(i), width);
+    }
+
+    void ColumnView::set_column_header_menu(size_t i, MenuModel* model)
+    {
+        gtk_column_view_column_set_header_menu(get_column(i), model->operator GMenuModel*());
+    }
+
+    void ColumnView::set_column_resizable(size_t i, bool b)
+    {
+        gtk_column_view_column_set_resizable(get_column(i), b);
+    }
+
+    void ColumnView::set_column_title(size_t i, const std::string& name)
+    {
+        gtk_column_view_column_set_title(get_column(i), name.c_str());
+    }
+
+    size_t ColumnView::get_n_columns() const
+    {
+        return g_list_model_get_n_items(gtk_column_view_get_columns(_native));
     }
 }
