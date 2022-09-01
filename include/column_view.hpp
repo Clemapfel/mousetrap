@@ -1,327 +1,202 @@
-//
+// 
 // Copyright 2022 Clemens Cords
-// Created on 8/28/22 by clem (mail@clemens-cords.com)
+// Created on 9/1/22 by clem (mail@clemens-cords.com)
 //
+
+#pragma once
+
+#include <gtk/gtk.h>
 
 #include <include/widget.hpp>
 
+#include <vector>
+#include <deque>
+
+namespace mousetrap::detail
+{
+    // row item, hold col-number of widgets
+    #define G_TYPE_VOID_POINTER_WRAPPER (row_item_get_type())
+
+    G_DECLARE_FINAL_TYPE (RowItem, row_item, G, ROW_ITEM, GObject)
+
+    struct _RowItem
+    {
+        GObject parent_instance;
+        std::vector<GtkWidget*>* widgets;
+    };
+
+    struct _RowItemClass
+    {
+        GObjectClass parent_class;
+    };
+
+    G_DEFINE_TYPE (RowItem, row_item, G_TYPE_OBJECT)
+
+    static void row_item_init(RowItem*) {}
+    static void row_item_class_init(RowItemClass*) {}
+
+    static RowItem* row_item_new(std::vector<GtkWidget*> in)
+    {
+        auto* item = (RowItem*) g_object_new(G_TYPE_VOID_POINTER_WRAPPER, NULL);
+        item->widgets = new std::vector<GtkWidget*>(in.begin(), in.end());
+        return item;
+    }
+}
+
 namespace mousetrap
 {
-    class ListItemFactory : public SignalEmitter
-    {
-        public:
-            ListItemFactory();
-            operator GtkListItemFactory*();
-            operator GObject*() override;
-
-            using SignalSignature = void(*)(GtkSignalListItemFactory* self, GtkListItem* object, void*);
-            void connect_bind(SignalSignature, void*);
-            void connect_unbind(SignalSignature, void*);
-            void connect_setup(SignalSignature, void*);
-            void connect_teardown(SignalSignature, void*);
-
-        private:
-            GtkSignalListItemFactory* _native;
-    };
-
-    class TreeStore
-    {
-        public:
-            TreeStore(size_t n_columns);
-
-            struct Iterator
-            {
-                Iterator();
-                Iterator(GtkTreeIter*);
-                ~Iterator();
-
-                GtkTreeIter* _native = nullptr;
-            };
-
-            static inline const Iterator toplevel = Iterator(nullptr);
-
-            void clear();
-
-            Iterator insert_row(size_t position);
-            Iterator insert_row_after(Iterator after_this);
-            Iterator insert_row_before(Iterator before_this);
-            Iterator prepend_row();
-            Iterator append_row();
-
-            void remove_row(Iterator to_remove);
-
-            void set(Iterator row, size_t column_i, void* data);
-            void set_row(Iterator row, std::vector<void*> data);
-
-            size_t get_n_columns();
-            size_t get_n_rows();
-
-        private:
-            size_t _n_columns;
-            GtkListStore* _native;
-    };
-
-    class ListStore
-    {
-        public:
-            ListStore();
-            operator GListModel*();
-
-            void append(void*);
-            void insert(size_t position, void*);
-            void remove(size_t position);
-            void clear();
-
-        private:
-            GListStore* _native;
-    };
-
     class ColumnView : public Widget
     {
         public:
-            ColumnView(ListStore* model, GtkSelectionMode = GtkSelectionMode::GTK_SELECTION_MULTIPLE);
+            ColumnView(std::vector<std::string> titles, GtkSelectionMode = GtkSelectionMode::GTK_SELECTION_MULTIPLE);
             operator GtkWidget*() override;
 
-            void append_column(const std::string& label, ListItemFactory* factor);
-            void set_columns_reorderable(bool);
-            void set_enable_rubberband(bool);
-
-            void set_show_column_separator(bool);
-            void set_show_row_separator(bool);
-
-            void set_column_expand(size_t i, bool);
-            void set_column_fixed_width(size_t i, int);
-            void set_column_resizable(size_t i, bool);
-            void set_column_title(size_t i, const std::string&);
-            void set_column_header_menu(size_t i, MenuModel*);
-
-            size_t get_n_columns() const;
+            void append_row(std::vector<GtkWidget*> widgets);
 
         private:
-            GtkColumnViewColumn* get_column(size_t i);
-
-            GtkSelectionModel* _selection_model;
             GtkColumnView* _native;
 
-            std::vector<GtkColumnViewColumn*> _columns;
+            class RowListStore
+            {
+                public:
+                    RowListStore();
+                    operator GListModel*();
+
+                    void append(std::vector<GtkWidget*>);
+                    void insert(size_t position,  std::vector<GtkWidget*>);
+                    void remove(size_t position);
+                    void clear();
+
+                private:
+                    GListStore* _native;
+            };
+
+            RowListStore* _row_list_store;
+            GtkSelectionModel* _selection_model;
+
+            class ColumnFactory : public SignalEmitter
+            {
+                public:
+                    ColumnFactory(size_t column_i);
+                    operator GtkListItemFactory*();
+                    operator GObject*() override;
+
+                    void set_column_index(size_t i);
+
+                    static void on_setup(GtkSignalListItemFactory* self, GtkListItem* object, void*);
+                    static void on_teardown(GtkSignalListItemFactory* self, GtkListItem* object, void*);
+                    static void on_bind(GtkSignalListItemFactory* self, GtkListItem* object, void*);
+                    static void on_unbind(GtkSignalListItemFactory* self, GtkListItem* object, void*);
+
+                private:
+                    GtkSignalListItemFactory* _native;
+            };
+
+            std::deque<ColumnFactory*> _column_factories;
     };
 }
 
 // #include <src/column_view.inl>
 
-// declare void pointer wrapper to inject data into g_list_store
-// c.f. https://gitlab.gnome.org/GNOME/gtk/-/blob/main/demos/gtk-demo/listview_ucd.c
-#define G_TYPE_VOID_POINTER_WRAPPER (void_pointer_wrapper_get_type())
-G_DECLARE_FINAL_TYPE (VoidPointerWrapper, void_pointer_wrapper, G, VOID_POINTER_WRAPPER, GObject)
-
-struct _VoidPointerWrapper
-{
-    GObject parent_instance;
-    void* data;
-};
-
-struct _VoidPointerWrapperClass
-{
-    GObjectClass parent_class;
-};
-
-G_DEFINE_TYPE (VoidPointerWrapper, void_pointer_wrapper, G_TYPE_OBJECT)
-
-static void void_pointer_wrapper_init(VoidPointerWrapper*) {}
-static void void_pointer_wrapper_class_init(VoidPointerWrapperClass*) {}
-
-static VoidPointerWrapper* void_pointer_wrapper_new(void* data)
-{
-    auto* item = (VoidPointerWrapper*) g_object_new(G_TYPE_VOID_POINTER_WRAPPER, NULL);
-    item->data = data;
-    return item;
-}
-
 namespace mousetrap
 {
-    // ### LIST FACTORY ###
-
-    ListItemFactory::ListItemFactory()
-    {
-        _native = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
-    }
-
-    ListItemFactory::operator GtkListItemFactory*()
-    {
-        return GTK_LIST_ITEM_FACTORY(_native);
-    }
-
-    void ListItemFactory::connect_bind(SignalSignature f, void* data)
-    {
-        connect_signal("bind", f, data);
-    }
-
-    void ListItemFactory::connect_unbind(SignalSignature f, void* data)
-    {
-        connect_signal("unbind", f, data);
-    }
-
-    void ListItemFactory::connect_setup(SignalSignature f, void* data)
-    {
-        connect_signal("setup", f, data);
-    }
-
-    void ListItemFactory::connect_teardown(SignalSignature f, void* data)
-    {
-        connect_signal("teardown", f, data);
-    }
-
-    ListItemFactory::operator GObject*()
-    {
-        return G_OBJECT(_native);
-    }
-
-    /// ### TREE STORE ###
-
-    TreeStore::TreeStore(size_t n_columns)
-        : _n_columns(n_columns)
-    {
-        std::vector<GType> types = {};
-        types.reserve(n_columns);
-        for (size_t i = 0; i < n_columns; ++i)
-            types.push_back(GTK_TYPE_WIDGET);
-
-        _native = gtk_list_store_newv(1, types.data());
-    }
-
-    TreeStore::Iterator::Iterator(GtkTreeIter* it)
-    {
-        if (it != nullptr)
-            _native = gtk_tree_iter_copy(it);
-    }
-
-    TreeStore::Iterator::~Iterator() noexcept
-    {
-        if (_native != nullptr)
-            gtk_tree_iter_free(_native);
-    }
-
-    TreeStore::Iterator::Iterator()
-    {
-        _native = new GtkTreeIter();
-    }
-
-    void TreeStore::clear()
-    {
-        gtk_list_store_clear(_native);
-    }
-
-    TreeStore::Iterator TreeStore::insert_row(size_t position)
-    {
-        auto out = Iterator();
-        gtk_list_store_insert(_native, out._native, position);
-        return out;
-    }
-
-    TreeStore::Iterator TreeStore::append_row()
-    {
-        auto out = Iterator();
-        gtk_list_store_append(_native, out._native);
-        return out;
-    }
-
-    TreeStore::Iterator TreeStore::prepend_row()
-    {
-        auto out = Iterator();
-        gtk_list_store_prepend(_native, out._native);
-        return out;
-    }
-
-    TreeStore::Iterator TreeStore::insert_row_after(Iterator after_this)
-    {
-        auto out = Iterator();
-        gtk_list_store_insert_after(_native, out._native, after_this._native);
-        return out;
-    }
-
-    TreeStore::Iterator TreeStore::insert_row_before(Iterator after_this)
-    {
-        auto out = Iterator();
-        gtk_list_store_insert_before(_native, out._native, after_this._native);
-        return out;
-    }
-
-    void TreeStore::remove_row(Iterator to_remove)
-    {
-        gtk_list_store_remove(_native, to_remove._native);
-    }
-
-    void TreeStore::set(Iterator row, size_t column_i, void* data)
-    {
-        auto value = new GValue();
-        g_value_init(value, GTK_TYPE_WIDGET);
-        g_value_set_pointer(value, data);
-        gtk_list_store_set_value(_native, row._native, column_i, value);
-    }
-
-    void TreeStore::set_row(Iterator row, std::vector<void*> data)
-    {
-        for (size_t i = 0; i < data.size(); ++i)
-            set(row, i, data.at(i));
-    }
-
-    size_t TreeStore::get_n_columns()
-    {
-        return _n_columns;
-    }
-
-    size_t TreeStore::get_n_rows()
-    {
-        return g_list_model_get_n_items(G_LIST_MODEL(_native));
-    }
-
     // ### LIST STORE ###
 
-    ListStore::ListStore()
+    ColumnView::RowListStore::RowListStore()
     {
         _native = g_list_store_new(G_TYPE_OBJECT);
-        assert(_native != nullptr);
     }
 
-    void ListStore::append(void* ptr)
+    void ColumnView::RowListStore::append(std::vector<GtkWidget*> in)
     {
-        auto* item = void_pointer_wrapper_new(ptr);
+        auto* item = detail::row_item_new(in);
         g_list_store_append(_native, item);
         g_object_unref(item);
     }
 
-    ListStore::operator GListModel*()
+    ColumnView::RowListStore::operator GListModel*()
     {
         return G_LIST_MODEL(_native);
     }
 
-    void ListStore::insert(size_t position, void* ptr)
-    {
-        // TODO
-    }
-
-    void ListStore::remove(size_t position)
+    void ColumnView::RowListStore::remove(size_t position)
     {
         g_list_store_remove(_native, position);
     }
 
-    void ListStore::clear()
+    void ColumnView::RowListStore::clear()
     {
         g_list_store_remove_all(_native);
     }
 
+    // ### FACTORY ###
+
+    ColumnView::ColumnFactory::ColumnFactory(size_t i)
+    {
+        _native = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
+        set_column_index(i);
+    }
+
+    ColumnView::ColumnFactory::operator GObject*()
+    {
+        return G_OBJECT(_native);
+    }
+
+    ColumnView::ColumnFactory::operator GtkListItemFactory*()
+    {
+        return GTK_LIST_ITEM_FACTORY(_native);
+    }
+
+    void ColumnView::ColumnFactory::set_column_index(size_t i)
+    {
+        connect_signal("bind", on_bind, new size_t(i));
+        connect_signal("unbind", on_unbind, new size_t(i));
+        connect_signal("setup", on_setup, new size_t(i));
+        connect_signal("teardown", on_teardown, new size_t(i));
+    }
+
+    void ColumnView::ColumnFactory::on_setup(GtkSignalListItemFactory* self, GtkListItem* item, void* col_data)
+    {
+        size_t row_i =  gtk_list_item_get_position(item);
+        size_t col_i = *((size_t*) col_data);
+        detail::RowItem* row_item = (detail::RowItem*) gtk_list_item_get_item(item);
+
+        if (row_item->widgets->size() >= col_i)
+            return;
+
+        gtk_list_item_set_child(item, row_item->widgets.at(col_i));
+    }
+
+    void ColumnView::ColumnFactory::on_bind(GtkSignalListItemFactory* self, GtkListItem* object, void*) {};
+    void ColumnView::ColumnFactory::on_unbind(GtkSignalListItemFactory* self, GtkListItem* object, void*) {};
+    void ColumnView::ColumnFactory::on_teardown(GtkSignalListItemFactory* self, GtkListItem* object, void*) {};
+
     // ### COLUMN VIEW ###
 
-    ColumnView::ColumnView(ListStore* model, GtkSelectionMode mode)
+    ColumnView::ColumnView(std::vector<std::string> titles, GtkSelectionMode mode)
     {
+        _row_list_store = new ColumnView::RowListStore();
+
         if (mode == GTK_SELECTION_MULTIPLE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_multi_selection_new(model->operator GListModel *()));
+            _selection_model = GTK_SELECTION_MODEL(gtk_multi_selection_new(_row_list_store->operator GListModel *()));
         else if (mode == GTK_SELECTION_SINGLE or mode == GTK_SELECTION_BROWSE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(model->operator GListModel *()));
+            _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(_row_list_store->operator GListModel *()));
         else if (mode == GTK_SELECTION_NONE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(model->operator GListModel *()));
+            _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(_row_list_store->operator GListModel *()));
 
         _native = GTK_COLUMN_VIEW(gtk_column_view_new(_selection_model));
+
+        for (size_t i = 0; i < titles.size(); ++i)
+        {
+            _column_factories.push_back(new ColumnView::ColumnFactory(i));
+            gtk_column_view_append_column(
+                _native,
+              gtk_column_view_column_new(
+                  titles.at(i).c_str(),
+                  _column_factories.back()->operator GtkListItemFactory*()
+              )
+          );
+        }
     }
 
     ColumnView::operator GtkWidget*()
@@ -329,64 +204,14 @@ namespace mousetrap
         return GTK_WIDGET(_native);
     }
 
-    void ColumnView::append_column(const std::string& label, ListItemFactory* factor)
+    void ColumnView::append_row(std::vector<Widget*> widgets)
     {
-        _columns.push_back(gtk_column_view_column_new(label.c_str(), factor->operator GtkListItemFactory *()));
-        gtk_column_view_append_column(_native, _columns.back());
-    }
+        std::vector<GtkWidget*> to_append;
 
-    void ColumnView::set_columns_reorderable(bool b)
-    {
-        gtk_column_view_set_reorderable(_native, b);
-    }
+        for (auto& w : widgets)
+            to_append.push_back(w->operator GtkWidget *());
 
-    void ColumnView::set_enable_rubberband(bool b)
-    {
-        gtk_column_view_set_enable_rubberband(_native, b);
-    }
-
-    void ColumnView::set_show_column_separator(bool b)
-    {
-        gtk_column_view_set_show_column_separators(_native, b);
-    }
-
-    void ColumnView::set_show_row_separator(bool b)
-    {
-        gtk_column_view_set_show_row_separators(_native, b);
-    }
-
-    GtkColumnViewColumn* ColumnView::get_column(size_t i)
-    {
-        return (GtkColumnViewColumn*) g_list_model_get_item(gtk_column_view_get_columns(_native), i);
-    }
-
-    void ColumnView::set_column_expand(size_t i, bool b)
-    {
-        gtk_column_view_column_set_expand(get_column(i), b);
-    }
-
-    void ColumnView::set_column_fixed_width(size_t i, int width)
-    {
-        gtk_column_view_column_set_fixed_width(get_column(i), width);
-    }
-
-    void ColumnView::set_column_header_menu(size_t i, MenuModel* model)
-    {
-        gtk_column_view_column_set_header_menu(get_column(i), model->operator GMenuModel*());
-    }
-
-    void ColumnView::set_column_resizable(size_t i, bool b)
-    {
-        gtk_column_view_column_set_resizable(get_column(i), b);
-    }
-
-    void ColumnView::set_column_title(size_t i, const std::string& name)
-    {
-        gtk_column_view_column_set_title(get_column(i), name.c_str());
-    }
-
-    size_t ColumnView::get_n_columns() const
-    {
-        return g_list_model_get_n_items(gtk_column_view_get_columns(_native));
+        _row_list_store->append(to_append);
     }
 }
+

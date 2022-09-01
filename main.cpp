@@ -25,29 +25,6 @@
 
 using namespace mousetrap;
 
-static void on_setup(GtkSignalListItemFactory* self, GObject* object, void*)
-{}
-
-static void item01(GSimpleAction* self, GVariant*, gpointer in)
-{
-    std::cout << *((std::string*) in) << std::endl;
-}
-
-static void item02(GSimpleAction* self, GVariant*, gpointer in)
-{
-    std::cout << *((std::string*) in) << std::endl;
-}
-
-static void on_list_item_factory(GtkSignalListItemFactory* self, GtkListItem* item, void* factory_data)
-{
-    size_t row_i =  gtk_list_item_get_position(item);
-    size_t col_i = *((size_t*) factory_data);
-    GtkWidget* data = (GtkWidget*) ((VoidPointerWrapper*) gtk_list_item_get_item(item))->data;
-
-    gtk_widget_set_overflow(data, GTK_OVERFLOW_HIDDEN);
-    gtk_list_item_set_child(item,  data);
-}
-
 static void activate(GtkApplication* app, void*)
 {
     state::shortcut_map = new ShortcutMap();
@@ -79,16 +56,10 @@ static void activate(GtkApplication* app, void*)
     box->push_back(state::palette_view);
      */
 
+
     // TODO
-    auto* col1_factory = new ListItemFactory();
-    col1_factory->connect_bind(on_list_item_factory, new size_t(0));
+    auto* column_view = new ColumnView({"01", "02"});
 
-    auto* col2_factory = new ListItemFactory();
-    col2_factory->connect_bind(on_list_item_factory, new size_t(1));
-
-    auto* model = new ListStore();
-    std::cout << GTK_IS_LIST_STORE(model->operator GListModel *()) << std::endl;
-    
     auto image = Image();
     
     image.create(100, 100, RGBA(0, 1, 1, 1));
@@ -100,28 +71,14 @@ static void activate(GtkApplication* app, void*)
     image.create(100, 100, RGBA(0, 1, 0, 1));
     auto* img03 = new ImageDisplay(image);
 
-    model->append(img01->operator GtkWidget *());
-    model->append(img02->operator GtkWidget *());
-    model->append(img03->operator GtkWidget *());
+    image.create(100, 100, RGBA(1, 1, 0, 1));
+    auto* img04 = new ImageDisplay(image);
 
-    auto column_view = ColumnView(model);
-    column_view.append_column("col1", col1_factory);
-    column_view.append_column("col2", col2_factory);
-    //column_view.append_column("", col1_factory);
+    column_view->append_row({img01, img02});
+    column_view->append_row({img03, img04});
 
-    column_view.set_expand(true);
-    //column_view.set_reorderable(true);
-    column_view.set_enable_rubberband(true);
-    column_view.set_show_column_separator(true);
-    column_view.set_show_row_separator(true);
+    box->push_back(column_view);
 
-    for (size_t i = 0; i < column_view.get_n_columns(); ++i)
-    {
-        column_view.set_column_expand(i, true);
-        column_view.set_column_resizable(i, true);
-    }
-
-    box->push_back(&column_view);
     // TODO
 
     state::main_window->set_child(box);
