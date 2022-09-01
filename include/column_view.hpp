@@ -86,7 +86,8 @@ namespace mousetrap
 
             std::vector<Widget*> get_widgets_in_row(size_t i);
             std::vector<Widget*> get_widgets_in_column(size_t i);
-            Widget* at(size_t row_i, size_t col_i);
+            Widget* get_widget_at(size_t row_i, size_t col_i);
+            void set_widget_at(size_t row_i, size_t col_i, Widget*);
 
         private:
             GtkColumnView* _native;
@@ -390,9 +391,14 @@ namespace mousetrap
         return out;
     }
 
-    Widget* ColumnView::at(size_t row_i, size_t col_i)
+    Widget* ColumnView::get_widget_at(size_t row_i, size_t col_i)
     {
         return _row_list_store->at(row_i)->widgets->at(col_i);
+    }
+
+    void ColumnView::set_widget_at(size_t row_i, size_t col_i, Widget* widget)
+    {
+        _row_list_store->at(row_i)->widgets->at(col_i) = widget;
     }
 }
 
