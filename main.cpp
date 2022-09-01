@@ -16,6 +16,7 @@
 #include <include/shortcuts.hpp>
 #include <include/column_view.hpp>
 #include <include/image_display.hpp>
+#include <include/list_view.hpp>
 
 #include <app/global_state.hpp>
 #include <app/color_picker.hpp>
@@ -29,8 +30,6 @@ static void activate(GtkApplication* app, void*)
 {
     state::shortcut_map = new ShortcutMap();
     state::shortcut_map->load_from_file("/home/clem/Workspace/mousetrap/app/keybinding.conf");
-
-    std::cout << gdk_keyval_name(GDK_KEY_Pointer_Button1) << std::endl;
 
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
@@ -56,7 +55,6 @@ static void activate(GtkApplication* app, void*)
     box->push_back(state::palette_view);
      */
 
-
     // TODO
     auto* column_view = new ColumnView({"01", "02"});
 
@@ -81,13 +79,15 @@ static void activate(GtkApplication* app, void*)
     column_view->append_row({img01, img02});
     column_view->append_row({img03, img04});
 
-    auto* column_view_2 = new ColumnView({"first", "second"}, GtkSelectionMode::GTK_SELECTION_NONE);
+    auto* list_view = new ListView();
 
     auto* label3 = new Label("inner");
     auto* label4 = new Label("inner 2");
 
-    column_view_2->append_row({label3, label4});
-    column_view->set_widget_at(1, 0, column_view_2);
+    list_view->push_back(label3);
+    list_view->push_back(label4);
+
+    column_view->set_widget_at(1, 0, list_view);
 
     box->push_back(column_view);
 

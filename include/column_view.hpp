@@ -15,47 +15,10 @@
 
 #include <thread>
 
-namespace mousetrap::detail
-{
-    // row item, hold col-number of widgets
-
-    #define G_TYPE_ROW_ITEM (row_item_get_type())
-
-    G_DECLARE_FINAL_TYPE (RowItem, row_item, G, ROW_ITEM, GObject)
-
-    struct _RowItem
-    {
-        GObject parent_instance;
-        std::vector<Widget*>* widgets;
-    };
-
-    struct _RowItemClass
-    {
-        GObjectClass parent_class;
-    };
-
-    G_DEFINE_TYPE (RowItem, row_item, G_TYPE_OBJECT)
-
-    static void row_item_init(RowItem* item)
-    {
-        item->widgets = new std::vector<Widget*>();
-    }
-    static void row_item_class_init(RowItemClass*) {}
-
-    static RowItem* row_item_new(std::vector<Widget*> in)
-    {
-        auto* item = (RowItem*) g_object_new(G_TYPE_ROW_ITEM, NULL);
-        row_item_init(item);
-
-        for (size_t i = 0; i < in.size(); ++i)
-            item->widgets->push_back(in.at(i));
-
-        return item;
-    }
-}
-
 namespace mousetrap
 {
+    namespace detail { struct _ColumnViewRowItem; }
+
     class ColumnView : public Widget
     {
         public:
@@ -69,7 +32,7 @@ namespace mousetrap
             void move_row_to(size_t to_move, size_t new_position);
 
             void set_columns_reorderable(bool);
-            void set_enable_rubberband(bool);
+            void set_enable_rubberband_selection(bool);
 
             void set_show_column_separator(bool);
             void set_show_row_separator(bool);
@@ -104,7 +67,7 @@ namespace mousetrap
                     void remove(size_t position);
                     void clear();
 
-                    detail::RowItem* at(size_t);
+                    detail::_ColumnViewRowItem* at(size_t);
                     size_t get_n_items();
 
                 private:
@@ -142,6 +105,45 @@ namespace mousetrap
 
 // #include <src/column_view.inl>
 
+namespace mousetrap::detail
+{
+    // row item, holds col-number of widgets
+
+    #define G_TYPE_COLUMN_VIEW_ROW_ITEM (column_view_row_item_get_type())
+
+    G_DECLARE_FINAL_TYPE (ColumnViewRowItem, column_view_row_item, G, COLUMN_VIEW_ROW_ITEM, GObject)
+
+    struct _ColumnViewRowItem
+    {
+        GObject parent_instance;
+        std::vector<Widget*>* widgets;
+    };
+
+    struct _ColumnViewRowItemClass
+    {
+        GObjectClass parent_class;
+    };
+
+    G_DEFINE_TYPE (ColumnViewRowItem, column_view_row_item, G_TYPE_OBJECT)
+
+    static void column_view_row_item_init(ColumnViewRowItem* item)
+    {
+        item->widgets = new std::vector<Widget*>();
+    }
+    static void column_view_row_item_class_init(ColumnViewRowItemClass*) {}
+
+    static ColumnViewRowItem* column_view_row_item(std::vector<Widget*> in)
+    {
+        auto* item = (ColumnViewRowItem*) g_object_new(G_TYPE_COLUMN_VIEW_ROW_ITEM, NULL);
+        column_view_row_item_init(item);
+
+        for (size_t i = 0; i < in.size(); ++i)
+            item->widgets->push_back(in.at(i));
+
+        return item;
+    }
+}
+
 namespace mousetrap
 {
     // ### LIST STORE ###
@@ -153,14 +155,14 @@ namespace mousetrap
 
     void ColumnView::RowListStore::append(std::vector<Widget*> in)
     {
-        auto* item = detail::row_item_new(in);
+        auto* item = detail::column_view_row_item(in);
         g_list_store_append(_native, item);
         g_object_unref(item);
     }
 
     void ColumnView::RowListStore::insert(size_t i, std::vector<Widget*> in)
     {
-        auto* item = detail::row_item_new(in);
+        auto* item = detail::column_view_row_item(in);
         g_list_store_insert(_native, i, item);
         g_object_unref(item);
     }
@@ -185,9 +187,9 @@ namespace mousetrap
         g_list_store_remove_all(_native);
     }
 
-    detail::RowItem* ColumnView::RowListStore::at(size_t i)
+    detail::ColumnViewRowItem* ColumnView::RowListStore::at(size_t i)
     {
-        return (detail::RowItem*) g_list_model_get_item(G_LIST_MODEL(_native), i);
+        return (detail::ColumnViewRowItem*) g_list_model_get_item(G_LIST_MODEL(_native), i);
     }
 
     size_t ColumnView::RowListStore::get_n_items()
@@ -230,7 +232,7 @@ namespace mousetrap
     {
         [[maybe_unused]] size_t row_i =  gtk_list_item_get_position(item);
         size_t col_i = *((size_t*) col_data);
-        detail::RowItem* row_item = (detail::RowItem*) gtk_list_item_get_item(item);
+        detail::ColumnViewRowItem* row_item = (detail::ColumnViewRowItem*) gtk_list_item_get_item(item);
 
         gtk_list_item_set_child(item, row_item->widgets->at(col_i)->operator GtkWidget *());
     };
@@ -301,9 +303,9 @@ namespace mousetrap
         gtk_column_view_set_reorderable(_native, b);
     }
 
-    void ColumnView::set_enable_rubberband(bool b)
+    void ColumnView::set_enable_rubberband_selection(bool b)
     {
-        gtk_column_view_set_enable_rubberband(_native, b);
+        gtk_column_view_set_enable_rubberband_selection(_native, b);
     }
 
     void ColumnView::set_show_column_separator(bool b)
