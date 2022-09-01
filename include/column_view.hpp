@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include <include/widget.hpp>
+#include <include/menu_model.hpp>
 
 #include <vector>
 #include <deque>
@@ -61,7 +62,31 @@ namespace mousetrap
             ColumnView(std::vector<std::string> titles, GtkSelectionMode = GtkSelectionMode::GTK_SELECTION_MULTIPLE);
             operator GtkWidget*() override;
 
-            void append_row(std::vector<GtkWidget*> widgets);
+            void append_row(std::vector<Widget*> widgets);
+            void insert_row(size_t, std::vector<Widget*> widgets);
+            void remove_row(size_t);
+
+            void move_row_to(size_t to_move, size_t new_position);
+
+            void set_columns_reorderable(bool);
+            void set_enable_rubberband(bool);
+
+            void set_show_column_separator(bool);
+            void set_show_row_separator(bool);
+
+            void set_column_expand(size_t i, bool);
+            void set_column_fixed_width(size_t i, int);
+            void set_column_title(size_t i, const std::string&);
+            void set_column_header_menu(size_t i, MenuModel*);
+
+            void set_column_resizable(size_t i, bool);
+
+            size_t get_n_columns() const;
+            size_t get_n_rows() const;
+
+            std::vector<GtkWidget*> get_widgets_in_row(size_t i);
+            std::vector<GtkWidget*> get_widgets_in_column(size_t i);
+            GtkWidget* at(size_t row_i, size_t col_i);
 
         private:
             GtkColumnView* _native;
@@ -71,6 +96,7 @@ namespace mousetrap
                 public:
                     RowListStore();
                     operator GListModel*();
+                    operator GListStore*();
 
                     void append(std::vector<GtkWidget*>);
                     void insert(size_t position,  std::vector<GtkWidget*>);
@@ -105,6 +131,8 @@ namespace mousetrap
             };
 
             std::deque<ColumnFactory*> _column_factories;
+
+            GtkColumnViewColumn* get_column(size_t i);
     };
 }
 
@@ -126,9 +154,21 @@ namespace mousetrap
         g_object_unref(item);
     }
 
+    void ColumnView::RowListStore::insert(size_t i, std::vector<GtkWidget*> in)
+    {
+        auto* item = detail::row_item_new(in);
+        g_list_store_insert(_native, i, item);
+        g_object_unref(item);
+    }
+
     ColumnView::RowListStore::operator GListModel*()
     {
         return G_LIST_MODEL(_native);
+    }
+
+    ColumnView::RowListStore::operator GListStore*()
+    {
+        return _native;
     }
 
     void ColumnView::RowListStore::remove(size_t position)
@@ -162,9 +202,9 @@ namespace mousetrap
     void ColumnView::ColumnFactory::set_column_index(size_t i)
     {
         connect_signal("bind", on_bind, new size_t(i));
-        connect_signal("setup", on_setup, new size_t(i));
 
         /*
+        connect_signal("setup", on_setup, new size_t(i));
         connect_signal("unbind", on_unbind, new size_t(i));
         connect_signal("teardown", on_teardown, new size_t(i));
          */
@@ -174,18 +214,22 @@ namespace mousetrap
 
     void ColumnView::ColumnFactory::on_bind(GtkSignalListItemFactory* self, GtkListItem* item, void* col_data)
     {
-        size_t row_i =  gtk_list_item_get_position(item);
+        [[maybe_unused]] size_t row_i =  gtk_list_item_get_position(item);
         size_t col_i = *((size_t*) col_data);
         detail::RowItem* row_item = (detail::RowItem*) gtk_list_item_get_item(item);
 
         gtk_list_item_set_child(item, row_item->widgets->at(col_i));
-
-        std::cout << "bind " << row_i << " " << col_i << std::endl;
-
     };
 
-    void ColumnView::ColumnFactory::on_unbind(GtkSignalListItemFactory* self, GtkListItem* object, void*) {};
-    void ColumnView::ColumnFactory::on_teardown(GtkSignalListItemFactory* self, GtkListItem* object, void*) {};
+    void ColumnView::ColumnFactory::on_unbind(GtkSignalListItemFactory* self, GtkListItem* item, void*)
+    {
+        gtk_list_item_set_child(item, nullptr);
+    };
+
+    void ColumnView::ColumnFactory::on_teardown(GtkSignalListItemFactory* self, GtkListItem* item, void*)
+    {
+        gtk_list_item_set_child(item, nullptr);
+    };
 
     // ### COLUMN VIEW ###
 
@@ -223,21 +267,124 @@ namespace mousetrap
         return GTK_WIDGET(_native);
     }
 
-    void ColumnView::append_row(std::vector<GtkWidget*> widgets)
+    void ColumnView::append_row(std::vector<Widget*> widget)
     {
-        _row_list_store->append(widgets);
+        std::vector<GtkWidget*> to_append;
+        for (size_t i = 0; i < widget.size(); ++i)
+            to_append.push_back(widget.at(i)->operator GtkWidget*());
 
-        /*
-        if (_selection_mode == GTK_SELECTION_MULTIPLE)
-            gtk_multi_selection_set_model(GTK_MULTI_SELECTION(_selection_model), _row_list_store->operator GListModel *());
-        else if (_selection_mode == GTK_SELECTION_SINGLE or _selection_mode == GTK_SELECTION_BROWSE)
-            gtk_single_selection_set_model(GTK_SINGLE_SELECTION(_selection_model), _row_list_store->operator GListModel *());
-        else if (_selection_mode == GTK_SELECTION_NONE)
-            gtk_no_selection_set_model(GTK_NO_SELECTION(_selection_model), _row_list_store->operator GListModel *());
-        gtk_column_view_set_model(_native, _selection_model);
-
-        gtk_widget_show(GTK_WIDGET(_native));
-         */
+        _row_list_store->append(to_append);
     }
+
+    void ColumnView::insert_row(size_t i, std::vector<Widget*> widget)
+    {
+        std::vector<GtkWidget*> to_append;
+        for (size_t i = 0; i < widget.size(); ++i)
+            to_append.push_back(widget.at(i)->operator GtkWidget*());
+
+        _row_list_store->insert(i, to_append);
+    }
+
+    void ColumnView::remove_row(size_t i)
+    {
+        _row_list_store->remove(i);
+    }
+
+    void ColumnView::set_columns_reorderable(bool b)
+    {
+        gtk_column_view_set_reorderable(_native, b);
+    }
+
+    void ColumnView::set_enable_rubberband(bool b)
+    {
+        gtk_column_view_set_enable_rubberband(_native, b);
+    }
+
+    void ColumnView::set_show_column_separator(bool b)
+    {
+        gtk_column_view_set_show_column_separators(_native, b);
+    }
+
+    void ColumnView::set_show_row_separator(bool b)
+    {
+        gtk_column_view_set_show_row_separators(_native, b);
+    }
+
+    GtkColumnViewColumn* ColumnView::get_column(size_t i)
+    {
+        return (GtkColumnViewColumn*) g_list_model_get_item(gtk_column_view_get_columns(_native), i);
+    }
+
+    void ColumnView::set_column_expand(size_t i, bool b)
+    {
+        gtk_column_view_column_set_expand(get_column(i), b);
+    }
+
+    void ColumnView::set_column_fixed_width(size_t i, int width)
+    {
+        gtk_column_view_column_set_fixed_width(get_column(i), width);
+    }
+
+    void ColumnView::set_column_header_menu(size_t i, MenuModel* model)
+    {
+        gtk_column_view_column_set_header_menu(get_column(i), model->operator GMenuModel*());
+    }
+
+    void ColumnView::set_column_resizable(size_t i, bool b)
+    {
+        if (b)
+            std::cerr << "[WARNING] In ColumnView::set_column_resizable: resizing right-mose column to it's smallest size may lead to freeze. This feature is not safe to use." << std::endl;
+
+        gtk_column_view_column_set_resizable(get_column(i), b);
+    }
+
+    void ColumnView::set_column_title(size_t i, const std::string& name)
+    {
+        gtk_column_view_column_set_title(get_column(i), name.c_str());
+    }
+
+    size_t ColumnView::get_n_columns() const
+    {
+        return g_list_model_get_n_items(gtk_column_view_get_columns(_native));
+    }
+
+    size_t ColumnView::get_n_rows() const
+    {
+        return g_list_model_get_n_items(_row_list_store->operator GListModel *());
+    }
+
+    void ColumnView::move_row_to(size_t to_move, size_t new_position)
+    {
+        auto widgets = get_widgets_in_row(to_move);
+
+        _row_list_store->remove(to_move);
+        _row_list_store->insert(new_position, widgets);
+    }
+
+    std::vector<GtkWidget*> ColumnView::get_widgets_in_row(size_t i)
+    {
+        auto* list_store = _row_list_store->operator GListStore*();
+        detail::RowItem* item = (detail::RowItem*) g_list_model_get_item(G_LIST_MODEL(list_store), i);
+
+        std::vector<GtkWidget*> widgets;
+        for (size_t i = 0; i < item->widgets->size(); ++i)
+            widgets.push_back(item->widgets->at(i));
+
+        return widgets;
+    }
+
+    std::vector<GtkWidget*> ColumnView::get_widgets_in_column(size_t column_i)
+    {
+        std::vector<GtkWidget*> out;
+
+        auto* list_store = _row_list_store->operator GListStore*();
+        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(list_store)); ++i)
+        {
+            detail::RowItem* item = (detail::RowItem*) g_list_model_get_item(G_LIST_MODEL(list_store), i);
+            out.push_back(item->widgets->at(column_i));
+        }
+    }
+
+
 }
 
