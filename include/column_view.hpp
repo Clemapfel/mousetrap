@@ -12,10 +12,13 @@
 #include <vector>
 #include <deque>
 
+#include <thread>
+
 namespace mousetrap::detail
 {
     // row item, hold col-number of widgets
-    #define G_TYPE_VOID_POINTER_WRAPPER (row_item_get_type())
+
+    #define G_TYPE_ROW_ITEM (row_item_get_type())
 
     G_DECLARE_FINAL_TYPE (RowItem, row_item, G, ROW_ITEM, GObject)
 
@@ -32,13 +35,20 @@ namespace mousetrap::detail
 
     G_DEFINE_TYPE (RowItem, row_item, G_TYPE_OBJECT)
 
-    static void row_item_init(RowItem*) {}
+    static void row_item_init(RowItem* item)
+    {
+        item->widgets = new std::vector<GtkWidget*>();
+    }
     static void row_item_class_init(RowItemClass*) {}
 
     static RowItem* row_item_new(std::vector<GtkWidget*> in)
     {
-        auto* item = (RowItem*) g_object_new(G_TYPE_VOID_POINTER_WRAPPER, NULL);
-        item->widgets = new std::vector<GtkWidget*>(in.begin(), in.end());
+        auto* item = (RowItem*) g_object_new(G_TYPE_ROW_ITEM, NULL);
+        row_item_init(item);
+
+        for (size_t i = 0; i < in.size(); ++i)
+            item->widgets->push_back(in.at(i));
+
         return item;
     }
 }
@@ -72,6 +82,8 @@ namespace mousetrap
             };
 
             RowListStore* _row_list_store;
+
+            GtkSelectionMode _selection_mode;
             GtkSelectionModel* _selection_model;
 
             class ColumnFactory : public SignalEmitter
@@ -150,38 +162,43 @@ namespace mousetrap
     void ColumnView::ColumnFactory::set_column_index(size_t i)
     {
         connect_signal("bind", on_bind, new size_t(i));
-        connect_signal("unbind", on_unbind, new size_t(i));
         connect_signal("setup", on_setup, new size_t(i));
+
+        /*
+        connect_signal("unbind", on_unbind, new size_t(i));
         connect_signal("teardown", on_teardown, new size_t(i));
+         */
     }
 
-    void ColumnView::ColumnFactory::on_setup(GtkSignalListItemFactory* self, GtkListItem* item, void* col_data)
+    void ColumnView::ColumnFactory::on_setup(GtkSignalListItemFactory* self, GtkListItem* item, void* col_data) {}
+
+    void ColumnView::ColumnFactory::on_bind(GtkSignalListItemFactory* self, GtkListItem* item, void* col_data)
     {
         size_t row_i =  gtk_list_item_get_position(item);
         size_t col_i = *((size_t*) col_data);
         detail::RowItem* row_item = (detail::RowItem*) gtk_list_item_get_item(item);
 
-        if (row_item->widgets->size() >= col_i)
-            return;
+        gtk_list_item_set_child(item, row_item->widgets->at(col_i));
 
-        gtk_list_item_set_child(item, row_item->widgets.at(col_i));
-    }
+        std::cout << "bind " << row_i << " " << col_i << std::endl;
 
-    void ColumnView::ColumnFactory::on_bind(GtkSignalListItemFactory* self, GtkListItem* object, void*) {};
+    };
+
     void ColumnView::ColumnFactory::on_unbind(GtkSignalListItemFactory* self, GtkListItem* object, void*) {};
     void ColumnView::ColumnFactory::on_teardown(GtkSignalListItemFactory* self, GtkListItem* object, void*) {};
 
     // ### COLUMN VIEW ###
 
     ColumnView::ColumnView(std::vector<std::string> titles, GtkSelectionMode mode)
+        : _selection_mode(mode)
     {
         _row_list_store = new ColumnView::RowListStore();
 
-        if (mode == GTK_SELECTION_MULTIPLE)
+        if (_selection_mode == GTK_SELECTION_MULTIPLE)
             _selection_model = GTK_SELECTION_MODEL(gtk_multi_selection_new(_row_list_store->operator GListModel *()));
-        else if (mode == GTK_SELECTION_SINGLE or mode == GTK_SELECTION_BROWSE)
+        else if (_selection_mode == GTK_SELECTION_SINGLE or _selection_mode == GTK_SELECTION_BROWSE)
             _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(_row_list_store->operator GListModel *()));
-        else if (mode == GTK_SELECTION_NONE)
+        else if (_selection_mode == GTK_SELECTION_NONE)
             _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(_row_list_store->operator GListModel *()));
 
         _native = GTK_COLUMN_VIEW(gtk_column_view_new(_selection_model));
@@ -189,13 +206,15 @@ namespace mousetrap
         for (size_t i = 0; i < titles.size(); ++i)
         {
             _column_factories.push_back(new ColumnView::ColumnFactory(i));
+            static std::vector<GtkColumnViewColumn*> temp;
+
             gtk_column_view_append_column(
                 _native,
-              gtk_column_view_column_new(
-                  titles.at(i).c_str(),
-                  _column_factories.back()->operator GtkListItemFactory*()
-              )
-          );
+                gtk_column_view_column_new(
+                        titles.at(i).c_str(),
+                        _column_factories.back()->operator GtkListItemFactory*()
+                )
+            );
         }
     }
 
@@ -204,14 +223,21 @@ namespace mousetrap
         return GTK_WIDGET(_native);
     }
 
-    void ColumnView::append_row(std::vector<Widget*> widgets)
+    void ColumnView::append_row(std::vector<GtkWidget*> widgets)
     {
-        std::vector<GtkWidget*> to_append;
+        _row_list_store->append(widgets);
 
-        for (auto& w : widgets)
-            to_append.push_back(w->operator GtkWidget *());
+        /*
+        if (_selection_mode == GTK_SELECTION_MULTIPLE)
+            gtk_multi_selection_set_model(GTK_MULTI_SELECTION(_selection_model), _row_list_store->operator GListModel *());
+        else if (_selection_mode == GTK_SELECTION_SINGLE or _selection_mode == GTK_SELECTION_BROWSE)
+            gtk_single_selection_set_model(GTK_SINGLE_SELECTION(_selection_model), _row_list_store->operator GListModel *());
+        else if (_selection_mode == GTK_SELECTION_NONE)
+            gtk_no_selection_set_model(GTK_NO_SELECTION(_selection_model), _row_list_store->operator GListModel *());
+        gtk_column_view_set_model(_native, _selection_model);
 
-        _row_list_store->append(to_append);
+        gtk_widget_show(GTK_WIDGET(_native));
+         */
     }
 }
 

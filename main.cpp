@@ -74,8 +74,8 @@ static void activate(GtkApplication* app, void*)
     image.create(100, 100, RGBA(1, 1, 0, 1));
     auto* img04 = new ImageDisplay(image);
 
-    column_view->append_row({img01, img02});
-    column_view->append_row({img03, img04});
+    column_view->append_row({img01->operator GtkWidget*(), img02->operator GtkWidget*()});
+    column_view->append_row({img03->operator GtkWidget*(), img04->operator GtkWidget*()});
 
     box->push_back(column_view);
 
