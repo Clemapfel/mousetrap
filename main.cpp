@@ -17,7 +17,6 @@
 #include <include/column_view.hpp>
 #include <include/image_display.hpp>
 #include <include/list_view.hpp>
-#include <include/tree_column_view.hpp>
 
 #include <app/global_state.hpp>
 #include <app/color_picker.hpp>
@@ -57,9 +56,6 @@ static void activate(GtkApplication* app, void*)
      */
 
     // TODO
-    auto* column_view = new ColumnView({"01", "02"});
-    column_view->set_headers_visible(false);
-
     auto image = Image();
     
     image.create(100, 100, RGBA(0, 1, 1, 1));
@@ -85,6 +81,9 @@ static void activate(GtkApplication* app, void*)
     auto it = tree_view->push_back({img02, label2});
     it = tree_view->push_back({img03, label3}, it);
     tree_view->push_back({img04, label4}, it);
+
+    tree_view->set_expand(true);
+    std::cout << tree_view->get_n_rows_total() << std::endl;
 
     box->push_back(tree_view);
 

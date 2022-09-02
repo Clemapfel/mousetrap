@@ -200,6 +200,9 @@ namespace mousetrap
 
         auto* item =  detail::G_TREE_VIEW_ITEM(g_list_model_get_item(list, i));
         item->widget = widget;
+
+        g_object_unref(item->widget_ref);
+        item->widget_ref = g_object_ref(widget->operator GtkWidget*());
     }
 
     void TreeListView::set_enable_rubberband_selection(bool b)

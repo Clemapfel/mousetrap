@@ -159,7 +159,10 @@ add_library(mousetrap SHARED
 
     include/list_view.hpp
     src/list_view.inl
-        src/tree_column_view.hpp)
+
+    include/column_view.hpp
+    src/column_view.inl
+)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
