@@ -162,9 +162,6 @@ namespace mousetrap
 
     PaletteView::~PaletteView()
     {
-        delete _box;
-        delete _main;
-
         for (auto* tile : _tiles)
             delete tile;
     }

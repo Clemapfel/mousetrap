@@ -79,7 +79,7 @@ static void activate(GtkApplication* app, void*)
     column_view->append_row({img01, img02});
     column_view->append_row({img03, img04});
 
-    auto* list_view = new ListView(true);
+    auto* list_view = new ListView();
 
     auto* label3 = new Label("inner");
     auto* label4 = new Label("inner 2");
