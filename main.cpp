@@ -87,7 +87,7 @@ static void activate(GtkApplication* app, void*)
     tree_view->push_back(img03);
     tree_view->push_back(img04);
 
-    tree_view->push_back(label1, it);
+    it = tree_view->push_back(label1, it);
     tree_view->push_back(label2, it);
 
     box->push_back(tree_view);

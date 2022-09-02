@@ -23,6 +23,7 @@ namespace mousetrap::detail
         GtkTreeExpander* expander;
         Widget* widget;
 
+        size_t id;
         GListStore* children;
     };
 
@@ -35,9 +36,11 @@ namespace mousetrap::detail
 
     static void tree_view_item_init(TreeViewItem* item)
     {
+        static size_t i = 0;
         item->expander = GTK_TREE_EXPANDER(gtk_tree_expander_new());
         item->widget = nullptr;
         item->children = g_list_store_new(G_TYPE_OBJECT);
+        item->id = i++;
     }
 
     static void tree_view_item_class_init(TreeViewItemClass*) {}
@@ -90,7 +93,7 @@ namespace mousetrap
     TreeView::TreeView(GtkSelectionMode mode)
     {
         _root = g_list_store_new(G_TYPE_OBJECT);
-        _tree_list_model = gtk_tree_list_model_new(G_LIST_MODEL(_root), false, true, on_tree_list_model_create, nullptr, on_tree_list_model_destroy);
+        _tree_list_model = gtk_tree_list_model_new(G_LIST_MODEL(_root), false, false, on_tree_list_model_create, nullptr, on_tree_list_model_destroy);
 
         if (mode == GTK_SELECTION_MULTIPLE)
             _selection_model = GTK_SELECTION_MODEL(gtk_multi_selection_new(G_LIST_MODEL(_tree_list_model)));
@@ -100,10 +103,10 @@ namespace mousetrap
             _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(G_LIST_MODEL(_tree_list_model)));
 
         _factory = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
-        g_signal_connect(_factory, "bind", G_CALLBACK(on_list_item_factory_bind), nullptr);
-        g_signal_connect(_factory, "unbind", G_CALLBACK(on_list_item_factory_unbind), nullptr);
-        g_signal_connect(_factory, "setup", G_CALLBACK(on_list_item_factory_setup), nullptr);
-        g_signal_connect(_factory, "teardown", G_CALLBACK(on_list_item_factory_teardown), nullptr);
+        g_signal_connect(_factory, "bind", G_CALLBACK(on_list_item_factory_bind), this);
+        g_signal_connect(_factory, "unbind", G_CALLBACK(on_list_item_factory_unbind), this);
+        g_signal_connect(_factory, "setup", G_CALLBACK(on_list_item_factory_setup), this);
+        g_signal_connect(_factory, "teardown", G_CALLBACK(on_list_item_factory_teardown), this);
 
         _list_view = GTK_LIST_VIEW(gtk_list_view_new(_selection_model, GTK_LIST_ITEM_FACTORY(_factory)));
     }
@@ -116,23 +119,24 @@ namespace mousetrap
     GListModel* TreeView::on_tree_list_model_create(void* item, void* user_data)
     {
         auto* tree_view_item = (detail::TreeViewItem*) item;
-        std::cout << g_list_model_get_n_items(G_LIST_MODEL(tree_view_item->children)) << std::endl;
+        auto* out = g_list_store_new(G_TYPE_OBJECT);
+        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(tree_view_item->children)); ++i)
+            g_list_store_append(out, g_list_model_get_item(G_LIST_MODEL(tree_view_item->children), i));
 
-        if (g_list_model_get_n_items(G_LIST_MODEL(tree_view_item->children)) == 0)
-            return nullptr;
-        else
-            return G_LIST_MODEL(tree_view_item->children);
+        return G_LIST_MODEL(out);
     }
 
     void TreeView::on_tree_list_model_destroy(void* item)
     {}
 
-    void TreeView::on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, void*)
+    void TreeView::on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, void* instance)
     {
         auto* list_item = GTK_LIST_ITEM(object);
         auto* tree_list_row = GTK_TREE_LIST_ROW(gtk_list_item_get_item(list_item));
         detail::TreeViewItem* tree_view_item = (detail::TreeViewItem*) gtk_tree_list_row_get_item(tree_list_row);
-        std::cout << g_list_model_get_n_items(G_LIST_MODEL(tree_view_item->children)) << std::endl;
+
+        static size_t i = 0;
+        std::cout << "factory: " <<  i++ << " " << tree_view_item->id << " " << g_list_model_get_n_items(G_LIST_MODEL(tree_view_item->children)) << std::endl;
 
         if (g_list_model_get_n_items(G_LIST_MODEL(tree_view_item->children)) != 0) // non-leaf
         {
@@ -145,13 +149,7 @@ namespace mousetrap
     }
 
     void TreeView::on_list_item_factory_unbind(GtkSignalListItemFactory* self, void* object, void*)
-    {
-        auto* list_item = GTK_LIST_ITEM(object);
-        auto* tree_list_row = GTK_TREE_LIST_ROW(gtk_list_item_get_item(list_item));
-        detail::TreeViewItem* tree_view_item = (detail::TreeViewItem*) gtk_tree_list_row_get_item(tree_list_row);
-
-        gtk_tree_expander_set_child(tree_view_item->expander, nullptr);
-    }
+    {}
 
     void TreeView::on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*)
     {}
@@ -169,7 +167,6 @@ namespace mousetrap
 
         auto* item = detail::tree_view_item_new(widget);
         g_list_store_append(G_LIST_STORE(to_append_to), item);
-        g_object_unref(item);
 
         return detail::G_TREE_VIEW_ITEM(g_list_model_get_item(to_append_to, g_list_model_get_n_items(to_append_to) - 1));
     }
