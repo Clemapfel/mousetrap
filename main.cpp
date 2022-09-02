@@ -17,6 +17,7 @@
 #include <include/column_view.hpp>
 #include <include/image_display.hpp>
 #include <include/list_view.hpp>
+#include <include/tree_view.hpp>
 
 #include <app/global_state.hpp>
 #include <app/color_picker.hpp>
@@ -76,25 +77,20 @@ static void activate(GtkApplication* app, void*)
     auto* label1 = new Label("line");
     auto* label2 = new Label("line");
 
-    column_view->append_row({img01, img02});
-    column_view->append_row({img03, img04});
-
-    auto* list_view = new ListView();
-
     auto* label3 = new Label("inner");
     auto* label4 = new Label("inner 2");
 
-    list_view->push_back(label1);
-    list_view->push_back(label2);
-    list_view->push_back(label3);
-    list_view->push_back(label4);
-    list_view->push_back(img01);
+    auto* tree_view = new TreeView();
 
-    column_view->set_widget_at(1, 0, list_view);
-    column_view->set_show_row_separator(true);
-    column_view->set_show_column_separator(true);
-    column_view->set_expand(true);
-    box->push_back(list_view);
+    tree_view->push_back(img01);
+    auto it = tree_view->push_back(img02);
+    tree_view->push_back(img03);
+    tree_view->push_back(img04);
+
+    tree_view->push_back(label1, it);
+    tree_view->push_back(label2, it);
+
+    box->push_back(tree_view);
 
     // TODO
 

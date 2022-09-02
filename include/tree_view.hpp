@@ -6,147 +6,171 @@
 #pragma once
 
 #include <gtk/gtk.h>
-
 #include <vector>
+
+#include <include/widget.hpp>
+
+namespace mousetrap::detail
+{
+    #define G_TYPE_LIST_VIEW_ITEM_ITEM (tree_view_item_get_type())
+
+    G_DECLARE_FINAL_TYPE (TreeViewItem, tree_view_item, G, TREE_VIEW_ITEM, GObject)
+
+    struct _TreeViewItem
+    {
+        GObject parent_instance;
+
+        GtkTreeExpander* expander;
+        Widget* widget;
+
+        GListStore* children;
+    };
+
+    struct _TreeViewItemClass
+    {
+        GObjectClass parent_class;
+    };
+
+    G_DEFINE_TYPE (TreeViewItem, tree_view_item, G_TYPE_OBJECT)
+
+    static void tree_view_item_init(TreeViewItem* item)
+    {
+        item->expander = GTK_TREE_EXPANDER(gtk_tree_expander_new());
+        item->widget = nullptr;
+        item->children = g_list_store_new(G_TYPE_OBJECT);
+    }
+
+    static void tree_view_item_class_init(TreeViewItemClass*) {}
+
+    static TreeViewItem* tree_view_item_new(Widget* in)
+    {
+        auto* item = (TreeViewItem*) g_object_new(G_TYPE_LIST_VIEW_ITEM_ITEM, nullptr);
+        tree_view_item_init(item);
+        item->widget = in;
+        return item;
+    }
+}
 
 namespace mousetrap
 {
-    class TreeStore
+
+    /// \note wrapper for GtkList with GtkTreeListModel, **not** GtkTreeView
+    class TreeView : public Widget
     {
         public:
-            TreeStore(size_t n_columns);
+            using Iterator = detail::_TreeViewItem*;
 
-            struct Iterator
-            {
-                Iterator();
-                Iterator(GtkTreeIter*);
-                ~Iterator();
+            TreeView(GtkSelectionMode = GTK_SELECTION_NONE);
+            operator GtkWidget*() override;
 
-                GtkTreeIter* _native = nullptr;
-            };
-
-            static inline const Iterator toplevel = Iterator(nullptr);
-
-            void clear();
-
-            Iterator insert_row(size_t position);
-            Iterator insert_row_after(Iterator after_this);
-            Iterator insert_row_before(Iterator before_this);
-            Iterator prepend_row();
-            Iterator append_row();
-
-            void remove_row(Iterator to_remove);
-
-            void set(Iterator row, size_t column_i, void* data);
-            void set_row(Iterator row, std::vector<void*> data);
-
-            size_t get_n_columns();
-            size_t get_n_rows();
+            Iterator push_back(Widget* widget, Iterator it = nullptr);
 
         private:
-            size_t _n_columns;
-            GtkListStore* _native;
+            static void on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*);
+            static void on_list_item_factory_teardown(GtkSignalListItemFactory* self, void* object, void*);
+            static void on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, void*);
+            static void on_list_item_factory_unbind(GtkSignalListItemFactory* self, void* object, void*);
+
+            static GListModel* on_tree_list_model_create(void* item, void* user_data);
+            static void on_tree_list_model_destroy(void* item);
+
+            GtkSignalListItemFactory* _factory;
+
+            GtkListView* _list_view;
+            GListStore* _root;
+            GtkTreeListModel* _tree_list_model;
+
+            GtkSelectionModel* _selection_model;
+            GtkSelectionMode _mode;
     };
 }
 
-// ###
-
 namespace mousetrap
 {
-    TreeStore::TreeStore(size_t n_columns)
-            : _n_columns(n_columns)
+    TreeView::TreeView(GtkSelectionMode mode)
     {
-        std::vector<GType> types = {};
-        types.reserve(n_columns);
-        for (size_t i = 0; i < n_columns; ++i)
-            types.push_back(GTK_TYPE_WIDGET);
+        _root = g_list_store_new(G_TYPE_OBJECT);
+        _tree_list_model = gtk_tree_list_model_new(G_LIST_MODEL(_root), false, true, on_tree_list_model_create, nullptr, on_tree_list_model_destroy);
 
-        _native = gtk_list_store_newv(1, types.data());
+        if (mode == GTK_SELECTION_MULTIPLE)
+            _selection_model = GTK_SELECTION_MODEL(gtk_multi_selection_new(G_LIST_MODEL(_tree_list_model)));
+        else if (mode == GTK_SELECTION_SINGLE or mode == GTK_SELECTION_BROWSE)
+            _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(G_LIST_MODEL(_tree_list_model)));
+        else if (mode == GTK_SELECTION_NONE)
+            _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(G_LIST_MODEL(_tree_list_model)));
+
+        _factory = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
+        g_signal_connect(_factory, "bind", G_CALLBACK(on_list_item_factory_bind), nullptr);
+        g_signal_connect(_factory, "unbind", G_CALLBACK(on_list_item_factory_unbind), nullptr);
+        g_signal_connect(_factory, "setup", G_CALLBACK(on_list_item_factory_setup), nullptr);
+        g_signal_connect(_factory, "teardown", G_CALLBACK(on_list_item_factory_teardown), nullptr);
+
+        _list_view = GTK_LIST_VIEW(gtk_list_view_new(_selection_model, GTK_LIST_ITEM_FACTORY(_factory)));
     }
 
-    TreeStore::Iterator::Iterator(GtkTreeIter* it)
+    TreeView::operator GtkWidget*()
     {
-        if (it != nullptr)
-            _native = gtk_tree_iter_copy(it);
+        return GTK_WIDGET(_list_view);
     }
 
-    TreeStore::Iterator::~Iterator() noexcept
+    GListModel* TreeView::on_tree_list_model_create(void* item, void* user_data)
     {
-        if (_native != nullptr)
-            gtk_tree_iter_free(_native);
+        auto* tree_view_item = (detail::TreeViewItem*) item;
+        std::cout << g_list_model_get_n_items(G_LIST_MODEL(tree_view_item->children)) << std::endl;
+
+        if (g_list_model_get_n_items(G_LIST_MODEL(tree_view_item->children)) == 0)
+            return nullptr;
+        else
+            return G_LIST_MODEL(tree_view_item->children);
     }
 
-    TreeStore::Iterator::Iterator()
+    void TreeView::on_tree_list_model_destroy(void* item)
+    {}
+
+    void TreeView::on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, void*)
     {
-        _native = new GtkTreeIter();
+        auto* list_item = GTK_LIST_ITEM(object);
+        auto* tree_list_row = GTK_TREE_LIST_ROW(gtk_list_item_get_item(list_item));
+        detail::TreeViewItem* tree_view_item = (detail::TreeViewItem*) gtk_tree_list_row_get_item(tree_list_row);
+        std::cout << g_list_model_get_n_items(G_LIST_MODEL(tree_view_item->children)) << std::endl;
+
+        if (g_list_model_get_n_items(G_LIST_MODEL(tree_view_item->children)) != 0) // non-leaf
+        {
+            gtk_tree_expander_set_child(tree_view_item->expander, tree_view_item->widget->operator GtkWidget*());
+            gtk_tree_expander_set_list_row(tree_view_item->expander, tree_list_row);
+            gtk_list_item_set_child(list_item, GTK_WIDGET(tree_view_item->expander));
+        }
+        else // leaf
+            gtk_list_item_set_child(list_item, GTK_WIDGET(tree_view_item->widget->operator GtkWidget*()));
     }
 
-    void TreeStore::clear()
+    void TreeView::on_list_item_factory_unbind(GtkSignalListItemFactory* self, void* object, void*)
     {
-        gtk_list_store_clear(_native);
+        auto* list_item = GTK_LIST_ITEM(object);
+        auto* tree_list_row = GTK_TREE_LIST_ROW(gtk_list_item_get_item(list_item));
+        detail::TreeViewItem* tree_view_item = (detail::TreeViewItem*) gtk_tree_list_row_get_item(tree_list_row);
+
+        gtk_tree_expander_set_child(tree_view_item->expander, nullptr);
     }
 
-    TreeStore::Iterator TreeStore::insert_row(size_t position)
-    {
-        auto out = Iterator();
-        gtk_list_store_insert(_native, out._native, position);
-        return out;
-    }
+    void TreeView::on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*)
+    {}
 
-    TreeStore::Iterator TreeStore::append_row()
-    {
-        auto out = Iterator();
-        gtk_list_store_append(_native, out._native);
-        return out;
-    }
+    void TreeView::on_list_item_factory_teardown(GtkSignalListItemFactory* self, void* object, void*)
+    {}
 
-    TreeStore::Iterator TreeStore::prepend_row()
+    TreeView::Iterator TreeView::push_back(Widget* widget, Iterator it)
     {
-        auto out = Iterator();
-        gtk_list_store_prepend(_native, out._native);
-        return out;
-    }
+        GListModel* to_append_to;
+        if (it == nullptr)
+            to_append_to = G_LIST_MODEL(_root);
+        else
+            to_append_to = G_LIST_MODEL(it->children);
 
-    TreeStore::Iterator TreeStore::insert_row_after(Iterator after_this)
-    {
-        auto out = Iterator();
-        gtk_list_store_insert_after(_native, out._native, after_this._native);
-        return out;
-    }
+        auto* item = detail::tree_view_item_new(widget);
+        g_list_store_append(G_LIST_STORE(to_append_to), item);
+        g_object_unref(item);
 
-    TreeStore::Iterator TreeStore::insert_row_before(Iterator after_this)
-    {
-        auto out = Iterator();
-        gtk_list_store_insert_before(_native, out._native, after_this._native);
-        return out;
-    }
-
-    void TreeStore::remove_row(Iterator to_remove)
-    {
-        gtk_list_store_remove(_native, to_remove._native);
-    }
-
-    void TreeStore::set(Iterator row, size_t column_i, void* data)
-    {
-        auto value = new GValue();
-        g_value_init(value, GTK_TYPE_WIDGET);
-        g_value_set_pointer(value, data);
-        gtk_list_store_set_value(_native, row._native, column_i, value);
-    }
-
-    void TreeStore::set_row(Iterator row, std::vector<void*> data)
-    {
-        for (size_t i = 0; i < data.size(); ++i)
-            set(row, i, data.at(i));
-    }
-
-    size_t TreeStore::get_n_columns()
-    {
-        return _n_columns;
-    }
-
-    size_t TreeStore::get_n_rows()
-    {
-        return g_list_model_get_n_items(G_LIST_MODEL(_native));
+        return detail::G_TREE_VIEW_ITEM(g_list_model_get_item(to_append_to, g_list_model_get_n_items(to_append_to) - 1));
     }
 }

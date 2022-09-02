@@ -6,7 +6,6 @@
 #pragma once
 
 #include <include/widget.hpp>
-#include "label.hpp"
 
 namespace mousetrap
 {
@@ -63,7 +62,7 @@ namespace mousetrap::detail
 
     #define G_TYPE_LIST_VIEW_ITEM_ITEM (list_view_item_get_type())
 
-    G_DECLARE_FINAL_TYPE (ListViewItem, list_view_item, G, LIST_VIEW_ITEM_ITEM, GObject)
+    G_DECLARE_FINAL_TYPE (ListViewItem, list_view_item, G, LIST_VIEW_ITEM, GObject)
 
     struct _ListViewItem
     {
