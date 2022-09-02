@@ -28,7 +28,6 @@ namespace mousetrap
             void append_row(std::vector<Widget*> widgets);
             void insert_row(size_t, std::vector<Widget*> widgets);
             void remove_row(size_t);
-
             void move_row_to(size_t to_move, size_t new_position);
 
             void set_columns_reorderable(bool);
