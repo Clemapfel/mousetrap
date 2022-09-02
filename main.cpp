@@ -83,8 +83,12 @@ static void activate(GtkApplication* app, void*)
     tree_view->push_back({img04, label4}, it);
 
     tree_view->set_expand(true);
-    std::cout << tree_view->get_n_rows_total() << std::endl;
 
+    std::vector<Widget*> to_add;
+    for (size_t i = 0; i < tree_view->get_n_rows_total(); ++i)
+        to_add.push_back(new Label("test"));
+
+    tree_view->set_widgets_in_column(0, to_add);
     box->push_back(tree_view);
 
     // TODO

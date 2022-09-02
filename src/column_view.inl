@@ -274,12 +274,46 @@ namespace mousetrap
 
     std::vector<Widget*> TreeColumnView::get_widgets_in_column(size_t col_i)
     {
-        // TODO
+        static std::function<size_t(detail::TreeColumnViewItem*, std::vector<Widget*>&)> add = [&](
+                detail::TreeColumnViewItem* item,
+                std::vector<Widget*>& widgets
+        ) -> size_t
+        {
+            widgets.push_back(item->widgets->at(col_i));
+            auto* model = G_LIST_MODEL(item->children);
+            for (size_t i = 0; i < g_list_model_get_n_items(model); ++i)
+                add((detail::TreeColumnViewItem*) g_list_model_get_item(model, i), widgets);
+        };
+
+        std::vector<Widget*> widgets;
+        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_root)); ++i)
+            add((detail::TreeColumnViewItem*) g_list_model_get_item(G_LIST_MODEL(_root), i), widgets);
+
+        return widgets;
     }
 
-    void TreeColumnView::set_widgets_in_column(size_t col_i, std::vector<Widget*>)
+    void TreeColumnView::set_widgets_in_column(size_t col_i, std::vector<Widget*> widgets)
     {
-        // TODO
+        static std::function<size_t(detail::TreeColumnViewItem*, int& index)> set = [&](
+                detail::TreeColumnViewItem* item,
+                int& index
+        ) -> size_t
+        {
+            index += 1;
+
+            auto* widget = widgets.at(index);
+            item->widgets->at(col_i) = widget;
+            g_object_unref(item->widget_refs->at(col_i));
+            item->widget_refs->at(col_i) = g_object_ref(widget->operator GtkWidget*());
+
+            auto* model = G_LIST_MODEL(item->children);
+            for (size_t i = 0; i < g_list_model_get_n_items(model); ++i)
+                set((detail::TreeColumnViewItem*) g_list_model_get_item(model, i), index);
+        };
+
+        int index = -1;
+        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_root)); ++i)
+            set((detail::TreeColumnViewItem*) g_list_model_get_item(G_LIST_MODEL(_root), i), index);
     }
 
     size_t TreeColumnView::get_n_rows_total()
