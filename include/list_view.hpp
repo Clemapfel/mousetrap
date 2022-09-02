@@ -6,13 +6,14 @@
 #pragma once
 
 #include <include/widget.hpp>
+#include "label.hpp"
 
 namespace mousetrap
 {
     class ListView : public Widget
     {
         public:
-            ListView(GtkSelectionMode mode = GTK_SELECTION_NONE);
+            ListView(bool collapsible = true, GtkSelectionMode mode = GTK_SELECTION_NONE);
             operator GtkWidget*();
 
             void push_front(Widget*);
@@ -28,18 +29,18 @@ namespace mousetrap
             void set_enable_rubberband_selection(bool);
             void set_show_separators(bool);
 
-        private:
+        //protected:
             class Factory : public SignalEmitter
             {
                 public:
-                    Factory();
+                    Factory(void*);
                     operator GtkListItemFactory*();
                     operator GObject*() override;
 
-                    static void on_setup(GtkSignalListItemFactory* self, GtkListItem* object, void*);
-                    static void on_teardown(GtkSignalListItemFactory* self, GtkListItem* object, void*);
-                    static void on_bind(GtkSignalListItemFactory* self, GtkListItem* object, void*);
-                    static void on_unbind(GtkSignalListItemFactory* self, GtkListItem* object, void*);
+                    static void on_setup(GtkSignalListItemFactory* self, void* object, void*);
+                    static void on_teardown(GtkSignalListItemFactory* self, void* object, void*);
+                    static void on_bind(GtkSignalListItemFactory* self, void* object, void*);
+                    static void on_unbind(GtkSignalListItemFactory* self, void* object, void*);
 
                 private:
                     GtkSignalListItemFactory* _native;
@@ -47,8 +48,15 @@ namespace mousetrap
 
             GtkListView* _native;
             GListStore* _list_store;
+
             GtkSelectionModel* _selection_model;
             Factory* _factory;
+            GtkSelectionMode _mode;
+
+            // collapsible
+            bool _collapsible;
+            GtkTreeListModel* _tree_list_model;
+            WidgetWrapper<GtkTreeExpander>* _tree_expander;
     };
 }
 
@@ -92,11 +100,11 @@ namespace mousetrap::detail
 
 namespace mousetrap
 {
-    ListView::Factory::Factory()
+    ListView::Factory::Factory(void* data)
     {
         _native = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
 
-        connect_signal("bind", on_bind, nullptr);
+        connect_signal("bind", on_bind, data);
         /*
         connect_signal("setup", on_setup, new size_t(i));
         connect_signal("unbind", on_unbind, new size_t(i));
@@ -119,37 +127,65 @@ namespace mousetrap
         return GTK_LIST_ITEM_FACTORY(_native);
     }
 
-    void ListView::Factory::on_setup(GtkSignalListItemFactory* self, GtkListItem* item, void* col_data) {}
+    void ListView::Factory::on_setup(GtkSignalListItemFactory* self, void* item, void* col_data) {}
 
-    void ListView::Factory::on_bind(GtkSignalListItemFactory* self, GtkListItem* item, void* col_data)
+    void ListView::Factory::on_bind(GtkSignalListItemFactory* self, void* item, void* data)
     {
-        detail::ListViewItem* list_view_item = (detail::ListViewItem*) gtk_list_item_get_item(item);
-        gtk_list_item_set_child(item, list_view_item->widget->operator GtkWidget *());
+        auto* row = (GtkTreeListRow*) gtk_list_item_get_item(GTK_LIST_ITEM(item));
+        detail::ListViewItem* list_view_item = (detail::ListViewItem*) gtk_tree_list_row_get_item(row);
+        gtk_list_item_set_child(GTK_LIST_ITEM(item), list_view_item->widget->operator GtkWidget*());
     };
 
-    void ListView::Factory::on_unbind(GtkSignalListItemFactory* self, GtkListItem* item, void*)
-    {
-        gtk_list_item_set_child(item, nullptr);
-    };
+    void ListView::Factory::on_unbind(GtkSignalListItemFactory* self, void* item, void*)
+    {}
 
-    void ListView::Factory::on_teardown(GtkSignalListItemFactory* self, GtkListItem* item, void*)
-    {
-        gtk_list_item_set_child(item, nullptr);
-    };
+    void ListView::Factory::on_teardown(GtkSignalListItemFactory* self, void* item, void*)
+    {};
 
-    ListView::ListView(GtkSelectionMode mode)
+    static void tree_list_model_destroy(gpointer data)
+    {
+
+    }
+
+    static GListModel* tree_list_model_create(void* item_in, void* user_data)
+    {
+        auto* item = (detail::ListViewItem*) item_in;
+        if (GTK_IS_TREE_EXPANDER(item->widget->operator GtkWidget *()))
+        {
+            std::cout << "non-leaf" << std::endl;
+            return G_LIST_MODEL(user_data);
+        }
+        else
+        {
+            std::cout << "leaf" << std::endl;
+            return G_LIST_MODEL(g_list_store_new(G_TYPE_OBJECT));
+        }
+    }
+
+    ListView::ListView(bool collapsible, GtkSelectionMode mode)
+        : _mode(mode), _collapsible(collapsible)
     {
         _list_store = g_list_store_new(G_TYPE_OBJECT);
+        static auto* _root = g_list_store_new(G_TYPE_OBJECT);
+        _tree_list_model = gtk_tree_list_model_new(G_LIST_MODEL(_root), false, true, tree_list_model_create, _list_store, nullptr);
+        _tree_expander = new WidgetWrapper(GTK_TREE_EXPANDER(gtk_tree_expander_new()));
 
         if (mode == GTK_SELECTION_MULTIPLE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_multi_selection_new(G_LIST_MODEL(_list_store)));
+            _selection_model = GTK_SELECTION_MODEL(gtk_multi_selection_new(G_LIST_MODEL(_tree_list_model)));
         else if (mode == GTK_SELECTION_SINGLE or mode == GTK_SELECTION_BROWSE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(G_LIST_MODEL(_list_store)));
+            _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(G_LIST_MODEL(_tree_list_model)));
         else if (mode == GTK_SELECTION_NONE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(G_LIST_MODEL(_list_store)));
+            _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(G_LIST_MODEL(_tree_list_model)));
 
-        _factory = new Factory();
+        _factory = new Factory(_tree_expander);
         _native = GTK_LIST_VIEW(gtk_list_view_new(_selection_model, _factory->operator GtkListItemFactory*()));
+
+        auto* item = detail::list_view_item_new(_tree_expander);
+        g_list_store_append(_root, item);
+        g_object_unref(item);
+
+        gtk_tree_expander_set_child(_tree_expander->operator _GtkTreeExpander*(), gtk_label_new("test"));
+        gtk_tree_expander_set_list_row(_tree_expander->operator _GtkTreeExpander*(), gtk_tree_list_model_get_row(_tree_list_model, 0));
     }
 
     void ListView::push_front(Widget* in)
@@ -162,6 +198,8 @@ namespace mousetrap
         auto* item = detail::list_view_item_new(in);
         g_list_store_append(_list_store, item);
         g_object_unref(item);
+
+        // gtk_tree_expander_set_list_row(_tree_expander->operator _GtkTreeExpander*(), gtk_tree_list_model_get_row(_tree_list_model, g_list_model_get_n_items(G_LIST_MODEL(_tree_list_model))));
     }
 
     void ListView::insert(size_t i, Widget* in)

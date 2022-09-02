@@ -43,6 +43,8 @@ namespace mousetrap
             void set_column_header_menu(size_t i, MenuModel*);
             void set_column_visible(size_t i, bool b);
 
+            void set_headers_visible(bool b);
+
             void set_column_resizable(size_t i, bool);
 
             size_t get_n_columns() const;
@@ -343,6 +345,11 @@ namespace mousetrap
         gtk_column_view_column_set_visible(get_column(i), b);
     }
 
+    void ColumnView::set_headers_visible(bool b)
+    {
+        gtk_column_view_column_set_header_menu(get_column(0), nullptr);
+    }
+
     void ColumnView::set_column_resizable(size_t i, bool b)
     {
         if (b)
@@ -400,11 +407,35 @@ namespace mousetrap
 
     Widget* ColumnView::get_widget_at(size_t row_i, size_t col_i)
     {
+        if (row_i > get_n_rows())
+        {
+            std::cerr << "[ERROR] In ColumnView::set_widget_at: row index " << row_i << " out of bounds for view with " << get_n_rows() << " rows." << std::endl;
+            return nullptr;
+        }
+
+        if (col_i > get_n_columns())
+        {
+            std::cerr << "[ERROR] In ColumnView::set_widget_at: column index " << col_i << " out of bounds for view with " << get_n_columns() << " columns." << std::endl;
+            return nullptr;
+        }
+
         return _row_list_store->at(row_i)->widgets->at(col_i);
     }
 
     void ColumnView::set_widget_at(size_t row_i, size_t col_i, Widget* widget)
     {
+        if (row_i > get_n_rows())
+        {
+            std::cerr << "[ERROR] In ColumnView::set_widget_at: row index " << row_i << " out of bounds for view with " << get_n_rows() << " rows." << std::endl;
+            return;
+        }
+
+        if (col_i > get_n_columns())
+        {
+            std::cerr << "[ERROR] In ColumnView::set_widget_at: column index " << col_i << " out of bounds for view with " << get_n_columns() << " columns." << std::endl;
+            return;
+        }
+
         _row_list_store->at(row_i)->widgets->at(col_i) = widget;
     }
 }

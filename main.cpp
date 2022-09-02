@@ -57,6 +57,7 @@ static void activate(GtkApplication* app, void*)
 
     // TODO
     auto* column_view = new ColumnView({"01", "02"});
+    column_view->set_headers_visible(false);
 
     auto image = Image();
     
@@ -75,23 +76,25 @@ static void activate(GtkApplication* app, void*)
     auto* label1 = new Label("line");
     auto* label2 = new Label("line");
 
-    column_view->append_row({label1, label2});
     column_view->append_row({img01, img02});
     column_view->append_row({img03, img04});
 
-    auto* list_view = new ListView();
+    auto* list_view = new ListView(true);
 
     auto* label3 = new Label("inner");
     auto* label4 = new Label("inner 2");
 
+    list_view->push_back(label1);
+    list_view->push_back(label2);
     list_view->push_back(label3);
     list_view->push_back(label4);
+    list_view->push_back(img01);
 
     column_view->set_widget_at(1, 0, list_view);
     column_view->set_show_row_separator(true);
     column_view->set_show_column_separator(true);
     column_view->set_expand(true);
-    box->push_back(column_view);
+    box->push_back(list_view);
 
     // TODO
 
