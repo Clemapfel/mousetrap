@@ -55,6 +55,54 @@ namespace mousetrap::state
     PaletteID default_palette_id = "debug";
     PaletteID active_palette_id = "debug";
 
+    // ### TOOLS ######################################
+
+    enum ToolboxTool
+    {
+        MARQUEE_RECTANGLE,
+        MARQUEE_CIRCLE,
+        MARQUEE_POLYGON,
+        MARQUEE_NEIGHBORHOOD_SELECT,
+        MARQUEE_BRUSH,
+        MARQUEE_FILL,
+
+        BRUSH,
+        ERASER,
+        EYEDROPPER,
+        BUCKET_FILL,
+
+        LINE_SHAPE,
+        RECTANGLE_SHAPE_OUTLINE,
+        RECTANGLE_SHAPE_FILL,
+        CIRCLE_SHAPE_OUTLINE,
+        CIRCLE_SHAPE_FILL,
+
+        GRADIENT_SMOOTH,
+        GRADIENT_DITHERED
+    };
+
+    ToolboxTool active_tool = BRUSH;
+
+    enum class MarqueeMode
+    {
+        REPLACE,
+        ADD,
+        SUBTRACT
+    };
+
+    MarqueeMode marquee_mode = MarqueeMode::REPLACE;
+
+    enum class BrushType
+    {
+        RECTANGLE,
+        CIRCLE,
+        CUSTOM
+    };
+
+    BrushType brush_type = BrushType::RECTANGLE;
+
+    size_t brush_size = 1; // rectangle size
+
     // ### FRAMES / LAYERS ############################
 
     struct Layer
