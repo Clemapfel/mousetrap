@@ -7,6 +7,7 @@
 
 #include <include/widget.hpp>
 #include <include/menu_model.hpp>
+#include <include/popover.hpp>
 
 namespace mousetrap
 {
@@ -20,6 +21,7 @@ namespace mousetrap
             void set_model(MenuModel*);
 
             void set_popover_position(GtkPositionType);
+            void set_popover(Popover*);
 
         private:
             GtkMenuButton* _native;
@@ -54,5 +56,10 @@ namespace mousetrap
     void MenuButton::set_popover_position(GtkPositionType type)
     {
         gtk_popover_set_position(gtk_menu_button_get_popover(_native), type);
+    }
+
+    void MenuButton::set_popover(Popover* popover)
+    {
+        gtk_menu_button_set_popover(_native, GTK_POPOVER(popover->GtkWidget*()));
     }
 }

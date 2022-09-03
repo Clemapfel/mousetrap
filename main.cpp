@@ -57,7 +57,7 @@ static void activate(GtkApplication* app, void*)
 
     // TODO
     auto image = Image();
-    
+
     image.create(100, 100, RGBA(0, 1, 1, 1));
     auto* img01 = new ImageDisplay(image);
 
@@ -75,12 +75,30 @@ static void activate(GtkApplication* app, void*)
     auto* label3 = new Label("inner");
     auto* label4 = new Label("inner 2");
 
+    auto list_view = new ListView(GTK_ORIENTATION_HORIZONTAL);
+    list_view->push_back(img01);
+
+    auto it = list_view->push_back(img02);
+        list_view->push_back(label1, it);
+        it = list_view->push_back(label2, it);
+            list_view->push_back(label3, it);
+
+    list_view->push_back(img03);
+    list_view->set_expand(true);
+
+    auto* popover_wrapper = new WidgetWrapper<GtkPopover>(GTK_POPOVER(gtk_popover_new()));
+    auto* popover = popover_wrapper->operator GtkPopover*();
+    gtk_popover_set_child(popover, list_view->operator GtkWidget*());
+    gtk_popover_popup(popover);
+
+
+    /*
     auto* tree_view = new TreeColumnView({"col1", "col2"});
 
-    tree_view->push_back({img01, label1});
-    auto it = tree_view->push_back({img02, label2});
-    it = tree_view->push_back({img03, label3}, it);
-    tree_view->push_back({img04, label4}, it);
+    tree_view->append_row({img01, label1});
+    auto it = tree_view->append_row({img02, label2});
+    it = tree_view->append_row({img03, label3}, it);
+    tree_view->append_row({img04, label4}, it);
 
     tree_view->set_expand(true);
 
@@ -88,8 +106,10 @@ static void activate(GtkApplication* app, void*)
     for (size_t i = 0; i < tree_view->get_n_rows_total(); ++i)
         to_add.push_back(new Label("test"));
 
-    tree_view->set_widgets_in_column(0, to_add);
+    tree_view->append_column("new", to_add);
+    tree_view->remove_column(1);
     box->push_back(tree_view);
+     */
 
     // TODO
 
