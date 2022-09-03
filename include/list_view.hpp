@@ -19,7 +19,9 @@ namespace mousetrap
         public:
             using Iterator = detail::_TreeListViewItem*;
 
-            TreeListView(GtkSelectionMode = GTK_SELECTION_NONE);
+            TreeListView(GtkOrientation = GTK_ORIENTATION_VERTICAL, GtkSelectionMode = GTK_SELECTION_NONE);
+            TreeListView(GtkSelectionMode);
+
             operator GtkWidget*() override;
 
             Iterator push_back(Widget* widget, Iterator = nullptr);
@@ -35,6 +37,7 @@ namespace mousetrap
 
             void set_enable_rubberband_selection(bool);
             void set_show_separators(bool);
+            void set_select_on_hover(bool);
 
         private:
             static void on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*);
@@ -53,6 +56,7 @@ namespace mousetrap
 
             GtkSelectionModel* _selection_model;
             GtkSelectionMode _selection_mode;
+            GtkOrientation _orientation;
     };
 
     using ListView = TreeListView;

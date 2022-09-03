@@ -63,7 +63,8 @@ namespace mousetrap::detail
 
 namespace mousetrap
 {
-    TreeListView::TreeListView(GtkSelectionMode mode)
+    TreeListView::TreeListView(GtkOrientation orientation, GtkSelectionMode mode)
+        : _orientation(orientation)
     {
         _root = g_list_store_new(G_TYPE_OBJECT);
         _tree_list_model = gtk_tree_list_model_new(G_LIST_MODEL(_root), false, false, on_tree_list_model_create, nullptr, on_tree_list_model_destroy);
@@ -82,7 +83,12 @@ namespace mousetrap
         g_signal_connect(_factory, "teardown", G_CALLBACK(on_list_item_factory_teardown), this);
 
         _list_view = GTK_LIST_VIEW(gtk_list_view_new(_selection_model, GTK_LIST_ITEM_FACTORY(_factory)));
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(_list_view), _orientation);
     }
+
+    TreeListView::TreeListView(GtkSelectionMode mode)
+        : TreeListView(GTK_ORIENTATION_VERTICAL, mode)
+    {}
 
     TreeListView::operator GtkWidget*()
     {
@@ -220,5 +226,10 @@ namespace mousetrap
         auto* widget = get_widget_at(old_position, old_it);
         remove(old_position, old_it);
         return insert(new_position, widget, new_it);
+    }
+
+    void TreeListView::set_select_on_hover(bool b)
+    {
+        gtk_list_view_set_single_click_activate(_list_view, b);
     }
 }
