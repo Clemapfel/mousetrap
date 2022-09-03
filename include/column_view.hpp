@@ -22,12 +22,18 @@ namespace mousetrap
             TreeColumnView(std::vector<std::string> titles, GtkSelectionMode = GtkSelectionMode::GTK_SELECTION_MULTIPLE);
             operator GtkWidget*() override;
 
-            Iterator push_back(std::vector<Widget*>, Iterator = nullptr);
-            Iterator push_front(std::vector<Widget*>, Iterator = nullptr);
-            Iterator insert(size_t, std::vector<Widget*>, Iterator = nullptr);
+            void append_column(const std::string& title, std::vector<Widget*>);
+            void prepend_column(const std::string& title, std::vector<Widget*>);
+            void insert_column(size_t i, const std::string& title, std::vector<Widget*>);
+            void move_column_to(size_t old_i, size_t new_i);
+            void remove_column(size_t i);
 
-            Iterator move_item_to(size_t old_position, size_t new_position, Iterator old_it, Iterator new_it);
-            void remove(size_t, Iterator = nullptr);
+            Iterator append_row(std::vector<Widget*>, Iterator = nullptr);
+            Iterator prepend_row(std::vector<Widget*>, Iterator = nullptr);
+            Iterator insert_row(size_t, std::vector<Widget*>, Iterator = nullptr);
+
+            Iterator move_row_to(size_t old_position, size_t new_position, Iterator old_it, Iterator new_it);
+            void remove_row(size_t, Iterator = nullptr);
 
             Widget* get_widget_at(size_t row_i, size_t col_i, Iterator = nullptr);
             void set_widget_at(size_t row_i, size_t col_i, Widget*, Iterator = nullptr);
@@ -47,7 +53,7 @@ namespace mousetrap
 
             size_t get_n_columns();
             size_t get_n_rows(Iterator);
-            size_t get_n_rows_total(); // rows in root and all children
+            size_t get_n_rows_total(); // rows in root and recursively
 
         private:
             static void on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*);

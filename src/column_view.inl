@@ -148,7 +148,7 @@ namespace mousetrap
     void TreeColumnView::on_list_item_factory_teardown(GtkSignalListItemFactory* self, void* object, void*)
     {}
 
-    TreeColumnView::Iterator TreeColumnView::push_back(std::vector<Widget*> widgets, Iterator it)
+    TreeColumnView::Iterator TreeColumnView::append_row(std::vector<Widget*> widgets, Iterator it)
     {
         GListModel* to_append_to;
         if (it == nullptr)
@@ -163,12 +163,12 @@ namespace mousetrap
         return detail::G_TREE_COLUMN_VIEW_ITEM(g_list_model_get_item(to_append_to, g_list_model_get_n_items(to_append_to) - 1));
     }
 
-    TreeColumnView::Iterator TreeColumnView::push_front(std::vector<Widget*> widgets, Iterator it)
+    TreeColumnView::Iterator TreeColumnView::prepend_row(std::vector<Widget*> widgets, Iterator it)
     {
-        insert(0, widgets, it);
+        insert_row(0, widgets, it);
     }
 
-    TreeColumnView::Iterator TreeColumnView::insert(size_t i, std::vector<Widget*> widgets, Iterator it)
+    TreeColumnView::Iterator TreeColumnView::insert_row(size_t i, std::vector<Widget*> widgets, Iterator it)
     {
         GListModel* list;
         if (it == nullptr)
@@ -183,14 +183,14 @@ namespace mousetrap
         return detail::G_TREE_COLUMN_VIEW_ITEM(g_list_model_get_item(list, g_list_model_get_n_items(list) - 1));
     }
 
-    TreeColumnView::Iterator TreeColumnView::move_item_to(size_t old_position, size_t new_position, Iterator old_iterator, Iterator new_iterator)
+    TreeColumnView::Iterator TreeColumnView::move_row_to(size_t old_position, size_t new_position, Iterator old_iterator, Iterator new_iterator)
     {
         std::vector<Widget*> widgets = get_widgets_in_row(old_position, old_iterator);
-        remove(old_position, old_iterator);
-        return insert(new_position, widgets, new_iterator);
+        remove_row(old_position, old_iterator);
+        return insert_row(new_position, widgets, new_iterator);
     }
 
-    void TreeColumnView::remove(size_t i, Iterator it)
+    void TreeColumnView::remove_row(size_t i, Iterator it)
     {
         GListStore* list;
         if (it == nullptr)
@@ -376,5 +376,68 @@ namespace mousetrap
             return g_list_model_get_n_items(G_LIST_MODEL(_root));
         else
             return g_list_model_get_n_items(G_LIST_MODEL(it->children));
+    }
+
+    void TreeColumnView::append_column(const std::string& title, std::vector<Widget*> widgets)
+    {
+        static std::function<void(detail::TreeColumnViewItem*, int& index)> append = [&](
+                detail::TreeColumnViewItem* item,
+                int& index
+        ) -> size_t
+        {
+            index += 1;
+
+            auto* widget = widgets.at(index);
+            item->widgets->push_back(widget);
+            item->widget_refs->push_back(g_object_ref(widget->operator GtkWidget*()));
+
+            auto* model = G_LIST_MODEL(item->children);
+            for (size_t i = 0; i < g_list_model_get_n_items(model); ++i)
+                append((detail::TreeColumnViewItem*) g_list_model_get_item(model, i), index);
+        };
+
+        int index = -1;
+        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_root)); ++i)
+            append((detail::TreeColumnViewItem*) g_list_model_get_item(G_LIST_MODEL(_root), i), index);
+
+        index -= 1;
+        _factories.push_back(GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new()));
+        g_signal_connect(_factories.back(), "bind", G_CALLBACK(on_list_item_factory_bind), new size_t(index));
+        g_signal_connect(_factories.back(), "unbind", G_CALLBACK(on_list_item_factory_unbind), new size_t(index));
+        g_signal_connect(_factories.back(), "setup", G_CALLBACK(on_list_item_factory_setup), new size_t(index));
+        g_signal_connect(_factories.back(), "teardown", G_CALLBACK(on_list_item_factory_teardown), new size_t(index));
+
+        gtk_column_view_append_column(_column_view, gtk_column_view_column_new(title.c_str(), GTK_LIST_ITEM_FACTORY(_factories.back())));
+    }
+
+    void TreeColumnView::remove_column(size_t column_i)
+    {
+        static std::function<void(detail::TreeColumnViewItem*)> remove = [&](
+                detail::TreeColumnViewItem* item
+        ) -> size_t
+        {
+            item->widgets->erase(item->widgets->begin() + column_i);
+            g_object_unref( item->widget_refs->at(column_i));
+            item->widget_refs->erase(item->widget_refs->begin() + column_i);
+
+            auto* model = G_LIST_MODEL(item->children);
+            for (size_t i = 0; i < g_list_model_get_n_items(model); ++i)
+                remove((detail::TreeColumnViewItem*) g_list_model_get_item(model, i));
+        };
+
+        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_root)); ++i)
+            remove((detail::TreeColumnViewItem*) g_list_model_get_item(G_LIST_MODEL(_root), i));
+
+        _factories.erase(_factories.begin() + column_i);
+
+        for (size_t i = 0; i < _factories.size(); ++i)
+        {
+            g_signal_connect(_factories.at(i), "bind", G_CALLBACK(on_list_item_factory_bind), new size_t(i));
+            g_signal_connect(_factories.at(i), "unbind", G_CALLBACK(on_list_item_factory_unbind), new size_t(i));
+            g_signal_connect(_factories.at(i), "setup", G_CALLBACK(on_list_item_factory_setup), new size_t(i));
+            g_signal_connect(_factories.at(i), "teardown", G_CALLBACK(on_list_item_factory_teardown), new size_t(i));
+        }
+
+        gtk_column_view_remove_column(_column_view, get_column(column_i));
     }
 }
