@@ -57,6 +57,8 @@ namespace mousetrap::state
 
     // ### TOOLS ######################################
 
+    Widget* toolbox = nullptr;
+
     enum ToolboxTool
     {
         MARQUEE_RECTANGLE,
@@ -100,7 +102,6 @@ namespace mousetrap::state
     };
 
     BrushType brush_type = BrushType::RECTANGLE;
-
     size_t brush_size = 1; // rectangle size
 
     // ### FRAMES / LAYERS ############################

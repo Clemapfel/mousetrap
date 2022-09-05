@@ -22,7 +22,13 @@ namespace mousetrap
 
     void Button::set_icon(const std::string& path)
     {
-        _icon = GTK_IMAGE(gtk_image_new_from_file(path.c_str()));
+        GError* error = nullptr;
+        auto* pixbuf = gdk_pixbuf_new_from_file(path.c_str(), &error);
+
+        if (error)
+            std::cerr << "[WARNING] In Button::set_icon: Unable to load image at " << path << ":\n" << error->message << std::endl;
+
+        _icon = GTK_IMAGE(gtk_image_new_from_pixbuf(pixbuf));
         gtk_button_set_child(_native, GTK_WIDGET(_icon));
     }
 

@@ -25,7 +25,7 @@ namespace mousetrap
             void set_has_arrow(bool);
             void set_autohide(bool);
 
-            // TODO: void attach_to(Widget*);
+            void attach_to(Widget*);
 
         private:
             GtkPopover* _native;
@@ -79,5 +79,10 @@ namespace mousetrap
     void Popover::set_autohide(bool b)
     {
         gtk_popover_set_autohide(_native, b);
+    }
+
+    void Popover::attach_to(Widget* widget)
+    {
+        gtk_widget_set_parent(GTK_WIDGET(_native), widget->operator GtkWidget*());
     }
 }

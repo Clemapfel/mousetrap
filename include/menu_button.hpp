@@ -23,6 +23,9 @@ namespace mousetrap
             void set_popover_position(GtkPositionType);
             void set_popover(Popover*);
 
+            void popup();
+            void popdown();
+
         private:
             GtkMenuButton* _native;
     };
@@ -60,6 +63,16 @@ namespace mousetrap
 
     void MenuButton::set_popover(Popover* popover)
     {
-        gtk_menu_button_set_popover(_native, GTK_POPOVER(popover->GtkWidget*()));
+        gtk_menu_button_set_popover(_native, popover->operator GtkWidget*());
+    }
+
+    void MenuButton::popup()
+    {
+        gtk_menu_button_popup(_native);
+    }
+
+    void MenuButton::popdown()
+    {
+        gtk_menu_button_popdown(_native);
     }
 }

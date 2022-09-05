@@ -23,6 +23,7 @@
 #include <app/primary_secondary_color_swapper.hpp>
 #include <app/verbose_color_picker.hpp>
 #include <app/palette_view.hpp>
+#include <app/toolbox.hpp>
 
 using namespace mousetrap;
 
@@ -47,6 +48,8 @@ static void activate(GtkApplication* app, void*)
     state::palette_view->set_expand(true);
     state::palette_view->show();
 
+    state::toolbox = new Toolbox();
+
     static auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
     /*
     box->push_back(state::color_picker);
@@ -54,62 +57,10 @@ static void activate(GtkApplication* app, void*)
     box->push_back(state::verbose_color_picker);
     box->push_back(state::palette_view);
      */
+    box->push_back(state::toolbox);
 
     // TODO
-    auto image = Image();
 
-    image.create(100, 100, RGBA(0, 1, 1, 1));
-    auto* img01 = new ImageDisplay(image);
-
-    image.create(100, 100, RGBA(1, 0, 1, 1));
-    auto* img02 = new ImageDisplay(image);
-
-    image.create(100, 100, RGBA(0, 1, 0, 1));
-    auto* img03 = new ImageDisplay(image);
-
-    image.create(100, 100, RGBA(1, 1, 0, 1));
-    auto* img04 = new ImageDisplay(image);
-
-    auto* label1 = new Label("line");
-    auto* label2 = new Label("line");
-    auto* label3 = new Label("inner");
-    auto* label4 = new Label("inner 2");
-
-    auto list_view = new ListView(GTK_ORIENTATION_HORIZONTAL);
-    list_view->push_back(img01);
-
-    auto it = list_view->push_back(img02);
-        list_view->push_back(label1, it);
-        it = list_view->push_back(label2, it);
-            list_view->push_back(label3, it);
-
-    list_view->push_back(img03);
-    list_view->set_expand(true);
-
-    auto* popover_wrapper = new WidgetWrapper<GtkPopover>(GTK_POPOVER(gtk_popover_new()));
-    auto* popover = popover_wrapper->operator GtkPopover*();
-    gtk_popover_set_child(popover, list_view->operator GtkWidget*());
-    gtk_popover_popup(popover);
-
-
-    /*
-    auto* tree_view = new TreeColumnView({"col1", "col2"});
-
-    tree_view->append_row({img01, label1});
-    auto it = tree_view->append_row({img02, label2});
-    it = tree_view->append_row({img03, label3}, it);
-    tree_view->append_row({img04, label4}, it);
-
-    tree_view->set_expand(true);
-
-    std::vector<Widget*> to_add;
-    for (size_t i = 0; i < tree_view->get_n_rows_total(); ++i)
-        to_add.push_back(new Label("test"));
-
-    tree_view->append_column("new", to_add);
-    tree_view->remove_column(1);
-    box->push_back(tree_view);
-     */
 
     // TODO
 
