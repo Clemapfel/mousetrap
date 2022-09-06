@@ -26,6 +26,8 @@ namespace mousetrap
             Toolbox();
             operator GtkWidget*() override;
 
+            void select(ToolID);
+
         private:
             static inline const std::vector<std::pair<std::string, std::vector<std::vector<std::string>>>> icon_mapping = {
 
@@ -68,7 +70,7 @@ namespace mousetrap
                 MotionEventController* motion_event_controller;
             };
 
-            using on_icon_click_data = struct { Icon* self; Icon* parent; Toolbox* instance; };
+            using on_icon_click_data = struct { Icon* self; Icon* parent; Toolbox* instance; ToolID tool_id; };
             static void on_icon_click(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
 
             using on_icon_without_popover_enter_data = Toolbox*;
@@ -99,6 +101,11 @@ namespace mousetrap
             using on_main_leave_data = Toolbox*;
             static void on_main_leave(GtkEventControllerMotion* self, void* data);
 
+            using on_main_motion_data = Toolbox*;
+            static void on_main_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void* data);
+            Vector2f* last_known_position = new Vector2f{0, 0};
+
+            std::string generate_tooltip(ToolID);
     };
 }
 
@@ -107,6 +114,7 @@ namespace mousetrap
 namespace mousetrap
 {
     Toolbox::Icon::Icon(ToolID id)
+        : id(id)
     {
         label = new ImageDisplay(get_resource_path() + "icons/" + id + ".png");
         label->set_size_request({32, 32});
@@ -196,6 +204,7 @@ namespace mousetrap
         auto* self = ((on_icon_click_data*) data)->self;
         auto* parent = ((on_icon_click_data*) data)->parent;
         auto* instance = ((on_icon_click_data*) data)->instance;
+        auto id = ((on_icon_click_data*) data)->tool_id;
 
         for (auto& pair : instance->_icons)
         {
@@ -203,6 +212,8 @@ namespace mousetrap
             pair.second->selected_indicator->set_opacity(pair.second == self);
             pair.second->popover_indicator->set_visible(pair.second != parent);
         }
+
+        state::active_tool = id;
     }
 
     void Toolbox::on_icon_without_popover_enter(GtkEventControllerMotion*, gdouble x, gdouble y, void* data)
@@ -215,8 +226,20 @@ namespace mousetrap
     void Toolbox::on_main_leave(GtkEventControllerMotion* self, void* data)
     {
         auto* instance = (Toolbox*) data;
+
+        auto size = instance->get_size();
+        if (instance->last_known_position->x > 0.75 * size.x)
+            return; // don't popdown if leaving to the right
+
         for (auto* icon_with : instance->_icons_with_popover)
             icon_with->popover->popdown();
+    }
+
+    void Toolbox::on_main_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void* data)
+    {
+        auto* instance = (Toolbox*) data;
+        instance->last_known_position->x = x;
+        instance->last_known_position->y = y;
     }
 
     Toolbox::Toolbox()
@@ -232,7 +255,8 @@ namespace mousetrap
         for (auto& pair : icon_mapping)
         {
             auto main_icon = add_icon(pair.first);
-            main_icon->click_event_controller->connect_pressed(on_icon_click, new on_icon_click_data{main_icon, nullptr, this});
+            main_icon->click_event_controller->connect_pressed(on_icon_click, new on_icon_click_data{main_icon, nullptr, this, pair.first});
+            main_icon->set_tooltip_text(generate_tooltip(pair.first));
             std::vector<std::vector<Icon*>> children;
 
             for (auto& row : pair.second)
@@ -244,7 +268,8 @@ namespace mousetrap
                 {
                     auto* to_add = add_icon(child);
                     children.back().emplace_back(to_add);
-                    children.back().back()->click_event_controller->connect_pressed(on_icon_click, new on_icon_click_data{to_add, main_icon, this});
+                    children.back().back()->click_event_controller->connect_pressed(on_icon_click, new on_icon_click_data{to_add, main_icon, this, child});
+                    children.back().back()->set_tooltip_text(generate_tooltip(child));
                 }
             }
 
@@ -265,10 +290,213 @@ namespace mousetrap
         motion_event_controller = new MotionEventController();
         main->add_controller(motion_event_controller);
         motion_event_controller->connect_leave(on_main_leave, this);
+        motion_event_controller->connect_motion(on_main_motion, this);
+
+        select(MARQUEE_RECTANGLE_ADD);
     }
 
     Toolbox::operator GtkWidget*()
     {
         return main->operator GtkWidget*();
+    }
+
+    void Toolbox::select(ToolID id)
+    {
+        Icon* parent = nullptr;
+        Icon* child = _icons.at(id);
+
+        for (auto& pair : icon_mapping)
+        {
+            if (pair.first == id)
+                goto done;
+            else
+            {
+                for (auto& row : pair.second)
+                {
+                    for (auto& child : row)
+                    {
+                        if (child == id)
+                        {
+                            parent = _icons.at(pair.first);
+                            goto done;
+                        }
+                    }
+                }
+            }
+        }
+        done:;
+
+        auto data = on_icon_click_data{child, parent, this, id};
+        on_icon_click(nullptr, 1, -1, -1, &data);
+    }
+
+    std::string Toolbox::generate_tooltip(ToolID tool_id)
+    {
+        static const std::string color_start = "<span foreground=\"#FF88BB\">";
+        static const std::string color_end = "</span>";
+
+        static auto get_shortcut = [](const std::string& action) -> std::string {
+            return "<tt><b>" + color_start + state::shortcut_map->get_shortcut_as_string("toolbox", action) + color_end + "</b></tt>";
+        };
+
+        static auto has_shortcut = [](const std::string& action) -> bool {
+            return not state::shortcut_map->get_shortcut_as_string("toolbox", action).empty();
+        };
+
+        std::map<std::string, std::pair<std::string, std::string>> tool_id_to_title_and_description =
+                {
+                        {"marquee_neighborhood_select", {
+                                "Marquee: Neighborhood Select",
+                                "Selects all pixels in connected region of identical Color\n(Replaces current selection)"
+                        }},
+
+                        // MARQUEE RECT
+
+                        {"marquee_rectangle", {
+                                "Rectangle Select",
+                                "Selects all pixels in rectangular region\n(Replaces current selection)"
+                        }},
+
+                        {"marquee_rectangle_add", {
+                                "Rectangle Select (Add)",
+                                "Selects all pixels in rectangular region\n(Adds to current selection)"
+                        }},
+
+                        {"marquee_rectangle_subtract", {
+                                "Rectangle Select (Subtract)",
+                                "Selects all pixels in rectangular region\n(Subtracts from current selection)"
+                        }},
+
+                        // MARQUEE CIRCLE
+
+                        {"marquee_circle", {
+                                "Circle Select",
+                                "Selects all pixels in elliptical region\n(Replaces current selection)"
+                        }},
+
+                        {"marquee_circle_add", {
+                                "Circle Select (Add)",
+                                "Selects all pixels in elliptical region\n(Adds to current selection)"
+                        }},
+
+                        {"marquee_circle_subtract", {
+                                "Circle Select (Subtract)",
+                                "Selects all pixels in elliptical region\n(Subtracts from current selection)"
+                        }},
+
+                        // MARQUEE POLY
+
+                        {"marquee_polygon", {
+                                "Polygon Select",
+                                "Selects all pixels in polygonal region\n(Replaces current selection)"
+                        }},
+
+                        {"marquee_polygon_add", {
+                                "Polygon Select (Add)",
+                                "Selects all pixels in polygonal region\n(Adds to current selection)"
+                        }},
+
+                        {"marquee_polygon_subtract", {
+                                "Polygon Select (Subtract)",
+                                "Selects all pixels in polygonal region\n(Subtracts from current selection)"
+                        }},
+
+                        // TOOLS
+
+                        {"pencil", {
+                                "Pencil",
+                                "Draws using the current brush and primary color"
+                        }},
+
+                        {"eraser", {
+                                "Eraser",
+                                "Draws by setting an areas opacity to 0"
+                        }},
+
+                        {"eyedropper", {
+                                "Color Picker",
+                                "Selects primary color from a pixel on the canvas"
+                        }},
+
+                        {"bucket_fill", {
+                                "Bucket Fill",
+                                "Fills a connected region with primary color"
+                        }},
+
+                        {"line", {
+                                "Line Shape",
+                                "Draws a straight line between two points"
+                        }},
+
+                        // SHAPES OUTLINE
+
+                        {"shapes_outline", {
+                                "Shapes (Outline)",
+                                "Draws the outline of geometric shapes using the primary color"
+                        }},
+
+                        {"rectangle_outline", {
+                                "Rectangle (Outline)",
+                                "Draws rectangle outline using the primary color"
+                        }},
+
+                        {"circle_outline", {
+                                "Ellipses (Outline)",
+                                "Draws ellipses outline using the primary color"
+                        }},
+
+                        {"polygon_outline", {
+                                "Polygon (Outline)",
+                                "Draws polygon outline using the primary color"
+                        }},
+
+                        // SHAPES FILLED
+
+                        {"shapes_fill", {
+                                "Shapes (Filled)",
+                                "Draws solid geometric shapes using primary color"
+                        }},
+
+                        {"rectangle_fill", {
+                                "Rectangle (Filled)",
+                                "Draws filled rectangle using the primary color"
+                        }},
+
+                        {"circle_fill", {
+                                "Ellipses (Filled)",
+                                "Draws filled ellipses using the primary Color"
+                        }},
+
+                        {"polygon_fill", {
+                                "Polygon (Filled)",
+                                "Draws filled polygon using the primary Color"
+                        }},
+
+                        // GRADIENT
+
+                        {"gradient_dithered", {
+                                "Gradient (Dithered)",
+                                "Draws a dithered gradient, from primary to secondary Color"
+                        }},
+
+                        {"gradient_smooth", {
+                                "Gradient (Smooth)",
+                                "Draws a gradient, from primary to secondary Color"
+                        }},
+                };
+
+        auto it = tool_id_to_title_and_description.find(tool_id);
+        if (it == tool_id_to_title_and_description.end())
+        {
+            std::cout << "[ERROR] In Toolbox::generate_tooltip: No description found for " << tool_id << std::endl;
+            return tool_id;
+        }
+
+        std::stringstream out;
+        auto shortcut = get_shortcut(tool_id);
+        out  << "<b>" << it->second.first << "</b>" << (not has_shortcut(tool_id) ? "" : "   [ " + shortcut + " ]") << "\n"
+             << it->second.second;
+
+        return out.str();
     }
 }
