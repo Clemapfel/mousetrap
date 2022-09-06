@@ -17,6 +17,7 @@ namespace mousetrap
             void set_label(const std::string&);
             void set_icon(const std::string& path);
             void set_has_frame(bool b);
+            void set_child(Widget*);
 
             operator GtkWidget*() override;
 

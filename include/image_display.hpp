@@ -17,6 +17,8 @@ namespace mousetrap
             ImageDisplay(const std::string& file);
             ImageDisplay(const Image&);
 
+            void set_scale(size_t);
+
             operator GtkWidget*() override;
 
         private:

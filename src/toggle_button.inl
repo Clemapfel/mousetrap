@@ -31,4 +31,14 @@ namespace mousetrap
     {
         return GTK_WIDGET(_native);
     }
+
+    void ToggleButton::set_child(Widget* widget)
+    {
+        gtk_button_set_child(GTK_BUTTON(_native), widget->operator GtkWidget*());
+    }
+
+    void ToggleButton::set_has_frame(bool b)
+    {
+        gtk_button_set_has_frame(GTK_BUTTON(_native), b);
+    }
 }

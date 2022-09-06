@@ -20,7 +20,8 @@ namespace mousetrap
             void set_active(bool b);
 
             void set_label(const std::string&);
-
+            void set_child(Widget*);
+            void set_has_frame(bool b);
 
         private:
             GtkToggleButton* _native;

@@ -26,4 +26,9 @@ namespace mousetrap
     {
         return GTK_WIDGET(_native);
     }
+
+    void ImageDisplay::set_scale(size_t n)
+    {
+        gtk_image_set_pixel_size(_native, n);
+    }
 }

@@ -36,4 +36,9 @@ namespace mousetrap
     {
         gtk_button_set_has_frame(_native, b);
     }
+
+    void Button::set_child(Widget* widget)
+    {
+        gtk_button_set_child(_native, widget->operator GtkWidget*());
+    }
 }

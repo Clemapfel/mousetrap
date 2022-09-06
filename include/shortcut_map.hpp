@@ -28,7 +28,10 @@ namespace mousetrap
             /// \note description for each binding will be generated from the variable name of the action in the .conf file
             std::string generate_control_tooltip(const std::string& action_prefix, const std::string& description_optional = "");
 
+            std::string get_shortcut_as_string(const std::string& action_prefix, const std::string& action);
+
         protected:
+            static std::string trigger_to_string(GtkShortcutTrigger*);
             std::map<std::string, GtkShortcutTrigger*> _bindings;
     };
 }
@@ -150,6 +153,25 @@ namespace mousetrap
             return gtk_shortcut_trigger_trigger(trigger, event, false);
     }
 
+    std::string ShortcutMap::trigger_to_string(GtkShortcutTrigger* trigger)
+    {
+        if (trigger == nullptr)
+            return "";
+
+        std::stringstream out;
+        for (char c : std::string(gtk_shortcut_trigger_to_string(trigger)))
+        {
+            if (c == '<')
+                continue;
+            else if (c == '>')
+                out << "+";
+            else
+                out << (char) std::toupper(c);
+        }
+
+        return out.str();
+    }
+
     std::string ShortcutMap::generate_control_tooltip(const std::string& action_prefix, const std::string& description)
     {
         static auto id_to_cleartext = [](const std::string& in) -> std::string
@@ -173,22 +195,6 @@ namespace mousetrap
                 }
 
                 out << c;
-            }
-
-            return out.str();
-        };
-
-        static auto trigger_to_string = [](GtkShortcutTrigger* trigger) -> std::string
-        {
-            std::stringstream out;
-            for (char c : std::string(gtk_shortcut_trigger_to_string(trigger)))
-            {
-                if (c == '<')
-                    continue;
-                else if (c == '>')
-                    out << "+";
-                else
-                    out << (char) std::tolower(c);
             }
 
             return out.str();
@@ -244,5 +250,15 @@ namespace mousetrap
             out << "<tt><b><span foreground=\"#BBBBBB\">" << left.at(i) << "</span></b></tt><span foreground=\"#777777\"> - " << right.at(i) << "</span>" << (i < left.size() - 1 ? "\n" : "");
 
         return out.str();
+    }
+
+    std::string ShortcutMap::get_shortcut_as_string(const std::string& action_prefix, const std::string& action)
+    {
+        auto it = _bindings.find(action_prefix + "." + action);
+
+        if (it == _bindings.end())
+            return "";
+        else
+            return trigger_to_string(it->second);
     }
 }
