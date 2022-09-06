@@ -61,8 +61,6 @@ static void activate(GtkApplication* app, void*)
 
     // TODO
 
-    std::cout << state::shortcut_map->get_shortcut_as_string("toolbox", "marquee_polygon") << std::endl;
-
     // TODO
 
     state::main_window->set_child(box);

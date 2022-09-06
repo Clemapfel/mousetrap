@@ -29,6 +29,7 @@ namespace mousetrap
             std::string generate_control_tooltip(const std::string& action_prefix, const std::string& description_optional = "");
 
             std::string get_shortcut_as_string(const std::string& action_prefix, const std::string& action);
+            GtkShortcutTrigger* get_shortcut(const std::string& action_prefix, const std::string& action);
 
         protected:
             static std::string trigger_to_string(GtkShortcutTrigger*);
@@ -260,5 +261,14 @@ namespace mousetrap
             return "";
         else
             return trigger_to_string(it->second);
+    }
+
+    GtkShortcutTrigger* ShortcutMap::get_shortcut(const std::string& action_prefix, const std::string& action)
+    {
+        auto it = _bindings.find(action_prefix + "." + action);
+        if (it == _bindings.end())
+            return nullptr;
+        else
+            return it->second;
     }
 }

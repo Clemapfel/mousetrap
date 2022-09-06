@@ -68,7 +68,7 @@ namespace mousetrap
         for (auto& tuple : _global_shortcuts)
         {
             auto* event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self));
-            if (GDK_IS_EVENT(event) and gtk_shortcut_trigger_trigger(tuple.trigger, event, false))
+            if (GDK_IS_EVENT(event) and gtk_shortcut_trigger_trigger(tuple.trigger, event, true))
                tuple.action(tuple.argument);
         }
 
@@ -77,9 +77,16 @@ namespace mousetrap
 
     void Window::register_global_shortcut(ShortcutMap* map, const std::string& shortcut_id, std::function<void(void*)> action, void* data)
     {
+        auto it = map->_bindings.find(shortcut_id);
+        if (it == map->_bindings.end())
+        {
+            std::cerr << "[ERROR] In Window::register_global_shortcut: Not shortcut with id " << shortcut_id << " loaded" << std::endl;
+            return;
+        }
+
         _global_shortcuts.push_back({
             shortcut_id,
-            map->_bindings.at(shortcut_id),
+            it->second,
             action,
             data
         });
