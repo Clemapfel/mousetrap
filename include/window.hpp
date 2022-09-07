@@ -42,6 +42,9 @@ namespace mousetrap
                 GtkShortcutTrigger* trigger;
                 std::function<void(void*)> action;
                 void* argument;
+                bool shift = false;
+                bool control = false;
+                bool alt = false;
             };
 
             static inline std::vector<GlobalShortcut> _global_shortcuts;

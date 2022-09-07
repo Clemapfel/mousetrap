@@ -76,7 +76,11 @@ namespace mousetrap
                 bool alt = modifier & GdkModifierType::GDK_ALT_MASK;
                 bool control = modifier & GdkModifierType::GDK_CONTROL_MASK;
 
-                if (gtk_shortcut_trigger_trigger(tuple.trigger, event, false))
+                if (gtk_shortcut_trigger_trigger(tuple.trigger, event, false) and
+                    shift == tuple.shift and
+                    control == tuple.control and
+                    alt == tuple.alt
+                )
                 {
                     tuple.action(tuple.argument);
                     triggered.emplace_back(tuple.id, tuple.trigger);
@@ -105,14 +109,17 @@ namespace mousetrap
             return;
         }
 
+        std::string normalized = gtk_shortcut_trigger_to_string(it->second);
+
         _global_shortcuts.push_back({
             shortcut_id,
             it->second,
             action,
-            data
+            data,
+            normalized.find("Shift") != std::string::npos,
+            normalized.find("Control") != std::string::npos,
+            normalized.find("Alt") != std::string::npos,
         });
-
-        std::cout << "registered " << shortcut_id << ": " << gtk_shortcut_trigger_to_string(it->second) << std::endl;
     }
 
     void Window::unregister_global_shortcut(const std::string& shortcut_id)
