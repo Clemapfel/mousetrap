@@ -65,11 +65,24 @@ namespace mousetrap
 
     gboolean Window::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void*)
     {
+        std::vector<std::pair<ShortcutID, GtkShortcutTrigger*>> triggered;
         for (auto& tuple : _global_shortcuts)
         {
             auto* event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self));
             if (GDK_IS_EVENT(event) and gtk_shortcut_trigger_trigger(tuple.trigger, event, true))
-               tuple.action(tuple.argument);
+            {
+                tuple.action(tuple.argument);
+                triggered.emplace_back(tuple.id, tuple.trigger);
+            }
+        }
+
+        if (triggered.size() > 1)
+        {
+            std::cerr << "[WARNING] In Window::on_key_pressed: The actions ";
+            for (size_t i = 0; i < triggered.size(); ++i)
+                std::cerr << "\"" << triggered.at(i).first << "\"" << (i != triggered.size() - 1 ? " and " : "");
+
+            std::cerr << " have the same global shortcut trigger: \"" << gtk_shortcut_trigger_to_string(triggered.front().second) << "\"" << std::endl;
         }
 
         return true;
@@ -80,7 +93,7 @@ namespace mousetrap
         auto it = map->_bindings.find(shortcut_id);
         if (it == map->_bindings.end())
         {
-            std::cerr << "[ERROR] In Window::register_global_shortcut: Not shortcut with id " << shortcut_id << " loaded" << std::endl;
+            std::cerr << "[ERROR] In Window::register_global_shortcut: Not shortcut trigger binding with id " << shortcut_id << " registered" << std::endl;
             return;
         }
 
@@ -95,7 +108,12 @@ namespace mousetrap
     void Window::unregister_global_shortcut(const std::string& shortcut_id)
     {
         for (size_t i = 0; i < _global_shortcuts.size(); ++i)
+        {
             if (_global_shortcuts.at(i).id == shortcut_id)
+            {
+                delete _global_shortcuts.at(i).argument;
                 _global_shortcuts.erase(_global_shortcuts.begin() + i);
+            }
+        }
     }
 }

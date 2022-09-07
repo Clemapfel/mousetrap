@@ -31,25 +31,25 @@ namespace mousetrap
         private:
             static inline const std::vector<std::pair<std::string, std::vector<std::vector<std::string>>>> icon_mapping = {
 
-                    {"marquee_neighborhood_select", {
-                            {"marquee_rectangle", "marquee_rectangle_add", "marquee_rectangle_subtract"},
-                            {"marquee_circle", "marquee_circle_add", "marquee_circle_subtract"},
-                            {"marquee_polygon", "marquee_polygon_add", "marquee_polygon_subtract"}
+                    {MARQUEE_NEIGHBORHODD_SELECT, {
+                            {MARQUEE_RECTANGLE, MARQUEE_RECTANGLE_ADD, MARQUEE_RECTANGLE_SUBTRACT},
+                            {MARQUEE_CIRCLE, MARQUEE_CIRCLE_ADD, MARQUEE_CIRCLE_SUBTRACT},
+                            {MARQUEE_POLYGON, MARQUEE_POLYGON_ADD, MARQUEE_POLYGON_SUBTRACT}
                     }},
 
-                    {"pencil", {{}}},
-                    {"eraser", {{}}},
-                    {"eyedropper", {{}}},
-                    {"bucket_fill", {{}}},
-                    {"line", {{}}},
+                    {PENCIL, {{}}},
+                    {ERASER, {{}}},
+                    {EYEDROPPER, {{}}},
+                    {BUCKET_FILL, {{}}},
+                    {LINE, {{}}},
 
                     {"shapes_outline", {
-                            {"rectangle_outline", "rectangle_fill"},
-                            {"circle_outline", "circle_fill"},
-                            {"polygon_outline", "polygon_fill"}
+                            {RECTANGLE_OUTLINE, RECTANGLE_FILL},
+                            {CIRCLE_OUTLINE, CIRCLE_FILL},
+                            {POLYGON_OUTLINE, POLYGON_FILL}
                     }},
 
-                    {"gradient_dithered", {{"gradient_smooth"}}},
+                    {GRADIENT_DITHERED, {{GRADIENT_SMOOTH}}},
             };
 
             struct Icon : public Widget
@@ -87,10 +87,14 @@ namespace mousetrap
                 Box* popover_box;
 
                 MotionEventController* main_motion_event_controller;
+                MotionEventController* popover_motion_event_controller;
             };
 
             using on_icon_with_popover_enter_data = struct { IconWithPopover* self; Toolbox* instance; };
             static void on_icon_with_popover_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* instance);
+
+            using on_popover_leave_data = IconWithPopover*;
+            static void on_popover_leave(GtkEventControllerMotion* self, void* data);
 
             std::map<ToolID, Icon*> _icons;
 
@@ -106,6 +110,12 @@ namespace mousetrap
             Vector2f* last_known_position = new Vector2f{0, 0};
 
             std::string generate_tooltip(ToolID);
+
+            using on_global_shortcut_select_data = struct {Toolbox* instance; ToolID tool_id;};
+            static void on_global_shortcut_select(void*);
+            
+            using on_global_shortcut_marquee_mode_shift_data = struct {Toolbox* instance; bool add;};
+            static void on_global_shortcut_marquee_mode_shift(void*);
     };
 }
 
@@ -178,6 +188,11 @@ namespace mousetrap
 
         main_motion_event_controller = new MotionEventController();
         main_box->add_controller(main_motion_event_controller);
+
+        popover_motion_event_controller = new MotionEventController();
+        popover_box->add_controller(popover_motion_event_controller);
+
+        popover_motion_event_controller->connect_leave(on_popover_leave, this);
     }
 
     Toolbox::IconWithPopover::operator GtkWidget*()
@@ -197,6 +212,11 @@ namespace mousetrap
             else
                 icon_with->popover->popdown();
         }
+    }
+
+    void Toolbox::on_popover_leave(GtkEventControllerMotion* self, void* data)
+    {
+        ((IconWithPopover*) data)->popover->popdown();
     }
 
     void Toolbox::on_icon_click(GtkGestureClick*, gint n_press, gdouble x, gdouble y, void* data)
@@ -240,6 +260,50 @@ namespace mousetrap
         auto* instance = (Toolbox*) data;
         instance->last_known_position->x = x;
         instance->last_known_position->y = y;
+    }
+
+    void Toolbox::on_global_shortcut_select(void* data)
+    {
+        auto* instance = ((on_global_shortcut_select_data*) data)->instance;
+        auto id = ((on_global_shortcut_select_data*) data)->tool_id;
+
+        instance->select(id);
+    }
+
+    void Toolbox::on_global_shortcut_marquee_mode_shift(void* data)
+    {
+        std::cout << "called" << std::endl;
+
+        auto* instance = ((on_global_shortcut_marquee_mode_shift_data*) data)->instance;
+        auto add = ((on_global_shortcut_marquee_mode_shift_data*) data)->add;
+
+        if (state::active_tool == MARQUEE_RECTANGLE or
+            state::active_tool == MARQUEE_RECTANGLE_ADD or
+            state::active_tool == MARQUEE_RECTANGLE_SUBTRACT)
+        {
+            if (add)
+                instance->select(MARQUEE_RECTANGLE_ADD);
+            else
+                instance->select(MARQUEE_RECTANGLE_SUBTRACT);
+        }
+        else if (state::active_tool == MARQUEE_CIRCLE or
+                 state::active_tool == MARQUEE_CIRCLE_ADD or
+                 state::active_tool == MARQUEE_CIRCLE_SUBTRACT)
+        {
+            if (add)
+                instance->select(MARQUEE_CIRCLE_ADD);
+            else
+                instance->select(MARQUEE_CIRCLE_SUBTRACT);
+        }
+        else if (state::active_tool == MARQUEE_POLYGON or
+                 state::active_tool == MARQUEE_POLYGON_ADD or
+                 state::active_tool == MARQUEE_POLYGON_SUBTRACT)
+        {
+            if (add)
+                instance->select(MARQUEE_POLYGON_ADD);
+            else
+                instance->select(MARQUEE_POLYGON_SUBTRACT);
+        }
     }
 
     Toolbox::Toolbox()
@@ -292,7 +356,29 @@ namespace mousetrap
         motion_event_controller->connect_leave(on_main_leave, this);
         motion_event_controller->connect_motion(on_main_motion, this);
 
-        select(MARQUEE_RECTANGLE_ADD);
+        for (auto id : {PENCIL, ERASER, EYEDROPPER, BUCKET_FILL, LINE, RECTANGLE_OUTLINE, RECTANGLE_FILL, CIRCLE_OUTLINE, CIRCLE_FILL, POLYGON_OUTLINE, POLYGON_FILL, GRADIENT_DITHERED, GRADIENT_SMOOTH, MARQUEE_CIRCLE, MARQUEE_NEIGHBORHODD_SELECT, MARQUEE_POLYGON})
+            state::main_window->register_global_shortcut(
+                    state::shortcut_map,
+                    "toolbox." + id,
+                    on_global_shortcut_select,
+                    new on_global_shortcut_select_data{this, id}
+            );
+
+        state::main_window->register_global_shortcut(
+                state::shortcut_map,
+                "toolbox.marquee_mode_add",
+                on_global_shortcut_marquee_mode_shift,
+                new on_global_shortcut_marquee_mode_shift_data{this, true}
+        );
+
+        state::main_window->register_global_shortcut(
+                state::shortcut_map,
+                "toolbox.marquee_mode_subtract",
+                on_global_shortcut_marquee_mode_shift,
+                new on_global_shortcut_marquee_mode_shift_data{this, false}
+        );
+
+        select(MARQUEE_RECTANGLE);
     }
 
     Toolbox::operator GtkWidget*()
@@ -327,7 +413,7 @@ namespace mousetrap
         done:;
 
         auto data = on_icon_click_data{child, parent, this, id};
-        on_icon_click(nullptr, 1, -1, -1, &data);
+        on_icon_click(nullptr, 1, -1, -1, &data); // sets state::active_tool_id
     }
 
     std::string Toolbox::generate_tooltip(ToolID tool_id)
@@ -344,146 +430,146 @@ namespace mousetrap
         };
 
         std::map<std::string, std::pair<std::string, std::string>> tool_id_to_title_and_description =
-                {
-                        {"marquee_neighborhood_select", {
-                                "Marquee: Neighborhood Select",
-                                "Selects all pixels in connected region of identical Color\n(Replaces current selection)"
-                        }},
+        {
+                {MARQUEE_NEIGHBORHODD_SELECT, {
+                        "Magic Wand Select",
+                        "Automatically select same-colored regions"
+                }},
 
-                        // MARQUEE RECT
+                // MARQUEE RECT
 
-                        {"marquee_rectangle", {
-                                "Rectangle Select",
-                                "Selects all pixels in rectangular region\n(Replaces current selection)"
-                        }},
+                {MARQUEE_RECTANGLE, {
+                        "Rectangle Select",
+                        "Select rectangular region\n(Replaces current selection)"
+                }},
 
-                        {"marquee_rectangle_add", {
-                                "Rectangle Select (Add)",
-                                "Selects all pixels in rectangular region\n(Adds to current selection)"
-                        }},
+                {MARQUEE_RECTANGLE_ADD, {
+                        "Rectangle Select (Add)",
+                        "Select rectangular region\n(Adds to current selection)"
+                }},
 
-                        {"marquee_rectangle_subtract", {
-                                "Rectangle Select (Subtract)",
-                                "Selects all pixels in rectangular region\n(Subtracts from current selection)"
-                        }},
+                {MARQUEE_RECTANGLE_SUBTRACT, {
+                        "Rectangle Select (Subtract)",
+                        "Select rectangular region\n(Subtracts from current selection)"
+                }},
 
-                        // MARQUEE CIRCLE
+                // MARQUEE CIRCLE
 
-                        {"marquee_circle", {
-                                "Circle Select",
-                                "Selects all pixels in elliptical region\n(Replaces current selection)"
-                        }},
+                {MARQUEE_CIRCLE, {
+                        "Ellipse Select",
+                        "Select elliptical region\n(Replaces current selection)"
+                }},
 
-                        {"marquee_circle_add", {
-                                "Circle Select (Add)",
-                                "Selects all pixels in elliptical region\n(Adds to current selection)"
-                        }},
+                {MARQUEE_CIRCLE_ADD, {
+                        "Circle Select (Add)",
+                        "Select elliptical region\n(Adds to current selection)"
+                }},
 
-                        {"marquee_circle_subtract", {
-                                "Circle Select (Subtract)",
-                                "Selects all pixels in elliptical region\n(Subtracts from current selection)"
-                        }},
+                {MARQUEE_CIRCLE_SUBTRACT, {
+                        "Circle Select (Subtract)",
+                        "Select elliptical region\n(Subtracts from current selection)"
+                }},
 
-                        // MARQUEE POLY
+                // MARQUEE POLY
 
-                        {"marquee_polygon", {
-                                "Polygon Select",
-                                "Selects all pixels in polygonal region\n(Replaces current selection)"
-                        }},
+                {MARQUEE_POLYGON, {
+                        "Lasso Select",
+                        "Select polygonal region\n(Replaces current selection)"
+                }},
 
-                        {"marquee_polygon_add", {
-                                "Polygon Select (Add)",
-                                "Selects all pixels in polygonal region\n(Adds to current selection)"
-                        }},
+                {MARQUEE_POLYGON_ADD, {
+                        "Lasso Select (Add)",
+                        "Select polygonal region\n(Adds to current selection)"
+                }},
 
-                        {"marquee_polygon_subtract", {
-                                "Polygon Select (Subtract)",
-                                "Selects all pixels in polygonal region\n(Subtracts from current selection)"
-                        }},
+                {MARQUEE_POLYGON_SUBTRACT, {
+                        "Lasso Select (Subtract)",
+                        "Select polygonal region\n(Subtracts from current selection)"
+                }},
 
-                        // TOOLS
+                // TOOLS
 
-                        {"pencil", {
-                                "Pencil",
-                                "Draws using the current brush and primary color"
-                        }},
+                {PENCIL, {
+                        "Pencil",
+                        "Draw using brush shape and size"
+                }},
 
-                        {"eraser", {
-                                "Eraser",
-                                "Draws by setting an areas opacity to 0"
-                        }},
+                {ERASER, {
+                        "Eraser",
+                        "Erase using brush shape and size"
+                }},
 
-                        {"eyedropper", {
-                                "Color Picker",
-                                "Selects primary color from a pixel on the canvas"
-                        }},
+                {EYEDROPPER, {
+                        "Color Select",
+                        "Select color from canvas"
+                }},
 
-                        {"bucket_fill", {
-                                "Bucket Fill",
-                                "Fills a connected region with primary color"
-                        }},
+                {BUCKET_FILL, {
+                        "Bucket Fill",
+                        "Fill region with color"
+                }},
 
-                        {"line", {
-                                "Line Shape",
-                                "Draws a straight line between two points"
-                        }},
+                {LINE, {
+                        "Line",
+                        "Draw colored line using brush size"
+                }},
 
-                        // SHAPES OUTLINE
+                // SHAPES OUTLINE
 
-                        {"shapes_outline", {
-                                "Shapes (Outline)",
-                                "Draws the outline of geometric shapes using the primary color"
-                        }},
+                {"shapes_outline", {
+                        "Shapes",
+                        "Draw geometric shapes"
+                }},
 
-                        {"rectangle_outline", {
-                                "Rectangle (Outline)",
-                                "Draws rectangle outline using the primary color"
-                        }},
+                {RECTANGLE_OUTLINE, {
+                        "Rectangle (Outline)",
+                        "Draw colored rectangle outline using brush size"
+                }},
 
-                        {"circle_outline", {
-                                "Ellipses (Outline)",
-                                "Draws ellipses outline using the primary color"
-                        }},
+                {CIRCLE_OUTLINE, {
+                        "Ellipses (Outline)",
+                        "Draw colored ellipses outline using brush size"
+                }},
 
-                        {"polygon_outline", {
-                                "Polygon (Outline)",
-                                "Draws polygon outline using the primary color"
-                        }},
+                {POLYGON_OUTLINE, {
+                        "Polygon (Outline)",
+                        "Draw colored polygon outline using brush size"
+                }},
 
-                        // SHAPES FILLED
+                // SHAPES FILLED
 
-                        {"shapes_fill", {
-                                "Shapes (Filled)",
-                                "Draws solid geometric shapes using primary color"
-                        }},
+                {"shapes_fill", {
+                        "Shapes (Filled)",
+                        "Draw solid geometric shapes"
+                }},
 
-                        {"rectangle_fill", {
-                                "Rectangle (Filled)",
-                                "Draws filled rectangle using the primary color"
-                        }},
+                {RECTANGLE_FILL, {
+                        "Rectangle (Filled)",
+                        "Draw colored rectangle"
+                }},
 
-                        {"circle_fill", {
-                                "Ellipses (Filled)",
-                                "Draws filled ellipses using the primary Color"
-                        }},
+                {CIRCLE_FILL, {
+                        "Ellipses (Filled)",
+                        "Draw colored ellipse"
+                }},
 
-                        {"polygon_fill", {
-                                "Polygon (Filled)",
-                                "Draws filled polygon using the primary Color"
-                        }},
+                {POLYGON_FILL, {
+                        "Polygon (Filled)",
+                        "Draw colored polygon"
+                }},
 
-                        // GRADIENT
+                // GRADIENT
 
-                        {"gradient_dithered", {
-                                "Gradient (Dithered)",
-                                "Draws a dithered gradient, from primary to secondary Color"
-                        }},
+                {GRADIENT_DITHERED, {
+                        "Gradient (Dithered)",
+                        "Draw dithered gradient, from primary to secondary color"
+                }},
 
-                        {"gradient_smooth", {
-                                "Gradient (Smooth)",
-                                "Draws a gradient, from primary to secondary Color"
-                        }},
-                };
+                {GRADIENT_SMOOTH, {
+                        "Gradient (Smooth)",
+                        "Draw gradient, from primary to secondary Color"
+                }},
+        };
 
         auto it = tool_id_to_title_and_description.find(tool_id);
         if (it == tool_id_to_title_and_description.end())

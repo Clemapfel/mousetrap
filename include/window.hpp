@@ -34,10 +34,11 @@ namespace mousetrap
 
         private:
             GtkWindow* _native;
+            using ShortcutID = std::string;
 
             struct GlobalShortcut
             {
-                std::string id;
+                ShortcutID id;
                 GtkShortcutTrigger* trigger;
                 std::function<void(void*)> action;
                 void* argument;
