@@ -272,8 +272,6 @@ namespace mousetrap
 
     void Toolbox::on_global_shortcut_marquee_mode_shift(void* data)
     {
-        std::cout << "called" << std::endl;
-
         auto* instance = ((on_global_shortcut_marquee_mode_shift_data*) data)->instance;
         auto add = ((on_global_shortcut_marquee_mode_shift_data*) data)->add;
 
@@ -574,7 +572,7 @@ namespace mousetrap
         auto it = tool_id_to_title_and_description.find(tool_id);
         if (it == tool_id_to_title_and_description.end())
         {
-            std::cout << "[ERROR] In Toolbox::generate_tooltip: No description found for " << tool_id << std::endl;
+            std::cerr << "[ERROR] In Toolbox::generate_tooltip: No description found for " << tool_id << std::endl;
             return tool_id;
         }
 

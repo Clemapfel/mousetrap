@@ -66,10 +66,10 @@ namespace mousetrap
     gboolean Window::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void*)
     {
         std::vector<std::pair<ShortcutID, GtkShortcutTrigger*>> triggered;
-        for (auto& tuple : _global_shortcuts)
+        auto* event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self));
+        if (GDK_IS_EVENT(event))
         {
-            auto* event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self));
-            if (GDK_IS_EVENT(event))
+            for (auto& tuple: _global_shortcuts)
             {
                 GdkModifierType modifier = gdk_event_get_modifier_state(event);
                 bool shift = modifier & GdkModifierType::GDK_SHIFT_MASK;
@@ -79,8 +79,7 @@ namespace mousetrap
                 if (gtk_shortcut_trigger_trigger(tuple.trigger, event, false) and
                     shift == tuple.shift and
                     control == tuple.control and
-                    alt == tuple.alt
-                )
+                    alt == tuple.alt)
                 {
                     tuple.action(tuple.argument);
                     triggered.emplace_back(tuple.id, tuple.trigger);
@@ -110,16 +109,29 @@ namespace mousetrap
         }
 
         std::string normalized = gtk_shortcut_trigger_to_string(it->second);
+        auto shift = normalized.find("Shift") != std::string::npos;
 
         _global_shortcuts.push_back({
             shortcut_id,
             it->second,
             action,
             data,
-            normalized.find("Shift") != std::string::npos,
+            shift,
             normalized.find("Control") != std::string::npos,
             normalized.find("Alt") != std::string::npos,
         });
+
+        if (shift)
+        {
+            auto start = normalized.find_last_of(">");
+            auto non_modifier = normalized.substr(start == std::string::npos ? 0 : start + 1, std::string::npos);
+
+            if (non_modifier.size() != 1 or not (static_cast<int>(non_modifier.at(0)) >= 97 and static_cast<int>(non_modifier.at(0)) <= 122))
+            {
+                std::cerr << "[WARNING] In Window::register_global_shortcut: Shortcut \"" << normalized << "\" for action \""
+                          << shortcut_id << "\" may be invalid on certain keyboard layouts. Consider using another modifier other than <Shift>." << std::endl;
+            }
+        }
     }
 
     void Window::unregister_global_shortcut(const std::string& shortcut_id)
