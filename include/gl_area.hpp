@@ -20,8 +20,10 @@ namespace mousetrap
 
             void add_render_task(Shape*, Shader* = nullptr, GLTransform* = nullptr);
             void add_render_task(RenderTask);
+            void clear_render_tasks();
 
             void queue_render();
+            void make_current();
 
         private:
             void on_resize(GtkGLArea* area, gint width, gint height);

@@ -33,6 +33,11 @@ namespace mousetrap
         _render_tasks.push_back(task);
     }
 
+    void GLArea::clear_render_tasks()
+    {
+        _render_tasks.clear();
+    }
+
     gboolean GLArea::on_render_wrapper(void* area, void* context, void* instance)
     {
         return ((GLArea*) instance)->on_render(GTK_GL_AREA(area), GDK_GL_CONTEXT(context));
@@ -69,5 +74,10 @@ namespace mousetrap
     {
         gtk_gl_area_queue_render(_native);
         gtk_widget_queue_draw(GTK_WIDGET(_native));
+    }
+
+    void GLArea::make_current()
+    {
+        gtk_gl_area_make_current(_native);
     }
 }

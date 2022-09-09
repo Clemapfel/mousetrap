@@ -54,6 +54,7 @@ static void activate(GtkApplication* app, void*)
     auto* brush_options = new BrushOptions();
 
     static auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
+
     /*
     box->push_back(state::color_picker);
     box->push_back(state::primary_secondary_color_swapper);
