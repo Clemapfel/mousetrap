@@ -83,6 +83,7 @@ namespace mousetrap
                 GLArea* canvas;
                 AspectFrame* main;
 
+                static inline const RGBA line_color = RGBA(1, 1, 1, 0.33);
                 std::vector<Shape*> pixel_lines;
 
                 Shape* transparency_tiling_shape;
@@ -232,13 +233,13 @@ namespace mousetrap
               {1 - eps, 1 - eps},
               {1 - eps, 0}
         });
-        instance->outline_frame->set_color(RGBA(1, 1, 1, 1));
+        instance->outline_frame->set_color(line_color);
 
         instance->brush_shape = new Shape();
         instance->brush_shape->as_rectangle({0, 0}, {1, 1});
         instance->brush_shape->set_color(RGBA(0, 0, 0, 1));
 
-        instance->set_resolution(2);
+        instance->set_resolution(1);
     }
 
     void BrushOptions::BrushPreviewCanvas::set_resolution(size_t resolution)
@@ -250,15 +251,16 @@ namespace mousetrap
 
         pixel_lines.clear();
 
-        for (size_t i = 0; resolution < 30 and i < resolution; ++i)
+        bool draw_lines = (1.f / resolution) * canvas_size->x > 5;
+        for (size_t i = 1; draw_lines and i < resolution; ++i)
         {
             pixel_lines.emplace_back(new Shape());
             pixel_lines.back()->as_line({0, float(i) / resolution}, {1, float(i) / resolution});
-            pixel_lines.back()->set_color(RGBA(1, 1, 1, 1));
+            pixel_lines.back()->set_color(line_color);
 
             pixel_lines.emplace_back(new Shape());
             pixel_lines.back()->as_line({float(i) / resolution, 0}, {float(i) / resolution, 1});
-            pixel_lines.back()->set_color(RGBA(1, 1, 1, 1));
+            pixel_lines.back()->set_color(line_color);
         }
 
         canvas->clear_render_tasks();
@@ -268,11 +270,11 @@ namespace mousetrap
 
         canvas->add_render_task(transparency_tiling_task);
         canvas->add_render_task(brush_shape);
+        canvas->add_render_task(outline_frame);
 
         for (auto* line : pixel_lines)
             canvas->add_render_task(line);
 
-        canvas->add_render_task(outline_frame);
         canvas->queue_render();
     }
 
