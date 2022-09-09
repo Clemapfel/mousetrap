@@ -204,7 +204,7 @@ namespace mousetrap
 
     void BrushOptions::BrushPreviewCanvas::on_resize(GtkGLArea* area, int x, int y, void* data)
     {
-        std::cout << x << " " << y << std::endl;
+        gtk_gl_area_make_current(area);
 
         auto* instance = (BrushOptions::BrushPreviewCanvas*) data;
         instance->canvas_size->x = x;
@@ -283,10 +283,10 @@ namespace mousetrap
         canvas = new GLArea();
         canvas->connect_signal("realize", on_realize, this);
         canvas->connect_signal("resize", on_resize, this);
+        canvas->set_expand(true);
 
         main = new AspectFrame(1);
         main->set_child(canvas);
-        main->set_size_request({100, 100});
     }
 
     BrushOptions::BrushOptions()
