@@ -162,7 +162,10 @@ add_library(mousetrap SHARED
 
     include/column_view.hpp
     src/column_view.inl
-        app/~toolbox.hpp include/popover.hpp src/popover.inl)
+
+    include/popover.hpp
+    src/popover.inl
+)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -188,7 +191,10 @@ add_library(app STATIC
     app/palette.hpp
     app/primary_secondary_color_swapper.hpp
     app/verbose_color_picker.hpp
-        app/tools.hpp app/toolbox.hpp)
+    app/tools.hpp
+    app/toolbox.hpp
+    app/brush_options.hpp
+)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

@@ -24,6 +24,7 @@
 #include <app/verbose_color_picker.hpp>
 #include <app/palette_view.hpp>
 #include <app/toolbox.hpp>
+#include <app/brush_options.hpp>
 
 using namespace mousetrap;
 
@@ -50,6 +51,8 @@ static void activate(GtkApplication* app, void*)
 
     state::toolbox = new Toolbox();
 
+    auto* brush_options = new BrushOptions();
+
     static auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
     /*
     box->push_back(state::color_picker);
@@ -57,7 +60,7 @@ static void activate(GtkApplication* app, void*)
     box->push_back(state::verbose_color_picker);
     box->push_back(state::palette_view);
      */
-    box->push_back(state::toolbox);
+    box->push_back(brush_options);
 
     // TODO
 
