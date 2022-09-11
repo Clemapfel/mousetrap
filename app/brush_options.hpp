@@ -235,8 +235,10 @@ namespace mousetrap
         });
         instance->outline_frame->set_color(line_color);
 
+        float brush_shape_margin = 0;
+
         instance->brush_shape = new Shape();
-        instance->brush_shape->as_rectangle({0, 0}, {1, 1});
+        instance->brush_shape->as_rectangle(Vector2f(brush_shape_margin), Vector2f(1 - 2 * brush_shape_margin));
         instance->brush_shape->set_color(RGBA(0, 0, 0, 1));
 
         instance->set_resolution(1);
@@ -252,14 +254,18 @@ namespace mousetrap
         pixel_lines.clear();
 
         bool draw_lines = (1.f / resolution) * canvas_size->x > 5;
+
+        auto topleft = brush_shape->get_top_left();
+        auto size = brush_shape->get_size();
+
         for (size_t i = 1; draw_lines and i < resolution; ++i)
         {
             pixel_lines.emplace_back(new Shape());
-            pixel_lines.back()->as_line({0, float(i) / resolution}, {1, float(i) / resolution});
+            pixel_lines.back()->as_line({topleft.x, float(i) / resolution}, {topleft.x + size.x, float(i) / resolution});
             pixel_lines.back()->set_color(line_color);
 
             pixel_lines.emplace_back(new Shape());
-            pixel_lines.back()->as_line({float(i) / resolution, 0}, {float(i) / resolution, 1});
+            pixel_lines.back()->as_line({float(i) / resolution, topleft.y}, {float(i) / resolution, topleft.y + size.y});
             pixel_lines.back()->set_color(line_color);
         }
 
@@ -405,6 +411,7 @@ namespace mousetrap
         _opacity_scale_box->push_back(_opacity_spin_button);
 
         _brush_preview = new BrushPreviewCanvas();
+        _brush_preview->set_size_request(Vector2f(4 * 32));
 
         _main = new Box(GTK_ORIENTATION_VERTICAL, state::margin_unit);
         _main->set_expand(true);

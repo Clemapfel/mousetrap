@@ -13,7 +13,6 @@ namespace mousetrap
     {
         public:
             SeparatorLine(GtkOrientation = GTK_ORIENTATION_HORIZONTAL);
-
             operator GtkWidget*();
 
         private:
