@@ -255,11 +255,49 @@ void mousetrap::state::update_brush_texture()
     }
     else if (state::brush_type == BrushType::LINE_HORIZONTAL)
     {
-        std::cerr << "[ERROR] In state::update_brush_texture: LINE_HORIZONTAL TODO" << std::endl;
+        state::brush_texture_image->create(size, size, RGBA(0, 0, 0, 0));
+
+        if (size == 1)
+            matrix_to_image({1});
+        else
+        {
+            if (size % 2 == 1)
+            {
+                for (size_t x = 0; x < size; ++x)
+                    state::brush_texture_image->set_pixel(x, size / 2, RGBA(1, 1, 1, 1));
+            }
+            else
+            {
+                for (size_t x = 0; x < size; ++x)
+                {
+                    state::brush_texture_image->set_pixel(x, size / 2 - 1, RGBA(1, 1, 1, 1));
+                    //state::brush_texture_image->set_pixel(x, size / 2, RGBA(1, 1, 1, 1));
+                }
+            }
+        }
     }
-    else if (state::brush_type == BrushType::LINE_HORIZONTAL)
+    else if (state::brush_type == BrushType::LINE_VERTICAL)
     {
-        std::cerr << "[ERROR] In state::update_brush_texture: LINE_VERTICAL TODO" << std::endl;
+        state::brush_texture_image->create(size, size, RGBA(0, 0, 0, 0));
+
+        if (size == 1)
+            matrix_to_image({1});
+        else
+        {
+            if (size % 2 == 1)
+            {
+                for (size_t y = 0; y < size; ++y)
+                    state::brush_texture_image->set_pixel(size / 2, y, RGBA(1, 1, 1, 1));
+            }
+            else
+            {
+                for (size_t y = 0; y < size; ++y)
+                {
+                    state::brush_texture_image->set_pixel(size / 2 - 1, y, RGBA(1, 1, 1, 1));
+                    //state::brush_texture_image->set_pixel(size / 2, y, RGBA(1, 1, 1, 1));
+                }
+            }
+        }
     }
 
     state::brush_texture->create_from_image(*state::brush_texture_image);
