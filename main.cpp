@@ -50,8 +50,7 @@ static void activate(GtkApplication* app, void*)
     state::palette_view->show();
 
     state::toolbox = new Toolbox();
-
-    auto* brush_options = new BrushOptions();
+    state::brush_options = new BrushOptions();
 
     static auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
 
@@ -61,7 +60,7 @@ static void activate(GtkApplication* app, void*)
     box->push_back(state::verbose_color_picker);
     box->push_back(state::palette_view);
      */
-    box->push_back(brush_options);
+    box->push_back(state::brush_options);
 
     // TODO
 

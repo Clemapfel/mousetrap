@@ -59,12 +59,13 @@ namespace mousetrap::state
     // ### TOOLS ######################################
 
     Widget* toolbox = nullptr;
-    ToolID active_tool = "brush";
+    ToolID active_tool = BRUSH;
 
+    Widget* brush_options = nullptr;
     Image* brush_texture_image = nullptr;
     Texture* brush_texture = nullptr;
 
-    BrushType brush_type = BrushType::RECTANGLE;
+    BrushType brush_type = BrushType::SQUARE;
     size_t brush_size = 1;
     float brush_opacity = 1;
 
@@ -106,24 +107,23 @@ void mousetrap::state::update_brush_texture()
         state::brush_texture = new Texture();
 
     size_t size = state::brush_size;
+    static auto matrix_to_image = [](std::vector<float> in) {
+        for (size_t i = 0; i < in.size(); ++i)
+        {
+            if (in.at(i) == 0)
+                state::brush_texture_image->set_pixel(i, RGBA(0, 0, 0, 0));
+            else
+                state::brush_texture_image->set_pixel(i, RGBA(1, 1, 1, 1));
+        }
+    };
 
-    if (state::brush_type == BrushType::RECTANGLE)
+    if (state::brush_type == BrushType::SQUARE)
     {
         state::brush_texture_image->create(size, size, RGBA(1, 1, 1, 1));
-        state::brush_texture->create_from_image(*state::brush_texture_image);
     }
     else if (state::brush_type == BrushType::CIRCLE)
     {
         state::brush_texture_image->create(size, size, RGBA(0, 0, 0, 0));
-        static auto matrix_to_image = [](std::vector<float> in) {
-            for (size_t i = 0; i < in.size(); ++i)
-            {
-                if (in.at(i) == 0)
-                    state::brush_texture_image->set_pixel(i, RGBA(0, 0, 0, 0));
-                else
-                    state::brush_texture_image->set_pixel(i, RGBA(1, 1, 1, 1));
-            }
-        };
 
         if (size == 1)
         {
@@ -204,7 +204,7 @@ void mousetrap::state::update_brush_texture()
         else
         {
             auto center = size / 2 + (size % 2 == 0 ? -0.5 : 0);
-            auto radicius = size / 2 + (size % 2 == 0 ? 1 : 1);
+            auto radius = size / 2 + (size % 2 == 0 ? 1 : 1);
 
             for (size_t x = 0; x < size; ++x)
                 for (size_t y = 0; y < size; ++y)
@@ -212,11 +212,55 @@ void mousetrap::state::update_brush_texture()
                         state::brush_texture_image->set_pixel(x, y, RGBA(1, 1, 1, 1));
 
         }
-
-        state::brush_texture->create_from_image(*state::brush_texture_image);
     }
-    else if (state::brush_type == BrushType::CUSTOM)
+    else if (state::brush_type == BrushType::RECTANGLE_HORIZONTAL)
     {
-        std::cerr << "[ERROR] In state::update_brush_texture: BrushType::CUSTOM TODO" << std::endl;
+        state::brush_texture_image->create(size, size, RGBA(1, 1, 1, 1));
+
+        if (size == 1)
+        {
+            matrix_to_image({1});
+        }
+        else if (size == 2)
+        {
+            matrix_to_image({1, 1, 1, 1});
+        }
+        else if (size == 4)
+        {
+            matrix_to_image({
+                0, 0, 0, 0,
+                1, 1, 1, 1,
+                1, 1, 1, 1,
+                0, 0, 0, 0
+            });
+        }
+        else
+        {
+            for (size_t x = 0; x < size; ++x)
+                for (size_t y = 0; y < size; ++y)
+                        state::brush_texture_image->set_pixel(x, y, RGBA(0, 0, 0, 0));
+        }
     }
+    else if (state::brush_type == BrushType::RECTANGLE_VERTICAL)
+    {
+        std::cerr << "[ERROR] In state::update_brush_texture: RECTANGLE_VERTICAL TODO" << std::endl;
+    }
+    else if (state::brush_type == BrushType::ELLIPSE_HORIZONTAL)
+    {
+        std::cerr << "[ERROR] In state::update_brush_texture: ELLIPSE_HORIZONTAL TODO" << std::endl;
+    }
+    else if (state::brush_type == BrushType::ELLIPSE_VERTICAL)
+    {
+        std::cerr << "[ERROR] In state::update_brush_texture: ELLIPSE_VERTICAL TODO" << std::endl;
+    }
+    else if (state::brush_type == BrushType::LINE_HORIZONTAL)
+    {
+        std::cerr << "[ERROR] In state::update_brush_texture: LINE_HORIZONTAL TODO" << std::endl;
+    }
+    else if (state::brush_type == BrushType::LINE_HORIZONTAL)
+    {
+        std::cerr << "[ERROR] In state::update_brush_texture: LINE_VERTICAL TODO" << std::endl;
+    }
+
+    state::brush_texture->create_from_image(*state::brush_texture_image);
 }

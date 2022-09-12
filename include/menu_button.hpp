@@ -23,6 +23,8 @@ namespace mousetrap
             void set_popover_position(GtkPositionType);
             void set_popover(Popover*);
 
+            void set_always_show_arrow(bool);
+
             void popup();
             void popdown();
 
@@ -74,5 +76,10 @@ namespace mousetrap
     void MenuButton::popdown()
     {
         gtk_menu_button_popdown(_native);
+    }
+
+    void MenuButton::set_always_show_arrow(bool b)
+    {
+        gtk_menu_button_set_always_show_arrow(_native, b);
     }
 }

@@ -241,6 +241,9 @@ namespace mousetrap
         if (not description.empty())
             out << description << "\n";
 
+        if (left.empty())
+            return out.str();
+
         out << "<span foreground=\"#777777\">";
         for (size_t i = 0; i < left_max; ++i)
             out << "―";

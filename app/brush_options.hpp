@@ -16,13 +16,19 @@ namespace mousetrap
     {
         public:
             BrushOptions();
+            void update() override;
             operator GtkWidget*() override;
 
         private:
             static inline constexpr size_t max_brush_size_on_scale = 50;
-            static inline constexpr const char* brush_size_label_text = "Brush Size (px) "; // trailing space sic
-            static inline constexpr const char* brush_shape_label_text = "Brush Shape "; // trailing space sic
-            static inline constexpr const char* opacity_label_text = "Opacity "; // trailing space sic
+            static inline constexpr const char* brush_size_label_text = "Brush Size "; // trailing space sic
+            static inline constexpr const char* brush_shape_label_text = "Brush Shape ";
+            static inline constexpr const char* opacity_label_text = "Opacity ";
+            static inline constexpr const char* brush_size_tooltip_text = "Brush radius, in pixels";
+            static inline constexpr const char* brush_shape_tooltip_text = "Brush shape";
+
+            static inline constexpr const char* opacity_tooltip_text = "Opacity (alpha)";
+            static inline constexpr const char* brush_preview_tooltip_text = "<b>Brush Preview</b>\nPreview brush shape, size and opacity";
 
             Label* _brush_size_label;
             SeparatorLine* _brush_size_label_separator;
@@ -32,18 +38,37 @@ namespace mousetrap
             SpinButton* _brush_size_spin_button;
             Box* _brush_size_scale_box;
 
-            static inline constexpr const char* circle_brush_shape_icon_id = "circle_brush_shape";
-            static inline constexpr const char* rectangle_brush_shape_icon_id = "rectangle_brush_shape";
-            static inline constexpr const char* custom_brush_shape_icon_id = "custom_brush_shape";
+            static inline const std::map<BrushType, std::string> brush_type_to_icon_id = {
+                {BrushType::SQUARE, "brush_shape_square"},
+                {BrushType::CIRCLE, "brush_shape_circle"},
+                {BrushType::ELLIPSE_VERTICAL, "brush_shape_ellipse_vertical"},
+                {BrushType::ELLIPSE_HORIZONTAL, "brush_shape_ellipse_horizontal"},
+                {BrushType::RECTANGLE_VERTICAL, "brush_shape_rectangle_vertical"},
+                {BrushType::RECTANGLE_HORIZONTAL, "brush_shape_rectangle_horizontal"},
+                {BrushType::LINE_VERTICAL, "brush_shape_line_vertical"},
+                {BrushType::LINE_HORIZONTAL, "brush_shape_line_horizontal"}
+            };
+            static inline constexpr const char* brush_type_more_icon_id = "brush_shape_other";
 
-            ImageDisplay* _circle_brush_icon;
-            ToggleButton* _circle_brush_toggle_button;
+            static inline const std::map<BrushType, std::string> brush_type_to_tooltip = {
+                {BrushType::SQUARE, "Brush Shape: Square"},
+                {BrushType::CIRCLE, "Brush Shape: Circle"},
+                {BrushType::ELLIPSE_VERTICAL, "Brush Shape: Ellipse (Vertical)"},
+                {BrushType::ELLIPSE_HORIZONTAL, "Brush Shape: Ellipse (Horizontal)"},
+                {BrushType::RECTANGLE_VERTICAL, "Brush Shape: Rectangle (Vertical)"},
+                {BrushType::RECTANGLE_HORIZONTAL, "Brush Shape: Rectangle (Horizontal)"},
+                {BrushType::LINE_VERTICAL, "Brush Shape: Line (Vertical)"},
+                {BrushType::LINE_HORIZONTAL, "Brush Shape: Line (Horizontal)"}
+            };
 
-            ImageDisplay* _rectangle_brush_icon;
-            ToggleButton* _rectangle_brush_toggle_button;
+            ImageDisplay* _other_brush_icon;
+            MenuButton* _other_brush_menu_button;
 
-            ImageDisplay* _custom_brush_icon;
-            ToggleButton* _custom_brush_toggle_button;
+            Popover* _other_brush_popover;
+            FlowBox* _other_brush_popover_box;
+
+            using BrushToggleButton = struct {ToggleButton* button; ImageDisplay* icon;};
+            std::map<BrushType, BrushToggleButton*> _brush_toggle_buttons;
 
             Box* _brush_shape_hbox;
 
@@ -62,8 +87,8 @@ namespace mousetrap
             using on_brush_size_changed_data = BrushOptions*;
             static void on_brush_size_changed(void*, void* instance);
 
-            using on_brush_shape_selected_data = struct{ BrushOptions* instance; BrushType which; };
-            static void on_brush_shape_selected(GtkToggleButton*, void*);
+            using on_brush_type_selected_data = struct{ BrushOptions* instance; BrushType which; };
+            static void on_brush_type_selected(GtkToggleButton*, void*);
 
             using on_brush_opacity_changed_data = BrushOptions*;
             static void on_brush_opacity_changed(void*, void* instance);
@@ -161,43 +186,23 @@ namespace mousetrap
         instance->_brush_preview->canvas->queue_render();
     }
 
-    void BrushOptions::on_brush_shape_selected(GtkToggleButton* button, void* data)
+    void BrushOptions::on_brush_type_selected(GtkToggleButton* button, void* data)
     {
-        auto which = ((on_brush_shape_selected_data *) data)->which;
-        auto* instance = ((on_brush_shape_selected_data *) data)->instance;
+        auto which = ((on_brush_type_selected_data *) data)->which;
+        auto* instance = ((on_brush_type_selected_data *) data)->instance;
 
-        for (auto* button : {
-            instance->_rectangle_brush_toggle_button,
-            instance->_circle_brush_toggle_button,
-            instance->_custom_brush_toggle_button
-        })
+        for (auto& pair : instance->_brush_toggle_buttons)
+        {
+            auto* button = pair.second->button;
             button->set_all_signals_blocked(true);
 
-        if (which == BrushType::RECTANGLE)
-        {
-            instance->_rectangle_brush_toggle_button->set_active(true);
-            instance->_circle_brush_toggle_button->set_active(false);
-            instance->_custom_brush_toggle_button->set_active(false);
-        }
-        else if (which == BrushType::CIRCLE)
-        {
-            instance->_rectangle_brush_toggle_button->set_active(false);
-            instance->_circle_brush_toggle_button->set_active(true);
-            instance->_custom_brush_toggle_button->set_active(false);
-        }
-        else if (which == BrushType::CUSTOM)
-        {
-            instance->_rectangle_brush_toggle_button->set_active(false);
-            instance->_circle_brush_toggle_button->set_active(false);
-            instance->_custom_brush_toggle_button->set_active(true);
-        }
+            if (pair.first == which)
+                button->set_active(true);
+            else
+                button->set_active(false);
 
-        for (auto* button : {
-                instance->_rectangle_brush_toggle_button,
-                instance->_circle_brush_toggle_button,
-                instance->_custom_brush_toggle_button
-        })
             button->set_all_signals_blocked(false);
+        }
 
         state::brush_type = which;
         state::update_brush_texture();
@@ -235,9 +240,9 @@ namespace mousetrap
               {1 - eps, 1 - eps},
               {1 - eps, 0}
         });
-        instance->outline_frame->set_color(line_color);
+        instance->outline_frame->set_color(RGBA(0, 0, 0, 1));
 
-        float brush_shape_margin = 0;
+        float brush_shape_margin = 0.05;
 
         if (state::brush_texture_image == nullptr)
         {
@@ -253,10 +258,10 @@ namespace mousetrap
 
         instance->brush_shape = new Shape();
         instance->brush_shape->as_rectangle(Vector2f(brush_shape_margin), Vector2f(1 - 2 * brush_shape_margin));
-        instance->brush_shape->set_color(RGBA(1, 0, 1, 1));
+        instance->brush_shape->set_color(RGBA(0, 0, 0, 1));
         instance->brush_shape->set_texture(state::brush_texture);
 
-        instance->set_resolution(1);
+        instance->set_resolution(2);
     }
 
     void BrushOptions::BrushPreviewCanvas::set_resolution(size_t resolution)
@@ -268,19 +273,26 @@ namespace mousetrap
 
         pixel_lines.clear();
 
-        bool draw_lines = (1.f / resolution) * canvas_size->x > 5;
-
         auto topleft = brush_shape->get_top_left();
         auto size = brush_shape->get_size();
+
+        float square_size = size.x / float(resolution);
+        bool draw_lines = square_size * canvas_size->x > 5;
 
         for (size_t i = 1; draw_lines and i < resolution; ++i)
         {
             pixel_lines.emplace_back(new Shape());
-            pixel_lines.back()->as_line({topleft.x, float(i) / resolution}, {topleft.x + size.x, float(i) / resolution});
+            pixel_lines.back()->as_line(
+                {topleft.x, float(i) * square_size + topleft.x},
+                {topleft.x + size.x, float(i) * square_size + topleft.x}
+            );
             pixel_lines.back()->set_color(line_color);
 
             pixel_lines.emplace_back(new Shape());
-            pixel_lines.back()->as_line({float(i) / resolution, topleft.y}, {float(i) / resolution, topleft.y + size.y});
+            pixel_lines.back()->as_line(
+                {float(i) * square_size + topleft.y, topleft.y},
+                {float(i) * square_size + topleft.y, topleft.y + size.y}
+            );
             pixel_lines.back()->set_color(line_color);
         }
 
@@ -328,6 +340,7 @@ namespace mousetrap
         _brush_size_scale_box->push_back(_brush_size_scale);
         _brush_size_scale_box->push_back(_brush_size_spin_button);
         _brush_size_scale_box->set_vexpand(false);
+        _brush_size_scale_box->set_tooltip_text(brush_size_tooltip_text);
 
         _brush_size_label = new Label(brush_size_label_text);
         _brush_size_label->set_halign(GTK_ALIGN_START);
@@ -340,54 +353,65 @@ namespace mousetrap
         _brush_size_label_box = new Box(GTK_ORIENTATION_HORIZONTAL);
         _brush_size_label_box->push_back(_brush_size_label);
         _brush_size_label_box->push_back(_brush_size_label_separator);
+        _brush_size_label_box->set_tooltip_text(brush_size_tooltip_text);
 
-        _circle_brush_icon = new ImageDisplay(get_resource_path() + "icons/" + circle_brush_shape_icon_id + ".png");
-        _rectangle_brush_icon = new ImageDisplay(get_resource_path() + "icons/" + rectangle_brush_shape_icon_id + ".png");
-        _custom_brush_icon = new ImageDisplay(get_resource_path() + "icons/" + custom_brush_shape_icon_id + ".png");
-
-        for (auto* icon : {_circle_brush_icon, _rectangle_brush_icon, _custom_brush_icon})
-            icon->set_size_request({32, 32});
-
-        _rectangle_brush_toggle_button = new ToggleButton();
-        _rectangle_brush_toggle_button->set_child(_rectangle_brush_icon);
-        _rectangle_brush_toggle_button->connect_signal(
-            "toggled",
-            on_brush_shape_selected,
-            new on_brush_shape_selected_data{this, BrushType::RECTANGLE}
-        );
-
-        _circle_brush_toggle_button = new ToggleButton();
-        _circle_brush_toggle_button->set_child(_circle_brush_icon);
-        _circle_brush_toggle_button->connect_signal(
-                "toggled",
-                on_brush_shape_selected,
-                new on_brush_shape_selected_data{this, BrushType::CIRCLE}
-        );
-
-        _custom_brush_toggle_button = new ToggleButton();
-        _custom_brush_toggle_button->set_child(_custom_brush_icon);
-        _custom_brush_toggle_button->connect_signal(
-                "toggled",
-                on_brush_shape_selected,
-                new on_brush_shape_selected_data{this, BrushType::CUSTOM}
-        );
-
-        for (auto* button : {_rectangle_brush_toggle_button, _circle_brush_toggle_button, _custom_brush_toggle_button})
+        for (auto& pair : brush_type_to_icon_id)
         {
-            button->set_hexpand(true);
-            button->set_margin_start(0.5 * state::margin_unit);
-            button->set_margin_end(0.5 * state::margin_unit);
+            auto type = pair.first;
+            auto inserted = _brush_toggle_buttons.insert({type, new BrushToggleButton{
+                new ToggleButton(),
+                new ImageDisplay(get_resource_path() + "icons/" + brush_type_to_icon_id.at(type) + ".png")
+            }}).first->second;
+
+            inserted->icon->set_size_request({32, 32});
+            inserted->button->set_child(inserted->icon);
+            inserted->button->set_hexpand(true);
+            inserted->button->set_margin_start(0.5 * state::margin_unit);
+            inserted->button->set_margin_end(0.5 * state::margin_unit);
+            inserted->button->set_cursor(GtkCursorType::POINTER);
+            inserted->button->set_tooltip_text(brush_type_to_tooltip.at(type));
+
+            if (type == BrushType::SQUARE)
+                inserted->button->set_active(true);
+
+            inserted->button->connect_signal(
+                "toggled",
+                on_brush_type_selected,
+                new on_brush_type_selected_data{this, type}
+            );
         }
 
+        _other_brush_icon = new ImageDisplay(get_resource_path() + "icons/" + brush_type_more_icon_id + ".png");
+        _other_brush_icon->set_size_request({32, 32});
+
+        _other_brush_menu_button = new MenuButton();
+        _other_brush_menu_button->set_child(_other_brush_icon);
+        _other_brush_menu_button->set_always_show_arrow(false);
+        _other_brush_menu_button->set_hexpand(true);
+        _other_brush_menu_button->set_margin_start(0.5 * state::margin_unit);
+        _other_brush_menu_button->set_margin_end(0.5 * state::margin_unit);
+        _other_brush_menu_button->set_cursor(GtkCursorType::POINTER);
+        _other_brush_menu_button->set_tooltip_text("Click for more brush shapes");
+
+        _other_brush_popover = new Popover();
+        _other_brush_popover_box = new FlowBox();
+        _other_brush_popover->set_child(_other_brush_popover_box);
+        _other_brush_menu_button->set_popover(_other_brush_popover);
+        _other_brush_menu_button->set_popover_position(GTK_POS_RIGHT);
+
         _brush_shape_hbox = new Box(GTK_ORIENTATION_HORIZONTAL);
-        _brush_shape_hbox->push_back(_rectangle_brush_toggle_button);
-        _brush_shape_hbox->push_back(_circle_brush_toggle_button);
-        _brush_shape_hbox->push_back(_custom_brush_toggle_button);
+        _brush_shape_hbox->push_back(_brush_toggle_buttons.at(BrushType::SQUARE)->button);
+        _brush_shape_hbox->push_back(_brush_toggle_buttons.at(BrushType::CIRCLE)->button);
+        _brush_shape_hbox->push_back(_other_brush_menu_button);
         _brush_shape_hbox->set_hexpand(true);
 
-        _rectangle_brush_toggle_button->set_all_signals_blocked(true);
-        _rectangle_brush_toggle_button->set_active(true);
-        _rectangle_brush_toggle_button->set_all_signals_blocked(false);
+        for (auto& pair : _brush_toggle_buttons)
+        {
+            if (pair.first == BrushType::SQUARE or pair.first == BrushType::CIRCLE or pair.first == BrushType::OTHER)
+                continue;
+
+            _other_brush_popover_box->push_back(pair.second->button);
+        }
 
         _brush_shape_label = new Label(brush_shape_label_text);
         _brush_shape_label->set_margin_start(0.5 * state::margin_unit);
@@ -397,6 +421,7 @@ namespace mousetrap
         _brush_shape_label_box = new Box(GTK_ORIENTATION_HORIZONTAL);
         _brush_shape_label_box->push_back(_brush_shape_label);
         _brush_shape_label_box->push_back(_brush_shape_label_separator);
+        _brush_shape_label_box->set_tooltip_text(brush_shape_tooltip_text);
 
         _opacity_label = new Label(opacity_label_text);
         _opacity_label->set_margin_start(0.5 * state::margin_unit);
@@ -407,6 +432,7 @@ namespace mousetrap
         _opacity_label_box = new Box(GTK_ORIENTATION_HORIZONTAL);
         _opacity_label_box->push_back(_opacity_label);
         _opacity_label_box->push_back(_opacity_label_separator);
+        _opacity_label_box->set_tooltip_text(opacity_tooltip_text);
 
         _opacity_scale = new Scale(0, 1, 0.05);
         _opacity_scale->set_hexpand(true);
@@ -421,14 +447,16 @@ namespace mousetrap
         _opacity_spin_button->set_vexpand(false);
         _opacity_spin_button->set_halign(GTK_ALIGN_END);
         _opacity_spin_button->set_value(1);
-        _opacity_scale->connect_signal("value-changed", on_brush_opacity_changed, this);
+        _opacity_spin_button->connect_signal("value-changed", on_brush_opacity_changed, this);
 
         _opacity_scale_box = new Box(GTK_ORIENTATION_HORIZONTAL);
         _opacity_scale_box->push_back(_opacity_scale);
         _opacity_scale_box->push_back(_opacity_spin_button);
+        _opacity_scale_box->set_tooltip_text(opacity_tooltip_text);
 
         _brush_preview = new BrushPreviewCanvas();
         _brush_preview->set_size_request(Vector2f(4 * 32));
+        _brush_preview->set_tooltip_text(brush_preview_tooltip_text);
 
         _main = new Box(GTK_ORIENTATION_VERTICAL, state::margin_unit);
         _main->set_expand(true);
@@ -439,6 +467,11 @@ namespace mousetrap
         _main->push_back(_brush_preview);
         _main->push_back(_opacity_label_box);
         _main->push_back(_opacity_scale_box);
+    }
+
+    void BrushOptions::update()
+    {
+        _brush_preview->set_resolution(state::brush_size);
     }
 
     BrushOptions::operator GtkWidget*()

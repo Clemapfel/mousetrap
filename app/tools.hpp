@@ -39,8 +39,14 @@ namespace mousetrap
     
     enum class BrushType
     {
-        RECTANGLE,
+        SQUARE,
         CIRCLE,
-        CUSTOM
+        ELLIPSE_VERTICAL,
+        ELLIPSE_HORIZONTAL,
+        RECTANGLE_VERTICAL,
+        RECTANGLE_HORIZONTAL,
+        LINE_VERTICAL,
+        LINE_HORIZONTAL,
+        OTHER
     };
 }
