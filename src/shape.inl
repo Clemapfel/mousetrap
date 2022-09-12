@@ -548,12 +548,12 @@ namespace mousetrap
         update_data(true, false, false);
     }
 
-    Texture* Shape::get_texture()
+    TextureObject* Shape::get_texture()
     {
         return _texture;
     }
 
-    void Shape::set_texture(Texture* texture)
+    void Shape::set_texture(TextureObject* texture)
     {
         _texture = texture;
     }

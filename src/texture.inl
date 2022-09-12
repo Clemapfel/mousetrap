@@ -45,7 +45,7 @@ namespace mousetrap
         _size = image.get_size();
     }
 
-    void Texture::bind(size_t texture_unit)
+    void Texture::bind(size_t texture_unit) const
     {
         glActiveTexture(GL_TEXTURE0 + texture_unit);
         glBindTexture(GL_TEXTURE_2D, _native_handle);
@@ -74,7 +74,12 @@ namespace mousetrap
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
-    void Texture::unbind()
+    void Texture::bind() const
+    {
+        bind(0);
+    }
+
+    void Texture::unbind() const
     {
         glBindTexture(GL_TEXTURE_2D, 0);
     }

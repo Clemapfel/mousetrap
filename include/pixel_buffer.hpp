@@ -6,19 +6,20 @@
 #pragma once
 
 #include <include/gl_common.hpp>
+#include <include/texture_object.hpp>
 
 #include <atomic>
 
 namespace mousetrap
 {
-    class PixelBuffer
+    class PixelBuffer : public TextureObject
     {
         public:
             PixelBuffer(size_t width, size_t height);
             virtual ~PixelBuffer();
 
-            void bind() const;
-            void unbind() const;
+            void bind() const override;
+            void unbind() const override;
 
             void flush() const;
             Vector2ui get_size() const;

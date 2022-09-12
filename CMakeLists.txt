@@ -165,7 +165,7 @@ add_library(mousetrap SHARED
 
     include/popover.hpp
     src/popover.inl
-)
+        include/texture_object.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

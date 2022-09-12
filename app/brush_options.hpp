@@ -12,13 +12,6 @@
 
 namespace mousetrap
 {
-    enum class BrushShape
-    {
-        RECTANGLE,
-        CIRCLE,
-        CUSTOM
-    };
-
     class BrushOptions : public Widget
     {
         public:
@@ -69,7 +62,7 @@ namespace mousetrap
             using on_brush_size_changed_data = BrushOptions*;
             static void on_brush_size_changed(void*, void* instance);
 
-            using on_brush_shape_selected_data = struct{ BrushOptions* instance; BrushShape which; };
+            using on_brush_shape_selected_data = struct{ BrushOptions* instance; BrushType which; };
             static void on_brush_shape_selected(GtkToggleButton*, void*);
 
             using on_brush_opacity_changed_data = BrushOptions*;
@@ -136,6 +129,9 @@ namespace mousetrap
         instance->_brush_size_scale->set_all_signals_blocked(false);
         instance->_brush_size_spin_button->set_all_signals_blocked(false);
 
+        state::brush_size = value;
+        state::update_brush_texture();
+
         instance->_brush_preview->set_resolution(value);
     }
 
@@ -159,6 +155,8 @@ namespace mousetrap
         instance->_opacity_scale->set_all_signals_blocked(false);
         instance->_opacity_spin_button->set_all_signals_blocked(false);
 
+        state::brush_opacity = value;
+
         instance->_brush_preview->brush_shape->set_color(RGBA(0, 0, 0, value));
         instance->_brush_preview->canvas->queue_render();
     }
@@ -175,19 +173,19 @@ namespace mousetrap
         })
             button->set_all_signals_blocked(true);
 
-        if (which == BrushShape::RECTANGLE)
+        if (which == BrushType::RECTANGLE)
         {
             instance->_rectangle_brush_toggle_button->set_active(true);
             instance->_circle_brush_toggle_button->set_active(false);
             instance->_custom_brush_toggle_button->set_active(false);
         }
-        else if (which == BrushShape::CIRCLE)
+        else if (which == BrushType::CIRCLE)
         {
             instance->_rectangle_brush_toggle_button->set_active(false);
             instance->_circle_brush_toggle_button->set_active(true);
             instance->_custom_brush_toggle_button->set_active(false);
         }
-        else if (which == BrushShape::CUSTOM)
+        else if (which == BrushType::CUSTOM)
         {
             instance->_rectangle_brush_toggle_button->set_active(false);
             instance->_circle_brush_toggle_button->set_active(false);
@@ -200,6 +198,10 @@ namespace mousetrap
                 instance->_custom_brush_toggle_button
         })
             button->set_all_signals_blocked(false);
+
+        state::brush_type = which;
+        state::update_brush_texture();
+        instance->_brush_preview->set_resolution(state::brush_size);
     }
 
     void BrushOptions::BrushPreviewCanvas::on_resize(GtkGLArea* area, int x, int y, void* data)
@@ -237,9 +239,22 @@ namespace mousetrap
 
         float brush_shape_margin = 0;
 
+        if (state::brush_texture_image == nullptr)
+        {
+            state::brush_texture_image = new Image();
+            state::brush_texture_image->create(1, 1, RGBA(1, 0, 1, 1));
+        }
+
+        if (state::brush_texture == nullptr)
+        {
+            state::brush_texture = new Texture();
+            state::brush_texture->create_from_image(*state::brush_texture_image);
+        }
+
         instance->brush_shape = new Shape();
         instance->brush_shape->as_rectangle(Vector2f(brush_shape_margin), Vector2f(1 - 2 * brush_shape_margin));
-        instance->brush_shape->set_color(RGBA(0, 0, 0, 1));
+        instance->brush_shape->set_color(RGBA(1, 0, 1, 1));
+        instance->brush_shape->set_texture(state::brush_texture);
 
         instance->set_resolution(1);
     }
@@ -338,7 +353,7 @@ namespace mousetrap
         _rectangle_brush_toggle_button->connect_signal(
             "toggled",
             on_brush_shape_selected,
-            new on_brush_shape_selected_data{this, BrushShape::RECTANGLE}
+            new on_brush_shape_selected_data{this, BrushType::RECTANGLE}
         );
 
         _circle_brush_toggle_button = new ToggleButton();
@@ -346,7 +361,7 @@ namespace mousetrap
         _circle_brush_toggle_button->connect_signal(
                 "toggled",
                 on_brush_shape_selected,
-                new on_brush_shape_selected_data{this, BrushShape::CIRCLE}
+                new on_brush_shape_selected_data{this, BrushType::CIRCLE}
         );
 
         _custom_brush_toggle_button = new ToggleButton();
@@ -354,7 +369,7 @@ namespace mousetrap
         _custom_brush_toggle_button->connect_signal(
                 "toggled",
                 on_brush_shape_selected,
-                new on_brush_shape_selected_data{this, BrushShape::CUSTOM}
+                new on_brush_shape_selected_data{this, BrushType::CUSTOM}
         );
 
         for (auto* button : {_rectangle_brush_toggle_button, _circle_brush_toggle_button, _custom_brush_toggle_button})
@@ -370,7 +385,9 @@ namespace mousetrap
         _brush_shape_hbox->push_back(_custom_brush_toggle_button);
         _brush_shape_hbox->set_hexpand(true);
 
+        _rectangle_brush_toggle_button->set_all_signals_blocked(true);
         _rectangle_brush_toggle_button->set_active(true);
+        _rectangle_brush_toggle_button->set_all_signals_blocked(false);
 
         _brush_shape_label = new Label(brush_shape_label_text);
         _brush_shape_label->set_margin_start(0.5 * state::margin_unit);

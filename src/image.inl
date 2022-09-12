@@ -127,4 +127,37 @@ namespace mousetrap
                 _data.at(i+3)
         );
     }
+
+    void Image::set_pixel(size_t i, RGBA color)
+    {
+        i *= 4;
+
+        _data.at(i) = color.r;
+        _data.at(i+1) = color.g;
+        _data.at(i+2) = color.b;
+        _data.at(i+3) = color.a;
+    }
+
+    void Image::set_pixel(size_t i, HSVA color_hsva)
+    {
+        auto color = color_hsva.operator RGBA();
+
+        i *= 4;
+
+        _data.at(i) = color.r;
+        _data.at(i+1) = color.g;
+        _data.at(i+2) = color.b;
+        _data.at(i+3) = color.a;
+    }
+
+    RGBA Image::get_pixel(size_t i)
+    {
+        return RGBA
+        (
+            _data.at(i),
+            _data.at(i+1),
+            _data.at(i+2),
+            _data.at(i+3)
+        );
+    }
 }

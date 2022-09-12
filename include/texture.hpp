@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 #include <include/gl_common.hpp>
 #include <include/image.hpp>
+#include <include/texture_object.hpp>
 
 namespace mousetrap
 {
@@ -21,14 +22,16 @@ namespace mousetrap
         STRETCH = GL_CLAMP_TO_EDGE
     };
 
-    class Texture
+    class Texture : public TextureObject
     {
         public:
             Texture(); // should be called while gl context is bound
             ~Texture();
 
-            void bind(size_t texture_unit = 0);
-            void unbind();
+            void bind(size_t texture_unit) const;
+
+            void bind() const override;
+            void unbind() const override;
 
             void create_from_file(const std::string& path);
             void create_from_image(const Image&);

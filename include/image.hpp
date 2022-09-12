@@ -29,6 +29,10 @@ namespace mousetrap
             void set_pixel(size_t, size_t, HSVA);
             RGBA get_pixel(size_t, size_t);
 
+            void set_pixel(size_t linear_index, RGBA);
+            void set_pixel(size_t linear_index, HSVA);
+            RGBA get_pixel(size_t linear_index);
+
         private:
             Vector2i _size;
             std::vector<float> _data; // rgba 32f bpc
