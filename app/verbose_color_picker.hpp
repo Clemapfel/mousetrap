@@ -257,6 +257,7 @@ namespace mousetrap
 
             SliderTuple_t* which = new std::tuple(c, this); // intentional memory leak
 
+            _sliders[c]->_canvas->set_size_request({state::slider_min_width, 1});
             _sliders[c]->_canvas->connect_signal("realize", on_slider_realize, which);
             _sliders[c]->_canvas->connect_signal("resize", on_slider_resize, which);
             _sliders[c]->_canvas->set_expand(true);

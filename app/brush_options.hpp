@@ -329,6 +329,7 @@ namespace mousetrap
         _brush_size_scale->set_vexpand(false);
         _brush_size_scale->set_margin_end(state::margin_unit);
         _brush_size_scale->connect_signal("value-changed", on_brush_size_changed, this);
+        _brush_size_scale->set_size_request({state::slider_min_width, 1});
 
         _brush_size_spin_button = new SpinButton(1, 999, 1);
         _brush_size_spin_button->set_digits(0);
@@ -360,10 +361,10 @@ namespace mousetrap
             auto type = pair.first;
             auto inserted = _brush_toggle_buttons.insert({type, new BrushToggleButton{
                 new ToggleButton(),
-                new ImageDisplay(get_resource_path() + "icons/" + brush_type_to_icon_id.at(type) + ".png")
+                new ImageDisplay(get_resource_path() + "icons/" + brush_type_to_icon_id.at(type) + ".png", state::icon_scale)
             }}).first->second;
 
-            inserted->icon->set_size_request({32, 32});
+            inserted->icon->set_size_request({32 * state::icon_scale, 32 * state::icon_scale});
             inserted->button->set_child(inserted->icon);
             inserted->button->set_hexpand(true);
             inserted->button->set_margin_start(0.5 * state::margin_unit);
@@ -391,10 +392,12 @@ namespace mousetrap
         _other_brush_menu_button->set_margin_start(0.5 * state::margin_unit);
         _other_brush_menu_button->set_margin_end(0.5 * state::margin_unit);
         _other_brush_menu_button->set_cursor(GtkCursorType::POINTER);
-        _other_brush_menu_button->set_tooltip_text("Click for more brush shapes");
+        _other_brush_menu_button->set_tooltip_text("More Brush Shapes");
 
         _other_brush_popover = new Popover();
         _other_brush_popover_box = new FlowBox();
+        _other_brush_popover_box->set_min_children_per_line(2);
+        _other_brush_popover_box->set_max_children_per_line(2);
         _other_brush_popover->set_child(_other_brush_popover_box);
         _other_brush_menu_button->set_popover(_other_brush_popover);
         _other_brush_menu_button->set_popover_position(GTK_POS_RIGHT);
@@ -440,6 +443,7 @@ namespace mousetrap
         _opacity_scale->set_margin_end(state::margin_unit);
         _opacity_scale->set_value(1);
         _opacity_scale->connect_signal("value-changed", on_brush_opacity_changed, this);
+        _opacity_scale->set_size_request({state::slider_min_width, 1});
 
         _opacity_spin_button = new SpinButton(0, 1, 0.05);
         _opacity_spin_button->set_digits(2);

@@ -93,7 +93,9 @@ namespace mousetrap::state
 
     // ### FORMATING ##################################
 
-    float margin_unit = 10; //px
+    float margin_unit = 10; // px
+    size_t slider_min_width = 0;
+    size_t icon_scale = 1;
 }
 
 // ###
@@ -215,7 +217,7 @@ void mousetrap::state::update_brush_texture()
     }
     else if (state::brush_type == BrushType::RECTANGLE_HORIZONTAL)
     {
-        state::brush_texture_image->create(size, size, RGBA(1, 1, 1, 1));
+        state::brush_texture_image->create(size, size, RGBA(0, 0, 0, 0));
 
         if (size == 1)
         {
@@ -224,6 +226,14 @@ void mousetrap::state::update_brush_texture()
         else if (size == 2)
         {
             matrix_to_image({1, 1, 1, 1});
+        }
+        else if (size == 3)
+        {
+            matrix_to_image({
+                0, 0, 0,
+                1, 1, 1,
+                0, 0, 0,
+            });
         }
         else if (size == 4)
         {
@@ -234,20 +244,169 @@ void mousetrap::state::update_brush_texture()
                 0, 0, 0, 0
             });
         }
+        else if (size == 5)
+        {
+            matrix_to_image({
+                0, 0, 0, 0, 0,
+                1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1,
+                0, 0, 0, 0, 0
+            });
+        }
         else
         {
+            size_t n = size - (size % 2);
+            size_t n_lines = n / 2;
+            size_t start = size / 2 - n_lines / 2;
+
             for (size_t x = 0; x < size; ++x)
-                for (size_t y = 0; y < size; ++y)
-                        state::brush_texture_image->set_pixel(x, y, RGBA(0, 0, 0, 0));
+                for (size_t y = start; y < start + n_lines; ++y)
+                    state::brush_texture_image->set_pixel(x, y, RGBA(1, 1, 1, 1));
         }
     }
     else if (state::brush_type == BrushType::RECTANGLE_VERTICAL)
     {
-        std::cerr << "[ERROR] In state::update_brush_texture: RECTANGLE_VERTICAL TODO" << std::endl;
+        state::brush_texture_image->create(size, size, RGBA(0, 0, 0, 0));
+
+        if (size == 1)
+        {
+            matrix_to_image({1});
+        }
+        else if (size == 2)
+        {
+            matrix_to_image({1, 1, 1, 1});
+        }
+        else if (size == 3)
+        {
+            matrix_to_image({
+                    0, 0, 0,
+                    1, 1, 1,
+                    0, 0, 0,
+            });
+        }
+        else if (size == 4)
+        {
+            matrix_to_image({
+                    0, 0, 0, 0,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    0, 0, 0, 0
+            });
+        }
+        else if (size == 5)
+        {
+            matrix_to_image({
+                    0, 0, 0, 0, 0,
+                    1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1,
+                    0, 0, 0, 0, 0
+            });
+        }
+        else
+        {
+            size_t n = size - (size % 2);
+            size_t n_lines = n / 2;
+            size_t start = size / 2 - n_lines / 2;
+
+            for (size_t y = 0; y < size; ++y)
+                for (size_t x = start; x < start + n_lines; ++x)
+                    state::brush_texture_image->set_pixel(x, y, RGBA(1, 1, 1, 1));
+        }
     }
     else if (state::brush_type == BrushType::ELLIPSE_HORIZONTAL)
     {
-        std::cerr << "[ERROR] In state::update_brush_texture: ELLIPSE_HORIZONTAL TODO" << std::endl;
+        state::brush_texture_image->create(size, size, RGBA(0, 0, 0, 0));
+
+        if (size == 1)
+        {
+            matrix_to_image({
+                    1
+            });
+        }
+        else if (size == 2)
+        {
+            matrix_to_image({
+                    1, 1,
+                    1, 1
+            });
+        }
+        else if (size == 3)
+        {
+            matrix_to_image({
+                    0, 1, 0,
+                    1, 1, 1,
+                    0, 1, 0
+            });
+        }
+        else if (size == 4)
+        {
+            matrix_to_image({
+                    0, 0, 0, 0,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    0, 0, 0, 0
+            });
+        }
+        else if (size == 5)
+        {
+            matrix_to_image({
+                    0, 0, 0, 0, 0,
+                    0, 1, 1, 1, 0,
+                    1, 1, 1, 1, 1,
+                    0, 1, 1, 1, 0,
+                    0, 0, 0, 0, 0
+            });
+        }
+        else if (size == 6)
+        {
+            matrix_to_image({
+                    0, 0, 0, 0, 0, 0,
+                    0, 1, 1, 1, 1, 0,
+                    1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1,
+                    0, 1, 1, 1, 1, 0,
+                    0, 0, 0, 0, 0, 0
+            });
+        }
+        else if (size == 7)
+        {
+            matrix_to_image({
+                    0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 1, 1, 1, 0, 0,
+                    0, 1, 1, 1, 1, 1, 0,
+                    1, 1, 1, 1, 1, 1, 1,
+                    0, 1, 1, 1, 1, 1, 0,
+                    0, 0, 1, 1, 1, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0
+            });
+        }
+        else if (size == 8)
+        {
+            matrix_to_image({
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 1, 1, 0, 0, 0,
+                    0, 1, 1, 1, 1, 1, 1, 0,
+                    1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1,
+                    0, 1, 1, 1, 1, 1, 1, 0,
+                    0, 0, 0, 1, 1, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0
+            });
+        }
+        else
+        {
+            auto center = Vector2f(size / 2 + (size % 2 == 0 ? -0.5 : 0));
+            auto radius = size / 2 + (size % 2 == 0 ? 1 : 1);
+
+            for (size_t x = 0; x < size; ++x)
+                for (size_t y = 0; y < size; ++y)
+                {
+                    if (glm::distance(Vector2f(x, y), center) < radius)
+                        state::brush_texture_image->set_pixel(x, y, RGBA(1, 1, 1, 1));
+                }
+        }
     }
     else if (state::brush_type == BrushType::ELLIPSE_VERTICAL)
     {

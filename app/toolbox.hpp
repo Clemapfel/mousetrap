@@ -126,21 +126,23 @@ namespace mousetrap
     Toolbox::Icon::Icon(ToolID id)
         : id(id)
     {
-        label = new ImageDisplay(get_resource_path() + "icons/" + id + ".png");
-        label->set_size_request({32, 32});
+        size_t scale = state::icon_scale;
+
+        label = new ImageDisplay(get_resource_path() + "icons/" + id + ".png", scale);
+        label->set_size_request({32 * scale, 32 * scale});
         label->set_expand(false);
         label->set_align(GTK_ALIGN_CENTER);
 
-        popover_indicator = new ImageDisplay(get_resource_path() + "icons/" + "has_popover_indicator" + ".png");
-        popover_indicator->set_size_request({48, 48});
+        popover_indicator = new ImageDisplay(get_resource_path() + "icons/" + "has_popover_indicator" + ".png", scale);
+        popover_indicator->set_size_request({48 * scale, 48 * scale});
         popover_indicator->set_opacity(0);
 
-        selected_indicator = new ImageDisplay(get_resource_path() + "icons/" + "selected_indicator" + ".png");
-        selected_indicator->set_size_request({48, 48});
+        selected_indicator = new ImageDisplay(get_resource_path() + "icons/" + "selected_indicator" + ".png", scale);
+        selected_indicator->set_size_request({48 * scale, 48 * scale});
         selected_indicator->set_opacity(0);
 
-        child_selected_indicator = new ImageDisplay(get_resource_path() + "icons/" + "child_selected_indicator" + ".png");
-        child_selected_indicator->set_size_request({48, 48});
+        child_selected_indicator = new ImageDisplay(get_resource_path() + "icons/" + "child_selected_indicator" + ".png", scale);
+        child_selected_indicator->set_size_request({48 * scale, 48 * scale});
         child_selected_indicator->set_opacity(0);
 
         overlay = new Overlay();
@@ -310,7 +312,8 @@ namespace mousetrap
         main->set_show_separators(true);
 
         auto add_icon = [&](ToolID id) -> Icon* {
-            _icons.insert({id, new Icon(id)});
+            auto inserted = _icons.insert({id, new Icon(id)});
+            inserted.first->second->overlay->set_cursor(GtkCursorType::POINTER);
             return _icons.at(id);
         };
 

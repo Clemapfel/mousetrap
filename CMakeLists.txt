@@ -165,7 +165,12 @@ add_library(mousetrap SHARED
 
     include/popover.hpp
     src/popover.inl
-        include/texture_object.hpp)
+
+    include/texture_object.hpp
+
+    include/revealer.hpp
+    src/revealer.inl
+        src/detachable_box.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
