@@ -70,7 +70,9 @@ namespace mousetrap
 
         gtk_revealer_set_reveal_child(_window_revealer, false);
         gtk_revealer_set_child(_window_revealer, nullptr);
+
         gtk_widget_set_visible(GTK_WIDGET(_window), false);
+        gtk_widget_set_visible(GTK_WIDGET(_anchor), true);
 
         gtk_revealer_set_child(_anchor, _child);
         gtk_revealer_set_reveal_child(_anchor, true);
@@ -86,7 +88,9 @@ namespace mousetrap
         gtk_revealer_set_reveal_child(_anchor, false);
         gtk_revealer_set_child(_anchor, nullptr);
 
+        gtk_widget_set_visible(GTK_WIDGET(_anchor), false);
         gtk_widget_set_visible(GTK_WIDGET(_window), true);
+
         gtk_window_present(_window);
         gtk_revealer_set_child(_window_revealer, GTK_WIDGET(_child));
         gtk_revealer_set_reveal_child(_window_revealer, true);

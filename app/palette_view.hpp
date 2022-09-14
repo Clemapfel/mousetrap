@@ -118,7 +118,7 @@ namespace mousetrap
         _scrolled_window->set_vexpand(true);
 
         _menu_button = new MenuButton();
-        _menu_button_label = new Label("Palette");
+        _menu_button_label = new Label("");
         _menu_button->set_child(_menu_button_label);
         _menu_button->set_vexpand(false);
 

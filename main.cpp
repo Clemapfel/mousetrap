@@ -18,6 +18,7 @@
 #include <include/image_display.hpp>
 #include <include/list_view.hpp>
 #include <include/detachable_box.hpp>
+#include <include/paned.hpp>
 
 #include <app/global_state.hpp>
 #include <app/color_picker.hpp>
@@ -46,6 +47,7 @@ static void activate(GtkApplication* app, void*)
 
     state::color_picker = new ColorPicker();
     state::color_picker->set_expand(true);
+    state::color_picker->set_size_request({0, 150});
 
     state::primary_secondary_color_swapper = new PrimarySecondaryColorSwapper();
     state::primary_secondary_color_swapper->set_expand(true);
@@ -60,23 +62,45 @@ static void activate(GtkApplication* app, void*)
     state::toolbox = new Toolbox();
     state::brush_options = new BrushOptions();
 
-    static auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
+    static auto* box = new Box(GTK_ORIENTATION_VERTICAL);
 
+    static auto containers = std::vector<WidgetContainer*>();
+    auto add_widget = [&](Widget* widget, const std::string& title)
+    {
+        containers.emplace_back(new WidgetContainer(title));
+        containers.back()->set_child(widget);
+        box->push_back(containers.back());
+    };
+
+    //add_widget(state::color_picker, "Color Picker");
+    //add_widget(state::primary_secondary_color_swapper, "Color Swapper");
+    //add_widget(state::verbose_color_picker, "Color Picker");
+    //add_widget(state::palette_view, "Palette");
+    //box->push_back(state::verbose_color_picker);
     /*
-    box->push_back(state::color_picker);
-    box->push_back(state::toolbox);
-    box->push_back(state::primary_secondary_color_swapper);
-    box->push_back(state::verbose_color_picker);
-    box->push_back(state::palette_view);
+    add_widget(state::verbose_color_picker, "Color Picker");
+    add_widget(state::palette_view, "Palette");
     */
 
-    auto* container = new WidgetContainer("Brush Options");
-    container->set_child(state::brush_options);
-    box->push_back(container);
+    //box->push_back(state::color_picker);
+    //box->push_back(state::toolbox);
+    //box->push_back(state::palette_view);
 
-    // TODO
+    auto* paned_01 = new Paned(GTK_ORIENTATION_VERTICAL);
 
-    // TODO
+    auto* palette = new WidgetContainer("");//Palette");
+    auto* toolbox = new WidgetContainer("");//Tools");
+
+    palette->set_child(state::palette_view);
+    toolbox->set_child(state::toolbox);
+
+    paned_01->set_start_child(palette);
+    paned_01->set_end_child(toolbox);
+
+    paned_01->set_start_child_resizable(false);
+    paned_01->set_start_child_shrinkable(false);
+
+    box->push_back(paned_01);
 
     state::main_window->set_child(box);
     state::main_window->show();

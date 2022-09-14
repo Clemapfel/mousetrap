@@ -142,13 +142,6 @@ namespace mousetrap
 
     void PrimarySecondaryColorSwapper::initialize_render_area()
     {
-        delete _primary_color_shape;
-        delete _secondary_color_shape;
-        delete _primary_color_shape_frame;
-        delete _secondary_color_shape_frame;
-        delete _primary_color_shape_transparency_tiling;
-        delete _secondary_color_shape_transparency_tiling;
-
         _canvas_size = new Vector2f(1, 1);
 
         _transparency_tiling_shader = new Shader();
@@ -197,6 +190,8 @@ namespace mousetrap
 
         _primary_color_shape->set_color(state::primary_color);
         _secondary_color_shape->set_color(state::secondary_color);
+
+        _render_area->clear_render_tasks();
 
         auto primary_transparency_render_task = RenderTask(_primary_color_shape_transparency_tiling, _transparency_tiling_shader);
         primary_transparency_render_task.register_vec2("_canvas_size", _canvas_size);

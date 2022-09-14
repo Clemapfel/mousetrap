@@ -12,10 +12,11 @@ namespace mousetrap
     class FlowBox : public Widget
     {
         public:
-            FlowBox();
+            FlowBox(GtkOrientation = GTK_ORIENTATION_VERTICAL);
 
             operator GtkWidget*() override;
 
+            void set_orientation(GtkOrientation);
             void set_activate_on_single_click(bool);
 
             void set_min_children_per_line(size_t);
@@ -25,7 +26,6 @@ namespace mousetrap
             void set_row_spacing(float);
 
             void set_selection_mode(GtkSelectionMode);
-
             void set_homogeneous(bool);
 
             GtkFlowBoxChild* get_child_at_index(size_t i);

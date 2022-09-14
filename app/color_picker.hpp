@@ -103,7 +103,6 @@ namespace mousetrap
 
         _main = new AspectFrame(1);
         _main->set_child(_render_area);
-
         _main->set_tooltip_text("<b>Color Picker</b>\nLeft-Click + Drag: Change Hue / Saturation / Value");
     }
 

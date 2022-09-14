@@ -7,15 +7,21 @@
 
 namespace mousetrap
 {
-    FlowBox::FlowBox()
+    FlowBox::FlowBox(GtkOrientation orientation)
     {
         _native = GTK_FLOW_BOX(gtk_flow_box_new());
         set_selection_mode(GTK_SELECTION_NONE);
+        set_orientation(orientation);
     }
 
     FlowBox::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);
+    }
+
+    void FlowBox::set_orientation(GtkOrientation orientation)
+    {
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(_native), orientation);
     }
 
     void FlowBox::set_activate_on_single_click(bool b)
