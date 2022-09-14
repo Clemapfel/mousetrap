@@ -46,6 +46,7 @@ namespace mousetrap
             float get_opacity();
 
             void set_visible(bool);
+            bool get_visible();
 
             void set_tooltip_text(const std::string&);
             void set_cursor(GtkCursorType type);

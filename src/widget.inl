@@ -115,6 +115,11 @@ namespace mousetrap
         gtk_widget_set_visible(this->operator GtkWidget*(), b);
     }
 
+    bool Widget::get_visible()
+    {
+        return gtk_widget_get_visible(this->operator GtkWidget*());
+    }
+
     void Widget::show()
     {
         gtk_widget_show(this->operator GtkWidget*());

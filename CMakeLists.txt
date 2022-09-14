@@ -170,7 +170,10 @@ add_library(mousetrap SHARED
 
     include/revealer.hpp
     src/revealer.inl
-        src/detachable_box.hpp)
+
+    include/detachable_box.hpp
+    src/detachable_box.inl
+        include/expander.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -199,6 +202,7 @@ add_library(app STATIC
     app/tools.hpp
     app/toolbox.hpp
     app/brush_options.hpp
+    app/widget_container.hpp
 )
 
 target_link_libraries(app PRIVATE mousetrap)

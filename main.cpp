@@ -26,6 +26,7 @@
 #include <app/palette_view.hpp>
 #include <app/toolbox.hpp>
 #include <app/brush_options.hpp>
+#include <app/widget_container.hpp>
 
 using namespace mousetrap;
 
@@ -61,23 +62,17 @@ static void activate(GtkApplication* app, void*)
 
     static auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
 
+    /*
     box->push_back(state::color_picker);
     box->push_back(state::toolbox);
     box->push_back(state::primary_secondary_color_swapper);
-
-    auto button = new Button();
-    button->connect_signal("clicked", detach);
-    button->set_size_request({10, 0});
-    button->set_hexpand(false);
-    box->push_back(button);
-
-    detachable = new DetachableBox("Brush Options");
-    detachable->set_child(state::brush_options);
-    box->push_back(detachable);
-
     box->push_back(state::verbose_color_picker);
     box->push_back(state::palette_view);
+    */
 
+    auto* container = new WidgetContainer("Brush Options");
+    container->set_child(state::brush_options);
+    box->push_back(container);
 
     // TODO
 

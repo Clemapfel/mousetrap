@@ -10,6 +10,7 @@ namespace mousetrap
     Revealer::Revealer(TransitionType type)
     {
         _native = GTK_REVEALER(gtk_revealer_new());
+        gtk_revealer_set_reveal_child(_native, true);
         set_transition_type(type);
     }
 
