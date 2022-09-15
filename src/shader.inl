@@ -30,13 +30,13 @@ namespace mousetrap
 
     Shader::~Shader()
     {
-        if (_fragment_shader_id != 0 and _fragment_shader_id != _noop_fragment_shader_id)
+        if (_fragment_shader_id != 0)
             glDeleteShader(_fragment_shader_id);
 
-        if (_vertex_shader_id != 0 and _vertex_shader_id != _noop_vertex_shader_id)
+        if (_vertex_shader_id != 0)
             glDeleteShader(_vertex_shader_id);
 
-        if (_program_id != 0 and _program_id != _noop_program_id)
+        if (_program_id != 0)
             glDeleteProgram(_program_id);
     }
 

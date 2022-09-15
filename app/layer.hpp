@@ -35,9 +35,10 @@ namespace mousetrap
 {
     void set_blend_mode(BlendMode mode)
     {
+        glEnable(GL_BLEND);
+
         if (mode == NORMAL)
         {
-            glEnable(GL_BLEND);
             glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
             glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         }
