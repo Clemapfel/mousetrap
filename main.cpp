@@ -28,6 +28,7 @@
 #include <app/toolbox.hpp>
 #include <app/brush_options.hpp>
 #include <app/widget_container.hpp>
+#include <app/canvas.hpp>
 
 using namespace mousetrap;
 
@@ -86,21 +87,8 @@ static void activate(GtkApplication* app, void*)
     //box->push_back(state::toolbox);
     //box->push_back(state::palette_view);
 
-    auto* paned_01 = new Paned(GTK_ORIENTATION_VERTICAL);
-
-    auto* palette = new WidgetContainer("");//Palette");
-    auto* toolbox = new WidgetContainer("");//Tools");
-
-    palette->set_child(state::palette_view);
-    toolbox->set_child(state::toolbox);
-
-    paned_01->set_start_child(palette);
-    paned_01->set_end_child(toolbox);
-
-    paned_01->set_start_child_resizable(false);
-    paned_01->set_start_child_shrinkable(false);
-
-    box->push_back(paned_01);
+    auto* canvas = new Canvas({100, 100});
+    box->push_back(canvas);
 
     state::main_window->set_child(box);
     state::main_window->show();

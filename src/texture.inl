@@ -50,14 +50,14 @@ namespace mousetrap
         glActiveTexture(GL_TEXTURE0 + texture_unit);
         glBindTexture(GL_TEXTURE_2D, _native_handle);
 
-        if (_wrap_mode == ZERO)
+        if (_wrap_mode == TextureWrapMode::ZERO)
         {
             static float zero_border[] = {0.f, 0.f, 0.f, 0.f};
             glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, zero_border);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
         }
-        else if (_wrap_mode == ONE)
+        else if (_wrap_mode == TextureWrapMode::ONE)
         {
             static float one_border[] = {0.f, 0.f, 0.f, 0.f};
             glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, one_border);
@@ -66,8 +66,8 @@ namespace mousetrap
         }
         else
         {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, _wrap_mode);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, _wrap_mode);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint) _wrap_mode);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint) _wrap_mode);
         }
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

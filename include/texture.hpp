@@ -13,7 +13,7 @@
 
 namespace mousetrap
 {
-    enum TextureWrapMode
+    enum class TextureWrapMode
     {
         ZERO = 0,
         ONE = 1,
@@ -45,7 +45,7 @@ namespace mousetrap
 
         private:
             GLNativeHandle _native_handle = 0;
-            TextureWrapMode _wrap_mode = STRETCH;
+            TextureWrapMode _wrap_mode = TextureWrapMode::STRETCH;
 
             Vector2i _size;
     };
