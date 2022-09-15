@@ -14,9 +14,10 @@ namespace mousetrap
         NORMAL,     // alpha blending
         ADD,        // src + dest
         SUBTRACT,   // src - dest
-        REVERSE_SUBTRACT, // dest - src
         MULTIPLY,   // src * dest
     };
+
+    void set_blend_mode(BlendMode);
 
     struct Layer
     {
@@ -26,4 +27,34 @@ namespace mousetrap
         float opacity = 1;
         BlendMode blend_mode = NORMAL;
     };
+}
+
+/// ###
+
+namespace mousetrap
+{
+    void set_blend_mode(BlendMode mode)
+    {
+        if (mode == NORMAL)
+        {
+            glEnable(GL_BLEND);
+            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        }
+        else if (mode == SUBTRACT)
+        {
+            glBlendEquationSeparate(GL_FUNC_REVERSE_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT);
+            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
+        }
+        else if (mode == ADD)
+        {
+            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
+        }
+        else if (mode == MULTIPLY)
+        {
+            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+            glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
+        }
+    }
 }

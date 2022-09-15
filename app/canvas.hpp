@@ -22,7 +22,7 @@ namespace mousetrap
             operator GtkWidget*() override;
 
             void add_layer(RGBA color);
-            void add_layer(Image);
+            void add_layer(const Image&);
 
         private:
             AspectFrame* _frame;
@@ -86,9 +86,6 @@ namespace mousetrap
         _gl_area->connect_signal("resize", on_gl_area_resize, this);
         _gl_area->connect_signal("render", on_gl_area_render, this);
         _gl_area->set_size_request(*_resolution);
-
-        //_frame = new AspectFrame(_resolution->x / _resolution->y);
-        //_frame->set_child(_gl_area);
     }
 
     void Canvas::on_gl_area_realize(GtkGLArea* area, Canvas* instance)
@@ -116,6 +113,7 @@ namespace mousetrap
             instance->_noop_transform = new GLTransform();
 
         instance->_transform = new GLTransform();
+        instance->_transform->scale(4, 4);
 
         instance->_layer_boundary = new Shape();
         instance->_subtract_overlay_top = new Shape();
@@ -125,7 +123,22 @@ namespace mousetrap
 
         on_gl_area_resize(area, 1, 1, instance);
 
-        instance->add_layer(RGBA(1, 0, 1, 0.5));
+        // TODO
+        auto pixbuf = gdk_pixbuf_new_from_file((get_resource_path() + "mole.png").c_str(), nullptr);
+        Vector2ui pixbuf_size = Vector2ui{
+            gdk_pixbuf_get_width(pixbuf),
+            gdk_pixbuf_get_height(pixbuf)
+        };
+        gdk_pixbuf_scale_simple(pixbuf, 3 * pixbuf_size.x, 3 * pixbuf_size.y, GDK_INTERP_NEAREST);
+        auto image = Image();
+        image.create_from_pixbuf(pixbuf);
+        instance->add_layer(image);
+        instance->add_layer(RGBA(1, 0, 0, 0.1));
+
+        instance->_layers.back()->layer.blend_mode = BlendMode::MULTIPLY;
+
+        // TODO
+
         gtk_gl_area_queue_render(area);
     }
 
@@ -135,29 +148,34 @@ namespace mousetrap
         glClear(GL_COLOR_BUFFER_BIT);
 
         glEnable(GL_BLEND);
-        glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 
         // render transparency background
 
         auto* shader = instance->_transparency_tiling_background_shader;
-
         glUseProgram(shader->get_program_id());
         shader->set_uniform_vec2("_canvas_size", *instance->_canvas_size);
+
+        set_blend_mode(BlendMode::NORMAL);
         instance->_transparency_tiling_background->render(*shader, *instance->_noop_transform);
 
+        // render layers
+
         for (auto* layer : instance->_layers)
+        {
+            set_blend_mode(layer->layer.blend_mode);
             layer->shape->render(*instance->_noop_shader, *instance->_transform);
+        }
 
-        instance->_layer_boundary->render(*instance->_noop_shader, *instance->_transform);
+        // render overlay
 
-        glBlendEquationSeparate(GL_FUNC_REVERSE_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT);
-        glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
-
+        set_blend_mode(BlendMode::SUBTRACT);
         instance->_subtract_overlay_top->render(*instance->_noop_shader, *instance->_transform);
         instance->_subtract_overlay_right->render(*instance->_noop_shader, *instance->_transform);
         instance->_subtract_overlay_bottom->render(*instance->_noop_shader, *instance->_transform);
         instance->_subtract_overlay_left->render(*instance->_noop_shader, *instance->_transform);
+
+        set_blend_mode(BlendMode::NORMAL);
+        instance->_layer_boundary->render(*instance->_noop_shader, *instance->_transform);
 
         glFlush();
         return FALSE;
@@ -221,27 +239,46 @@ namespace mousetrap
 
     void Canvas::add_layer(RGBA color)
     {
+        auto image = Image();
+        image.create(_resolution->x, _resolution->y, color);
+        add_layer(image);
+    }
+
+    void Canvas::add_layer(const Image& image)
+    {
         gtk_gl_area_make_current(_gl_area->operator GtkGLArea*());
 
         _layers.push_back(new LayerShape{
-            Layer{
-                new Texture()
-            },
-            new Shape()
+                Layer{
+                        new Texture()
+                },
+                new Shape()
         });
-
-        auto* texture = (Texture*) _layers.back()->layer.texture;
-        auto image = Image();
-        image.create(_resolution->x, _resolution->y, color);
-        texture->create_from_image(image);
 
         float width = _resolution->x / _canvas_size->x;
         float height = _resolution->y / _canvas_size->y;
 
         _layers.back()->shape->as_rectangle(
-            {0.5 - width / 2, 0.5 - height / 2},
-            {width, height}
+                {0.5 - width / 2, 0.5 - height / 2},
+                {width, height}
         );
+
+        auto image_size = Vector2f(image.get_size().x, image.get_size().y);
+
+        if (image_size == *_resolution)
+            ((Texture*) _layers.back()->layer.texture)->create_from_image(image);
+        else
+        {
+            auto image_padded = Image();
+            image_padded.create(_resolution->x, _resolution->y, RGBA(0, 0, 0, 0));
+
+            for (size_t x = 0.5 * (image_size.x - _resolution->x); x < image_size.x and x < _resolution->x; ++x)
+                for (size_t y = 0.5 * (image_size.y - _resolution->y); y < image_size.y and x < _resolution->y; ++y)
+                    image_padded.set_pixel(x, y, image.get_pixel(x, y));
+
+            ((Texture*) _layers.back()->layer.texture)->create_from_image(image);
+        }
+
         _layers.back()->shape->set_texture(_layers.back()->layer.texture);
     }
 }

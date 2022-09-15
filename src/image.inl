@@ -83,7 +83,7 @@ namespace mousetrap
         return _data.size();
     }
 
-    size_t Image::to_linear_index(size_t x, size_t y)
+    size_t Image::to_linear_index(size_t x, size_t y) const
     {
         return y * (_size.x * 4) + (x * 4);
     }
@@ -109,7 +109,7 @@ namespace mousetrap
         set_pixel(x, y, color.operator RGBA());
     }
 
-    RGBA Image::get_pixel(size_t x, size_t y)
+    RGBA Image::get_pixel(size_t x, size_t y) const
     {
         auto i = to_linear_index(x, y);
 
@@ -150,7 +150,7 @@ namespace mousetrap
         _data.at(i+3) = color.a;
     }
 
-    RGBA Image::get_pixel(size_t i)
+    RGBA Image::get_pixel(size_t i) const
     {
         return RGBA
         (
