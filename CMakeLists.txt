@@ -173,7 +173,7 @@ add_library(mousetrap SHARED
 
     include/detachable_box.hpp
     src/detachable_box.inl
-        include/expander.hpp include/paned.hpp app/layer.hpp include/dropdown.hpp src/dropdown.inl)
+        include/expander.hpp include/paned.hpp app/layer.hpp include/dropdown.hpp src/dropdown.inl include/check_button.hpp src/check_button.inl)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

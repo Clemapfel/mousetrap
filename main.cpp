@@ -20,6 +20,7 @@
 #include <include/detachable_box.hpp>
 #include <include/paned.hpp>
 #include <include/dropdown.hpp>
+#include <include/check_button.hpp>
 
 #include <app/global_state.hpp>
 #include <app/color_picker.hpp>
@@ -100,13 +101,13 @@ static void activate(GtkApplication* app, void*)
     auto* dropdown = new DropDown();
     auto* w1 = new Button();
     auto* w2 = new Label("test2");
-    auto* w3 = new Label("test2");
+    auto* w3 = new CheckButton("test3");
+    w3->set_expand(true);
 
     dropdown->push_back(w1, new Label("test"), on_select, new std::string("test1"));
     dropdown->push_back(w2, new Label("test2"), on_select, new std::string("test2"));
-    dropdown->push_back(w3, new Label("test3"), on_select, new std::string("test3"));
-    box->push_back(dropdown);
-    // TODO
+    //dropdown->push_back(w3, new Label("test3"), on_select, new std::string("test3"));
+    box->push_back(w3);
 
     state::main_window->set_child(box);
     state::main_window->show();
