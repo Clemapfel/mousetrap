@@ -87,6 +87,7 @@ namespace mousetrap
             _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(G_LIST_MODEL(_tree_list_model)));
 
         _column_view = GTK_COLUMN_VIEW(gtk_column_view_new(_selection_model));
+        gtk_column_view_set_reorderable(_column_view, false);
 
         for (size_t i = 0; i < titles.size(); ++i)
         {
@@ -439,5 +440,20 @@ namespace mousetrap
         }
 
         gtk_column_view_remove_column(_column_view, get_column(column_i));
+    }
+
+    void TreeColumnView::set_show_column_separators(bool b)
+    {
+        gtk_column_view_set_show_column_separators(_column_view, b);
+    }
+
+    void TreeColumnView::set_show_row_separators(bool b)
+    {
+        gtk_column_view_set_show_row_separators(_column_view, b);
+    }
+
+    void TreeColumnView::set_enable_rubberband_selection(bool b)
+    {
+        gtk_column_view_set_enable_rubberband(_column_view, b);
     }
 }

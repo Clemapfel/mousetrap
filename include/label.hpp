@@ -15,6 +15,7 @@ namespace mousetrap
             Label(const std::string&);
 
             void set_text(const std::string&);
+            std::string get_text();
             void set_use_markup(bool b);
 
             operator GtkWidget*() override;

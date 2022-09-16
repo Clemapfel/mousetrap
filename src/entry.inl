@@ -31,6 +31,8 @@ namespace mousetrap
     {
         auto* buffer = gtk_entry_get_buffer(_entry);
         gtk_entry_buffer_set_text(buffer, text.c_str(), text.size());
+        gtk_entry_buffer_emit_inserted_text(buffer, 0, text.c_str(), text.size());
+        gtk_entry_set_buffer(_entry, buffer);
     }
 
     void Entry::set_n_chars(size_t n)

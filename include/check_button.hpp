@@ -24,7 +24,6 @@ namespace mousetrap
 
         private:
             GtkCheckButton* _native;
-
     };
 }
 

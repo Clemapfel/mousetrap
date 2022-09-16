@@ -75,4 +75,9 @@ namespace mousetrap
         for (auto* w : to_remove)
             gtk_box_remove(_native, w);
     }
+
+    void Box::set_homogeneous(bool b)
+    {
+        gtk_box_set_homogeneous(_native, b);
+    }
 }

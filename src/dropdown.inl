@@ -122,6 +122,8 @@ namespace mousetrap
 
     void DropDown::push_back(Widget* widget, const std::string& id, OnSelectSignature on_select_f, void* on_select_data)
     {
-        push_back(widget, new Label(id), on_select_f, on_select_data);
+        auto* label = new Label(id);
+        label->set_use_markup(true);
+        push_back(widget, label, on_select_f, on_select_data);
     }
 }

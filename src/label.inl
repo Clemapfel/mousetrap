@@ -20,6 +20,11 @@ namespace mousetrap
         gtk_label_set_text(_native, text.c_str());
     }
 
+    std::string Label::get_text()
+    {
+        return std::string(gtk_label_get_text(_native));
+    }
+
     void Label::set_use_markup(bool b)
     {
         gtk_label_set_use_markup(_native, b);

@@ -24,6 +24,8 @@ namespace mousetrap
             void remove(Widget*);
             void clear();
 
+            void set_homogeneous(bool);
+
         private:
             GtkBox* _native;
     };

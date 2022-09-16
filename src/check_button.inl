@@ -10,11 +10,6 @@ namespace mousetrap
         _native = GTK_CHECK_BUTTON(gtk_check_button_new());
     }
 
-    CheckButton::CheckButton(const std::string& label)
-    {
-        _native = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(label.c_str()));
-    }
-
     CheckButton::operator GtkWidget*()
     {
         return GTK_WIDGET(_native);

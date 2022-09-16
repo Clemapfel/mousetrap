@@ -22,6 +22,10 @@ namespace mousetrap
             TreeColumnView(std::vector<std::string> titles, GtkSelectionMode = GtkSelectionMode::GTK_SELECTION_MULTIPLE);
             operator GtkWidget*() override;
 
+            void set_show_column_separators(bool);
+            void set_show_row_separators(bool);
+            void set_enable_rubberband_selection(bool);
+
             void append_column(const std::string& title, std::vector<Widget*>);
             void prepend_column(const std::string& title, std::vector<Widget*>);
             void insert_column(size_t i, const std::string& title, std::vector<Widget*>);
