@@ -72,11 +72,6 @@ namespace mousetrap::state
 
     void update_brush_texture();
 
-    // ### FRAMES / LAYERS ############################
-
-    //std::deque<Layer> layers;
-
-
     // ### FORMATING ##################################
 
     float margin_unit = 10; // px

@@ -31,6 +31,7 @@
 #include <app/brush_options.hpp>
 #include <app/widget_container.hpp>
 #include <app/canvas.hpp>
+#include <app/layer_view.hpp>
 
 using namespace mousetrap;
 
@@ -97,19 +98,10 @@ static void activate(GtkApplication* app, void*)
     auto* canvas = new Canvas({100, 100});
     //box->push_back(canvas);
 
-    // TODO
-    auto* dropdown = new DropDown();
-    auto* w1 = new Button();
-    auto* w2 = new Label("test2");
-    auto* w3 = new CheckButton("test3");
-    w3->set_expand(true);
+    state::layer_resolution = {100, 100};
+    auto* layer_view = new LayerView();
 
-    dropdown->push_back(w1, new Label("test"), on_select, new std::string("test1"));
-    dropdown->push_back(w2, new Label("test2"), on_select, new std::string("test2"));
-    //dropdown->push_back(w3, new Label("test3"), on_select, new std::string("test3"));
-    box->push_back(w3);
-
-    state::main_window->set_child(box);
+    state::main_window->set_child(layer_view);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

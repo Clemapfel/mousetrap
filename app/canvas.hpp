@@ -16,11 +16,6 @@
 
 namespace mousetrap
 {
-    namespace state
-    {
-        std::deque<Layer> layers;
-    }
-
     class Canvas : public Widget
     {
         public:

@@ -31,6 +31,15 @@ namespace mousetrap
         float opacity = 1;
         BlendMode blend_mode = NORMAL;
     };
+    
+    namespace state
+    {
+        std::deque<Layer*> layers;
+        Vector2ui layer_resolution;
+        
+        void add_layer(RGBA);
+        void add_layer(const Image&);
+    }
 }
 
 /// ###
@@ -68,6 +77,37 @@ namespace mousetrap
         {
             glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
             glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
+        }
+    }
+
+    void state::add_layer(RGBA color)
+    {
+        auto image = Image();
+        image.create(state::layer_resolution.x, state::layer_resolution.y, color);
+        add_layer(image);
+    }
+
+    void state::add_layer(const Image& image)
+    {
+        state::layers.emplace_back(new Layer());
+
+        float width = state::layer_resolution.x;
+        float height = state::layer_resolution.y;
+
+        auto image_size = Vector2ui(image.get_size().x, image.get_size().y);
+
+        if (image_size == state::layer_resolution)
+            ((Texture*) state::layers.back()->texture)->create_from_image(image);
+        else
+        {
+            auto image_padded = Image();
+            image_padded.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(0, 0, 0, 0));
+
+            for (size_t x = 0.5 * (image_size.x - state::layer_resolution.x); x < image_size.x and x < state::layer_resolution.x; ++x)
+                for (size_t y = 0.5 * (image_size.y - state::layer_resolution.y); y < image_size.y and x < state::layer_resolution.y; ++y)
+                    image_padded.set_pixel(x, y, image.get_pixel(x, y));
+
+            ((Texture*) state::layers.back()->texture)->create_from_image(image);
         }
     }
 }
