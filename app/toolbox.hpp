@@ -23,13 +23,13 @@ namespace mousetrap
     class Toolbox : public Widget
     {
         public:
-            Toolbox();
+            Toolbox(GtkOrientation);
             operator GtkWidget*() override;
 
             void select(ToolID);
 
         private:
-            static inline const std::vector<std::pair<std::string, std::vector<std::vector<std::string>>>> icon_mapping = {
+            static inline const std::vector<std::pair<std::string, std::vector<std::vector<std::string>>>> icon_mapping_old = {
 
                     {MARQUEE_NEIGHBORHODD_SELECT, {
                             {MARQUEE_RECTANGLE, MARQUEE_RECTANGLE_ADD, MARQUEE_RECTANGLE_SUBTRACT},
@@ -52,9 +52,34 @@ namespace mousetrap
                     {GRADIENT_DITHERED, {{GRADIENT_SMOOTH}}},
             };
 
+            static inline const std::vector<std::pair<std::string, std::vector<std::vector<std::string>>>> icon_mapping = {
+
+                    {MARQUEE_NEIGHBORHODD_SELECT, {{}}},
+                    {MARQUEE_RECTANGLE, {{MARQUEE_RECTANGLE_ADD, MARQUEE_RECTANGLE_SUBTRACT}}},
+                    {MARQUEE_CIRCLE, {{MARQUEE_CIRCLE_ADD, MARQUEE_CIRCLE_SUBTRACT}}},
+                    {MARQUEE_POLYGON, {{MARQUEE_POLYGON_ADD, MARQUEE_POLYGON_SUBTRACT}}},
+
+                    {PENCIL, {{}}},
+                    {ERASER, {{}}},
+                    {EYEDROPPER, {{}}},
+                    {BUCKET_FILL, {{}}},
+                    {LINE, {{}}},
+
+                    {"shapes_outline", {
+                          {RECTANGLE_OUTLINE, CIRCLE_OUTLINE, POLYGON_OUTLINE},
+                    }},
+
+                    {"shapes_fill", {
+                           {RECTANGLE_FILL, CIRCLE_FILL, POLYGON_FILL},
+                    }},
+
+                    {GRADIENT_DITHERED, {{}}},
+                    {GRADIENT_SMOOTH, {{}}},
+            };
+
             struct Icon : public Widget
             {
-                Icon(ToolID id);
+                Icon(ToolID id, bool is_vertical);
                 operator GtkWidget*() override;
 
                 ToolID id;
@@ -78,8 +103,10 @@ namespace mousetrap
 
             struct IconWithPopover : public Widget
             {
-                IconWithPopover(Icon* main, std::vector<std::vector<Icon*>> children);
+                IconWithPopover(Icon* main, std::vector<std::vector<Icon*>> children, bool is_vertical);
                 operator GtkWidget*();
+
+                bool is_vertical;
 
                 Box* main_box;
                 Popover* popover;
@@ -116,6 +143,8 @@ namespace mousetrap
             
             using on_global_shortcut_marquee_mode_shift_data = struct {Toolbox* instance; bool add;};
             static void on_global_shortcut_marquee_mode_shift(void*);
+
+            bool _is_orientation_vertical;
     };
 }
 
@@ -123,7 +152,7 @@ namespace mousetrap
 
 namespace mousetrap
 {
-    Toolbox::Icon::Icon(ToolID id)
+    Toolbox::Icon::Icon(ToolID id, bool is_vertical)
         : id(id)
     {
         size_t scale = state::icon_scale;
@@ -141,7 +170,7 @@ namespace mousetrap
         selected_indicator->set_size_request({48 * scale, 48 * scale});
         selected_indicator->set_opacity(0);
 
-        child_selected_indicator = new ImageDisplay(get_resource_path() + "icons/" + "child_selected_indicator" + ".png", scale);
+        child_selected_indicator = new ImageDisplay(get_resource_path() + "icons/child_selected_" + (is_vertical ? "vertical" : "horizontal") + ".png", scale);
         child_selected_indicator->set_size_request({48 * scale, 48 * scale});
         child_selected_indicator->set_opacity(0);
 
@@ -163,7 +192,8 @@ namespace mousetrap
         return overlay->operator GtkWidget*();
     }
 
-    Toolbox::IconWithPopover::IconWithPopover(Icon* main, std::vector<std::vector<Icon*>> children)
+    Toolbox::IconWithPopover::IconWithPopover(Icon* main, std::vector<std::vector<Icon*>> children, bool is_orientation_vertical)
+        : is_vertical(is_orientation_vertical)
     {
         main->popover_indicator->set_opacity(1);
 
@@ -176,7 +206,7 @@ namespace mousetrap
 
         for (auto& row : children)
         {
-            popover_rows.emplace_back(new ListView(GTK_ORIENTATION_HORIZONTAL));
+            popover_rows.emplace_back(new ListView(is_vertical ? GTK_ORIENTATION_VERTICAL : GTK_ORIENTATION_HORIZONTAL));
 
             for (auto* child : row)
                 popover_rows.back()->push_back(child);
@@ -186,7 +216,7 @@ namespace mousetrap
 
         popover->attach_to(main->overlay);
         popover->set_child(popover_box);
-        popover->set_relative_position(GTK_POS_RIGHT);
+        popover->set_relative_position(is_vertical ? GTK_POS_RIGHT : GTK_POS_BOTTOM);
 
         main_motion_event_controller = new MotionEventController();
         main_box->add_controller(main_motion_event_controller);
@@ -250,8 +280,17 @@ namespace mousetrap
         auto* instance = (Toolbox*) data;
 
         auto size = instance->get_size();
-        if (instance->last_known_position->x > 0.75 * size.x)
-            return; // don't popdown if leaving to the right
+
+        if (instance->_is_orientation_vertical)
+        {
+            if (instance->last_known_position->x > 0.75 * size.x)
+                return; // don't popdown if leaving to the right
+        }
+        else
+        {
+            if (instance->last_known_position->y > 0.75 * size.y)
+                return; // don't popdown if leaving to the bottom
+        }
 
         for (auto* icon_with : instance->_icons_with_popover)
             icon_with->popover->popdown();
@@ -306,13 +345,15 @@ namespace mousetrap
         }
     }
 
-    Toolbox::Toolbox()
+    Toolbox::Toolbox(GtkOrientation orientation)
     {
-        main = new ListView(GTK_ORIENTATION_VERTICAL);
+        _is_orientation_vertical = orientation == GTK_ORIENTATION_VERTICAL;
+
+        main = new ListView(_is_orientation_vertical ? GTK_ORIENTATION_VERTICAL: GTK_ORIENTATION_HORIZONTAL);
         main->set_show_separators(true);
 
         auto add_icon = [&](ToolID id) -> Icon* {
-            auto inserted = _icons.insert({id, new Icon(id)});
+            auto inserted = _icons.insert({id, new Icon(id, _is_orientation_vertical)});
             inserted.first->second->overlay->set_cursor(GtkCursorType::POINTER);
             return _icons.at(id);
         };
@@ -345,7 +386,7 @@ namespace mousetrap
             }
             else
             {
-                _icons_with_popover.emplace_back(new IconWithPopover(main_icon, children));
+                _icons_with_popover.emplace_back(new IconWithPopover(main_icon, children, _is_orientation_vertical));
                 auto* current = _icons_with_popover.back();
                 current->main_motion_event_controller->connect_enter(on_icon_with_popover_enter, new on_icon_with_popover_enter_data{current, this});
                 main->push_back(current);
@@ -389,6 +430,12 @@ namespace mousetrap
 
     void Toolbox::select(ToolID id)
     {
+        if (id == "shapes_fill" or id == "SHAPES_FILL")
+            id = RECTANGLE_FILL;
+
+        if (id == "shapes_outline" or id == "SHAPES_OUTLINE")
+            id = RECTANGLE_OUTLINE;
+
         Icon* parent = nullptr;
         Icon* child = _icons.at(id);
 

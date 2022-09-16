@@ -60,7 +60,7 @@ static void activate(GtkApplication* app, void*)
     state::palette_view->set_expand(true);
     state::palette_view->show();
 
-    state::toolbox = new Toolbox();
+    state::toolbox = new Toolbox(GTK_ORIENTATION_HORIZONTAL);
     state::brush_options = new BrushOptions();
 
     static auto* box = new Box(GTK_ORIENTATION_VERTICAL);
@@ -88,7 +88,7 @@ static void activate(GtkApplication* app, void*)
     //box->push_back(state::palette_view);
 
     auto* canvas = new Canvas({100, 100});
-    box->push_back(canvas);
+    box->push_back(state::toolbox);
 
     state::main_window->set_child(box);
     state::main_window->show();
