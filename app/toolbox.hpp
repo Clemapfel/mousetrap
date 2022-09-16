@@ -54,10 +54,10 @@ namespace mousetrap
 
             static inline const std::vector<std::pair<std::string, std::vector<std::vector<std::string>>>> icon_mapping = {
 
-                    {MARQUEE_NEIGHBORHODD_SELECT, {{}}},
                     {MARQUEE_RECTANGLE, {{MARQUEE_RECTANGLE_ADD, MARQUEE_RECTANGLE_SUBTRACT}}},
                     {MARQUEE_CIRCLE, {{MARQUEE_CIRCLE_ADD, MARQUEE_CIRCLE_SUBTRACT}}},
                     {MARQUEE_POLYGON, {{MARQUEE_POLYGON_ADD, MARQUEE_POLYGON_SUBTRACT}}},
+                    {MARQUEE_NEIGHBORHODD_SELECT, {{}}},
 
                     {PENCIL, {{}}},
                     {ERASER, {{}}},
@@ -284,12 +284,12 @@ namespace mousetrap
         if (instance->_is_orientation_vertical)
         {
             if (instance->last_known_position->x > 0.75 * size.x)
-                return; // don't popdown if leaving to the right
+                return;
         }
         else
         {
             if (instance->last_known_position->y > 0.75 * size.y)
-                return; // don't popdown if leaving to the bottom
+                return;
         }
 
         for (auto* icon_with : instance->_icons_with_popover)

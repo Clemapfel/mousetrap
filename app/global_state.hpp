@@ -15,6 +15,7 @@
 #include <include/pixel_buffer.hpp>
 #include <include/shortcut_map.hpp>
 
+#include <app/layer.hpp>
 #include <app/palette.hpp>
 #include <app/tools.hpp>
 
@@ -73,23 +74,8 @@ namespace mousetrap::state
 
     // ### FRAMES / LAYERS ############################
 
-    struct Layer
-    {
-        bool is_hidden = false;
-        bool is_locked = false;
+    //std::deque<Layer> layers;
 
-        std::string name;
-        float opacity = 1;
-
-        PixelBuffer* pixels = nullptr;
-    };
-
-    struct Frame
-    {
-        std::vector<Layer> layers;
-    };
-
-    std::deque<Frame> frames;
 
     // ### FORMATING ##################################
 

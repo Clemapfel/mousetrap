@@ -52,7 +52,6 @@ namespace mousetrap
 
             Shape* _underlay_transparency_tiling;
             Shader* _underlay_transparency_tiling_shader;
-            Shader* _underlay_noop_shader;
 
             Shape* _underlay_subtract_top;
             Shape* _underlay_subtract_right;
@@ -81,7 +80,7 @@ namespace mousetrap
             Shape* _subtract_left;
 
             Shape* _layer_boundary;
-            Shader* _noop_shader;
+            static inline Shader* _noop_shader = nullptr;
 
             static void on_gl_area_realize(GtkGLArea*, Canvas*);
             static void on_gl_area_resize(GtkGLArea*, int, int, Canvas*);
@@ -140,8 +139,6 @@ namespace mousetrap
             get_resource_path() + "shaders/transparency_tiling.frag",
             ShaderType::FRAGMENT
         );
-
-        instance->_underlay_noop_shader = new Shader();
 
         instance->_underlay_subtract_top = new Shape();
         instance->_underlay_subtract_right = new Shape();
@@ -213,10 +210,10 @@ namespace mousetrap
         instance->_underlay_transparency_tiling->render(*shader, *instance->_noop_transform);
 
         set_blend_mode(BlendMode::SUBTRACT);
-        instance->_underlay_subtract_top->render(*instance->_underlay_noop_shader, *instance->_transform);
-        instance->_underlay_subtract_right->render(*instance->_underlay_noop_shader, *instance->_transform);
-        instance->_underlay_subtract_bottom->render(*instance->_underlay_noop_shader, *instance->_transform);
-        instance->_underlay_subtract_left->render(*instance->_underlay_noop_shader, *instance->_transform);
+        instance->_underlay_subtract_top->render(*instance->_noop_shader, *instance->_transform);
+        instance->_underlay_subtract_right->render(*instance->_noop_shader, *instance->_transform);
+        instance->_underlay_subtract_bottom->render(*instance->_noop_shader, *instance->_transform);
+        instance->_underlay_subtract_left->render(*instance->_noop_shader, *instance->_transform);
 
         glFlush();
         gdk_gl_context_clear_current();
@@ -245,7 +242,7 @@ namespace mousetrap
         auto image = Image();
         image.create_from_pixbuf(pixbuf);
         instance->add_layer(image);
-        instance->add_layer(RGBA(1, 1, 1, 1));
+        instance->add_layer(RGBA(1, 1, 1, 0.5));
 
         instance->_layers.back()->layer.blend_mode = BlendMode::MULTIPLY;
 
@@ -308,6 +305,14 @@ namespace mousetrap
                 {x + w + a, y + h}, {x + w, y + h}
         );
 
+        for (auto* shape : {
+            instance->_subtract_top,
+            instance->_subtract_right,
+            instance->_subtract_bottom,
+            instance->_subtract_left
+        })
+            shape->set_color(RGBA(0.2, 0.2, 0.2, 1));
+
         gtk_gl_area_queue_render(area);
     }
 
@@ -325,7 +330,7 @@ namespace mousetrap
             layer->shape->render(*instance->_noop_shader, *instance->_transform);
         }
 
-        set_blend_mode(BlendMode::SUBTRACT);
+        set_blend_mode(BlendMode::NORMAL);
         instance->_subtract_top->render(*instance->_noop_shader, *instance->_transform);
         instance->_subtract_right->render(*instance->_noop_shader, *instance->_transform);
         instance->_subtract_bottom->render(*instance->_noop_shader, *instance->_transform);
@@ -351,9 +356,7 @@ namespace mousetrap
         gtk_gl_area_make_current(_layer_area->operator GtkGLArea*());
 
         _layers.push_back(new LayerShape{
-                Layer{
-                        new Texture()
-                },
+                Layer(),
                 new Shape()
         });
 

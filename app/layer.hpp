@@ -21,6 +21,10 @@ namespace mousetrap
 
     struct Layer
     {
+        static inline size_t _current_id = 0;
+        Layer(const std::string& name = "");
+
+        std::string name;
         TextureObject* texture;
         bool is_locked = false;
         bool is_visible = true;
@@ -33,6 +37,14 @@ namespace mousetrap
 
 namespace mousetrap
 {
+    Layer::Layer(const std::string& name_in)
+    {
+        if (name_in.empty())
+            name = "Layer_#" + std::to_string(_current_id++);
+
+        texture = new Texture();
+    }
+
     void set_blend_mode(BlendMode mode)
     {
         glEnable(GL_BLEND);

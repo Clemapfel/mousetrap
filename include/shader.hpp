@@ -57,9 +57,9 @@ namespace mousetrap
                     _vertex_shader_id;
 
             // default noop
-            size_t _noop_program_id,
-                   _noop_fragment_shader_id,
-                   _noop_vertex_shader_id;
+            static inline size_t _noop_program_id,
+                                 _noop_fragment_shader_id,
+                                 _noop_vertex_shader_id;
 
             static inline const std::string _noop_fragment_shader_source = R"(
                 #version 130

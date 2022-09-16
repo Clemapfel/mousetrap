@@ -38,7 +38,6 @@ namespace mousetrap::detail
 
     static void tree_list_view_item_init(TreeListViewItem* item)
     {
-        static size_t i = 0;
         item->expander = g_object_ref(GTK_TREE_EXPANDER(gtk_tree_expander_new()));
         item->widget = nullptr;
         item->widget_ref = nullptr;

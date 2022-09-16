@@ -173,7 +173,7 @@ add_library(mousetrap SHARED
 
     include/detachable_box.hpp
     src/detachable_box.inl
-        include/expander.hpp include/paned.hpp app/layer.hpp)
+        include/expander.hpp include/paned.hpp app/layer.hpp include/dropdown.hpp src/dropdown.inl)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -203,7 +203,7 @@ add_library(app STATIC
     app/toolbox.hpp
     app/brush_options.hpp
     app/widget_container.hpp
-        app/canvas.hpp)
+        app/canvas.hpp app/layer_view.hpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

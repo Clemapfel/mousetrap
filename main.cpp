@@ -19,6 +19,7 @@
 #include <include/list_view.hpp>
 #include <include/detachable_box.hpp>
 #include <include/paned.hpp>
+#include <include/dropdown.hpp>
 
 #include <app/global_state.hpp>
 #include <app/color_picker.hpp>
@@ -36,6 +37,11 @@ static DetachableBox* detachable;
 static void detach()
 {
     detachable->set_child_attached(not detachable->get_child_attached());
+}
+
+static void on_select(void* in)
+{
+    std::cout << *((std::string*) in) << std::endl;
 }
 
 static void activate(GtkApplication* app, void*)
@@ -88,7 +94,19 @@ static void activate(GtkApplication* app, void*)
     //box->push_back(state::palette_view);
 
     auto* canvas = new Canvas({100, 100});
-    box->push_back(state::toolbox);
+    //box->push_back(canvas);
+
+    // TODO
+    auto* dropdown = new DropDown();
+    auto* w1 = new Button();
+    auto* w2 = new Label("test2");
+    auto* w3 = new Label("test2");
+
+    dropdown->push_back(w1, new Label("test"), on_select, new std::string("test1"));
+    dropdown->push_back(w2, new Label("test2"), on_select, new std::string("test2"));
+    dropdown->push_back(w3, new Label("test3"), on_select, new std::string("test3"));
+    box->push_back(dropdown);
+    // TODO
 
     state::main_window->set_child(box);
     state::main_window->show();
