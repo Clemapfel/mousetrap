@@ -606,6 +606,7 @@ namespace mousetrap
         guint n_items,
         LayerView* instance)
     {
+        size_t temp;
         std::vector<size_t> selected;
 
         auto bitset = gtk_selection_model_get_selection(self);
