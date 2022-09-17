@@ -101,7 +101,8 @@ static void activate(GtkApplication* app, void*)
     state::layer_resolution = {100, 100};
     auto* layer_view = new LayerView();
 
-    state::main_window->set_child(layer_view);
+    box->push_back(layer_view);
+    state::main_window->set_child(box);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

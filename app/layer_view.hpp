@@ -28,6 +28,8 @@ namespace mousetrap
             LayerView();
             operator GtkWidget*() override;
 
+            static void signal_layer_name_updated(void*, LayerView*);
+
         private:
             static inline Shader* _noop_shader = nullptr;
             static inline Shader* _transparency_tiling_shader = nullptr;
@@ -36,9 +38,9 @@ namespace mousetrap
 
             struct LayerViewRow
             {
-                LayerViewRow(Layer*);
+                LayerViewRow(Layer*, LayerView* parent);
 
-                LayerViewRow* parent;
+                LayerView* parent;
                 Layer* layer;
 
                 GLArea* texture_area;
@@ -46,15 +48,20 @@ namespace mousetrap
                 Shape* layer_texture_shape;
                 AspectFrame* texture_area_frame;
 
-                Label* name;
+                Entry* name;
+                FocusEventController* name_focus_controller;
 
                 Box* visible_button_box;
                 Label* visible_button_label;
                 CheckButton* visible_button;
+                static inline const char* layer_hidden_tooltip = "Layer is Hidden";
+                static inline const char* layer_visible_tooltip = "Layer is Visible";
 
                 Box* locked_button_box;
                 Label* locked_button_label;
                 CheckButton* locked_button;
+                static inline const char* layer_locked_tooltip = "Layer is Locked";
+                static inline const char* layer_unlocked_tooltip = "Layer is Unlocked";
 
                 Scale* opacity_scale;
                 DropDown* blend_mode_dropdown;
@@ -74,6 +81,9 @@ namespace mousetrap
 
                 static void on_opacity_select(GtkScale*, LayerViewRow*);
 
+                static void on_layer_name_activate(GtkEntry*, LayerViewRow*);
+                static void on_layer_name_focus_lost(GtkEventControllerFocus* self, void*);
+
                 using on_blendmode_selected_data = struct {LayerViewRow* instance; BlendMode mode;};
                 static void on_blendmode_selected(void*);
             };
@@ -81,7 +91,7 @@ namespace mousetrap
             ListView* _row_view;
             std::deque<LayerViewRow*> _rows;
 
-            static void signal_layer_name_updated(void*, LayerView*);
+            bool initial_update_happened = false;
     };
 }
 
@@ -89,8 +99,8 @@ namespace mousetrap
 
 namespace mousetrap
 {
-    LayerView::LayerViewRow::LayerViewRow(Layer* layer)
-        : layer(layer)
+    LayerView::LayerViewRow::LayerViewRow(Layer* layer, LayerView* parent)
+        : layer(layer), parent(parent)
     {
         texture_area = new GLArea();
         texture_area->connect_signal("realize", on_texture_area_realize, this);
@@ -99,8 +109,15 @@ namespace mousetrap
         texture_area_frame = new AspectFrame(state::layer_resolution.x / float(state::layer_resolution.y));
         texture_area_frame->set_child(texture_area);
 
-        name = new Label("<tt>" + std::to_string(int(rand() / float(RAND_MAX) * 2000)) + "</tt>");
-        name->set_use_markup(true);
+        name = new Entry();
+        gtk_editable_set_width_chars(GTK_EDITABLE(name->operator GtkWidget*()), std::string("Layer_9999").size());
+        name->set_has_frame(false);
+        name->set_text(layer->name);
+        name->connect_signal("activate", on_layer_name_activate, this);
+
+        name_focus_controller = new FocusEventController();
+        name_focus_controller->connect_leave(on_layer_name_focus_lost, this);
+        name->add_controller(name_focus_controller);
 
         visible_button = new CheckButton();
         visible_button->set_is_checked(layer->is_visible);
@@ -133,32 +150,50 @@ namespace mousetrap
 
             std::string label;
             std::string list_item;
+            std::string tooltip;
 
             if (mode == BlendMode::NORMAL)
             {
                 list_item = "Normal";
-                label = "Normal  ";
+                label = "Normal    ";
+                tooltip = "Traditional Alpha Blending";
             }
             else if (mode == BlendMode::ADD)
             {
                 list_item = "Add";
-                label = "Add     ";
+                label = "Add         ";
+                tooltip = "source.rgba + destination.rgba";
             }
             else if (mode == BlendMode::SUBTRACT)
             {
                 list_item = "Subtract";
-                label = "Subtract";
+                label = "Subtract  ";
+                tooltip = "source.rgba - destination.rgba";
             }
             else if (mode == BlendMode::MULTIPLY)
             {
                 list_item = "Multiply";
-                label = "Multiply";
+                label = "Multiply   ";
+                tooltip = "source.rgba * destination.rgba";
+            }
+            else if (mode == BlendMode::MIN)
+            {
+                list_item = "Minimum ";
+                label = "Minimum ";
+                tooltip = "min(source.rgba, destination.rgba)";
+            }
+            else if (mode == BlendMode::MAX)
+            {
+                list_item = "Maximum";
+                label = "Maximum ";
+                tooltip = "max(source.rgba, destination.rgba)";
             }
 
             blend_mode_dropdown_list_items.emplace_back(new Label(list_item));
             blend_mode_dropdown_list_items.back()->set_use_markup(true);
+            blend_mode_dropdown_list_items.back()->set_tooltip_text(tooltip);
 
-            blend_mode_dropdown_label_items.emplace_back(new Label("<tt>" + label + "</tt>"));
+            blend_mode_dropdown_label_items.emplace_back(new Label(label));
             blend_mode_dropdown_label_items.back()->set_use_markup(true);
 
             blend_mode_dropdown->push_back(
@@ -169,16 +204,16 @@ namespace mousetrap
             );
         };
 
-        for (auto mode : {BlendMode::NORMAL, BlendMode::ADD, BlendMode::SUBTRACT, BlendMode::MULTIPLY})
+        for (auto mode : {BlendMode::NORMAL, BlendMode::ADD, BlendMode::SUBTRACT, BlendMode::MULTIPLY, BlendMode::MIN, BlendMode::MAX})
             add_dropdown_item(mode);
 
         visible_button->set_margin_start(0.5 * state::margin_unit);
         visible_button->set_margin_end(0.5 * state::margin_unit);
-        visible_button_box->set_tooltip_text("Layer Visible");
+        visible_button_box->set_tooltip_text(layer->is_visible ? layer_visible_tooltip : layer_hidden_tooltip);
 
         locked_button->set_margin_start(0.5 * state::margin_unit);
         locked_button->set_margin_end(state::margin_unit);
-        locked_button_box->set_tooltip_text("Layer Locked");
+        locked_button_box->set_tooltip_text(layer->is_locked ? layer_locked_tooltip : layer_unlocked_tooltip);
 
         texture_area_frame->set_vexpand(true);
         texture_area_frame->set_size_request({(float(_layer_thumbnail_size) / state::layer_resolution.y) * state::layer_resolution.x, _layer_thumbnail_size});
@@ -186,7 +221,7 @@ namespace mousetrap
 
         name->set_margin_start(2 * state::margin_unit);
         name->set_margin_end(2 * state::margin_unit);
-        name->set_tooltip_text("Layer Title");
+        name->set_tooltip_text("Layer Name");
 
         opacity_scale->set_margin_start(state::margin_unit);
         opacity_scale->set_margin_end(0.5 * state::margin_unit);
@@ -269,6 +304,7 @@ namespace mousetrap
             instance->name->set_opacity(1);
             instance->opacity_scale->set_opacity(1);
             instance->blend_mode_dropdown->set_opacity(1);
+            instance->visible_button_box->set_tooltip_text(layer_visible_tooltip);
         }
         else
         {
@@ -278,22 +314,32 @@ namespace mousetrap
             instance->name->set_opacity(hidden_opacity);
             instance->opacity_scale->set_opacity(hidden_opacity);
             instance->blend_mode_dropdown->set_opacity(hidden_opacity);
+            instance->visible_button_box->set_tooltip_text(layer_hidden_tooltip);
         }
     }
 
     void LayerView::LayerViewRow::on_is_locked_toggle(GtkCheckButton* button, LayerViewRow* instance)
     {
+        static const char* unlocked_lock = "&#128275;";
+        static const char* locked_lock = "&#128274;";
+
         if (gtk_check_button_get_active(button))
         {
             instance->layer->is_locked = true;
             instance->opacity_scale->set_visible(false);
             instance->blend_mode_dropdown->set_visible(false);
+            instance->locked_button_label->set_text(locked_lock);
+            instance->locked_button_box->set_tooltip_text(layer_locked_tooltip);
+            instance->locked_button_label->set_use_markup(true);
         }
         else
         {
             instance->layer->is_locked = false;
             instance->opacity_scale->set_visible(true);
             instance->blend_mode_dropdown->set_visible(true);
+            instance->locked_button_label->set_text(locked_lock);
+            instance->locked_button_box->set_tooltip_text(layer_unlocked_tooltip);
+            instance->locked_button_label->set_use_markup(true);
         }
     }
 
@@ -313,6 +359,20 @@ namespace mousetrap
         instance->texture_area->queue_render();
     }
 
+    void LayerView::LayerViewRow::on_layer_name_activate(GtkEntry* entry, LayerViewRow* instance)
+    {
+        auto* buffer = gtk_entry_get_buffer(entry);
+        instance->layer->name = gtk_entry_buffer_get_text(buffer);
+        gtk_editable_set_text(GTK_EDITABLE(entry), instance->layer->name.c_str());
+        std::cout << instance->layer->name << std::endl;
+    }
+
+    void LayerView::LayerViewRow::on_layer_name_focus_lost(GtkEventControllerFocus* self, void* data)
+    {
+        auto* instance = (LayerViewRow*) data;
+        instance->name->set_text(instance->layer->name);
+    }
+
     LayerView::LayerView()
     {
         _row_view = new ListView(GTK_ORIENTATION_VERTICAL);
@@ -325,7 +385,7 @@ namespace mousetrap
 
         for (size_t i = 0; i < 4; ++i)
         {
-            _rows.emplace_back(new LayerViewRow(state::layers.back()));
+            _rows.emplace_back(new LayerViewRow(state::layers.back(), this));
             _row_view->push_back(_rows.back()->main);
         }
     }
@@ -335,11 +395,14 @@ namespace mousetrap
         return _row_view->operator GtkWidget*();
     }
 
-    void LayerView::signal_layer_name_updated(void* widget, LayerView* instance)
+    void LayerView::signal_layer_name_updated(void*, LayerView* instance)
     {
         size_t max = 0;
         for (auto& row : instance->_rows)
-            max = std::max<int>(max, gtk_widget_get_allocated_width(row->name->operator GtkWidget*()));
+        {
+            auto width = gtk_widget_get_allocated_width(row->name->operator GtkWidget*());
+            max = std::max<int>(max, width);
+        }
 
         for (auto& row : instance->_rows)
             row->name->set_size_request({max, 0});

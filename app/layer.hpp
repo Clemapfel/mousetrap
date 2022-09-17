@@ -15,6 +15,8 @@ namespace mousetrap
         ADD,        // src + dest
         SUBTRACT,   // src - dest
         MULTIPLY,   // src * dest
+        MIN,        // min(src, dest)
+        MAX         // max(src, dest)
     };
 
     void set_blend_mode(BlendMode);
@@ -77,6 +79,16 @@ namespace mousetrap
         {
             glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
             glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
+        }
+        else if (mode == MIN)
+        {
+            glBlendEquationSeparate(GL_MIN, GL_MIN);
+            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
+        }
+        else if (mode == MAX)
+        {
+            glBlendEquationSeparate(GL_MAX, GL_MAX);
+            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
         }
     }
 
