@@ -95,13 +95,13 @@ static void activate(GtkApplication* app, void*)
     //box->push_back(state::toolbox);
     //box->push_back(state::palette_view);
 
-    auto* canvas = new Canvas({100, 100});
+    auto* canvas = new Canvas({100, 250});
     //box->push_back(canvas);
 
     state::layer_resolution = {100, 100};
     auto* layer_view = new LayerView();
+    add_widget(layer_view, "Layers");
 
-    box->push_back(layer_view);
     state::main_window->set_child(box);
     state::main_window->show();
     state::main_window->present();

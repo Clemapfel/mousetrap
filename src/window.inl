@@ -96,7 +96,7 @@ namespace mousetrap
             std::cerr << " have the same global shortcut trigger: \"" << gtk_shortcut_trigger_to_string(triggered.front().second) << "\"" << std::endl;
         }
 
-        return true;
+        return false;
     }
 
     void Window::register_global_shortcut(ShortcutMap* map, const std::string& shortcut_id, std::function<void(void*)> action, void* data)

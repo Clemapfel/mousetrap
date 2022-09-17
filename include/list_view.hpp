@@ -39,6 +39,8 @@ namespace mousetrap
             void set_show_separators(bool);
             void set_select_on_hover(bool);
 
+            GtkSelectionModel* get_selection_model();
+
         private:
             static void on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*);
             static void on_list_item_factory_teardown(GtkSignalListItemFactory* self, void* object, void*);

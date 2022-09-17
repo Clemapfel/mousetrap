@@ -19,26 +19,33 @@ namespace mousetrap
         }
 
         if (b)
-            g_signal_handler_block(operator GObject*(), it->second);
+        {
+            if (not it->second.is_blocked)
+            {
+                g_signal_handler_block(operator GObject*(), it->second.id);
+                it->second.is_blocked = true;
+            }
+        }
         else
-            g_signal_handler_unblock(operator GObject*(), it->second);
+        {
+            if (it->second.is_blocked)
+            {
+                g_signal_handler_unblock(operator GObject*(), it->second.id);
+                it->second.is_blocked = false;
+            }
+        }
     }
 
     void SignalEmitter::set_all_signals_blocked(bool b)
     {
         for (auto& pair: _signal_handlers)
-        {
-            if (b)
-                g_signal_handler_block(operator GObject*(), pair.second);
-            else
-                g_signal_handler_unblock(operator GObject*(), pair.second);
-        }
+            set_signal_blocked(pair.first, b);
     }
 
     template<typename Function_t>
     void SignalEmitter::connect_signal(const std::string& signal_id, Function_t* function, void* data)
     {
         auto handler_id = g_signal_connect(operator GObject*(), signal_id.c_str(), G_CALLBACK(function), data);
-        _signal_handlers.insert_or_assign(signal_id, handler_id);
+        _signal_handlers.insert_or_assign(signal_id, SignalHandler{handler_id});
     }
 }

@@ -231,4 +231,10 @@ namespace mousetrap
     {
         gtk_list_view_set_single_click_activate(_list_view, b);
     }
+
+    GtkSelectionModel* TreeListView::get_selection_model()
+    {
+        return _selection_model;
+    }
+
 }

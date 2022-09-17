@@ -129,8 +129,11 @@ namespace mousetrap
             ListView* _row_view;
             std::deque<LayerViewRow*> _rows;
 
-            Box* _main;
+            KeyEventController* _shortcut_controller;
+            static gboolean on_shortcut_controller_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void* data);
+            static void on_row_view_selection_changed(GtkSelectionModel* self, guint position, guint n_items, LayerView* instance);
 
+            Box* _main;
             bool initial_update_happened = false;
     };
 }
@@ -195,40 +198,45 @@ namespace mousetrap
 
             if (mode == BlendMode::NORMAL)
             {
-                list_item = "<b><tt>&#945;</tt></b> | Alpha Blending";
-                label = "<tt> &#945; </tt>";
-                label_tooltip = "Blending: Normal";
-                list_tooltip = "<b>Blend Mode: Alpha Blending</b>\ncolor = source.a * source.rgba + (1-source.a) * destination.rgba";
+                list_item = "Normal";
+                label = "Normal";
+                label_tooltip = "Blend Mode: Alpha";
+                list_tooltip = "<b>Alpha Blending</b>\n<tt>color.rgb = source.a * source.rgb + (1-source.a) * destination.rgb</tt>";
             }
             else if (mode == BlendMode::ADD)
             {
-                list_item = "<tt>+</tt>: Add";
-                label = "<tt> + </tt>";
-                label_tooltip = "<b>Blend Mode: Add</b>\ncolor = source.rgba + destination.rgba";
+                list_item = "Add";
+                label = "Add";
+                label_tooltip = "Blend Mode: Additive";
+                list_tooltip = "<b>Additive Blending</b>\n<tt>color = source.rgba + destination.rgba</tt>";
             }
             else if (mode == BlendMode::SUBTRACT)
             {
-                list_item = "<tt>-</tt>: Subtract";
-                label = "<tt> - </tt>";
-                list_tooltip = "color = source.rgba - destination.rgba";
+                list_item = "Subtract";
+                label = "Subtract";
+                label_tooltip = "Blend Mode: Subtractive";
+                list_tooltip = "<b>Subtractive Blending</b>\n<tt>color = destination.rgba - source.rgba</tt>";
             }
             else if (mode == BlendMode::MULTIPLY)
             {
-                list_item = "<tt>&#215;</tt>: Multiply";
-                label = "<tt> &#215; </tt>";
-                list_tooltip = "color = source.rgba * destination.rgba";
+                list_item = "Multiply";
+                label = "Multiply";
+                label_tooltip = "Blend Mode: Multiplicative";
+                list_tooltip = "<b>Multiplicative Blending</b>\n<tt>color = source.rgba * destination.rgba</tt>";
             }
             else if (mode == BlendMode::MIN)
             {
-                list_item = "<tt>min</tt>: Minimum";
-                label = "<tt>min</tt>";
-                list_tooltip = "color = min(source.rgba, destination.rgba)";
+                list_item = "Minimum";
+                label = "Min";
+                label_tooltip = "Blend Mode: Minimum";
+                list_tooltip = "<b>Minimum Blending</b>\n<tt>color = min(source.rgba, destination.rgba)</tt>";
             }
             else if (mode == BlendMode::MAX)
             {
-                list_item = "<tt>max</tt>: Maximum";
-                label = "<tt>max</tt>";
-                list_tooltip = "color = max(source.rgba, destination.rgba)";
+                list_item = "Maximum";
+                label = "Max";
+                label_tooltip = "Blend Mode: Maximum";
+                list_tooltip = "<b>Maximum Blending</b>\n<tt>color = max(source.rgba, destination.rgba)</tt>";
             }
 
             blend_mode_dropdown_list_items.emplace_back(new Label(list_item));
@@ -236,7 +244,7 @@ namespace mousetrap
             blend_mode_dropdown_list_items.back()->set_tooltip_text(list_tooltip);
             blend_mode_dropdown_list_items.back()->set_halign(GTK_ALIGN_START);
 
-            blend_mode_dropdown_label_items.emplace_back(new Label(label));
+            blend_mode_dropdown_label_items.emplace_back(new Label("<span size=\"small\">" + label + "</span>"));
             blend_mode_dropdown_label_items.back()->set_use_markup(true);
             blend_mode_dropdown_label_items.back()->set_tooltip_text(label_tooltip);
 
@@ -280,9 +288,6 @@ namespace mousetrap
         opacity_scale->set_margin_top(row_margin);
         opacity_scale->set_margin_bottom(row_margin);
 
-        //blend_mode_dropdown->set_margin_start(0.5 * state::margin_unit);
-        //blend_mode_dropdown->set_margin_end(0.5 * state::margin_unit);
-        //blend_mode_dropdown->set_tooltip_text("Layer Blend Mode");
         blend_mode_dropdown->set_margin_top(row_margin);
         blend_mode_dropdown->set_margin_bottom(row_margin);
 
@@ -442,39 +447,49 @@ namespace mousetrap
         move_up_label = new_label("layer_move_up");
         move_up_button->set_child(move_up_label);
         move_up_button->connect_signal("clicked", on_move_up_pressed, this);
+        move_up_button->set_tooltip_text("Move Layer Up");
 
         move_down_button = new Button();
         move_down_label = new_label("layer_move_down");
         move_down_button->set_child(move_down_label);
         move_down_button->connect_signal("clicked", on_move_down_pressed, this);
+        move_down_button->set_tooltip_text("Move Layer Down");
 
         create_button = new Button();
         create_label = new_label("layer_create");
         create_button->set_child(create_label);
         create_button->connect_signal("clicked", on_create_pressed, this);
+        create_button->set_tooltip_text("New Layer");
 
         delete_button = new Button();
         delete_label = new_label("layer_delete");
         delete_button->set_child(delete_label);
         delete_button->connect_signal("clicked", on_delete_pressed, this);
+        delete_button->set_tooltip_text("Delete Layer(s)");
 
         duplicate_button = new Button();
         duplicate_label = new_label("layer_duplicate");
         duplicate_button->set_child(duplicate_label);
         duplicate_button->connect_signal("clicked", on_duplicate_pressed, this);
+        duplicate_button->set_tooltip_text("Duplicate Layer");
 
         merge_down_button = new Button();
         merge_down_label = new_label("layer_merge_down");
         merge_down_button->set_child(merge_down_label);
         merge_down_button->connect_signal("clicked", on_merge_down_pressed, this);
+        merge_down_button->set_tooltip_text("Merge Layer Down");
 
         flatten_selected_button = new Button();
         flatten_selected_label = new_label("layer_flatten_selected");
         flatten_selected_button->set_child(flatten_selected_label);
         flatten_selected_button->connect_signal("clicked", on_flatten_selected_pressed, this);
+        flatten_selected_button->set_tooltip_text("Flatten Selected Layers");
 
         for (auto* button : {move_up_button, move_down_button, create_button, delete_button, duplicate_button, merge_down_button, flatten_selected_button})
+        {
             button->set_expand(true);
+            button->set_cursor(GtkCursorType::POINTER);
+        }
 
         main = new Box(GTK_ORIENTATION_HORIZONTAL);
         main->push_back(create_button);
@@ -491,26 +506,164 @@ namespace mousetrap
         return main->operator GtkWidget*();
     }
 
-    void LayerView::LayerControlBar::on_move_up_pressed(GtkButton*, LayerControlBar*)
-    {}
+    void LayerView::LayerControlBar::on_move_up_pressed(GtkButton*, LayerControlBar* instance)
+    {
+        auto* selection = instance->parent->_row_view->get_selection_model();
 
-    void LayerView::LayerControlBar::on_move_down_pressed(GtkButton*, LayerControlBar*)
-    {}
+        std::vector<size_t> selected;
+        auto bitset = gtk_selection_model_get_selection(selection);
+        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
+            selected.push_back(gtk_bitset_get_nth(bitset, i));
 
-    void LayerView::LayerControlBar::on_create_pressed(GtkButton*, LayerControlBar*)
-    {}
+        assert(selected.size() == 1);
 
-    void LayerView::LayerControlBar::on_delete_pressed(GtkButton*, LayerControlBar*)
-    {}
+        auto i = selected.at(0);
+        std::cout << "moved layer " << state::layers.at(i)->name << " up" << std::endl;
+    }
 
-    void LayerView::LayerControlBar::on_duplicate_pressed(GtkButton*, LayerControlBar*)
-    {}
+    void LayerView::LayerControlBar::on_move_down_pressed(GtkButton*, LayerControlBar* instance)
+    {
+        auto* selection = instance->parent->_row_view->get_selection_model();
 
-    void LayerView::LayerControlBar::on_merge_down_pressed(GtkButton*, LayerControlBar*)
-    {}
+        std::vector<size_t> selected;
+        auto bitset = gtk_selection_model_get_selection(selection);
+        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
+            selected.push_back(gtk_bitset_get_nth(bitset, i));
 
-    void LayerView::LayerControlBar::on_flatten_selected_pressed(GtkButton*, LayerControlBar*)
-    {}
+        assert(selected.size() == 1);
+
+        auto i = selected.at(0);
+        std::cout << "moved layer " << state::layers.at(i)->name << " down" << std::endl;
+    }
+
+    void LayerView::LayerControlBar::on_create_pressed(GtkButton*, LayerControlBar* instance)
+    {
+        std::cout << "created new layer" << std::endl;
+    }
+
+    void LayerView::LayerControlBar::on_delete_pressed(GtkButton*, LayerControlBar* instance)
+    {
+        auto* selection = instance->parent->_row_view->get_selection_model();
+
+        std::vector<size_t> selected;
+        auto bitset = gtk_selection_model_get_selection(selection);
+        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
+            selected.push_back(gtk_bitset_get_nth(bitset, i));
+
+        for (auto i : selected)
+            std::cout << "deleted layer " << state::layers.at(i)->name << std::endl;
+    }
+
+    void LayerView::LayerControlBar::on_duplicate_pressed(GtkButton*, LayerControlBar* instance)
+    {
+        auto* selection = instance->parent->_row_view->get_selection_model();
+
+        std::vector<size_t> selected;
+        auto bitset = gtk_selection_model_get_selection(selection);
+        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
+            selected.push_back(gtk_bitset_get_nth(bitset, i));
+
+        assert(selected.size() == 1);
+
+        auto i = selected.at(0);
+        std::cout << "duplicated layer " << state::layers.at(i)->name<< std::endl;
+    }
+
+    void LayerView::LayerControlBar::on_merge_down_pressed(GtkButton*, LayerControlBar* instance)
+    {
+        auto* selection = instance->parent->_row_view->get_selection_model();
+
+        std::vector<size_t> selected;
+        auto bitset = gtk_selection_model_get_selection(selection);
+        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
+            selected.push_back(gtk_bitset_get_nth(bitset, i));
+
+        assert(selected.size() == 1);
+
+        auto i = selected.at(0);
+        std::cout << "merged layer " << state::layers.at(i)->name << " onto " << state::layers.at(i+1)->name << std::endl;
+    }
+
+    void LayerView::LayerControlBar::on_flatten_selected_pressed(GtkButton*, LayerControlBar* instance)
+    {
+        auto* selection = instance->parent->_row_view->get_selection_model();
+
+        std::vector<size_t> selected;
+        auto bitset = gtk_selection_model_get_selection(selection);
+        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
+            selected.push_back(gtk_bitset_get_nth(bitset, i));
+
+        std::cout << "Flattening layers ";
+        for (auto i : selected)
+            std::cout << state::layers.at(i)->name << " ";
+
+        std::cout << std::endl;
+    }
+
+    void LayerView::on_row_view_selection_changed(
+        GtkSelectionModel* self,
+        guint position,
+        guint n_items,
+        LayerView* instance)
+    {
+        std::vector<size_t> selected;
+
+        auto bitset = gtk_selection_model_get_selection(self);
+        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
+            selected.push_back(gtk_bitset_get_nth(bitset, i));
+
+        static auto set_active = [](Button* button, bool b) {
+
+            button->set_all_signals_blocked(not b);
+            button->set_opacity(b ? 1 : 0.2);
+            button->set_cursor(b ? GtkCursorType::POINTER : GtkCursorType::NOT_ALLOWED);
+        };
+
+        set_active(instance->_control_bar->move_up_button,
+            selected.size() == 1 and selected.back() != 0
+        );
+
+        set_active(instance->_control_bar->move_down_button,
+            selected.size() == 1 and selected.back() != state::layers.size() - 1
+        );
+
+        set_active(instance->_control_bar->merge_down_button,
+            selected.size() == 1 and selected.back() != state::layers.size() - 1
+        );
+
+        set_active(instance->_control_bar->duplicate_button, selected.size() == 1);
+
+        set_active(instance->_control_bar->flatten_selected_button, selected.size() > 1);
+        set_active(instance->_control_bar->delete_button, selected.size() >= 1);
+    }
+
+    gboolean LayerView::on_shortcut_controller_pressed(
+        GtkEventControllerKey* self, guint keyval, guint keycode,
+        GdkModifierType modifier, void* data)
+    {
+        auto* instance = (LayerView*) data;
+
+        bool shift = modifier & GdkModifierType::GDK_SHIFT_MASK;
+        bool alt = modifier & GdkModifierType::GDK_ALT_MASK;
+        bool control = modifier & GdkModifierType::GDK_CONTROL_MASK;
+
+        // Ctrl + A: Select All
+        if (keyval == GDK_KEY_a) // TODO and control and not alt and not shift)
+        {
+            auto* selection = instance->_row_view->get_selection_model();
+            gtk_selection_model_select_all(selection);
+        }
+
+        if (keyval == GDK_KEY_Delete)
+        {
+            instance->_control_bar->on_delete_pressed(
+                GTK_BUTTON(instance->_control_bar->delete_button->operator GtkWidget*()),
+                instance->_control_bar
+            );
+        }
+
+        return false;
+    }
 
     LayerView::LayerView()
     {
@@ -521,13 +674,19 @@ namespace mousetrap
         auto image = Image();
         image.create_from_file(get_resource_path() + "mole.png");
         state::add_layer(image);
+        state::add_layer(RGBA(1, 0, 1, 1));
+        state::add_layer(RGBA(0, 0, 1, 1));
+        state::add_layer(RGBA(0, 1, 1, 1));
 
-        for (size_t i = 0; i < 4; ++i)
+        for (auto* layer : state::layers)
         {
-            _rows.emplace_back(new LayerViewRow(state::layers.back(), this));
+            _rows.emplace_back(new LayerViewRow(layer, this));
             _rows.back()->main->set_hexpand(true);
             _row_view->push_back(_rows.back()->main);
         }
+
+        auto* selection_model = _row_view->get_selection_model();
+        g_signal_connect(selection_model, "selection-changed", G_CALLBACK(on_row_view_selection_changed), this);
 
         _row_view_scrolled_window = new ScrolledWindow();
         _row_view_scrolled_window->set_child(_row_view);
@@ -537,9 +696,14 @@ namespace mousetrap
             true
         );
 
+        _shortcut_controller = new KeyEventController();
+        _shortcut_controller->connect_key_pressed(on_shortcut_controller_pressed, this);
+        _row_view_scrolled_window->add_controller(_shortcut_controller);
+
         _control_bar = new LayerControlBar(this);
         _control_bar->set_hexpand(true);
         _control_bar->set_vexpand(false);
+        on_row_view_selection_changed(_row_view->get_selection_model(), 0, 0, this);
 
         _main = new Box(GTK_ORIENTATION_VERTICAL);;
         _main->push_back(_row_view_scrolled_window);

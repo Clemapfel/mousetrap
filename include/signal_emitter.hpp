@@ -24,7 +24,13 @@ namespace mousetrap
             virtual operator GObject*() = 0;
 
         private:
-            std::map<std::string, size_t> _signal_handlers = {};
+            struct SignalHandler
+            {
+                size_t id;
+                bool is_blocked = false;
+            };
+
+            std::map<std::string, SignalHandler> _signal_handlers = {};
     };
 }
 
