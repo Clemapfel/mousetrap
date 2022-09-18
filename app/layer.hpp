@@ -27,6 +27,7 @@ namespace mousetrap
         Layer(const std::string& name = "");
 
         std::string name;
+        Image image;
         TextureObject* texture;
         bool is_locked = false;
         bool is_visible = true;
@@ -38,10 +39,22 @@ namespace mousetrap
     {
         std::deque<Layer*> layers;
         Vector2ui layer_resolution;
-        
-        void add_layer(RGBA);
-        void add_layer(const Image&);
+
+        Layer* new_layer(RGBA);
+        Layer* new_layer(const Image&);
+        Layer* new_layer(Layer*); // copies contents
+
+        void insert_layer_at(Layer*, size_t position = 0);
+        void insert_layer_after(Layer* to_insert, Layer* after);
+        void insert_layer_before(Layer* to_insert, Layer* before);
+
+        void delete_layer(Layer*);
+
+        void move_layer_to(Layer*, size_t new_position);
+        void move_layer_to_after(Layer* to_move, Layer* after);
+        void mvoe_layer_to_before(Layer* to_move, Layer* before);
     }
+
 }
 
 /// ###
@@ -92,16 +105,16 @@ namespace mousetrap
         }
     }
 
-    void state::add_layer(RGBA color)
+    Layer* state::new_layer(RGBA color)
     {
         auto image = Image();
         image.create(state::layer_resolution.x, state::layer_resolution.y, color);
-        add_layer(image);
+        return new_layer(image);
     }
 
-    void state::add_layer(const Image& image)
+    Layer* state::new_layer(const Image& image)
     {
-        state::layers.emplace_back(new Layer());
+        auto out = new Layer();
 
         float width = state::layer_resolution.x;
         float height = state::layer_resolution.y;
@@ -109,17 +122,24 @@ namespace mousetrap
         auto image_size = Vector2ui(image.get_size().x, image.get_size().y);
 
         if (image_size == state::layer_resolution)
-            ((Texture*) state::layers.back()->texture)->create_from_image(image);
+            ((Texture*) out->texture)->create_from_image(image);
         else
         {
             auto image_padded = Image();
             image_padded.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(0, 0, 0, 0));
 
-            for (size_t x = 0.5 * (image_size.x - state::layer_resolution.x); x < image_size.x and x < state::layer_resolution.x; ++x)
-                for (size_t y = 0.5 * (image_size.y - state::layer_resolution.y); y < image_size.y and x < state::layer_resolution.y; ++y)
+            for (size_t x = 0; x < std::min<size_t>(state::layer_resolution.x, image.get_size().x); ++x)
+                for (size_t y = 0; y < std::min<size_t>(state::layer_resolution.y, image.get_size().y); ++y)
                     image_padded.set_pixel(x, y, image.get_pixel(x, y));
 
-            ((Texture*) state::layers.back()->texture)->create_from_image(image);
+            ((Texture*) out->texture)->create_from_image(image_padded);
         }
     }
+
+    Layer* state::new_layer(Layer* layer)
+    {
+
+    }
+
+
 }
