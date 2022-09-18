@@ -9,7 +9,7 @@
 
 namespace mousetrap
 {
-    class Label : public Widget
+    class Label : public WidgetImplementation<GtkLabel>
     {
         public:
             Label(const std::string&);
@@ -17,11 +17,6 @@ namespace mousetrap
             void set_text(const std::string&);
             std::string get_text();
             void set_use_markup(bool b);
-
-            operator GtkWidget*() override;
-
-        private:
-            GtkLabel* _native;
     };
 }
 

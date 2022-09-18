@@ -6,25 +6,19 @@
 #pragma once
 
 #include <include/widget.hpp>
-#include <include/range.hpp>
 
 namespace mousetrap
 {
-    class SpinButton : public Widget
+    class SpinButton : public WidgetImplementation<GtkSpinButton>
     {
         public:
             SpinButton(float min, float max, float step);
-
-            operator GtkWidget*() override;
 
             void set_value(float);
             float get_value();
 
             void set_digits(size_t);
             void set_wrap(bool);
-
-        private:
-            GtkSpinButton* _native;
     };
 }
 

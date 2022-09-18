@@ -9,14 +9,10 @@
 
 namespace mousetrap
 {
-    class SeparatorLine : public Widget
+    class SeparatorLine : public WidgetImplementation<GtkSeparator>
     {
         public:
             SeparatorLine(GtkOrientation = GTK_ORIENTATION_HORIZONTAL);
-            operator GtkWidget*();
-
-        private:
-            GtkSeparator* _native;
     };
 }
 

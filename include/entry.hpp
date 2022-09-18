@@ -9,7 +9,7 @@
 
 namespace mousetrap
 {
-    class Entry : public Widget
+    class Entry : public WidgetImplementation<GtkEntry>
     {
         public:
             Entry();
@@ -17,14 +17,8 @@ namespace mousetrap
             std::string get_text() const;
             void set_text(const std::string&);
 
-            operator GtkWidget*() override;
-
             void set_n_chars(size_t);
             void set_has_frame(bool);
-
-        private:
-            GtkEntry* _entry;
-            GtkEntryBuffer* _buffer;
     };
 }
 

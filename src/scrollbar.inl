@@ -3,25 +3,11 @@
 // Created on 8/11/22 by clem (mail@clemens-cords.com)
 //
 
+#include <include/scrollbar.hpp>
+
 namespace mousetrap
 {
-    Scrollbar::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
-
     Scrollbar::Scrollbar(Adjustment adjustment, GtkOrientation orientation)
-            : _adjustment(adjustment)
-    {
-        _native = GTK_SCROLLBAR(gtk_scrollbar_new(orientation, _adjustment.get_native()));
-    }
-
-    Scrollbar::Scrollbar(GtkOrientation orientation)
-            : _native(GTK_SCROLLBAR(gtk_scrollbar_new(orientation, nullptr))), _adjustment(gtk_range_get_adjustment(GTK_RANGE(_native)))
+        : WidgetImplementation<GtkScrollbar>((GTK_SCROLLBAR(gtk_scrollbar_new(orientation, adjustment.operator GtkAdjustment*()))))
     {}
-
-    Adjustment& Scrollbar::get_adjustment()
-    {
-        return _adjustment;
-    }
 }

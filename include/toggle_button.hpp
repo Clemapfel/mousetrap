@@ -9,12 +9,10 @@
 
 namespace mousetrap
 {
-    class ToggleButton : public Widget
+    class ToggleButton : public WidgetImplementation<GtkToggleButton>
     {
         public:
             ToggleButton();
-
-            operator GtkWidget*() override;
 
             bool get_active() const;
             void set_active(bool b);
@@ -22,9 +20,6 @@ namespace mousetrap
             void set_label(const std::string&);
             void set_child(Widget*);
             void set_has_frame(bool b);
-
-        private:
-            GtkToggleButton* _native;
     };
 }
 

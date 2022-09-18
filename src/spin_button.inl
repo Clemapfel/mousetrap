@@ -6,32 +6,26 @@
 namespace mousetrap
 {
     SpinButton::SpinButton(float min, float max, float step)
-    {
-        _native = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(min, max, step));
-    }
-
-    SpinButton::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
+        : WidgetImplementation<GtkSpinButton>(GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(min, max, step)))
+    {}
 
     void SpinButton::set_value(float value)
     {
-        gtk_spin_button_set_value(_native, value);
+        gtk_spin_button_set_value(get_native(), value);
     }
 
     float SpinButton::get_value()
     {
-        return gtk_spin_button_get_value(_native);
+        return gtk_spin_button_get_value(get_native());
     }
 
     void SpinButton::set_digits(size_t n)
     {
-        gtk_spin_button_set_digits(_native, n);
+        gtk_spin_button_set_digits(get_native(), n);
     }
 
     void SpinButton::set_wrap(bool b)
     {
-        gtk_spin_button_set_wrap(_native, b);
+        gtk_spin_button_set_wrap(get_native(), b);
     }
 }

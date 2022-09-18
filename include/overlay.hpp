@@ -9,21 +9,16 @@
 
 namespace mousetrap
 {
-    class Overlay : public Widget
+    class Overlay : public WidgetImplementation<GtkOverlay>
     {
         public:
             Overlay();
-
-            operator GtkWidget*() override;
 
             void set_child(Widget*);
             void add_overlay(Widget*);
 
             void remove_child();
             void remove_overlay(Widget*);
-
-        private:
-            GtkOverlay* _native;
     };
 }
 

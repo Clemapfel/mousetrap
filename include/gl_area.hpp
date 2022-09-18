@@ -11,12 +11,10 @@
 
 namespace mousetrap
 {
-    class GLArea : public Widget
+    class GLArea : public WidgetImplementation<GtkGLArea>
     {
         public:
             GLArea();
-
-            operator GtkWidget*() override;
 
             void add_render_task(Shape*, Shader* = nullptr, GLTransform* = nullptr);
             void add_render_task(RenderTask);

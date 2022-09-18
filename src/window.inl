@@ -10,9 +10,8 @@ namespace mousetrap
     {}
 
     Window::Window(GtkWindow* window)
+        : WidgetImplementation<GtkWindow>(window)
     {
-        _native = window;
-
         if (_global_shortcut_controller == nullptr)
         {
             _global_shortcut_controller = new KeyEventController();
@@ -22,45 +21,40 @@ namespace mousetrap
         add_controller(_global_shortcut_controller);
     }
 
-    Window::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
-
     void Window::present()
     {
-        gtk_window_present(_native);
+        gtk_window_present(get_native());
     }
 
     void Window::set_maximized(bool b)
     {
         if (b)
-            gtk_window_maximize(_native);
+            gtk_window_maximize(get_native());
         else
-            gtk_window_unmaximize(_native);
+            gtk_window_unmaximize(get_native());
     }
 
     void Window::set_fullscreen(bool b )
     {
         if (b)
-            gtk_window_fullscreen(_native);
+            gtk_window_fullscreen(get_native());
         else
-            gtk_window_unfullscreen(_native);
+            gtk_window_unfullscreen(get_native());
     }
 
     void Window::set_child(Widget* widget)
     {
-        gtk_window_set_child(_native, widget->operator GtkWidget *());
+        gtk_window_set_child(get_native(), widget->operator GtkWidget *());
     }
 
     void Window::remove_child()
     {
-        gtk_window_set_child(_native, nullptr);
+        gtk_window_set_child(get_native(), nullptr);
     }
 
     void Window::set_focused_widget(Widget* widget)
     {
-        gtk_window_set_focus(_native, widget->operator GtkWidget*());
+        gtk_window_set_focus(get_native(), widget->operator GtkWidget*());
     }
 
     gboolean Window::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void*)
@@ -139,10 +133,7 @@ namespace mousetrap
         for (size_t i = 0; i < _global_shortcuts.size(); ++i)
         {
             if (_global_shortcuts.at(i).id == shortcut_id)
-            {
-                delete _global_shortcuts.at(i).argument;
                 _global_shortcuts.erase(_global_shortcuts.begin() + i);
-            }
         }
     }
 }

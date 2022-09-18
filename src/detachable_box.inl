@@ -12,6 +12,7 @@ namespace mousetrap
     }
 
     DetachableBox::DetachableBox(const std::string& window_title)
+        : WidgetImplementation<GtkRevealer>(GTK_REVEALER(gtk_revealer_new()))
     {
         _titlebar_title = GTK_LABEL(gtk_label_new(window_title.c_str()));
         gtk_label_set_ellipsize(_titlebar_title, PANGO_ELLIPSIZE_START);
@@ -29,25 +30,22 @@ namespace mousetrap
 
         g_signal_connect(_window, "close-request", G_CALLBACK(on_window_close), this);
 
-        _anchor = GTK_REVEALER(gtk_revealer_new());
+        _anchor = get_native();
         gtk_revealer_set_transition_type(_anchor, GTK_REVEALER_TRANSITION_TYPE_CROSSFADE);
 
         _window_revealer = GTK_REVEALER(gtk_revealer_new());
         gtk_revealer_set_transition_type(_window_revealer, GTK_REVEALER_TRANSITION_TYPE_CROSSFADE);
         gtk_window_set_child(_window, GTK_WIDGET(_window_revealer));
+
+        add_reference(_window);
+        add_reference(_window_revealer);
+        add_reference(_titlebar);
+        add_reference(_titlebar_title);
     }
 
     DetachableBox::~DetachableBox()
     {
-        if (_child != nullptr)
-            g_object_unref(_child);
-
-        g_object_unref(_window);
-    }
-
-    DetachableBox::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_anchor);
+        g_object_unref(_child);
     }
 
     void DetachableBox::set_child(Widget* child)
@@ -56,7 +54,7 @@ namespace mousetrap
             g_object_unref(_child);
 
         _child = child->operator GtkWidget*();
-        _child = g_object_ref(_child);
+        g_object_ref(_child);
 
         if (_attached)
             attach();

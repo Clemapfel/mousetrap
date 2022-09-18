@@ -9,12 +9,10 @@
 
 namespace mousetrap
 {
-    class FlowBox : public Widget
+    class FlowBox : public WidgetImplementation<GtkFlowBox>
     {
         public:
             FlowBox(GtkOrientation = GTK_ORIENTATION_VERTICAL);
-
-            operator GtkWidget*() override;
 
             void set_orientation(GtkOrientation);
             void set_activate_on_single_click(bool);
@@ -37,9 +35,6 @@ namespace mousetrap
             void remove(Widget*);
 
             void clear();
-
-        private:
-            GtkFlowBox* _native;
     };
 }
 

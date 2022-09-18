@@ -9,7 +9,7 @@
 
 namespace mousetrap
 {
-    class AspectFrame : public Widget
+    class AspectFrame : public WidgetImplementation<GtkAspectFrame>
     {
         public:
             AspectFrame(float ratio, float x_align = 0.5, float y_align = 0.5, bool obey_child = false);
@@ -20,11 +20,6 @@ namespace mousetrap
 
             void set_child(Widget*);
             void remove_child();
-
-            operator GtkWidget*() override;
-
-        private:
-            GtkAspectFrame* _native;
     };
 }
 

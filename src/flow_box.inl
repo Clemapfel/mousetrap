@@ -3,20 +3,13 @@
 // Created on 8/14/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/flow_box.hpp> // TODO
-
 namespace mousetrap
 {
     FlowBox::FlowBox(GtkOrientation orientation)
+        : WidgetImplementation<GtkFlowBox>(GTK_FLOW_BOX(gtk_flow_box_new()))
     {
-        _native = GTK_FLOW_BOX(gtk_flow_box_new());
         set_selection_mode(GTK_SELECTION_NONE);
         set_orientation(orientation);
-    }
-
-    FlowBox::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
     }
 
     void FlowBox::set_orientation(GtkOrientation orientation)

@@ -9,7 +9,7 @@
 
 namespace mousetrap
 {
-    class Frame : public Widget
+    class Frame : public WidgetImplementation<GtkFrame>
     {
         public:
             Frame();
@@ -18,10 +18,6 @@ namespace mousetrap
             void remove_child();
 
             void set_label(const std::string&);
-            operator GtkWidget*() override;
-
-        private:
-            GtkFrame* _native;
     };
 }
 

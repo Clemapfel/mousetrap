@@ -9,11 +9,10 @@
 
 namespace mousetrap
 {
-    class Popover : public Widget
+    class Popover : public WidgetImplementation<GtkPopover>
     {
         public:
             Popover();
-            operator GtkWidget*() override;
 
             void popup();
             void popdown();
@@ -26,63 +25,7 @@ namespace mousetrap
             void set_autohide(bool);
 
             void attach_to(Widget*);
-
-        private:
-            GtkPopover* _native;
     };
 }
 
 #include <src/popover.inl>
-
-namespace mousetrap
-{
-    Popover::Popover()
-    {
-        _native = GTK_POPOVER(gtk_popover_new());
-    }
-
-    Popover::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
-
-    void Popover::popup()
-    {
-        gtk_popover_popup(_native);
-    }
-
-    void Popover::popdown()
-    {
-        gtk_popover_popdown(_native);
-    }
-
-    void Popover::present()
-    {
-        gtk_popover_present(_native);
-    }
-
-    void Popover::set_child(Widget* widget)
-    {
-        gtk_popover_set_child(_native, widget->operator GtkWidget*());
-    }
-
-    void Popover::set_relative_position(GtkPositionType position)
-    {
-        gtk_popover_set_position(_native, position);
-    }
-
-    void Popover::set_has_arrow(bool b)
-    {
-        gtk_popover_set_has_arrow(_native, b);
-    }
-
-    void Popover::set_autohide(bool b)
-    {
-        gtk_popover_set_autohide(_native, b);
-    }
-
-    void Popover::attach_to(Widget* widget)
-    {
-        gtk_widget_set_parent(GTK_WIDGET(_native), widget->operator GtkWidget*());
-    }
-}

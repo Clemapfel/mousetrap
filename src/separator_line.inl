@@ -6,12 +6,6 @@
 namespace mousetrap
 {
     SeparatorLine::SeparatorLine(GtkOrientation orientation)
-    {
-        _native = GTK_SEPARATOR(gtk_separator_new(orientation));
-    }
-
-    SeparatorLine::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
+        : WidgetImplementation<GtkSeparator>(GTK_SEPARATOR(gtk_separator_new(orientation)))
+    {}
 }

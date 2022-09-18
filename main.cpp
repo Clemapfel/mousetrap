@@ -13,16 +13,17 @@
 #include <include/event_controller.hpp>
 #include <include/menu_model.hpp>
 #include <include/menu_button.hpp>
-#include <include/shortcuts.hpp>
 #include <include/column_view.hpp>
 #include <include/image_display.hpp>
 #include <include/list_view.hpp>
 #include <include/detachable_box.hpp>
 #include <include/paned.hpp>
 #include <include/dropdown.hpp>
+#include <include/button.hpp>
 #include <include/check_button.hpp>
 
 #include <app/global_state.hpp>
+/*
 #include <app/color_picker.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
 #include <app/verbose_color_picker.hpp>
@@ -32,19 +33,27 @@
 #include <app/widget_container.hpp>
 #include <app/canvas.hpp>
 #include <app/layer_view.hpp>
+ */
 
 using namespace mousetrap;
 
-static DetachableBox* detachable;
-static void detach()
+struct CompoundWidget
 {
-    detachable->set_child_attached(not detachable->get_child_attached());
-}
+    CompoundWidget()
+        : box(GTK_ORIENTATION_HORIZONTAL),
+          label("test"),
+          button()
+    {
+        box.push_back(&label);
+        box.push_back(&button);
+    }
 
-static void on_select(void* in)
-{
-    std::cout << *((std::string*) in) << std::endl;
-}
+    Box box;
+    Label label;
+    Button button;
+};
+
+CompoundWidget* test;
 
 static void activate(GtkApplication* app, void*)
 {
@@ -54,55 +63,9 @@ static void activate(GtkApplication* app, void*)
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
 
-    state::color_picker = new ColorPicker();
-    state::color_picker->set_expand(true);
-    state::color_picker->set_size_request({0, 150});
+    test = new CompoundWidget();
 
-    state::primary_secondary_color_swapper = new PrimarySecondaryColorSwapper();
-    state::primary_secondary_color_swapper->set_expand(true);
-
-    state::verbose_color_picker = new VerboseColorPicker();
-    state::verbose_color_picker->set_expand(true);
-
-    state::palette_view = new PaletteView();
-    state::palette_view->set_expand(true);
-    state::palette_view->show();
-
-    state::toolbox = new Toolbox(GTK_ORIENTATION_HORIZONTAL);
-    state::brush_options = new BrushOptions();
-
-    static auto* box = new Box(GTK_ORIENTATION_VERTICAL);
-
-    static auto containers = std::vector<WidgetContainer*>();
-    auto add_widget = [&](Widget* widget, const std::string& title)
-    {
-        containers.emplace_back(new WidgetContainer(title));
-        containers.back()->set_child(widget);
-        box->push_back(containers.back());
-    };
-
-    //add_widget(state::color_picker, "Color Picker");
-    //add_widget(state::primary_secondary_color_swapper, "Color Swapper");
-    //add_widget(state::verbose_color_picker, "Color Picker");
-    //add_widget(state::palette_view, "Palette");
-    //box->push_back(state::verbose_color_picker);
-    /*
-    add_widget(state::verbose_color_picker, "Color Picker");
-    add_widget(state::palette_view, "Palette");
-    */
-
-    //box->push_back(state::color_picker);
-    //box->push_back(state::toolbox);
-    //box->push_back(state::palette_view);
-
-    auto* canvas = new Canvas({100, 250});
-    //box->push_back(canvas);
-
-    state::layer_resolution = {100, 100};
-    auto* layer_view = new LayerView();
-    add_widget(layer_view, "Layers");
-
-    state::main_window->set_child(box);
+    state::main_window->set_child(&test->box);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

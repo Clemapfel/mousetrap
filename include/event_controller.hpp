@@ -19,6 +19,8 @@ namespace mousetrap
 
             void set_propagation_phase(GtkPropagationPhase);
 
+            ~EventController();
+
         protected:
             EventController(GtkEventController*);
             GtkEventController* _native;
@@ -112,7 +114,12 @@ namespace mousetrap
 {
     EventController::EventController(GtkEventController* controller)
     {
-        _native = controller;
+        _native = g_object_ref(controller);
+    }
+
+    EventController::~EventController()
+    {
+        g_object_unref(_native);
     }
 
     EventController::operator GObject*()

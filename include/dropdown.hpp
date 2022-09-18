@@ -10,12 +10,10 @@
 
 namespace mousetrap
 {
-    class DropDown : public Widget
+    class DropDown : public WidgetImplementation<GtkDropDown>
     {
         public:
             DropDown();
-
-            operator GtkWidget*() override;
 
             // push back and create label widget as Label(id)
             using OnSelectSignature = void (*)(void*);
@@ -36,12 +34,9 @@ namespace mousetrap
 
         private:
             static void on_list_factory_bind(GtkSignalListItemFactory* self, void* object, void*);
-
             static void on_label_factory_bind(GtkSignalListItemFactory* self, void* object, void*);
-
             static void noop_item_function(void*);
 
-            GtkDropDown* _native;
             GtkSignalListItemFactory* _list_factory;
             GtkSignalListItemFactory* _label_factory;
             GListStore* _model;

@@ -10,39 +10,23 @@
 namespace mousetrap
 {
     Box::Box(GtkOrientation orientation, float spacing)
-    {
-        _native = GTK_BOX(gtk_box_new(orientation, spacing));
-    }
-
-    Box HBox(float spacing)
-    {
-        return Box(GTK_ORIENTATION_HORIZONTAL, spacing);
-    }
-
-    Box VBox(float spacing)
-    {
-        return Box(GTK_ORIENTATION_VERTICAL, spacing);
-    }
-
-    Box::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
+        : WidgetImplementation<GtkBox>(GTK_BOX(gtk_box_new(orientation, spacing)))
+    {}
 
     void Box::push_back(Widget* widget)
     {
-        gtk_box_append(_native, widget->operator GtkWidget*());
+        gtk_box_append(get_native(), widget->operator GtkWidget*());
     }
 
     void Box::push_front(Widget* widget)
     {
-        gtk_box_prepend(_native, widget->operator GtkWidget*());
+        gtk_box_prepend(get_native(), widget->operator GtkWidget*());
     }
 
     void Box::insert_after(Widget* to_append, Widget* after)
     {
         gtk_box_insert_child_after(
-            _native,
+            get_native(),
             to_append->operator GtkWidget*(),
             after->operator GtkWidget*()
         );
@@ -51,7 +35,7 @@ namespace mousetrap
     void Box::reorder_after(Widget* to_reorder, Widget* after)
     {
         gtk_box_reorder_child_after(
-                _native,
+                get_native(),
                 to_reorder->operator GtkWidget*(),
                 after->operator GtkWidget*()
         );
@@ -59,13 +43,13 @@ namespace mousetrap
 
     void Box::remove(Widget* widget)
     {
-        gtk_box_remove(_native, widget->operator GtkWidget *());
+        gtk_box_remove(get_native(), widget->operator GtkWidget *());
     }
 
     void Box::clear()
     {
         std::vector<GtkWidget*> to_remove;
-        GtkWidget* current = gtk_widget_get_first_child(GTK_WIDGET(_native));
+        GtkWidget* current = gtk_widget_get_first_child(GTK_WIDGET(get_native()));
         while (current != nullptr)
         {
             to_remove.push_back(current);
@@ -73,11 +57,11 @@ namespace mousetrap
         }
 
         for (auto* w : to_remove)
-            gtk_box_remove(_native, w);
+            gtk_box_remove(get_native(), w);
     }
 
     void Box::set_homogeneous(bool b)
     {
-        gtk_box_set_homogeneous(_native, b);
+        gtk_box_set_homogeneous(get_native(), b);
     }
 }

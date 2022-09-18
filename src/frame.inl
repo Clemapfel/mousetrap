@@ -8,27 +8,21 @@
 namespace mousetrap
 {
     Frame::Frame()
-    {
-        _native = GTK_FRAME(gtk_frame_new(""));
-    }
-
-    Frame::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
+        : WidgetImplementation<GtkFrame>(GTK_FRAME(gtk_frame_new("")))
+    {}
 
     void Frame::set_child(Widget* in)
     {
-        gtk_frame_set_child(_native, in->operator GtkWidget *());
+        gtk_frame_set_child(get_native(), in->operator GtkWidget *());
     }
 
     void Frame::remove_child()
     {
-        gtk_frame_set_child(_native, nullptr);
+        gtk_frame_set_child(get_native(), nullptr);
     }
 
     void Frame::set_label(const std::string& label)
     {
-        gtk_frame_set_label(_native, label.c_str());
+        gtk_frame_set_label(get_native(), label.c_str());
     }
 }

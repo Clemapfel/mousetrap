@@ -63,36 +63,41 @@ namespace mousetrap::detail
 namespace mousetrap
 {
     TreeListView::TreeListView(GtkOrientation orientation, GtkSelectionMode mode)
-        : _orientation(orientation)
+        : WidgetImplementation<GtkListView>([&]() -> GtkListView* {
+
+            _root = g_list_store_new(G_TYPE_OBJECT);
+            _tree_list_model = gtk_tree_list_model_new(G_LIST_MODEL(_root), false, false, on_tree_list_model_create, nullptr, on_tree_list_model_destroy);
+
+            _orientation = orientation;
+
+            if (mode == GTK_SELECTION_MULTIPLE)
+                _selection_model = GTK_SELECTION_MODEL(gtk_multi_selection_new(G_LIST_MODEL(_tree_list_model)));
+            else if (mode == GTK_SELECTION_SINGLE or mode == GTK_SELECTION_BROWSE)
+                _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(G_LIST_MODEL(_tree_list_model)));
+            else if (mode == GTK_SELECTION_NONE)
+                _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(G_LIST_MODEL(_tree_list_model)));
+
+            _factory = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
+            g_signal_connect(_factory, "bind", G_CALLBACK(on_list_item_factory_bind), this);
+            g_signal_connect(_factory, "unbind", G_CALLBACK(on_list_item_factory_unbind), this);
+            g_signal_connect(_factory, "setup", G_CALLBACK(on_list_item_factory_setup), this);
+            g_signal_connect(_factory, "teardown", G_CALLBACK(on_list_item_factory_teardown), this);
+
+            _list_view = GTK_LIST_VIEW(gtk_list_view_new(_selection_model, GTK_LIST_ITEM_FACTORY(_factory)));
+            gtk_orientable_set_orientation(GTK_ORIENTABLE(_list_view), _orientation);
+
+            return _list_view;
+        }())
     {
-        _root = g_list_store_new(G_TYPE_OBJECT);
-        _tree_list_model = gtk_tree_list_model_new(G_LIST_MODEL(_root), false, false, on_tree_list_model_create, nullptr, on_tree_list_model_destroy);
-
-        if (mode == GTK_SELECTION_MULTIPLE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_multi_selection_new(G_LIST_MODEL(_tree_list_model)));
-        else if (mode == GTK_SELECTION_SINGLE or mode == GTK_SELECTION_BROWSE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(G_LIST_MODEL(_tree_list_model)));
-        else if (mode == GTK_SELECTION_NONE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(G_LIST_MODEL(_tree_list_model)));
-
-        _factory = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
-        g_signal_connect(_factory, "bind", G_CALLBACK(on_list_item_factory_bind), this);
-        g_signal_connect(_factory, "unbind", G_CALLBACK(on_list_item_factory_unbind), this);
-        g_signal_connect(_factory, "setup", G_CALLBACK(on_list_item_factory_setup), this);
-        g_signal_connect(_factory, "teardown", G_CALLBACK(on_list_item_factory_teardown), this);
-
-        _list_view = GTK_LIST_VIEW(gtk_list_view_new(_selection_model, GTK_LIST_ITEM_FACTORY(_factory)));
-        gtk_orientable_set_orientation(GTK_ORIENTABLE(_list_view), _orientation);
+        add_reference(_factory);
+        add_reference(_root);
+        add_reference(_tree_list_model);
+        add_reference(_selection_model);
     }
 
     TreeListView::TreeListView(GtkSelectionMode mode)
         : TreeListView(GTK_ORIENTATION_VERTICAL, mode)
     {}
-
-    TreeListView::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_list_view);
-    }
 
     GListModel* TreeListView::on_tree_list_model_create(void* item, void* user_data)
     {
@@ -126,10 +131,7 @@ namespace mousetrap
     }
 
     void TreeListView::on_list_item_factory_unbind(GtkSignalListItemFactory* self, void* object, void*)
-    {
-        auto* list_item = GTK_LIST_ITEM(object);
-        auto* tree_list_row = GTK_TREE_LIST_ROW(gtk_list_item_get_item(list_item));
-    }
+    {}
 
     void TreeListView::on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*)
     {}
@@ -154,7 +156,7 @@ namespace mousetrap
 
     TreeListView::Iterator TreeListView::push_front(Widget* widget, Iterator it)
     {
-        insert(0, widget, it);
+        return insert(0, widget, it);
     }
 
     TreeListView::Iterator TreeListView::insert(size_t i, Widget* widget, Iterator it)

@@ -16,12 +16,16 @@
 
 namespace mousetrap
 {
+    template<typename GtkWidget_t>
+    struct WidgetImplementation;
+
     class Widget : public SignalEmitter
     {
-        public:
-            virtual void update(){};
+        template<typename T>
+        friend struct WidgetImplementation;
 
-            virtual operator GtkWidget*() = 0;
+        public:
+            operator GtkWidget*();
             operator GObject*() override;
 
             Vector2f get_size_request();
@@ -56,25 +60,32 @@ namespace mousetrap
 
             void set_focusable(bool);
             void grab_focus();
+
+        protected:
+            Widget() = delete;
+
+            template<typename GObject_t>
+            void add_reference(GObject_t*);
+
+        private:
+            template<typename GtkWidget_t>
+            Widget(GtkWidget_t*);
+
+            virtual ~Widget();
+
+            GtkWidget* _native;
+            std::vector<GObject*> _refs;
     };
 
-    template<typename T>
-    struct WidgetWrapper : public Widget
+    template<typename GtkWidget_t>
+    struct WidgetImplementation : public Widget
     {
-        WidgetWrapper(T* in)
-            : _native(in)
-        {}
-
-        operator GtkWidget*() override {
-            return GTK_WIDGET(_native);
-        };
-
-        operator T*() {
-            return _native;
-        }
-
-        T* _native;
+        WidgetImplementation(GtkWidget_t*);
+        operator GtkWidget_t*() const;
+        GtkWidget_t* get_native() const;
     };
+
+
 };
 
 #include <src/widget.inl>

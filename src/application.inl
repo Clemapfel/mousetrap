@@ -14,6 +14,7 @@ namespace mousetrap
     {
         _native = gtk_application_new(nullptr, G_APPLICATION_FLAGS_NONE);
         g_signal_connect(_native, "activate", G_CALLBACK(initialize), data);
+        _native = g_object_ref(_native);
     }
 
     Application::~Application()

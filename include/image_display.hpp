@@ -10,7 +10,7 @@
 
 namespace mousetrap
 {
-    class ImageDisplay : public Widget
+    class ImageDisplay : public WidgetImplementation<GtkImage>
     {
         public:
             ImageDisplay();
@@ -18,10 +18,8 @@ namespace mousetrap
             ImageDisplay(const Image&);
 
             Vector2ui get_size() const;
-            operator GtkWidget*() override;
 
         private:
-            GtkImage* _native;
             Vector2ui _size;
     };
 }

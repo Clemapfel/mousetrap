@@ -12,6 +12,53 @@ namespace mousetrap
         return G_OBJECT(operator GtkWidget*());
     }
 
+    Widget::operator GtkWidget*()
+    {
+        return GTK_WIDGET(_native);
+    }
+
+    template<typename T>
+    Widget::Widget(T* in)
+    {
+        _native = g_object_ref(GTK_WIDGET(in));
+    }
+
+    template<typename T>
+    WidgetImplementation<T>::WidgetImplementation(T* in)
+        : Widget(in)
+    {
+        if (not GTK_IS_WIDGET(in))
+            throw std::invalid_argument("[FATAL] In WidgetImplementation::WidgetImplementation(T*): Object is not a widget.");
+    }
+
+    template<typename T>
+    WidgetImplementation<T>::operator T*() const
+    {
+        return (T*) Widget::_native;
+    }
+
+    template<typename T>
+    T* WidgetImplementation<T>::get_native() const
+    {
+        return (T*) Widget::_native;
+    }
+
+    template<typename GObject_t>
+    void Widget::add_reference(GObject_t* ref)
+    {
+        if (not G_IS_OBJECT(ref))
+            throw std::invalid_argument("[FATAL] In Widget::add_reference: Attempting to increase the reference count on an object that does not support it.");
+
+        _refs.push_back(g_object_ref(G_OBJECT(ref)));
+    }
+
+    Widget::~Widget()
+    {
+        g_object_unref(_native);
+        for (auto* ref : _refs)
+            g_object_unref(ref);
+    }
+
     Vector2f Widget::get_size_request()
     {
         int w, h;

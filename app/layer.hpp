@@ -116,8 +116,8 @@ namespace mousetrap
     {
         auto out = new Layer();
 
-        float width = state::layer_resolution.x;
-        float height = state::layer_resolution.y;
+        //float width = state::layer_resolution.x;
+        //float height = state::layer_resolution.y;
 
         auto image_size = Vector2ui(image.get_size().x, image.get_size().y);
 
@@ -134,6 +134,8 @@ namespace mousetrap
 
             ((Texture*) out->texture)->create_from_image(image_padded);
         }
+
+        return out;
     }
 
     Layer* state::new_layer(Layer* layer)

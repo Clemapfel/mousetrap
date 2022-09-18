@@ -23,11 +23,10 @@ namespace mousetrap
         SWING_BOTTOM_TO_TOP = GTK_REVEALER_TRANSITION_TYPE_SWING_UP,
     };
 
-    class Revealer : public Widget
+    class Revealer : public WidgetImplementation<GtkRevealer>
     {
         public:
             Revealer(TransitionType = TransitionType::CROSSFADE);
-            operator GtkWidget*() override;
 
             void set_child(Widget*);
 

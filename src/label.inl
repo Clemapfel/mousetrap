@@ -6,27 +6,21 @@
 namespace mousetrap
 {
     Label::Label(const std::string& str)
-    {
-        _native = GTK_LABEL(gtk_label_new(str.c_str()));
-    }
-
-    Label::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
-
+        : WidgetImplementation<GtkLabel>(GTK_LABEL(gtk_label_new(str.c_str())))
+    {}
+    
     void Label::set_text(const std::string& text)
     {
-        gtk_label_set_text(_native, text.c_str());
+        gtk_label_set_text(get_native(), text.c_str());
     }
 
     std::string Label::get_text()
     {
-        return std::string(gtk_label_get_text(_native));
+        return std::string(gtk_label_get_text(get_native()));
     }
 
     void Label::set_use_markup(bool b)
     {
-        gtk_label_set_use_markup(_native, b);
+        gtk_label_set_use_markup(get_native(), b);
     }
 }

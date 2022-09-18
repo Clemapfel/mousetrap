@@ -5,14 +5,9 @@
 
 namespace mousetrap
 {
-    GLArea::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
-
     GLArea::GLArea()
+        : WidgetImplementation<GtkGLArea>(GTK_GL_AREA(gtk_gl_area_new()))
     {
-        _native = GTK_GL_AREA(gtk_gl_area_new());
         gtk_gl_area_set_auto_render(_native, TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(_native), 1, 1);
 

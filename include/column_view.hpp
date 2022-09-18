@@ -14,13 +14,12 @@ namespace mousetrap
 {
     namespace detail { struct _TreeColumnViewItem; }
 
-    class TreeColumnView : public Widget
+    class TreeColumnView : public WidgetImplementation<GtkColumnView>
     {
         public:
             using Iterator = detail::_TreeColumnViewItem*;
 
             TreeColumnView(std::vector<std::string> titles, GtkSelectionMode = GtkSelectionMode::GTK_SELECTION_MULTIPLE);
-            operator GtkWidget*() override;
 
             void set_show_column_separators(bool);
             void set_show_row_separators(bool);

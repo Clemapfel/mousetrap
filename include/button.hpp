@@ -9,21 +9,13 @@
 
 namespace mousetrap
 {
-    class Button : public Widget
+    class Button : public WidgetImplementation<GtkButton>
     {
         public:
             Button();
 
-            void set_label(const std::string&);
-            void set_icon(const std::string& path);
             void set_has_frame(bool b);
             void set_child(Widget*);
-
-            operator GtkWidget*() override;
-
-        private:
-            GtkButton* _native;
-            GtkImage* _icon;
     };
 }
 

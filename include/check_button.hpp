@@ -9,21 +9,17 @@
 
 namespace mousetrap
 {
-    class CheckButton : public Widget
+    class CheckButton : public WidgetImplementation<GtkCheckButton>
     {
         public:
             CheckButton();
             CheckButton(const std::string& label);
 
-            operator GtkWidget*() override;
             bool get_is_checked();
             void set_is_checked(bool b);
 
             bool get_is_inconsistent();
             void set_is_inconsistent(bool b);
-
-        private:
-            GtkCheckButton* _native;
     };
 }
 

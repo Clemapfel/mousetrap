@@ -6,32 +6,26 @@
 namespace mousetrap
 {
     CheckButton::CheckButton()
-    {
-        _native = GTK_CHECK_BUTTON(gtk_check_button_new());
-    }
-
-    CheckButton::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
+        : WidgetImplementation<GtkCheckButton>(GTK_CHECK_BUTTON(gtk_check_button_new()))
+    {}
 
     bool CheckButton::get_is_checked()
     {
-        return gtk_check_button_get_active(_native);
+        return gtk_check_button_get_active(get_native());
     }
 
     void CheckButton::set_is_checked(bool b)
     {
-        gtk_check_button_set_active(_native, b);
+        gtk_check_button_set_active(get_native(), b);
     }
 
     bool CheckButton::get_is_inconsistent()
     {
-        return gtk_check_button_get_inconsistent(_native);
+        return gtk_check_button_get_inconsistent(get_native());
     }
 
     void CheckButton::set_is_inconsistent(bool b)
     {
-        gtk_check_button_set_inconsistent(_native, b);
+        gtk_check_button_set_inconsistent(get_native(), b);
     }
 }

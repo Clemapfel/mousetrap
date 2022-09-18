@@ -11,13 +11,11 @@
 
 namespace mousetrap
 {
-    class Window : public Widget, public ShortcutMap
+    class Window : public WidgetImplementation<GtkWindow>, public ShortcutMap
     {
         public:
             Window();
             Window(GtkWindow*);
-
-            operator GtkWidget*() override;
 
             void set_maximized(bool);
             void set_fullscreen(bool);
@@ -33,7 +31,6 @@ namespace mousetrap
             void unregister_global_shortcut(const std::string& shortcut_id);
 
         private:
-            GtkWindow* _native;
             using ShortcutID = std::string;
 
             struct GlobalShortcut

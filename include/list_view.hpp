@@ -14,15 +14,13 @@ namespace mousetrap
 {
     namespace detail { struct _TreeListViewItem; }
 
-    class TreeListView : public Widget
+    class TreeListView : public WidgetImplementation<GtkListView>
     {
         public:
             using Iterator = detail::_TreeListViewItem*;
 
             TreeListView(GtkOrientation = GTK_ORIENTATION_VERTICAL, GtkSelectionMode = GTK_SELECTION_NONE);
             TreeListView(GtkSelectionMode);
-
-            operator GtkWidget*() override;
 
             Iterator push_back(Widget* widget, Iterator = nullptr);
             Iterator push_front(Widget* widget, Iterator = nullptr);

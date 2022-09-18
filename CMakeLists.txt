@@ -79,9 +79,6 @@ add_library(mousetrap SHARED
     include/spin_button.hpp
     src/spin_button.inl
 
-    include/range.hpp
-    src/range.inl
-
     include/entry.hpp
     src/entry.inl
 
@@ -127,6 +124,9 @@ add_library(mousetrap SHARED
     include/scrolled_window.hpp
     src/scrolled_window.inl
 
+    include/stack.hpp
+    src/stack.inl
+
     include/time.hpp
     src/time.inl
 
@@ -151,11 +151,13 @@ add_library(mousetrap SHARED
     src/separator_line.inl
 
     include/menu_button.hpp
+    src/menu_button.inl
 
     include/menu_model.hpp
+    src/menu_model.inl
 
-    include/shortcuts.hpp
     include/shortcut_map.hpp
+    src/shortcut_map.inl
 
     include/list_view.hpp
     src/list_view.inl
@@ -173,7 +175,19 @@ add_library(mousetrap SHARED
 
     include/detachable_box.hpp
     src/detachable_box.inl
-        include/expander.hpp include/paned.hpp app/layer.hpp include/dropdown.hpp src/dropdown.inl include/check_button.hpp src/check_button.inl)
+
+    include/expander.hpp
+    src/expander.inl
+
+    include/paned.hpp
+    src/paned.hpp
+
+    include/dropdown.hpp
+    src/dropdown.inl
+
+    include/check_button.hpp
+    src/check_button.inl
+)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -203,7 +217,7 @@ add_library(app STATIC
     app/toolbox.hpp
     app/brush_options.hpp
     app/widget_container.hpp
-        app/canvas.hpp app/layer_view.hpp)
+        app/canvas.hpp app/layer_view.hpp app/app_widget.hpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

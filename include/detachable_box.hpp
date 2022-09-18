@@ -11,12 +11,11 @@
 namespace mousetrap
 {
     /// \brief box container, call detach() to move child widget into new window. attach() or closing of window moves child back to box
-    class DetachableBox : public Widget
+    class DetachableBox : public WidgetImplementation<GtkRevealer>
     {
         public:
             DetachableBox(const std::string& detached_window_title = "");
             virtual ~DetachableBox();
-            operator GtkWidget*();
 
             void detach();
             void attach();

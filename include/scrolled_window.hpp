@@ -9,12 +9,10 @@
 
 namespace mousetrap
 {
-    class ScrolledWindow : public Widget
+    class ScrolledWindow : public WidgetImplementation<GtkScrolledWindow>
     {
         public:
             ScrolledWindow();
-
-            operator GtkWidget*() override;
 
             void set_min_content_width(float);
             void set_min_content_height(float);
@@ -28,9 +26,6 @@ namespace mousetrap
             void set_kinetic_scrolling_enabled(bool);
 
             void set_child(Widget*);
-
-        private:
-            GtkScrolledWindow* _native;
     };
 }
 

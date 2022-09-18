@@ -5,19 +5,24 @@
 
 namespace mousetrap
 {
-    Adjustment::operator Adjustment*()
+    Adjustment::operator GtkAdjustment*()
     {
         return _native;
     }
 
+    Adjustment::~Adjustment()
+    {
+        g_object_unref(_native);
+    }
+
     Adjustment::Adjustment(float current, float lower, float upper, float increment, float page_size, float page_increment)
     {
-        _native = gtk_adjustment_new(current, lower, upper, increment, page_size, page_increment);
+        _native = g_object_ref(gtk_adjustment_new(current, lower, upper, increment, page_size, page_increment));
     }
 
     Adjustment::Adjustment(GtkAdjustment* in)
     {
-        _native = in;
+        _native = g_object_ref();
     }
 
     void Adjustment::clamp_page(float lower, float upper)

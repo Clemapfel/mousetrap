@@ -10,18 +10,10 @@
 
 namespace mousetrap
 {
-    class Scrollbar : public Widget
+    class Scrollbar : public WidgetImplementation<GtkScrollbar>
     {
         public:
             Scrollbar(Adjustment, GtkOrientation = GTK_ORIENTATION_HORIZONTAL);
-            Scrollbar(GtkOrientation = GTK_ORIENTATION_HORIZONTAL);
-
-            operator GtkWidget*() override;
-            Adjustment& get_adjustment();
-
-        private:
-            GtkScrollbar* _native;
-            Adjustment _adjustment;
     };
 }
 

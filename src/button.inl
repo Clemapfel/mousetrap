@@ -6,39 +6,16 @@
 namespace mousetrap
 {
     Button::Button()
-    {
-        _native = GTK_BUTTON(gtk_button_new());
-    }
-
-    Button::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
-
-    void Button::set_label(const std::string& text)
-    {
-        gtk_button_set_label(_native, text.c_str());
-    }
-
-    void Button::set_icon(const std::string& path)
-    {
-        GError* error = nullptr;
-        auto* pixbuf = gdk_pixbuf_new_from_file(path.c_str(), &error);
-
-        if (error)
-            std::cerr << "[WARNING] In Button::set_icon: Unable to load image at " << path << ":\n" << error->message << std::endl;
-
-        _icon = GTK_IMAGE(gtk_image_new_from_pixbuf(pixbuf));
-        gtk_button_set_child(_native, GTK_WIDGET(_icon));
-    }
+        : WidgetImplementation<GtkButton>(GTK_BUTTON(gtk_button_new()))
+    {}
 
     void Button::set_has_frame(bool b)
     {
-        gtk_button_set_has_frame(_native, b);
+        gtk_button_set_has_frame(get_native(), b);
     }
 
     void Button::set_child(Widget* widget)
     {
-        gtk_button_set_child(_native, widget->operator GtkWidget*());
+        gtk_button_set_child(get_native(), widget->operator GtkWidget*());
     }
 }

@@ -41,9 +41,9 @@ namespace mousetrap::state
 
     void set_primary_color(HSVA color)
     {
-        primary_color = color;
-        color_picker->update();
-        primary_secondary_color_swapper->update();
+        //primary_color = color;
+        //color_picker->update();
+        //primary_secondary_color_swapper->update();
     }
 
     // ### PALETTES ###################################

@@ -9,12 +9,10 @@
 
 namespace mousetrap
 {
-    class Box : public Widget
+    class Box : public WidgetImplementation<GtkBox>
     {
         public:
             Box(GtkOrientation, float spacing = 0);
-
-            operator GtkWidget*() override;
 
             void push_back(Widget*);
             void push_front(Widget*);
@@ -25,13 +23,7 @@ namespace mousetrap
             void clear();
 
             void set_homogeneous(bool);
-
-        private:
-            GtkBox* _native;
     };
-
-    Box HBox(float spacing = 0);
-    Box VBox(float spacing = 0);
 }
 
 #include <src/box.inl>
