@@ -152,6 +152,16 @@ namespace mousetrap
         return out;
     }
 
+    bool Widget::operator==(const Widget& other) const
+    {
+        return this->_native == other._native;
+    }
+
+    bool Widget::operator!=(const Widget& other) const
+    {
+        return not (*this == other);
+    }
+
     void Widget::set_tooltip_text(const std::string& text)
     {
         gtk_widget_set_tooltip_markup(this->operator GtkWidget*(), text.c_str());

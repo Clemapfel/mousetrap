@@ -30,7 +30,6 @@ namespace mousetrap
             static gboolean on_render_wrapper(void* area, void* context, void* instance);
             static void on_resize_wrapper(GtkGLArea* area, gint width, gint height, void* instance);
 
-            GtkGLArea* _native;
             std::vector<RenderTask> _render_tasks;
     };
 }

@@ -8,8 +8,8 @@ namespace mousetrap
     GLArea::GLArea()
         : WidgetImplementation<GtkGLArea>(GTK_GL_AREA(gtk_gl_area_new()))
     {
-        gtk_gl_area_set_auto_render(_native, TRUE);
-        gtk_widget_set_size_request(GTK_WIDGET(_native), 1, 1);
+        gtk_gl_area_set_auto_render(get_native(), TRUE);
+        gtk_widget_set_size_request(GTK_WIDGET(get_native()), 1, 1);
 
         connect_signal("render", on_render_wrapper, this);
         connect_signal("resize", on_resize_wrapper, this);
@@ -67,12 +67,12 @@ namespace mousetrap
 
     void GLArea::queue_render()
     {
-        gtk_gl_area_queue_render(_native);
-        gtk_widget_queue_draw(GTK_WIDGET(_native));
+        gtk_gl_area_queue_render(get_native());
+        gtk_widget_queue_draw(GTK_WIDGET(get_native()));
     }
 
     void GLArea::make_current()
     {
-        gtk_gl_area_make_current(_native);
+        gtk_gl_area_make_current(get_native());
     }
 }

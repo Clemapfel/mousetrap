@@ -23,12 +23,13 @@
 #include <include/check_button.hpp>
 
 #include <app/global_state.hpp>
+#include <app/primary_secondary_color_swapper.hpp>
+#include <app/toolbox.hpp>
+
 /*
 #include <app/color_picker.hpp>
-#include <app/primary_secondary_color_swapper.hpp>
 #include <app/verbose_color_picker.hpp>
 #include <app/palette_view.hpp>
-#include <app/toolbox.hpp>
 #include <app/brush_options.hpp>
 #include <app/widget_container.hpp>
 #include <app/canvas.hpp>
@@ -37,23 +38,11 @@
 
 using namespace mousetrap;
 
-struct CompoundWidget
+static void static_test(Button* instance, std::string* data)
 {
-    CompoundWidget()
-        : box(GTK_ORIENTATION_HORIZONTAL),
-          label("test"),
-          button()
-    {
-        box.push_back(&label);
-        box.push_back(&button);
-    }
-
-    Box box;
-    Label label;
-    Button button;
-};
-
-CompoundWidget* test;
+    std::cout << instance->get_native() << std::endl;
+    std::cout << *((std::string*) data) << std::endl;
+}
 
 static void activate(GtkApplication* app, void*)
 {
@@ -63,9 +52,40 @@ static void activate(GtkApplication* app, void*)
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
 
-    test = new CompoundWidget();
+    //state::primary_secondary_color_swapper = new PrimarySecondaryColorSwapper();
+    //state::toolbox = new Toolbox(GTK_ORIENTATION_HORIZONTAL);
 
-    state::main_window->set_child(&test->box);
+    auto box = Box(GTK_ORIENTATION_HORIZONTAL);
+
+    static auto lambda_test = [](Button* instance, std::string* data) -> void {
+        std::cout << instance->get_native() << std::endl;
+        std::cout << *data << std::endl;
+    };
+
+    static auto button = Button();
+    button.connect_signal_clicked(static_test, new std::string("test"));
+    box.push_back(&button);
+
+    /*
+    void(*t1)(Button*, void*) = (void(*)(Button*, void*)) static_test;
+    t1(&button, new std::string("test"));
+
+    void(*t2)(Button*, void*) = (void(*)(Button*, void*)) &lambda_test;
+    //t2(&button, new std::string("test"));
+
+    std::function<void(Button*, void*)> t3 = (void(*)(Button*, void*)) static_test;
+    t3(&button, new std::string("test"));
+
+    std::function<void(Button*, std::string*)> temp = lambda_test;
+
+    std::function<void(Button*, void*)>* t4 = (std::function<void(Button*, void*)>*) &temp;
+    (*t4)(&button, new std::string("test"));
+     */
+
+    // box.push_back(state::primary_secondary_color_swapper->operator Widget*());
+    // box.push_back(state::toolbox->operator Widget*());
+
+    state::main_window->set_child(&box);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

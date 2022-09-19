@@ -17,15 +17,19 @@
 #include <include/list_view.hpp>
 
 #include <app/tools.hpp>
+#include <app/app_component.hpp>
+#include <app/global_state.hpp>
 
 namespace mousetrap
 {
-    class Toolbox : public Widget
+    class Toolbox : public AppComponent
     {
         public:
             Toolbox(GtkOrientation);
-            operator GtkWidget*() override;
-
+            
+            operator Widget*() override;
+            void update() override;
+            
             void select(ToolID);
 
         private:
@@ -77,22 +81,22 @@ namespace mousetrap
                     {GRADIENT_SMOOTH, {{}}},
             };
 
-            struct Icon : public Widget
+            struct Icon
             {
                 Icon(ToolID id, bool is_vertical);
-                operator GtkWidget*() override;
+                operator Widget*();
 
                 ToolID id;
 
-                Overlay* overlay;
+                Overlay overlay;
 
-                ImageDisplay* label;
-                ImageDisplay* popover_indicator;
-                ImageDisplay* selected_indicator;
-                ImageDisplay* child_selected_indicator;
+                ImageDisplay label;
+                ImageDisplay popover_indicator;
+                ImageDisplay selected_indicator;
+                ImageDisplay child_selected_indicator;
 
-                ClickEventController* click_event_controller;
-                MotionEventController* motion_event_controller;
+                ClickEventController click_event_controller;
+                MotionEventController motion_event_controller;
             };
 
             using on_icon_click_data = struct { Icon* self; Icon* parent; Toolbox* instance; ToolID tool_id; };
@@ -101,20 +105,20 @@ namespace mousetrap
             using on_icon_without_popover_enter_data = Toolbox*;
             static void on_icon_without_popover_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* instance);
 
-            struct IconWithPopover : public Widget
+            struct IconWithPopover
             {
                 IconWithPopover(Icon* main, std::vector<std::vector<Icon*>> children, bool is_vertical);
-                operator GtkWidget*();
+                operator Widget*();
 
                 bool is_vertical;
 
-                Box* main_box;
-                Popover* popover;
-                std::vector<ListView*> popover_rows;
-                Box* popover_box;
+                Box main_box;
+                Popover popover;
+                std::vector<ListView> popover_rows;
+                Box popover_box;
 
-                MotionEventController* main_motion_event_controller;
-                MotionEventController* popover_motion_event_controller;
+                MotionEventController main_motion_event_controller;
+                MotionEventController popover_motion_event_controller;
             };
 
             using on_icon_with_popover_enter_data = struct { IconWithPopover* self; Toolbox* instance; };
@@ -123,11 +127,11 @@ namespace mousetrap
             using on_popover_leave_data = IconWithPopover*;
             static void on_popover_leave(GtkEventControllerMotion* self, void* data);
 
-            std::map<ToolID, Icon*> _icons;
+            std::map<ToolID, Icon> _icons;
 
-            std::vector<IconWithPopover*> _icons_with_popover;
-            ListView* main;
-            MotionEventController* motion_event_controller;
+            std::vector<IconWithPopover> _icons_with_popover;
+            ListView main;
+            MotionEventController motion_event_controller;
 
             using on_main_leave_data = Toolbox*;
             static void on_main_leave(GtkEventControllerMotion* self, void* data);
@@ -153,83 +157,84 @@ namespace mousetrap
 namespace mousetrap
 {
     Toolbox::Icon::Icon(ToolID id, bool is_vertical)
-        : id(id)
+        : id(id),
+          label(get_resource_path() + "icons/" + id + ".png", state::icon_scale),
+          popover_indicator(get_resource_path() + "icons/" + "has_popover_indicator" + ".png", state::icon_scale),
+          selected_indicator(get_resource_path() + "icons/" + "selected_indicator" + ".png", state::icon_scale),
+          child_selected_indicator(get_resource_path() + "icons/child_selected_" + (is_vertical ? "vertical" : "horizontal") + ".png", state::icon_scale),
+          overlay(),
+          click_event_controller(),
+          motion_event_controller()
     {
         size_t scale = state::icon_scale;
 
-        label = new ImageDisplay(get_resource_path() + "icons/" + id + ".png", scale);
-        label->set_size_request({32 * scale, 32 * scale});
-        label->set_expand(false);
-        label->set_align(GTK_ALIGN_CENTER);
+        label.set_size_request({32 * scale, 32 * scale});
+        label.set_expand(false);
+        label.set_align(GTK_ALIGN_CENTER);
 
-        popover_indicator = new ImageDisplay(get_resource_path() + "icons/" + "has_popover_indicator" + ".png", scale);
-        popover_indicator->set_size_request({48 * scale, 48 * scale});
-        popover_indicator->set_opacity(0);
+        popover_indicator.set_size_request({48 * scale, 48 * scale});
+        popover_indicator.set_opacity(0);
 
-        selected_indicator = new ImageDisplay(get_resource_path() + "icons/" + "selected_indicator" + ".png", scale);
-        selected_indicator->set_size_request({48 * scale, 48 * scale});
-        selected_indicator->set_opacity(0);
+        selected_indicator.set_size_request({48 * scale, 48 * scale});
+        selected_indicator.set_opacity(0);
 
-        child_selected_indicator = new ImageDisplay(get_resource_path() + "icons/child_selected_" + (is_vertical ? "vertical" : "horizontal") + ".png", scale);
-        child_selected_indicator->set_size_request({48 * scale, 48 * scale});
-        child_selected_indicator->set_opacity(0);
+        child_selected_indicator.set_size_request({48 * scale, 48 * scale});
+        child_selected_indicator.set_opacity(0);
 
-        overlay = new Overlay();
-        overlay->set_child(selected_indicator);
-        overlay->add_overlay(child_selected_indicator);
-        overlay->add_overlay(label);
-        overlay->add_overlay(popover_indicator);
+        overlay.set_child(&selected_indicator);
+        overlay.add_overlay(&child_selected_indicator);
+        overlay.add_overlay(&label);
+        overlay.add_overlay(&popover_indicator);
 
-        click_event_controller = new ClickEventController();
-        overlay->add_controller(click_event_controller);
-        
-        motion_event_controller = new MotionEventController();
-        overlay->add_controller(motion_event_controller);
+        overlay.add_controller(&click_event_controller);
+        overlay.add_controller(&motion_event_controller);
     }
 
-    Toolbox::Icon::operator GtkWidget*()
+    Toolbox::Icon::operator Widget*()
     {
-        return overlay->operator GtkWidget*();
+        return &overlay;
+    }
+
+    void Toolbox::update()
+    {
+        select(state::active_tool);
     }
 
     Toolbox::IconWithPopover::IconWithPopover(Icon* main, std::vector<std::vector<Icon*>> children, bool is_orientation_vertical)
-        : is_vertical(is_orientation_vertical)
+        : is_vertical(is_orientation_vertical),
+          main_box(GTK_ORIENTATION_VERTICAL),
+          popover(),
+          popover_box(GTK_ORIENTATION_VERTICAL),
+          main_motion_event_controller(),
+          popover_motion_event_controller()
     {
-        main->popover_indicator->set_opacity(1);
+        main->popover_indicator.set_opacity(1);
 
-        main_box = new Box(GTK_ORIENTATION_VERTICAL);
-        main_box->push_back(main);
-
-        popover = new Popover;
-        popover->set_autohide(false);
-        popover_box = new Box(GTK_ORIENTATION_VERTICAL);
+        main_box.push_back(main->operator Widget*());
+        popover.set_autohide(false);
 
         for (auto& row : children)
         {
-            popover_rows.emplace_back(new ListView(is_vertical ? GTK_ORIENTATION_VERTICAL : GTK_ORIENTATION_HORIZONTAL));
+            popover_rows.emplace_back(is_vertical ? GTK_ORIENTATION_VERTICAL : GTK_ORIENTATION_HORIZONTAL);
 
-            for (auto* child : row)
-                popover_rows.back()->push_back(child);
+            for (auto& child : row)
+                popover_rows.back().push_back(child->operator Widget*());
 
-            popover_box->push_back(popover_rows.back());
+            popover_box.push_back(&popover_rows.back());
         }
 
-        popover->attach_to(main->overlay);
-        popover->set_child(popover_box);
-        popover->set_relative_position(is_vertical ? GTK_POS_RIGHT : GTK_POS_BOTTOM);
+        popover.attach_to(&main->overlay);
+        popover.set_child(&popover_box);
+        popover.set_relative_position(is_vertical ? GTK_POS_RIGHT : GTK_POS_BOTTOM);
 
-        main_motion_event_controller = new MotionEventController();
-        main_box->add_controller(main_motion_event_controller);
-
-        popover_motion_event_controller = new MotionEventController();
-        popover_box->add_controller(popover_motion_event_controller);
-
-        popover_motion_event_controller->connect_leave(on_popover_leave, this);
+        main_box.add_controller(&main_motion_event_controller);
+        popover_box.add_controller(&popover_motion_event_controller);
+        popover_motion_event_controller.connect_leave(on_popover_leave, this);
     }
 
-    Toolbox::IconWithPopover::operator GtkWidget*()
+    Toolbox::IconWithPopover::operator Widget*()
     {
-        return main_box->operator GtkWidget*();
+        return &main_box;
     }
 
     void Toolbox::on_icon_with_popover_enter(GtkEventControllerMotion*, gdouble x, gdouble y, void* data)
@@ -237,18 +242,18 @@ namespace mousetrap
         auto* self = ((on_icon_with_popover_enter_data*) data)->self;
         auto* instance = ((on_icon_with_popover_enter_data*) data)->instance;
 
-        for (auto* icon_with : instance->_icons_with_popover)
+        for (auto& icon_with : instance->_icons_with_popover)
         {
-            if (icon_with == self)
-                icon_with->popover->popup();
+            if (&icon_with == self)
+                icon_with.popover.popup();
             else
-                icon_with->popover->popdown();
+                icon_with.popover.popdown();
         }
     }
 
     void Toolbox::on_popover_leave(GtkEventControllerMotion* self, void* data)
     {
-        ((IconWithPopover*) data)->popover->popdown();
+        ((IconWithPopover*) data)->popover.popdown();
     }
 
     void Toolbox::on_icon_click(GtkGestureClick*, gint n_press, gdouble x, gdouble y, void* data)
@@ -260,9 +265,9 @@ namespace mousetrap
 
         for (auto& pair : instance->_icons)
         {
-            pair.second->child_selected_indicator->set_opacity(pair.second == parent);
-            pair.second->selected_indicator->set_opacity(pair.second == self);
-            pair.second->popover_indicator->set_visible(pair.second != parent);
+            pair.second.child_selected_indicator.set_opacity(pair.second == *parent);
+            pair.second.selected_indicator.set_opacity(pair.second == *self);
+            pair.second.popover_indicator.set_visible(pair.second != *parent);
         }
 
         state::active_tool = id;
@@ -271,15 +276,14 @@ namespace mousetrap
     void Toolbox::on_icon_without_popover_enter(GtkEventControllerMotion*, gdouble x, gdouble y, void* data)
     {
         auto* instance = (Toolbox*) data;
-        for (auto* icon_with : instance->_icons_with_popover)
-            icon_with->popover->popdown();
+        for (auto& icon_with : instance->_icons_with_popover)
+            icon_with.popover.popdown();
     }
 
     void Toolbox::on_main_leave(GtkEventControllerMotion* self, void* data)
     {
         auto* instance = (Toolbox*) data;
-
-        auto size = instance->get_size();
+        auto size = (instance->operator Widget*())->get_size();
 
         if (instance->_is_orientation_vertical)
         {
@@ -292,8 +296,8 @@ namespace mousetrap
                 return;
         }
 
-        for (auto* icon_with : instance->_icons_with_popover)
-            icon_with->popover->popdown();
+        for (auto icon_with : instance->_icons_with_popover)
+            icon_with.popover.popdown();
     }
 
     void Toolbox::on_main_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void* data)
@@ -346,23 +350,24 @@ namespace mousetrap
     }
 
     Toolbox::Toolbox(GtkOrientation orientation)
+        : main(_is_orientation_vertical ? GTK_ORIENTATION_VERTICAL: GTK_ORIENTATION_HORIZONTAL),
+          motion_event_controller()
     {
         _is_orientation_vertical = orientation == GTK_ORIENTATION_VERTICAL;
 
-        main = new ListView(_is_orientation_vertical ? GTK_ORIENTATION_VERTICAL: GTK_ORIENTATION_HORIZONTAL);
-        main->set_show_separators(true);
+        main.set_show_separators(true);
 
         auto add_icon = [&](ToolID id) -> Icon* {
-            auto inserted = _icons.insert({id, new Icon(id, _is_orientation_vertical)});
-            inserted.first->second->overlay->set_cursor(GtkCursorType::POINTER);
-            return _icons.at(id);
+            auto inserted = _icons.insert({id, Icon(id, _is_orientation_vertical)});
+            inserted.first->second.overlay.set_cursor(GtkCursorType::POINTER);
+            return &_icons.at(id);
         };
 
         for (auto& pair : icon_mapping)
         {
             auto main_icon = add_icon(pair.first);
-            main_icon->click_event_controller->connect_pressed(on_icon_click, new on_icon_click_data{main_icon, nullptr, this, pair.first});
-            main_icon->set_tooltip_text(generate_tooltip(pair.first));
+            main_icon->click_event_controller.connect_pressed(on_icon_click, new on_icon_click_data{main_icon, nullptr, this, pair.first});
+            main_icon->operator Widget*()->set_tooltip_text(generate_tooltip(pair.first));
             std::vector<std::vector<Icon*>> children;
 
             for (auto& row : pair.second)
@@ -374,29 +379,28 @@ namespace mousetrap
                 {
                     auto* to_add = add_icon(child);
                     children.back().emplace_back(to_add);
-                    children.back().back()->click_event_controller->connect_pressed(on_icon_click, new on_icon_click_data{to_add, main_icon, this, child});
-                    children.back().back()->set_tooltip_text(generate_tooltip(child));
+                    children.back().back()->click_event_controller.connect_pressed(on_icon_click, new on_icon_click_data{to_add, main_icon, this, child});
+                    children.back().back()->operator Widget*()->set_tooltip_text(generate_tooltip(child));
                 }
             }
 
             if (children.empty())
             {
-                main->push_back(main_icon);
-                main_icon->motion_event_controller->connect_enter(on_icon_without_popover_enter, this);
+                main.push_back(main_icon-> operator Widget*());
+                main_icon->motion_event_controller.connect_enter(on_icon_without_popover_enter, this);
             }
             else
             {
-                _icons_with_popover.emplace_back(new IconWithPopover(main_icon, children, _is_orientation_vertical));
-                auto* current = _icons_with_popover.back();
-                current->main_motion_event_controller->connect_enter(on_icon_with_popover_enter, new on_icon_with_popover_enter_data{current, this});
-                main->push_back(current);
+                _icons_with_popover.emplace_back(IconWithPopover(main_icon, children, _is_orientation_vertical));
+                auto& current = _icons_with_popover.back();
+                current.main_motion_event_controller.connect_enter(on_icon_with_popover_enter, new on_icon_with_popover_enter_data{&current, this});
+                main.push_back(current.operator Widget*());
             }
         }
 
-        motion_event_controller = new MotionEventController();
-        main->add_controller(motion_event_controller);
-        motion_event_controller->connect_leave(on_main_leave, this);
-        motion_event_controller->connect_motion(on_main_motion, this);
+        main.add_controller(&motion_event_controller);
+        motion_event_controller.connect_leave(on_main_leave, this);
+        motion_event_controller.connect_motion(on_main_motion, this);
 
         for (auto id : {PENCIL, ERASER, EYEDROPPER, BUCKET_FILL, LINE, RECTANGLE_OUTLINE, RECTANGLE_FILL, CIRCLE_OUTLINE, CIRCLE_FILL, POLYGON_OUTLINE, POLYGON_FILL, GRADIENT_DITHERED, GRADIENT_SMOOTH, MARQUEE_RECTANGLE, MARQUEE_CIRCLE, MARQUEE_NEIGHBORHODD_SELECT, MARQUEE_POLYGON})
             state::main_window->register_global_shortcut(
@@ -423,9 +427,9 @@ namespace mousetrap
         select(MARQUEE_RECTANGLE);
     }
 
-    Toolbox::operator GtkWidget*()
+    Toolbox::operator Widget*()
     {
-        return main->operator GtkWidget*();
+        return &main;
     }
 
     void Toolbox::select(ToolID id)
@@ -437,7 +441,7 @@ namespace mousetrap
             id = RECTANGLE_OUTLINE;
 
         Icon* parent = nullptr;
-        Icon* child = _icons.at(id);
+        Icon* child = &_icons.at(id);
 
         for (auto& pair : icon_mapping)
         {
@@ -451,7 +455,7 @@ namespace mousetrap
                     {
                         if (child == id)
                         {
-                            parent = _icons.at(pair.first);
+                            parent = &_icons.at(pair.first);
                             goto done;
                         }
                     }

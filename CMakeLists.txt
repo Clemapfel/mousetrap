@@ -217,7 +217,7 @@ add_library(app STATIC
     app/toolbox.hpp
     app/brush_options.hpp
     app/widget_container.hpp
-        app/canvas.hpp app/layer_view.hpp app/app_widget.hpp)
+        app/canvas.hpp app/layer_view.hpp app/app_component.hpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

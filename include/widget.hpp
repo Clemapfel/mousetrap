@@ -32,6 +32,9 @@ namespace mousetrap
             void set_size_request(Vector2f);
             Vector2f get_size();
 
+            bool operator==(const Widget& other) const;
+            bool operator!=(const Widget& other) const;
+
             void set_margin_top(float);
             void set_margin_bottom(float);
             void set_margin_start(float);

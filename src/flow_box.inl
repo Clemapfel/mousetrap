@@ -14,78 +14,78 @@ namespace mousetrap
 
     void FlowBox::set_orientation(GtkOrientation orientation)
     {
-        gtk_orientable_set_orientation(GTK_ORIENTABLE(_native), orientation);
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(get_native()), orientation);
     }
 
     void FlowBox::set_activate_on_single_click(bool b)
     {
-        gtk_flow_box_set_activate_on_single_click(_native, b);
+        gtk_flow_box_set_activate_on_single_click(get_native(), b);
     }
 
     void FlowBox::set_min_children_per_line(size_t n)
     {
-        gtk_flow_box_set_min_children_per_line(_native, n);
+        gtk_flow_box_set_min_children_per_line(get_native(), n);
     }
 
     void FlowBox::set_max_children_per_line(size_t n)
     {
-        gtk_flow_box_set_max_children_per_line(_native, n);
+        gtk_flow_box_set_max_children_per_line(get_native(), n);
     }
 
     void FlowBox::set_column_spacing(float v)
     {
-        gtk_flow_box_set_column_spacing(_native, v);
+        gtk_flow_box_set_column_spacing(get_native(), v);
     }
 
     void FlowBox::set_row_spacing(float v)
     {
-        gtk_flow_box_set_row_spacing(_native, v);
+        gtk_flow_box_set_row_spacing(get_native(), v);
     }
 
     void FlowBox::set_selection_mode(GtkSelectionMode mode)
     {
-        gtk_flow_box_set_selection_mode(_native, mode);
+        gtk_flow_box_set_selection_mode(get_native(), mode);
     }
 
     void FlowBox::set_homogeneous(bool b)
     {
-        gtk_flow_box_set_homogeneous(_native, b);
+        gtk_flow_box_set_homogeneous(get_native(), b);
     }
 
     GtkFlowBoxChild* FlowBox::get_child_at_index(size_t i)
     {
-        return gtk_flow_box_get_child_at_index(_native, i);
+        return gtk_flow_box_get_child_at_index(get_native(), i);
     }
 
     GtkFlowBoxChild* FlowBox::get_child_at_pos(int x, int y)
     {
-        return gtk_flow_box_get_child_at_pos(_native, x, y);
+        return gtk_flow_box_get_child_at_pos(get_native(), x, y);
     }
 
     void FlowBox::push_back(Widget* widget)
     {
-        gtk_flow_box_append(_native, widget->operator GtkWidget*());
+        gtk_flow_box_append(get_native(), widget->operator GtkWidget*());
     }
 
     void FlowBox::push_front(Widget* widget)
     {
-        gtk_flow_box_prepend(_native, widget->operator GtkWidget*());
+        gtk_flow_box_prepend(get_native(), widget->operator GtkWidget*());
     }
 
     void FlowBox::insert_at(Widget* widget, size_t i)
     {
-        gtk_flow_box_insert(_native, widget->operator GtkWidget *(), i);
+        gtk_flow_box_insert(get_native(), widget->operator GtkWidget *(), i);
     }
 
     void FlowBox::remove(Widget* widget)
     {
-        gtk_flow_box_remove(_native, widget->operator GtkWidget*());
+        gtk_flow_box_remove(get_native(), widget->operator GtkWidget*());
     }
 
     void FlowBox::clear()
     {
         std::vector<GtkWidget*> to_remove;
-        GtkWidget* current = gtk_widget_get_first_child(GTK_WIDGET(_native));
+        GtkWidget* current = gtk_widget_get_first_child(GTK_WIDGET(get_native()));
         while (current != nullptr)
         {
             to_remove.push_back(current);
@@ -93,6 +93,6 @@ namespace mousetrap
         }
 
         for (auto* w : to_remove)
-            gtk_flow_box_remove(_native, w);
+            gtk_flow_box_remove(get_native(), w);
     }
 }

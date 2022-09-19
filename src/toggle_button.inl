@@ -26,11 +26,6 @@ namespace mousetrap
         gtk_button_set_label(GTK_BUTTON(get_native()), str.c_str());
     }
 
-    ToggleButton::operator GtkWidget*()
-    {
-        return GTK_WIDGET(get_native());
-    }
-
     void ToggleButton::set_child(Widget* widget)
     {
         gtk_button_set_child(GTK_BUTTON(get_native()), widget->operator GtkWidget*());

@@ -15,6 +15,7 @@
 #include <include/pixel_buffer.hpp>
 #include <include/shortcut_map.hpp>
 
+#include <app/app_component.hpp>
 #include <app/layer.hpp>
 #include <app/palette.hpp>
 #include <app/tools.hpp>
@@ -34,10 +35,10 @@ namespace mousetrap::state
     HSVA primary_color = RGBA(1, 0, 1, 1).operator HSVA();
     HSVA secondary_color = RGBA(0, 1, 0, 1).operator HSVA();
 
-    Widget* color_picker = nullptr;
-    Widget* primary_secondary_color_swapper = nullptr;
-    Widget* verbose_color_picker = nullptr;
-    Widget* palette_view = nullptr;
+    AppComponent* color_picker = nullptr;
+    AppComponent* primary_secondary_color_swapper = nullptr;
+    AppComponent* verbose_color_picker = nullptr;
+    AppComponent* palette_view = nullptr;
 
     void set_primary_color(HSVA color)
     {
@@ -59,10 +60,10 @@ namespace mousetrap::state
 
     // ### TOOLS ######################################
 
-    Widget* toolbox = nullptr;
+    AppComponent* toolbox = nullptr;
     ToolID active_tool = BRUSH;
 
-    Widget* brush_options = nullptr;
+    AppComponent* brush_options = nullptr;
     Image* brush_texture_image = nullptr;
     Texture* brush_texture = nullptr;
 
