@@ -20,6 +20,18 @@ namespace mousetrap
 
             bool get_is_inconsistent();
             void set_is_inconsistent(bool b);
+
+            template<typename T>
+            using on_toggled_function_t = void(CheckButton*, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_toggled(Function_t function, T data);
+
+        private:
+            static void on_toggled_wrapper(GtkCheckButton*, CheckButton* instance);
+
+            std::function<on_toggled_function_t<void*>> _on_toggled_f;
+            void* _on_toggled_data;
     };
 }
 

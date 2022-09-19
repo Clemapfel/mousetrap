@@ -23,12 +23,29 @@ namespace mousetrap
             void queue_render();
             void make_current();
 
-        private:
-            void on_resize(GtkGLArea* area, gint width, gint height);
-            gboolean on_render(GtkGLArea*, GdkGLContext*);
+            template<typename T>
+            using on_render_function_t = bool(GLArea*, GdkGLContext*, T);
 
-            static gboolean on_render_wrapper(void* area, void* context, void* instance);
-            static void on_resize_wrapper(GtkGLArea* area, gint width, gint height, void* instance);
+            template<typename Function_t, typename T>
+            void connect_signal_render(Function_t, T);
+
+            template<typename T>
+            using on_resize_function_t = void(GLArea*, int, int, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_resize(Function_t, T);
+
+        private:
+            static gboolean on_render_wrapper(GtkGLArea*, GdkGLContext*, GLArea* instance);
+            std::function<on_render_function_t<void*>> _on_render_f;
+            void* _on_render_data;
+
+            static void on_resize_wrapper(GtkGLArea*, int, int, GLArea* instance);
+            std::function<on_resize_function_t<void*>> _on_resize_f;
+            void* _on_resize_data;
+
+            static void on_resize(GLArea* area, gint width, gint height, void*);
+            static gboolean on_render(GLArea*, GdkGLContext*, void*);
 
             std::vector<RenderTask> _render_tasks;
     };

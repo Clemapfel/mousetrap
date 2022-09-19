@@ -187,7 +187,7 @@ add_library(mousetrap SHARED
 
     include/check_button.hpp
     src/check_button.inl
-)
+        src/event_controller.inl)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

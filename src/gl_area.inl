@@ -11,8 +11,8 @@ namespace mousetrap
         gtk_gl_area_set_auto_render(get_native(), TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(get_native()), 1, 1);
 
-        connect_signal("render", on_render_wrapper, this);
-        connect_signal("resize", on_resize_wrapper, this);
+        connect_signal_render(on_render, this);
+        connect_signal_resize(on_resize, this);
     }
 
     void GLArea::add_render_task(Shape* shape, Shader* shader, GLTransform* transform)
@@ -33,24 +33,14 @@ namespace mousetrap
         _render_tasks.clear();
     }
 
-    gboolean GLArea::on_render_wrapper(void* area, void* context, void* instance)
+    void GLArea::on_resize(GLArea* area, gint width, gint height, void*)
     {
-        return ((GLArea*) instance)->on_render(GTK_GL_AREA(area), GDK_GL_CONTEXT(context));
+        area->make_current();
     }
 
-    void GLArea::on_resize_wrapper(GtkGLArea* area, gint width, gint height, void* instance)
+    gboolean GLArea::on_render(GLArea* area, GdkGLContext* context, void*)
     {
-        ((GLArea*) instance)->on_resize(area, width, height);
-    }
-
-    void GLArea::on_resize(GtkGLArea* area, gint width, gint height)
-    {
-        gtk_gl_area_queue_render(area);
-    }
-
-    gboolean GLArea::on_render(GtkGLArea* area, GdkGLContext* context)
-    {
-        gtk_gl_area_make_current(area);
+        area->make_current();
 
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -58,7 +48,7 @@ namespace mousetrap
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        for (auto& task : _render_tasks)
+        for (auto& task : area->_render_tasks)
             task.render();
 
         glFlush();
@@ -74,5 +64,41 @@ namespace mousetrap
     void GLArea::make_current()
     {
         gtk_gl_area_make_current(get_native());
+    }
+
+    template<typename Function_t, typename T>
+    void GLArea::connect_signal_render(Function_t f, T data)
+    {
+        auto temp =  std::function<on_render_function_t<T>>(f);
+        _on_render_f = std::function<on_render_function_t<void*>>(*((std::function<on_render_function_t<void*>>*) &temp));
+        _on_render_data = data;
+
+        connect_signal("render", on_render_wrapper, this);
+    }
+
+    template<typename Function_t, typename T>
+    void GLArea::connect_signal_resize(Function_t f, T data)
+    {
+        auto temp =  std::function<on_resize_function_t<T>>(f);
+        _on_resize_f = std::function<on_resize_function_t<void*>>(*((std::function<on_resize_function_t<void*>>*) &temp));
+        _on_resize_data = data;
+
+        connect_signal("render", on_render_wrapper, this);
+    }
+
+    gboolean GLArea::on_render_wrapper(GtkGLArea* area, GdkGLContext* context, GLArea* instance)
+    {
+        if (instance->_on_render_f == nullptr)
+            return FALSE;
+
+        return (instance->_on_render_f)(instance, context, instance->_on_render_data);
+    }
+
+    void GLArea::on_resize_wrapper(GtkGLArea* area, int w, int h, GLArea* instance)
+    {
+        if (instance->_on_render_f == nullptr)
+            return;
+
+        (instance->_on_resize_f)(instance, w, h, instance->_on_render_data);
     }
 }

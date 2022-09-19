@@ -129,4 +129,22 @@ namespace mousetrap
         label->set_use_markup(true);
         push_back(widget, label, on_select_f, on_select_data);
     }
+
+    template<typename Function_t, typename T>
+    void DropDown::connect_signal_activate(Function_t function, T data)
+    {
+        auto temp =  std::function<on_activate_function_t<T>>(function);
+        _on_activate_f = std::function<on_activate_function_t<void*>>(*((std::function<on_activate_function_t<void*>>*) &temp));
+        _on_activate_data = data;
+
+        connect_signal("activate", on_activate_wrapper, this);
+    }
+
+    void DropDown::on_activate_wrapper(GtkDropDown*, DropDown* instance)
+    {
+        if (instance->_on_activate_f == nullptr)
+            return;
+
+        (instance->_on_activate_f)(instance, instance->_on_activate_data);
+    }
 }

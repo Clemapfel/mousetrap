@@ -32,4 +32,22 @@ namespace mousetrap
     {
         gtk_entry_set_max_length(get_native(), n);
     }
+
+    template<typename Function_t, typename T>
+    void Entry::connect_signal_activate(Function_t function, T data)
+    {
+        auto temp =  std::function<on_activate_function_t<T>>(function);
+        _on_activate_f = std::function<on_activate_function_t<void*>>(*((std::function<on_activate_function_t<void*>>*) &temp));
+        _on_activate_data = data;
+
+        connect_signal("activate", on_activate_wrapper, this);
+    }
+
+    void Entry::on_activate_wrapper(GtkEntry*, Entry* instance)
+    {
+        if (instance->_on_activate_f == nullptr)
+            return;
+
+        (instance->_on_activate_f)(instance, instance->_on_activate_data);
+    }
 }

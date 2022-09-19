@@ -21,6 +21,18 @@ namespace mousetrap
 
             bool get_expanded();
             void set_expanded(bool);
+
+            template<typename T>
+            using on_activate_function_t = void(Expander*, T);
+            
+            template<typename Function_t, typename T>
+            void connect_signal_activate(Function_t, T);
+            
+        private:
+            static void on_activate_wrapper(GtkExpander*, Expander* instance);
+
+            std::function<on_activate_function_t<void*>> _on_activate_f;
+            void* _on_activate_data;
     };
 }
 

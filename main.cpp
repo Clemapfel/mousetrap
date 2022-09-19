@@ -38,11 +38,37 @@
 
 using namespace mousetrap;
 
-void static_test(Button* instance, std::string* data)
+void static_test(CheckButton* instance, std::string* data)
 {
     std::cout << instance->get_native() << std::endl;
     std::cout << *((std::string*) data) << std::endl;
 }
+
+/*
+ * template<typename T>
+            using on_clicked_function_t = void(Button*, T);
+
+            static void on_clicked_wrapper(GtkButton*, Button* instance)
+            {
+                if (instance->_on_clicked_f == nullptr)
+                    return;
+
+                (instance->_on_clicked_f)(instance, instance->_on_clicked_data);
+            }
+
+            template<typename Function_t, typename T>
+            void connect_signal_clicked(Function_t function, T data)
+            {
+                auto temp =  std::function<on_clicked_function_t<T>>(function);
+                _on_clicked_f = std::function<on_clicked_function_t<void*>>(*((std::function<on_clicked_function_t<void*>>*) &temp));
+                _on_clicked_data = data;
+
+                connect_signal("clicked", on_clicked_wrapper, this);
+            }
+
+            std::function<on_clicked_function_t<void*>> _on_clicked_f;
+            void* _on_clicked_data;
+ */
 
 static void activate(GtkApplication* app, void*)
 {
@@ -57,13 +83,13 @@ static void activate(GtkApplication* app, void*)
 
     auto box = Box(GTK_ORIENTATION_HORIZONTAL);
 
-    static auto lambda_test = [](Button* instance, std::string* data) -> void {
+    static auto lambda_test = [](CheckButton* instance, std::string* data) -> void {
         std::cout << instance->get_native() << std::endl;
         std::cout << *data << std::endl;
     };
 
-    static auto button = Button();
-    button.connect_signal_clicked(static_test, new std::string("test"));
+    static auto button = CheckButton();
+    button.connect_signal_toggled(lambda_test, new std::string("test"));
     box.push_back(&button);
 
     /*
