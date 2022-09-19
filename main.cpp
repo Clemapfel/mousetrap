@@ -38,7 +38,7 @@
 
 using namespace mousetrap;
 
-static void static_test(Button* instance, std::string* data)
+void static_test(Button* instance, std::string* data)
 {
     std::cout << instance->get_native() << std::endl;
     std::cout << *((std::string*) data) << std::endl;

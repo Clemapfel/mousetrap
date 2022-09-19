@@ -9,6 +9,13 @@
 
 namespace mousetrap
 {
+    class ButtonClickSignalEmitter
+    {
+        public:
+
+        protected:
+    };
+
     class Button : public WidgetImplementation<GtkButton>
     {
         public:
