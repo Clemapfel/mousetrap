@@ -10,7 +10,7 @@
 
 namespace mousetrap
 {
-    class Scale : public WidgetImplementation<GtkScale>
+    class Scale : public WidgetImplementation<GtkScale>, public HasValueChangedSignal<Scale>
     {
         public:
             Scale(float min, float max, float step, GtkOrientation orientation = GTK_ORIENTATION_HORIZONTAL);

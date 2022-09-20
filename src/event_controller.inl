@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <include/event_controller.hpp> // TODO
-
 namespace mousetrap
 {
     EventController::EventController(GtkEventController* controller)

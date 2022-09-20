@@ -9,7 +9,7 @@
 
 namespace mousetrap
 {
-    class Entry : public WidgetImplementation<GtkEntry>
+    class Entry : public WidgetImplementation<GtkEntry>, public HasActivateSignal<Entry>
     {
         public:
             Entry();
@@ -19,18 +19,6 @@ namespace mousetrap
 
             void set_n_chars(size_t);
             void set_has_frame(bool);
-
-            template<typename T>
-            using on_activate_function_t = void(Entry*, T);
-
-            template<typename Function_t, typename T>
-            void connect_signal_activate(Function_t, T);
-
-        private:
-            static void on_activate_wrapper(GtkEntry*, Entry* instance);
-
-            std::function<on_activate_function_t<void*>> _on_activate_f;
-            void* _on_activate_data;
     };
 }
 

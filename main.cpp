@@ -83,13 +83,13 @@ static void activate(GtkApplication* app, void*)
 
     auto box = Box(GTK_ORIENTATION_HORIZONTAL);
 
-    static auto lambda_test = [](CheckButton* instance, std::string* data) -> void {
+    static auto lambda_test = [](Button* instance, std::string* data) -> void {
         std::cout << instance->get_native() << std::endl;
         std::cout << *data << std::endl;
     };
 
-    static auto button = CheckButton();
-    button.connect_signal_toggled(lambda_test, new std::string("test"));
+    static auto button = Button();
+    button.connect_signal_clicked(lambda_test, new std::string("test"));
     box.push_back(&button);
 
     /*

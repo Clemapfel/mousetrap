@@ -6,7 +6,9 @@
 namespace mousetrap
 {
     GLArea::GLArea()
-        : WidgetImplementation<GtkGLArea>(GTK_GL_AREA(gtk_gl_area_new()))
+        : WidgetImplementation<GtkGLArea>(GTK_GL_AREA(gtk_gl_area_new())),
+          HasRenderSignal<GLArea>(this),
+          HasResizeSignal<GLArea>(this)
     {
         gtk_gl_area_set_auto_render(get_native(), TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(get_native()), 1, 1);

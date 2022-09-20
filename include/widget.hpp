@@ -10,6 +10,7 @@
 #include <include/gtk_common.hpp>
 #include <include/signal_emitter.hpp>
 #include <include/event_controller.hpp>
+#include <include/signal_component.hpp>
 
 #include <map>
 #include <string>
@@ -19,7 +20,7 @@ namespace mousetrap
     template<typename GtkWidget_t>
     struct WidgetImplementation;
 
-    class Widget : public SignalEmitter
+    class Widget : public SignalEmitter, public HasRealizeSignal<Widget>
     {
         template<typename T>
         friend struct WidgetImplementation;

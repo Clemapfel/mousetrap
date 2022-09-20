@@ -15,7 +15,7 @@ namespace mousetrap
         if (_global_shortcut_controller == nullptr)
         {
             _global_shortcut_controller = new KeyEventController();
-            _global_shortcut_controller->connect_key_pressed(on_key_pressed);
+            _global_shortcut_controller->connect_key_pressed(on_key_pressed, nullptr);
         }
 
         add_controller(_global_shortcut_controller);

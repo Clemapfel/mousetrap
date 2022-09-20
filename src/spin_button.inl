@@ -6,7 +6,8 @@
 namespace mousetrap
 {
     SpinButton::SpinButton(float min, float max, float step)
-        : WidgetImplementation<GtkSpinButton>(GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(min, max, step)))
+        : WidgetImplementation<GtkSpinButton>(GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(min, max, step))),
+          HasValueChangedSignal<SpinButton>(this)
     {}
 
     void SpinButton::set_value(float value)

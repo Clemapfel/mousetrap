@@ -7,10 +7,11 @@
 
 #include <include/widget.hpp>
 #include <include/label.hpp>
+#include <include/signal_component.hpp>
 
 namespace mousetrap
 {
-    class DropDown : public WidgetImplementation<GtkDropDown>
+    class DropDown : public WidgetImplementation<GtkDropDown>, public HasActivateSignal<DropDown>
     {
         public:
             DropDown();
@@ -32,18 +33,7 @@ namespace mousetrap
                     void* on_select_data = nullptr
             );
 
-            template<typename T>
-            using on_activate_function_t = void(DropDown*, T);
-
-            template<typename Function_t, typename T>
-            void connect_signal_activate(Function_t, T);
-
         private:
-            static void on_activate_wrapper(GtkDropDown*, DropDown* instance);
-
-            std::function<on_activate_function_t<void*>> _on_activate_f;
-            void* _on_activate_data;
-
             static void on_list_factory_bind(GtkSignalListItemFactory* self, void* object, void*);
             static void on_label_factory_bind(GtkSignalListItemFactory* self, void* object, void*);
             static void noop_item_function(void*);

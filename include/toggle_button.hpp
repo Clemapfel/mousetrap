@@ -9,7 +9,7 @@
 
 namespace mousetrap
 {
-    class ToggleButton : public WidgetImplementation<GtkToggleButton>
+    class ToggleButton : public WidgetImplementation<GtkToggleButton>, public HasToggledSignal<ToggleButton>
     {
         public:
             ToggleButton();
@@ -20,18 +20,6 @@ namespace mousetrap
             void set_label(const std::string&);
             void set_child(Widget*);
             void set_has_frame(bool b);
-
-            template<typename T>
-            using on_toggled_function_t = void(ToggleButton*, T);
-
-            template<typename Function_t, typename T>
-            void connect_signal_toggled(Function_t function, T data);
-
-        private:
-            static void on_toggled_wrapper(GtkToggleButton*, ToggleButton* instance);
-
-            std::function<on_toggled_function_t<void*>> _on_toggled_f;
-            void* _on_toggled_data;
     };
 }
 

@@ -9,7 +9,7 @@
 
 namespace mousetrap
 {
-    class SpinButton : public WidgetImplementation<GtkSpinButton>
+    class SpinButton : public WidgetImplementation<GtkSpinButton>, public HasValueChangedSignal<SpinButton>
     {
         public:
             SpinButton(float min, float max, float step);
