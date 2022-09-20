@@ -3,8 +3,6 @@
 // Created on 9/20/22 by clem (mail@clemens-cords.com)
 //
 
-#pragma once
-
 namespace mousetrap
 {
     EventController::EventController(GtkEventController* controller)
@@ -32,103 +30,32 @@ namespace mousetrap
         gtk_event_controller_set_propagation_phase(_native, phase);
     }
 
+    GdkEvent* EventController::get_current_event()
+    {
+        return gtk_event_controller_get_current_event(_native);
+    }
+
     // KEY
 
     KeyEventController::KeyEventController()
-            : EventController(GTK_EVENT_CONTROLLER(gtk_event_controller_key_new()))
+            : EventController(GTK_EVENT_CONTROLLER(gtk_event_controller_key_new())),
+              HasKeyPressedSignal<KeyEventController>(this),
+              HasKeyReleasedSignal<KeyEventController>(this),
+              HasModifiersChangedSignal<KeyEventController>(this)
     {}
-
-    template<typename Function_t, typename T>
-    void KeyEventController::connect_signal_key_pressed(Function_t f, T data)
-    {
-        auto temp =  std::function<on_key_pressed_function_t<T>>(f);
-        _on_key_pressed_f = std::function<on_key_pressed_function_t<void*>>(*((std::function<on_key_pressed_function_t<void*>>*) &temp));
-        _on_key_pressed_data = data;
-        connect_signal("key-pressed", f, data);
-    }
-
-    void KeyEventController::on_key_pressed_wrapper(GtkEventControllerKey* self, guint keyval, guint keycode,
-                                                    GdkModifierType state, KeyEventController* instance)
-    {
-        if (instance->_on_key_pressed_data == nullptr)
-            return;
-
-        (instance->_on_key_pressed_f)(instance, keyval, keycode, state, instance->_on_key_pressed_data);
-    }
-
-    template<typename Function_t, typename T>
-    void KeyEventController::connect_signal_key_released(Function_t f, T data)
-    {
-        auto temp =  std::function<on_key_released_function_t<T>>(f);
-        _on_key_released_f = std::function<on_key_released_function_t<void*>>(*((std::function<on_key_released_function_t<void*>>*) &temp));
-        _on_key_released_data = data;
-        connect_signal("key-released", f, data);
-    }
-
-    void KeyEventController::on_key_released_wrapper(GtkEventControllerKey* self, guint keyval, guint keycode,
-                                                     GdkModifierType state, KeyEventController* instance)
-    {
-        if (instance->_on_key_released_data == nullptr)
-            return;
-
-        (instance->_on_key_released_f)(instance, keyval, keycode, state, instance->_on_key_released_data);
-    }
-
-    template<typename Function_t, typename T>
-    void KeyEventController::connect_signal_modifiers_changed(Function_t f, T data)
-    {
-        auto temp =  std::function<on_modifiers_changed_function_t<T>>(f);
-        _on_modifiers_changed_f = std::function<on_modifiers_changed_function_t<void*>>(*((std::function<on_modifiers_changed_function_t<void*>>*) &temp));
-        _on_modifiers_changed_data = data;
-        connect_signal("key-released", f, data);
-    }
-
-    void KeyEventController::on_modifiers_changed_wrapper(GtkEventControllerKey*, GdkModifierType state, KeyEventController* instance)
-    {
-        if (instance->_on_modifiers_changed_data == nullptr)
-            return;
-
-        (instance->_on_modifiers_changed_f)(instance, state, instance->_on_modifiers_changed_data);
-    }
-
-    // MOTION
 
     MotionEventController::MotionEventController()
-            : EventController(GTK_EVENT_CONTROLLER(gtk_event_controller_motion_new()))
+            : EventController(GTK_EVENT_CONTROLLER(gtk_event_controller_motion_new())),
+              HasMotionEnterSignal<MotionEventController>(this),
+              HasMotionLeaveSignal<MotionEventController>(this),
+              HasMotionSignal<MotionEventController>(this)
     {}
-
-    void MotionEventController::connect_enter(OnEnterSignature f, void* data)
-    {
-        connect_signal("enter", f, data);
-    }
-
-    void MotionEventController::connect_leave(OnLeaveSignature f, void* data)
-    {
-        connect_signal("leave", f, data);
-    }
-
-    void MotionEventController::connect_motion(OnMotionSignature f, void* data)
-    {
-        connect_signal("motion", f, data);
-    }
-
-    // CLICK
 
     ClickEventController::ClickEventController()
-            : EventController(GTK_EVENT_CONTROLLER(gtk_gesture_click_new()))
+            : EventController(GTK_EVENT_CONTROLLER(gtk_gesture_click_new())),
+              HasClickPressedSignal<ClickEventController>(this),
+              HasClickReleasedSignal<ClickEventController>(this)
     {}
-
-    void ClickEventController::connect_pressed(OnPressedSignature f, void* data)
-    {
-        connect_signal("pressed", f, data);
-    }
-
-    void ClickEventController::connect_released(OnReleasedSignature f, void* data)
-    {
-        connect_signal("released", f, data);
-    }
-
-    // SCROLL
 
     ScrollEventController::ScrollEventController(bool emit_vertical, bool emit_horizontal)
             : EventController(GTK_EVENT_CONTROLLER(gtk_event_controller_scroll_new([&]() {
@@ -141,48 +68,14 @@ namespace mousetrap
             return GTK_EVENT_CONTROLLER_SCROLL_HORIZONTAL;
         else
             return GTK_EVENT_CONTROLLER_SCROLL_NONE;
-    }())))
+    }()))), HasScrollBeginSignal<ScrollEventController>(this),
+              HasScrollEndSignal<ScrollEventController>(this),
+              HasScrollSignal<ScrollEventController>(this)
     {}
-
-    void ScrollEventController::connect_scroll(OnScrollSignature f, void* data)
-    {
-        connect_signal("scroll", f, data);
-    }
-
-    void ScrollEventController::connect_scroll_begin(OnScrollBeginSignature f, void* data)
-    {
-        connect_signal("scroll-begin", f, data);
-    }
-
-    void ScrollEventController::connect_scroll_end(OnScrollEndSignature f, void* data)
-    {
-        connect_signal("scroll-end", f, data);
-    }
-
-    // FOCUS
 
     FocusEventController::FocusEventController()
-            : EventController(GTK_EVENT_CONTROLLER(gtk_event_controller_focus_new()))
+            : EventController(GTK_EVENT_CONTROLLER(gtk_event_controller_focus_new())),
+              HasFocusGainedSignal<FocusEventController>(this),
+              HasFocusLostSignal<FocusEventController>(this)
     {}
-
-    void FocusEventController::connect_enter(OnEnterSignature f, void* data)
-    {
-        connect_signal("enter", f, data);
-    }
-
-    void FocusEventController::connect_leave(OnLeaveSignature f, void* data)
-    {
-        connect_signal("leave", f, data);
-    }
-
-    // ZOOM
-
-    ZoomGestureEventController::ZoomGestureEventController()
-            : EventController(GTK_EVENT_CONTROLLER(gtk_gesture_zoom_new()))
-    {}
-
-    void ZoomGestureEventController::connect_scale_changed(OnScaleChangedSignature f, void* data)
-    {
-        connect_signal("scale-changed", f, data);
-    }
 }

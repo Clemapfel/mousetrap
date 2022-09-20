@@ -18,6 +18,7 @@ namespace mousetrap
             void set_signal_blocked(const std::string& signal_id, bool);
             void set_all_signals_blocked(bool);
 
+        protected:
             template<typename Function_t>
             void connect_signal(const std::string& signal_id, Function_t*, void* data = nullptr);
 

@@ -368,6 +368,128 @@ namespace mousetrap
             std::function<on_click_released_function_t<void*>> _on_click_released_f;
             void* _on_click_released_data;
     };
+
+    template<typename Owner_t>
+    class HasScrollBeginSignal
+    {
+        public:
+            template<typename T>
+            using on_scroll_begin_function_t = void(Owner_t*, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_scroll_begin(Function_t, T);
+
+        protected:
+            HasScrollBeginSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_scroll_begin_wrapper(void*,HasScrollBeginSignal<Owner_t>* instance);
+
+            std::function<on_scroll_begin_function_t<void*>> _on_scroll_begin_f;
+            void* _on_scroll_begin_data;
+    };
+
+    template<typename Owner_t>
+    class HasScrollEndSignal
+    {
+        public:
+            template<typename T>
+            using on_scroll_end_function_t = void(Owner_t*, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_scroll_end(Function_t, T);
+
+        protected:
+            HasScrollEndSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_scroll_end_wrapper(void*,HasScrollEndSignal<Owner_t>* instance);
+
+            std::function<on_scroll_end_function_t<void*>> _on_scroll_end_f;
+            void* _on_scroll_end_data;
+    };
+
+    template<typename Owner_t>
+    class HasScrollSignal
+    {
+        public:
+            template<typename T>
+            using on_scroll_function_t = void(Owner_t*, double x, double y, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_scroll(Function_t, T);
+
+        protected:
+            HasScrollSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_scroll_wrapper(void*, double x, double y, HasScrollSignal<Owner_t>* instance);
+
+            std::function<on_scroll_function_t<void*>> _on_scroll_f;
+            void* _on_scroll_data;
+    };
+
+    template<typename Owner_t>
+    class HasFocusGainedSignal
+    {
+        public:
+            template<typename T>
+            using on_focus_gained_function_t = void(Owner_t*, double x, double y, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_focus_gained(Function_t, T);
+
+        protected:
+            HasFocusGainedSignal(Owner_t* instance)
+                : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_focus_gained_wrapper(void*, double x, double y, HasFocusGainedSignal<Owner_t>* instance);
+
+            std::function<on_focus_gained_function_t<void*>> _on_focus_gained_f;
+            void* _on_focus_gained_data;
+    };
+
+    template<typename Owner_t>
+    class HasFocusLostSignal
+    {
+        public:
+            template<typename T>
+            using on_focus_lost_function_t = void(Owner_t*, double x, double y, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_focus_lost(Function_t, T);
+
+        protected:
+            HasFocusLostSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_focus_lost_wrapper(void*, double x, double y, HasFocusLostSignal<Owner_t>* instance);
+
+            std::function<on_focus_lost_function_t<void*>> _on_focus_lost_f;
+            void* _on_focus_lost_data;
+    };
+
+
 }
 
 // ###
@@ -502,7 +624,7 @@ namespace mousetrap
         _on_value_changed_f = std::function<on_value_changed_function_t<void*>>(*((std::function<on_value_changed_function_t<void*>>*) &temp));
         _on_value_changed_data = data;
 
-        _instance->connect_signal("value_changed", on_value_changed_wrapper, this);
+        _instance->connect_signal("value-changed", on_value_changed_wrapper, this);
     }
 
     template<typename Owner_t>
@@ -587,7 +709,7 @@ namespace mousetrap
         _on_motion_enter_f = std::function<on_motion_enter_function_t<void*>>(*((std::function<on_motion_enter_function_t<void*>>*) &temp));
         _on_motion_enter_data = data;
 
-        _instance->connect_signal("modifiers", on_motion_enter_wrapper, this);
+        _instance->connect_signal("enter", on_motion_enter_wrapper, this);
     }
 
     template<typename Owner_t>
@@ -607,7 +729,7 @@ namespace mousetrap
         _on_motion_leave_f = std::function<on_motion_leave_function_t<void*>>(*((std::function<on_motion_leave_function_t<void*>>*) &temp));
         _on_motion_leave_data = data;
 
-        _instance->connect_signal("modifiers", on_motion_leave_wrapper, this);
+        _instance->connect_signal("leave", on_motion_leave_wrapper, this);
     }
 
     template<typename Owner_t>
@@ -627,7 +749,7 @@ namespace mousetrap
         _on_motion_f = std::function<on_motion_function_t<void*>>(*((std::function<on_motion_function_t<void*>>*) &temp));
         _on_motion_data = data;
 
-        _instance->connect_signal("modifiers", on_motion_wrapper, this);
+        _instance->connect_signal("motion", on_motion_wrapper, this);
     }
 
     template<typename Owner_t>
@@ -647,7 +769,7 @@ namespace mousetrap
         _on_click_pressed_f = std::function<on_click_pressed_function_t<void*>>(*((std::function<on_click_pressed_function_t<void*>>*) &temp));
         _on_click_pressed_data = data;
 
-        _instance->connect_signal("modifiers", on_click_pressed_wrapper, this);
+        _instance->connect_signal("pressed", on_click_pressed_wrapper, this);
     }
 
     template<typename Owner_t>
@@ -667,7 +789,7 @@ namespace mousetrap
         _on_click_released_f = std::function<on_click_released_function_t<void*>>(*((std::function<on_click_released_function_t<void*>>*) &temp));
         _on_click_released_data = data;
 
-        _instance->connect_signal("modifiers", on_click_released_wrapper, this);
+        _instance->connect_signal("released", on_click_released_wrapper, this);
     }
 
     template<typename Owner_t>
@@ -675,5 +797,105 @@ namespace mousetrap
     {
         if (self->_on_click_released_f != nullptr)
             self->_on_click_released_f(self->_instance, n_press, x, y, self->_on_click_released_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasScrollBeginSignal<Owner_t>::connect_signal_scroll_begin(Function_t function, T data)
+    {
+        auto temp =  std::function<on_scroll_begin_function_t<T>>(function);
+        _on_scroll_begin_f = std::function<on_scroll_begin_function_t<void*>>(*((std::function<on_scroll_begin_function_t<void*>>*) &temp));
+        _on_scroll_begin_data = data;
+
+        _instance->connect_signal("scroll-begin", on_scroll_begin_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasScrollBeginSignal<Owner_t>::on_scroll_begin_wrapper(void*, HasScrollBeginSignal<Owner_t>* self)
+    {
+        if (self->_on_scroll_begin_f != nullptr)
+            self->_on_scroll_begin_f(self->_instance, self->_on_scroll_begin_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasScrollEndSignal<Owner_t>::connect_signal_scroll_end(Function_t function, T data)
+    {
+        auto temp =  std::function<on_scroll_end_function_t<T>>(function);
+        _on_scroll_end_f = std::function<on_scroll_end_function_t<void*>>(*((std::function<on_scroll_end_function_t<void*>>*) &temp));
+        _on_scroll_end_data = data;
+
+        _instance->connect_signal("scroll-end", on_scroll_end_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasScrollEndSignal<Owner_t>::on_scroll_end_wrapper(void*, HasScrollEndSignal<Owner_t>* self)
+    {
+        if (self->_on_scroll_end_f != nullptr)
+            self->_on_scroll_end_f(self->_instance, self->_on_scroll_end_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasScrollSignal<Owner_t>::connect_signal_scroll(Function_t function, T data)
+    {
+        auto temp =  std::function<on_scroll_function_t<T>>(function);
+        _on_scroll_f = std::function<on_scroll_function_t<void*>>(*((std::function<on_scroll_function_t<void*>>*) &temp));
+        _on_scroll_data = data;
+
+        _instance->connect_signal("scroll", on_scroll_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasScrollSignal<Owner_t>::on_scroll_wrapper(void*, double x, double y, HasScrollSignal<Owner_t>* self)
+    {
+        if (self->_on_scroll_f != nullptr)
+            self->_on_scroll_f(self->_instance, x, y, self->_on_scroll_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasFocusGainedSignal<Owner_t>::connect_signal_focus_gained(Function_t function, T data)
+    {
+        auto temp =  std::function<on_focus_gained_function_t<T>>(function);
+        _on_focus_gained_f = std::function<on_focus_gained_function_t<void*>>(*((std::function<on_focus_gained_function_t<void*>>*) &temp));
+        _on_focus_gained_data = data;
+
+        _instance->connect_signal("enter", on_focus_gained_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasFocusGainedSignal<Owner_t>::on_focus_gained_wrapper(void*, double x, double y, HasFocusGainedSignal<Owner_t>* self)
+    {
+        if (self->_on_focus_gained_f != nullptr)
+            self->_on_focus_gained_f(self->_instance, x, y, self->_on_focus_gained_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasFocusLostSignal<Owner_t>::connect_signal_focus_lost(Function_t function, T data)
+    {
+        auto temp =  std::function<on_focus_lost_function_t<T>>(function);
+        _on_focus_lost_f = std::function<on_focus_lost_function_t<void*>>(*((std::function<on_focus_lost_function_t<void*>>*) &temp));
+        _on_focus_lost_data = data;
+
+        _instance->connect_signal("leave", on_focus_lost_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasFocusLostSignal<Owner_t>::on_focus_lost_wrapper(void*, double x, double y, HasFocusLostSignal<Owner_t>* self)
+    {
+        if (self->_on_focus_lost_f != nullptr)
+            self->_on_focus_lost_f(self->_instance, x, y, self->_on_focus_lost_data);
     }
 }
