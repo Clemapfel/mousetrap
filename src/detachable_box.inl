@@ -75,8 +75,7 @@ namespace mousetrap
         gtk_revealer_set_child(_anchor, _child);
         gtk_revealer_set_reveal_child(_anchor, true);
 
-        if (_on_attach != nullptr)
-            _on_attach(_on_attach_data);
+        _on_attach(this, _on_attach_data);
     }
 
     void DetachableBox::detach()
@@ -93,8 +92,7 @@ namespace mousetrap
         gtk_revealer_set_child(_window_revealer, GTK_WIDGET(_child));
         gtk_revealer_set_reveal_child(_window_revealer, true);
 
-        if (_on_detach != nullptr)
-            _on_detach(_on_detach_data);
+        _on_detach(this, _on_detach_data);
     }
 
     bool DetachableBox::get_child_attached()
@@ -110,15 +108,19 @@ namespace mousetrap
             attach();
     }
 
-    void DetachableBox::connect_attach(OnAttachSignature f, void* data)
+    template<typename Function_t, typename T>
+    void DetachableBox::connect_signal_attach(Function_t f, T data)
     {
-        _on_attach = f;
+        auto temp =  std::function<on_attach_function_t<T>>(f);
+        _on_attach = std::function<on_attach_function_t<void*>>(*((std::function<on_attach_function_t<void*>>*) &temp));
         _on_attach_data = data;
     }
 
-    void DetachableBox::connect_detach(OnDetachSignature f, void* data)
+    template<typename Function_t, typename T>
+    void DetachableBox::connect_signal_detach(Function_t f, T data)
     {
-        _on_detach = f;
+        auto temp =  std::function<on_detach_function_t<T>>(f);
+        _on_detach = std::function<on_detach_function_t<void*>>(*((std::function<on_detach_function_t<void*>>*) &temp));
         _on_detach_data = data;
     }
 }

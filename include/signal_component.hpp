@@ -518,7 +518,7 @@ namespace mousetrap
     template<typename Function_t, typename T>
     void HasKeyPressedSignal<Owner_t>::connect_signal_key_pressed(Function_t function, T data)
     {
-        auto temp =  std::function<on_key_pressed_function_t<T>>(function);
+        auto temp = std::function<on_key_pressed_function_t<T>>(function);
         _on_key_pressed_f = std::function<on_key_pressed_function_t<void*>>(*((std::function<on_key_pressed_function_t<void*>>*) &temp));
         _on_key_pressed_data = data;
 

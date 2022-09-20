@@ -23,10 +23,10 @@
 #include <include/check_button.hpp>
 
 #include <app/global_state.hpp>
+/*
 #include <app/primary_secondary_color_swapper.hpp>
 #include <app/toolbox.hpp>
 
-/*
 #include <app/color_picker.hpp>
 #include <app/verbose_color_picker.hpp>
 #include <app/palette_view.hpp>
@@ -83,10 +83,13 @@ static void activate(GtkApplication* app, void*)
 
     auto box = Box(GTK_ORIENTATION_HORIZONTAL);
 
+
     static auto lambda_test = [](Button* instance, std::string* data) -> void {
         std::cout << instance->get_native() << std::endl;
         std::cout << *data << std::endl;
     };
+
+    std::function<void(int)> f;
 
     static auto button = Button();
     button.connect_signal_clicked(lambda_test, new std::string("test"));

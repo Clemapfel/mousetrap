@@ -15,7 +15,7 @@ namespace mousetrap
         if (_global_shortcut_controller == nullptr)
         {
             _global_shortcut_controller = new KeyEventController();
-            _global_shortcut_controller->connect_key_pressed(on_key_pressed, nullptr);
+            _global_shortcut_controller->connect_signal_key_pressed(on_key_pressed, nullptr);
         }
 
         add_controller(_global_shortcut_controller);
@@ -57,10 +57,11 @@ namespace mousetrap
         gtk_window_set_focus(get_native(), widget->operator GtkWidget*());
     }
 
-    gboolean Window::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void*)
+    bool Window::on_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, void*)
     {
         std::vector<std::pair<ShortcutID, GtkShortcutTrigger*>> triggered;
-        auto* event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self));
+        auto* as_controller = self->operator GtkEventController *();
+        auto* event = gtk_event_controller_get_current_event(as_controller);
         if (GDK_IS_EVENT(event))
         {
             for (auto& tuple: _global_shortcuts)

@@ -46,7 +46,7 @@ namespace mousetrap
 
             static inline std::vector<GlobalShortcut> _global_shortcuts;
 
-            static gboolean on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void*);
+            static bool on_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, void*);
             static inline KeyEventController* _global_shortcut_controller = nullptr;
     };
 }

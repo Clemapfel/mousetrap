@@ -87,7 +87,7 @@ namespace mousetrap
         _frame.set_tooltip_text(state::shortcut_map->generate_control_tooltip("color_swapper", "Swap Primary and Secondary Color"));
         _frame.set_child(&_arrow_overlay);
 
-        _click_event_controller.connect_pressed(on_click_release, this);
+        _click_event_controller.connect_signal_click_pressed(on_click_release, this);
         _motion_event_controller.connect_enter(on_motion_enter, this);
 
         _render_area.add_controller(&_click_event_controller);

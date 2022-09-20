@@ -25,11 +25,17 @@ namespace mousetrap
 
             void set_child(Widget*);
 
-            using OnAttachSignature = void(*)(void*);
-            void connect_attach(OnAttachSignature , void*);
+            template<typename T>
+            using on_attach_function_t = void(DetachableBox*, T);
 
-            using OnDetachSignature = void(*)(void*);
-            void connect_detach(OnDetachSignature, void*);
+            template<typename Function_t, typename T>
+            void connect_signal_attach(Function_t , T);
+
+            template<typename T>
+            using on_detach_function_t = void(DetachableBox*, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_detach(Function_t , T);
 
         private:
             bool _attached = true;
@@ -42,10 +48,10 @@ namespace mousetrap
             GtkRevealer* _anchor;
             GtkWidget* _child = nullptr;
 
-            OnAttachSignature _on_attach = nullptr;
+            std::function<on_attach_function_t<void*>> _on_attach;
             void* _on_attach_data;
 
-            OnDetachSignature _on_detach = nullptr;
+            std::function<on_detach_function_t<void*>> _on_detach;
             void* _on_detach_data;
 
             static gboolean on_window_close(GtkWindow*, DetachableBox* instance);
