@@ -23,8 +23,9 @@
 #include <include/check_button.hpp>
 
 #include <app/global_state.hpp>
-/*
 #include <app/primary_secondary_color_swapper.hpp>
+
+/*
 #include <app/toolbox.hpp>
 
 #include <app/color_picker.hpp>
@@ -78,43 +79,18 @@ static void activate(GtkApplication* app, void*)
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
 
-    //state::primary_secondary_color_swapper = new PrimarySecondaryColorSwapper();
+    auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
+
+    state::primary_secondary_color_swapper = new PrimarySecondaryColorSwapper();
+    state::primary_secondary_color_swapper->operator Widget*()->set_expand(true);
     //state::toolbox = new Toolbox(GTK_ORIENTATION_HORIZONTAL);
 
-    auto box = Box(GTK_ORIENTATION_HORIZONTAL);
-
-
-    static auto lambda_test = [](Button* instance, std::string* data) -> void {
-        std::cout << instance->get_native() << std::endl;
-        std::cout << *data << std::endl;
-    };
-
-    std::function<void(int)> f;
-
-    static auto button = Button();
-    button.connect_signal_clicked(lambda_test, new std::string("test"));
-    box.push_back(&button);
-
-    /*
-    void(*t1)(Button*, void*) = (void(*)(Button*, void*)) static_test;
-    t1(&button, new std::string("test"));
-
-    void(*t2)(Button*, void*) = (void(*)(Button*, void*)) &lambda_test;
-    //t2(&button, new std::string("test"));
-
-    std::function<void(Button*, void*)> t3 = (void(*)(Button*, void*)) static_test;
-    t3(&button, new std::string("test"));
-
-    std::function<void(Button*, std::string*)> temp = lambda_test;
-
-    std::function<void(Button*, void*)>* t4 = (std::function<void(Button*, void*)>*) &temp;
-    (*t4)(&button, new std::string("test"));
-     */
-
-    // box.push_back(state::primary_secondary_color_swapper->operator Widget*());
+    auto* label = new Label("test");
+    box->push_back(label);
+    box->push_back(state::primary_secondary_color_swapper->operator Widget*());
     // box.push_back(state::toolbox->operator Widget*());
 
-    state::main_window->set_child(&box);
+    state::main_window->set_child(box);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

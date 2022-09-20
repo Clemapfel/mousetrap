@@ -27,16 +27,16 @@ namespace mousetrap
             void update() override;
 
         private:
-            static void on_gl_area_realize(GtkGLArea* self, PrimarySecondaryColorSwapper* instance);
-            static void on_gl_area_resize(GtkGLArea* self, int, int, PrimarySecondaryColorSwapper* instance);
+            static void on_gl_area_realize(Widget* self, PrimarySecondaryColorSwapper* instance);
+            static void on_gl_area_resize(GLArea* self, int, int, PrimarySecondaryColorSwapper* instance);
             void swap_colors();
 
             ClickEventController _click_event_controller;
-            static void on_click_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
+            static void on_click_release(ClickEventController* self, gint n_press, gdouble x, gdouble y, void* user_data);
             static void on_global_key_pressed(void* instance);
 
             MotionEventController _motion_event_controller;
-            static void on_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data);
+            static void on_motion_enter(MotionEventController* self, gdouble x, gdouble y, void* user_data);
 
             AspectFrame _frame;
             GLArea _render_area;
@@ -72,8 +72,8 @@ namespace mousetrap
           _click_event_controller(),
           _motion_event_controller()
     {
-        _render_area.connect_signal("realize", on_gl_area_realize, this);
-        _render_area.connect_signal("resize", on_gl_area_resize, this);
+        _render_area.connect_signal_realize(on_gl_area_realize, this);
+        _render_area.connect_signal_resize(on_gl_area_resize, this);
         _render_area.set_cursor(GtkCursorType::POINTER);
 
         _arrow.set_use_markup(true);
@@ -88,7 +88,7 @@ namespace mousetrap
         _frame.set_child(&_arrow_overlay);
 
         _click_event_controller.connect_signal_click_pressed(on_click_release, this);
-        _motion_event_controller.connect_enter(on_motion_enter, this);
+        _motion_event_controller.connect_signal_motion_enter(on_motion_enter, this);
 
         _render_area.add_controller(&_click_event_controller);
         _render_area.add_controller(&_motion_event_controller);
@@ -124,14 +124,15 @@ namespace mousetrap
         _render_area.queue_render();
     }
 
-    void PrimarySecondaryColorSwapper::on_gl_area_realize(GtkGLArea* self, PrimarySecondaryColorSwapper* instance)
+    void PrimarySecondaryColorSwapper::on_gl_area_realize(Widget* widget, PrimarySecondaryColorSwapper* instance)
     {
-        gtk_gl_area_make_current(self);
+        auto* self = (GLArea*) widget;
+        self->make_current();
         instance->initialize_render_area();
         instance->_render_area.queue_render();
     }
 
-    void PrimarySecondaryColorSwapper::on_gl_area_resize(GtkGLArea* self, int w, int h, PrimarySecondaryColorSwapper* instance)
+    void PrimarySecondaryColorSwapper::on_gl_area_resize(GLArea* self, int w, int h, PrimarySecondaryColorSwapper* instance)
     {
         instance->_canvas_size.x = w;
         instance->_canvas_size.y = h;
@@ -235,7 +236,7 @@ namespace mousetrap
         _render_area.queue_render();
     }
 
-    void PrimarySecondaryColorSwapper::on_click_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y,
+    void PrimarySecondaryColorSwapper::on_click_release(ClickEventController* self, gint n_press, gdouble x, gdouble y,
                                                         void* instance)
     {
         ((PrimarySecondaryColorSwapper*) instance)->swap_colors();
@@ -247,7 +248,7 @@ namespace mousetrap
         ((PrimarySecondaryColorSwapper*) instance)->swap_colors();
     }
 
-    void PrimarySecondaryColorSwapper::on_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* instance)
+    void PrimarySecondaryColorSwapper::on_motion_enter(MotionEventController* self, gdouble x, gdouble y, void* instance)
     {
         ((PrimarySecondaryColorSwapper*) instance)->_render_area.grab_focus();
     }
