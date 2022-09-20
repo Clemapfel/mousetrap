@@ -24,6 +24,8 @@
 
 #include <app/global_state.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
+#include <app/brush_options.hpp>
+
 
 /*
 #include <app/toolbox.hpp>
@@ -31,7 +33,6 @@
 #include <app/color_picker.hpp>
 #include <app/verbose_color_picker.hpp>
 #include <app/palette_view.hpp>
-#include <app/brush_options.hpp>
 #include <app/widget_container.hpp>
 #include <app/canvas.hpp>
 #include <app/layer_view.hpp>
@@ -83,14 +84,14 @@ static void activate(GtkApplication* app, void*)
 
     state::primary_secondary_color_swapper = new PrimarySecondaryColorSwapper();
     state::primary_secondary_color_swapper->operator Widget*()->set_expand(true);
+
+    state::brush_options = new BrushOptions();
     //state::toolbox = new Toolbox(GTK_ORIENTATION_HORIZONTAL);
 
-    auto* label = new Label("test");
-    box->push_back(label);
-    box->push_back(state::primary_secondary_color_swapper->operator Widget*());
-    // box.push_back(state::toolbox->operator Widget*());
+    //box->push_back(state::primary_secondary_color_swapper->operator Widget*());
+    //box->push_back(state::brush_options->operator Widget*());
 
-    state::main_window->set_child(box);
+    state::main_window->set_child(state::brush_options->operator Widget*());
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

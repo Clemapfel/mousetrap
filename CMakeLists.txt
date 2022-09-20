@@ -146,6 +146,7 @@ add_library(mousetrap SHARED
     src/image_display.inl
 
     include/event_controller.hpp
+    src/event_controller.inl
 
     include/separator_line.hpp
     src/separator_line.inl
@@ -187,7 +188,9 @@ add_library(mousetrap SHARED
 
     include/check_button.hpp
     src/check_button.inl
-        src/event_controller.inl include/signal_component.hpp)
+
+    include/signal_component.hpp
+)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -217,7 +220,10 @@ add_library(app STATIC
     app/toolbox.hpp
     app/brush_options.hpp
     app/widget_container.hpp
-        app/canvas.hpp app/layer_view.hpp app/app_component.hpp)
+    app/canvas.hpp
+    app/layer_view.hpp
+    app/app_component.hpp
+)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES
