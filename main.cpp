@@ -26,6 +26,7 @@
 #include <app/primary_secondary_color_swapper.hpp>
 #include <app/brush_options.hpp>
 #include <app/palette_view.hpp>
+#include <app/toolbox.hpp>
 
 /*
 #include <app/toolbox.hpp>
@@ -87,12 +88,12 @@ static void activate(GtkApplication* app, void*)
 
     state::palette_view = new PaletteView();
     //state::brush_options = new BrushOptions();
-    //state::toolbox = new Toolbox(GTK_ORIENTATION_HORIZONTAL);
+    state::toolbox = new Toolbox(GTK_ORIENTATION_VERTICAL);
 
     //box->push_back(state::primary_secondary_color_swapper->operator Widget*());
     //box->push_back(state::brush_options->operator Widget*());
 
-    state::main_window->set_child(state::palette_view->operator Widget*());
+    state::main_window->set_child(state::toolbox->operator Widget*());
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

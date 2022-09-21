@@ -27,7 +27,8 @@ namespace mousetrap
 
             void set_focused_widget(Widget*);
 
-            void register_global_shortcut(ShortcutMap*, const std::string& shortcut_id, std::function<void(void*)>, void*);
+            template<typename T>
+            void register_global_shortcut(ShortcutMap*, const std::string& shortcut_id, std::function<void(T)>, T);
             void unregister_global_shortcut(const std::string& shortcut_id);
 
         private:

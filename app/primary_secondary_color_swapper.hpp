@@ -33,12 +33,12 @@ namespace mousetrap
 
             ClickEventController _click_event_controller;
             static void on_click_release(ClickEventController* self, gint n_press, gdouble x, gdouble y, void* user_data);
-            static void on_global_key_pressed(void* instance);
+            static void on_global_key_pressed(PrimarySecondaryColorSwapper* instance);
 
             MotionEventController _motion_event_controller;
             static void on_motion_enter(MotionEventController* self, gdouble x, gdouble y, void* user_data);
 
-            AspectFrame _frame;
+            AspectFrame _frame = AspectFrame(1);
             GLArea _render_area;
 
             void initialize_render_area();
@@ -55,8 +55,8 @@ namespace mousetrap
             static inline Shader* _transparency_tiling_shader = nullptr;
             Vector2f _canvas_size;
 
-            Label _arrow;
-            Overlay _arrow_overlay;
+            Label _arrow = Label("");
+            Overlay _arrow_overlay = Overlay();
     };
 }
 
@@ -65,12 +65,6 @@ namespace mousetrap
 namespace mousetrap
 {
     PrimarySecondaryColorSwapper::PrimarySecondaryColorSwapper()
-        : _render_area(), 
-          _arrow(""), 
-          _arrow_overlay(),
-          _frame(1),
-          _click_event_controller(),
-          _motion_event_controller()
     {
         _render_area.connect_signal_realize(on_gl_area_realize, this);
         _render_area.connect_signal_resize(on_gl_area_resize, this);
@@ -93,7 +87,7 @@ namespace mousetrap
         _render_area.add_controller(&_click_event_controller);
         _render_area.add_controller(&_motion_event_controller);
 
-        state::main_window->register_global_shortcut(state::shortcut_map, "color_swapper.swap", on_global_key_pressed, this);
+        state::main_window->register_global_shortcut<PrimarySecondaryColorSwapper*>(state::shortcut_map, "color_swapper.swap", on_global_key_pressed, this);
    }
 
     PrimarySecondaryColorSwapper::~PrimarySecondaryColorSwapper()
@@ -243,9 +237,9 @@ namespace mousetrap
         gtk_widget_grab_focus(((PrimarySecondaryColorSwapper*) instance)->operator Widget*()->operator GtkWidget*());
     }
 
-    void PrimarySecondaryColorSwapper::on_global_key_pressed(void* instance)
+    void PrimarySecondaryColorSwapper::on_global_key_pressed(PrimarySecondaryColorSwapper* instance)
     {
-        ((PrimarySecondaryColorSwapper*) instance)->swap_colors();
+        instance->swap_colors();
     }
 
     void PrimarySecondaryColorSwapper::on_motion_enter(MotionEventController* self, gdouble x, gdouble y, void* instance)

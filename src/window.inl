@@ -94,7 +94,8 @@ namespace mousetrap
         return false;
     }
 
-    void Window::register_global_shortcut(ShortcutMap* map, const std::string& shortcut_id, std::function<void(void*)> action, void* data)
+    template<typename T>
+    void Window::register_global_shortcut(ShortcutMap* map, const std::string& shortcut_id, std::function<void(T)> action, T data)
     {
         auto it = map->_bindings.find(shortcut_id);
         if (it == map->_bindings.end())
@@ -106,11 +107,12 @@ namespace mousetrap
         std::string normalized = gtk_shortcut_trigger_to_string(it->second);
         auto shift = normalized.find("Shift") != std::string::npos;
 
+        auto temp = std::function<void(T)>(action);
         _global_shortcuts.push_back({
             shortcut_id,
             it->second,
-            action,
-            data,
+            std::function<void(void*)>(*((std::function<void(void*)>*) &temp)),
+            reinterpret_cast<void*>(data),
             shift,
             normalized.find("Control") != std::string::npos,
             normalized.find("Alt") != std::string::npos,

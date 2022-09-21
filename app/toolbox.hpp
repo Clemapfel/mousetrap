@@ -26,6 +26,7 @@ namespace mousetrap
     {
         public:
             Toolbox(GtkOrientation);
+            ~Toolbox();
             
             operator Widget*() override;
             void update() override;
@@ -100,10 +101,8 @@ namespace mousetrap
             };
 
             using on_icon_click_data = struct { Icon* self; Icon* parent; Toolbox* instance; ToolID tool_id; };
-            static void on_icon_click(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
-
-            using on_icon_without_popover_enter_data = Toolbox*;
-            static void on_icon_without_popover_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* instance);
+            static void on_icon_click(ClickEventController* self, gint n_press, gdouble x, gdouble y, on_icon_click_data* user_data);
+            static void on_icon_without_popover_enter(MotionEventController* self, gdouble x, gdouble y, Toolbox* instance);
 
             struct IconWithPopover
             {
@@ -122,31 +121,26 @@ namespace mousetrap
             };
 
             using on_icon_with_popover_enter_data = struct { IconWithPopover* self; Toolbox* instance; };
-            static void on_icon_with_popover_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* instance);
+            static void on_icon_with_popover_enter(MotionEventController* self, gdouble x, gdouble y, on_icon_with_popover_enter_data* instance);
+            static void on_popover_leave(MotionEventController* self, IconWithPopover* data);
 
-            using on_popover_leave_data = IconWithPopover*;
-            static void on_popover_leave(GtkEventControllerMotion* self, void* data);
+            std::map<ToolID, Icon*> _icons;
 
-            std::map<ToolID, Icon> _icons;
-
-            std::vector<IconWithPopover> _icons_with_popover;
-            ListView main;
+            std::vector<IconWithPopover*> _icons_with_popover;
+            ListView _main;
             MotionEventController motion_event_controller;
 
-            using on_main_leave_data = Toolbox*;
-            static void on_main_leave(GtkEventControllerMotion* self, void* data);
-
-            using on_main_motion_data = Toolbox*;
-            static void on_main_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void* data);
+            static void on_main_leave(MotionEventController* self, Toolbox* data);
+            static void on_main_motion(MotionEventController* self, gdouble x, gdouble y, Toolbox* data);
             Vector2f* last_known_position = new Vector2f{0, 0};
 
             std::string generate_tooltip(ToolID);
 
             using on_global_shortcut_select_data = struct {Toolbox* instance; ToolID tool_id;};
-            static void on_global_shortcut_select(void*);
+            static void on_global_shortcut_select(on_global_shortcut_select_data*);
             
             using on_global_shortcut_marquee_mode_shift_data = struct {Toolbox* instance; bool add;};
-            static void on_global_shortcut_marquee_mode_shift(void*);
+            static void on_global_shortcut_marquee_mode_shift(on_global_shortcut_marquee_mode_shift_data*);
 
             bool _is_orientation_vertical;
     };
@@ -156,6 +150,11 @@ namespace mousetrap
 
 namespace mousetrap
 {
+    Toolbox::operator Widget*()
+    {
+        return &_main;
+    }
+
     Toolbox::Icon::Icon(ToolID id, bool is_vertical)
         : id(id),
           label(get_resource_path() + "icons/" + id + ".png", state::icon_scale),
@@ -188,6 +187,15 @@ namespace mousetrap
 
         overlay.add_controller(&click_event_controller);
         overlay.add_controller(&motion_event_controller);
+    }
+
+    Toolbox::~Toolbox()
+    {
+        for (auto& pair : _icons)
+            delete pair.second;
+
+        for (auto* icon_with : _icons_with_popover)
+            delete icon_with;
     }
 
     Toolbox::Icon::operator Widget*()
@@ -229,7 +237,7 @@ namespace mousetrap
 
         main_box.add_controller(&main_motion_event_controller);
         popover_box.add_controller(&popover_motion_event_controller);
-        popover_motion_event_controller.connect_leave(on_popover_leave, this);
+        popover_motion_event_controller.connect_signal_motion_leave(on_popover_leave, this);
     }
 
     Toolbox::IconWithPopover::operator Widget*()
@@ -237,26 +245,27 @@ namespace mousetrap
         return &main_box;
     }
 
-    void Toolbox::on_icon_with_popover_enter(GtkEventControllerMotion*, gdouble x, gdouble y, void* data)
+    void Toolbox::on_icon_with_popover_enter(MotionEventController*, gdouble x, gdouble y,
+                                             on_icon_with_popover_enter_data* data)
     {
-        auto* self = ((on_icon_with_popover_enter_data*) data)->self;
-        auto* instance = ((on_icon_with_popover_enter_data*) data)->instance;
+        auto* self = data->self;
+        auto* instance = data->instance;
 
         for (auto& icon_with : instance->_icons_with_popover)
         {
-            if (&icon_with == self)
-                icon_with.popover.popup();
+            if (icon_with == self)
+                icon_with->popover.popup();
             else
-                icon_with.popover.popdown();
+                icon_with->popover.popdown();
         }
     }
 
-    void Toolbox::on_popover_leave(GtkEventControllerMotion* self, void* data)
+    void Toolbox::on_popover_leave(MotionEventController* self, IconWithPopover* data)
     {
-        ((IconWithPopover*) data)->popover.popdown();
+        data->popover.popdown();
     }
 
-    void Toolbox::on_icon_click(GtkGestureClick*, gint n_press, gdouble x, gdouble y, void* data)
+    void Toolbox::on_icon_click(ClickEventController*, gint n_press, gdouble x, gdouble y, on_icon_click_data* data)
     {
         auto* self = ((on_icon_click_data*) data)->self;
         auto* parent = ((on_icon_click_data*) data)->parent;
@@ -265,24 +274,22 @@ namespace mousetrap
 
         for (auto& pair : instance->_icons)
         {
-            pair.second.child_selected_indicator.set_opacity(pair.second == *parent);
-            pair.second.selected_indicator.set_opacity(pair.second == *self);
-            pair.second.popover_indicator.set_visible(pair.second != *parent);
+            pair.second->child_selected_indicator.set_opacity(pair.second == parent);
+            pair.second->selected_indicator.set_opacity(pair.second == self);
+            pair.second->popover_indicator.set_visible(pair.second != parent);
         }
 
         state::active_tool = id;
     }
 
-    void Toolbox::on_icon_without_popover_enter(GtkEventControllerMotion*, gdouble x, gdouble y, void* data)
+    void Toolbox::on_icon_without_popover_enter(MotionEventController*, gdouble x, gdouble y, Toolbox* instance)
     {
-        auto* instance = (Toolbox*) data;
         for (auto& icon_with : instance->_icons_with_popover)
-            icon_with.popover.popdown();
+            icon_with->popover.popdown();
     }
 
-    void Toolbox::on_main_leave(GtkEventControllerMotion* self, void* data)
+    void Toolbox::on_main_leave(MotionEventController* self, Toolbox* instance)
     {
-        auto* instance = (Toolbox*) data;
         auto size = (instance->operator Widget*())->get_size();
 
         if (instance->_is_orientation_vertical)
@@ -297,28 +304,27 @@ namespace mousetrap
         }
 
         for (auto icon_with : instance->_icons_with_popover)
-            icon_with.popover.popdown();
+            icon_with->popover.popdown();
     }
 
-    void Toolbox::on_main_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void* data)
+    void Toolbox::on_main_motion(MotionEventController* self, gdouble x, gdouble y, Toolbox* instance)
     {
-        auto* instance = (Toolbox*) data;
         instance->last_known_position->x = x;
         instance->last_known_position->y = y;
     }
 
-    void Toolbox::on_global_shortcut_select(void* data)
+    void Toolbox::on_global_shortcut_select(on_global_shortcut_select_data* data)
     {
-        auto* instance = ((on_global_shortcut_select_data*) data)->instance;
-        auto id = ((on_global_shortcut_select_data*) data)->tool_id;
+        auto* instance = data->instance;
+        auto id = data->tool_id;
 
         instance->select(id);
     }
 
-    void Toolbox::on_global_shortcut_marquee_mode_shift(void* data)
+    void Toolbox::on_global_shortcut_marquee_mode_shift(on_global_shortcut_marquee_mode_shift_data* data)
     {
-        auto* instance = ((on_global_shortcut_marquee_mode_shift_data*) data)->instance;
-        auto add = ((on_global_shortcut_marquee_mode_shift_data*) data)->add;
+        auto* instance = data->instance;
+        auto add = data->add;
 
         if (state::active_tool == MARQUEE_RECTANGLE or
             state::active_tool == MARQUEE_RECTANGLE_ADD or
@@ -350,23 +356,23 @@ namespace mousetrap
     }
 
     Toolbox::Toolbox(GtkOrientation orientation)
-        : main(_is_orientation_vertical ? GTK_ORIENTATION_VERTICAL: GTK_ORIENTATION_HORIZONTAL),
+        : _main(_is_orientation_vertical ? GTK_ORIENTATION_VERTICAL: GTK_ORIENTATION_HORIZONTAL),
           motion_event_controller()
     {
         _is_orientation_vertical = orientation == GTK_ORIENTATION_VERTICAL;
 
-        main.set_show_separators(true);
+        _main.set_show_separators(true);
 
         auto add_icon = [&](ToolID id) -> Icon* {
-            auto inserted = _icons.insert({id, Icon(id, _is_orientation_vertical)});
-            inserted.first->second.overlay.set_cursor(GtkCursorType::POINTER);
-            return &_icons.at(id);
+            auto inserted = _icons.insert({id, new Icon(id, _is_orientation_vertical)});
+            inserted.first->second->overlay.set_cursor(GtkCursorType::POINTER);
+            return _icons.at(id);
         };
 
         for (auto& pair : icon_mapping)
         {
             auto main_icon = add_icon(pair.first);
-            main_icon->click_event_controller.connect_pressed(on_icon_click, new on_icon_click_data{main_icon, nullptr, this, pair.first});
+            main_icon->click_event_controller.connect_signal_click_pressed(on_icon_click, new on_icon_click_data{main_icon, nullptr, this, pair.first});
             main_icon->operator Widget*()->set_tooltip_text(generate_tooltip(pair.first));
             std::vector<std::vector<Icon*>> children;
 
@@ -379,45 +385,45 @@ namespace mousetrap
                 {
                     auto* to_add = add_icon(child);
                     children.back().emplace_back(to_add);
-                    children.back().back()->click_event_controller.connect_pressed(on_icon_click, new on_icon_click_data{to_add, main_icon, this, child});
+                    children.back().back()->click_event_controller.connect_signal_click_pressed(on_icon_click, new on_icon_click_data{to_add, main_icon, this, child});
                     children.back().back()->operator Widget*()->set_tooltip_text(generate_tooltip(child));
                 }
             }
 
             if (children.empty())
             {
-                main.push_back(main_icon-> operator Widget*());
-                main_icon->motion_event_controller.connect_enter(on_icon_without_popover_enter, this);
+                _main.push_back(main_icon-> operator Widget*());
+                main_icon->motion_event_controller.connect_signal_motion_enter(on_icon_without_popover_enter, this);
             }
             else
             {
-                _icons_with_popover.emplace_back(IconWithPopover(main_icon, children, _is_orientation_vertical));
+                _icons_with_popover.emplace_back(new IconWithPopover(main_icon, children, _is_orientation_vertical));
                 auto& current = _icons_with_popover.back();
-                current.main_motion_event_controller.connect_enter(on_icon_with_popover_enter, new on_icon_with_popover_enter_data{&current, this});
-                main.push_back(current.operator Widget*());
+                current->main_motion_event_controller.connect_signal_motion_enter(on_icon_with_popover_enter, new on_icon_with_popover_enter_data{current, this});
+                _main.push_back(current->operator Widget*());
             }
         }
 
-        main.add_controller(&motion_event_controller);
-        motion_event_controller.connect_leave(on_main_leave, this);
-        motion_event_controller.connect_motion(on_main_motion, this);
+        _main.add_controller(&motion_event_controller);
+        motion_event_controller.connect_signal_motion_leave(on_main_leave, this);
+        motion_event_controller.connect_signal_motion(on_main_motion, this);
 
         for (auto id : {PENCIL, ERASER, EYEDROPPER, BUCKET_FILL, LINE, RECTANGLE_OUTLINE, RECTANGLE_FILL, CIRCLE_OUTLINE, CIRCLE_FILL, POLYGON_OUTLINE, POLYGON_FILL, GRADIENT_DITHERED, GRADIENT_SMOOTH, MARQUEE_RECTANGLE, MARQUEE_CIRCLE, MARQUEE_NEIGHBORHODD_SELECT, MARQUEE_POLYGON})
-            state::main_window->register_global_shortcut(
+            state::main_window->register_global_shortcut<on_global_shortcut_select_data*>(
                     state::shortcut_map,
                     "toolbox." + id,
                     on_global_shortcut_select,
                     new on_global_shortcut_select_data{this, id}
             );
 
-        state::main_window->register_global_shortcut(
+        state::main_window->register_global_shortcut<on_global_shortcut_marquee_mode_shift_data*>(
                 state::shortcut_map,
                 "toolbox.marquee_mode_add",
                 on_global_shortcut_marquee_mode_shift,
                 new on_global_shortcut_marquee_mode_shift_data{this, true}
         );
 
-        state::main_window->register_global_shortcut(
+        state::main_window->register_global_shortcut<on_global_shortcut_marquee_mode_shift_data*>(
                 state::shortcut_map,
                 "toolbox.marquee_mode_subtract",
                 on_global_shortcut_marquee_mode_shift,
@@ -425,11 +431,6 @@ namespace mousetrap
         );
 
         select(MARQUEE_RECTANGLE);
-    }
-
-    Toolbox::operator Widget*()
-    {
-        return &main;
     }
 
     void Toolbox::select(ToolID id)
@@ -441,7 +442,7 @@ namespace mousetrap
             id = RECTANGLE_OUTLINE;
 
         Icon* parent = nullptr;
-        Icon* child = &_icons.at(id);
+        Icon* child = _icons.at(id);
 
         for (auto& pair : icon_mapping)
         {
@@ -455,7 +456,7 @@ namespace mousetrap
                     {
                         if (child == id)
                         {
-                            parent = &_icons.at(pair.first);
+                            parent = _icons.at(pair.first);
                             goto done;
                         }
                     }

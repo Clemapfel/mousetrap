@@ -140,7 +140,7 @@ namespace mousetrap
 
     Layer* state::new_layer(Layer* layer)
     {
-
+        return new Layer(*layer);
     }
 
 

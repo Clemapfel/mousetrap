@@ -59,8 +59,8 @@ namespace mousetrap
 
     // handles mouse scroll
     class ScrollEventController : public EventController,
-        public HasScrollEndSignal<ScrollEventController>,
         public HasScrollBeginSignal<ScrollEventController>,
+        public HasScrollEndSignal<ScrollEventController>,
         public HasScrollSignal<ScrollEventController>
     {
         public:

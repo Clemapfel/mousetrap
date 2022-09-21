@@ -117,6 +117,8 @@ namespace mousetrap
         auto* trigger = it->second;
         if (trigger != nullptr)
             return gtk_shortcut_trigger_trigger(trigger, event, false);
+        else
+            return false;
     }
 
     std::string ShortcutMap::trigger_to_string(GtkShortcutTrigger* trigger)
