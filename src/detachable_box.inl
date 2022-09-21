@@ -75,7 +75,8 @@ namespace mousetrap
         gtk_revealer_set_child(_anchor, _child);
         gtk_revealer_set_reveal_child(_anchor, true);
 
-        _on_attach(this, _on_attach_data);
+        if (_on_attach != nullptr)
+            _on_attach(this, _on_attach_data);
     }
 
     void DetachableBox::detach()
@@ -92,7 +93,8 @@ namespace mousetrap
         gtk_revealer_set_child(_window_revealer, GTK_WIDGET(_child));
         gtk_revealer_set_reveal_child(_window_revealer, true);
 
-        _on_detach(this, _on_detach_data);
+        if (_on_detach != nullptr)
+            _on_detach(this, _on_detach_data);
     }
 
     bool DetachableBox::get_child_attached()

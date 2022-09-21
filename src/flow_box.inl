@@ -11,6 +11,7 @@ namespace mousetrap
     {
         set_selection_mode(GTK_SELECTION_NONE);
         set_orientation(orientation);
+        set_max_children_per_line(size_t(-1));
     }
 
     void FlowBox::set_orientation(GtkOrientation orientation)

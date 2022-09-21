@@ -28,6 +28,7 @@
 #include <app/palette_view.hpp>
 #include <app/toolbox.hpp>
 #include <app/color_picker.hpp>
+#include <app/widget_container.hpp>
 
 /*
 #include <app/toolbox.hpp>
@@ -91,11 +92,16 @@ static void activate(GtkApplication* app, void*)
     state::brush_options = new BrushOptions();
     state::toolbox = new Toolbox(GTK_ORIENTATION_VERTICAL);
     state::color_picker = new ColorPicker();
+    state::color_picker->operator Widget *()->set_size_request({0, 100});
+
+    auto* container = new WidgetContainer("Palette");
+    container->set_child(state::palette_view);
+    container->operator Widget *()->set_expand(true);
 
     //box->push_back(state::primary_secondary_color_swapper->operator Widget*());
     //box->push_back(state::brush_options->operator Widget*());
 
-    state::main_window->set_child(state::color_picker->operator Widget*());
+    state::main_window->set_child(container->operator Widget*());
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

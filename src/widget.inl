@@ -55,7 +55,9 @@ namespace mousetrap
 
     Widget::~Widget()
     {
-        g_object_unref(_native);
+        if (gtk_widget_get_parent(_native) == nullptr)
+            g_object_unref(_native);
+
         for (auto* ref : _refs)
             g_object_unref(ref);
     }
