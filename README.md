@@ -23,6 +23,8 @@ list_view.push_back(button);
 list_view.push_back(other_list_view);
 ```
 
++ Allow signals to trigger runtime-lambdas, which is impossible using just the Gtk4 C-Library
+
 ## Dependencies
 + CMake 3.12+ including PkgConfig
 + OpenGL 3.2+

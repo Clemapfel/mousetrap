@@ -6,10 +6,12 @@
 #pragma once
 
 #include <include/widget.hpp>
+#include <include/signal_component.hpp>
 
 namespace mousetrap
 {
-    class FlowBox : public WidgetImplementation<GtkFlowBox>
+    class FlowBox : public WidgetImplementation<GtkFlowBox>,
+            public HasChildActivatedSignal<FlowBox>
     {
         public:
             FlowBox(GtkOrientation = GTK_ORIENTATION_VERTICAL);

@@ -489,7 +489,29 @@ namespace mousetrap
             void* _on_focus_lost_data;
     };
 
+    template<typename Owner_t>
+    class HasChildActivatedSignal
+    {
+        public:
+            template<typename T>
+            using on_child_activated_function_t = void(Owner_t*, size_t index, T);
 
+            template<typename Function_t, typename T>
+            void connect_signal_child_activated(Function_t, T);
+
+        protected:
+            HasChildActivatedSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_child_activated_wrapper(GtkFlowBox* self, GtkFlowBoxChild* child, HasChildActivatedSignal<Owner_t>* instance);
+
+            std::function<on_child_activated_function_t<void*>> _on_child_activated_f;
+            void* _on_child_activated_data;
+    };
 }
 
 // ###
@@ -897,5 +919,25 @@ namespace mousetrap
     {
         if (self->_on_focus_lost_f != nullptr)
             self->_on_focus_lost_f(self->_instance, x, y, self->_on_focus_lost_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasChildActivatedSignal<Owner_t>::connect_signal_child_activated(Function_t function, T data)
+    {
+        auto temp =  std::function<on_child_activated_function_t<T>>(function);
+        _on_child_activated_f = std::function<on_child_activated_function_t<void*>>(*((std::function<on_child_activated_function_t<void*>>*) &temp));
+        _on_child_activated_data = data;
+
+        _instance->connect_signal("child-activated", on_child_activated_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasChildActivatedSignal<Owner_t>::on_child_activated_wrapper(GtkFlowBox*, GtkFlowBoxChild* child, HasChildActivatedSignal<Owner_t>* self)
+    {
+        if (self->_on_child_activated_f != nullptr)
+            self->_on_child_activated_f(self->_instance, gtk_flow_box_child_get_index(child), self->_on_child_activated_data);
     }
 }

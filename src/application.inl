@@ -37,10 +37,11 @@ namespace mousetrap
         (*data->first)(data->second);
     }
 
-    void Application::add_action(const std::string& id, ActionSignature f, void* user_data)
+    template<typename T>
+    void Application::add_action(const std::string& id, ActionSignature f, T user_data)
     {
         auto* action = g_simple_action_new(id.c_str(), nullptr);
-        g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(action_wrapper), (void*) (new std::pair<ActionSignature, void*>(f, user_data)));
+        g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(action_wrapper), (void*) (new std::pair<ActionSignature, void*>(f, reinterpret_cast<void*>(user_data))));
         g_action_map_add_action(G_ACTION_MAP(_native), G_ACTION(action));
     }
 

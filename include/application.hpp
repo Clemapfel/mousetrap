@@ -25,7 +25,9 @@ namespace mousetrap
             operator GObject*() override;
 
             using ActionSignature = void(*)(void* user_data);
-            void add_action(const std::string& id, ActionSignature, void* user_data);
+
+            template<typename T>
+            void add_action(const std::string& id, ActionSignature, T user_data);
             void activate_action(const std::string& id);
             GAction* get_action(const std::string& id);
 

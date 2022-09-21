@@ -16,17 +16,24 @@
 #include <include/get_resource_path.hpp>
 #include <include/check_button.hpp>
 #include <include/aspect_frame.hpp>
+#include <include/entry.hpp>
+#include <include/separator_line.hpp>
+#include <include/list_view.hpp>
+#include <include/button.hpp>
+#include <include/scrolled_window.hpp>
 
+#include <app/app_component.hpp>
 #include <app/global_state.hpp>
 #include <app/layer.hpp>
 
 namespace mousetrap
 {
-    class LayerView : public Widget
+    class LayerView : public AppComponent
     {
         public:
             LayerView();
-            operator GtkWidget*() override;
+            void update() override;
+            operator Widget*() override;
 
         private:
             static inline Shader* _noop_shader = nullptr;
@@ -41,96 +48,96 @@ namespace mousetrap
                 LayerView* parent;
                 Layer* layer;
 
-                GLArea* texture_area;
+                GLArea texture_area;
                 Shape* transparency_tiling_shape;
                 Shape* layer_texture_shape;
-                AspectFrame* texture_area_frame;
+                AspectFrame texture_area_frame;
 
-                Entry* name;
-                FocusEventController* name_focus_controller;
+                Entry name;
+                FocusEventController name_focus_controller;
 
-                Box* visible_button_box;
-                Label* visible_button_label;
-                CheckButton* visible_button;
+                Box visible_button_box;
+                Label visible_button_label;
+                CheckButton visible_button;
                 static inline const char* layer_hidden_tooltip = "Layer is Hidden";
                 static inline const char* layer_visible_tooltip = "Layer is Visible";
 
-                Box* locked_button_box;
-                Label* locked_button_label;
-                CheckButton* locked_button;
+                Box locked_button_box;
+                Label locked_button_label;
+                CheckButton locked_button;
                 static inline const char* layer_locked_tooltip = "Layer is Locked";
                 static inline const char* layer_unlocked_tooltip = "Layer is Unlocked";
 
-                Scale* opacity_scale;
-                DropDown* blend_mode_dropdown;
-                std::vector<Label*> blend_mode_dropdown_label_items;
-                std::vector<Label*> blend_mode_dropdown_list_items;
+                Scale opacity_scale;
+                DropDown blend_mode_dropdown;
+                std::vector<Label> blend_mode_dropdown_label_items;
+                std::vector<Label> blend_mode_dropdown_list_items;
 
-                std::vector<SeparatorLine*> separators;
+                std::vector<SeparatorLine> separators;
 
-                ListView* main;
+                ListView main;
 
                 Vector2f* canvas_size;
-                static void on_texture_area_realize(GtkGLArea*, LayerViewRow*);
-                static void on_texture_area_resize(GtkGLArea*, int, int, LayerViewRow*);
+                static void on_gl_area_realize(GLArea*, LayerViewRow*);
+                static void on_gl_area_resize(GLArea*, int, int, LayerViewRow*);
 
-                static void on_is_visible_toggle(GtkCheckButton*, LayerViewRow*);
-                static void on_is_locked_toggle(GtkCheckButton*, LayerViewRow*);
+                static void on_visible_check_button_toggled(CheckButton*, LayerViewRow*);
+                static void on_locked_check_button_toggle(CheckButton*, LayerViewRow*);
 
-                static void on_opacity_select(GtkScale*, LayerViewRow*);
+                static void on_opacity_scale_value_changed(Scale*, LayerViewRow*);
 
-                static void on_layer_name_activate(GtkEntry*, LayerViewRow*);
-                static void on_layer_name_focus_lost(GtkEventControllerFocus* self, void*);
+                static void on_layer_name_entry_activate(Entry*, LayerViewRow*);
+                static void on_layer_name_entry_focus_lost(FocusEventController* self, LayerViewRow*);
 
                 using on_blendmode_selected_data = struct {LayerViewRow* instance; BlendMode mode;};
                 static void on_blendmode_selected(void*);
             };
 
-            struct LayerControlBar : public Widget
+            struct LayerControlBar
             {
                 LayerControlBar(LayerView* parent_instance);
-                operator GtkWidget*() override;
+                operator Widget*();
 
                 LayerView* parent;
-                Box* main;
+                Box main;
 
-                Button* move_up_button;
+                Button move_up_button;
                 ImageDisplay* move_up_label;
-                static void on_move_up_pressed(GtkButton*, LayerControlBar*);
+                static void on_move_up_pressed(Button*, LayerControlBar*);
 
-                Button* move_down_button;
-                ImageDisplay* move_down_label;
-                static void on_move_down_pressed(GtkButton*, LayerControlBar*);
+                Button move_down_button;
+                ImageDisplay move_down_label;
+                static void on_move_down_pressed(Button*, LayerControlBar*);
 
-                Button* create_button;
-                ImageDisplay* create_label;
-                static void on_create_pressed(GtkButton*, LayerControlBar*);
+                Button create_button;
+                ImageDisplay create_label;
+                static void on_create_pressed(Button*, LayerControlBar*);
 
-                Button* delete_button;
-                ImageDisplay* delete_label;
-                static void on_delete_pressed(GtkButton*, LayerControlBar*);
+                Button delete_button;
+                ImageDisplay delete_label;
+                static void on_delete_pressed(Button*, LayerControlBar*);
 
-                Button* duplicate_button;
-                ImageDisplay* duplicate_label;
-                static void on_duplicate_pressed(GtkButton*, LayerControlBar*);
+                Button duplicate_button;
+                ImageDisplay duplicate_label;
+                static void on_duplicate_pressed(Button*, LayerControlBar*);
 
-                Button* merge_down_button;
-                ImageDisplay* merge_down_label;
-                static void on_merge_down_pressed(GtkButton*, LayerControlBar*);
+                Button merge_down_button;
+                ImageDisplay merge_down_label;
+                static void on_merge_down_pressed(Button*, LayerControlBar*);
 
-                Button* flatten_selected_button;
-                ImageDisplay* flatten_selected_label;
-                static void on_flatten_selected_pressed(GtkButton*, LayerControlBar*);
+                Button flatten_selected_button;
+                ImageDisplay flatten_selected_label;
+                static void on_flatten_selected_pressed(Button*, LayerControlBar*);
             };
 
-            LayerControlBar* _control_bar;
+            LayerControlBar _control_bar;
 
-            ScrolledWindow* _row_view_scrolled_window;
-            ListView* _row_view;
-            std::deque<LayerViewRow*> _rows;
+            ScrolledWindow _row_view_scrolled_window;
+            ListView _row_view;
+            std::deque<LayerViewRow> _rows;
 
-            KeyEventController* _shortcut_controller;
-            static gboolean on_shortcut_controller_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void* data);
+            KeyEventController _shortcut_controller;
+            static gboolean on_shortcut_controller_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, void* data);
             static void on_row_view_selection_changed(GtkSelectionModel* self, guint position, guint n_items, LayerView* instance);
 
             Box* _main;
@@ -140,6 +147,7 @@ namespace mousetrap
 
 // ###
 
+/*
 namespace mousetrap
 {
     LayerView::LayerViewRow::LayerViewRow(Layer* layer, LayerView* parent)
@@ -716,3 +724,4 @@ namespace mousetrap
         return _main->operator GtkWidget*();
     }
 }
+ */

@@ -12,6 +12,7 @@ namespace mousetrap
     class Label : public WidgetImplementation<GtkLabel>
     {
         public:
+            Label();
             Label(const std::string&);
 
             void set_text(const std::string&);

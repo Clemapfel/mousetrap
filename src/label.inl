@@ -5,6 +5,10 @@
 
 namespace mousetrap
 {
+    Label::Label()
+        : Label("")
+    {}
+
     Label::Label(const std::string& str)
         : WidgetImplementation<GtkLabel>(GTK_LABEL(gtk_label_new(str.c_str())))
     {}

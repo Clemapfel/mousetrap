@@ -6,7 +6,8 @@
 namespace mousetrap
 {
     FlowBox::FlowBox(GtkOrientation orientation)
-        : WidgetImplementation<GtkFlowBox>(GTK_FLOW_BOX(gtk_flow_box_new()))
+        : WidgetImplementation<GtkFlowBox>(GTK_FLOW_BOX(gtk_flow_box_new())),
+          HasChildActivatedSignal<FlowBox>(this)
     {
         set_selection_mode(GTK_SELECTION_NONE);
         set_orientation(orientation);
