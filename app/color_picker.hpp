@@ -14,21 +14,20 @@
 
 namespace mousetrap
 {
-    class ColorPicker : public Widget
+    class ColorPicker : public AppComponent
     {
         public:
             ColorPicker();
             ~ColorPicker();
 
-            operator GtkWidget*() override;
-
+            operator Widget*() override;
             void update() override;
 
         private:
             void update(HSVA Color);
 
-            static void on_render_area_realize(GtkGLArea*, ColorPicker* instance);
-            static void on_render_area_resize(GtkGLArea*, int, int , ColorPicker* instance);
+            static void on_render_area_realize(Widget*, ColorPicker* instance);
+            static void on_render_area_resize(GLArea*, int, int , ColorPicker* instance);
 
             bool _hue_bar_active = false;
             void set_hue_bar_cursor(Vector2f);
@@ -38,8 +37,8 @@ namespace mousetrap
 
             Vector2f align_to_pixelgrid(Vector2f);
 
-            AspectFrame* _main;
-            GLArea* _render_area;
+            AspectFrame _main = AspectFrame(1);
+            GLArea _render_area;
 
             Shader* _hue_bar_shader;
             Shape* _hue_bar_shape;
@@ -60,18 +59,18 @@ namespace mousetrap
             Shape* _hsv_shape_cursor_window;
             Shape* _hsv_shape_cursor_window_frame;
 
-            Vector2f* _canvas_size;
-            HSVA* _current_color_hsva;
-            Vector2f* _square_top_left;
-            Vector2f* _square_size;
+            Vector2f _canvas_size;
+            HSVA _current_color_hsva;
+            Vector2f _square_top_left;
+            Vector2f _square_size;
 
-            static void on_render_area_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data);
-            static void on_render_area_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data);
-            static void on_render_area_button_press(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
-            static void on_render_area_button_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data);
+            static void on_render_area_motion_enter(MotionEventController* self, gdouble x, gdouble y, ColorPicker* user_data);
+            static void on_render_area_motion(MotionEventController* self, gdouble x, gdouble y, ColorPicker* user_data);
+            static void on_render_area_button_press(ClickEventController* self, gint n_press, gdouble x, gdouble y, ColorPicker* user_data);
+            static void on_render_area_button_release(ClickEventController* self, gint n_press, gdouble x, gdouble y, ColorPicker* user_data);
 
-            ClickEventController* _render_area_button_event_controller;
-            MotionEventController* _render_area_motion_event_controller;
+            ClickEventController _render_area_button_event_controller;
+            MotionEventController _render_area_motion_event_controller;
 
             void update_primary_color(double x, double y);
             void reformat();
@@ -84,26 +83,18 @@ namespace mousetrap
 {
     ColorPicker::ColorPicker()
     {
-        _hue_bar_shader = new Shader();
-        _render_area = new GLArea();
+        _render_area.connect_signal_realize(on_render_area_realize, this);
+        _render_area.connect_signal_resize(on_render_area_resize, this);
 
-        _render_area_motion_event_controller = new MotionEventController();
-        _render_area_button_event_controller = new ClickEventController();
+        _render_area_motion_event_controller.connect_signal_motion_enter(on_render_area_motion_enter, this);
+        _render_area_motion_event_controller.connect_signal_motion(on_render_area_motion, this);
+        _render_area_button_event_controller.connect_signal_click_pressed(on_render_area_button_press, this);
+        _render_area_button_event_controller.connect_signal_click_released(on_render_area_button_release, this);
 
-        _render_area->connect_signal("realize", on_render_area_realize, this);
-        _render_area->connect_signal("resize", on_render_area_resize, this);
+        _render_area.add_controller(&_render_area_motion_event_controller);
+        _render_area.add_controller(&_render_area_button_event_controller);
 
-        _render_area_motion_event_controller->connect_enter(on_render_area_motion_enter, this);
-        _render_area_motion_event_controller->connect_motion(on_render_area_motion, this);
-        _render_area_button_event_controller->connect_pressed(on_render_area_button_press, this);
-        _render_area_button_event_controller->connect_released(on_render_area_button_release, this);
-
-        _render_area->add_controller(_render_area_motion_event_controller);
-        _render_area->add_controller(_render_area_button_event_controller);
-
-        _main = new AspectFrame(1);
-        _main->set_child(_render_area);
-        _main->set_tooltip_text("<b>Color Picker</b>\nLeft-Click + Drag: Change Hue / Saturation / Value");
+        _main.set_child(&_render_area);
     }
 
     ColorPicker::~ColorPicker()
@@ -126,28 +117,26 @@ namespace mousetrap
 
         delete _hsv_shape_cursor_window;
         delete _hsv_shape_cursor_window_frame;
-
-        delete _canvas_size;
-        delete _current_color_hsva;
-        delete _square_top_left;
-        delete _square_size;
     }
 
-    ColorPicker::operator GtkWidget*()
+    ColorPicker::operator Widget*()
     {
-        return _main->operator GtkWidget*();
+        return &_main;
     }
 
     Vector2f ColorPicker::align_to_pixelgrid(Vector2f in)
     {
-        in.x = int(in.x * _canvas_size->x) / float(_canvas_size->x);
-        in.y = int(in.y * _canvas_size->y) / float(_canvas_size->y);
+        in.x = int(in.x * _canvas_size.x) / float(_canvas_size.x);
+        in.y = int(in.y * _canvas_size.y) / float(_canvas_size.y);
         return in;
     }
 
-    void ColorPicker::on_render_area_realize(GtkGLArea* area, ColorPicker* instance)
+    void ColorPicker::on_render_area_realize(Widget* widget, ColorPicker* instance)
     {
-        gtk_gl_area_make_current(area);
+        auto* area = (GLArea*) widget;
+        area->make_current();
+
+        instance->_hue_bar_shader = new Shader();
 
         instance->_hue_bar_shape = new Shape();
         instance->_hue_bar_frame = new Shape();
@@ -173,62 +162,60 @@ namespace mousetrap
         instance->_hsv_shape_shader = new Shader();
         instance->_hsv_shape_shader->create_from_file(get_resource_path() + "shaders/color_picker_hsv_square.frag", ShaderType::FRAGMENT);
 
-        instance->_canvas_size = new Vector2f{1, 1};
-        instance->_current_color_hsva = new HSVA();
-        instance->_square_top_left = new Vector2f(0, 0);
-        instance->_square_size = new Vector2f(1, 1);
-
-        auto* self = instance->_render_area;
+        instance->_canvas_size = Vector2f{1, 1};
+        instance->_current_color_hsva = HSVA();
+        instance->_square_top_left = Vector2f(0, 0);
+        instance->_square_size = Vector2f(1, 1);
 
         auto hue_bar_task = RenderTask(instance->_hue_bar_shape, instance->_hue_bar_shader);
-        hue_bar_task.register_color("_current_color_hsva", instance->_current_color_hsva);
-        self->add_render_task(hue_bar_task);
+        hue_bar_task.register_color("_current_color_hsva", &instance->_current_color_hsva);
+        area->add_render_task(hue_bar_task);
 
-        self->add_render_task(instance->_hue_bar_frame);
+        area->add_render_task(instance->_hue_bar_frame);
 
-        self->add_render_task(instance->_hue_bar_cursor);
-        self->add_render_task(instance->_hue_bar_cursor_frame);
+        area->add_render_task(instance->_hue_bar_cursor);
+        area->add_render_task(instance->_hue_bar_cursor_frame);
 
-        self->add_render_task(instance->_hue_bar_cursor_window);
-        self->add_render_task(instance->_hue_bar_cursor_window_frame);
+        area->add_render_task(instance->_hue_bar_cursor_window);
+        area->add_render_task(instance->_hue_bar_cursor_window_frame);
 
         auto hsv_shape_task = RenderTask(instance->_hsv_shape, instance->_hsv_shape_shader);
-        hsv_shape_task.register_color("_current_color_hsva", instance->_current_color_hsva);
-        hsv_shape_task.register_vec2("_square_top_left", instance->_square_top_left);
-        hsv_shape_task.register_vec2("_square_size", instance->_square_size);
+        hsv_shape_task.register_color("_current_color_hsva", &instance->_current_color_hsva);
+        hsv_shape_task.register_vec2("_square_top_left", &instance->_square_top_left);
+        hsv_shape_task.register_vec2("_square_size", &instance->_square_size);
 
-        self->add_render_task(hsv_shape_task);
+        area->add_render_task(hsv_shape_task);
 
-        self->add_render_task(instance->_hsv_shape_frame);
+        area->add_render_task(instance->_hsv_shape_frame);
 
-        self->add_render_task(instance->_hsv_shape_cursor);
-        self->add_render_task(instance->_hsv_shape_cursor_frame);
+        area->add_render_task(instance->_hsv_shape_cursor);
+        area->add_render_task(instance->_hsv_shape_cursor_frame);
 
-        self->add_render_task(instance->_hsv_shape_cursor_window);
-        self->add_render_task(instance->_hsv_shape_cursor_window_frame);
+        area->add_render_task(instance->_hsv_shape_cursor_window);
+        area->add_render_task(instance->_hsv_shape_cursor_window_frame);
 
         instance->reformat();
         instance->update();
 
-        gtk_gl_area_queue_render(area);
+        area->queue_render();
     }
 
-    void ColorPicker::on_render_area_resize(GtkGLArea* area, int w, int h, ColorPicker* instance)
+    void ColorPicker::on_render_area_resize(GLArea* area, int w, int h, ColorPicker* instance)
     {
-        gtk_gl_area_make_current(area);
+        area->make_current();
 
-        instance->_canvas_size->x = w;
-        instance->_canvas_size->y = h;
+        instance->_canvas_size.x = w;
+        instance->_canvas_size.y = h;
 
         instance->reformat();
 
-        gtk_gl_area_queue_render(area);
+        area->queue_render();
     }
 
     void ColorPicker::reformat()
     {
-        float x_margin = state::margin_unit / _canvas_size->x;
-        float y_margin = state::margin_unit / _canvas_size->y;
+        float x_margin = state::margin_unit / _canvas_size.x;
+        float y_margin = state::margin_unit / _canvas_size.y;
 
         float hsv_shape_size = 1;
         float cursor_size = 0.1;
@@ -245,8 +232,8 @@ namespace mousetrap
         );
 
         Vector2f cursor_frame_width = {
-            4 * 1 / _canvas_size->x,
-            4 * 1 / _canvas_size->y
+            4 * 1 / _canvas_size.x,
+            4 * 1 / _canvas_size.y
         };
 
         if (int(cursor_frame_width.x) % 2 != 0)
@@ -255,7 +242,7 @@ namespace mousetrap
         if (int(cursor_frame_width.y) % 2 != 0)
             cursor_frame_width -= 1;
 
-        _hsv_shape_cursor->as_rectangle({0, 0}, {cursor_size, cursor_size * (_canvas_size->x / _canvas_size->y)});
+        _hsv_shape_cursor->as_rectangle({0, 0}, {cursor_size, cursor_size * (_canvas_size.x / _canvas_size.y)});
         _hsv_shape_cursor_window->as_rectangle({0, 0},
             _hsv_shape_cursor->get_size() - cursor_frame_width
         );
@@ -311,13 +298,13 @@ namespace mousetrap
         for (auto* frame : {_hue_bar_frame, _hue_bar_cursor_frame, _hue_bar_cursor_window_frame, _hsv_shape_frame, _hsv_shape_cursor_frame, _hsv_shape_cursor_window_frame})
             frame->set_color(RGBA(0, 0, 0, 1));
 
-        _main->set_ratio(_hsv_shape->get_size().y / _hsv_shape->get_size().x);
-        *_square_top_left = _hsv_shape->get_top_left();
-        *_square_size = _hsv_shape->get_size();
+        _main.set_ratio(_hsv_shape->get_size().y / _hsv_shape->get_size().x);
+        _square_top_left = _hsv_shape->get_top_left();
+        _square_size = _hsv_shape->get_size();
 
         update();
 
-        _render_area->queue_render();
+        _render_area.queue_render();
     }
 
     void ColorPicker::update()
@@ -327,7 +314,7 @@ namespace mousetrap
 
     void ColorPicker::update(HSVA color)
     {
-        if (not gtk_widget_get_realized(_render_area->operator GtkWidget *()))
+        if (not _render_area.get_is_realized())
             return;
 
         set_hue_bar_cursor({0, _hue_bar_shape->get_top_left().y + (1 - color.h) * _hue_bar_shape->get_size().y});
@@ -339,19 +326,19 @@ namespace mousetrap
         auto window_color = color;
         window_color.a = 1;
         _hsv_shape_cursor_window->set_color(window_color);
-        *_current_color_hsva = window_color;
+        _current_color_hsva = window_color;
 
-        _render_area->queue_render();
+        _render_area.queue_render();
     }
 
     void ColorPicker::set_hue_bar_cursor(Vector2f pos)
     {
         float hue = (pos.y - _hue_bar_shape->get_top_left().y) / _hue_bar_shape->get_size().y;
         hue = glm::clamp<float>(hue, 0, 1);
-        _current_color_hsva->h = 1 - hue;
+        _current_color_hsva.h = 1 - hue;
 
-        _hue_bar_cursor_window->set_color(HSVA(_current_color_hsva->h, 1, 1, 1));
-        _hsv_shape_cursor_window->set_color(*_current_color_hsva);
+        _hue_bar_cursor_window->set_color(HSVA(_current_color_hsva.h, 1, 1, 1));
+        _hsv_shape_cursor_window->set_color(_current_color_hsva);
 
         float y = glm::clamp<float>(pos.y,
              _hue_bar_shape->get_top_left().y + _hue_bar_cursor->get_size().y * 0.5,
@@ -383,15 +370,14 @@ namespace mousetrap
         _hsv_shape_cursor_window_frame->set_centroid(_hsv_shape_cursor->get_centroid());
     }
 
-    void ColorPicker::on_render_area_motion_enter(GtkEventControllerMotion* self, gdouble x, gdouble y, void* instance)
+    void ColorPicker::on_render_area_motion_enter(MotionEventController* self, gdouble x, gdouble y, ColorPicker* instance)
     {
-        ((ColorPicker*) instance)->grab_focus();
+        instance->operator Widget*()->grab_focus();
     }
 
-    void ColorPicker::on_render_area_motion(GtkEventControllerMotion* self, gdouble x, gdouble y, void* user_data)
+    void ColorPicker::on_render_area_motion(MotionEventController* self, gdouble x, gdouble y, ColorPicker* instance)
     {
-        auto* instance = (ColorPicker*) user_data;
-        auto pos = Vector2f(x / instance->_canvas_size->x, y / instance->_canvas_size->y);
+        auto pos = Vector2f(x / instance->_canvas_size.x, y / instance->_canvas_size.y);
 
         bool in_hue_bar = is_point_in_rectangle(pos, Rectangle{instance->_hue_bar_shape->get_top_left(), instance->_hue_bar_shape->get_size()});
         bool in_hsv_shape = is_point_in_rectangle(pos, Rectangle{instance->_hsv_shape->get_top_left(), instance->_hsv_shape->get_size()});
@@ -399,86 +385,85 @@ namespace mousetrap
         if (instance->_hue_bar_active)
         {
             instance->set_hue_bar_cursor(pos);
-            instance->_render_area->queue_render();
-            instance->_render_area->set_cursor(GtkCursorType::GRABBING);
+            instance->_render_area.queue_render();
+            instance->_render_area.set_cursor(GtkCursorType::GRABBING);
             instance->update_primary_color(x, y);
             return;
         }
         else if (instance->_hsv_shape_active)
         {
             instance->set_hsv_shape_cursor(pos);
-            instance->_render_area->queue_render();
-            instance->_render_area->set_cursor(GtkCursorType::NONE);
+            instance->_render_area.queue_render();
+            instance->_render_area.set_cursor(GtkCursorType::NONE);
             instance->update_primary_color(x, y);
             return;
         }
         else if (in_hue_bar)
-            instance->_render_area->set_cursor(GtkCursorType::GRAB);
+            instance->_render_area.set_cursor(GtkCursorType::GRAB);
         else if (in_hsv_shape)
-            instance->_render_area->set_cursor(GtkCursorType::CELL);
+            instance->_render_area.set_cursor(GtkCursorType::CELL);
         else
-            instance->_render_area->set_cursor(GtkCursorType::DEFAULT);
+            instance->_render_area.set_cursor(GtkCursorType::DEFAULT);
     }
 
-    void ColorPicker::on_render_area_button_press(GtkGestureClick* self, gint n_press, gdouble x, gdouble y, void* user_data)
+    void ColorPicker::on_render_area_button_press(ClickEventController* self, gint n_press, gdouble x, gdouble y, ColorPicker* instance)
     {
-        auto* instance = (ColorPicker*) user_data;
-        auto pos = Vector2f(x / instance->_canvas_size->x, y / instance->_canvas_size->y);
+        auto pos = Vector2f(x / instance->_canvas_size.x, y / instance->_canvas_size.y);
 
         if (is_point_in_rectangle(pos, Rectangle{instance->_hue_bar_shape->get_top_left(), instance->_hue_bar_shape->get_size()}))
         {
             instance->_hue_bar_active = true;
-            instance->_render_area->set_cursor(GtkCursorType::GRABBING);
+            instance->_render_area.set_cursor(GtkCursorType::GRABBING);
             instance->set_hue_bar_cursor(pos);
-            instance->_render_area->queue_render();
+            instance->_render_area.queue_render();
             instance->update_primary_color(x, y);
         }
         else if (is_point_in_rectangle(pos, Rectangle{instance->_hsv_shape->get_top_left(), instance->_hsv_shape->get_size()}))
         {
             instance->_hsv_shape_active = true;
-            instance->_render_area->set_cursor(GtkCursorType::NONE);
+            instance->_render_area.set_cursor(GtkCursorType::NONE);
             instance->set_hsv_shape_cursor(pos);
-            instance->_render_area->queue_render();
+            instance->_render_area.queue_render();
             instance->update_primary_color(x, y);
         }
     }
 
-    void ColorPicker::on_render_area_button_release(GtkGestureClick* self, gint n_press, gdouble x, gdouble y,
-                                                    void* user_data)
+    void ColorPicker::on_render_area_button_release(ClickEventController* self, gint n_press, gdouble x, gdouble y,
+                                                    ColorPicker* user_data)
     {
         auto* instance = (ColorPicker*) user_data;
 
         instance->_hue_bar_active = false;
         instance->_hsv_shape_active = false;
 
-        auto pos = Vector2f(x / instance->_canvas_size->x, y / instance->_canvas_size->y);
+        auto pos = Vector2f(x / instance->_canvas_size.x, y / instance->_canvas_size.y);
         if (is_point_in_rectangle(pos, Rectangle{instance->_hue_bar_shape->get_top_left(), instance->_hue_bar_shape->get_size()}))
-            instance->_render_area->set_cursor(GtkCursorType::GRAB);
+            instance->_render_area.set_cursor(GtkCursorType::GRAB);
         else if (is_point_in_rectangle(pos, Rectangle{instance->_hsv_shape->get_top_left(), instance->_hsv_shape->get_size()}))
-            instance->_render_area->set_cursor(GtkCursorType::CELL);
+            instance->_render_area.set_cursor(GtkCursorType::CELL);
         else
-            instance->_render_area->set_cursor(GtkCursorType::DEFAULT);
+            instance->_render_area.set_cursor(GtkCursorType::DEFAULT);
     }
 
     void ColorPicker::update_primary_color(double x, double y)
     {
         if (_hue_bar_active)
         {
-            float hue = y / _canvas_size->y;
+            float hue = y / _canvas_size.y;
             hue = glm::clamp<float>(hue, 0, 1);
 
             auto color = state::primary_color;
             color.h = 1 - (hue - _hue_bar_shape->get_top_left().y) / _hue_bar_shape->get_size().y;
 
             state::primary_color = color;
-            state::primary_secondary_color_swapper->update();
-            state::verbose_color_picker->update();
+            //state::primary_secondary_color_swapper->update();
+            //state::verbose_color_picker->update();
 
         }
         else if (_hsv_shape_active)
         {
-            float value = ((x / _canvas_size->x) - _hsv_shape->get_top_left().x) / _hsv_shape->get_size().x;
-            float saturation = 1 - ((y / _canvas_size->y) - _hsv_shape->get_top_left().y / _hsv_shape->get_size().y);
+            float value = ((x / _canvas_size.x) - _hsv_shape->get_top_left().x) / _hsv_shape->get_size().x;
+            float saturation = 1 - ((y / _canvas_size.y) - _hsv_shape->get_top_left().y / _hsv_shape->get_size().y);
 
             auto color = state::primary_color;
             color.v = value;
@@ -488,13 +473,13 @@ namespace mousetrap
             color.s = glm::clamp<float>(color.s, 0, 1);
 
             state::primary_color = color;
-            state::primary_secondary_color_swapper->update();
-            state::verbose_color_picker->update();
+            //state::primary_secondary_color_swapper->update();
+            //state::verbose_color_picker->update();
         }
 
         auto window_color = state::primary_color;
         window_color.a = 1;
         _hsv_shape_cursor_window->set_color(window_color);
-        *_current_color_hsva = window_color;
+        _current_color_hsva = window_color;
     }
 }

@@ -285,4 +285,9 @@ namespace mousetrap
     {
         gtk_widget_grab_focus(this->operator GtkWidget*());
     }
+
+    bool Widget::get_is_realized()
+    {
+        return gtk_widget_get_realized(this->operator GtkWidget*());
+    }
 }

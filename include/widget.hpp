@@ -65,6 +65,8 @@ namespace mousetrap
             void set_focusable(bool);
             void grab_focus();
 
+            bool get_is_realized();
+
         protected:
             Widget() = delete;
 
