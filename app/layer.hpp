@@ -9,101 +9,111 @@
 
 namespace mousetrap
 {
-    enum BlendMode
-    {
-        NORMAL,     // alpha blending
-        ADD,        // src + dest
-        SUBTRACT,   // src - dest
-        MULTIPLY,   // src * dest
-        MIN,        // min(src, dest)
-        MAX         // max(src, dest)
-    };
-
-    void set_blend_mode(BlendMode);
-
     struct Layer
     {
-        static inline size_t _current_id = 0;
-        Layer(const std::string& name = "");
-
         std::string name;
-        Image image;
-        TextureObject* texture;
+
+        using PixelData = struct
+        {
+            Image image;
+            Texture texture;
+        };
+
+        std::deque<PixelData> frames = std::deque<PixelData>();
+
         bool is_locked = false;
         bool is_visible = true;
         float opacity = 1;
         BlendMode blend_mode = NORMAL;
     };
-    
+
     namespace state
     {
-        std::deque<Layer*> layers;
+        std::deque<Layer> layers;
         Vector2ui layer_resolution;
+        size_t n_frames = 0;
 
-        Layer* new_layer(RGBA);
-        Layer* new_layer(const Image&);
-        Layer* new_layer(Layer*); // copies contents
-
-        void insert_layer_at(Layer*, size_t position = 0);
-        void insert_layer_after(Layer* to_insert, Layer* after);
-        void insert_layer_before(Layer* to_insert, Layer* before);
+        Layer* new_layer(const std::string& name, Layer* after = nullptr);
+        void new_frame(size_t index);
 
         void delete_layer(Layer*);
-
-        void move_layer_to(Layer*, size_t new_position);
-        void move_layer_to_after(Layer* to_move, Layer* after);
-        void mvoe_layer_to_before(Layer* to_move, Layer* before);
+        void delete_frame(size_t index);
     }
-
 }
 
 /// ###
 
 namespace mousetrap
 {
-    Layer::Layer(const std::string& name_in)
+    Layer* state::new_layer(const std::string& name, Layer* after)
     {
-        if (name_in.empty())
-            name = "Layer_#" + std::to_string(_current_id++);
+        if (n_frames == 0)
+            n_frames = 1;
 
-        texture = new Texture();
+        auto after_pos = state::layers.begin();
+        for (; after != nullptr and after_pos != state::layers.end(); ++after_pos)
+            if (&(*after_pos) == after)
+                break;
+
+        auto it = layers.insert(after_pos, Layer{name});
+
+        for (size_t i = 0; i < n_frames; ++i)
+        {
+            it->frames.emplace_back();
+            it->frames.back().image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 1, 1, 0));
+            it->frames.back().texture.create_from_image(it->frames.back().image);
+        }
+
+        return &(*it);
     }
 
-    void set_blend_mode(BlendMode mode)
+    void state::new_frame(size_t index)
     {
-        glEnable(GL_BLEND);
+        if (index > n_frames)
+        {
+            std::cout << "[ERROR] In state::new_frame: Attempting to insert frame at position " << index << " but there are only " << n_frames << " frames" << std::endl;
+            return;
+        }
 
-        if (mode == NORMAL)
+        for (auto& layer : state::layers)
         {
-            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-        }
-        else if (mode == SUBTRACT)
-        {
-            glBlendEquationSeparate(GL_FUNC_REVERSE_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT);
-            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
-        }
-        else if (mode == ADD)
-        {
-            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
-        }
-        else if (mode == MULTIPLY)
-        {
-            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-            glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
-        }
-        else if (mode == MIN)
-        {
-            glBlendEquationSeparate(GL_MIN, GL_MIN);
-            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
-        }
-        else if (mode == MAX)
-        {
-            glBlendEquationSeparate(GL_MAX, GL_MAX);
-            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
+            auto it = layer.frames.emplace(layer.frames.begin() + index);
+            it->image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 1, 1, 0));
+            it->texture.create_from_image(it->image);
         }
     }
+
+    void state::delete_layer(Layer* ptr)
+    {
+        for (auto it = state::layers.begin(); it != state::layers.end(); ++it)
+        {
+            if (&(*it) == ptr)
+            {
+                state::layers.erase(it);
+                return;
+            }
+        }
+
+        std::cout << "[ERROR] In state::delete_layer: Attempting to delete Layer " << ptr->name << " but it is not in the global state." << std::endl;
+    }
+
+    void state::delete_frame(size_t index)
+    {
+        if (index > n_frames)
+        {
+            std::cout << "[ERROR] In state::delete_frame: Attempting to delete frame with index " << index
+                      << " but there are only " << n_frames << " frames." << std::endl;
+            return;
+        }
+
+        for (auto& layer : layers)
+            layer.frames.erase(layer.frames.begin() + index);
+
+        n_frames -= 1;
+    }
+
+
+    /*
 
     Layer* state::new_layer(RGBA color)
     {
@@ -142,6 +152,7 @@ namespace mousetrap
     {
         return new Layer(*layer);
     }
+     */
 
 
 }

@@ -102,6 +102,11 @@ namespace mousetrap
         _title_label.set_margin_end(0.5 * state::margin_unit);
         _title_label.set_hexpand(true);
 
+        auto* scrolled_window = new ScrolledWindow();
+        scrolled_window->set_child(&_title_label);
+        scrolled_window->set_size_request({0, 0});
+        gtk_scrolled_window_set_min_content_width(scrolled_window->operator GtkScrolledWindow*(), 0);
+
         _detach_label.set_use_markup(true);
         _header_bar_hseparator.set_size_request({2, 0});
 
@@ -110,7 +115,7 @@ namespace mousetrap
         _detach_button.set_halign(GTK_ALIGN_END);
         _detach_button.set_has_frame(false);
 
-        _header_bar_hbox.push_back(&_title_label);
+        _header_bar_hbox.push_back(scrolled_window);
         _header_bar_hbox.push_back(&_header_bar_hseparator);
         _header_bar_hbox.push_back(&_detach_button);
 

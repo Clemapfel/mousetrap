@@ -21,6 +21,7 @@
 #include <include/dropdown.hpp>
 #include <include/button.hpp>
 #include <include/check_button.hpp>
+#include <include/grid_view.hpp>
 
 #include <app/global_state.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
@@ -101,7 +102,16 @@ static void activate(GtkApplication* app, void*)
     //box->push_back(state::primary_secondary_color_swapper->operator Widget*());
     //box->push_back(state::brush_options->operator Widget*());
 
-    state::main_window->set_child(container->operator Widget*());
+    static auto grid_view = GridView(GTK_SELECTION_MULTIPLE);
+
+    std::vector<Label*> labels;
+    for (size_t i = 0; i < 30; ++i)
+    {
+        labels.emplace_back(new Label("label_" + std::to_string(i)));
+        grid_view.push_back(labels.back());
+    }
+
+    state::main_window->set_child(&grid_view);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

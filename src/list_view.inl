@@ -5,7 +5,7 @@
 
 namespace mousetrap::detail
 {
-    #define G_TYPE_LIST_VIEW_ITEM_ITEM (tree_list_view_item_get_type())
+    #define G_TYPE_LIST_VIEW_ITEM (tree_list_view_item_get_type())
 
     G_DECLARE_FINAL_TYPE (TreeListViewItem, tree_list_view_item, G, TREE_VIEW_ITEM, GObject)
 
@@ -52,7 +52,7 @@ namespace mousetrap::detail
 
     static TreeListViewItem* tree_list_view_item_new(Widget* in)
     {
-        auto* item = (TreeListViewItem*) g_object_new(G_TYPE_LIST_VIEW_ITEM_ITEM, nullptr);
+        auto* item = (TreeListViewItem*) g_object_new(G_TYPE_LIST_VIEW_ITEM, nullptr);
         tree_list_view_item_init(item);
         item->widget = in;
         item->widget_ref = g_object_ref(in->operator GtkWidget*());
