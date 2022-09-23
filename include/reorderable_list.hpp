@@ -46,6 +46,11 @@ namespace mousetrap
             static void on_click_released(ClickEventController*, int n_press, double x, double y, ReorderableListView* instance);
 
             size_t position_to_item_index(double x, double y);
+
+            bool _drag_active = false;
+            size_t _currently_being_dragged_index;
+
+            void deposit_dragged_item();
     };
 }
 
@@ -92,7 +97,7 @@ namespace mousetrap::detail
         gobject_class->finalize = reorderable_list_item_finalize;
     }
 
-    static ReorderableListItem* reorderable_list_item_new(Widget* in, ReorderableListView* owner)
+    static ReorderableListItem* reorderable_list_item_new(Widget* in)
     {
         auto* item = (ReorderableListItem*)
         g_object_new(G_TYPE_REORDERABLE_LIST_ITEM, nullptr);
@@ -129,9 +134,7 @@ namespace mousetrap
         _overlay = GTK_OVERLAY(gtk_overlay_new());
         gtk_overlay_set_child(_overlay, GTK_WIDGET(_native));
         gtk_overlay_add_overlay(_overlay, GTK_WIDGET(_fixed));
-        gtk_widget_set_visible(GTK_WIDGET(_fixed), false);
         gtk_fixed_put(_fixed, GTK_WIDGET(_fixed_box), 0, 0);
-
         gtk_widget_set_can_target(GTK_WIDGET(_fixed), false);
 
         return _overlay;
@@ -140,11 +143,11 @@ namespace mousetrap
         _motion_event_controller.connect_signal_motion(on_motion, this);
         _motion_event_controller.connect_signal_motion_leave(on_motion_leave, this);
         _motion_event_controller.connect_signal_motion_enter(on_motion_enter, this);
-        gtk_widget_add_controller(GTK_WIDGET(_overlay), _motion_event_controller.operator GtkEventController*());
+        gtk_widget_add_controller(GTK_WIDGET(_native), _motion_event_controller.operator GtkEventController*());
 
         _click_event_controller.connect_signal_click_pressed(on_click_pressed, this);
         _click_event_controller.connect_signal_click_released(on_click_released, this);
-        gtk_widget_add_controller(GTK_WIDGET(_overlay), _click_event_controller.operator GtkEventController*());
+        gtk_widget_add_controller(GTK_WIDGET(_native), _click_event_controller.operator GtkEventController*());
     }
 
     size_t ReorderableListView::position_to_item_index(double x, double y)
@@ -170,20 +173,69 @@ namespace mousetrap
     {}
 
     void ReorderableListView::on_motion_leave(MotionEventController*, ReorderableListView* instance)
-    {}
+    {
+        instance->deposit_dragged_item();
+    }
 
     void ReorderableListView::on_motion(MotionEventController*, double x, double y, ReorderableListView* instance)
-    {}
+    {
+        gtk_fixed_move(instance->_fixed, GTK_WIDGET(instance->_fixed_box), x, y);
+    }
+
+    void ReorderableListView::deposit_dragged_item()
+    {
+        if (not _drag_active)
+            return;
+
+        _drag_active = false;
+
+        size_t to_insert_i = 0;
+        for (; to_insert_i < g_list_model_get_n_items(G_LIST_MODEL(_list_store)); ++to_insert_i)
+            if (gtk_selection_model_is_selected(_selection_model, to_insert_i))
+                break;
+
+        auto* current = (detail::ReorderableListItem*) g_list_model_get_item(G_LIST_MODEL(_list_store), _currently_being_dragged_index);
+
+        gtk_box_remove(_fixed_box, current->widget->operator GtkWidget*());
+        gtk_widget_unparent(current->widget->operator GtkWidget*());
+
+        auto* item = detail::reorderable_list_item_new(current->widget);
+
+        g_list_store_remove(_list_store, _currently_being_dragged_index);
+        g_list_store_insert(_list_store, to_insert_i, item);
+
+        gtk_list_view_set_single_click_activate(_native, false);
+
+        _drag_active = false;
+    }
 
     void ReorderableListView::on_click_pressed(ClickEventController*, int n_press, double x, double y,
                                                ReorderableListView* instance)
     {
+        std::cout << "pressed" << std::endl;
 
+        if (instance->_drag_active)
+            instance->deposit_dragged_item();
+
+        instance->_drag_active = true;
+        size_t item_index = instance->position_to_item_index(x, y);
+
+        if (item_index == size_t(-1))
+            return;
+
+        auto* item = (detail::ReorderableListItem*) g_list_model_get_item(G_LIST_MODEL(instance->_list_store), item_index);
+        gtk_box_remove(item->box, item->widget->operator GtkWidget*());
+        gtk_box_append(instance->_fixed_box, item->widget->operator GtkWidget*());
+        gtk_list_view_set_single_click_activate(instance->_native, true);
+        instance->_currently_being_dragged_index = item_index;
     }
 
     void ReorderableListView::on_click_released(ClickEventController*, int n_press, double x, double y,
                                                 ReorderableListView* instance)
-    {}
+    {
+        std::cout << "released" << std::endl;
+        instance->deposit_dragged_item();
+    }
 
     void ReorderableListView::on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, ReorderableListView* instance)
     {
@@ -195,7 +247,7 @@ namespace mousetrap
 
     void ReorderableListView::push_back(Widget* widget)
     {
-        auto* item = detail::reorderable_list_item_new(widget, this);
+        auto* item = detail::reorderable_list_item_new(widget);
         g_list_store_append(_list_store, item);
     }
 }

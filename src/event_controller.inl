@@ -30,6 +30,11 @@ namespace mousetrap
         gtk_event_controller_set_propagation_phase(_native, phase);
     }
 
+    void EventController::set_propagation_limit(GtkPropagationLimit limit)
+    {
+        gtk_event_controller_set_propagation_limit(_native, limit);
+    }
+
     GdkEvent* EventController::get_current_event()
     {
         return gtk_event_controller_get_current_event(_native);

@@ -19,6 +19,7 @@ namespace mousetrap
             operator GtkEventController*();
 
             void set_propagation_phase(GtkPropagationPhase);
+            void set_propagation_limit(GtkPropagationLimit);
             GdkEvent* get_current_event();
 
             ~EventController();
