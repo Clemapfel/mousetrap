@@ -6,6 +6,7 @@
 #pragma once
 
 #include <include/widget.hpp>
+#include <include/geometry.hpp>
 
 namespace mousetrap
 {
@@ -13,8 +14,6 @@ namespace mousetrap
 
     class ReorderableListView : public WidgetImplementation<GtkOverlay>
     {
-        friend detail::_ReorderableListItem;
-
         public:
             ReorderableListView(GtkOrientation orientation, GtkSelectionMode mode = GTK_SELECTION_SINGLE);
 
@@ -37,13 +36,16 @@ namespace mousetrap
             GtkBox* _fixed_box;
             GtkOverlay* _overlay;
 
-            void update_list_item_indices();
             MotionEventController _motion_event_controller;
+            static void on_motion_enter(MotionEventController*, double x, double y, ReorderableListView* instance);
             static void on_motion(MotionEventController*, double x, double y, ReorderableListView* instance);
+            static void on_motion_leave(MotionEventController*, ReorderableListView* instance);
 
-            size_t _currently_being_moved = -1;
-            size_t _current_insert_i = -1;
-            bool _drag_active = false;
+            ClickEventController _click_event_controller;
+            static void on_click_pressed(ClickEventController*, int n_press, double x, double y, ReorderableListView* instance);
+            static void on_click_released(ClickEventController*, int n_press, double x, double y, ReorderableListView* instance);
+
+            size_t position_to_item_index(double x, double y);
     };
 }
 
@@ -60,17 +62,6 @@ namespace mousetrap::detail
         Widget* widget;
         GtkWidget* widget_ref;
         GtkBox* box;
-
-        ReorderableListView* owner;
-        size_t position;
-
-        ClickEventController* click_event_controller;
-        MotionEventController* motion_event_controller;
-
-        static void on_click_pressed(ClickEventController*, int n_press, double x, double y, ReorderableListItem* instance);
-        static void on_click_released(ClickEventController*, int n_press, double x, double y, ReorderableListItem* instance);
-        static void on_motion_enter(MotionEventController*, double x, double y, ReorderableListItem* instance);
-        static void on_motion_leave(MotionEventController*, ReorderableListItem* instance);
     };
 
     struct _ReorderableListItemClass
@@ -78,18 +69,13 @@ namespace mousetrap::detail
         GObjectClass parent_class;
     };
 
-    G_DEFINE_TYPE (ReorderableListItem, reorderable_list_item, G_TYPE_OBJECT
-    )
+    G_DEFINE_TYPE (ReorderableListItem, reorderable_list_item, G_TYPE_OBJECT)
 
     static void reorderable_list_item_finalize(GObject* object)
     {
         auto* self = G_REORDERABLE_LIST_ITEM(object);
         g_object_unref(self->widget_ref);
-
         delete self->box;
-        delete self->click_event_controller;
-        delete self->motion_event_controller;
-
         G_OBJECT_CLASS(reorderable_list_item_parent_class)->finalize(object);
     }
 
@@ -97,12 +83,7 @@ namespace mousetrap::detail
     {
         item->widget = nullptr;
         item->widget_ref = nullptr;
-        item->click_event_controller = nullptr;
-        item->motion_event_controller = nullptr;
-        item->owner = nullptr;
         item->box = nullptr;
-
-        item->position = size_t(-1);
     }
 
     static void reorderable_list_item_class_init(ReorderableListItemClass* klass)
@@ -114,24 +95,12 @@ namespace mousetrap::detail
     static ReorderableListItem* reorderable_list_item_new(Widget* in, ReorderableListView* owner)
     {
         auto* item = (ReorderableListItem*)
-                g_object_new(G_TYPE_REORDERABLE_LIST_ITEM, nullptr);
+        g_object_new(G_TYPE_REORDERABLE_LIST_ITEM, nullptr);
         reorderable_list_item_init(item);
         item->widget = in;
         item->widget_ref = g_object_ref(in->operator GtkWidget*());
         item->box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
         gtk_box_append(item->box, item->widget->operator GtkWidget*());
-        item->owner = owner;
-
-        item->click_event_controller = new ClickEventController();
-        item->click_event_controller->connect_signal_click_pressed(ReorderableListItem::on_click_pressed, item);
-        item->click_event_controller->connect_signal_click_released(ReorderableListItem::on_click_released, item);
-
-        item->motion_event_controller = new MotionEventController();
-        item->motion_event_controller->connect_signal_motion_enter(ReorderableListItem::on_motion_enter, item);
-        item->motion_event_controller->connect_signal_motion_leave(ReorderableListItem::on_motion_leave, item);
-
-        gtk_widget_add_controller(GTK_WIDGET(item->box), item->click_event_controller->operator GtkEventController*());
-        gtk_widget_add_controller(GTK_WIDGET(item->box), item->motion_event_controller->operator GtkEventController*());
         return item;
     }
 }
@@ -163,17 +132,58 @@ namespace mousetrap
         gtk_widget_set_visible(GTK_WIDGET(_fixed), false);
         gtk_fixed_put(_fixed, GTK_WIDGET(_fixed_box), 0, 0);
 
+        gtk_widget_set_can_target(GTK_WIDGET(_fixed), false);
+
         return _overlay;
     }())
     {
-        //_motion_event_controller.connect_signal_motion(on_motion, this);
-        //gtk_widget_add_controller(GTK_WIDGET(_fixed), _motion_event_controller.operator GtkEventController*());
+        _motion_event_controller.connect_signal_motion(on_motion, this);
+        _motion_event_controller.connect_signal_motion_leave(on_motion_leave, this);
+        _motion_event_controller.connect_signal_motion_enter(on_motion_enter, this);
+        gtk_widget_add_controller(GTK_WIDGET(_overlay), _motion_event_controller.operator GtkEventController*());
+
+        _click_event_controller.connect_signal_click_pressed(on_click_pressed, this);
+        _click_event_controller.connect_signal_click_released(on_click_released, this);
+        gtk_widget_add_controller(GTK_WIDGET(_overlay), _click_event_controller.operator GtkEventController*());
     }
 
-    void ReorderableListView::on_motion(MotionEventController*, double x, double y, ReorderableListView* instance)
+    size_t ReorderableListView::position_to_item_index(double x, double y)
     {
-        gtk_fixed_move(instance->_fixed, GTK_WIDGET(instance->_fixed_box), x, y);
+        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_list_store)); ++i)
+        {
+            auto* item = (detail::ReorderableListItem*) g_list_model_get_item(G_LIST_MODEL(_list_store), i);
+            double top_left_x, top_left_y;
+            gtk_widget_translate_coordinates(GTK_WIDGET(item->box), GTK_WIDGET(_overlay), 0, 0, &top_left_x, &top_left_y);
+
+            double height = gtk_widget_get_allocated_height(GTK_WIDGET(item->box));
+            double width = gtk_widget_get_allocated_width(GTK_WIDGET(item->box));
+
+            auto rect = mousetrap::Rectangle{{top_left_x, top_left_y}, {width, height}};
+            if (is_point_in_rectangle(Vector2f(x, y), rect))
+                return i;
+        }
+
+        return size_t(-1);
     }
+
+    void ReorderableListView::on_motion_enter(MotionEventController*, double x, double y, ReorderableListView* instance)
+    {}
+
+    void ReorderableListView::on_motion_leave(MotionEventController*, ReorderableListView* instance)
+    {}
+
+    void ReorderableListView::on_motion(MotionEventController*, double x, double y, ReorderableListView* instance)
+    {}
+
+    void ReorderableListView::on_click_pressed(ClickEventController*, int n_press, double x, double y,
+                                               ReorderableListView* instance)
+    {
+
+    }
+
+    void ReorderableListView::on_click_released(ClickEventController*, int n_press, double x, double y,
+                                                ReorderableListView* instance)
+    {}
 
     void ReorderableListView::on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, ReorderableListView* instance)
     {
@@ -187,56 +197,5 @@ namespace mousetrap
     {
         auto* item = detail::reorderable_list_item_new(widget, this);
         g_list_store_append(_list_store, item);
-        update_list_item_indices();
     }
-
-    void ReorderableListView::update_list_item_indices()
-    {
-        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_list_store)); ++i)
-        {
-            auto* item = (detail::ReorderableListItem*) g_list_model_get_item(G_LIST_MODEL(_list_store), i);
-            item->position = i;
-        }
-    }
-
-    void detail::ReorderableListItem::on_click_pressed(ClickEventController*, int n_press, double x, double y,
-                                                       ReorderableListItem* instance)
-    {
-        instance->owner->_drag_active = true;
-        instance->owner->_currently_being_moved = instance->position;
-        gtk_widget_set_visible(GTK_WIDGET(instance->owner->_fixed), true);
-
-        gtk_box_remove(instance->box, instance->widget->operator GtkWidget*());
-        gtk_box_append(instance->owner->_fixed_box, instance->widget->operator GtkWidget*());
-    }
-
-    void detail::ReorderableListItem::on_click_released(ClickEventController*, int n_press, double x, double y, ReorderableListItem* instance)
-    {
-        if (not instance->owner->_drag_active)
-            return;
-
-        auto* list = instance->owner;
-
-        auto* current = (detail::ReorderableListItem*) g_list_model_get_item(G_LIST_MODEL(list->_list_store), list->_currently_being_moved);
-        auto* item = detail::reorderable_list_item_new(current->widget, list);
-
-        g_list_store_remove(list->_list_store, list->_currently_being_moved);
-        g_list_store_insert(list->_list_store, list->_current_insert_i, item);
-        list->update_list_item_indices();
-
-        list->_drag_active = false;
-        list->_current_insert_i = size_t(-1);
-        list->_currently_being_moved = size_t(-1);
-        gtk_widget_set_visible(GTK_WIDGET(instance->owner->_fixed), false);
-    }
-
-    void detail::ReorderableListItem::on_motion_enter(MotionEventController*, double x, double y,
-                                                      ReorderableListItem* instance)
-    {
-        instance->owner->_current_insert_i = instance->position;
-        gtk_fixed_move(instance->owner->_fixed, GTK_WIDGET(instance->owner->_fixed_box), x, y);
-    }
-
-    void detail::ReorderableListItem::on_motion_leave(MotionEventController*, ReorderableListItem* instance)
-    {}
 }

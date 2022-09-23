@@ -190,7 +190,7 @@ add_library(mousetrap SHARED
     src/check_button.inl
 
     include/signal_component.hpp
-        include/grid_view.hpp src/grid_view.inl include/reorderable_list.hpp include/reorderable_list.hpp)
+        include/grid_view.hpp src/grid_view.inl include/reorderable_list.hpp include/reorderable_list.hpp include/reorderable_list.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
