@@ -22,6 +22,7 @@
 #include <include/button.hpp>
 #include <include/check_button.hpp>
 #include <include/grid_view.hpp>
+#include <include/reorderable_list.hpp>
 
 #include <app/global_state.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
@@ -50,31 +51,10 @@ void static_test(CheckButton* instance, std::string* data)
     std::cout << *((std::string*) data) << std::endl;
 }
 
-/*
- * template<typename T>
-            using on_clicked_function_t = void(Button*, T);
-
-            static void on_clicked_wrapper(GtkButton*, Button* instance)
-            {
-                if (instance->_on_clicked_f == nullptr)
-                    return;
-
-                (instance->_on_clicked_f)(instance, instance->_on_clicked_data);
-            }
-
-            template<typename Function_t, typename T>
-            void connect_signal_clicked(Function_t function, T data)
-            {
-                auto temp =  std::function<on_clicked_function_t<T>>(function);
-                _on_clicked_f = std::function<on_clicked_function_t<void*>>(*((std::function<on_clicked_function_t<void*>>*) &temp));
-                _on_clicked_data = data;
-
-                connect_signal("clicked", on_clicked_wrapper, this);
-            }
-
-            std::function<on_clicked_function_t<void*>> _on_clicked_f;
-            void* _on_clicked_data;
- */
+static void on_button_pressed(Button*, int* i)
+{
+    std::cout << "pressed " << *i << std::endl;
+}
 
 static void activate(GtkApplication* app, void*)
 {
@@ -95,23 +75,20 @@ static void activate(GtkApplication* app, void*)
     state::color_picker = new ColorPicker();
     state::color_picker->operator Widget *()->set_size_request({0, 100});
 
-    auto* container = new WidgetContainer("Palette");
-    container->set_child(state::palette_view);
-    container->operator Widget *()->set_expand(true);
+    static auto list = ReorderableListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_SINGLE);
 
-    //box->push_back(state::primary_secondary_color_swapper->operator Widget*());
-    //box->push_back(state::brush_options->operator Widget*());
-
-    static auto grid_view = GridView(GTK_SELECTION_MULTIPLE);
-
-    std::vector<Label*> labels;
-    for (size_t i = 0; i < 30; ++i)
+    for (size_t i = 0; i < 10; ++i)
     {
-        labels.emplace_back(new Label("label_" + std::to_string(i)));
-        grid_view.push_back(labels.back());
+        auto* label = new Label("label_" + std::to_string(i));
+        auto* button = new Button();
+        button->connect_signal_clicked(on_button_pressed, new int(i));
+        auto* box = new Box(GTK_ORIENTATION_HORIZONTAL, 15);
+        box->push_back(label);
+        box->push_back(button);
+        list.push_back(box);
     }
 
-    state::main_window->set_child(&grid_view);
+    state::main_window->set_child(&list);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

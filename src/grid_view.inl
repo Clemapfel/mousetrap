@@ -106,6 +106,24 @@ namespace mousetrap
         g_list_store_append(G_LIST_STORE(_list_store), item);
     }
 
+    void GridView::push_front(Widget* widget)
+    {
+        auto* item = detail::grid_view_item_new(widget);
+        g_list_store_insert(G_LIST_STORE(_list_store), 0, item);
+    }
+
+    void GridView::insert(Widget* widget, size_t i)
+    {
+        auto* item = detail::grid_view_item_new(widget);
+        g_list_store_insert(G_LIST_STORE(_list_store), i, item);
+    }
+
+    void GridView::remove(Widget* widget)
+    {
+        size_t i = 0;
+        g_list_store_remove(G_LIST_STORE(_list_store), i);
+    }
+
     void GridView::set_enable_rubberband_selection(bool b)
     {
         gtk_grid_view_set_enable_rubberband(_native, b);

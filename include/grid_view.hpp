@@ -15,8 +15,12 @@ namespace mousetrap
             GridView(GtkOrientation = GTK_ORIENTATION_VERTICAL, GtkSelectionMode = GTK_SELECTION_NONE);
             GridView(GtkSelectionMode);
 
+            void push_front(Widget*);
             void push_back(Widget*);
+            void insert(Widget*, size_t);
+
             void remove(Widget*);
+            size_t get_n_items() const;
 
             void set_enable_rubberband_selection(bool);
             void set_max_columns(size_t);
