@@ -15,10 +15,18 @@ namespace mousetrap
     class ReorderableListView : public WidgetImplementation<GtkOverlay>
     {
         public:
-            ReorderableListView(GtkOrientation orientation, GtkSelectionMode mode = GTK_SELECTION_SINGLE);
+            ReorderableListView(GtkOrientation orientation);
 
-            operator GtkListView*();
             void push_back(Widget*);
+            void push_front(Widget*);
+            void insert(Widget*, size_t);
+            void remove(size_t);
+
+            Widget* get_widget_at(size_t i);
+            void set_widget_at(size_t i, Widget*);
+
+            void set_show_separators(bool);
+            void set_orientation(GtkOrientation);
 
         private:
             static void
@@ -29,7 +37,6 @@ namespace mousetrap
             GListStore* _list_store;
 
             GtkSelectionModel* _selection_model;
-            GtkSelectionMode _selection_mode;
             GtkOrientation _orientation;
 
             GtkFixed* _fixed;
@@ -117,20 +124,14 @@ namespace mousetrap::detail
 
 namespace mousetrap
 {
-    ReorderableListView::ReorderableListView(GtkOrientation orientation, GtkSelectionMode mode)
-            : _orientation(orientation), _selection_mode(mode), WidgetImplementation<GtkOverlay>([&]() -> GtkOverlay* {
+    ReorderableListView::ReorderableListView(GtkOrientation orientation)
+            : _orientation(orientation), WidgetImplementation<GtkOverlay>([&]() -> GtkOverlay* {
 
         _list_store = g_list_store_new(G_TYPE_OBJECT);
         _factory = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
         g_signal_connect(_factory, "bind", G_CALLBACK(on_list_item_factory_bind), this);
 
-        if (mode == GTK_SELECTION_MULTIPLE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_multi_selection_new(G_LIST_MODEL(_list_store)));
-        else if (mode == GTK_SELECTION_SINGLE or mode == GTK_SELECTION_BROWSE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(G_LIST_MODEL(_list_store)));
-        else if (mode == GTK_SELECTION_NONE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(G_LIST_MODEL(_list_store)));
-
+        _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(G_LIST_MODEL(_list_store)));
         _native = GTK_LIST_VIEW(gtk_list_view_new(_selection_model, GTK_LIST_ITEM_FACTORY(_factory)));
         gtk_orientable_set_orientation(GTK_ORIENTABLE(_native), orientation);
 
@@ -287,7 +288,52 @@ namespace mousetrap
 
     void ReorderableListView::push_back(Widget* widget)
     {
+        if (_drag_active)
+            end_drag();
+
         auto* item = detail::reorderable_list_item_new(widget);
         g_list_store_append(_list_store, item);
+    }
+
+    void ReorderableListView::push_front(Widget* widget)
+    {
+        if (_drag_active)
+            end_drag();
+
+        auto* item = detail::reorderable_list_item_new(widget);
+        g_list_store_insert(_list_store, g_list_model_get_n_items(G_LIST_MODEL(_list_store)), item);
+    }
+
+    void ReorderableListView::insert(Widget* widget, size_t i)
+    {
+        if (_drag_active)
+            end_drag();
+
+        auto* item = detail::reorderable_list_item_new(widget);
+        g_list_store_insert(_list_store, i, item);
+    }
+
+    void ReorderableListView::remove(size_t i)
+    {
+        if (_drag_active)
+            end_drag();
+
+        g_list_store_remove(_list_store, i);
+    }
+
+    Widget* ReorderableListView::get_widget_at(size_t i)
+    {
+        auto* item = (detail::ReorderableListItem*) g_list_model_get_item(G_LIST_MODEL(_list_store), i);
+        return item->widget;
+    }
+
+    void ReorderableListView::set_show_separators(bool b)
+    {
+        gtk_list_view_set_show_separators(_native, b);
+    }
+
+    void ReorderableListView::set_orientation(GtkOrientation orientation)
+    {
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(_native), orientation);
     }
 }

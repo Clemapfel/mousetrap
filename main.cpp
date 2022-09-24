@@ -73,9 +73,10 @@ static void activate(GtkApplication* app, void*)
     state::brush_options = new BrushOptions();
     state::toolbox = new Toolbox(GTK_ORIENTATION_VERTICAL);
     state::color_picker = new ColorPicker();
-    state::color_picker->operator Widget *()->set_size_request({0, 100});
+    state::color_picker->operator Widget*()->set_size_request({0, 100});
 
-    static auto list = ReorderableListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_SINGLE);
+    static auto list = ReorderableListView(GTK_ORIENTATION_VERTICAL);
+    list.set_orientation(GTK_ORIENTATION_HORIZONTAL);
 
     for (size_t i = 0; i < 10; ++i)
     {
