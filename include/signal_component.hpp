@@ -512,6 +512,79 @@ namespace mousetrap
             std::function<on_child_activated_function_t<void*>> _on_child_activated_f;
             void* _on_child_activated_data;
     };
+
+    template<typename Owner_t>
+    class HasDragBeginSignal
+    {
+        public:
+            template<typename T>
+            using on_drag_begin_function_t = void(Owner_t*, double start_x, double start_y, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_drag_begin(Function_t, T);
+
+        protected:
+            HasDragBeginSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_drag_begin_wrapper(void*, double x, double y, HasDragBeginSignal<Owner_t>* instance);
+
+            std::function<on_drag_begin_function_t<void*>> _on_drag_begin_f;
+            void* _on_drag_begin_data;
+    };
+
+    template<typename Owner_t>
+    class HasDragEndSignal
+    {
+        public:
+            template<typename T>
+            using on_drag_end_function_t = void(Owner_t*, double offset_x, double offset_y, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_drag_end(Function_t, T);
+
+        protected:
+            HasDragEndSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_drag_end_wrapper(void*, double x, double y, HasDragEndSignal<Owner_t>* instance);
+
+            std::function<on_drag_end_function_t<void*>> _on_drag_end_f;
+            void* _on_drag_end_data;
+    };
+
+    template<typename Owner_t>
+    class HasDragUpdateSignal
+    {
+        public:
+            template<typename T>
+            using on_drag_update_function_t = void(Owner_t*, double offset_x, double offset_y, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_drag_update(Function_t, T);
+
+        protected:
+            HasDragUpdateSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_drag_update_wrapper(void*, double x, double y, HasDragUpdateSignal<Owner_t>* instance);
+
+            std::function<on_drag_update_function_t<void*>> _on_drag_update_f;
+            void* _on_drag_update_data;
+    };
+
 }
 
 // ###
@@ -939,5 +1012,65 @@ namespace mousetrap
     {
         if (self->_on_child_activated_f != nullptr)
             self->_on_child_activated_f(self->_instance, gtk_flow_box_child_get_index(child), self->_on_child_activated_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasDragBeginSignal<Owner_t>::connect_signal_drag_begin(Function_t function, T data)
+    {
+        auto temp =  std::function<on_drag_begin_function_t<T>>(function);
+        _on_drag_begin_f = std::function<on_drag_begin_function_t<void*>>(*((std::function<on_drag_begin_function_t<void*>>*) &temp));
+        _on_drag_begin_data = data;
+
+        _instance->connect_signal("drag-begin", on_drag_begin_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasDragBeginSignal<Owner_t>::on_drag_begin_wrapper(void*, double x, double y, HasDragBeginSignal<Owner_t>* self)
+    {
+        if (self->_on_drag_begin_f != nullptr)
+            self->_on_drag_begin_f(self->_instance, x, y, self->_on_drag_begin_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasDragEndSignal<Owner_t>::connect_signal_drag_end(Function_t function, T data)
+    {
+        auto temp =  std::function<on_drag_end_function_t<T>>(function);
+        _on_drag_end_f = std::function<on_drag_end_function_t<void*>>(*((std::function<on_drag_end_function_t<void*>>*) &temp));
+        _on_drag_end_data = data;
+
+        _instance->connect_signal("drag-begin", on_drag_end_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasDragEndSignal<Owner_t>::on_drag_end_wrapper(void*, double x, double y, HasDragEndSignal<Owner_t>* self)
+    {
+        if (self->_on_drag_end_f != nullptr)
+            self->_on_drag_end_f(self->_instance, x, y, self->_on_drag_end_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasDragUpdateSignal<Owner_t>::connect_signal_drag_update(Function_t function, T data)
+    {
+        auto temp =  std::function<on_drag_update_function_t<T>>(function);
+        _on_drag_update_f = std::function<on_drag_update_function_t<void*>>(*((std::function<on_drag_update_function_t<void*>>*) &temp));
+        _on_drag_update_data = data;
+
+        _instance->connect_signal("drag-update", on_drag_update_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasDragUpdateSignal<Owner_t>::on_drag_update_wrapper(void*, double x, double y, HasDragUpdateSignal<Owner_t>* self)
+    {
+        if (self->_on_drag_update_f != nullptr)
+            self->_on_drag_update_f(self->_instance, x, y, self->_on_drag_update_data);
     }
 }

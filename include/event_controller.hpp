@@ -76,6 +76,19 @@ namespace mousetrap
         public:
             FocusEventController();
     };
+
+    // handles drag start end
+    class DragEventController : public EventController,
+        public HasDragBeginSignal<DragEventController>,
+        public HasDragEndSignal<DragEventController>,
+        public HasDragUpdateSignal<DragEventController>
+    {
+        public:
+            DragEventController();
+
+            Vector2f get_start_position();
+            Vector2f get_current_offset();
+    };
 }
 
 #include <src/event_controller.inl>

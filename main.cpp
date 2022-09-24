@@ -80,6 +80,7 @@ static void activate(GtkApplication* app, void*)
     for (size_t i = 0; i < 10; ++i)
     {
         auto* label = new Label("label_" + std::to_string(i));
+        label->set_use_markup(true);
         auto* button = new Button();
         button->connect_signal_clicked(on_button_pressed, new int(i));
         auto* box = new Box(GTK_ORIENTATION_HORIZONTAL, 15);
