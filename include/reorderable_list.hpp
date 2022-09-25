@@ -28,9 +28,28 @@ namespace mousetrap
             void set_show_separators(bool);
             void set_orientation(GtkOrientation);
 
+            template<typename T>
+            using on_reordered_function_t = void(ReorderableListView*, Widget* row_widget_move, size_t previous_position, size_t next_position, T data);
+            
+            template<typename Function_t, typename T>
+            void connect_signal_reordered(Function_t, T);
+
+            template<typename T>
+            using on_list_item_activate_function_t = void(ReorderableListView*, Widget* row_widget, size_t item_position, T data);
+
+            template<typename Function_t, typename T>
+            void connect_signal_list_item_activate(Function_t, T);
+
         private:
-            static void
-            on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, ReorderableListView* instance);
+            std::function<on_reordered_function_t<void*>> _on_reordered_function;
+            void* _on_reordered_data;
+
+            static void on_list_item_activate_wrapper(GtkListView* self, guint position, ReorderableListView* instance);
+            
+            std::function<on_list_item_activate_function_t<void*>> _on_list_item_activate_function;
+            void* _on_list_item_activate_data;
+            
+            static void on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, ReorderableListView* instance);
 
             GtkListView* _native;
             GtkSignalListItemFactory* _factory;
@@ -54,7 +73,6 @@ namespace mousetrap
             static void on_drag_update(DragEventController*, double x, double y, ReorderableListView* instance);
 
             size_t position_to_item_index(double x, double y);
-            void deposit_dragged_item();
 
             bool _drag_started = false;
             bool _drag_active = false;
@@ -242,8 +260,11 @@ namespace mousetrap
         g_list_store_remove(_list_store, _currently_being_dragged_item_i);
         g_list_store_insert(_list_store, target_i, item);
 
+        _on_reordered_function(this, item->widget, _currently_being_dragged_item_i, target_i, _on_reordered_data);
+
         _currently_being_dragged_item_i = -1;
-        gtk_selection_model_unselect_all(_selection_model);
+        gtk_selection_model_select_item(_selection_model, target_i, true);
+        gtk_list_view_set_single_click_activate(_native, false);
         _drag_active = false;
     }
 
@@ -335,5 +356,29 @@ namespace mousetrap
     void ReorderableListView::set_orientation(GtkOrientation orientation)
     {
         gtk_orientable_set_orientation(GTK_ORIENTABLE(_native), orientation);
+    }
+
+    template<typename Function_t, typename T>
+    void ReorderableListView::connect_signal_reordered(Function_t f, T data)
+    {
+        auto temp = std::function<on_reordered_function_t<T>>(f);
+        _on_reordered_function = std::function<on_reordered_function_t<void*>>(*((std::function<on_reordered_function_t<void*>>*) &temp));
+        _on_reordered_data = data;
+    }
+
+    template<typename Function_t, typename T>
+    void ReorderableListView::connect_signal_list_item_activate(Function_t f, T data)
+    {
+        auto temp = std::function<on_list_item_activate_function_t<T>>(f);
+        _on_list_item_activate_function = std::function<on_list_item_activate_function_t<void*>>(*((std::function<on_list_item_activate_function_t<void*>>*) &temp));
+        _on_list_item_activate_data = data;
+
+        g_signal_connect(_native, "activate", G_CALLBACK(on_list_item_activate_wrapper), this);
+    }
+
+    void ReorderableListView::on_list_item_activate_wrapper(GtkListView* self, guint position, ReorderableListView* instance)
+    {
+        auto* item = (detail::ReorderableListItem*) g_list_model_get_item(G_LIST_MODEL(instance->_list_store), position);
+        instance->_on_list_item_activate_function(instance, item->widget, position, instance->_on_list_item_activate_data);
     }
 }

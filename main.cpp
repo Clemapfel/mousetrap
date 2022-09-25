@@ -56,6 +56,17 @@ static void on_button_pressed(Button*, int* i)
     std::cout << "pressed " << *i << std::endl;
 }
 
+static void on_reorder(ReorderableListView*, Widget* row_widget_move, size_t previous_position, size_t next_position, size_t* data)
+{
+    std::cout << previous_position << " -> " << next_position << " : " << *data << std::endl;
+}
+
+static void on_activate(ReorderableListView*, Widget* row_widget, size_t item_position, size_t* data)
+{
+    std::cout << item_position << " : " << *data << std::endl;
+}
+
+
 static void activate(GtkApplication* app, void*)
 {
     state::shortcut_map = new ShortcutMap();
@@ -76,7 +87,6 @@ static void activate(GtkApplication* app, void*)
     state::color_picker->operator Widget*()->set_size_request({0, 100});
 
     static auto list = ReorderableListView(GTK_ORIENTATION_VERTICAL);
-    list.set_orientation(GTK_ORIENTATION_HORIZONTAL);
 
     for (size_t i = 0; i < 10; ++i)
     {
@@ -89,6 +99,9 @@ static void activate(GtkApplication* app, void*)
         box->push_back(button);
         list.push_back(box);
     }
+
+    list.connect_signal_reordered(on_reorder, new size_t(1234));
+    list.connect_signal_list_item_activate(on_activate, new size_t(1234));
 
     state::main_window->set_child(&list);
     state::main_window->show();
