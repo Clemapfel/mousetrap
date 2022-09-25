@@ -31,6 +31,8 @@
 #include <app/toolbox.hpp>
 #include <app/color_picker.hpp>
 #include <app/widget_container.hpp>
+#include <app/layer.hpp>
+#include <app/preview.hpp>
 
 /*
 #include <app/toolbox.hpp>
@@ -44,27 +46,6 @@
  */
 
 using namespace mousetrap;
-
-void static_test(CheckButton* instance, std::string* data)
-{
-    std::cout << instance->get_native() << std::endl;
-    std::cout << *((std::string*) data) << std::endl;
-}
-
-static void on_button_pressed(Button*, int* i)
-{
-    std::cout << "pressed " << *i << std::endl;
-}
-
-static void on_reorder(ReorderableListView*, Widget* row_widget_move, size_t previous_position, size_t next_position, size_t* data)
-{
-    std::cout << previous_position << " -> " << next_position << " : " << *data << std::endl;
-}
-
-static void on_activate(ReorderableListView*, Widget* row_widget, size_t item_position, size_t* data)
-{
-    std::cout << item_position << " : " << *data << std::endl;
-}
 
 
 static void activate(GtkApplication* app, void*)
@@ -84,26 +65,24 @@ static void activate(GtkApplication* app, void*)
     state::brush_options = new BrushOptions();
     state::toolbox = new Toolbox(GTK_ORIENTATION_VERTICAL);
     state::color_picker = new ColorPicker();
-    state::color_picker->operator Widget*()->set_size_request({0, 100});
 
-    static auto list = ReorderableListView(GTK_ORIENTATION_VERTICAL);
+    // load frames
+    state::layer_resolution = {50, 50};
+    state::new_layer("layer");
 
-    for (size_t i = 0; i < 10; ++i)
+    for (size_t i_in : {1, 2, 3, 4, 5, 6, 7, 8, 9})
     {
-        auto* label = new Label("label_" + std::to_string(i));
-        label->set_use_markup(true);
-        auto* button = new Button();
-        button->connect_signal_clicked(on_button_pressed, new int(i));
-        auto* box = new Box(GTK_ORIENTATION_HORIZONTAL, 15);
-        box->push_back(label);
-        box->push_back(button);
-        list.push_back(box);
+        size_t i = i_in - 1;
+        state::new_frame(i);
+
+        auto frame =  state::layers.at(0).frames.at(i);
+        frame.image.create_from_file(get_resource_path() + "example_animation/0" + std::to_string(i_in) + ".png");
+        frame.texture.create_from_image(frame.image);
     }
 
-    list.connect_signal_reordered(on_reorder, new size_t(1234));
-    list.connect_signal_list_item_activate(on_activate, new size_t(1234));
+    auto* preview = new Preview();
 
-    state::main_window->set_child(&list);
+    state::main_window->set_child(preview->operator Widget*());
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

@@ -228,7 +228,7 @@ add_library(app STATIC
     app/canvas.hpp
     app/layer_view.hpp
     app/app_component.hpp
-)
+        app/preview.hpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

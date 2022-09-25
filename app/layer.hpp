@@ -81,6 +81,8 @@ namespace mousetrap
             it->image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 1, 1, 0));
             it->texture.create_from_image(it->image);
         }
+
+        n_frames += 1;
     }
 
     void state::delete_layer(Layer* ptr)
