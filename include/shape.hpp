@@ -53,6 +53,9 @@ namespace mousetrap
 
             void set_color(RGBA);
 
+            void set_visible(bool);
+            bool get_visible() const;
+
             Rectangle get_bounding_box() const;
             Vector2f get_size() const;
             void set_size(Vector2f);
@@ -81,6 +84,7 @@ namespace mousetrap
             };
 
             RGBA _color = RGBA(1, 1, 1, 1);
+            bool _visible = true;
 
             std::vector<Vertex> _vertices;
             std::vector<int> _indices;

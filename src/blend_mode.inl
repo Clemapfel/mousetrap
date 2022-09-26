@@ -20,6 +20,11 @@ namespace mousetrap
             glBlendEquationSeparate(GL_FUNC_REVERSE_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT);
             glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
         }
+        else if (mode == REVERSE_SUBTRACT)
+        {
+            glBlendEquationSeparate(GL_FUNC_SUBTRACT, GL_FUNC_SUBTRACT);
+            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
+        }
         else if (mode == ADD)
         {
             glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);

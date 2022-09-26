@@ -146,6 +146,9 @@ namespace mousetrap
 
     void Shape::render(Shader& shader, GLTransform transform)
     {
+        if (not _visible)
+            return;
+
         update_data(false, true, false); // TODO: optimize this away
 
         glUseProgram(shader.get_program_id());
@@ -456,6 +459,16 @@ namespace mousetrap
 
         update_color();
         update_data(false, true, false);
+    }
+
+    void Shape::set_visible(bool b)
+    {
+        _visible = b;
+    }
+
+    bool Shape::get_visible() const
+    {
+        return _visible;
     }
 
     Vector2f Shape::get_centroid() const

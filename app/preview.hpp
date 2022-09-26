@@ -30,9 +30,12 @@ namespace mousetrap
             // fps slider
 
         private:
-            GLArea _gl_area;
+            GLArea _transparency_tiling_area;
+            GLArea _layer_area;
 
-            static void on_gl_area_realize(Widget*, Preview*);
+            static void on_layer_area_realize(Widget*, Preview*);
+            static void on_transparency_area_realize(Widget*, Preview*);
+
             static void on_gl_area_resize(GLArea*, int, int, Preview*);
 
             Shape* _transparency_tiling_shape;
@@ -40,6 +43,7 @@ namespace mousetrap
 
             Vector2f _canvas_size;
             AspectFrame _gl_area_frame = AspectFrame(1);
+            Overlay _gl_area_overlay;
 
             std::vector<Shape*> _layer_shapes;
 
@@ -107,7 +111,7 @@ namespace mousetrap
         delete _transparency_tiling_shape;
     }
 
-    void Preview::on_gl_area_realize(Widget* widget, Preview* instance)
+    void Preview::on_transparency_area_realize(Widget* widget, Preview* instance)
     {
         auto* area = (GLArea*) widget;
         area->make_current();
@@ -118,25 +122,20 @@ namespace mousetrap
         instance->_transparency_tiling_shader = Shader();
         instance->_transparency_tiling_shader.create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
 
-        // TODO
-        for (auto& layer : state::layers)
-        {
-            layer.frames.clear();
-            layer.frames.resize(10);
+        instance->_transparency_tiling_area.make_current();
+        instance->_transparency_tiling_area.clear_render_tasks();
 
-            size_t frame_i = 0;
-            for (auto& frame: layer.frames)
-            {
-                frame.image.create_from_file(get_resource_path() + "example_animation/0" + std::to_string(frame_i) + ".png");
-                frame.texture.create_from_image(frame.image);
+        auto task = RenderTask( instance->_transparency_tiling_shape, & instance->_transparency_tiling_shader);
+        task.register_vec2("_canvas_size", & instance->_canvas_size);
+        instance->_transparency_tiling_area.add_render_task(task);
 
-                frame_i += 1;
-            }
+        instance->_transparency_tiling_area.queue_render();
+    }
 
-            state::n_frames = layer.frames.size();
-        }
-        // TODO
-
+    void Preview::on_layer_area_realize(Widget* widget, Preview* instance)
+    {
+        auto* area = (GLArea*) widget;
+        area->make_current();
         instance->update();
         area->queue_render();
     }
@@ -163,7 +162,9 @@ namespace mousetrap
     void Preview::on_scale_spin_button_value_changed(SpinButton* scale, Preview* instance)
     {
         float value = scale->get_value();
-        instance->_gl_area.set_size_request(state::layer_resolution * Vector2ui(value));
+        instance->_layer_area.set_size_request(state::layer_resolution * Vector2ui(value));
+        instance->_transparency_tiling_area.set_size_request(state::layer_resolution * Vector2ui(value));
+
         instance->_scale = value;
     }
 
@@ -228,7 +229,7 @@ namespace mousetrap
             instance->set_frame(next_frame);
         }
 
-        instance->_gl_area.queue_render();
+        instance->_layer_area.queue_render();
         previous = current;
     }
 
@@ -322,13 +323,21 @@ namespace mousetrap
         _motion_event_controller.connect_signal_motion_enter(on_motion_enter, this);
         _motion_event_controller.connect_signal_motion_leave(on_motion_leave, this);
 
-        _gl_area.set_expand(false);
-        _gl_area.set_align(GTK_ALIGN_CENTER);
-        _gl_area.connect_signal_realize(on_gl_area_realize, this);
-        _gl_area.connect_signal_resize(on_gl_area_resize, this);
+        _layer_area.set_expand(false);
+        _layer_area.set_align(GTK_ALIGN_CENTER);
+        _layer_area.connect_signal_realize(on_layer_area_realize, this);
+        _layer_area.connect_signal_resize(on_gl_area_resize, this);
+        
+        _transparency_tiling_area.set_expand(false);
+        _transparency_tiling_area.set_align(GTK_ALIGN_CENTER);
+        _transparency_tiling_area.connect_signal_realize(on_transparency_area_realize, this);
+        _transparency_tiling_area.connect_signal_resize(on_gl_area_resize, this);
 
+        _gl_area_overlay.set_child(&_transparency_tiling_area);
+        _gl_area_overlay.add_overlay(&_layer_area);
+        
         _gl_area_frame.set_ratio(state::layer_resolution.x / float(state::layer_resolution.y));
-        _gl_area_frame.set_child(&_gl_area);
+        _gl_area_frame.set_child(&_gl_area_overlay);
 
         _frame_label.set_halign(GTK_ALIGN_END);
         _frame_label.set_valign(GTK_ALIGN_START);
@@ -366,24 +375,20 @@ namespace mousetrap
 
         _layer_shapes.clear();
 
-        _gl_area.make_current();
-
-        _gl_area.clear_render_tasks();
-        auto task = RenderTask(_transparency_tiling_shape, &_transparency_tiling_shader);
-        task.register_vec2("_canvas_size", &_canvas_size);
-
-        _gl_area.add_render_task(task);
+        _layer_area.make_current();
+        _layer_area.clear_render_tasks();
 
         for (auto& layer : state::layers)
         {
             _layer_shapes.emplace_back(new Shape());
             _layer_shapes.back()->as_rectangle({0, 0}, {1, 1});
             _layer_shapes.back()->set_texture(&layer.frames.at(_current_frame).texture);
+            _layer_shapes.back()->set_visible(layer.is_visible);
 
             auto task = RenderTask(_layer_shapes.back(), nullptr, nullptr, layer.blend_mode);
-            _gl_area.add_render_task(task);
+            _layer_area.add_render_task(task);
         }
 
-        _gl_area.queue_render();
+        _layer_area.queue_render();
     }
 }

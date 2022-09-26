@@ -12,6 +12,7 @@ namespace mousetrap
         NORMAL,     // alpha blending
         ADD,        // src + dest
         SUBTRACT,   // src - dest
+        REVERSE_SUBTRACT, // dest - src
         MULTIPLY,   // src * dest
         MIN,        // min(src, dest)
         MAX         // max(src, dest)

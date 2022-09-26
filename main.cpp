@@ -67,9 +67,39 @@ static void activate(GtkApplication* app, void*)
     state::color_picker = new ColorPicker();
 
     state::layer_resolution = {50, 50};
-    state::new_layer("layer");
+    state::new_layer("number");
+    state::new_layer("overlay");
+    state::layers.back().blend_mode = BlendMode::ADD;
 
     auto* preview = new Preview();
+
+    for (auto& layer : state::layers)
+    {
+        layer.frames.clear();
+        layer.frames.resize(10);
+
+        size_t frame_i = 0;
+        for (auto& frame: layer.frames)
+        {
+            if (layer.name == "number")
+            {
+                frame.image.create_from_file(
+                        get_resource_path() + "example_animation/0" + std::to_string(frame_i) + ".png");
+            }
+            else
+            {
+                frame.image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 0.5));
+            }
+
+            frame.texture.create_from_image(frame.image);
+            frame_i += 1;
+        }
+
+        state::n_frames = layer.frames.size();
+    }
+
+
+
 
     state::main_window->set_child(preview->operator Widget*());
     state::main_window->show();
