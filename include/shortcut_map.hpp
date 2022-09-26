@@ -33,7 +33,7 @@ namespace mousetrap
 
         protected:
             static std::string trigger_to_string(GtkShortcutTrigger*);
-            std::map<std::string, GtkShortcutTrigger*> _bindings;
+            std::unordered_map<std::string, GtkShortcutTrigger*> _bindings;
     };
 }
 

@@ -5,7 +5,7 @@
 
 namespace mousetrap
 {
-    RenderTask::RenderTask(Shape* shape, Shader* shader, GLTransform* transform)
+    RenderTask::RenderTask(Shape* shape, Shader* shader, GLTransform* transform, BlendMode blend_mode)
     {
         if (shape == nullptr)
             throw std::invalid_argument("In RenderTask::RenderTask: shape == nullptr");
@@ -19,6 +19,7 @@ namespace mousetrap
         _shape = shape;
         _shader = shader;
         _transform = transform;
+        _blend_mode = blend_mode;
     }
 
     void RenderTask::render()
@@ -66,7 +67,11 @@ namespace mousetrap
             if (pair.second != nullptr)
                 shader->set_uniform_vec4(pair.first, pair.second->operator glm::vec4());
 
+        set_current_blend_mode(_blend_mode);
+
         _shape->render(*shader, *transform);
+
+        set_current_blend_mode(BlendMode::NORMAL);
     }
 
     void RenderTask::register_float(const std::string& uniform_name, float* value)

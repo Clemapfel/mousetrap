@@ -8,6 +8,7 @@
 #include <include/shape.hpp>
 #include <include/shader.hpp>
 #include <include/gl_transform.hpp>
+#include <include/blend_mode.hpp>
 
 #include <map>
 
@@ -16,7 +17,7 @@ namespace mousetrap
     class RenderTask
     {
         public:
-            RenderTask(Shape*, Shader* = nullptr, GLTransform* = nullptr);
+            RenderTask(Shape*, Shader* = nullptr, GLTransform* = nullptr, BlendMode blend_mode = BlendMode::NORMAL);
 
             void register_float(const std::string& uniform_name, float*);
             void register_int(const std::string& uniform_name, int*);
@@ -37,6 +38,7 @@ namespace mousetrap
             Shape* _shape;
             Shader* _shader;
             GLTransform* _transform;
+            BlendMode _blend_mode;
             
             static inline Shader* noop_shader = nullptr;
             static inline GLTransform* noop_transform = nullptr;

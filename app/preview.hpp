@@ -199,7 +199,7 @@ namespace mousetrap
             instance->_play_pause_button.set_active(false);
             instance->set_frame(instance->_current_frame == 0 ? state::n_frames - 1 : instance->_current_frame - 1);
         }
-        else if (state::shortcut_map->should_trigger(event, "preview.play_pause"))
+        else if (state::shortcut_map->should_trigger(event, "preview.pause_unpause_animation"))
         {
             instance->_play_pause_button.set_active(not instance->_play_pause_button.get_active());
         }
@@ -339,9 +339,10 @@ namespace mousetrap
         _main.add_overlay(&_toolbox_revealer);
         _main.add_overlay(&_frame_label);
 
+        _main.set_tooltip_text(state::shortcut_map->generate_control_tooltip("preview", "Displays frames at screen resolution"));
+
         gtk_widget_add_tick_callback(_main.operator GtkWidget *(), (GtkTickCallback) G_CALLBACK(on_tick_callback), this, (GDestroyNotify) nullptr);
         _main.add_controller(&_motion_event_controller);
-
         _main.add_controller(&_key_event_controller);
         _key_event_controller.connect_signal_key_pressed(on_key_pressed, this);
 
@@ -367,23 +368,20 @@ namespace mousetrap
 
         _gl_area.make_current();
 
-        for (auto& layer : state::layers)
-        {
-            _layer_shapes.emplace_back(new Shape());
-            _layer_shapes.back()->as_rectangle({0, 0}, {1, 1});
-            _layer_shapes.back()->set_texture(&layer.frames.at(_current_frame).texture);
-        }
-
         _gl_area.clear_render_tasks();
-
         auto task = RenderTask(_transparency_tiling_shape, &_transparency_tiling_shader);
         task.register_vec2("_canvas_size", &_canvas_size);
 
         _gl_area.add_render_task(task);
 
-        for (auto* shape : _layer_shapes)
+        for (auto& layer : state::layers)
         {
-            _gl_area.add_render_task(shape);
+            _layer_shapes.emplace_back(new Shape());
+            _layer_shapes.back()->as_rectangle({0, 0}, {1, 1});
+            _layer_shapes.back()->set_texture(&layer.frames.at(_current_frame).texture);
+
+            auto task = RenderTask(_layer_shapes.back(), nullptr, nullptr, layer.blend_mode);
+            _gl_area.add_render_task(task);
         }
 
         _gl_area.queue_render();

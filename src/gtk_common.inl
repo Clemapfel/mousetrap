@@ -34,7 +34,16 @@ bool gtk_initialize_opengl(GtkWindow* window)
     GLenum glewError = glewInit();
     if (glewError != GLEW_NO_ERROR)
     {
-        std::cerr << "[WARNING] In glewInit: " << glewGetErrorString(glewError) << std::endl;
+        std::cerr << "[ERROR] In glewInit: " << "(" << glewError << ") ";
+
+        if (glewError == GLEW_ERROR_NO_GL_VERSION)
+            std::cerr << "Missing GL version" << std::endl;
+        else if (glewError == GLEW_ERROR_GL_VERSION_10_ONLY)
+            std::cerr << "Need at least OpenGL 1.1" << std::endl;
+        else if (glewError == GLEW_ERROR_GLX_VERSION_11_ONLY)
+            std::cerr << "Need at least GLX 1.2" << std::endl;
+        else if (glewError == GLEW_ERROR_NO_GLX_DISPLAY)
+            std::cerr << "Need GLX Display for GLX support. Are you on Wayland?" << std::endl;
     }
 
     GL_INITIALIZED = true;
