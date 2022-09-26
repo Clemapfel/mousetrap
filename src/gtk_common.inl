@@ -32,26 +32,11 @@ bool gtk_initialize_opengl(GtkWindow* window)
 
     glewExperimental = GL_TRUE;
     GLenum glewError = glewInit();
-    if (glewError != GLEW_OK)
+    if (glewError != GLEW_NO_ERROR)
     {
-        failed = true;
-        std::cerr << "[ERROR] In glewInit: " << glewGetErrorString(glewError) << std::endl;
+        std::cerr << "[WARNING] In glewInit: " << glewGetErrorString(glewError) << std::endl;
     }
 
-    GL_INITIALIZED = not failed;
+    GL_INITIALIZED = true;
     return not failed;
 }
-
-/*
-void gtk_widget_get_size(GtkWidget* widget, int* w, int* h)
-{
-    GtkAllocation* allocation = new GtkAllocation();
-    gtk_widget_get_allocation(widget, allocation);
-
-    if (w != nullptr)
-        *w = allocation->width;
-
-    if (h != nullptr)
-        *h = allocation->height;
-}
-*/

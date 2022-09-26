@@ -175,6 +175,7 @@ namespace mousetrap
 
     void Preview::on_motion_enter(MotionEventController*, double x, double y, Preview* instance)
     {
+        instance->_main.grab_focus();
         instance->_toolbox_revealer.set_revealed(true);
     }
 
@@ -184,12 +185,9 @@ namespace mousetrap
             instance->_toolbox_revealer.set_revealed(false);
     }
 
-    bool
-    Preview::on_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, Preview* instance)
+    bool Preview::on_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, Preview* instance)
     {
         GdkEvent* event = self->get_current_event();
-
-        std::cout << "called" << std::endl;
 
         if (state::shortcut_map->should_trigger(event, "preview.next_frame"))
         {
@@ -200,6 +198,10 @@ namespace mousetrap
         {
             instance->_play_pause_button.set_active(false);
             instance->set_frame(instance->_current_frame == 0 ? state::n_frames - 1 : instance->_current_frame - 1);
+        }
+        else if (state::shortcut_map->should_trigger(event, "preview.play_pause"))
+        {
+            instance->_play_pause_button.set_active(not instance->_play_pause_button.get_active());
         }
     }
 
