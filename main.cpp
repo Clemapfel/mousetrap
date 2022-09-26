@@ -66,19 +66,8 @@ static void activate(GtkApplication* app, void*)
     state::toolbox = new Toolbox(GTK_ORIENTATION_VERTICAL);
     state::color_picker = new ColorPicker();
 
-    // load frames
     state::layer_resolution = {50, 50};
     state::new_layer("layer");
-
-    for (size_t i_in : {1, 2, 3, 4, 5, 6, 7, 8, 9})
-    {
-        size_t i = i_in - 1;
-        state::new_frame(i);
-
-        auto frame =  state::layers.at(0).frames.at(i);
-        frame.image.create_from_file(get_resource_path() + "example_animation/0" + std::to_string(i_in) + ".png");
-        frame.texture.create_from_image(frame.image);
-    }
 
     auto* preview = new Preview();
 

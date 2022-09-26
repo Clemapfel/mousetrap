@@ -78,7 +78,7 @@ namespace mousetrap
         for (auto& layer : state::layers)
         {
             auto it = layer.frames.emplace(layer.frames.begin() + index);
-            it->image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 1, 1, 0));
+            it->image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1));
             it->texture.create_from_image(it->image);
         }
 

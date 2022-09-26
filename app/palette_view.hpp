@@ -336,7 +336,7 @@ namespace mousetrap
     bool PaletteView::on_key_event_controller_key_pressed(KeyEventController* self, guint keyval, guint keycode,
                                                               GdkModifierType state, PaletteView* instance)
     {
-        GdkEvent* event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self));
+        GdkEvent* event = self->get_current_event();
 
         if (state::shortcut_map->should_trigger(event, "palette_view.select_color_0"))
             instance->select(0);
