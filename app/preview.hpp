@@ -317,6 +317,7 @@ namespace mousetrap
         _toolbox_box.push_back(&_menu_button);
         _toolbox_box.set_hexpand(true);
         _toolbox_box.set_valign(GTK_ALIGN_END);
+        _toolbox_box.set_homogeneous(true);
 
         _toolbox_revealer.set_child(&_toolbox_box);
 
