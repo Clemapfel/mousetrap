@@ -1,6 +1,6 @@
 // 
 // Copyright 2022 Clemens Cords
-// Created on 9/28/22 by clem (mail@clemens-cords.com)
+// Created on 9/26/22 by clem (mail@clemens-cords.com)
 //
 
 #pragma once
@@ -23,7 +23,6 @@
 #include <include/menu_button.hpp>
 #include <include/popover.hpp>
 #include <include/dropdown.hpp>
-#include <include/overlay.hpp>
 
 #include <app/global_state.hpp>
 #include <app/app_component.hpp>
@@ -36,15 +35,12 @@ namespace mousetrap
             LayerView();
 
             operator Widget*() override;
-
-            void update() override
-            {};
+            void update() override {};
 
         private:
             struct LayerFrameDisplay
             {
                 LayerFrameDisplay(Layer*, size_t, LayerView* _owner);
-                operator Widget*();
 
                 size_t _frame_index;
                 Layer* _layer;
@@ -132,95 +128,29 @@ namespace mousetrap
                 using on_blend_mode_select_data = struct {BlendMode blend_mode; LayerRow* instance;};
                 static void on_blend_mode_select(on_blend_mode_select_data*);
 
+                std::vector<LayerFrameDisplay> _frames;
+                ListView _frame_list = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
                 ListView _main = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
-
-                LayerFrameDisplay _current_frame;
             };
 
             std::vector<LayerRow*> _rows;
             ReorderableListView _row_list = ReorderableListView(GTK_ORIENTATION_VERTICAL);
 
-            struct FrameColumn
-            {
-                FrameColumn(size_t frame_i, LayerView* owner);
+            std::vector<Label*> _frame_indices;
+            std::vector<Box*> _frame_indices_box;
+            ReorderableListView _frame_index_list = ReorderableListView(GTK_ORIENTATION_HORIZONTAL);
 
-                size_t _frame;
-                LayerView* _owner;
-
-                Label _index_label;
-                std::vector<LayerFrameDisplay*> _layers;
-                ListView _main = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_NONE);
-            };
-
-            std::vector<FrameColumn*> _columns;
-            ReorderableListView _column_list = ReorderableListView(GTK_ORIENTATION_HORIZONTAL);
 
             static void notify_layer_locked(bool locked, LayerRow*);
             static void notify_layer_visible(bool visible, LayerRow*);
             static void notify_layer_renamed(std::string new_name, LayerRow*);
             static void notify_layer_opacity_changed(float opacity, LayerRow*);
             static void notify_layer_blend_mode_changed(BlendMode, LayerRow*);
-
-            Overlay _main;
     };
 }
 
 namespace mousetrap
 {
-    /// LAYER FRAME DISPLAY
-
-    void LayerView::LayerFrameDisplay::on_gl_area_realize(Widget* widget, LayerFrameDisplay* instance)
-    {
-        auto* area = (GLArea*) widget;
-        area->make_current();
-
-        if (_transparency_tiling_shader == nullptr)
-        {
-            _transparency_tiling_shader = new Shader();
-            _transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag",
-                                                          ShaderType::FRAGMENT);
-        }
-
-        instance->_transparency_tiling_shape = new Shape();
-        instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
-        instance->_canvas_size = Vector2f(1, 1);
-
-        instance->_layer_shape = new Shape();
-        instance->_layer_shape->as_rectangle({0, 0}, {1, 1});
-        instance->_layer_shape->set_texture(&instance->_layer->frames.at(instance->_frame_index).texture);
-
-        auto task = RenderTask(instance->_transparency_tiling_shape, _transparency_tiling_shader);
-        task.register_vec2("_canvas_size", &instance->_canvas_size);
-
-        instance->_gl_area.add_render_task(task);
-        instance->_gl_area.add_render_task(instance->_layer_shape);
-
-        instance->_gl_area.set_size_request({state::layer_resolution.x * 1.1, state::layer_resolution.y});
-    }
-
-    void LayerView::LayerFrameDisplay::on_gl_area_resize(GLArea*, int w, int h, LayerFrameDisplay* instance)
-    {
-        instance->_canvas_size = {w, h};
-        instance->_gl_area.queue_render();
-    }
-
-    LayerView::LayerFrameDisplay::LayerFrameDisplay(Layer* layer, size_t frame_i, LayerView* owner)
-            : _layer(layer), _frame_index(frame_i),
-              _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y)), _owner(owner)
-    {
-        _gl_area.connect_signal_realize(on_gl_area_realize, this);
-        _gl_area.connect_signal_resize(on_gl_area_resize, this);
-
-        _aspect_frame.set_child(&_gl_area);
-    }
-
-    LayerView::LayerFrameDisplay::operator Widget*()
-    {
-        return &_aspect_frame;
-    }
-
-    // LAYER ROW
-
     void LayerView::LayerRow::on_locked_toggle_button_toggled(ToggleButton* button, LayerRow* instance)
     {
         LayerView::notify_layer_locked(button->get_active(), instance);
@@ -333,19 +263,19 @@ namespace mousetrap
     }
 
 
+
     LayerView::LayerRow::LayerRow(Layer* layer, LayerView* owner)
-        : _layer(layer), _menu_button_title_label(layer->name), _owner(owner), _current_frame(layer, state::current_frame, owner)
+            : _layer(layer), _menu_button_title_label(layer->name), _owner(owner)
     {
         auto icon_size = _locked_toggle_button_icon_locked.get_size();
 
-        for (auto* icon: {&_locked_toggle_button_icon_locked, &_locked_toggle_button_icon_not_locked,
-                          &_visible_toggle_button_icon_visible, &_visible_toggle_button_icon_not_visible})
+        for (auto* icon : {&_locked_toggle_button_icon_locked, &_locked_toggle_button_icon_not_locked, &_visible_toggle_button_icon_visible, &_visible_toggle_button_icon_not_visible})
         {
             icon->set_size_request(icon_size);
             icon->set_expand(false);
         }
 
-        for (auto* button: {&_visible_toggle_button, &_locked_toggle_button})
+        for (auto* button : { &_visible_toggle_button, &_locked_toggle_button})
         {
             button->set_has_frame(false);
             button->set_size_request(icon_size);
@@ -371,8 +301,8 @@ namespace mousetrap
         auto* entry_natural = gtk_requisition_new();
         auto* button_natural = gtk_requisition_new();
 
-        gtk_widget_get_preferred_size(_name_entry.operator GtkWidget*(), nullptr, entry_natural);
-        gtk_widget_get_preferred_size(_visible_check_button.operator GtkWidget*(), nullptr, button_natural);
+        gtk_widget_get_preferred_size(_name_entry.operator GtkWidget *(), nullptr, entry_natural);
+        gtk_widget_get_preferred_size(_visible_check_button.operator GtkWidget *(), nullptr, button_natural);
 
         float right_margin = entry_natural->width * 0.5 - button_natural->width * 0.5;
 
@@ -477,7 +407,7 @@ namespace mousetrap
         _blend_mode_dropdown_label_items.reserve(_blend_modes_in_order.size());
         _blend_mode_dropdown_list_items.reserve(_blend_modes_in_order.size());
 
-        for (auto mode: _blend_modes_in_order)
+        for (auto mode : _blend_modes_in_order)
             add_dropdown_item(mode);
 
         _blend_mode_box.push_back(&_blend_mode_label);
@@ -486,7 +416,7 @@ namespace mousetrap
         _blend_mode_dropdown.set_hexpand(true);
         _blend_mode_dropdown.set_halign(GTK_ALIGN_CENTER);
 
-        for (auto* box: {&_name_box, &_opacity_box, &_visible_box, &_locked_box, &_blend_mode_box})
+        for (auto* box : {&_name_box, &_opacity_box, &_visible_box, &_locked_box, &_blend_mode_box})
             _menu_button_popover_box.push_back(box);
 
         _menu_button_popover_box.set_homogeneous(true);
@@ -504,37 +434,34 @@ namespace mousetrap
         _menu_button.set_child(&_menu_button_title_label_viewport);
 
         _menu_button.set_hexpand(false);
-        _main.set_show_separators(false);
+        _main.set_show_separators(true);
 
         _main.push_back(&_visible_locked_indicator_box);
         _main.push_back(&_menu_button);
-        _main.push_back(&_current_frame._aspect_frame);
-    }
 
-    // FRAME COLUMN
-
-    LayerView::FrameColumn::FrameColumn(size_t frame_i, LayerView* owner)
-        : _frame(frame_i), _owner(owner), _index_label(frame_i < 10 ? "0" : "" + std::to_string(frame_i))
-    {
-        _layers.reserve(state::layers.size());
-
-        _main.push_back(&_index_label);
-        for (auto& layer : state::layers)
+        _frames.reserve(_layer->frames.size());
+        for (size_t i = 0; i < _layer->frames.size(); i++)
         {
-            _layers.emplace_back(new LayerFrameDisplay(&layer, _frame, owner));
-            _main.push_back(&_layers.back()->_aspect_frame);
+            _frames.emplace_back(_layer, i, _owner);
+            _frame_list.push_back(&_frames.back()._aspect_frame);
         }
 
-        _main.set_show_separators(false);
+        _main.push_back(&_frame_list);
     }
-
-    // LAYER VIEW
 
     LayerView::LayerView()
     {
-        static auto* dummy = new Label("dummy");
-        _row_list.push_back(dummy);
-        dummy->set_opacity(0);
+        _frame_indices.reserve(state::n_frames);
+        for (size_t i = 0; i < state::n_frames; i++)
+        {
+            _frame_indices.emplace_back(new Label((i < 10 ? "0" : "") + std::to_string(i)));
+            _frame_indices_box.emplace_back(new Box(GTK_ORIENTATION_HORIZONTAL));
+
+            _frame_indices.back()->set_halign(GTK_ALIGN_CENTER);
+            _frame_indices_box.back()->push_back(_frame_indices.back());
+
+            _frame_index_list.push_back(_frame_indices_box.back());
+        }
 
         for (auto& layer : state::layers)
         {
@@ -542,20 +469,17 @@ namespace mousetrap
             _row_list.push_back(&_rows.back()->_main);
         }
 
-        for (size_t frame = 0; frame < state::n_frames; ++frame)
-        {
-            _columns.emplace_back(new FrameColumn(frame, this));
-            _column_list.push_back(&_columns.back()->_main);
-        }
+        // align frame index with row below
+        float first_left_margin = 0;
+        first_left_margin += _rows.at(0)->_visible_locked_indicator_box.get_preferred_size().natural_size.x;
+        first_left_margin += _rows.at(0)->_menu_button.get_preferred_size().natural_size.x;
+        first_left_margin += _frame_indices.at(0)->get_preferred_size().natural_size.x * 0.5;
+        _frame_index_list.set_margin_start(first_left_margin);
 
-        _row_list.set_show_separators(false);
-        _column_list.set_show_separators(false);
+        std::cout << "left to start: " << first_left_margin << std::endl;
 
-        _column_list.set_halign(GTK_ALIGN_END);
-
-        _main.set_size_request({_column_list.get_preferred_size().natural_size.y, 0});
-        _main.add_overlay(&_row_list);
-        _main.add_overlay(&_column_list);
+        _main.push_back(&_frame_index_list);
+        _main.push_back(&_row_list);
     }
 
     LayerView::operator Widget*()
@@ -563,4 +487,3 @@ namespace mousetrap
         return &_main;
     }
 }
-

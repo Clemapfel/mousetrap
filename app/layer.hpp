@@ -32,6 +32,7 @@ namespace mousetrap
         std::deque<Layer> layers;
         Vector2ui layer_resolution;
         size_t n_frames = 0;
+        size_t current_frame = 2;
 
         Layer* new_layer(const std::string& name, Layer* after = nullptr);
         void new_frame(size_t index);
