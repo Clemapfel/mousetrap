@@ -16,6 +16,7 @@ namespace mousetrap
             ImageDisplay();
             ImageDisplay(const std::string& file, size_t scale = 1);
             ImageDisplay(const Image&);
+            ImageDisplay(GdkPixbuf*);
 
             Vector2ui get_size() const;
 

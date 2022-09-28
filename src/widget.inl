@@ -292,4 +292,13 @@ namespace mousetrap
     {
         return gtk_widget_get_realized(this->operator GtkWidget*());
     }
+
+    Widget::preferred_size Widget::get_preferred_size()
+    {
+        auto min = gtk_requisition_new();
+        auto nat = gtk_requisition_new();
+        gtk_widget_get_preferred_size(_native, min, nat);
+
+        return Widget::preferred_size{{min->width, min->height}, {nat->width, nat->height}};
+    }
 }

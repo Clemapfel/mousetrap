@@ -13,6 +13,13 @@ namespace mousetrap
         _size = {0, 0};
     }
 
+    ImageDisplay::ImageDisplay(GdkPixbuf* pixbuf)
+        : WidgetImplementation<GtkImage>(GTK_IMAGE(gtk_image_new_from_pixbuf(pixbuf)))
+    {
+        _size.x = gdk_pixbuf_get_width(pixbuf);
+        _size.y = gdk_pixbuf_get_height(pixbuf);
+    }
+
     ImageDisplay::ImageDisplay(const std::string& file, size_t scale)
         : WidgetImplementation<GtkImage>([&]() -> GtkImage*{
 

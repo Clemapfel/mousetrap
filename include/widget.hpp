@@ -67,6 +67,9 @@ namespace mousetrap
 
             bool get_is_realized();
 
+            using preferred_size = struct {Vector2f minimum_size; Vector2f natural_size;};
+            preferred_size get_preferred_size();
+
         protected:
             Widget() = delete;
 
@@ -90,8 +93,6 @@ namespace mousetrap
         operator GtkWidget_t*() const;
         GtkWidget_t* get_native() const;
     };
-
-
 };
 
 #include <src/widget.inl>
