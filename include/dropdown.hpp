@@ -17,21 +17,20 @@ namespace mousetrap
             DropDown();
 
             // push back and create label widget as Label(id)
-            using OnSelectSignature = void (*)(void*);
 
-            void push_back(
-                    Widget*,
-                    const std::string& id,
-                    OnSelectSignature on_select_f = nullptr,
-                    void* on_select_data = nullptr
-            );
+            template<typename T>
+            using on_select_function_t = void (*)(void*);
 
+            template<typename Function_t, typename T>
             void push_back(
                     Widget* list_widget,
                     Widget* when_selected_label_widget,
-                    OnSelectSignature on_select_f = nullptr,
-                    void* on_select_data = nullptr
+                    Function_t on_select_f = nullptr,
+                    T on_select_data = nullptr
             );
+
+            void set_selected(size_t);
+            size_t get_selected();
 
         private:
             static void on_list_factory_bind(GtkSignalListItemFactory* self, void* object, void*);

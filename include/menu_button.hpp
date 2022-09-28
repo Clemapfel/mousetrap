@@ -23,6 +23,7 @@ namespace mousetrap
             void set_popover(Popover*);
 
             void set_always_show_arrow(bool);
+            void set_has_frame(bool);
 
             void popup();
             void popdown();

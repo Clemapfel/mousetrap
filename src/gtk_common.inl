@@ -30,11 +30,11 @@ bool gtk_initialize_opengl(GtkWindow* window)
 
     gdk_gl_context_make_current(context);
 
-    glewExperimental = GL_TRUE;
+    glewExperimental = GL_FALSE;
     GLenum glewError = glewInit();
     if (glewError != GLEW_NO_ERROR)
     {
-        std::cerr << "[ERROR] In glewInit: " << "(" << glewError << ") ";
+        std::cerr << "[WARNING] In glewInit: Unable to initialize glew " << "(" << glewError << ") ";
 
         if (glewError == GLEW_ERROR_NO_GL_VERSION)
             std::cerr << "Missing GL version" << std::endl;

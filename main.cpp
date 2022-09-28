@@ -33,6 +33,7 @@
 #include <app/widget_container.hpp>
 #include <app/layer.hpp>
 #include <app/preview.hpp>
+#include <app/layer_view.hpp>
 
 /*
 #include <app/toolbox.hpp>
@@ -98,10 +99,9 @@ static void activate(GtkApplication* app, void*)
         state::n_frames = layer.frames.size();
     }
 
+    auto* layer_view = new LayerView();
 
-
-
-    state::main_window->set_child(preview->operator Widget*());
+    state::main_window->set_child(layer_view->operator Widget*());
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

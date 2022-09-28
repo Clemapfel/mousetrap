@@ -22,7 +22,7 @@ namespace mousetrap
 
     Adjustment::Adjustment(GtkAdjustment* in)
     {
-        _native = g_object_ref();
+        _native = g_object_ref(in);
     }
 
     void Adjustment::clamp_page(float lower, float upper)

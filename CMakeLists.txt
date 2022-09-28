@@ -195,7 +195,7 @@ add_library(mousetrap SHARED
     src/grid_view.inl
 
     include/reorderable_list.hpp
-        include/blend_mode.hpp src/blend_mode.inl)
+        include/blend_mode.hpp src/blend_mode.inl include/viewport.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

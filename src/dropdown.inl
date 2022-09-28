@@ -20,7 +20,7 @@ namespace mousetrap
             Widget* label_widget;
             GtkWidget* label_widget_ref;
 
-            mousetrap::DropDown::OnSelectSignature on_select_f;
+            DropDown::on_select_function_t<void*> on_select_f;
             void* on_select_data;
         };
 
@@ -57,7 +57,7 @@ namespace mousetrap
             gobject_class->finalize = drop_down_item_finalize;
         }
 
-        static DropDownItem* drop_down_item_new(Widget* in, Widget* label, DropDown::OnSelectSignature f, void* f_data)
+        static DropDownItem* drop_down_item_new(Widget* in, Widget* label, DropDown::on_select_function_t<void*> f, void* f_data)
         {
             auto* item = (DropDownItem*) g_object_new(G_TYPE_DROP_DOWN_ITEM, nullptr);
             drop_down_item_init(item);
@@ -108,26 +108,33 @@ namespace mousetrap
         auto* item = GTK_LIST_ITEM(object);
         auto* dropdown_item = detail::G_DROP_DOWN_ITEM(gtk_list_item_get_item(item));
         gtk_list_item_set_child(item, dropdown_item->label_widget->operator GtkWidget*());
-
         if (dropdown_item->on_select_f != nullptr)
             dropdown_item->on_select_f(dropdown_item->on_select_data);
     }
 
+    template<typename Function_t, typename T>
     void DropDown::push_back(
             Widget* list_widget,
             Widget* when_selected_label_widget,
-            OnSelectSignature on_select_f,
-            void* on_select_data)
+            Function_t on_select_f,
+            T on_select_data)
     {
-        auto* item = detail::drop_down_item_new(list_widget, when_selected_label_widget, on_select_f, on_select_data);
+        auto* item = detail::drop_down_item_new(
+            list_widget,
+            when_selected_label_widget,
+            reinterpret_cast<on_select_function_t<void*>>(on_select_f),
+            reinterpret_cast<void*>(on_select_data)
+        );
         g_list_store_append(_model, item);
     }
 
-    void DropDown::push_back(Widget* widget, const std::string& id, OnSelectSignature on_select_f, void* on_select_data)
+    size_t DropDown::get_selected()
     {
-        auto* label = new Label(id);
-        label->set_use_markup(true);
-        push_back(widget, label, on_select_f, on_select_data);
+        return gtk_drop_down_get_selected(get_native());
     }
 
+    void DropDown::set_selected(size_t i)
+    {
+        gtk_drop_down_set_selected(get_native(), i);
+    }
 }

@@ -260,7 +260,8 @@ namespace mousetrap
         g_list_store_remove(_list_store, _currently_being_dragged_item_i);
         g_list_store_insert(_list_store, target_i, item);
 
-        _on_reordered_function(this, item->widget, _currently_being_dragged_item_i, target_i, _on_reordered_data);
+        if (_on_reordered_function != nullptr)
+            _on_reordered_function(this, item->widget, _currently_being_dragged_item_i, target_i, _on_reordered_data);
 
         _currently_being_dragged_item_i = -1;
         gtk_selection_model_select_item(_selection_model, target_i, true);

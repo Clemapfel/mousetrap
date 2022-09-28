@@ -45,4 +45,9 @@ namespace mousetrap
     {
         gtk_menu_button_set_always_show_arrow(get_native(), b);
     }
+
+    void MenuButton::set_has_frame(bool b)
+    {
+        gtk_menu_button_set_has_frame(get_native(), b);
+    }
 }
