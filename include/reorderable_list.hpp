@@ -323,7 +323,7 @@ namespace mousetrap
             end_drag();
 
         auto* item = detail::reorderable_list_item_new(widget);
-        g_list_store_insert(_list_store, g_list_model_get_n_items(G_LIST_MODEL(_list_store)), item);
+        g_list_store_insert(_list_store, 0, item);
     }
 
     void ReorderableListView::insert(Widget* widget, size_t i)

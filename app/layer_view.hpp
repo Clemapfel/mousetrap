@@ -134,26 +134,12 @@ namespace mousetrap
 
                 ListView _main = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
-                LayerFrameDisplay _current_frame;
+                Label _index_label;
+                std::vector<LayerFrameDisplay*> _layers;
             };
 
             std::vector<LayerRow*> _rows;
             ReorderableListView _row_list = ReorderableListView(GTK_ORIENTATION_VERTICAL);
-
-            struct FrameColumn
-            {
-                FrameColumn(size_t frame_i, LayerView* owner);
-
-                size_t _frame;
-                LayerView* _owner;
-
-                Label _index_label;
-                std::vector<LayerFrameDisplay*> _layers;
-                ListView _main = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_NONE);
-            };
-
-            std::vector<FrameColumn*> _columns;
-            ReorderableListView _column_list = ReorderableListView(GTK_ORIENTATION_HORIZONTAL);
 
             static void notify_layer_locked(bool locked, LayerRow*);
             static void notify_layer_visible(bool visible, LayerRow*);
@@ -161,7 +147,10 @@ namespace mousetrap
             static void notify_layer_opacity_changed(float opacity, LayerRow*);
             static void notify_layer_blend_mode_changed(BlendMode, LayerRow*);
 
-            Overlay _main;
+            std::vector<Label*> _frame_index_labels;
+            ReorderableListView _frame_index_list = ReorderableListView(GTK_ORIENTATION_HORIZONTAL);
+
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
 }
 
@@ -202,6 +191,9 @@ namespace mousetrap
     {
         instance->_canvas_size = {w, h};
         instance->_gl_area.queue_render();
+
+        for (auto* label : instance->_owner->_frame_index_labels)
+            label->set_size_request({w, 0});
     }
 
     LayerView::LayerFrameDisplay::LayerFrameDisplay(Layer* layer, size_t frame_i, LayerView* owner)
@@ -334,7 +326,7 @@ namespace mousetrap
 
 
     LayerView::LayerRow::LayerRow(Layer* layer, LayerView* owner)
-        : _layer(layer), _menu_button_title_label(layer->name), _owner(owner), _current_frame(layer, state::current_frame, owner)
+        : _layer(layer), _menu_button_title_label(layer->name), _owner(owner)
     {
         auto icon_size = _locked_toggle_button_icon_locked.get_size();
 
@@ -503,59 +495,32 @@ namespace mousetrap
         _menu_button_title_label_viewport.set_policy(GTK_POLICY_EXTERNAL, GTK_POLICY_NEVER);
         _menu_button.set_child(&_menu_button_title_label_viewport);
 
-        _menu_button.set_hexpand(false);
-        _main.set_show_separators(false);
-
         _main.push_back(&_visible_locked_indicator_box);
         _main.push_back(&_menu_button);
-        _main.push_back(&_current_frame._aspect_frame);
-    }
-
-    // FRAME COLUMN
-
-    LayerView::FrameColumn::FrameColumn(size_t frame_i, LayerView* owner)
-        : _frame(frame_i), _owner(owner), _index_label(frame_i < 10 ? "0" : "" + std::to_string(frame_i))
-    {
-        _layers.reserve(state::layers.size());
-
-        _main.push_back(&_index_label);
-        for (auto& layer : state::layers)
-        {
-            _layers.emplace_back(new LayerFrameDisplay(&layer, _frame, owner));
-            _main.push_back(&_layers.back()->_aspect_frame);
-        }
-
-        _main.set_show_separators(false);
+        _menu_button.set_hexpand(false);
+        _main.set_show_separators(true);
     }
 
     // LAYER VIEW
 
     LayerView::LayerView()
     {
-        static auto* dummy = new Label("dummy");
-        _row_list.push_back(dummy);
-        dummy->set_opacity(0);
-
         for (auto& layer : state::layers)
         {
             _rows.emplace_back(new LayerRow(&layer, this));
+
+            auto* row = _rows.back();
+            row->_layers.reserve(state::layers.size());
+
+            for (size_t i = 0; i < row->_layer->frames.size(); ++i)
+            {
+                row->_layers.emplace_back(new LayerFrameDisplay(row->_layer, i, this));
+                row->_main.push_back(&row->_layers.back()->_aspect_frame);
+            }
             _row_list.push_back(&_rows.back()->_main);
         }
-
-        for (size_t frame = 0; frame < state::n_frames; ++frame)
-        {
-            _columns.emplace_back(new FrameColumn(frame, this));
-            _column_list.push_back(&_columns.back()->_main);
-        }
-
-        _row_list.set_show_separators(false);
-        _column_list.set_show_separators(false);
-
-        _column_list.set_halign(GTK_ALIGN_END);
-
-        _main.set_size_request({_column_list.get_preferred_size().natural_size.y, 0});
-        _main.add_overlay(&_row_list);
-        _main.add_overlay(&_column_list);
+        _row_list.set_show_separators(true);
+        _main.push_back(&_row_list);
     }
 
     LayerView::operator Widget*()
