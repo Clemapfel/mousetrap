@@ -12,7 +12,7 @@ namespace mousetrap
         return G_OBJECT(operator GtkWidget*());
     }
 
-    Widget::operator GtkWidget*()
+    Widget::operator GtkWidget*() const
     {
         return GTK_WIDGET(_native);
     }
@@ -35,13 +35,13 @@ namespace mousetrap
     template<typename T>
     WidgetImplementation<T>::operator T*() const
     {
-        return (T*) Widget::_native;
+        return (T*) Widget::operator GtkWidget*();
     }
 
     template<typename T>
     T* WidgetImplementation<T>::get_native() const
     {
-        return (T*) Widget::_native;
+        return (T*) Widget::operator GtkWidget*();
     }
 
     template<typename GObject_t>

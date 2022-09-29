@@ -585,6 +585,105 @@ namespace mousetrap
             void* _on_drag_update_data;
     };
 
+    template<typename Owner_t>
+    class HasAttachSignal
+    {
+        public:
+            template<typename T>
+            using on_attach_function_t = void(Owner_t*, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_attach(Function_t , T);
+
+        protected:
+            HasAttachSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+            void emit_signal_attach();
+
+        private:
+            Owner_t* _instance;
+
+            std::function<on_attach_function_t<void*>> _on_attach_f;
+            void* _on_attach_data;
+    };
+
+    template<typename Owner_t>
+    class HasDetachSignal
+    {
+        public:
+            template<typename T>
+            using on_detach_function_t = void(Owner_t*, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_detach(Function_t , T);
+
+        protected:
+            HasDetachSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+            void emit_signal_detach();
+
+        private:
+            Owner_t* _instance;
+
+            std::function<on_detach_function_t<void*>> _on_detach_f;
+            void* _on_detach_data;
+    };
+
+    class Widget;
+
+    template<typename Owner_t>
+    class HasReorderedSignal
+    {
+        public:
+            template<typename T>
+            using on_reordered_function_t = void(Owner_t*, Widget* row_widget_moved, size_t previous_position, size_t next_position, T data);
+
+            template<typename Function_t, typename T>
+            void connect_signal_reordered(Function_t , T);
+
+        protected:
+            HasReorderedSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+            void emit_signal_reordered(Widget*, size_t previous_position, size_t next_position);
+
+        private:
+            Owner_t* _instance;
+
+            std::function<on_reordered_function_t<void*>> _on_reordered_f;
+            void* _on_reordered_data;
+    };
+
+    template<typename Owner_t>
+    class HasListItemActivateSignal
+    {
+        public:
+            template<typename T>
+            using on_list_item_activate_function_t = void(Owner_t*, size_t item_position, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_list_item_activate(Function_t, T);
+
+        protected:
+            HasListItemActivateSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_list_item_activate_wrapper(GtkListView*, guint position, HasActivateSignal<Owner_t>* instance);
+
+            std::function<on_list_item_activate_function_t<void*>> _on_list_item_activate_f;
+            void* _on_list_item_activate_data;
+    };
+
+
 }
 
 // ###
@@ -1072,5 +1171,80 @@ namespace mousetrap
     {
         if (self->_on_drag_update_f != nullptr)
             self->_on_drag_update_f(self->_instance, x, y, self->_on_drag_update_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasAttachSignal<Owner_t>::connect_signal_attach(Function_t f, T data)
+    {
+        auto temp =  std::function<on_attach_function_t<T>>(f);
+        _on_attach_f = std::function<on_attach_function_t<void*>>(*((std::function<on_attach_function_t<void*>>*) &temp));
+        _on_attach_data = data;
+    }
+
+    template<typename Owner_t>
+    void HasAttachSignal<Owner_t>::emit_signal_attach()
+    {
+        if (_on_attach_f != nullptr)
+            _on_attach_f(_instance, _on_attach_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasDetachSignal<Owner_t>::connect_signal_detach(Function_t f, T data)
+    {
+        auto temp =  std::function<on_detach_function_t<T>>(f);
+        _on_detach_f = std::function<on_detach_function_t<void*>>(*((std::function<on_detach_function_t<void*>>*) &temp));
+        _on_detach_data = data;
+    }
+
+    template<typename Owner_t>
+    void HasDetachSignal<Owner_t>::emit_signal_detach()
+    {
+        if (_on_detach_f != nullptr)
+            _on_detach_f(_instance, _on_detach_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasReorderedSignal<Owner_t>::connect_signal_reordered(Function_t f, T data)
+    {
+        auto temp =  std::function<on_reordered_function_t<T>>(f);
+        _on_reordered_f = std::function<on_reordered_function_t<void*>>(*((std::function<on_reordered_function_t<void*>>*) &temp));
+        _on_reordered_data = data;
+    }
+
+    template<typename Owner_t>
+    void HasReorderedSignal<Owner_t>::emit_signal_reordered(Widget* widget, size_t previous_position, size_t next_position)
+    {
+        if (_on_reordered_f != nullptr)
+            _on_reordered_f(_instance, widget, previous_position, next_position, _on_reordered_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasListItemActivateSignal<Owner_t>::connect_signal_list_item_activate(Function_t f, T data)
+    {
+        auto temp = std::function<on_list_item_activate_function_t<T>>(f);
+        _on_list_item_activate_f = std::function<on_list_item_activate_function_t<void*>>(*((std::function<on_list_item_activate_function_t<void*>>*) &temp));
+        _on_list_item_activate_data = data;
+
+        _instance->connect_signal("activate", on_list_item_activate_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasListItemActivateSignal<Owner_t>::on_list_item_activate_wrapper(GtkListView* view, guint position,
+                                                                           HasActivateSignal<Owner_t>* self)
+    {
+        if (self->_on_list_item_activate_f != nullptr)
+            self->_on_list_item_activate_f(self->_instance, position, self->_on_list_item_activate_data);
     }
 }
