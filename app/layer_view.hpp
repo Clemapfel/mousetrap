@@ -233,13 +233,7 @@ namespace mousetrap
     {
         _gl_area.connect_signal_realize(on_gl_area_realize, this);
         _gl_area.connect_signal_resize(on_gl_area_resize, this);
-
         _aspect_frame.set_child(&_gl_area);
-        float margin = state::margin_unit * 0.5;
-        _aspect_frame.set_margin_start(margin);
-        _aspect_frame.set_margin_end(margin);
-        _aspect_frame.set_margin_top(margin);
-        _aspect_frame.set_margin_bottom(margin);
     }
 
     LayerView::LayerFrameDisplay::operator Widget*()
@@ -606,6 +600,7 @@ namespace mousetrap
                 row->_frame_box.emplace_back(new Box(GTK_ORIENTATION_VERTICAL));
                 row->_frame_box.back()->push_back(row->_frames.back()->operator Widget *());
                 row->_frame_list.push_back(row->_frame_box.back());
+                row->_frame_list.set_show_separators(true);
             }
             row->_main.push_back(&row->_frame_list);
             _row_list.push_back(&row->_main);
@@ -624,10 +619,12 @@ namespace mousetrap
             current->box.push_back(&current->label);
 
             _header_list_inner.push_back(&_header_frames.back()->box);
+            _header_list_inner.set_show_separators(true);
         }
 
         _header_list_outer.push_back(&_header_list_inner);
         _header_list_outer.set_halign(GTK_ALIGN_END);
+        _header_list_outer.set_show_separators(true);
 
         _main.push_back(&_header_list_outer);
         _main.push_back(&_row_list);
