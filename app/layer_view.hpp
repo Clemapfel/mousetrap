@@ -172,9 +172,16 @@ namespace mousetrap
             static void notify_layer_opacity_changed(float opacity, LayerRow*);
             static void notify_layer_blend_mode_changed(BlendMode, LayerRow*);
 
-            std::vector<WholeFrameDisplay*> _header_frames;
-            ListView _header_list = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
+            struct HeaderFrame
+            {
+                WholeFrameDisplay frame;
+                Box box;
+                Label label;
+            };
 
+            std::vector<HeaderFrame*> _header_frames;
+            ReorderableListView _header_list_inner = ReorderableListView(GTK_ORIENTATION_HORIZONTAL);
+            ListView _header_list_outer = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
 }
@@ -519,7 +526,6 @@ namespace mousetrap
         _main.push_back(&_visible_locked_indicator_box);
         _main.push_back(&_menu_button);
         _menu_button.set_hexpand(false);
-        _main.set_show_separators(true);
     }
 
     // WHOLE FRAME DISPLAY
@@ -591,27 +597,32 @@ namespace mousetrap
             {
                 row->_layers.emplace_back(new LayerFrameDisplay(row->_layer, i, this));
                 row->_main.push_back(row->_layers.back()->operator Widget*());
-                row->_main.set_show_separators(true);
                 row->_main.set_halign(GTK_ALIGN_END);
             }
             _row_list.push_back(&_rows.back()->_main);
         }
-        _row_list.set_show_separators(true);
 
         for (size_t i = 0; i < state::n_frames; ++i)
         {
-            _header_frames.emplace_back(new WholeFrameDisplay(i, this));
-            _header_list.push_back(_header_frames.back()->operator Widget*());
+            _header_frames.emplace_back(new HeaderFrame{
+                WholeFrameDisplay(i, this),
+                Box(GTK_ORIENTATION_VERTICAL),
+                Label((i < 10 ? "0" : "") + std::to_string(i))
+            });
+
+            auto* current = _header_frames.back();
+            current->box.push_back(current->frame.operator Widget *());
+            current->box.push_back(&current->label);
+
+            _header_list_inner.push_back(&_header_frames.back()->box);
         }
-        _header_list.set_show_separators(true);
 
-        auto* list = new ListView(GTK_ORIENTATION_HORIZONTAL);
-        list->push_back(&_header_list);
-        list->set_show_separators(true);
-        list->set_halign(GTK_ALIGN_END);
+        _header_list_outer.push_back(&_header_list_inner);
+        _header_list_outer.set_halign(GTK_ALIGN_END);
 
-        _main.push_back(list);
+        _main.push_back(&_header_list_outer);
         _main.push_back(&_row_list);
+        _main.set_hexpand(false);
     }
 
     LayerView::operator Widget*()
