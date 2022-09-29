@@ -160,7 +160,9 @@ namespace mousetrap
                 ListView _main = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
                 Label _index_label;
-                std::vector<LayerFrameDisplay*> _layers;
+                std::vector<LayerFrameDisplay*> _frames;
+                std::vector<Box*> _frame_box;
+                ListView _frame_list = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
             };
 
             std::vector<LayerRow*> _rows;
@@ -233,6 +235,11 @@ namespace mousetrap
         _gl_area.connect_signal_resize(on_gl_area_resize, this);
 
         _aspect_frame.set_child(&_gl_area);
+        float margin = state::margin_unit * 0.5;
+        _aspect_frame.set_margin_start(margin);
+        _aspect_frame.set_margin_end(margin);
+        _aspect_frame.set_margin_top(margin);
+        _aspect_frame.set_margin_bottom(margin);
     }
 
     LayerView::LayerFrameDisplay::operator Widget*()
@@ -591,15 +598,17 @@ namespace mousetrap
             _rows.emplace_back(new LayerRow(&layer, this));
 
             auto* row = _rows.back();
-            row->_layers.reserve(state::layers.size());
+            row->_frames.reserve(state::layers.size());
 
             for (size_t i = 0; i < row->_layer->frames.size(); ++i)
             {
-                row->_layers.emplace_back(new LayerFrameDisplay(row->_layer, i, this));
-                row->_main.push_back(row->_layers.back()->operator Widget*());
-                row->_main.set_halign(GTK_ALIGN_END);
+                row->_frames.emplace_back(new LayerFrameDisplay(row->_layer, i, this));
+                row->_frame_box.emplace_back(new Box(GTK_ORIENTATION_VERTICAL));
+                row->_frame_box.back()->push_back(row->_frames.back()->operator Widget *());
+                row->_frame_list.push_back(row->_frame_box.back());
             }
-            _row_list.push_back(&_rows.back()->_main);
+            row->_main.push_back(&row->_frame_list);
+            _row_list.push_back(&row->_main);
         }
 
         for (size_t i = 0; i < state::n_frames; ++i)
