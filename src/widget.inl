@@ -301,4 +301,9 @@ namespace mousetrap
 
         return Widget::preferred_size{{min->width, min->height}, {nat->width, nat->height}};
     }
+
+    void Widget::unparent()
+    {
+        gtk_widget_unparent(_native);
+    }
 }

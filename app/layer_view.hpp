@@ -41,9 +41,11 @@ namespace mousetrap
             {};
 
         private:
+            static inline float thumbnail_height = 50;
+
             struct LayerFrameDisplay
             {
-                LayerFrameDisplay(Layer*, size_t, LayerView* _owner);
+                LayerFrameDisplay(Layer*, size_t frame_i, LayerView* owner);
                 operator Widget*();
 
                 size_t _frame_index;
@@ -61,6 +63,29 @@ namespace mousetrap
 
                 static void on_gl_area_realize(Widget*, LayerFrameDisplay*);
                 static void on_gl_area_resize(GLArea*, int, int, LayerFrameDisplay*);
+            };
+
+            struct WholeFrameDisplay
+            {
+                WholeFrameDisplay(size_t frame_i, LayerView* owner);
+                operator Widget*();
+
+                size_t _frame;
+                LayerView* _owner;
+
+                static inline Shader* _transparency_tiling_shader = nullptr;
+                Shape* _transparency_tiling_shape;
+                GLArea _transparency_area;
+                Vector2f _canvas_size;
+                static void on_transparency_area_realize(Widget*, WholeFrameDisplay*);
+                static void on_transparency_area_resize(GLArea*, int, int, WholeFrameDisplay*);
+
+                GLArea _layer_area;
+                std::vector<Shape*> _layer_shapes;
+                static void on_layer_area_realize(Widget*, WholeFrameDisplay*);
+
+                AspectFrame _aspect_frame;
+                Overlay _overlay;
             };
 
             struct LayerRow
@@ -147,8 +172,8 @@ namespace mousetrap
             static void notify_layer_opacity_changed(float opacity, LayerRow*);
             static void notify_layer_blend_mode_changed(BlendMode, LayerRow*);
 
-            std::vector<Label*> _frame_index_labels;
-            ReorderableListView _frame_index_list = ReorderableListView(GTK_ORIENTATION_HORIZONTAL);
+            std::vector<WholeFrameDisplay*> _header_frames;
+            ListView _header_list = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
@@ -184,16 +209,13 @@ namespace mousetrap
         instance->_gl_area.add_render_task(task);
         instance->_gl_area.add_render_task(instance->_layer_shape);
 
-        instance->_gl_area.set_size_request({state::layer_resolution.x * 1.1, state::layer_resolution.y});
+        instance->_gl_area.set_size_request({state::layer_resolution.x * (state::layer_resolution.x / LayerView::thumbnail_height), LayerView::thumbnail_height});
     }
 
     void LayerView::LayerFrameDisplay::on_gl_area_resize(GLArea*, int w, int h, LayerFrameDisplay* instance)
     {
         instance->_canvas_size = {w, h};
         instance->_gl_area.queue_render();
-
-        for (auto* label : instance->_owner->_frame_index_labels)
-            label->set_size_request({w, 0});
     }
 
     LayerView::LayerFrameDisplay::LayerFrameDisplay(Layer* layer, size_t frame_i, LayerView* owner)
@@ -323,7 +345,6 @@ namespace mousetrap
         row->_blend_mode_dropdown.set_selected(index);
         row->_blend_mode_dropdown.set_all_signals_blocked(false);
     }
-
 
     LayerView::LayerRow::LayerRow(Layer* layer, LayerView* owner)
         : _layer(layer), _menu_button_title_label(layer->name), _owner(owner)
@@ -501,6 +522,60 @@ namespace mousetrap
         _main.set_show_separators(true);
     }
 
+    // WHOLE FRAME DISPLAY
+
+    LayerView::WholeFrameDisplay::WholeFrameDisplay(size_t frame_i, LayerView* owner)
+        : _frame(frame_i), _owner(owner), _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y))
+    {
+        _transparency_area.connect_signal_realize(on_transparency_area_realize, this);
+        _transparency_area.connect_signal_resize(on_transparency_area_resize, this);
+        _layer_area.connect_signal_realize(on_layer_area_realize, this);
+
+        for (auto* area : {&_transparency_area, &_layer_area})
+            area->set_size_request({state::layer_resolution.x * (state::layer_resolution.x / LayerView::thumbnail_height), LayerView::thumbnail_height});
+
+        _overlay.set_child(&_transparency_area);
+        _overlay.add_overlay(&_layer_area);
+        _aspect_frame.set_child(&_overlay);
+    }
+
+    void LayerView::WholeFrameDisplay::on_transparency_area_realize(Widget* widget, WholeFrameDisplay* instance)
+    {
+        auto* area = (GLArea*) widget;
+        area->make_current();
+
+        if (_transparency_tiling_shader == nullptr)
+        {
+            _transparency_tiling_shader = new Shader();
+            _transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag",
+                                                          ShaderType::FRAGMENT);
+        }
+
+        instance->_transparency_tiling_shape = new Shape();
+        instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
+        instance->_canvas_size = Vector2f(1, 1);
+
+        auto task = RenderTask(instance->_transparency_tiling_shape, _transparency_tiling_shader);
+        task.register_vec2("_canvas_size", &instance->_canvas_size);
+
+        instance->_transparency_area.add_render_task(task);
+    }
+
+    void LayerView::WholeFrameDisplay::on_transparency_area_resize(GLArea*, int w, int h, WholeFrameDisplay* instance)
+    {
+        instance->_canvas_size = {w, h};
+    }
+
+    void LayerView::WholeFrameDisplay::on_layer_area_realize(Widget* widget, WholeFrameDisplay* display)
+    {
+
+    }
+
+    LayerView::WholeFrameDisplay::operator Widget*()
+    {
+        return &_aspect_frame;
+    }
+
     // LAYER VIEW
 
     LayerView::LayerView()
@@ -515,11 +590,27 @@ namespace mousetrap
             for (size_t i = 0; i < row->_layer->frames.size(); ++i)
             {
                 row->_layers.emplace_back(new LayerFrameDisplay(row->_layer, i, this));
-                row->_main.push_back(&row->_layers.back()->_aspect_frame);
+                row->_main.push_back(row->_layers.back()->operator Widget*());
+                row->_main.set_show_separators(true);
+                row->_main.set_halign(GTK_ALIGN_END);
             }
             _row_list.push_back(&_rows.back()->_main);
         }
         _row_list.set_show_separators(true);
+
+        for (size_t i = 0; i < state::n_frames; ++i)
+        {
+            _header_frames.emplace_back(new WholeFrameDisplay(i, this));
+            _header_list.push_back(_header_frames.back()->operator Widget*());
+        }
+        _header_list.set_show_separators(true);
+
+        auto* list = new ListView(GTK_ORIENTATION_HORIZONTAL);
+        list->push_back(&_header_list);
+        list->set_show_separators(true);
+        list->set_halign(GTK_ALIGN_END);
+
+        _main.push_back(list);
         _main.push_back(&_row_list);
     }
 

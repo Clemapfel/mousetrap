@@ -70,6 +70,8 @@ namespace mousetrap
             using preferred_size = struct {Vector2f minimum_size; Vector2f natural_size;};
             preferred_size get_preferred_size();
 
+            void unparent();
+
         protected:
             Widget() = delete;
 
