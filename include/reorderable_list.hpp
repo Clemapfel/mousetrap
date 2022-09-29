@@ -19,7 +19,6 @@ namespace mousetrap
     {
         public:
             ReorderableListView(GtkOrientation orientation);
-            operator GtkWidget*() const override;
 
             void push_back(Widget*);
             void push_front(Widget*);
@@ -42,10 +41,6 @@ namespace mousetrap
 
             GtkSelectionModel* _selection_model;
             GtkOrientation _orientation;
-
-            GtkFixed* _fixed;
-            GtkBox* _fixed_box;
-            GtkOverlay* _overlay;
 
             MotionEventController _motion_event_controller;
             static void on_motion_leave(MotionEventController*, ReorderableListView* instance);
@@ -127,11 +122,6 @@ namespace mousetrap::detail
 
 namespace mousetrap
 {
-    ReorderableListView::operator GtkWidget*() const
-    {
-        return GTK_WIDGET(_overlay);
-    }
-
     ReorderableListView::ReorderableListView(GtkOrientation orientation)
         : _orientation(orientation), WidgetImplementation<GtkListView>([&]() -> GtkListView*
     {
@@ -143,14 +133,6 @@ namespace mousetrap
         _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(G_LIST_MODEL(_list_store)));
         _native = GTK_LIST_VIEW(gtk_list_view_new(_selection_model, GTK_LIST_ITEM_FACTORY(_factory)));
         gtk_orientable_set_orientation(GTK_ORIENTABLE(_native), orientation);
-
-        _fixed = GTK_FIXED(gtk_fixed_new());
-        _fixed_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-        _overlay = GTK_OVERLAY(gtk_overlay_new());
-        gtk_overlay_set_child(_overlay, GTK_WIDGET(_native));
-        gtk_overlay_add_overlay(_overlay, GTK_WIDGET(_fixed));
-        gtk_fixed_put(_fixed, GTK_WIDGET(_fixed_box), 0, 0);
-        gtk_widget_set_can_target(GTK_WIDGET(_fixed), false);
 
         return _native;
 
@@ -175,7 +157,7 @@ namespace mousetrap
         {
             auto* item = (detail::ReorderableListItem*) g_list_model_get_item(G_LIST_MODEL(_list_store), i);
             double top_left_x, top_left_y;
-            gtk_widget_translate_coordinates(GTK_WIDGET(item->box), GTK_WIDGET(_overlay), 0, 0, &top_left_x, &top_left_y);
+            gtk_widget_translate_coordinates(GTK_WIDGET(item->box), GTK_WIDGET(_native), 0, 0, &top_left_x, &top_left_y);
 
             double height = gtk_widget_get_allocated_height(GTK_WIDGET(item->box));
             double width = gtk_widget_get_allocated_width(GTK_WIDGET(item->box));
@@ -228,9 +210,7 @@ namespace mousetrap
 
         if (instance->_drag_active)
         {
-            gtk_fixed_move(instance->_fixed, GTK_WIDGET(instance->_fixed_box), start.x + offset.x, start.y + offset.y);
             size_t item_i = instance->position_to_item_index(start.x + offset.x, start.y + offset.y);
-
             if (item_i != size_t(-1))
                 gtk_selection_model_select_item(instance->_selection_model, item_i, true);
         }
