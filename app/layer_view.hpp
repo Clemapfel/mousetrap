@@ -67,6 +67,9 @@ namespace mousetrap
                 Box _main = Box(GTK_ORIENTATION_VERTICAL);
             };
 
+            std::deque<WholeFrameDisplay> _whole_frame_displays;
+            ListView _whole_frame_row = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
+
             struct LayerFrameDisplay
             {
                 LayerFrameDisplay(Layer* layer, size_t frame);
@@ -89,8 +92,21 @@ namespace mousetrap
                 Box _main = Box(GTK_ORIENTATION_VERTICAL);
             };
 
-            std::deque<WholeFrameDisplay> _whole_frame_displays;
-            ReorderableListView _whole_frame_row = ReorderableListView(GTK_ORIENTATION_HORIZONTAL);
+            struct LayerRow
+            {
+                LayerRow(Layer*);
+                operator Widget*();
+
+                Layer* _layer;
+
+                std::deque<LayerFrameDisplay> _layer_frame_displays;
+                ListView _layer_frame_row = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
+            };
+
+            std::deque<LayerRow> _layer_rows;
+            ListView _layer_rows_list = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_SINGLE);
+
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
 }
 
@@ -152,7 +168,7 @@ namespace mousetrap
         _layer_area.connect_signal_realize(on_layer_area_realize, this);
 
         for (auto* area : {&_transparency_area, &_layer_area})
-            area->set_size_request({thumbnail_height, (thumbnail_height / state::layer_resolution.x) * state::layer_resolution.y});
+            area->set_size_request({thumbnail_height, (thumbnail_height / float(state::layer_resolution.x)) * state::layer_resolution.y});
 
         _aspect_frame.set_child(&_transparency_area);
         _overlay.set_child(&_aspect_frame);
@@ -184,11 +200,12 @@ namespace mousetrap
         instance->_layer_shape.as_rectangle({0, 0}, {1, 1});
         instance->_layer_shape.set_texture(&instance->_layer->frames.at(instance->_frame).texture);
 
-        auto task = RenderTask(&instance->_transparency_tiling_shape, transparency_tiling_shader);
+        auto task = RenderTask(&instance->_transparency_tiling_shape, nullptr);
         task.register_vec2("_canvas_size", &instance->_canvas_size);
 
         instance->_gl_area.add_render_task(task);
-        instance->_gl_area.add_render_task(_layer_shape);
+        instance->_gl_area.add_render_task(&instance->_layer_shape);
+        instance->_gl_area.queue_render();
     }
 
     void LayerView::LayerFrameDisplay::on_gl_area_resize(GLArea*, int w, int h, LayerFrameDisplay* instance)
@@ -197,12 +214,50 @@ namespace mousetrap
         instance->_gl_area.queue_render();
     }
 
+    LayerView::LayerFrameDisplay::LayerFrameDisplay(Layer* layer, size_t frame)
+        : _layer(layer),
+          _frame(frame),
+          _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y)),
+          _label((frame <= 9 ? "0" : "") + std::to_string(frame))
+    {
+        _gl_area.connect_signal_realize(on_gl_area_realize, this);
+        _gl_area.connect_signal_resize(on_gl_area_resize, this);
+        _gl_area.set_size_request({thumbnail_height, (thumbnail_height / float(state::layer_resolution.x)) * state::layer_resolution.y});
+
+        _aspect_frame.set_child(&_gl_area);
+
+        _main.push_back(&_label);
+        _main.push_back(&_aspect_frame);
+
+        _gl_area.queue_render();
+    }
+
+    LayerView::LayerFrameDisplay::operator Widget*()
+    {
+        return &_main;
+    }
+
+    LayerView::LayerRow::LayerRow(Layer* layer)
+        : _layer(layer)
+    {
+        for (size_t i = 0; i < state::n_frames; ++i)
+        {
+            _layer_frame_displays.emplace_back(layer, i);
+            _layer_frame_row.push_back(_layer_frame_displays.back());
+        }
+    }
+
+    LayerView::LayerRow::operator Widget*()
+    {
+        return &_layer_frame_row;
+    }
+
     void LayerView::update()
     {}
 
     LayerView::operator Widget*()
     {
-        return &_whole_frame_row;
+        return &_main;
     }
 
     LayerView::LayerView()
@@ -212,5 +267,17 @@ namespace mousetrap
             _whole_frame_displays.emplace_back(i);
             _whole_frame_row.push_back(_whole_frame_displays.back());
         }
+
+        _whole_frame_row.set_halign(GTK_ALIGN_END);
+
+        for (auto& layer : state::layers)
+        {
+           _layer_rows.emplace_back(&layer);
+           _layer_rows.back().operator Widget*()->set_halign(GTK_ALIGN_END);
+           _layer_rows_list.push_back(_layer_rows.back());
+        }
+
+        _main.push_back(&_whole_frame_row);
+        _main.push_back(&_layer_rows_list);
     }
 }
