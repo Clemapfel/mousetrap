@@ -81,7 +81,8 @@ namespace mousetrap
 
     void SelectionModel::unselect_all()
     {
-        gtk_selection_model_unselect_all(operator GtkSelectionModel*());
+        for (size_t i = 0; i < get_selection().size(); ++i)
+            gtk_selection_model_unselect_item(operator GtkSelectionModel*(), i);
     }
 
     void SelectionModel::select(size_t i, bool unselect_others)

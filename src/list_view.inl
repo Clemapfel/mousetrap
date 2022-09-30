@@ -73,7 +73,10 @@ namespace mousetrap
             if (mode == GTK_SELECTION_MULTIPLE)
                 _selection_model = new MultiSelectionModel(G_LIST_MODEL(_tree_list_model));
             else if (mode == GTK_SELECTION_SINGLE or mode == GTK_SELECTION_BROWSE)
+            {
                 _selection_model = new SingleSelectionModel(G_LIST_MODEL(_tree_list_model));
+                gtk_single_selection_set_can_unselect(GTK_SINGLE_SELECTION(_selection_model->operator GtkSelectionModel *()), true);
+            }
             else if (mode == GTK_SELECTION_NONE)
                 _selection_model = new NoSelectionModel(G_LIST_MODEL(_tree_list_model));
 

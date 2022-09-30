@@ -19,7 +19,6 @@ namespace mousetrap
     };
 
     static void set_current_blend_mode(BlendMode);
-    static BlendMode get_current_blend_mode();
 }
 
 #include <src/blend_mode.inl>

@@ -1281,13 +1281,23 @@ namespace mousetrap
         _on_selection_changed_f = std::function<on_selection_changed_function_t<void*>>(*((std::function<on_selection_changed_function_t<void*>>*) &temp));
         _on_selection_changed_data = data;
 
-        _instance->connect_signal("activate", on_selection_changed_wrapper, this);
+        _instance->connect_signal("selection-changed", on_selection_changed_wrapper, this);
     }
 
     template<typename Owner_t>
-    void HasSelectionChangedSignal<Owner_t>::on_selection_changed_wrapper(GtkSelectionModel*, guint position, guint n_items, HasSelectionChangedSignal<Owner_t>* self)
+    void HasSelectionChangedSignal<Owner_t>::on_selection_changed_wrapper(GtkSelectionModel* model, guint position, guint n_items, HasSelectionChangedSignal<Owner_t>* self)
     {
         if (self->_on_selection_changed_f != nullptr)
+        {
+            auto* selected = gtk_selection_model_get_selection(model);
+
+            n_items = gtk_bitset_get_size(selected);
+            if (n_items > 0)
+                position = gtk_bitset_get_nth(selected, 0);
+            else
+                position = -1;
+
             self->_on_selection_changed_f(self->_instance, position, n_items, self->_on_selection_changed_data);
+        }
     }
 }

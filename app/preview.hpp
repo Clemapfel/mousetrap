@@ -233,6 +233,8 @@ namespace mousetrap
 
         instance->_layer_area.queue_render();
         previous = current;
+
+        return true;
     }
 
     void Preview::set_frame(size_t i)
