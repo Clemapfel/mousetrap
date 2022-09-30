@@ -682,6 +682,31 @@ namespace mousetrap
             std::function<on_list_item_activate_function_t<void*>> _on_list_item_activate_f;
             void* _on_list_item_activate_data;
     };
+
+    template<typename Owner_t>
+    class HasSelectionChangedSignal
+    {
+        public:
+            template<typename T>
+            using on_selection_changed_function_t = void(Owner_t*, size_t first_item_position, size_t n_items_changed, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_selection_changed(Function_t, T);
+
+        protected:
+            HasSelectionChangedSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_selection_changed_wrapper(GtkSelectionModel*, guint position, guint n_items, HasSelectionChangedSignal<Owner_t>* instance);
+
+            std::function<on_selection_changed_function_t<void*>> _on_selection_changed_f;
+            void* _on_selection_changed_data;
+    };
+
 }
 
 // ###
@@ -1244,5 +1269,25 @@ namespace mousetrap
     {
         if (self->_on_list_item_activate_f != nullptr)
             self->_on_list_item_activate_f(self->_instance, position, self->_on_list_item_activate_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasSelectionChangedSignal<Owner_t>::connect_signal_selection_changed(Function_t f, T data)
+    {
+        auto temp = std::function<on_selection_changed_function_t<T>>(f);
+        _on_selection_changed_f = std::function<on_selection_changed_function_t<void*>>(*((std::function<on_selection_changed_function_t<void*>>*) &temp));
+        _on_selection_changed_data = data;
+
+        _instance->connect_signal("activate", on_selection_changed_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasSelectionChangedSignal<Owner_t>::on_selection_changed_wrapper(GtkSelectionModel*, guint position, guint n_items, HasSelectionChangedSignal<Owner_t>* self)
+    {
+        if (self->_on_selection_changed_f != nullptr)
+            self->_on_selection_changed_f(self->_instance, position, n_items, self->_on_selection_changed_data);
     }
 }

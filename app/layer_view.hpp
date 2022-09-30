@@ -72,7 +72,7 @@ namespace mousetrap
             };
 
             std::deque<WholeFrameDisplay> _whole_frame_displays;
-            ListView _whole_frame_row_inner = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
+            ListView _whole_frame_row_inner = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
             ListView _whole_frame_row = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
             struct LayerFrameDisplay
@@ -317,6 +317,7 @@ namespace mousetrap
         _whole_frame_row_inner.set_single_click_activate(true);
         _whole_frame_row.push_back(&_whole_frame_row_inner);
         _whole_frame_row.set_halign(GTK_ALIGN_END);
+        _whole_frame_row.set_cursor(GtkCursorType::NOT_ALLOWED);
 
         for (auto& layer : state::layers)
         {
@@ -327,6 +328,8 @@ namespace mousetrap
            _layer_rows.back()._layer_frame_row.set_single_click_activate(true);
            _layer_rows_list.push_back(_layer_rows.back());
         }
+
+        _layer_rows_list.set_cursor(GtkCursorType::POINTER);
 
         _main.push_back(&_whole_frame_row);
         _main.push_back(&_layer_rows_list);
