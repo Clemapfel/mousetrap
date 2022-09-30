@@ -24,6 +24,7 @@
 #include <include/popover.hpp>
 #include <include/dropdown.hpp>
 #include <include/overlay.hpp>
+#include <include/center_box.hpp>
 
 #include <app/global_state.hpp>
 #include <app/app_component.hpp>
@@ -71,7 +72,7 @@ namespace mousetrap
             };
 
             std::deque<WholeFrameDisplay> _whole_frame_displays;
-            ListView _whole_frame_row_inner = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
+            ListView _whole_frame_row_inner = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
             ListView _whole_frame_row = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
             struct LayerFrameDisplay
@@ -91,9 +92,12 @@ namespace mousetrap
                 Shape* _transparency_tiling_shape;
                 Shape* _layer_shape;
 
+                static inline Texture* selection_indicator_texture = nullptr;
+
                 AspectFrame _aspect_frame;
 
-                Box _main = Box(GTK_ORIENTATION_VERTICAL);
+
+                CenterBox _main = CenterBox(GTK_ORIENTATION_HORIZONTAL);
             };
 
             struct LayerRow
@@ -104,11 +108,11 @@ namespace mousetrap
                 Layer* _layer;
 
                 std::deque<LayerFrameDisplay> _layer_frame_displays;
-                ListView _layer_frame_row = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
+                ListView _layer_frame_row = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
             };
 
             std::deque<LayerRow> _layer_rows;
-            ListView _layer_rows_list = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_NONE);
+            ListView _layer_rows_list = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_SINGLE);
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
@@ -217,6 +221,12 @@ namespace mousetrap
         instance->_layer_shape->as_rectangle({0, 0}, {1, 1});
         instance->_layer_shape->set_texture(&instance->_layer->frames.at(instance->_frame).texture);
 
+        if (selection_indicator_texture == nullptr)
+        {
+            selection_indicator_texture = new Texture();
+            selection_indicator_texture->create_from_file(get_resource_path() + "frame/frame_vertical.png");
+        }
+
         auto task = RenderTask(instance->_transparency_tiling_shape, transparency_tiling_shader);
         task.register_vec2("_canvas_size", &instance->_canvas_size);
 
@@ -242,8 +252,8 @@ namespace mousetrap
         _gl_area.set_expand(false);
 
         _aspect_frame.set_child(&_gl_area);
-        _main.push_back(&_aspect_frame);
 
+        _main.set_center_widget(&_aspect_frame);
         _gl_area.queue_render();
 
         _main.set_margin_start(thumbnail_margin);
@@ -306,7 +316,10 @@ namespace mousetrap
 
     void LayerView::set_selected_frame(size_t i)
     {
-        auto text = _whole_frame_displays.at(i)._label.get_text();
-        _whole_frame_displays.at(i)._label.set_text("<span bgcolor=\"#FF00FF\">" + text + "</span>");
+        gtk_selection_model_select_item(_whole_frame_row_inner.get_selection_model(), i, true);
+        for (auto& row : _layer_rows)
+        {
+            gtk_selection_model_select_item(row._layer_frame_row.get_selection_model(), i, true);
+        }
     }
 }

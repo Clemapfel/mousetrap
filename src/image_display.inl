@@ -34,10 +34,10 @@ namespace mousetrap
             if (scale != 1)
             {
                 auto* scaled = gdk_pixbuf_scale_simple(
-                        pixbuf,
-                        scale * gdk_pixbuf_get_width(pixbuf),
-                        scale * gdk_pixbuf_get_height(pixbuf),
-                        GDK_INTERP_NEAREST
+                    pixbuf,
+                    scale * gdk_pixbuf_get_width(pixbuf),
+                    scale * gdk_pixbuf_get_height(pixbuf),
+                    GDK_INTERP_NEAREST
                 );
                 out = GTK_IMAGE(gtk_image_new_from_pixbuf(scaled));
                 _size = {scale * gdk_pixbuf_get_width(pixbuf), scale * gdk_pixbuf_get_height(pixbuf)};
