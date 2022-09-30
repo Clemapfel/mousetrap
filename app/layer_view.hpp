@@ -42,6 +42,9 @@ namespace mousetrap
         private:
             static inline float thumbnail_height = 5 * state::margin_unit;
             static inline Shader* transparency_tiling_shader = nullptr;
+            static inline float thumbnail_margin = 0.5 * state::margin_unit;
+
+            void set_selected_frame(size_t);
 
             struct WholeFrameDisplay
             {
@@ -68,11 +71,13 @@ namespace mousetrap
             };
 
             std::deque<WholeFrameDisplay> _whole_frame_displays;
-            ListView _whole_frame_row = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
+            ListView _whole_frame_row_inner = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
+            ListView _whole_frame_row = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
             struct LayerFrameDisplay
             {
                 LayerFrameDisplay(Layer* layer, size_t frame);
+                ~LayerFrameDisplay();
                 operator Widget*();
 
                 Layer* _layer;
@@ -83,12 +88,11 @@ namespace mousetrap
                 static void on_gl_area_resize(GLArea*, int, int, LayerFrameDisplay*);
 
                 GLArea _gl_area;
-                Shape _transparency_tiling_shape;
-                Shape _layer_shape;
+                Shape* _transparency_tiling_shape;
+                Shape* _layer_shape;
 
                 AspectFrame _aspect_frame;
 
-                Label _label;
                 Box _main = Box(GTK_ORIENTATION_VERTICAL);
             };
 
@@ -100,11 +104,11 @@ namespace mousetrap
                 Layer* _layer;
 
                 std::deque<LayerFrameDisplay> _layer_frame_displays;
-                ListView _layer_frame_row = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
+                ListView _layer_frame_row = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
             };
 
             std::deque<LayerRow> _layer_rows;
-            ListView _layer_rows_list = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_SINGLE);
+            ListView _layer_rows_list = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_NONE);
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
@@ -161,26 +165,39 @@ namespace mousetrap
     LayerView::WholeFrameDisplay::WholeFrameDisplay(size_t frame)
         : _frame(frame),
          _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y)),
-         _label((frame <= 9 ? "0" : "") + std::to_string(frame))
+         _label((frame <= 9 ? "00" : (frame <= 100 ? "0" : "")) + std::to_string(frame))
     {
         _transparency_area.connect_signal_realize(on_transparency_area_realize, this);
         _transparency_area.connect_signal_resize(on_transparency_area_resize, this);
         _layer_area.connect_signal_realize(on_layer_area_realize, this);
 
         for (auto* area : {&_transparency_area, &_layer_area})
+        {
             area->set_size_request({thumbnail_height, (thumbnail_height / float(state::layer_resolution.x)) * state::layer_resolution.y});
+            area->set_expand(false);
+        }
 
         _aspect_frame.set_child(&_transparency_area);
+        _aspect_frame.set_expand(false);
         _overlay.set_child(&_aspect_frame);
         _overlay.add_overlay(&_layer_area);
 
-        _main.push_back(&_label);
         _main.push_back(&_overlay);
+        _main.push_back(&_label);
+
+        _main.set_margin_start(thumbnail_margin);
+        _main.set_margin_end(thumbnail_margin);
     }
 
     LayerView::WholeFrameDisplay::operator Widget*()
     {
         return &_main;
+    }
+
+    LayerView::LayerFrameDisplay::~LayerFrameDisplay()
+    {
+        delete _transparency_tiling_shape;
+        delete _layer_shape;
     }
 
     void LayerView::LayerFrameDisplay::on_gl_area_realize(Widget*, LayerFrameDisplay* instance)
@@ -193,18 +210,18 @@ namespace mousetrap
             transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
         }
 
-        instance->_transparency_tiling_shape = Shape();
-        instance->_transparency_tiling_shape.as_rectangle({0, 0}, {1, 1});
+        instance->_transparency_tiling_shape = new Shape();
+        instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
 
-        instance->_layer_shape = Shape();
-        instance->_layer_shape.as_rectangle({0, 0}, {1, 1});
-        instance->_layer_shape.set_texture(&instance->_layer->frames.at(instance->_frame).texture);
+        instance->_layer_shape = new Shape();
+        instance->_layer_shape->as_rectangle({0, 0}, {1, 1});
+        instance->_layer_shape->set_texture(&instance->_layer->frames.at(instance->_frame).texture);
 
-        auto task = RenderTask(&instance->_transparency_tiling_shape, nullptr);
+        auto task = RenderTask(instance->_transparency_tiling_shape, transparency_tiling_shader);
         task.register_vec2("_canvas_size", &instance->_canvas_size);
 
         instance->_gl_area.add_render_task(task);
-        instance->_gl_area.add_render_task(&instance->_layer_shape);
+        instance->_gl_area.add_render_task(instance->_layer_shape);
         instance->_gl_area.queue_render();
     }
 
@@ -217,19 +234,20 @@ namespace mousetrap
     LayerView::LayerFrameDisplay::LayerFrameDisplay(Layer* layer, size_t frame)
         : _layer(layer),
           _frame(frame),
-          _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y)),
-          _label((frame <= 9 ? "0" : "") + std::to_string(frame))
+          _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y))
     {
         _gl_area.connect_signal_realize(on_gl_area_realize, this);
         _gl_area.connect_signal_resize(on_gl_area_resize, this);
         _gl_area.set_size_request({thumbnail_height, (thumbnail_height / float(state::layer_resolution.x)) * state::layer_resolution.y});
+        _gl_area.set_expand(false);
 
         _aspect_frame.set_child(&_gl_area);
-
-        _main.push_back(&_label);
         _main.push_back(&_aspect_frame);
 
         _gl_area.queue_render();
+
+        _main.set_margin_start(thumbnail_margin);
+        _main.set_margin_end(thumbnail_margin);
     }
 
     LayerView::LayerFrameDisplay::operator Widget*()
@@ -265,19 +283,30 @@ namespace mousetrap
         for (size_t i = 0; i < state::n_frames; ++i)
         {
             _whole_frame_displays.emplace_back(i);
-            _whole_frame_row.push_back(_whole_frame_displays.back());
+            _whole_frame_row_inner.push_back(_whole_frame_displays.back());
         }
 
+        _whole_frame_row_inner.set_show_separators(true);
+        _whole_frame_row.push_back(&_whole_frame_row_inner);
         _whole_frame_row.set_halign(GTK_ALIGN_END);
 
         for (auto& layer : state::layers)
         {
            _layer_rows.emplace_back(&layer);
            _layer_rows.back().operator Widget*()->set_halign(GTK_ALIGN_END);
+           _layer_rows.back()._layer_frame_row.set_show_separators(true);
            _layer_rows_list.push_back(_layer_rows.back());
         }
 
         _main.push_back(&_whole_frame_row);
         _main.push_back(&_layer_rows_list);
+
+        set_selected_frame(2);
+    }
+
+    void LayerView::set_selected_frame(size_t i)
+    {
+        auto text = _whole_frame_displays.at(i)._label.get_text();
+        _whole_frame_displays.at(i)._label.set_text("<span bgcolor=\"#FF00FF\">" + text + "</span>");
     }
 }
