@@ -14,9 +14,9 @@ namespace mousetrap
             public HasSelectionChangedSignal<SelectionModel>
     {
         public:
-            virtual operator GtkSelectionModel*() = 0;
-
+            operator GtkSelectionModel*();
             operator GObject*() override;
+
             std::vector<size_t> get_selection();
             void select_all();
             void unselect_all();
@@ -25,23 +25,25 @@ namespace mousetrap
             void unselect(size_t i);
 
         protected:
-            SelectionModel() = default;
+            SelectionModel(GtkSelectionModel*);
+
+            GtkSelectionModel* _native;
     };
 
-    template<typename GtkSelection_t>
-    class SelectionModelImplementation : public SelectionModel
+    struct MultiSelectionModel : public SelectionModel
     {
-        public:
-            SelectionModelImplementation(GtkSelection_t*);
-            operator GtkSelectionModel*() override;
-
-        private:
-            GtkSelection_t* _native;
+        MultiSelectionModel(GListModel*);
     };
 
-    using MultiSelectionModel = SelectionModelImplementation<GtkMultiSelection>;
-    using SingleSelectionModel = SelectionModelImplementation<GtkSingleSelection>;
-    using NoSelectionModel = SelectionModelImplementation<GtkNoSelection>;
+    struct SingleSelectionModel : public SelectionModel
+    {
+        SingleSelectionModel(GListModel*);
+    };
+
+    struct NoSelectionModel : public SelectionModel
+    {
+        NoSelectionModel(GListModel*);
+    };
 }
 
 //#include <src/selection_model.hpp>
@@ -52,6 +54,15 @@ namespace mousetrap
     {
         return G_OBJECT(operator GtkSelectionModel*());
     }
+
+    SelectionModel::operator GtkSelectionModel*()
+    {
+        return _native;
+    }
+
+    SelectionModel::SelectionModel(GtkSelectionModel* model)
+        : _native(model), HasSelectionChangedSignal<SelectionModel>(this)
+    {}
 
     std::vector<size_t> SelectionModel::get_selection()
     {
@@ -83,14 +94,15 @@ namespace mousetrap
         gtk_selection_model_unselect_item(operator GtkSelectionModel*(), i);
     }
 
-    template<typename GtkSelection_t>
-    SelectionModelImplementation<GtkSelection_t>::SelectionModelImplementation(GtkSelection_t* in)
-        : _native(in)
+    MultiSelectionModel::MultiSelectionModel(GListModel* model)
+        : SelectionModel(GTK_SELECTION_MODEL(gtk_multi_selection_new(model)))
     {}
 
-    template<typename GtkSelection_t>
-    SelectionModelImplementation<GtkSelection_t>::operator GtkSelectionModel*()
-    {
-        return _native;
-    }
+    SingleSelectionModel::SingleSelectionModel(GListModel* model)
+            : SelectionModel(GTK_SELECTION_MODEL(gtk_single_selection_new(model)))
+    {}
+
+    NoSelectionModel::NoSelectionModel(GListModel* model)
+            : SelectionModel(GTK_SELECTION_MODEL(gtk_no_selection_new(model)))
+    {}
 }
