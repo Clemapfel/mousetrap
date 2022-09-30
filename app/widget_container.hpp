@@ -37,8 +37,8 @@ namespace mousetrap
             Label _detach_label;
             Button _detach_button;
 
-            Expander _expander;
             DetachableBox _child_box;
+            Expander _expander;
 
             SeparatorLine _child_separator_top = SeparatorLine(GTK_ORIENTATION_VERTICAL);
             SeparatorLine _child_separator_bottom = SeparatorLine(GTK_ORIENTATION_VERTICAL);

@@ -26,6 +26,8 @@ namespace mousetrap
             void set_max_columns(size_t);
             void set_min_columns(size_t);
 
+            SelectionModel* get_selection_model();
+
         private:
             static void on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, GridView* instance);
             static void on_list_item_factory_teardown(GtkSignalListItemFactory* self, void* object, GridView* instance);
@@ -36,7 +38,7 @@ namespace mousetrap
             GtkSignalListItemFactory* _factory;
             GListStore* _list_store;
 
-            GtkSelectionModel* _selection_model;
+            SelectionModel* _selection_model;
             GtkSelectionMode _selection_mode;
             GtkOrientation _orientation;
     };

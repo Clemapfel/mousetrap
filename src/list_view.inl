@@ -71,11 +71,11 @@ namespace mousetrap
             _orientation = orientation;
 
             if (mode == GTK_SELECTION_MULTIPLE)
-                _selection_model = GTK_SELECTION_MODEL(gtk_multi_selection_new(G_LIST_MODEL(_tree_list_model)));
+                _selection_model = new MultiSelectionModel(G_LIST_MODEL(_tree_list_model));
             else if (mode == GTK_SELECTION_SINGLE or mode == GTK_SELECTION_BROWSE)
-                _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(G_LIST_MODEL(_tree_list_model)));
+                _selection_model = new SingleSelectionModel(G_LIST_MODEL(_tree_list_model));
             else if (mode == GTK_SELECTION_NONE)
-                _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(G_LIST_MODEL(_tree_list_model)));
+                _selection_model = new NoSelectionModel(G_LIST_MODEL(_tree_list_model));
 
             _factory = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
             g_signal_connect(_factory, "bind", G_CALLBACK(on_list_item_factory_bind), this);
@@ -83,7 +83,7 @@ namespace mousetrap
             g_signal_connect(_factory, "setup", G_CALLBACK(on_list_item_factory_setup), this);
             g_signal_connect(_factory, "teardown", G_CALLBACK(on_list_item_factory_teardown), this);
 
-            _list_view = GTK_LIST_VIEW(gtk_list_view_new(_selection_model, GTK_LIST_ITEM_FACTORY(_factory)));
+            _list_view = GTK_LIST_VIEW(gtk_list_view_new(_selection_model->operator GtkSelectionModel*(), GTK_LIST_ITEM_FACTORY(_factory)));
             gtk_orientable_set_orientation(GTK_ORIENTABLE(_list_view), _orientation);
 
             return _list_view;
@@ -92,7 +92,7 @@ namespace mousetrap
         add_reference(_factory);
         add_reference(_root);
         add_reference(_tree_list_model);
-        add_reference(_selection_model);
+        add_reference(_selection_model->operator GtkSelectionModel*());
     }
 
     TreeListView::TreeListView(GtkSelectionMode mode)
@@ -236,9 +236,8 @@ namespace mousetrap
         gtk_list_view_set_single_click_activate(_list_view, b);
     }
 
-    GtkSelectionModel* TreeListView::get_selection_model()
+    SelectionModel* TreeListView::get_selection_model()
     {
         return _selection_model;
     }
-
 }

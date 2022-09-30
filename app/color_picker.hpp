@@ -215,7 +215,7 @@ namespace mousetrap
     void ColorPicker::reformat()
     {
         float x_margin = state::margin_unit / _canvas_size.x;
-        float y_margin = state::margin_unit / _canvas_size.y;
+        //float y_margin = state::margin_unit / _canvas_size.y;
 
         float hsv_shape_size = 1;
         float cursor_size = 0.1;
@@ -355,8 +355,8 @@ namespace mousetrap
 
     void ColorPicker::set_hsv_shape_cursor(Vector2f pos)
     {
-        auto top_left = _hsv_shape->get_top_left();
-        auto size = _hsv_shape->get_size();
+        //auto top_left = _hsv_shape->get_top_left();
+        //auto size = _hsv_shape->get_size();
 
         auto half_cursor = Vector2f(_hsv_shape_cursor->get_size() * Vector2f(0.5));
         pos = glm::clamp(pos,

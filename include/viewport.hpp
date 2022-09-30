@@ -27,12 +27,12 @@ namespace mousetrap
 namespace mousetrap
 {
     Viewport::Viewport(Adjustment h_adjustment, Adjustment v_adjustment)
-        : _h_adjustment(h_adjustment),
-          _v_adjustment(v_adjustment),
-          WidgetImplementation<GtkViewport>(GTK_VIEWPORT(gtk_viewport_new(
+        : WidgetImplementation<GtkViewport>(GTK_VIEWPORT(gtk_viewport_new(
                   _h_adjustment.operator GtkAdjustment*(),
                   _v_adjustment.operator GtkAdjustment*()))
-          )
+          ),
+          _h_adjustment(h_adjustment),
+          _v_adjustment(v_adjustment)
     {}
 
     void Viewport::set_child(Widget* widget)

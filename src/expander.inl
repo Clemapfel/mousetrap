@@ -17,7 +17,7 @@ namespace mousetrap
 
     bool Expander::get_expanded()
     {
-        gtk_expander_get_expanded(get_native());
+        return gtk_expander_get_expanded(get_native());
     }
 
     void Expander::set_expanded(bool b)

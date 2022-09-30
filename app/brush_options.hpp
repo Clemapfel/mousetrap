@@ -113,8 +113,8 @@ namespace mousetrap
                 BrushPreviewCanvas();
                 void set_resolution(size_t);
 
-                GLArea canvas;
                 AspectFrame main;
+                GLArea canvas;
 
                 static inline const RGBA line_color = RGBA(1, 1, 1, 0.33);
                 std::vector<Shape*> pixel_lines;

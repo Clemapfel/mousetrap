@@ -127,16 +127,7 @@ namespace mousetrap
 namespace mousetrap
 {
     void LayerView::on_list_view_item_activate(ListView*, size_t item_position, LayerView* instance)
-    {
-        instance->set_selected_frame(item_position);
-    }
-
-    void LayerView::on_selection_model_selection_changed(GtkSelectionModel*, int position, int n_items, LayerView* instance)
-    {
-        gtk_selection_model_select_item(instance->_whole_frame_row_inner.get_selection_model(), position, true);
-        for (auto& row : instance->_layer_rows)
-            gtk_selection_model_select_item(row._layer_frame_row.get_selection_model(), position, true);
-    }
+    {}
 
     void LayerView::WholeFrameDisplay::on_transparency_area_realize(Widget*, WholeFrameDisplay* instance)
     {
@@ -333,16 +324,5 @@ namespace mousetrap
 
         _main.push_back(&_whole_frame_row);
         _main.push_back(&_layer_rows_list);
-
-        set_selected_frame(2);
-    }
-
-    void LayerView::set_selected_frame(size_t i)
-    {
-        gtk_selection_model_select_item(_whole_frame_row_inner.get_selection_model(), i, true);
-        for (auto& row : _layer_rows)
-        {
-            gtk_selection_model_select_item(row._layer_frame_row.get_selection_model(), i, true);
-        }
     }
 }

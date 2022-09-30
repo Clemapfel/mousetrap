@@ -204,6 +204,8 @@ namespace mousetrap
         {
             instance->_play_pause_button.set_active(not instance->_play_pause_button.get_active());
         }
+
+        return FALSE;
     }
 
     gboolean Preview::on_tick_callback(GtkWidget* widget, GdkFrameClock* frame_clock, Preview* instance)

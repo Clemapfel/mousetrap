@@ -61,7 +61,7 @@ namespace mousetrap
     }
 
     SelectionModel::SelectionModel(GtkSelectionModel* model)
-        : _native(model), HasSelectionChangedSignal<SelectionModel>(this)
+        : HasSelectionChangedSignal<SelectionModel>(this), _native(model)
     {}
 
     std::vector<size_t> SelectionModel::get_selection()

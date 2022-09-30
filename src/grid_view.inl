@@ -55,7 +55,10 @@ namespace mousetrap::detail
 namespace mousetrap
 {
     GridView::GridView(GtkOrientation orientation, GtkSelectionMode mode)
-            : _orientation(orientation), _selection_mode(mode), WidgetImplementation<GtkGridView>([&]() -> GtkGridView* {
+            : WidgetImplementation<GtkGridView>([&]() -> GtkGridView* {
+
+        _orientation = orientation;
+        _selection_mode = mode;
 
         _list_store = g_list_store_new(G_TYPE_OBJECT);
         _factory = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
@@ -65,13 +68,13 @@ namespace mousetrap
         g_signal_connect(_factory, "teardown", G_CALLBACK(on_list_item_factory_teardown), this);
 
         if (mode == GTK_SELECTION_MULTIPLE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_multi_selection_new(G_LIST_MODEL(_list_store)));
+            _selection_model = new MultiSelectionModel(G_LIST_MODEL(_list_store));
         else if (mode == GTK_SELECTION_SINGLE or mode == GTK_SELECTION_BROWSE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_single_selection_new(G_LIST_MODEL(_list_store)));
+            _selection_model = new SingleSelectionModel(G_LIST_MODEL(_list_store));
         else if (mode == GTK_SELECTION_NONE)
-            _selection_model = GTK_SELECTION_MODEL(gtk_no_selection_new(G_LIST_MODEL(_list_store)));
+            _selection_model = new NoSelectionModel(G_LIST_MODEL(_list_store));
 
-        _native = GTK_GRID_VIEW(gtk_grid_view_new(_selection_model, GTK_LIST_ITEM_FACTORY(_factory)));
+        _native = GTK_GRID_VIEW(gtk_grid_view_new(_selection_model->operator GtkSelectionModel*(), GTK_LIST_ITEM_FACTORY(_factory)));
         gtk_orientable_set_orientation(GTK_ORIENTABLE(_native), orientation);
 
         return _native;
@@ -137,5 +140,10 @@ namespace mousetrap
     void GridView::set_min_columns(size_t i)
     {
         gtk_grid_view_set_min_columns(_native, i);
+    }
+
+    SelectionModel* GridView::get_selection_model()
+    {
+        return _selection_model;
     }
 }

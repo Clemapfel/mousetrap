@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <include/widget.hpp>
+#include <include/selection_model.hpp>
 
 namespace mousetrap
 {
@@ -38,7 +39,7 @@ namespace mousetrap
             void set_show_separators(bool);
             void set_single_click_activate(bool);
 
-            GtkSelectionModel* get_selection_model();
+            SelectionModel* get_selection_model();
 
         private:
             static void on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*);
@@ -55,7 +56,7 @@ namespace mousetrap
             GListStore* _root;
             GtkTreeListModel* _tree_list_model;
 
-            GtkSelectionModel* _selection_model;
+            SelectionModel* _selection_model;
             GtkSelectionMode _selection_mode;
             GtkOrientation _orientation;
     };
