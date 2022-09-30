@@ -115,6 +115,10 @@ namespace mousetrap
             ListView _layer_rows_list = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_SINGLE);
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
+
+            static void on_list_view_item_activate(ListView*, size_t item_position, LayerView* instance);
+            static void on_reorderable_list_view_item_activate(ReorderableListView*, size_t item_position, LayerView* instance);
+            static void on_selection_model_selection_changed(GtkSelectionModel*, int position, int n_items, LayerView* instance);
     };
 }
 
@@ -122,6 +126,18 @@ namespace mousetrap
 
 namespace mousetrap
 {
+    void LayerView::on_list_view_item_activate(ListView*, size_t item_position, LayerView* instance)
+    {
+        instance->set_selected_frame(item_position);
+    }
+
+    void LayerView::on_selection_model_selection_changed(GtkSelectionModel*, int position, int n_items, LayerView* instance)
+    {
+        gtk_selection_model_select_item(instance->_whole_frame_row_inner.get_selection_model(), position, true);
+        for (auto& row : instance->_layer_rows)
+            gtk_selection_model_select_item(row._layer_frame_row.get_selection_model(), position, true);
+    }
+
     void LayerView::WholeFrameDisplay::on_transparency_area_realize(Widget*, WholeFrameDisplay* instance)
     {
         instance->_transparency_area.make_current();
@@ -297,6 +313,8 @@ namespace mousetrap
         }
 
         _whole_frame_row_inner.set_show_separators(true);
+        _whole_frame_row_inner.connect_signal_list_item_activate(on_list_view_item_activate, this);
+        _whole_frame_row_inner.set_single_click_activate(true);
         _whole_frame_row.push_back(&_whole_frame_row_inner);
         _whole_frame_row.set_halign(GTK_ALIGN_END);
 
@@ -305,6 +323,8 @@ namespace mousetrap
            _layer_rows.emplace_back(&layer);
            _layer_rows.back().operator Widget*()->set_halign(GTK_ALIGN_END);
            _layer_rows.back()._layer_frame_row.set_show_separators(true);
+           _layer_rows.back()._layer_frame_row.connect_signal_list_item_activate(on_list_view_item_activate, this);
+           _layer_rows.back()._layer_frame_row.set_single_click_activate(true);
            _layer_rows_list.push_back(_layer_rows.back());
         }
 

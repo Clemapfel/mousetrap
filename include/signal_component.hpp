@@ -677,13 +677,11 @@ namespace mousetrap
         private:
             Owner_t* _instance;
 
-            static void on_list_item_activate_wrapper(GtkListView*, guint position, HasActivateSignal<Owner_t>* instance);
+            static void on_list_item_activate_wrapper(GtkListView*, guint position, HasListItemActivateSignal<Owner_t>* instance);
 
             std::function<on_list_item_activate_function_t<void*>> _on_list_item_activate_f;
             void* _on_list_item_activate_data;
     };
-
-
 }
 
 // ###
@@ -1242,7 +1240,7 @@ namespace mousetrap
 
     template<typename Owner_t>
     void HasListItemActivateSignal<Owner_t>::on_list_item_activate_wrapper(GtkListView* view, guint position,
-                                                                           HasActivateSignal<Owner_t>* self)
+                                                                           HasListItemActivateSignal<Owner_t>* self)
     {
         if (self->_on_list_item_activate_f != nullptr)
             self->_on_list_item_activate_f(self->_instance, position, self->_on_list_item_activate_data);

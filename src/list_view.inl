@@ -87,7 +87,7 @@ namespace mousetrap
             gtk_orientable_set_orientation(GTK_ORIENTABLE(_list_view), _orientation);
 
             return _list_view;
-        }())
+        }()), HasListItemActivateSignal<TreeListView>(this)
     {
         add_reference(_factory);
         add_reference(_root);
@@ -128,6 +128,8 @@ namespace mousetrap
         }
         else // leaf
             gtk_list_item_set_child(list_item, GTK_WIDGET(tree_list_view_item->widget->operator GtkWidget*()));
+
+        gtk_list_item_set_activatable(list_item, true);
     }
 
     void TreeListView::on_list_item_factory_unbind(GtkSignalListItemFactory* self, void* object, void*)
@@ -229,7 +231,7 @@ namespace mousetrap
         return insert(new_position, widget, new_it);
     }
 
-    void TreeListView::set_select_on_hover(bool b)
+    void TreeListView::set_single_click_activate(bool b)
     {
         gtk_list_view_set_single_click_activate(_list_view, b);
     }

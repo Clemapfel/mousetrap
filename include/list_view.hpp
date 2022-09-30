@@ -14,7 +14,8 @@ namespace mousetrap
 {
     namespace detail { struct _TreeListViewItem; }
 
-    class TreeListView : public WidgetImplementation<GtkListView>
+    class TreeListView : public WidgetImplementation<GtkListView>,
+        public HasListItemActivateSignal<TreeListView>
     {
         public:
             using Iterator = detail::_TreeListViewItem*;
@@ -35,7 +36,7 @@ namespace mousetrap
 
             void set_enable_rubberband_selection(bool);
             void set_show_separators(bool);
-            void set_select_on_hover(bool);
+            void set_single_click_activate(bool);
 
             GtkSelectionModel* get_selection_model();
 
