@@ -68,9 +68,8 @@ static void activate(GtkApplication* app, void*)
     state::color_picker = new ColorPicker();
 
     state::layer_resolution = {50, 50};
-    state::new_layer("number");
     state::new_layer("overlay");
-    state::layers.back().blend_mode = BlendMode::ADD;
+    state::new_layer("number");
 
     auto* preview = new Preview();
 
@@ -89,7 +88,7 @@ static void activate(GtkApplication* app, void*)
             }
             else
             {
-                frame.image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 0.5));
+                frame.image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1));
             }
 
             frame.texture.create_from_image(frame.image);

@@ -23,10 +23,10 @@ namespace mousetrap
 
             template<typename Function_t, typename T>
             void push_back(
-                    Widget* list_widget,
-                    Widget* when_selected_label_widget,
-                    Function_t on_select_f = nullptr,
-                    T on_select_data = nullptr
+                Widget* list_widget,
+                Widget* when_selected_label_widget,
+                Function_t on_select_f = nullptr,
+                T on_select_data = nullptr
             );
 
             void set_selected(size_t);
