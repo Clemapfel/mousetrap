@@ -48,7 +48,7 @@ namespace mousetrap
         glClear(GL_COLOR_BUFFER_BIT);
 
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        set_current_blend_mode(BlendMode::NORMAL);
 
         for (auto& task : area->_render_tasks)
             task.render();

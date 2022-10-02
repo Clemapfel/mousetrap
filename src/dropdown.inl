@@ -20,6 +20,7 @@ namespace mousetrap
             Widget* label_widget;
             GtkWidget* label_widget_ref;
 
+            bool* on_select_blocked;
             DropDown::on_select_function_t<void*> on_select_f;
             void* on_select_data;
         };
@@ -47,6 +48,7 @@ namespace mousetrap
             item->widget_ref = nullptr;
             item->label_widget = nullptr;
             item->label_widget_ref = nullptr;
+            item->on_select_blocked = new bool(false);
             item->on_select_f = nullptr;
             item->on_select_data = nullptr;
         }
@@ -57,7 +59,7 @@ namespace mousetrap
             gobject_class->finalize = drop_down_item_finalize;
         }
 
-        static DropDownItem* drop_down_item_new(Widget* in, Widget* label, DropDown::on_select_function_t<void*> f, void* f_data)
+        static DropDownItem* drop_down_item_new(Widget* in, Widget* label, DropDown::on_select_function_t<void*> f, void* f_data, bool* blocked)
         {
             auto* item = (DropDownItem*) g_object_new(G_TYPE_DROP_DOWN_ITEM, nullptr);
             drop_down_item_init(item);
@@ -65,6 +67,7 @@ namespace mousetrap
             item->widget_ref = g_object_ref(in->operator GtkWidget*());
             item->label_widget = label;
             item->label_widget_ref = g_object_ref(label->operator GtkWidget*());
+            item->on_select_blocked = blocked;
             item->on_select_f = f;
             item->on_select_data = f_data;
             return item;
@@ -108,7 +111,7 @@ namespace mousetrap
         auto* item = GTK_LIST_ITEM(object);
         auto* dropdown_item = detail::G_DROP_DOWN_ITEM(gtk_list_item_get_item(item));
         gtk_list_item_set_child(item, dropdown_item->label_widget->operator GtkWidget*());
-        if (dropdown_item->on_select_f != nullptr)
+        if (dropdown_item->on_select_f != nullptr and not *dropdown_item->on_select_blocked)
             dropdown_item->on_select_f(dropdown_item->on_select_data);
     }
 
@@ -123,7 +126,8 @@ namespace mousetrap
             list_widget,
             when_selected_label_widget,
             reinterpret_cast<on_select_function_t<void*>>(on_select_f),
-            reinterpret_cast<void*>(on_select_data)
+            reinterpret_cast<void*>(on_select_data),
+            _activation_blocked
         );
         g_list_store_append(_model, item);
     }
@@ -131,6 +135,11 @@ namespace mousetrap
     size_t DropDown::get_selected()
     {
         return gtk_drop_down_get_selected(get_native());
+    }
+
+    void DropDown::set_list_item_activation_blocked(bool b)
+    {
+        *_activation_blocked = b;
     }
 
     void DropDown::set_selected(size_t i)

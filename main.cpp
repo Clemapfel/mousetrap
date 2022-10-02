@@ -48,7 +48,6 @@
 
 using namespace mousetrap;
 
-
 static void activate(GtkApplication* app, void*)
 {
     state::shortcut_map = new ShortcutMap();
@@ -70,32 +69,27 @@ static void activate(GtkApplication* app, void*)
     state::layer_resolution = {50, 50};
     state::new_layer("overlay");
     state::new_layer("number");
+    state::layers.back()->blend_mode = BlendMode::MULTIPLY;
 
     auto* preview = new Preview();
-
-    for (auto& layer : state::layers)
+    for (auto* layer : state::layers)
     {
-        layer.frames.clear();
-        layer.frames.resize(10);
+        layer->frames.clear();
+        layer->frames.resize(10);
 
         size_t frame_i = 0;
-        for (auto& frame: layer.frames)
+        for (auto& frame: layer->frames)
         {
-            if (layer.name == "number")
-            {
-                frame.image.create_from_file(
-                        get_resource_path() + "example_animation/0" + std::to_string(frame_i) + ".png");
-            }
+            if (layer->name == "number")
+                frame.image.create_from_file(get_resource_path() + "example_animation/0" + std::to_string(frame_i) + ".png");
             else
-            {
-                frame.image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1));
-            }
+                frame.image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 0.25));
 
             frame.texture.create_from_image(frame.image);
             frame_i += 1;
         }
 
-        state::n_frames = layer.frames.size();
+        state::n_frames = layer->frames.size();
     }
 
     auto* layer_view = new LayerView();

@@ -26,7 +26,7 @@ namespace mousetrap
         friend struct WidgetImplementation;
 
         public:
-            virtual operator GtkWidget*() const; // can be overriden if template argument is not parent widget type of compound widget
+            virtual operator GtkWidget*() const; // can be overridden if template argument is not parent widget type of compound widget
             operator GObject*() override;
 
             Vector2f get_size_request();

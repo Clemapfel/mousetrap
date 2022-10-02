@@ -246,7 +246,7 @@ namespace mousetrap
         assert(_layer_shapes.size() == state::layers.size());
         for (size_t i = 0; i < _layer_shapes.size(); ++i)
         {
-            auto& frame = state::layers.at(i).frames.at(_current_frame);
+            auto& frame = state::layers.at(i)->frames.at(_current_frame);
             _layer_shapes.at(i)->set_texture(&frame.texture);
         }
 
@@ -383,14 +383,14 @@ namespace mousetrap
         _layer_area.make_current();
         _layer_area.clear_render_tasks();
 
-        for (auto& layer : state::layers)
+        for (auto* layer : state::layers)
         {
             _layer_shapes.emplace_back(new Shape());
             _layer_shapes.back()->as_rectangle({0, 0}, {1, 1});
-            _layer_shapes.back()->set_texture(&layer.frames.at(_current_frame).texture);
-            _layer_shapes.back()->set_visible(layer.is_visible);
+            _layer_shapes.back()->set_texture(&layer->frames.at(_current_frame).texture);
+            _layer_shapes.back()->set_visible(layer->is_visible);
 
-            auto task = RenderTask(_layer_shapes.back(), nullptr, nullptr, layer.blend_mode);
+            auto task = RenderTask(_layer_shapes.back(), nullptr, nullptr, layer->blend_mode);
             _layer_area.add_render_task(task);
         }
 

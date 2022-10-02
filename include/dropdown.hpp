@@ -32,6 +32,8 @@ namespace mousetrap
             void set_selected(size_t);
             size_t get_selected();
 
+            void set_list_item_activation_blocked(bool);
+
         private:
             static void on_list_factory_bind(GtkSignalListItemFactory* self, void* object, void*);
             static void on_label_factory_bind(GtkSignalListItemFactory* self, void* object, void*);
@@ -40,6 +42,8 @@ namespace mousetrap
             GtkSignalListItemFactory* _list_factory;
             GtkSignalListItemFactory* _label_factory;
             GListStore* _model;
+
+            bool* _activation_blocked = new bool(false);
     };
 }
 

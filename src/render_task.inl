@@ -67,10 +67,9 @@ namespace mousetrap
             if (pair.second != nullptr)
                 shader->set_uniform_vec4(pair.first, pair.second->operator glm::vec4());
 
+        glEnable(GL_BLEND);
         set_current_blend_mode(_blend_mode);
-
         _shape->render(*shader, *transform);
-
         set_current_blend_mode(BlendMode::NORMAL);
     }
 

@@ -29,10 +29,12 @@ namespace mousetrap
 
     namespace state
     {
-        std::deque<Layer> layers;
+        std::deque<Layer*> layers;
         Vector2ui layer_resolution;
         size_t n_frames = 0;
+
         size_t current_frame = 2;
+        size_t current_layer = 0;
 
         Layer* new_layer(const std::string& name, Layer* after = nullptr);
         void new_frame(size_t index);
@@ -53,19 +55,20 @@ namespace mousetrap
 
         auto after_pos = state::layers.begin();
         for (; after != nullptr and after_pos != state::layers.end(); ++after_pos)
-            if (&(*after_pos) == after)
+            if (*after_pos == after)
                 break;
 
-        auto it = layers.insert(after_pos, Layer{name});
+        auto it = layers.insert(after_pos, new Layer{name});
+        Layer* layer = *it;
 
         for (size_t i = 0; i < n_frames; ++i)
         {
-            it->frames.emplace_back();
-            it->frames.back().image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 1, 1, 0));
-            it->frames.back().texture.create_from_image(it->frames.back().image);
+            layer->frames.emplace_back();
+            layer->frames.back().image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 1, 1, 0));
+            layer->frames.back().texture.create_from_image(layer->frames.back().image);
         }
 
-        return &(*it);
+        return layer;
     }
 
     void state::new_frame(size_t index)
@@ -78,7 +81,7 @@ namespace mousetrap
 
         for (auto& layer : state::layers)
         {
-            auto it = layer.frames.emplace(layer.frames.begin() + index);
+            auto it = layer->frames.emplace(layer->frames.begin() + index);
             it->image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1));
             it->texture.create_from_image(it->image);
         }
@@ -90,7 +93,7 @@ namespace mousetrap
     {
         for (auto it = state::layers.begin(); it != state::layers.end(); ++it)
         {
-            if (&(*it) == ptr)
+            if (*it == ptr)
             {
                 state::layers.erase(it);
                 return;
@@ -110,7 +113,7 @@ namespace mousetrap
         }
 
         for (auto& layer : layers)
-            layer.frames.erase(layer.frames.begin() + index);
+            layer->frames.erase(layer->frames.begin() + index);
 
         n_frames -= 1;
     }
