@@ -25,6 +25,7 @@
 #include <include/dropdown.hpp>
 #include <include/overlay.hpp>
 #include <include/center_box.hpp>
+#include <include/frame.hpp>
 
 #include <app/global_state.hpp>
 #include <app/app_component.hpp>
@@ -50,6 +51,8 @@ namespace mousetrap
             struct WholeFrameDisplay
             {
                 WholeFrameDisplay(size_t frame_i);
+                ~WholeFrameDisplay();
+
                 operator Widget*();
 
                 void update();
@@ -70,7 +73,7 @@ namespace mousetrap
                 Overlay _overlay;
 
                 Label _label;
-                Box _main = Box(GTK_ORIENTATION_VERTICAL);
+                Frame _frame_widget = Frame();
             };
 
             struct LayerFrameDisplay
@@ -91,6 +94,7 @@ namespace mousetrap
                 GLArea _gl_area;
                 Shape* _transparency_tiling_shape;
                 Shape* _layer_shape;
+                Shape* _frame_shape;
 
                 static inline Texture* selection_indicator_texture = nullptr;
 
@@ -98,6 +102,7 @@ namespace mousetrap
 
                 ImageDisplay _layer_frame_active_icon = ImageDisplay(get_resource_path() + "icons/layer_frame_active.png");
                 Overlay _overlay;
+                Frame _frame_widget = Frame();
                 ListView _main = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
             };
 
@@ -282,6 +287,12 @@ namespace mousetrap
         _layer_area.queue_render();
     }
 
+    LayerView::WholeFrameDisplay::~WholeFrameDisplay()
+    {
+        delete _transparency_tiling_shape;
+        delete _canvas_size;
+    }
+
     LayerView::WholeFrameDisplay::WholeFrameDisplay(size_t frame)
         : _frame(frame),
           _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y)),
@@ -299,23 +310,22 @@ namespace mousetrap
             area->set_expand(false);
         }
 
-        _aspect_frame.set_child(&_transparency_area);
-        _aspect_frame.set_expand(false);
-        _overlay.set_child(&_aspect_frame);
+        _overlay.set_child(&_transparency_area);
         _overlay.add_overlay(&_layer_area);
+        _aspect_frame.set_child(&_overlay);
+        _frame_widget.set_child(&_aspect_frame);
+        _frame_widget.set_label_align(0.5);
+        _frame_widget.set_label_widget(&_label);
 
-        _overlay.set_margin_start(thumbnail_margin_left_right);
-        _overlay.set_margin_end(thumbnail_margin_left_right);
-        _overlay.set_margin_top(thumbnail_margin_top_bottom);
-        _overlay.set_margin_bottom(thumbnail_margin_top_bottom);
-
-        _main.push_back(&_overlay);
-        _main.push_back(&_label);
+        _frame_widget.set_margin_start(thumbnail_margin_left_right);
+        _frame_widget.set_margin_end(thumbnail_margin_left_right);
+        _frame_widget.set_margin_top(thumbnail_margin_top_bottom);
+        _frame_widget.set_margin_bottom(thumbnail_margin_top_bottom);
     }
 
     LayerView::WholeFrameDisplay::operator Widget*()
     {
-        return &_main;
+        return &_frame_widget;
     }
 
     // SINGLE FRAME DISPLAY
@@ -368,7 +378,10 @@ namespace mousetrap
         _gl_area.set_expand(false);
 
         _aspect_frame.set_child(&_gl_area);
-        _overlay.set_child(&_aspect_frame);
+        _frame_widget.set_child(&_aspect_frame);
+        _frame_widget.set_label_widget(nullptr);
+
+        _overlay.set_child(&_frame_widget);
         _layer_frame_active_icon.set_align(GTK_ALIGN_CENTER);
         _layer_frame_active_icon.set_visible(false);
         _layer_frame_active_icon.set_size_request(_layer_frame_active_icon.get_size());
@@ -737,6 +750,9 @@ namespace mousetrap
             model->set_all_signals_blocked(true);
             model->select(frame_i);
             model->set_all_signals_blocked(false);
+
+            for (auto& display : row.frame_display)
+                display._layer_frame_active_icon.set_visible(false);
         }
 
         {
@@ -745,6 +761,8 @@ namespace mousetrap
             model->select(frame_i);
             model->set_all_signals_blocked(false);
         }
+
+        _layer_rows.at(layer_i).frame_display.at(frame_i)._layer_frame_active_icon.set_visible(true);
     }
 
     void LayerView::on_layer_frame_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed,
@@ -807,11 +825,13 @@ namespace mousetrap
                 on_whole_frame_view_selection_changed, this);
 
         _whole_frame_display_list_view_outer.push_back(&_whole_frame_display_list_view_inner);
+        _layer_row_list_view.set_halign(GTK_ALIGN_END);
         _whole_frame_display_list_view_outer.set_halign(GTK_ALIGN_END);
 
         _main.push_back(&_layer_row_list_view);
         _main.push_back(&_whole_frame_display_list_view_outer);
 
+        set_layer_frame_selection(state::current_layer, state::current_frame);
         update();
     }
 

@@ -21,8 +21,13 @@ namespace mousetrap
         gtk_frame_set_child(get_native(), nullptr);
     }
 
-    void Frame::set_label(const std::string& label)
+    void Frame::set_label_widget(Widget* widget)
     {
-        gtk_frame_set_label(get_native(), label.c_str());
+        gtk_frame_set_label_widget(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
+    }
+
+    void Frame::set_label_align(float x)
+    {
+        gtk_frame_set_label_align(get_native(), x);
     }
 }
