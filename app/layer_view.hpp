@@ -382,9 +382,10 @@ namespace mousetrap
         _frame_widget.set_label_widget(nullptr);
 
         _overlay.set_child(&_frame_widget);
-        _layer_frame_active_icon.set_align(GTK_ALIGN_CENTER);
+        _layer_frame_active_icon.set_align(GTK_ALIGN_END);
         _layer_frame_active_icon.set_visible(false);
         _layer_frame_active_icon.set_size_request(_layer_frame_active_icon.get_size());
+        _layer_frame_active_icon.set_tooltip_text("Currently Being Edited");
         _overlay.add_overlay(&_layer_frame_active_icon);
 
         _main.push_back(&_overlay);
@@ -684,7 +685,7 @@ namespace mousetrap
     void LayerView::LayerControlBar::on_visible_check_button_toggled(CheckButton* button, LayerControlBar* instance)
     {
         auto& layer = *state::layers.at(instance->_layer);
-        layer.is_visible = not button->get_is_checked();
+        layer.is_visible = button->get_is_checked();
 
         instance->update();
 
