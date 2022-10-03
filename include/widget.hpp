@@ -57,6 +57,8 @@ namespace mousetrap
             bool get_visible();
 
             void set_tooltip_text(const std::string&);
+
+            // for pictures, c.f. https://docs.gtk.org/gdk4/ctor.Cursor.new_from_name.html
             void set_cursor(GtkCursorType type);
 
             void show();

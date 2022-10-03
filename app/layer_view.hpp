@@ -74,6 +74,11 @@ namespace mousetrap
 
                 Label _label;
                 Frame _frame_widget = Frame();
+
+                void generate_tooltip() {
+                    _label.set_tooltip_text("Frame #" + std::to_string(_frame));
+                    _overlay.set_tooltip_text("Composite for Frame #" + std::to_string(_frame));
+                }
             };
 
             struct LayerFrameDisplay
@@ -104,11 +109,15 @@ namespace mousetrap
                 Overlay _overlay;
                 Frame _frame_widget = Frame();
                 ListView _main = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
+
+                void generate_tooltip() {
+                    _frame_widget.set_tooltip_text("Layer \"" + state::layers.at(_layer)->name + "\", Frame #" + std::to_string(_frame));
+                }
             };
 
-            struct LayerControlBar
+            struct LayerPropertyOptions
             {
-                LayerControlBar(size_t layer_i, LayerView*);
+                LayerPropertyOptions(size_t layer_i, LayerView*);
                 operator Widget*();
 
                 void update();
@@ -120,12 +129,12 @@ namespace mousetrap
                 ImageDisplay _locked_toggle_button_icon_locked = ImageDisplay(get_resource_path() + "icons/layer_locked.png", state::icon_scale);
                 ImageDisplay _locked_toggle_button_icon_not_locked = ImageDisplay(get_resource_path() + "icons/layer_not_locked.png", state::icon_scale);
                 ToggleButton _locked_toggle_button;
-                static void on_locked_toggle_button_toggled(ToggleButton*, LayerControlBar*);
+                static void on_locked_toggle_button_toggled(ToggleButton*, LayerPropertyOptions*);
 
                 ImageDisplay _visible_toggle_button_icon_visible = ImageDisplay(get_resource_path() + "icons/layer_visible.png", state::icon_scale);
                 ImageDisplay _visible_toggle_button_icon_not_visible = ImageDisplay(get_resource_path() + "icons/layer_not_visible.png", state::icon_scale);
                 ToggleButton _visible_toggle_button;
-                static void on_visible_toggle_button_toggled(ToggleButton*, LayerControlBar*);
+                static void on_visible_toggle_button_toggled(ToggleButton*, LayerPropertyOptions*);
 
                 Box _visible_locked_indicator_box = Box(GTK_ORIENTATION_HORIZONTAL, state::margin_unit * 0.5);
 
@@ -139,25 +148,25 @@ namespace mousetrap
                 SeparatorLine _name_separator;
                 Entry _name_entry;
                 Box _name_box = Box(GTK_ORIENTATION_HORIZONTAL);
-                static void on_name_entry_activate(Entry*, LayerControlBar* instance);
+                static void on_name_entry_activate(Entry*, LayerPropertyOptions* instance);
 
                 Label _visible_label = Label("Visible");
                 SeparatorLine _visible_separator;
                 CheckButton _visible_check_button;
                 Box _visible_box = Box(GTK_ORIENTATION_HORIZONTAL);
-                static void on_visible_check_button_toggled(CheckButton*, LayerControlBar* instance);
+                static void on_visible_check_button_toggled(CheckButton*, LayerPropertyOptions* instance);
 
                 Label _locked_label = Label("Locked");
                 SeparatorLine _locked_separator;
                 CheckButton _locked_check_button;
                 Box _locked_box = Box(GTK_ORIENTATION_HORIZONTAL);
-                static void on_locked_check_button_toggled(CheckButton*, LayerControlBar* instance);
+                static void on_locked_check_button_toggled(CheckButton*, LayerPropertyOptions* instance);
 
                 Label _opacity_label = Label("Opacity");
                 SeparatorLine _opacity_separator;
                 Scale _opacity_scale = Scale(0, 1, 0.01);
                 Box _opacity_box = Box(GTK_ORIENTATION_HORIZONTAL);
-                static void on_opacity_scale_value_changed(Scale*, LayerControlBar* instance);
+                static void on_opacity_scale_value_changed(Scale*, LayerPropertyOptions* instance);
 
                 Label _blend_mode_label = Label("Blend");
                 SeparatorLine _blend_mode_separator;
@@ -176,13 +185,34 @@ namespace mousetrap
                 std::vector<Label> _blend_mode_dropdown_label_items;
                 std::vector<Label> _blend_mode_dropdown_list_items;
 
-                using on_blend_mode_select_data = struct {BlendMode blend_mode; LayerControlBar* instance;};
+                using on_blend_mode_select_data = struct {BlendMode blend_mode; LayerPropertyOptions* instance;};
                 static void on_blend_mode_select(on_blend_mode_select_data*);
+
+                void generate_tooltip()
+                {
+                    static auto generate_tooltip = [](std::string title, std::string description)
+                    {
+                        std::stringstream str;
+                        str << title << "\n\n"
+                            << "<span foreground=\"#BBBBBB\">" << description << "</span>";
+
+                        return str.str();
+                    };
+
+                    _name_box.set_tooltip_text(generate_tooltip("Layer Name", "Layer names help to stay organized"));
+                    _visible_box.set_tooltip_text(generate_tooltip("Layer Visibility", "Hidden layers will not appear in composite renders of the image"));
+                    _locked_box.set_tooltip_text(generate_tooltip("Layer Locked", "Locked layers cannot be edited"));
+                    _opacity_box.set_tooltip_text(generate_tooltip("Layer Opacity", "Alpha value of all pixels in a layer are multiplied with the layer opacity"));
+                    _blend_mode_label.set_tooltip_text(generate_tooltip("Layer Blend Mode", "Blend mode governs how a layer behaves when rendered on top of another layer"));
+                    _menu_button.set_tooltip_text("Layer Options");
+                    _locked_toggle_button.set_tooltip_text("Toggle Layer Locked");
+                    _visible_toggle_button.set_tooltip_text("Toggle Layer Visible");
+                }
             };
 
             struct LayerRow
             {
-                LayerControlBar* control_bar;
+                LayerPropertyOptions* control_bar;
                 Box main = Box(GTK_ORIENTATION_HORIZONTAL);
                 ListView frame_display_list = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
                 std::deque<LayerFrameDisplay> frame_display;
@@ -195,16 +225,16 @@ namespace mousetrap
             std::deque<WholeFrameDisplay> _whole_frame_displays;
             ListView _whole_frame_display_list_view_inner = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
             ListView _whole_frame_display_list_view_outer = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
-
-            Box _main = Box(GTK_ORIENTATION_VERTICAL);
-
+            
             using on_layer_frame_view_selection_changed_data = struct {LayerView* instance; size_t layer;};
             static void on_layer_frame_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed, on_layer_frame_view_selection_changed_data*);
             static void on_whole_frame_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed, LayerView*);
             static void on_whole_layer_row_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed, LayerView*);
 
             void set_layer_frame_selection(size_t layer_i, size_t frame_i);
-          };
+
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
+    };
 }
 
 namespace mousetrap
@@ -285,6 +315,7 @@ namespace mousetrap
         }
 
         _layer_area.queue_render();
+        generate_tooltip();
     }
 
     LayerView::WholeFrameDisplay::~WholeFrameDisplay()
@@ -313,6 +344,7 @@ namespace mousetrap
         _overlay.set_child(&_transparency_area);
         _overlay.add_overlay(&_layer_area);
         _aspect_frame.set_child(&_overlay);
+
         _frame_widget.set_child(&_aspect_frame);
         _frame_widget.set_label_align(0.5);
         _frame_widget.set_label_widget(&_label);
@@ -321,6 +353,9 @@ namespace mousetrap
         _frame_widget.set_margin_end(thumbnail_margin_left_right);
         _frame_widget.set_margin_top(thumbnail_margin_top_bottom);
         _frame_widget.set_margin_bottom(thumbnail_margin_top_bottom);
+
+        generate_tooltip();
+        _frame_widget.set_cursor(GtkCursorType::POINTER);
     }
 
     LayerView::WholeFrameDisplay::operator Widget*()
@@ -385,11 +420,14 @@ namespace mousetrap
         _layer_frame_active_icon.set_align(GTK_ALIGN_END);
         _layer_frame_active_icon.set_visible(false);
         _layer_frame_active_icon.set_size_request(_layer_frame_active_icon.get_size());
-        _layer_frame_active_icon.set_tooltip_text("Currently Being Edited");
+        _layer_frame_active_icon.set_tooltip_text("Currently editing this frame");
         _overlay.add_overlay(&_layer_frame_active_icon);
 
         _main.push_back(&_overlay);
         _gl_area.queue_render();
+
+        generate_tooltip();
+        _frame_widget.set_cursor(GtkCursorType::POINTER);
     }
 
     LayerView::LayerFrameDisplay::~LayerFrameDisplay()
@@ -417,12 +455,13 @@ namespace mousetrap
         else
             _gl_area.set_opacity(1);
 
+        generate_tooltip();
         _gl_area.queue_render();
     }
 
     // CONTROL BAR
 
-    void LayerView::LayerControlBar::update()
+    void LayerView::LayerPropertyOptions::update()
     {
         auto& layer = *state::layers.at(_layer);
 
@@ -463,7 +502,7 @@ namespace mousetrap
         _name_entry.set_all_signals_blocked(false);
     }
 
-    LayerView::LayerControlBar::LayerControlBar(size_t layer_i, LayerView* owner)
+    LayerView::LayerPropertyOptions::LayerPropertyOptions(size_t layer_i, LayerView* owner)
         : _layer(layer_i), _owner(owner)
     {
         auto icon_size = _locked_toggle_button_icon_locked.get_size();
@@ -636,15 +675,30 @@ namespace mousetrap
         _main.push_back(&_visible_locked_indicator_box);
         _main.push_back(&_menu_button);
 
+        generate_tooltip();
+        for (auto* widget : std::vector<Widget*>{
+            &_locked_toggle_button,
+            &_visible_toggle_button,
+            &_menu_button,
+            &_visible_check_button,
+            &_locked_check_button,
+            &_opacity_scale,
+            &_blend_mode_box
+        })
+            widget->set_cursor(GtkCursorType::POINTER);
+
+        for (auto& label : _blend_mode_dropdown_label_items)
+            label.set_cursor(GtkCursorType::POINTER);
+
         update();
     }
 
-    LayerView::LayerControlBar::operator Widget*()
+    LayerView::LayerPropertyOptions::operator Widget*()
     {
         return &_main;
     }
 
-    void LayerView::LayerControlBar::on_locked_toggle_button_toggled(ToggleButton* button, LayerControlBar* instance)
+    void LayerView::LayerPropertyOptions::on_locked_toggle_button_toggled(ToggleButton* button, LayerPropertyOptions* instance)
     {
         auto& layer = *state::layers.at(instance->_layer);
         layer.is_locked = button->get_active();
@@ -652,7 +706,7 @@ namespace mousetrap
         instance->update();
     }
 
-    void LayerView::LayerControlBar::on_visible_toggle_button_toggled(ToggleButton* button, LayerControlBar* instance)
+    void LayerView::LayerPropertyOptions::on_visible_toggle_button_toggled(ToggleButton* button, LayerPropertyOptions* instance)
     {
         auto& layer = *state::layers.at(instance->_layer);
         layer.is_visible = not button->get_active();
@@ -666,15 +720,18 @@ namespace mousetrap
             display.update();
     }
 
-    void LayerView::LayerControlBar::on_name_entry_activate(Entry* entry, LayerControlBar* instance)
+    void LayerView::LayerPropertyOptions::on_name_entry_activate(Entry* entry, LayerPropertyOptions* instance)
     {
         auto& layer = *state::layers.at(instance->_layer);
         layer.name = entry->get_text();
 
+        for (auto& display : instance->_owner->_layer_rows.at(instance->_layer).frame_display)
+            display.update();
+
         instance->update();
     }
 
-    void LayerView::LayerControlBar::on_locked_check_button_toggled(CheckButton* button, LayerControlBar* instance)
+    void LayerView::LayerPropertyOptions::on_locked_check_button_toggled(CheckButton* button, LayerPropertyOptions* instance)
     {
         auto& layer = *state::layers.at(instance->_layer);
         layer.is_locked = button->get_is_checked();
@@ -682,7 +739,7 @@ namespace mousetrap
         instance->update();
     }
 
-    void LayerView::LayerControlBar::on_visible_check_button_toggled(CheckButton* button, LayerControlBar* instance)
+    void LayerView::LayerPropertyOptions::on_visible_check_button_toggled(CheckButton* button, LayerPropertyOptions* instance)
     {
         auto& layer = *state::layers.at(instance->_layer);
         layer.is_visible = button->get_is_checked();
@@ -696,7 +753,7 @@ namespace mousetrap
             display.update();
     }
 
-    void LayerView::LayerControlBar::on_opacity_scale_value_changed(Scale* scale, LayerControlBar* instance)
+    void LayerView::LayerPropertyOptions::on_opacity_scale_value_changed(Scale* scale, LayerPropertyOptions* instance)
     {
         auto& layer = *state::layers.at(instance->_layer);
         layer.opacity = scale->get_value();
@@ -710,7 +767,7 @@ namespace mousetrap
             display.update();
     }
 
-    void LayerView::LayerControlBar::on_blend_mode_select(on_blend_mode_select_data* data)
+    void LayerView::LayerPropertyOptions::on_blend_mode_select(on_blend_mode_select_data* data)
     {
         auto& layer = *state::layers.at(data->instance->_layer);
         layer.blend_mode = data->blend_mode;
@@ -719,38 +776,22 @@ namespace mousetrap
             display.update();
     }
 
-    void LayerView::on_layer_row_list_view_reordered(ReorderableListView*, Widget* row_widget_moved,
-                                                     size_t previous_position, size_t next_position,
-                                                     LayerView* instance)
-    {
-        auto* layer_a = state::layers.at(previous_position);
-        state::layers.erase(state::layers.begin() + previous_position);
-
-        size_t offset = 0;
-        if (previous_position < next_position)
-            offset = -1;
-
-        state::layers.insert(state::layers.begin() + next_position + offset, layer_a);
-
-        instance->update();
-    }
-
     void LayerView::set_layer_frame_selection(size_t layer_i, size_t frame_i)
     {
         {
             auto* model = _layer_row_list_view.get_selection_model();
-            model->set_all_signals_blocked(true);
+            model->set_signal_selection_changed_blocked(true);
             model->select(layer_i);
-            model->set_all_signals_blocked(false);
+            model->set_signal_selection_changed_blocked(false);
         }
 
         for (size_t i = 0; i < _layer_rows.size(); ++i)
         {
             auto& row = _layer_rows.at(i);
             auto* model = row.frame_display_list.get_selection_model();
-            model->set_all_signals_blocked(true);
+            model->set_signal_selection_changed_blocked(true);
             model->select(frame_i);
-            model->set_all_signals_blocked(false);
+            model->set_signal_selection_changed_blocked(false);
 
             for (auto& display : row.frame_display)
                 display._layer_frame_active_icon.set_visible(false);
@@ -758,9 +799,9 @@ namespace mousetrap
 
         {
             auto* model = _whole_frame_display_list_view_inner.get_selection_model();
-            model->set_all_signals_blocked(true);
+            model->set_signal_selection_changed_blocked(true);
             model->select(frame_i);
-            model->set_all_signals_blocked(false);
+            model->set_signal_selection_changed_blocked(false);
         }
 
         _layer_rows.at(layer_i).frame_display.at(frame_i)._layer_frame_active_icon.set_visible(true);
@@ -771,7 +812,6 @@ namespace mousetrap
     {
         state::current_frame = first_item_position;
         state::current_layer = data->layer;
-
         data->instance->set_layer_frame_selection(state::current_layer, state::current_frame);
     }
 
@@ -794,7 +834,7 @@ namespace mousetrap
         for (size_t layer_i = 0; layer_i < state::layers.size(); ++layer_i)
         {
             _layer_rows.push_back(LayerRow{
-                new LayerControlBar(layer_i, this)
+                new LayerPropertyOptions(layer_i, this)
             });
 
             auto& row = _layer_rows.back();
