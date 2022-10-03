@@ -233,6 +233,132 @@ namespace mousetrap
 
             void set_layer_frame_selection(size_t layer_i, size_t frame_i);
 
+            struct FrameControlBar
+            {
+                FrameControlBar();
+                operator Widget*();
+
+                ImageDisplay _frame_move_left_icon = ImageDisplay(get_resource_path() + "icons/frame_move_left.png");
+                Button _frame_move_left_button;
+                static void on_frame_move_left_button_clicked(Button*, FrameControlBar* instance);
+
+                ImageDisplay _frame_create_left_of_this_icon = ImageDisplay(get_resource_path() + "icons/frame_create_left_of_this.png");
+                Button _frame_create_left_of_this_button;
+                static void on_frame_create_left_of_this_button_clicked(Button*, FrameControlBar* instance);
+
+                ImageDisplay _frame_delete_icon = ImageDisplay(get_resource_path() + "icons/frame_delete.png");
+                Button _frame_delete_button;
+                static void on_frame_delete_button_clicked(Button*, FrameControlBar* instance);
+
+                ImageDisplay _frame_duplicate_icon = ImageDisplay(get_resource_path() + "icons/frame_duplicate.png");
+                Button _frame_duplicate_button;
+                static void on_frame_duplicate_button_clicked(Button*, FrameControlBar* instance);
+
+                ImageDisplay _frame_create_right_of_this_icon = ImageDisplay(get_resource_path() + "icons/frame_create_right_of_this.png");
+                Button _frame_create_right_of_this_button;
+                static void on_frame_create_right_of_this_button_clicked(Button*, FrameControlBar* instance);
+
+                ImageDisplay _frame_move_right_icon = ImageDisplay(get_resource_path() + "icons/frame_move_right.png");
+                Button _frame_move_right_button;
+                static void on_frame_move_right_button_clicked(Button*, FrameControlBar* instance);
+
+                Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+
+                void generate_tooltip()
+                {
+                    _frame_move_left_button.set_tooltip_text("");
+                    _frame_create_left_of_this_button.set_tooltip_text("");
+                    _frame_delete_button.set_tooltip_text("");
+                    _frame_duplicate_button.set_tooltip_text("");
+                    _frame_create_right_of_this_button.set_tooltip_text("");
+                    _frame_move_right_button.set_tooltip_text("");
+                }
+            };
+
+            FrameControlBar _frame_control_bar;
+
+            struct PlaybackControlBar
+            {
+                PlaybackControlBar();
+                operator Widget*();
+
+                ImageDisplay _playback_jump_to_start_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
+                Button _playback_jump_to_start_button;
+                static void on_playback_jump_to_start_button_clicked(Button*, PlaybackControlBar* instance);
+
+                ImageDisplay _playback_pause_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_pause.png");
+                Button _playback_pause_button;
+                static void on_playback_pause_button_clicked(Button*, PlaybackControlBar* instance);
+
+                ImageDisplay _playback_play_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_play.png");
+                Button _playback_play_button;
+                static void on_playback_play_button_clicked(Button*, PlaybackControlBar* instance);
+
+                ImageDisplay _playback_jump_to_end_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_end.png");
+                Button _playback_jump_to_end_button;
+                static void on_playback_jump_to_end_button_clicked(Button*, PlaybackControlBar* instance);
+
+                Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+
+                void generate_tooltip()
+                {
+                    _playback_jump_to_start_button.set_tooltip_text("");
+                    _playback_jump_to_end_button.set_tooltip_text("");
+                    _playback_play_button.set_tooltip_text("");
+                    _playback_pause_button.set_tooltip_text("");
+                }
+            };
+
+            PlaybackControlBar _playback_control_bar;
+
+            struct LayerControlBar
+            {
+                LayerControlBar();
+                operator Widget*();
+
+                ImageDisplay _layer_move_up_icon = ImageDisplay(get_resource_path() + "icons/layer_move_up.png");
+                Button _layer_move_up_button;
+                static void on_layer_move_up_button_clicked(Button*, LayerControlBar* instance);
+
+                ImageDisplay _layer_create_icon = ImageDisplay(get_resource_path() + "icons/layer_create.png");
+                Button _layer_create_button;
+                static void on_layer_create_button_clicked(Button*, LayerControlBar* instance);
+
+                ImageDisplay _layer_duplicate_icon = ImageDisplay(get_resource_path() + "icons/layer_duplicate.png");
+                Button _layer_duplicate_button;
+                static void on_layer_duplicate_button_clicked(Button*, LayerControlBar* instance);
+
+                ImageDisplay _layer_delete_icon = ImageDisplay(get_resource_path() + "icons/layer_delete.png");
+                Button _layer_delete_button;
+                static void on_layer_delete_button_clicked(Button*, LayerControlBar* instance);
+
+                ImageDisplay _layer_move_down_icon = ImageDisplay(get_resource_path() + "icons/layer_move_down.png");
+                Button _layer_move_down_button;
+                static void on_layer_move_down_button_clicked(Button*, LayerControlBar* instance);
+
+                ImageDisplay _layer_merge_down_icon = ImageDisplay(get_resource_path() + "icons/layer_merge_down.png");
+                Button _layer_merge_down_button;
+                static void on_layer_merge_down_button_clicked(Button*, LayerControlBar* instance);
+
+                ImageDisplay _layer_flatten_all_icon = ImageDisplay(get_resource_path() + "icons/layer_flatten_all.png");
+                Button _layer_flatten_all_button;
+                static void on_layer_flatten_all_button_clicked(Button*, LayerControlBar* instance);
+
+                Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+                void generate_tooltip()
+                {
+                    _layer_move_up_button.set_tooltip_text("");
+                    _layer_move_down_button.set_tooltip_text("");
+                    _layer_create_button.set_tooltip_text("");
+                    _layer_delete_button.set_tooltip_text("");
+                    _layer_duplicate_button.set_tooltip_text("");
+                    _layer_merge_down_button.set_tooltip_text("");
+                    _layer_flatten_all_button.set_tooltip_text("");
+                }
+            };
+
+            LayerControlBar _layer_control_bar;
+
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
 }
@@ -324,6 +450,7 @@ namespace mousetrap
         delete _canvas_size;
     }
 
+
     LayerView::WholeFrameDisplay::WholeFrameDisplay(size_t frame)
         : _frame(frame),
           _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y)),
@@ -344,7 +471,7 @@ namespace mousetrap
         _overlay.set_child(&_transparency_area);
         _overlay.add_overlay(&_layer_area);
         _aspect_frame.set_child(&_overlay);
-
+        
         _frame_widget.set_child(&_aspect_frame);
         _frame_widget.set_label_align(0.5);
         _frame_widget.set_label_widget(&_label);
@@ -459,7 +586,7 @@ namespace mousetrap
         _gl_area.queue_render();
     }
 
-    // CONTROL BAR
+    // LAYER PROPERTY OPTIONS
 
     void LayerView::LayerPropertyOptions::update()
     {
@@ -776,6 +903,168 @@ namespace mousetrap
             display.update();
     }
 
+    // FRAME CONTROL BAR
+
+    void LayerView::FrameControlBar::on_frame_move_right_button_clicked(Button*, FrameControlBar* instance)
+    {}
+
+    void LayerView::FrameControlBar::on_frame_create_left_of_this_button_clicked(Button*, FrameControlBar* instance)
+    {}
+
+    void LayerView::FrameControlBar::on_frame_create_right_of_this_button_clicked(Button*, FrameControlBar* instance)
+    {}
+
+    void LayerView::FrameControlBar::on_frame_delete_button_clicked(Button*, FrameControlBar* instance)
+    {}
+
+    void LayerView::FrameControlBar::on_frame_move_left_button_clicked(Button*, FrameControlBar* instance)
+    {}
+
+    void LayerView::FrameControlBar::on_frame_duplicate_button_clicked(Button*, FrameControlBar* instance)
+    {}
+
+    LayerView::FrameControlBar::FrameControlBar()
+    {
+        for (auto* display : {&_frame_move_left_icon, &_frame_create_left_of_this_icon, &_frame_delete_icon, &_frame_duplicate_icon, &_frame_create_right_of_this_icon, &_frame_move_right_icon})
+            display->set_size_request(display->get_size());
+
+        _frame_move_left_button.set_child(&_frame_move_left_icon);
+        _frame_move_left_button.connect_signal_clicked(on_frame_move_left_button_clicked, this);
+
+        _frame_create_left_of_this_button.set_child(&_frame_create_left_of_this_icon);
+        _frame_create_left_of_this_button.connect_signal_clicked(on_frame_create_left_of_this_button_clicked, this);
+
+        _frame_delete_button.set_child(&_frame_delete_icon);
+        _frame_delete_button.connect_signal_clicked(on_frame_delete_button_clicked, this);
+
+        _frame_duplicate_button.set_child(&_frame_duplicate_icon);
+        _frame_duplicate_button.connect_signal_clicked(on_frame_duplicate_button_clicked, this);
+
+        _frame_create_right_of_this_button.set_child(&_frame_create_right_of_this_icon);
+        _frame_create_right_of_this_button.connect_signal_clicked(on_frame_create_right_of_this_button_clicked, this);
+
+        _frame_move_right_button.set_child(&_frame_move_right_icon);
+        _frame_move_right_button.connect_signal_clicked(on_frame_move_right_button_clicked, this);
+
+        _main.push_back(&_frame_move_left_button);
+        _main.push_back(&_frame_create_left_of_this_button);
+        _main.push_back(&_frame_duplicate_button);
+        _main.push_back(&_frame_delete_button);
+        _main.push_back(&_frame_create_right_of_this_button);
+        _main.push_back(&_frame_move_right_button);
+
+        generate_tooltip();
+    }
+
+    LayerView::FrameControlBar::operator Widget*()
+    {
+        return &_main;
+    }
+
+    // PLAYBACK CONTROL BAR
+
+    void LayerView::PlaybackControlBar::on_playback_pause_button_clicked(Button*, PlaybackControlBar* instance)
+    {}
+
+    void LayerView::PlaybackControlBar::on_playback_play_button_clicked(Button*, PlaybackControlBar* instance)
+    {}
+
+    void LayerView::PlaybackControlBar::on_playback_jump_to_end_button_clicked(Button*, PlaybackControlBar* instance)
+    {}
+
+    void LayerView::PlaybackControlBar::on_playback_jump_to_start_button_clicked(Button*, PlaybackControlBar* instance)
+    {}
+
+    LayerView::PlaybackControlBar::PlaybackControlBar()
+    {
+        for (ImageDisplay* icon : {&_playback_jump_to_start_icon, &_playback_pause_icon, &_playback_play_icon, &_playback_jump_to_end_icon})
+            icon->set_size_request(icon->get_size());
+
+        _playback_jump_to_start_button.set_child(&_playback_jump_to_start_icon);
+        _playback_jump_to_start_button.connect_signal_clicked(&on_playback_jump_to_start_button_clicked, this);
+
+        _playback_pause_button.set_child(&_playback_pause_icon);
+        _playback_pause_button.connect_signal_clicked(&on_playback_pause_button_clicked, this);
+
+        _playback_play_button.set_child(&_playback_play_icon);
+        _playback_play_button.connect_signal_clicked(&on_playback_play_button_clicked, this);
+
+        _playback_jump_to_end_button.set_child(&_playback_jump_to_end_icon);
+        _playback_jump_to_end_button.connect_signal_clicked(&on_playback_jump_to_end_button_clicked, this);
+
+        for (auto* button : {&_playback_jump_to_start_button, &_playback_play_button, &_playback_pause_button, &_playback_jump_to_end_button})
+            _main.push_back(button);
+
+        generate_tooltip();
+    }
+
+    LayerView::PlaybackControlBar::operator Widget*()
+    {
+        return &_main;
+    }
+
+    // LAYER CONTROL BAR
+
+    void LayerView::LayerControlBar::on_layer_move_up_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    void LayerView::LayerControlBar::on_layer_move_down_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    void LayerView::LayerControlBar::on_layer_create_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    void LayerView::LayerControlBar::on_layer_delete_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    void LayerView::LayerControlBar::on_layer_duplicate_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    void LayerView::LayerControlBar::on_layer_merge_down_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    void LayerView::LayerControlBar::on_layer_flatten_all_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    LayerView::LayerControlBar::operator Widget*()
+    {
+        return &_main;
+    }
+
+    LayerView::LayerControlBar::LayerControlBar()
+    {
+        for (auto* display : {&_layer_move_up_icon, &_layer_create_icon, &_layer_duplicate_icon, &_layer_delete_icon, &_layer_move_down_icon, &_layer_merge_down_icon, &_layer_flatten_all_icon})
+            display->set_size_request(display->get_size());
+
+        _layer_move_up_button.set_child(&_layer_move_up_icon);
+        _layer_move_up_button.connect_signal_clicked(on_layer_move_up_button_clicked, this);
+
+        _layer_create_button.set_child(&_layer_create_icon);
+        _layer_create_button.connect_signal_clicked(on_layer_create_button_clicked, this);
+
+        _layer_duplicate_button.set_child(&_layer_duplicate_icon);
+        _layer_duplicate_button.connect_signal_clicked(on_layer_duplicate_button_clicked, this);
+
+        _layer_delete_button.set_child(&_layer_delete_icon);
+        _layer_delete_button.connect_signal_clicked(on_layer_delete_button_clicked, this);
+
+        _layer_move_down_button.set_child(&_layer_move_down_icon);
+        _layer_move_down_button.connect_signal_clicked(on_layer_move_down_button_clicked, this);
+
+        _layer_merge_down_button.set_child(&_layer_merge_down_icon);
+        _layer_merge_down_button.connect_signal_clicked(on_layer_merge_down_button_clicked, this);
+
+        _layer_flatten_all_button.set_child(&_layer_flatten_all_icon);
+        _layer_flatten_all_button.connect_signal_clicked(on_layer_flatten_all_button_clicked, this);
+
+        for (auto* button : {&_layer_move_up_button, &_layer_create_button, &_layer_duplicate_button, &_layer_delete_button, &_layer_move_down_button, &_layer_merge_down_button, &_layer_flatten_all_button})
+            _main.push_back(button);
+
+        generate_tooltip();
+    }
+
+    // LAYER VIEW
+
     void LayerView::set_layer_frame_selection(size_t layer_i, size_t frame_i)
     {
         {
@@ -871,6 +1160,9 @@ namespace mousetrap
 
         _main.push_back(&_layer_row_list_view);
         _main.push_back(&_whole_frame_display_list_view_outer);
+        _main.push_back(_frame_control_bar);
+        _main.push_back(_playback_control_bar);
+        _main.push_back(_layer_control_bar);
 
         set_layer_frame_selection(state::current_layer, state::current_frame);
         update();
