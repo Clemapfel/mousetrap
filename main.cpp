@@ -68,7 +68,10 @@ static void activate(GtkApplication* app, void*)
 
     state::layer_resolution = {50, 50};
     state::new_layer("overlay");
-    state::new_layer("number");
+
+    for (size_t i = 0; i < 250; ++i)
+        state::new_layer("number");
+
     state::layers.back()->blend_mode = BlendMode::MULTIPLY;
 
     auto* preview = new Preview();

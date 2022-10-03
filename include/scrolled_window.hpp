@@ -19,6 +19,9 @@ namespace mousetrap
             void set_max_content_width(float);
             void set_max_content_height(float);
 
+            void set_propagate_natural_height(bool);
+            void set_propagate_natural_width(bool);
+
             void set_policy(GtkPolicyType horizontal, GtkPolicyType vertical);
             void set_placement(GtkCornerType content_relative_to_scrollbars);
             void set_has_frame(bool);
