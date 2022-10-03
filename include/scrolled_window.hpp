@@ -6,6 +6,7 @@
 #pragma once
 
 #include <include/widget.hpp>
+#include <include/adjustment.hpp>
 
 namespace mousetrap
 {
@@ -25,6 +26,9 @@ namespace mousetrap
             void set_policy(GtkPolicyType horizontal, GtkPolicyType vertical);
             void set_placement(GtkCornerType content_relative_to_scrollbars);
             void set_has_frame(bool);
+
+            void set_hadjustment(Adjustment&);
+            void set_vadjustment(Adjustment&);
 
             void set_kinetic_scrolling_enabled(bool);
 

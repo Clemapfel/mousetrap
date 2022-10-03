@@ -26,6 +26,7 @@
 #include <include/overlay.hpp>
 #include <include/center_box.hpp>
 #include <include/frame.hpp>
+#include <include/scrollbar.hpp>
 
 #include <app/global_state.hpp>
 #include <app/app_component.hpp>
@@ -213,11 +214,15 @@ namespace mousetrap
             struct LayerRow
             {
                 LayerPropertyOptions* control_bar;
-                Box main = Box(GTK_ORIENTATION_HORIZONTAL);
                 ScrolledWindow frame_display_list_viewport;
+
+                Box main = Box(GTK_ORIENTATION_HORIZONTAL);
                 ListView frame_display_list = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
                 std::deque<LayerFrameDisplay> frame_display;
             };
+
+            Adjustment _layer_row_frame_display_list_hadjustment;
+            Scrollbar _layer_row_frame_display_list_hscrollbar = Scrollbar(_layer_row_frame_display_list_hadjustment, GTK_ORIENTATION_HORIZONTAL);
 
             std::deque<LayerRow> _layer_rows;
             ListView _layer_row_list_view = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_SINGLE);
@@ -1128,6 +1133,9 @@ namespace mousetrap
             });
 
             auto& row = _layer_rows.back();
+            row.frame_display_list_viewport.set_propagate_natural_height(true);
+            row.frame_display_list_viewport.set_policy(GTK_POLICY_EXTERNAL, GTK_POLICY_NEVER);
+            row.frame_display_list_viewport.set_hadjustment(_layer_row_frame_display_list_hadjustment);
             row.main.push_back(row.control_bar->operator Widget*());
 
             for (size_t frame_i = 0; frame_i < state::n_frames; ++frame_i)
@@ -1135,17 +1143,14 @@ namespace mousetrap
                 row.frame_display.emplace_back(layer_i, frame_i);
                 row.frame_display_list.push_back(row.frame_display.back());
                 row.frame_display_list.get_selection_model()->connect_signal_selection_changed(
-                        on_layer_frame_view_selection_changed,
-                        new on_layer_frame_view_selection_changed_data{this, layer_i});
+                    on_layer_frame_view_selection_changed,
+                    new on_layer_frame_view_selection_changed_data{this, layer_i}
+                );
             }
 
-            /*
             row.frame_display_list_viewport.set_child(&row.frame_display_list);
-            row.frame_display_list_viewport.set_propagate_natural_height(true);
+            row.frame_display_list_viewport.set_expand(true);
             row.main.push_back(&row.frame_display_list_viewport);
-            */
-
-            row.main.push_back(&row.frame_display_list);
             _layer_row_list_view.push_back(&row.main);
         }
 
@@ -1164,6 +1169,10 @@ namespace mousetrap
         _whole_frame_display_list_view_outer.push_back(&_whole_frame_display_list_view_inner);
         _whole_frame_display_list_view_outer.set_halign(GTK_ALIGN_END);
 
+        _main.push_back(&_layer_row_list_view);
+        _main.push_back(&_layer_row_frame_display_list_hscrollbar);
+
+        /*
         auto* _frame_playback_box = new Box(GTK_ORIENTATION_HORIZONTAL);
 
         _frame_control_bar.operator Widget*()->set_halign(GTK_ALIGN_END);
@@ -1202,6 +1211,8 @@ namespace mousetrap
         _main.push_back(_layer_control_layer_row_box);
         //_main.push_back(&_whole_frame_display_list_view_outer);
         _main.push_back(_frame_playback_box);
+        */
+
 
         set_layer_frame_selection(state::current_layer, state::current_frame);
         update();

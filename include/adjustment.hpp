@@ -12,6 +12,7 @@ namespace mousetrap
     class Adjustment
     {
         public:
+            Adjustment();
             Adjustment(GtkAdjustment*);
             Adjustment(float current, float lower, float upper, float increment, float page_size = 0, float page_increment = 0);
             ~Adjustment();

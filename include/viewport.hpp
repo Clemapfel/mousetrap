@@ -13,26 +13,19 @@ namespace mousetrap
     class Viewport : public WidgetImplementation<GtkViewport>
     {
         public:
-            Viewport();
-            Viewport(Adjustment h_adjustment, Adjustment v_adjustment);
-
+            Viewport(Adjustment& h_adjustment, Adjustment& v_adjustment);
             void set_child(Widget* widget);
 
-        private:
-            Adjustment _h_adjustment;
-            Adjustment _v_adjustment;
     };
 }
 
 namespace mousetrap
 {
-    Viewport::Viewport(Adjustment h_adjustment, Adjustment v_adjustment)
+    Viewport::Viewport(Adjustment& h_adjustment, Adjustment& v_adjustment)
         : WidgetImplementation<GtkViewport>(GTK_VIEWPORT(gtk_viewport_new(
-                  _h_adjustment.operator GtkAdjustment*(),
-                  _v_adjustment.operator GtkAdjustment*()))
-          ),
-          _h_adjustment(h_adjustment),
-          _v_adjustment(v_adjustment)
+                  h_adjustment.operator GtkAdjustment*(),
+                  v_adjustment.operator GtkAdjustment*()))
+          )
     {}
 
     void Viewport::set_child(Widget* widget)

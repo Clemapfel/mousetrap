@@ -15,6 +15,10 @@ namespace mousetrap
         g_object_unref(_native);
     }
 
+    Adjustment::Adjustment()
+        : Adjustment(0, 0, 0, 0, 0, 0)
+    {}
+
     Adjustment::Adjustment(float current, float lower, float upper, float increment, float page_size, float page_increment)
     {
         _native = g_object_ref(gtk_adjustment_new(current, lower, upper, increment, page_size, page_increment));

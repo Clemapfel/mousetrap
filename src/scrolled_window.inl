@@ -63,4 +63,14 @@ namespace mousetrap
     {
         gtk_scrolled_window_set_kinetic_scrolling(get_native(), b);
     }
+
+    void ScrolledWindow::set_hadjustment(Adjustment& adjustment)
+    {
+        gtk_scrolled_window_set_hadjustment(get_native(), adjustment.operator GtkAdjustment*());
+    }
+
+    void ScrolledWindow::set_vadjustment(Adjustment& adjustment)
+    {
+        gtk_scrolled_window_set_vadjustment(get_native(), adjustment.operator GtkAdjustment*());
+    }
 }
