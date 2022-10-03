@@ -1170,23 +1170,33 @@ namespace mousetrap
         _playback_control_bar.operator Widget*()->set_halign(GTK_ALIGN_END);
         auto* _frame_playback_box_separator = new SeparatorLine();
         _frame_playback_box_separator->set_halign(GTK_ALIGN_END);
-        _frame_playback_box_separator->set_size_request({state::margin_unit * 4, 0});
+        _frame_playback_box_separator->set_size_request({state::margin_unit * 8, 0});
         _frame_playback_box_separator->set_opacity(0);
 
-        _frame_playback_box->push_back(_frame_control_bar);
-        _frame_playback_box->push_back(_frame_playback_box_separator);
+        _playback_control_bar.operator Widget *()->set_margin_start(
+            _layer_control_bar._layer_create_button.get_preferred_size().natural_size.x
+        );
+
         _frame_playback_box->push_back(_playback_control_bar);
+        _frame_playback_box->push_back(_frame_playback_box_separator);
+        _frame_playback_box->push_back(_frame_control_bar);
         _frame_playback_box->set_halign(GTK_ALIGN_END);
 
         auto* _layer_row_list_view_viewport = new ScrolledWindow();
-        _layer_row_list_view_viewport->set_child(&_layer_row_list_view);
+        _layer_row_list_view_viewport->set_propagate_natural_width(true);
+
+        auto* _layer_row_list_view_viewport_vbox = new Box(GTK_ORIENTATION_VERTICAL);
+        auto* _layer_row_list_view_viewport_vbox_stretch = new SeparatorLine(GTK_ORIENTATION_VERTICAL);
+        _layer_row_list_view_viewport_vbox_stretch->set_expand(true);
+
+        _layer_row_list_view_viewport_vbox->push_back(&_layer_row_list_view);
+        _layer_row_list_view_viewport_vbox->push_back(_layer_row_list_view_viewport_vbox_stretch);
+
+        _layer_row_list_view_viewport->set_child(_layer_row_list_view_viewport_vbox);
         _layer_row_list_view_viewport->set_expand(true);
 
-        auto* hadjust = gtk_scrolled_window_get_hadjustment(_layer_row_list_view_viewport->operator _GtkScrolledWindow *());
-        gtk_adjustment_set_value(hadjust, gtk_adjustment_get_upper(hadjust));
-
         auto* _layer_control_layer_row_box = new Box(GTK_ORIENTATION_HORIZONTAL);
-        //_layer_control_layer_row_box->push_back(_layer_control_bar);
+        _layer_control_layer_row_box->push_back(_layer_control_bar);
         _layer_control_layer_row_box->push_back(_layer_row_list_view_viewport);
 
         _main.push_back(_layer_control_layer_row_box);
