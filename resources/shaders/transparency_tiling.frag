@@ -35,4 +35,6 @@ void main()
         else if (x_index < 1)
             _fragment_color = dark;
     }
+
+    _fragment_color *= _vertex_color;
 }

@@ -458,7 +458,6 @@ namespace mousetrap
             v.color = color;
 
         update_color();
-        update_data(false, true, false);
     }
 
     void Shape::set_visible(bool b)

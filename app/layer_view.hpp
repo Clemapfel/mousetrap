@@ -112,7 +112,7 @@ namespace mousetrap
                 ListView _main = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
                 void generate_tooltip() {
-                    _frame_widget.set_tooltip_text("Layer \"" + state::layers.at(_layer)->name + "\", Frame #" + std::to_string(_frame));
+                    _frame_widget.set_tooltip_text("Layer " + std::to_string(_layer) + ": \"" + state::layers.at(_layer)->name + "\", Frame " + std::to_string(_frame));
                 }
             };
 
@@ -1104,6 +1104,29 @@ namespace mousetrap
         }
 
         _layer_rows.at(layer_i).frame_display.at(frame_i)._layer_frame_active_icon.set_visible(true);
+
+        for (size_t row_i = 0; row_i < _layer_rows.size(); ++row_i)
+        {
+            auto& row = _layer_rows.at(row_i);
+            for (size_t col_i = 0; col_i < row.frame_display.size(); ++col_i)
+            {
+                if (not row.frame_display.at(0)._gl_area.get_is_realized())
+                    break;
+
+                float opacity;
+
+                if (col_i == frame_i and row_i == layer_i)
+                    opacity = 1;
+                else if (col_i == frame_i or row_i == layer_i)
+                    opacity = 1;
+                else
+                    opacity = 0.6;
+
+                row.frame_display.at(col_i)._transparency_tiling_shape->set_color(RGBA(opacity, opacity, opacity, 1));
+                row.frame_display.at(col_i)._layer_shape->set_color(RGBA(opacity, opacity, opacity, 1));
+                row.frame_display.at(col_i)._gl_area.queue_render();
+            }
+        }
     }
 
     void LayerView::on_layer_frame_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed,
