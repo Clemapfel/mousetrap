@@ -73,6 +73,7 @@ namespace mousetrap
             preferred_size get_preferred_size();
 
             void unparent();
+            void set_can_respond_to_input(bool);
 
         protected:
             Widget() = delete;

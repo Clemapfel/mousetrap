@@ -223,9 +223,12 @@ namespace mousetrap
 
             Adjustment _layer_row_frame_display_list_hadjustment;
             Scrollbar _layer_row_frame_display_list_hscrollbar = Scrollbar(_layer_row_frame_display_list_hadjustment, GTK_ORIENTATION_HORIZONTAL);
+            static void on_layer_row_frame_display_list_hadjusment_value_changed(Adjustment*, LayerView* instance);
 
             std::deque<LayerRow> _layer_rows;
             ListView _layer_row_list_view = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_SINGLE);
+            Adjustment* _layer_row_list_view_vadjustment = new Adjustment();
+            Scrollbar _layer_row_list_view_vscrollbar = Scrollbar(*_layer_row_list_view_vadjustment, GTK_ORIENTATION_VERTICAL);
             static void on_layer_row_list_view_reordered(ReorderableListView*, Widget* row_widget_moved, size_t previous_position, size_t next_position, LayerView* instance);
 
             std::deque<WholeFrameDisplay> _whole_frame_displays;
@@ -364,7 +367,6 @@ namespace mousetrap
             };
 
             LayerControlBar _layer_control_bar;
-
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
 }
@@ -801,7 +803,9 @@ namespace mousetrap
         _menu_button_title_label_viewport.set_child(&_menu_button_title_label);
         _menu_button_title_label_viewport.set_size_request({10 * state::margin_unit, 0});
         _menu_button_title_label_viewport.set_has_frame(false);
-        _menu_button_title_label_viewport.set_policy(GTK_POLICY_EXTERNAL, GTK_POLICY_NEVER);
+        _menu_button_title_label_viewport.set_propagate_natural_height(true);
+        _menu_button_title_label_viewport.set_policy(GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+        _menu_button_title_label_viewport.set_can_respond_to_input(false);
         _menu_button.set_child(&_menu_button_title_label_viewport);
         _menu_button.set_hexpand(false);
 
@@ -1124,8 +1128,14 @@ namespace mousetrap
         instance->set_layer_frame_selection(state::current_layer, state::current_frame);
     }
 
+    void LayerView::on_layer_row_frame_display_list_hadjusment_value_changed(Adjustment* adjustment, LayerView* instance)
+    {}
+
     LayerView::LayerView()
     {
+        _layer_row_frame_display_list_hadjustment.connect_signal_value_changed(
+                on_layer_row_frame_display_list_hadjusment_value_changed, this);
+
         for (size_t layer_i = 0; layer_i < state::layers.size(); ++layer_i)
         {
             _layer_rows.push_back(LayerRow{
@@ -1150,12 +1160,14 @@ namespace mousetrap
 
             row.frame_display_list_viewport.set_child(&row.frame_display_list);
             row.frame_display_list_viewport.set_expand(true);
+            row.frame_display_list_viewport.set_has_frame(false);
             row.main.push_back(&row.frame_display_list_viewport);
             _layer_row_list_view.push_back(&row.main);
         }
 
         _layer_row_list_view.get_selection_model()->connect_signal_selection_changed(
                 on_whole_layer_row_selection_changed, this);
+
 
         for (size_t frame_i = 0; frame_i < state::n_frames; ++frame_i)
         {
@@ -1169,50 +1181,59 @@ namespace mousetrap
         _whole_frame_display_list_view_outer.push_back(&_whole_frame_display_list_view_inner);
         _whole_frame_display_list_view_outer.set_halign(GTK_ALIGN_END);
 
-        _main.push_back(&_layer_row_list_view);
-        _main.push_back(&_layer_row_frame_display_list_hscrollbar);
+        // main layout
 
-        /*
-        auto* _frame_playback_box = new Box(GTK_ORIENTATION_HORIZONTAL);
+        auto* _layer_row_list_viewport = new ScrolledWindow();
+        _layer_row_list_viewport->set_placement(GTK_CORNER_TOP_RIGHT);
+        _layer_row_list_viewport->set_propagate_natural_width(true);
+        _layer_row_list_viewport->set_policy(GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC); //TODO why does external scrollbar break?
+        _layer_row_list_view_vscrollbar.set_visible(false); // TODO
+        _layer_row_list_viewport->set_has_frame(false);
+        _layer_row_list_viewport->set_vadjustment(*_layer_row_list_view_vadjustment);
 
-        _frame_control_bar.operator Widget*()->set_halign(GTK_ALIGN_END);
-        _playback_control_bar.operator Widget*()->set_halign(GTK_ALIGN_END);
-        auto* _frame_playback_box_separator = new SeparatorLine();
-        _frame_playback_box_separator->set_halign(GTK_ALIGN_END);
-        _frame_playback_box_separator->set_size_request({state::margin_unit * 8, 0});
-        _frame_playback_box_separator->set_opacity(0);
+        auto* _layer_row_list_viewport_box = new Box(GTK_ORIENTATION_VERTICAL);
+        auto* _layer_row_list_viewport_separator = new SeparatorLine(GTK_ORIENTATION_VERTICAL);
+        _layer_row_list_viewport_separator->set_expand(true);
 
-        _playback_control_bar.operator Widget *()->set_margin_start(
-            _layer_control_bar._layer_create_button.get_preferred_size().natural_size.x
-        );
+        _layer_row_list_viewport_box->push_back(&_layer_row_list_view);
+        _layer_row_list_viewport_box->push_back(_layer_row_list_viewport_separator);
+        _layer_row_list_viewport->set_child(_layer_row_list_viewport_box);
 
-        _frame_playback_box->push_back(_playback_control_bar);
-        _frame_playback_box->push_back(_frame_playback_box_separator);
-        _frame_playback_box->push_back(_frame_control_bar);
-        _frame_playback_box->set_halign(GTK_ALIGN_END);
+        auto* _layer_row_list_area_right_box = new Box(GTK_ORIENTATION_VERTICAL);
+        _layer_row_list_area_right_box->push_back(_layer_row_list_viewport);
+        _layer_row_list_area_right_box->push_back(&_layer_row_frame_display_list_hscrollbar);
 
-        auto* _layer_row_list_view_viewport = new ScrolledWindow();
-        _layer_row_list_view_viewport->set_propagate_natural_width(true);
+        auto* _layer_row_list_area_box = new Box(GTK_ORIENTATION_HORIZONTAL);
+        _layer_control_bar.operator Widget *()->set_valign(GTK_ALIGN_START);
 
-        auto* _layer_row_list_view_viewport_vbox = new Box(GTK_ORIENTATION_VERTICAL);
-        auto* _layer_row_list_view_viewport_vbox_stretch = new SeparatorLine(GTK_ORIENTATION_VERTICAL);
-        _layer_row_list_view_viewport_vbox_stretch->set_expand(true);
+        auto* _layer_control_bar_box = new Box(GTK_ORIENTATION_VERTICAL);
+        auto* _layer_control_bar_separator = new SeparatorLine(GTK_ORIENTATION_VERTICAL);
+        _layer_control_bar_box->push_back(_layer_control_bar);
+        _layer_control_bar_box->push_back(_layer_control_bar_separator);
 
-        _layer_row_list_view_viewport_vbox->push_back(&_layer_row_list_view);
-        _layer_row_list_view_viewport_vbox->push_back(_layer_row_list_view_viewport_vbox_stretch);
+        _layer_row_list_area_box->push_back(_layer_control_bar_box);
+        _layer_row_list_area_box->push_back(&_layer_row_list_view_vscrollbar);
+        _layer_row_list_area_box->push_back(_layer_row_list_area_right_box);
 
-        _layer_row_list_view_viewport->set_child(_layer_row_list_view_viewport_vbox);
-        _layer_row_list_view_viewport->set_expand(true);
+        auto* _frame_playback_control_box = new Box(GTK_ORIENTATION_HORIZONTAL);
+        auto* _frame_playback_control_box_separator_a = new SeparatorLine();
+        auto* _frame_playback_control_box_separator_b = new SeparatorLine();
+        _frame_playback_control_box_separator_a->set_size_request({_layer_control_bar._layer_create_button.get_preferred_size().natural_size.x, 0});
+        _frame_playback_control_box_separator_a->set_hexpand(true);
 
-        auto* _layer_control_layer_row_box = new Box(GTK_ORIENTATION_HORIZONTAL);
-        _layer_control_layer_row_box->push_back(_layer_control_bar);
-        _layer_control_layer_row_box->push_back(_layer_row_list_view_viewport);
+        _frame_playback_control_box_separator_b->set_size_request({_layer_control_bar._layer_create_button.get_preferred_size().natural_size.x, 0});
+        _frame_playback_control_box_separator_b->set_hexpand(false);
 
-        _main.push_back(_layer_control_layer_row_box);
-        //_main.push_back(&_whole_frame_display_list_view_outer);
-        _main.push_back(_frame_playback_box);
-        */
+        _playback_control_bar.operator Widget *()->set_halign(GTK_ALIGN_END);
 
+        _frame_playback_control_box->push_back(_frame_playback_control_box_separator_a);
+        _frame_playback_control_box->push_back(_playback_control_bar);
+        _frame_playback_control_box->push_back(_frame_playback_control_box_separator_b);
+        _frame_playback_control_box->push_back(_frame_control_bar);
+        _frame_playback_control_box->set_hexpand(true);
+
+        _main.push_back(_layer_row_list_area_box);
+        _main.push_back(_frame_playback_control_box);
 
         set_layer_frame_selection(state::current_layer, state::current_frame);
         update();

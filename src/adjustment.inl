@@ -15,18 +15,25 @@ namespace mousetrap
         g_object_unref(_native);
     }
 
-    Adjustment::Adjustment()
-        : Adjustment(0, 0, 0, 0, 0, 0)
-    {}
-
     Adjustment::Adjustment(float current, float lower, float upper, float increment, float page_size, float page_increment)
+        : HasValueChangedSignal<Adjustment>(this)
     {
         _native = g_object_ref(gtk_adjustment_new(current, lower, upper, increment, page_size, page_increment));
     }
 
+    Adjustment::Adjustment()
+            : Adjustment(0, 0, 0, 0, 0, 0)
+    {}
+
     Adjustment::Adjustment(GtkAdjustment* in)
+        : HasValueChangedSignal<Adjustment>(this)
     {
         _native = g_object_ref(in);
+    }
+
+    Adjustment::operator GObject*()
+    {
+        return G_OBJECT(_native);
     }
 
     void Adjustment::clamp_page(float lower, float upper)

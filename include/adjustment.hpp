@@ -9,7 +9,7 @@
 
 namespace mousetrap
 {
-    class Adjustment
+    class Adjustment : public SignalEmitter, public HasValueChangedSignal<Adjustment>
     {
         public:
             Adjustment();
@@ -18,6 +18,7 @@ namespace mousetrap
             ~Adjustment();
 
             operator GtkAdjustment*();
+            operator GObject*() override;
 
             void clamp_page(float lower, float upper);
             void configure(float current, float lower, float upper, float increment, float page_size, float page_increment);

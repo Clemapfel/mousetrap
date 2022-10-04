@@ -65,7 +65,7 @@ namespace mousetrap
         public HasScrollSignal<ScrollEventController>
     {
         public:
-            ScrollEventController(bool emit_vertical = true, bool emit_horizontal = false);
+            ScrollEventController(bool emit_vertical = true, bool emit_horizontal = true);
     };
 
     // handles focus gain/loss

@@ -306,4 +306,9 @@ namespace mousetrap
     {
         gtk_widget_unparent(_native);
     }
+
+    void Widget::set_can_respond_to_input(bool b)
+    {
+        gtk_widget_set_sensitive(_native, b);
+    }
 }
