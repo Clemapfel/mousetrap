@@ -49,6 +49,19 @@ namespace mousetrap
             static inline const float thumbnail_margin_left_right = 0.25 * state::margin_unit;
             static inline Shader* transparency_tiling_shader = nullptr;
 
+            static std::string generate_tooltip_text(std::string title, std::string description)
+            {
+                std::stringstream str;
+
+                str << "<b>" << title << "</b>";
+
+                if (not description.empty())
+                    str << "\n\n" << "<span foreground=\"#BBBBBB\">" << description << "</span>";
+
+                return str.str();
+            };
+
+
             struct WholeFrameDisplay
             {
                 WholeFrameDisplay(size_t frame_i, LayerView* owner);
@@ -114,7 +127,9 @@ namespace mousetrap
                 ListView _main = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
                 void generate_tooltip() {
-                    _frame_widget.set_tooltip_text("Layer " + std::to_string(_layer) + ": \"" + state::layers.at(_layer)->name + "\", Frame " + std::to_string(_frame));
+                    std::stringstream str;
+                    str << "Layer: " << _layer << " | Frame: " << _frame;
+                    _main.set_tooltip_text(str.str());
                 }
             };
 
@@ -193,23 +208,14 @@ namespace mousetrap
 
                 void generate_tooltip()
                 {
-                    static auto generate_tooltip = [](std::string title, std::string description)
-                    {
-                        std::stringstream str;
-                        str << title << "\n\n"
-                            << "<span foreground=\"#BBBBBB\">" << description << "</span>";
-
-                        return str.str();
-                    };
-
-                    _name_box.set_tooltip_text(generate_tooltip("Layer Name", "Layer names help to stay organized"));
-                    _visible_box.set_tooltip_text(generate_tooltip("Layer Visibility", "Hidden layers will not appear in composite renders of the image"));
-                    _locked_box.set_tooltip_text(generate_tooltip("Layer Locked", "Locked layers cannot be edited"));
-                    _opacity_box.set_tooltip_text(generate_tooltip("Layer Opacity", "Alpha value of all pixels in a layer are multiplied with the layer opacity"));
-                    _blend_mode_label.set_tooltip_text(generate_tooltip("Layer Blend Mode", "Blend mode governs how a layer behaves when rendered on top of another layer"));
-                    _menu_button.set_tooltip_text("Layer Options");
-                    _locked_toggle_button.set_tooltip_text("Toggle Layer Locked");
-                    _visible_toggle_button.set_tooltip_text("Toggle Layer Visible");
+                    _name_box.set_tooltip_text(generate_tooltip_text("Layer Name", "Layer names help to stay organized"));
+                    _visible_box.set_tooltip_text(generate_tooltip_text("Toggle Layer Visible", "Hidden layers will not appear in composite renders of the image"));
+                    _locked_box.set_tooltip_text(generate_tooltip_text("Toggle Layer Locked", "Locked layers cannot be edited"));
+                    _opacity_box.set_tooltip_text(generate_tooltip_text("Layer Opacity", "Alpha value of all pixels in a layer are multiplied with the layer opacity"));
+                    _blend_mode_label.set_tooltip_text(generate_tooltip_text("Layer Blend Mode", "Blend mode governs how a layer behaves when rendered on top of another layer"));
+                    _menu_button.set_tooltip_text(generate_tooltip_text("Layer Options", "Modify properties of layer #" + std::to_string(_layer)));
+                    _locked_toggle_button.set_tooltip_text(generate_tooltip_text("Toggle Layer Locked", "Locked layers cannot be edited"));
+                    _visible_toggle_button.set_tooltip_text(generate_tooltip_text("Toggle Layer Visible", "Hidden layers will not appear in composite renders of the image"));
                 }
             };
 
@@ -287,12 +293,13 @@ namespace mousetrap
 
                 void generate_tooltip()
                 {
-                    _frame_move_left_button.set_tooltip_text("");
-                    _frame_create_left_of_this_button.set_tooltip_text("");
-                    _frame_delete_button.set_tooltip_text("");
-                    _frame_duplicate_button.set_tooltip_text("");
-                    _frame_create_right_of_this_button.set_tooltip_text("");
-                    _frame_move_right_button.set_tooltip_text("");
+                    _frame_move_left_button.set_tooltip_text(generate_tooltip_text("Move Frame Left", "Move selected frame before previous frame"));
+                    _frame_create_left_of_this_button.set_tooltip_text(generate_tooltip_text("Create Frame Before", "Create new keyframe left of selected frame"));
+                    _frame_delete_button.set_tooltip_text(generate_tooltip_text("Delete Frame", "Delete currently selected frame"));
+                    _frame_duplicate_button.set_tooltip_text(generate_tooltip_text("Duplicate Frame", "Create new inbetween right of selected frame"));
+                    _frame_create_right_of_this_button.set_tooltip_text(generate_tooltip_text("Create Frame After", "Create new keyframe right of selected frame"));
+                    _frame_move_right_button.set_tooltip_text(generate_tooltip_text("Move Frame Right", "Move selected frame after next frame"));
+                    _frame_keyframe_toggle_button.set_tooltip_text(generate_tooltip_text("Toggle Keyframe / Inbetween", "Inbetweens always copy the content of the last keyframe"));
                 }
             };
 
@@ -325,10 +332,10 @@ namespace mousetrap
 
                 void generate_tooltip()
                 {
-                    _playback_jump_to_start_button.set_tooltip_text("");
-                    _playback_jump_to_end_button.set_tooltip_text("");
-                    _playback_play_toggle_button.set_tooltip_text("");
-                    _playback_pause_button.set_tooltip_text("");
+                    _playback_jump_to_start_button.set_tooltip_text(generate_tooltip_text("Jump to First Frame", "Skip to the beginning of the animation"));
+                    _playback_jump_to_end_button.set_tooltip_text(generate_tooltip_text("Jump to Last Fame", "Skip to the end of the animation"));
+                    _playback_play_toggle_button.set_tooltip_text(generate_tooltip_text("Start Animation Playback", "Play animation starting at selected frame"));
+                    _playback_pause_button.set_tooltip_text(generate_tooltip_text("Stop Animation Playback", "Stop playing animation"));
                 }
             };
 
@@ -374,13 +381,13 @@ namespace mousetrap
                 Box _main = Box(GTK_ORIENTATION_VERTICAL);
                 void generate_tooltip()
                 {
-                    _layer_move_up_button.set_tooltip_text("");
-                    _layer_move_down_button.set_tooltip_text("");
-                    _layer_create_button.set_tooltip_text("");
-                    _layer_delete_button.set_tooltip_text("");
-                    _layer_duplicate_button.set_tooltip_text("");
-                    _layer_merge_down_button.set_tooltip_text("");
-                    _layer_flatten_all_button.set_tooltip_text("");
+                    _layer_move_up_button.set_tooltip_text(generate_tooltip_text("Move Layer Up", "Layers are rendered in order from top to bottom"));
+                    _layer_move_down_button.set_tooltip_text(generate_tooltip_text("Move Layer Down", "Layers are rendered in order from top to bottom"));
+                    _layer_create_button.set_tooltip_text(generate_tooltip_text("New Layer", "Create new layer above selected layer"));
+                    _layer_delete_button.set_tooltip_text(generate_tooltip_text("Delete Layer", "Delete selected layer"));
+                    _layer_duplicate_button.set_tooltip_text(generate_tooltip_text("Duplicate Layer", "Create copy of selected layer"));
+                    _layer_merge_down_button.set_tooltip_text(generate_tooltip_text("Merge Down", "Merge selected layer with layer below, according to the upper layers blend mode"));
+                    _layer_flatten_all_button.set_tooltip_text(generate_tooltip_text("Flatten All Layers", "Merge all layers onto the last"));
                 }
             };
 
@@ -593,7 +600,6 @@ namespace mousetrap
         _layer_frame_active_icon.set_align(GTK_ALIGN_END);
         _layer_frame_active_icon.set_visible(false);
         _layer_frame_active_icon.set_size_request(_layer_frame_active_icon.get_size());
-        _layer_frame_active_icon.set_tooltip_text("Currently editing this frame");
         _overlay.add_overlay(&_layer_frame_active_icon);
 
         _main.push_back(&_overlay);
@@ -762,49 +768,49 @@ namespace mousetrap
                 list_item = "Normal";
                 label = "Normal";
                 label_tooltip = "Blend Mode: Alpha";
-                list_tooltip = "<b>Alpha Blending</b>";
+                list_tooltip = generate_tooltip_text("Alpha Blending", "<tt>color = mix(source.rgb, destination.rgb, source.a)</tt>");
             }
             else if (mode == BlendMode::ADD)
             {
                 list_item = "Add";
                 label = "Add";
                 label_tooltip = "Blend Mode: Additive";
-                list_tooltip = "<b>Additive Blending</b>\n<tt>color = source.rgba + destination.rgba</tt>";
+                list_tooltip = generate_tooltip_text("Additive Blending", "<tt>color = source.rgba + destination.rgba</tt>");
             }
             else if (mode == BlendMode::SUBTRACT)
             {
                 list_item = "Subtract";
                 label = "Subtract";
                 label_tooltip = "Blend Mode: Subtractive";
-                list_tooltip = "<b>Subtractive Blending</b>\n<tt>color = destination.rgba - source.rgba</tt>";
+                list_tooltip = generate_tooltip_text("Subtractive Blending", "<tt>color = source.rgba - destination.rgba</tt>");
             }
             else if (mode == BlendMode::REVERSE_SUBTRACT)
             {
                 list_item = "Reverse Subtract";
                 label = "Reverse Subtract";
                 label_tooltip = "Blend Mode: Subtractive Reversed";
-                list_tooltip = "<b>Reversed Subtractive Blending</b>\n<tt>color = source.rgba - destination.rgba</tt>";
+                list_tooltip = generate_tooltip_text("Reverse Subtractive Blending", "<tt>color = destination.rgba - source.rgba</tt>");
             }
             else if (mode == BlendMode::MULTIPLY)
             {
                 list_item = "Multiply";
                 label = "Multiply";
                 label_tooltip = "Blend Mode: Multiplicative";
-                list_tooltip = "<b>Multiplicative Blending</b>\n<tt>color = source.rgba * destination.rgba</tt>";
+                list_tooltip = generate_tooltip_text("Multiplicative Blending", "<tt>color = destination.rgba * source.rgba</tt>");
             }
             else if (mode == BlendMode::MIN)
             {
                 list_item = "Minimum";
                 label = "Min";
                 label_tooltip = "Blend Mode: Minimum";
-                list_tooltip = "<b>Minimum Blending</b>\n<tt>color = min(source.rgba, destination.rgba)</tt>";
+                list_tooltip = generate_tooltip_text("Minimum Blending", "<tt>color = min(destination.rgba, source.rgba)</tt>");
             }
             else if (mode == BlendMode::MAX)
             {
                 list_item = "Maximum";
                 label = "Max";
                 label_tooltip = "Blend Mode: Maximum";
-                list_tooltip = "<b>Maximum Blending</b>\n<tt>color = max(source.rgba, destination.rgba)</tt>";
+                list_tooltip = generate_tooltip_text("Maximum Blending", "<tt>color = max(destination.rgba, source.rgba)</tt>");
             }
 
             _blend_mode_dropdown_list_items.emplace_back(list_item);
@@ -873,6 +879,9 @@ namespace mousetrap
 
         for (auto& label : _blend_mode_dropdown_label_items)
             label.set_cursor(GtkCursorType::POINTER);
+
+        for (auto& sep : {&_name_separator, &_visible_separator, &_locked_separator, &_opacity_separator, &_blend_mode_separator})
+            sep->set_opacity(0);
 
         update();
     }
@@ -1320,12 +1329,33 @@ namespace mousetrap
         _layer_row_list_viewport.set_has_frame(false);
         _layer_row_list_viewport.set_vadjustment(*_layer_row_list_view_vadjustment);
 
-       _layer_row_list_viewport_separator.set_expand(true);
+        _layer_row_list_viewport_separator.set_expand(true);
 
         _layer_row_list_viewport_box.push_back(&_layer_row_list_view);
         _layer_row_list_viewport_box.push_back(&_layer_row_list_viewport_separator);
         _layer_row_list_viewport.set_child(&_layer_row_list_viewport_box);
 
+        std::vector<Label*> _frame_index_labels;
+        std::vector<Frame*> _frame_index_label_frames;
+
+        for (size_t i = 0; i < state::n_frames; ++i)
+        {
+            _frame_index_labels.emplace_back(new Label((i < 10 ? "00" : (i < 100 ? "0" : "")) + std::to_string(i)));
+            _frame_index_label_frames.emplace_back(new Frame());
+            _frame_index_label_frames.back()->set_child(_frame_index_labels.back());
+            _frame_index_label_frames.back()->set_label_widget(nullptr);
+        }
+
+        float width = _layer_rows.at(0).frame_display.at(0).operator Widget *()->get_preferred_size().natural_size.x;
+        for (auto* label : _frame_index_label_frames)
+            label->set_size_request({width, 0});
+
+        auto* _frame_index_label_list_view = new ListView(GTK_ORIENTATION_HORIZONTAL);
+        _frame_index_label_list_view->set_halign(GTK_ALIGN_END);
+        for (auto* label : _frame_index_label_frames)
+            _frame_index_label_list_view->push_back(label);
+
+        _layer_row_list_area_right_box.push_back(_frame_index_label_list_view);
         _layer_row_list_area_right_box.push_back(&_layer_row_list_viewport);
         _layer_row_list_area_right_box.push_back(&_layer_row_frame_display_list_hscrollbar);
 
