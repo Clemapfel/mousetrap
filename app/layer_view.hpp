@@ -313,8 +313,8 @@ namespace mousetrap
                 static void on_playback_pause_button_clicked(Button*, PlaybackControlBar* instance);
 
                 ImageDisplay _playback_play_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_play.png");
-                Button _playback_play_button;
-                static void on_playback_play_button_clicked(Button*, PlaybackControlBar* instance);
+                ToggleButton _playback_play_toggle_button;
+                static void on_playback_play_toggle_button_toggled(ToggleButton*, PlaybackControlBar* instance);
 
                 ImageDisplay _playback_jump_to_end_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_end.png");
                 Button _playback_jump_to_end_button;
@@ -326,7 +326,7 @@ namespace mousetrap
                 {
                     _playback_jump_to_start_button.set_tooltip_text("");
                     _playback_jump_to_end_button.set_tooltip_text("");
-                    _playback_play_button.set_tooltip_text("");
+                    _playback_play_toggle_button.set_tooltip_text("");
                     _playback_pause_button.set_tooltip_text("");
                 }
             };
@@ -550,6 +550,9 @@ namespace mousetrap
         instance->_gl_area.add_render_task(task);
         instance->_gl_area.add_render_task(instance->_layer_shape);
         instance->_gl_area.queue_render();
+
+        // trigger selection coloring on realize
+        instance->_owner->set_layer_frame_selection(instance->_owner->_selected_layer, instance->_owner->_selected_frame);
     }
 
     void LayerView::LayerFrameDisplay::on_gl_area_resize(GLArea*, int w, int h, LayerFrameDisplay* instance)
@@ -1050,7 +1053,7 @@ namespace mousetrap
     void LayerView::PlaybackControlBar::on_playback_pause_button_clicked(Button*, PlaybackControlBar* instance)
     {}
 
-    void LayerView::PlaybackControlBar::on_playback_play_button_clicked(Button*, PlaybackControlBar* instance)
+    void LayerView::PlaybackControlBar::on_playback_play_toggle_button_toggled(ToggleButton*, PlaybackControlBar* instance)
     {}
 
     void LayerView::PlaybackControlBar::on_playback_jump_to_end_button_clicked(Button*, PlaybackControlBar* instance)
@@ -1071,13 +1074,13 @@ namespace mousetrap
         _playback_pause_button.set_child(&_playback_pause_icon);
         _playback_pause_button.connect_signal_clicked(&on_playback_pause_button_clicked, this);
 
-        _playback_play_button.set_child(&_playback_play_icon);
-        _playback_play_button.connect_signal_clicked(&on_playback_play_button_clicked, this);
+        _playback_play_toggle_button.set_child(&_playback_play_icon);
+        _playback_play_toggle_button.connect_signal_toggled(&on_playback_play_toggle_button_toggled, this);
 
         _playback_jump_to_end_button.set_child(&_playback_jump_to_end_icon);
         _playback_jump_to_end_button.connect_signal_clicked(&on_playback_jump_to_end_button_clicked, this);
 
-        for (auto* button : {&_playback_jump_to_start_button, &_playback_play_button, &_playback_pause_button, &_playback_jump_to_end_button})
+        for (auto* button : std::vector<Widget*>{&_playback_jump_to_start_button, &_playback_play_toggle_button, &_playback_pause_button, &_playback_jump_to_end_button})
             _main.push_back(button);
 
         generate_tooltip();
@@ -1153,6 +1156,9 @@ namespace mousetrap
 
     void LayerView::set_layer_frame_selection(size_t layer_i, size_t frame_i)
     {
+        //auto* row_frame_widget = _layer_rows.at(layer_i).frame_display.at(frame_i).operator Widget *()->operator GtkWidget *();
+        //auto x_pos = gtk_widget_translate_coordinates(row_frame_widget)
+
         {
             auto* model = _layer_row_list_view.get_selection_model();
             model->set_signal_selection_changed_blocked(true);
@@ -1186,7 +1192,7 @@ namespace mousetrap
             auto& row = _layer_rows.at(row_i);
             for (size_t col_i = 0; col_i < row.frame_display.size(); ++col_i)
             {
-                if (not row.frame_display.at(0)._gl_area.get_is_realized())
+                if (not row.frame_display.at(col_i)._gl_area.get_is_realized())
                     break;
 
                 float k;
