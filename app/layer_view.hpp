@@ -51,7 +51,7 @@ namespace mousetrap
 
             struct WholeFrameDisplay
             {
-                WholeFrameDisplay(size_t frame_i);
+                WholeFrameDisplay(size_t frame_i, LayerView* owner);
                 ~WholeFrameDisplay();
 
                 operator Widget*();
@@ -59,6 +59,7 @@ namespace mousetrap
                 void update();
 
                 size_t _frame;
+                LayerView* _owner;
 
                 Shape* _transparency_tiling_shape;
                 GLArea _transparency_area;
@@ -84,7 +85,7 @@ namespace mousetrap
 
             struct LayerFrameDisplay
             {
-                LayerFrameDisplay(size_t layer, size_t frame);
+                LayerFrameDisplay(size_t layer, size_t frame, LayerView* owner);
                 ~LayerFrameDisplay();
                 operator Widget*();
 
@@ -92,6 +93,7 @@ namespace mousetrap
 
                 size_t _layer;
                 size_t _frame;
+                LayerView* _owner;
 
                 Vector2f _canvas_size;
                 static void on_gl_area_realize(Widget*, LayerFrameDisplay*);
@@ -244,8 +246,11 @@ namespace mousetrap
 
             struct FrameControlBar
             {
-                FrameControlBar();
+                FrameControlBar(LayerView*);
                 operator Widget*();
+                void update();
+
+                LayerView* _owner;
 
                 ImageDisplay _frame_move_left_icon = ImageDisplay(get_resource_path() + "icons/frame_move_left.png");
                 Button _frame_move_left_button;
@@ -254,6 +259,12 @@ namespace mousetrap
                 ImageDisplay _frame_create_left_of_this_icon = ImageDisplay(get_resource_path() + "icons/frame_create_left_of_this.png");
                 Button _frame_create_left_of_this_button;
                 static void on_frame_create_left_of_this_button_clicked(Button*, FrameControlBar* instance);
+
+                ImageDisplay _frame_is_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_keyframe.png");
+                ImageDisplay _frame_is_not_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_not_keyframe.png");
+                ToggleButton _frame_keyframe_toggle_button;
+                static void on_frame_keyframe_toggle_button_toggled(ToggleButton*, FrameControlBar* instance);
+                void set_selected_frame_is_keyframe(bool);
 
                 ImageDisplay _frame_delete_icon = ImageDisplay(get_resource_path() + "icons/frame_delete.png");
                 Button _frame_delete_button;
@@ -288,8 +299,10 @@ namespace mousetrap
 
             struct PlaybackControlBar
             {
-                PlaybackControlBar();
+                PlaybackControlBar(LayerView*);
                 operator Widget*();
+
+                LayerView* _owner;
 
                 ImageDisplay _playback_jump_to_start_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
                 Button _playback_jump_to_start_button;
@@ -322,8 +335,12 @@ namespace mousetrap
 
             struct LayerControlBar
             {
-                LayerControlBar();
+                LayerControlBar(LayerView*);
+
+                void update();
                 operator Widget*();
+
+                LayerView* _owner;
 
                 ImageDisplay _layer_move_up_icon = ImageDisplay(get_resource_path() + "icons/layer_move_up.png");
                 Button _layer_move_up_button;
@@ -365,6 +382,9 @@ namespace mousetrap
                     _layer_flatten_all_button.set_tooltip_text("");
                 }
             };
+
+            size_t _selected_frame;
+            size_t _selected_layer;
 
             LayerControlBar _layer_control_bar;
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
@@ -410,7 +430,7 @@ namespace mousetrap
         {
             auto& shape = instance->_layer_shapes.emplace_back();
             shape.as_rectangle({0, 0}, {1, 1});
-            shape.set_texture(&state::layers.at(i)->frames.at(instance->_frame).texture);
+            shape.set_texture(state::layers.at(i)->frames.at(instance->_frame).texture);
 
             auto task = RenderTask(&shape, nullptr, nullptr, state::layers.at(i)->blend_mode);
             instance->_layer_area.add_render_task(task);
@@ -443,7 +463,7 @@ namespace mousetrap
 
             shape->set_visible(layer->is_visible);
             shape->set_color(RGBA(1, 1, 1, layer->opacity));
-            shape->set_texture(&layer->frames.at(_frame).texture);
+            shape->set_texture(layer->frames.at(_frame).texture);
             auto task = RenderTask(shape, nullptr, nullptr, state::layers.at(i)->blend_mode);
             _layer_area.add_render_task(task);
         }
@@ -459,8 +479,9 @@ namespace mousetrap
     }
 
 
-    LayerView::WholeFrameDisplay::WholeFrameDisplay(size_t frame)
+    LayerView::WholeFrameDisplay::WholeFrameDisplay(size_t frame, LayerView* owner)
         : _frame(frame),
+          _owner(owner),
           _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y)),
           _label((frame <= 9 ? "00" : (frame <= 100 ? "0" : "")) + std::to_string(frame))
     {
@@ -515,7 +536,7 @@ namespace mousetrap
 
         instance->_layer_shape = new Shape();
         instance->_layer_shape->as_rectangle({0, 0}, {1, 1});
-        instance->_layer_shape->set_texture(&state::layers.at(instance->_layer)->frames.at(instance->_frame).texture);
+        instance->_layer_shape->set_texture(state::layers.at(instance->_layer)->frames.at(instance->_frame).texture);
 
         if (selection_indicator_texture == nullptr)
         {
@@ -537,9 +558,10 @@ namespace mousetrap
         instance->_gl_area.queue_render();
     }
 
-    LayerView::LayerFrameDisplay::LayerFrameDisplay(size_t layer, size_t frame)
+    LayerView::LayerFrameDisplay::LayerFrameDisplay(size_t layer, size_t frame, LayerView* owner)
             : _layer(layer),
               _frame(frame),
+              _owner(owner),
               _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y))
     {
         _gl_area.connect_signal_realize(on_gl_area_realize, this);
@@ -582,13 +604,20 @@ namespace mousetrap
             return;
 
         auto& layer = *state::layers.at(_layer);
-        _layer_shape->set_texture(&layer.frames.at(_frame).texture);
-        _layer_shape->set_color(RGBA(1, 1, 1, layer.opacity));
+        auto& frame = layer.frames.at(_frame);
 
-        if (not layer.is_visible)
-            _gl_area.set_opacity(0.2);
-        else
-            _gl_area.set_opacity(1);
+        size_t frame_i = _frame;
+
+        while (frame_i > 0 and layer.frames.at(frame_i).is_tween_repeat)
+            frame_i -= 1;
+
+        _layer_shape->set_texture(layer.frames.at(frame_i).texture);
+
+        auto color = _layer_shape->get_vertex_color(0);
+        color.a = layer.opacity;
+        _layer_shape->set_color(color);
+
+        _gl_area.set_opacity(frame.is_tween_repeat ? 0.3 : 1);
 
         generate_tooltip();
         _gl_area.queue_render();
@@ -608,6 +637,8 @@ namespace mousetrap
         _visible_check_button.set_all_signals_blocked(true);
         _visible_check_button.set_is_checked(layer.is_visible);
         _visible_check_button.set_all_signals_blocked(false);
+
+        _menu_button.set_opacity(layer.is_visible ? 1 : 0.3);
 
         _locked_toggle_button.set_all_signals_blocked(true);
         _locked_toggle_button.set_active(layer.is_locked);
@@ -927,15 +958,43 @@ namespace mousetrap
     void LayerView::FrameControlBar::on_frame_delete_button_clicked(Button*, FrameControlBar* instance)
     {}
 
+    void LayerView::FrameControlBar::set_selected_frame_is_keyframe(bool is_key)
+    {
+        if (is_key)
+            _frame_keyframe_toggle_button.set_child(&_frame_is_keyframe_icon);
+        else
+            _frame_keyframe_toggle_button.set_child(&_frame_is_not_keyframe_icon);
+
+        _frame_keyframe_toggle_button.set_signal_toggled_blocked(true);
+        _frame_keyframe_toggle_button.set_active(not is_key);
+        _frame_keyframe_toggle_button.set_signal_toggled_blocked(false);
+    }
+
+    void LayerView::FrameControlBar::on_frame_keyframe_toggle_button_toggled(ToggleButton* button, FrameControlBar* instance)
+    {
+        bool is_key = not button->get_active();
+
+        auto layer_i = instance->_owner->_selected_layer;
+        auto frame_i = instance->_owner->_selected_frame;
+
+        state::layers.at(layer_i)->frames.at(frame_i).is_tween_repeat = not is_key;
+
+        for (auto& frame :  instance->_owner->_layer_rows.at(layer_i).frame_display)
+            frame.update();
+
+        instance->set_selected_frame_is_keyframe(is_key);
+    }
+
     void LayerView::FrameControlBar::on_frame_move_left_button_clicked(Button*, FrameControlBar* instance)
     {}
 
     void LayerView::FrameControlBar::on_frame_duplicate_button_clicked(Button*, FrameControlBar* instance)
     {}
 
-    LayerView::FrameControlBar::FrameControlBar()
+    LayerView::FrameControlBar::FrameControlBar(LayerView* owner)
+        : _owner(owner)
     {
-        for (auto* display : {&_frame_move_left_icon, &_frame_create_left_of_this_icon, &_frame_delete_icon, &_frame_duplicate_icon, &_frame_create_right_of_this_icon, &_frame_move_right_icon})
+        for (auto* display : {&_frame_move_left_icon, &_frame_create_left_of_this_icon, &_frame_delete_icon, &_frame_duplicate_icon, &_frame_create_right_of_this_icon, &_frame_move_right_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
             display->set_size_request(display->get_size());
 
         _frame_move_left_button.set_child(&_frame_move_left_icon);
@@ -946,6 +1005,9 @@ namespace mousetrap
 
         _frame_delete_button.set_child(&_frame_delete_icon);
         _frame_delete_button.connect_signal_clicked(on_frame_delete_button_clicked, this);
+
+        _frame_keyframe_toggle_button.set_child(&_frame_is_keyframe_icon);
+        _frame_keyframe_toggle_button.connect_signal_toggled(on_frame_keyframe_toggle_button_toggled, this);
 
         _frame_duplicate_button.set_child(&_frame_duplicate_icon);
         _frame_duplicate_button.connect_signal_clicked(on_frame_duplicate_button_clicked, this);
@@ -958,12 +1020,24 @@ namespace mousetrap
 
         _main.push_back(&_frame_move_left_button);
         _main.push_back(&_frame_create_left_of_this_button);
+        _main.push_back(&_frame_keyframe_toggle_button);
         _main.push_back(&_frame_duplicate_button);
         _main.push_back(&_frame_delete_button);
         _main.push_back(&_frame_create_right_of_this_button);
         _main.push_back(&_frame_move_right_button);
 
         generate_tooltip();
+    }
+
+    void LayerView::FrameControlBar::update()
+    {
+        _frame_create_left_of_this_button.set_can_respond_to_input(_owner->_selected_frame != 0);
+        _frame_create_left_of_this_button.set_can_respond_to_input(_owner->_selected_frame != state::n_frames - 1);
+
+        auto is_key = not state::layers.at(_owner->_selected_layer)->frames.at(_owner->_selected_frame).is_tween_repeat;
+
+        _frame_duplicate_button.set_can_respond_to_input(is_key);
+        set_selected_frame_is_keyframe(is_key);
     }
 
     LayerView::FrameControlBar::operator Widget*()
@@ -985,7 +1059,8 @@ namespace mousetrap
     void LayerView::PlaybackControlBar::on_playback_jump_to_start_button_clicked(Button*, PlaybackControlBar* instance)
     {}
 
-    LayerView::PlaybackControlBar::PlaybackControlBar()
+    LayerView::PlaybackControlBar::PlaybackControlBar(LayerView* owner)
+        : _owner(owner)
     {
         for (ImageDisplay* icon : {&_playback_jump_to_start_icon, &_playback_pause_icon, &_playback_play_icon, &_playback_jump_to_end_icon})
             icon->set_size_request(icon->get_size());
@@ -1041,7 +1116,8 @@ namespace mousetrap
         return &_main;
     }
 
-    LayerView::LayerControlBar::LayerControlBar()
+    LayerView::LayerControlBar::LayerControlBar(LayerView* owner)
+        : _owner(owner)
     {
         for (auto* display : {&_layer_move_up_icon, &_layer_create_icon, &_layer_duplicate_icon, &_layer_delete_icon, &_layer_move_down_icon, &_layer_merge_down_icon, &_layer_flatten_all_icon})
             display->set_size_request(display->get_size());
@@ -1113,20 +1189,29 @@ namespace mousetrap
                 if (not row.frame_display.at(0)._gl_area.get_is_realized())
                     break;
 
-                float opacity;
+                float k;
 
                 if (col_i == frame_i and row_i == layer_i)
-                    opacity = 1;
+                    k = 1;
                 else if (col_i == frame_i or row_i == layer_i)
-                    opacity = 1;
+                    k = 1;
                 else
-                    opacity = 0.6;
+                    k = 0.6;
 
-                row.frame_display.at(col_i)._transparency_tiling_shape->set_color(RGBA(opacity, opacity, opacity, 1));
-                row.frame_display.at(col_i)._layer_shape->set_color(RGBA(opacity, opacity, opacity, 1));
+                auto opacity = row.frame_display.at(col_i)._transparency_tiling_shape->get_vertex_color(0).a;
+                row.frame_display.at(col_i)._transparency_tiling_shape->set_color(RGBA(k, k, k, opacity));
+
+                opacity = row.frame_display.at(col_i)._layer_shape->get_vertex_color(0).a;
+                row.frame_display.at(col_i)._layer_shape->set_color(RGBA(k, k, k, opacity));
+
                 row.frame_display.at(col_i)._gl_area.queue_render();
             }
         }
+
+        _selected_frame = frame_i;
+        _selected_layer = layer_i;
+
+        _frame_control_bar.update();
     }
 
     void LayerView::on_layer_frame_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed,
@@ -1155,6 +1240,7 @@ namespace mousetrap
     {}
 
     LayerView::LayerView()
+        : _playback_control_bar(this), _frame_control_bar(this), _layer_control_bar(this)
     {
         _layer_row_frame_display_list_hadjustment.connect_signal_value_changed(
                 on_layer_row_frame_display_list_hadjusment_value_changed, this);
@@ -1173,7 +1259,7 @@ namespace mousetrap
 
             for (size_t frame_i = 0; frame_i < state::n_frames; ++frame_i)
             {
-                row.frame_display.emplace_back(layer_i, frame_i);
+                row.frame_display.emplace_back(layer_i, frame_i, this);
                 row.frame_display_list.push_back(row.frame_display.back());
                 row.frame_display_list.get_selection_model()->connect_signal_selection_changed(
                     on_layer_frame_view_selection_changed,
@@ -1194,7 +1280,7 @@ namespace mousetrap
 
         for (size_t frame_i = 0; frame_i < state::n_frames; ++frame_i)
         {
-            _whole_frame_displays.emplace_back(frame_i);
+            _whole_frame_displays.emplace_back(frame_i, this);
             _whole_frame_display_list_view_inner.push_back(_whole_frame_displays.back());
         }
 
@@ -1257,6 +1343,7 @@ namespace mousetrap
 
         _main.push_back(_layer_row_list_area_box);
         _main.push_back(_frame_playback_control_box);
+        //_main.push_back(&_whole_frame_display_list_view_outer);
 
         set_layer_frame_selection(state::current_layer, state::current_frame);
         update();

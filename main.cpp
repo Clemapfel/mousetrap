@@ -83,12 +83,21 @@ static void activate(GtkApplication* app, void*)
         size_t frame_i = 0;
         for (auto& frame: layer->frames)
         {
+            frame.image = new Image();
             if (layer->name == "number")
-                frame.image.create_from_file(get_resource_path() + "example_animation/0" + std::to_string(frame_i) + ".png");
+            {
+                frame.image->create_from_file(
+                        get_resource_path() + "example_animation/0" + std::to_string(frame_i) + ".png");
+            }
             else
-                frame.image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 0.25));
+            {
+                frame.image->create(state::layer_resolution.x, state::layer_resolution.y,
+                                    RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX),
+                                         0.25));
+            }
 
-            frame.texture.create_from_image(frame.image);
+            frame.texture = new Texture();
+            frame.texture->create_from_image(*frame.image);
             frame_i += 1;
         }
 

@@ -247,7 +247,7 @@ namespace mousetrap
         for (size_t i = 0; i < _layer_shapes.size(); ++i)
         {
             auto& frame = state::layers.at(i)->frames.at(_current_frame);
-            _layer_shapes.at(i)->set_texture(&frame.texture);
+            _layer_shapes.at(i)->set_texture(frame.texture);
         }
 
         std::stringstream label_text;
@@ -387,7 +387,7 @@ namespace mousetrap
         {
             _layer_shapes.emplace_back(new Shape());
             _layer_shapes.back()->as_rectangle({0, 0}, {1, 1});
-            _layer_shapes.back()->set_texture(&layer->frames.at(_current_frame).texture);
+            _layer_shapes.back()->set_texture(layer->frames.at(_current_frame).texture);
             _layer_shapes.back()->set_visible(layer->is_visible);
 
             auto task = RenderTask(_layer_shapes.back(), nullptr, nullptr, layer->blend_mode);

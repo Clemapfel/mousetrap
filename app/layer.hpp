@@ -13,13 +13,14 @@ namespace mousetrap
     {
         std::string name;
 
-        using PixelData = struct
+        struct Frame
         {
-            Image image;
-            Texture texture;
+            Image* image;
+            Texture* texture;
+            bool is_tween_repeat = false;
         };
 
-        std::deque<PixelData> frames = std::deque<PixelData>();
+        std::deque<Frame> frames = std::deque<Frame>();
 
         bool is_locked = false;
         bool is_visible = true;
@@ -64,8 +65,10 @@ namespace mousetrap
         for (size_t i = 0; i < n_frames; ++i)
         {
             layer->frames.emplace_back();
-            layer->frames.back().image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 1, 1, 0));
-            layer->frames.back().texture.create_from_image(layer->frames.back().image);
+            layer->frames.back().image = new Image();
+            layer->frames.back().texture = new Texture();
+            layer->frames.back().image->create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 1, 1, 0));
+            layer->frames.back().texture->create_from_image(*layer->frames.back().image);
         }
 
         return layer;
@@ -82,8 +85,8 @@ namespace mousetrap
         for (auto& layer : state::layers)
         {
             auto it = layer->frames.emplace(layer->frames.begin() + index);
-            it->image.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1));
-            it->texture.create_from_image(it->image);
+            it->image->create(state::layer_resolution.x, state::layer_resolution.y, RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1));
+            it->texture->create_from_image(*it->image);
         }
 
         n_frames += 1;
