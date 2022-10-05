@@ -386,6 +386,18 @@ namespace mousetrap
             size_t _selected_frame;
             size_t _selected_layer;
 
+            ScrolledWindow _layer_row_list_viewport;
+            Box _layer_row_list_viewport_box = Box(GTK_ORIENTATION_VERTICAL);
+            SeparatorLine _layer_row_list_viewport_separator = SeparatorLine(GTK_ORIENTATION_VERTICAL);
+            Box _layer_row_list_area_right_box = Box(GTK_ORIENTATION_VERTICAL);
+            Box _layer_row_list_area_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Box _layer_control_bar_box = Box(GTK_ORIENTATION_VERTICAL);
+            SeparatorLine _layer_control_bar_separator = SeparatorLine(GTK_ORIENTATION_VERTICAL);
+
+            Box _frame_playback_control_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            SeparatorLine _frame_playback_control_box_separator_a = SeparatorLine();
+            SeparatorLine _frame_playback_control_box_separator_b = SeparatorLine();
+
             LayerControlBar _layer_control_bar;
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
@@ -1298,57 +1310,47 @@ namespace mousetrap
 
         // main layout
 
-        auto* _layer_row_list_viewport = new ScrolledWindow();
-        _layer_row_list_viewport->set_placement(GTK_CORNER_TOP_RIGHT);
-        _layer_row_list_viewport->set_propagate_natural_width(true);
-        _layer_row_list_viewport->set_policy(GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC); //TODO why does external scrollbar break?
+        _layer_row_list_viewport.set_placement(GTK_CORNER_TOP_RIGHT);
+        _layer_row_list_viewport.set_propagate_natural_width(true);
+        _layer_row_list_viewport.set_policy(GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC); //TODO why does external scrollbar break?
         _layer_row_list_view_vscrollbar.set_visible(false); // TODO
-        _layer_row_list_viewport->set_has_frame(false);
-        _layer_row_list_viewport->set_vadjustment(*_layer_row_list_view_vadjustment);
+        _layer_row_list_viewport.set_has_frame(false);
+        _layer_row_list_viewport.set_vadjustment(*_layer_row_list_view_vadjustment);
 
-        auto* _layer_row_list_viewport_box = new Box(GTK_ORIENTATION_VERTICAL);
-        auto* _layer_row_list_viewport_separator = new SeparatorLine(GTK_ORIENTATION_VERTICAL);
-        _layer_row_list_viewport_separator->set_expand(true);
+       _layer_row_list_viewport_separator.set_expand(true);
 
-        _layer_row_list_viewport_box->push_back(&_layer_row_list_view);
-        _layer_row_list_viewport_box->push_back(_layer_row_list_viewport_separator);
-        _layer_row_list_viewport->set_child(_layer_row_list_viewport_box);
+        _layer_row_list_viewport_box.push_back(&_layer_row_list_view);
+        _layer_row_list_viewport_box.push_back(&_layer_row_list_viewport_separator);
+        _layer_row_list_viewport.set_child(&_layer_row_list_viewport_box);
 
-        auto* _layer_row_list_area_right_box = new Box(GTK_ORIENTATION_VERTICAL);
-        _layer_row_list_area_right_box->push_back(_layer_row_list_viewport);
-        _layer_row_list_area_right_box->push_back(&_layer_row_frame_display_list_hscrollbar);
+        _layer_row_list_area_right_box.push_back(&_layer_row_list_viewport);
+        _layer_row_list_area_right_box.push_back(&_layer_row_frame_display_list_hscrollbar);
 
-        auto* _layer_row_list_area_box = new Box(GTK_ORIENTATION_HORIZONTAL);
         _layer_control_bar.operator Widget *()->set_valign(GTK_ALIGN_START);
 
-        auto* _layer_control_bar_box = new Box(GTK_ORIENTATION_VERTICAL);
-        auto* _layer_control_bar_separator = new SeparatorLine(GTK_ORIENTATION_VERTICAL);
-        _layer_control_bar_box->push_back(_layer_control_bar);
-        _layer_control_bar_box->push_back(_layer_control_bar_separator);
+        _layer_control_bar_box.push_back(_layer_control_bar);
+        _layer_control_bar_box.push_back(&_layer_control_bar_separator);
 
-        _layer_row_list_area_box->push_back(_layer_control_bar_box);
-        _layer_row_list_area_box->push_back(&_layer_row_list_view_vscrollbar);
-        _layer_row_list_area_box->push_back(_layer_row_list_area_right_box);
+        _layer_row_list_area_box.push_back(&_layer_control_bar_box);
+        _layer_row_list_area_box.push_back(&_layer_row_list_view_vscrollbar);
+        _layer_row_list_area_box.push_back(&_layer_row_list_area_right_box);
 
-        auto* _frame_playback_control_box = new Box(GTK_ORIENTATION_HORIZONTAL);
-        auto* _frame_playback_control_box_separator_a = new SeparatorLine();
-        auto* _frame_playback_control_box_separator_b = new SeparatorLine();
-        _frame_playback_control_box_separator_a->set_size_request({_layer_control_bar._layer_create_button.get_preferred_size().natural_size.x, 0});
-        _frame_playback_control_box_separator_a->set_hexpand(true);
+        _frame_playback_control_box_separator_a.set_size_request({_layer_control_bar._layer_create_button.get_preferred_size().natural_size.x, 0});
+        _frame_playback_control_box_separator_a.set_hexpand(true);
 
-        _frame_playback_control_box_separator_b->set_size_request({_layer_control_bar._layer_create_button.get_preferred_size().natural_size.x, 0});
-        _frame_playback_control_box_separator_b->set_hexpand(false);
+        _frame_playback_control_box_separator_b.set_size_request({_layer_control_bar._layer_create_button.get_preferred_size().natural_size.x, 0});
+        _frame_playback_control_box_separator_b.set_hexpand(false);
 
         _playback_control_bar.operator Widget *()->set_halign(GTK_ALIGN_END);
 
-        _frame_playback_control_box->push_back(_frame_playback_control_box_separator_a);
-        _frame_playback_control_box->push_back(_playback_control_bar);
-        _frame_playback_control_box->push_back(_frame_playback_control_box_separator_b);
-        _frame_playback_control_box->push_back(_frame_control_bar);
-        _frame_playback_control_box->set_hexpand(true);
+        _frame_playback_control_box.push_back(&_frame_playback_control_box_separator_a);
+        _frame_playback_control_box.push_back(_playback_control_bar);
+        _frame_playback_control_box.push_back(&_frame_playback_control_box_separator_b);
+        _frame_playback_control_box.push_back(_frame_control_bar);
+        _frame_playback_control_box.set_hexpand(true);
 
-        _main.push_back(_layer_row_list_area_box);
-        _main.push_back(_frame_playback_control_box);
+        _main.push_back(&_layer_row_list_area_box);
+        _main.push_back(&_frame_playback_control_box);
         //_main.push_back(&_whole_frame_display_list_view_outer);
 
         set_layer_frame_selection(state::current_layer, state::current_frame);
