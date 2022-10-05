@@ -13,8 +13,10 @@ namespace mousetrap
     class Viewport : public WidgetImplementation<GtkViewport>
     {
         public:
+            Viewport();
             Viewport(Adjustment& h_adjustment, Adjustment& v_adjustment);
             void set_child(Widget* widget);
+            void set_scroll_to_focus(bool b);
 
     };
 }
@@ -28,8 +30,20 @@ namespace mousetrap
           )
     {}
 
+    Viewport::Viewport()
+        : WidgetImplementation<GtkViewport>(GTK_VIEWPORT(gtk_viewport_new(
+            gtk_adjustment_new(0, 0, 0, 0, 0, 0),
+            gtk_adjustment_new(0, 0, 0, 0, 0, 0)
+          )))
+    {}
+
     void Viewport::set_child(Widget* widget)
     {
         gtk_viewport_set_child(get_native(), widget->operator GtkWidget*());
+    }
+
+    void Viewport::set_scroll_to_focus(bool b)
+    {
+        gtk_viewport_set_scroll_to_focus(get_native(), b);
     }
 }

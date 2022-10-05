@@ -216,7 +216,8 @@ namespace mousetrap
             struct LayerRow
             {
                 LayerPropertyOptions* control_bar;
-                ScrolledWindow frame_display_list_viewport;
+                Viewport frame_display_list_viewport;
+                ScrolledWindow frame_display_list_scrolled_window;
 
                 Box main = Box(GTK_ORIENTATION_HORIZONTAL);
                 ListView frame_display_list = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
@@ -1270,9 +1271,9 @@ namespace mousetrap
             });
 
             auto& row = _layer_rows.back();
-            row.frame_display_list_viewport.set_propagate_natural_height(true);
-            row.frame_display_list_viewport.set_policy(GTK_POLICY_EXTERNAL, GTK_POLICY_NEVER);
-            row.frame_display_list_viewport.set_hadjustment(_layer_row_frame_display_list_hadjustment);
+            row.frame_display_list_scrolled_window.set_propagate_natural_height(true);
+            row.frame_display_list_scrolled_window.set_policy(GTK_POLICY_EXTERNAL, GTK_POLICY_NEVER);
+            row.frame_display_list_scrolled_window.set_hadjustment(_layer_row_frame_display_list_hadjustment);
             row.main.push_back(row.control_bar->operator Widget*());
 
             for (size_t frame_i = 0; frame_i < state::n_frames; ++frame_i)
@@ -1286,9 +1287,11 @@ namespace mousetrap
             }
 
             row.frame_display_list_viewport.set_child(&row.frame_display_list);
-            row.frame_display_list_viewport.set_expand(true);
-            row.frame_display_list_viewport.set_has_frame(false);
-            row.main.push_back(&row.frame_display_list_viewport);
+            row.frame_display_list_viewport.set_scroll_to_focus(false);
+            row.frame_display_list_scrolled_window.set_child(&row.frame_display_list_viewport);
+            row.frame_display_list_scrolled_window.set_expand(true);
+            row.frame_display_list_scrolled_window.set_has_frame(false);
+            row.main.push_back(&row.frame_display_list_scrolled_window);
             _layer_row_list_view.push_back(&row.main);
         }
 
