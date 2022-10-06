@@ -21,7 +21,14 @@ namespace mousetrap
     {}
 
     void LayerView::FrameControlBar::on_frame_delete_button_clicked(Button*, FrameControlBar* instance)
-    {}
+    {
+        for (auto* layer : state::layers)
+            layer->frames.erase(layer->frames.begin() + instance->_owner->_selected_frame);
+
+        state::n_frames -= 1;
+        for (auto& row : instance->_owner->_layer_rows)
+            row.delete_frame(instance->_owner->_selected_frame);
+    }
 
     void LayerView::FrameControlBar::on_frame_keyframe_toggle_button_toggled(ToggleButton*, FrameControlBar* instance)
     {}

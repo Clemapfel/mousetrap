@@ -56,6 +56,8 @@ namespace mousetrap
                     void update();
                     void update_selection();
 
+                    void set_frame(size_t);
+
                 private:
                     size_t _layer;
                     size_t _frame;
@@ -165,6 +167,7 @@ namespace mousetrap
                     operator Widget*();
                     void update();
                     void update_selection();
+                    void delete_frame(size_t);
 
                 private:
                     size_t _layer;
@@ -299,8 +302,6 @@ namespace mousetrap
 
     bool LayerView::on_layer_row_list_view_key_event_controller_key_pressed(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, LayerView* instance)
     {
-        std::cout << keyval << std::endl;
-
         if (keyval == GDK_KEY_Right)
             instance->set_selection(instance->_selected_layer, std::min(instance->_selected_frame+1, state::n_frames - 1));
         if (keyval == GDK_KEY_Left)

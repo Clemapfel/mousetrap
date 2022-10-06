@@ -55,4 +55,19 @@ namespace mousetrap
         for (auto& display : _layer_frame_displays)
             display.update();
     }
+
+    void LayerView::LayerRow::delete_frame(size_t to_delete)
+    {
+        _layer_frame_display_list_view.clear();
+        _layer_frame_displays.erase(_layer_frame_displays.end() - 1);
+
+        assert(state::n_frames == _layer_frame_displays.size());
+
+        auto& layer = state::layers.at(_layer);
+        for (size_t i = to_delete; i < state::n_frames; ++i)
+            _layer_frame_displays.at(i).set_frame(i);
+
+        for (auto& display : _layer_frame_displays)
+            _layer_frame_display_list_view.push_back(display);
+    }
 }

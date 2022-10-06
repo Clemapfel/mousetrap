@@ -3,6 +3,8 @@
 // Created on 10/6/22 by clem (mail@clemens-cords.com)
 //
 
+#include <app/layer_view.hpp>
+
 namespace mousetrap
 {
     void LayerView::LayerPropertyOptions::update()

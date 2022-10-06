@@ -19,6 +19,16 @@ namespace mousetrap
             selection_indicator_texture->create_from_file(get_resource_path() + "frame/frame_vertical.png");
         }
 
+        instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
+        instance->_layer_shape->as_rectangle({0, 0}, {1, 1});
+
+        auto task = RenderTask(instance->_transparency_tiling_shape, transparency_tiling_shader);
+        task.register_vec2("_canvas_size", &instance->_canvas_size);
+
+        instance->_gl_area.add_render_task(task);
+        instance->_gl_area.add_render_task(instance->_layer_shape);
+        instance->_gl_area.queue_render();
+
         instance->update();
 
         // initial select update on construction
@@ -81,25 +91,14 @@ namespace mousetrap
 
         if (_gl_area.get_is_realized())
         {
-            _transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
-            _layer_shape->as_rectangle({0, 0}, {1, 1});
-
             size_t frame_i = _frame;
-
             while (frame_i > 0 and layer.frames.at(frame_i).is_tween_repeat)
                 frame_i -= 1;
 
             _layer_shape->set_texture(layer.frames.at(frame_i).texture);
-
-            auto task = RenderTask(_transparency_tiling_shape, transparency_tiling_shader);
-            task.register_vec2("_canvas_size", &_canvas_size);
-
-            _gl_area.add_render_task(task);
-            _gl_area.add_render_task(_layer_shape);
-            _gl_area.queue_render();
-
-            update_selection();
         }
+
+        update_selection();
     }
 
     void LayerView::LayerFrameDisplay::update_selection()
@@ -124,5 +123,11 @@ namespace mousetrap
         _layer_shape->set_color(RGBA(k, k, k, opacity));
 
         _gl_area.queue_render();
+    }
+
+    void LayerView::LayerFrameDisplay::set_frame(size_t i)
+    {
+        _frame = i;
+        _layer_shape->set_texture(state::layers.at(_layer)->frames.at(_frame).texture);
     }
 }
