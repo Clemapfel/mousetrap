@@ -20,6 +20,10 @@ namespace mousetrap
         }
 
         instance->update();
+
+        // initial select update on construction
+        if (instance->_layer == state::layers.size() - 1 and instance->_frame == state::n_frames - 1)
+            instance->_owner->set_selection(state::current_layer, state::current_frame);
     }
 
     void LayerView::LayerFrameDisplay::on_gl_area_resize(GLArea*, int w, int h, LayerFrameDisplay* instance)

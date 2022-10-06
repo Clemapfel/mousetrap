@@ -6,12 +6,17 @@
 namespace mousetrap
 {
     LayerView::LayerRow::LayerRow(size_t layer, LayerView* owner)
-            : _layer(layer), _owner(owner)
-    {}
+            : _layer(layer), _owner(owner), _layer_property_options(layer, owner)
+    {
+        _layer_frame_display_list_view.set_focusable(false);
+
+        _main.push_back(_layer_property_options);
+        _main.push_back(&_layer_frame_display_list_view);
+    }
 
     LayerView::LayerRow::operator Widget*()
     {
-        return &_layer_frame_display_list_view;
+        return &_main;
     }
 
     void LayerView::LayerRow::on_layer_frame_display_list_view_selection_changed(SelectionModel*, size_t first_item_position,
