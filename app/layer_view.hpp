@@ -61,7 +61,6 @@ namespace mousetrap
                 return str.str();
             };
 
-
             struct WholeFrameDisplay
             {
                 WholeFrameDisplay(size_t frame_i, LayerView* owner);
@@ -123,6 +122,7 @@ namespace mousetrap
 
                 ImageDisplay _layer_frame_active_icon = ImageDisplay(get_resource_path() + "icons/layer_frame_active.png");
                 Overlay _overlay;
+                Label _frame_widget_label;
                 Frame _frame_widget = Frame();
                 ListView _main = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
@@ -290,6 +290,7 @@ namespace mousetrap
                 static void on_frame_move_right_button_clicked(Button*, FrameControlBar* instance);
 
                 Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+                void swap_frames(size_t current_pos, size_t new_pos);
 
                 void generate_tooltip()
                 {
@@ -405,6 +406,9 @@ namespace mousetrap
             Box _frame_playback_control_box = Box(GTK_ORIENTATION_HORIZONTAL);
             SeparatorLine _frame_playback_control_box_separator_a = SeparatorLine();
             SeparatorLine _frame_playback_control_box_separator_b = SeparatorLine();
+
+            KeyEventController _layer_row_list_key_event_controller;
+            static bool on_layer_row_list_key_event_controller_key_pressed(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, LayerView* instance);
 
             LayerControlBar _layer_control_bar;
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
@@ -585,7 +589,8 @@ namespace mousetrap
             : _layer(layer),
               _frame(frame),
               _owner(owner),
-              _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y))
+              _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y)),
+              _frame_widget_label((frame < 10 ? "00" : (frame < 100 ? "0" : "")) + std::to_string(_frame))
     {
         _gl_area.connect_signal_realize(on_gl_area_realize, this);
         _gl_area.connect_signal_resize(on_gl_area_resize, this);
@@ -594,7 +599,8 @@ namespace mousetrap
 
         _aspect_frame.set_child(&_gl_area);
         _frame_widget.set_child(&_aspect_frame);
-        _frame_widget.set_label_widget(nullptr);
+        _frame_widget.set_label_widget(&_frame_widget_label);
+        _frame_widget_label.set_visible(false);
 
         _overlay.set_child(&_frame_widget);
         _layer_frame_active_icon.set_align(GTK_ALIGN_END);
@@ -971,8 +977,44 @@ namespace mousetrap
 
     // FRAME CONTROL BAR
 
+    void LayerView::FrameControlBar::swap_frames(size_t current_pos, size_t new_pos)
+    {
+        for (size_t i = 0; i < state::layers.size(); ++i)
+        {
+            auto* layer = state::layers.at(i);
+
+            auto temp = Layer::Frame(layer->frames.at(current_pos));
+            layer->frames.at(current_pos) = layer->frames.at(new_pos);
+            layer->frames.at(new_pos) = temp;
+
+            for (auto update_pos : {current_pos, new_pos})
+                _owner->_layer_rows.at(i).frame_display.at(update_pos).update();
+        }
+
+        _owner->set_layer_frame_selection(_owner->_selected_layer, new_pos);
+    }
+
     void LayerView::FrameControlBar::on_frame_move_right_button_clicked(Button*, FrameControlBar* instance)
-    {}
+    {
+        size_t current_pos = instance->_owner->_selected_frame;
+        size_t new_pos = instance->_owner->_selected_frame + 1;
+
+        if (new_pos == state::n_frames)
+            return;
+
+        instance->swap_frames(current_pos, new_pos);
+    }
+
+    void LayerView::FrameControlBar::on_frame_move_left_button_clicked(Button*, FrameControlBar* instance)
+    {
+        size_t current_pos = instance->_owner->_selected_frame;
+        size_t new_pos = instance->_owner->_selected_frame - 1;
+
+        if (current_pos == 0)
+            return;
+
+        instance->swap_frames(current_pos, new_pos);
+    }
 
     void LayerView::FrameControlBar::on_frame_create_left_of_this_button_clicked(Button*, FrameControlBar* instance)
     {}
@@ -1009,9 +1051,6 @@ namespace mousetrap
 
         instance->set_selected_frame_is_keyframe(is_key);
     }
-
-    void LayerView::FrameControlBar::on_frame_move_left_button_clicked(Button*, FrameControlBar* instance)
-    {}
 
     void LayerView::FrameControlBar::on_frame_duplicate_button_clicked(Button*, FrameControlBar* instance)
     {}
@@ -1231,13 +1270,16 @@ namespace mousetrap
 
                 opacity = row.frame_display.at(col_i)._layer_shape->get_vertex_color(0).a;
                 row.frame_display.at(col_i)._layer_shape->set_color(RGBA(k, k, k, opacity));
-
                 row.frame_display.at(col_i)._gl_area.queue_render();
+                row.frame_display.at(col_i)._frame_widget_label.set_visible(row_i == layer_i);
             }
         }
 
         _selected_frame = frame_i;
         _selected_layer = layer_i;
+
+        _frame_control_bar._frame_move_left_button.set_can_respond_to_input(_selected_frame != 0);
+        _frame_control_bar._frame_move_right_button.set_can_respond_to_input(_selected_frame < state::n_frames - 1);
 
         _frame_control_bar.update();
     }
@@ -1266,6 +1308,21 @@ namespace mousetrap
 
     void LayerView::on_layer_row_frame_display_list_hadjusment_value_changed(Adjustment* adjustment, LayerView* instance)
     {}
+
+    bool LayerView::on_layer_row_list_key_event_controller_key_pressed(KeyEventController*, guint keyval, guint keycode,
+                                                                       GdkModifierType state, LayerView* instance)
+    {
+        if (keyval == GDK_KEY_Right)
+            instance->set_layer_frame_selection(instance->_selected_layer, std::min(instance->_selected_frame+1, state::n_frames - 1));
+        if (keyval == GDK_KEY_Left)
+            instance->set_layer_frame_selection(instance->_selected_layer, instance->_selected_frame - (instance->_selected_frame != 0 ? 1 : 0));
+        if (keyval == GDK_KEY_Down)
+            instance->set_layer_frame_selection(std::min(instance->_selected_layer+1, state::layers.size()-1), instance->_selected_frame);
+        if (keyval == GDK_KEY_Up)
+            instance->set_layer_frame_selection(instance->_selected_layer - (instance->_selected_layer != 0 ? 1 : 0), instance->_selected_frame);
+
+        return true;
+    }
 
     LayerView::LayerView()
         : _playback_control_bar(this), _frame_control_bar(this), _layer_control_bar(this)
@@ -1334,28 +1391,6 @@ namespace mousetrap
         _layer_row_list_viewport_box.push_back(&_layer_row_list_view);
         _layer_row_list_viewport_box.push_back(&_layer_row_list_viewport_separator);
         _layer_row_list_viewport.set_child(&_layer_row_list_viewport_box);
-
-        std::vector<Label*> _frame_index_labels;
-        std::vector<Frame*> _frame_index_label_frames;
-
-        for (size_t i = 0; i < state::n_frames; ++i)
-        {
-            _frame_index_labels.emplace_back(new Label((i < 10 ? "00" : (i < 100 ? "0" : "")) + std::to_string(i)));
-            _frame_index_label_frames.emplace_back(new Frame());
-            _frame_index_label_frames.back()->set_child(_frame_index_labels.back());
-            _frame_index_label_frames.back()->set_label_widget(nullptr);
-        }
-
-        float width = _layer_rows.at(0).frame_display.at(0).operator Widget *()->get_preferred_size().natural_size.x;
-        for (auto* label : _frame_index_label_frames)
-            label->set_size_request({width, 0});
-
-        auto* _frame_index_label_list_view = new ListView(GTK_ORIENTATION_HORIZONTAL);
-        _frame_index_label_list_view->set_halign(GTK_ALIGN_END);
-        for (auto* label : _frame_index_label_frames)
-            _frame_index_label_list_view->push_back(label);
-
-        _layer_row_list_area_right_box.push_back(_frame_index_label_list_view);
         _layer_row_list_area_right_box.push_back(&_layer_row_list_viewport);
         _layer_row_list_area_right_box.push_back(&_layer_row_frame_display_list_hscrollbar);
 
@@ -1367,6 +1402,9 @@ namespace mousetrap
         _layer_row_list_area_box.push_back(&_layer_control_bar_box);
         _layer_row_list_area_box.push_back(&_layer_row_list_view_vscrollbar);
         _layer_row_list_area_box.push_back(&_layer_row_list_area_right_box);
+
+        _layer_row_list_key_event_controller.connect_signal_key_pressed(on_layer_row_list_key_event_controller_key_pressed, this);
+        _layer_row_list_view.add_controller(&_layer_row_list_key_event_controller);
 
         _frame_playback_control_box_separator_a.set_size_request({_layer_control_bar._layer_create_button.get_preferred_size().natural_size.x, 0});
         _frame_playback_control_box_separator_a.set_hexpand(true);
