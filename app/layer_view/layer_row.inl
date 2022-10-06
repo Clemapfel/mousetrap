@@ -64,10 +64,28 @@ namespace mousetrap
         assert(state::n_frames == _layer_frame_displays.size());
 
         auto& layer = state::layers.at(_layer);
-        for (size_t i = to_delete; i < state::n_frames; ++i)
+        for (size_t i = 0; i < state::n_frames; ++i)
             _layer_frame_displays.at(i).set_frame(i);
 
         for (auto& display : _layer_frame_displays)
             _layer_frame_display_list_view.push_back(display);
+    }
+
+    void LayerView::LayerRow::insert_frame(size_t frame_i)
+    {
+        _layer_frame_displays.emplace_back(_layer, state::n_frames-1, _owner);
+        _layer_frame_display_list_view.push_back(_layer_frame_displays.back());
+
+        assert(state::n_frames == _layer_frame_displays.size());
+
+        for (size_t i = frame_i; i < state::n_frames; ++i)
+            _layer_frame_displays.at(i).set_frame(i);
+
+        update_frame(frame_i+1);
+    }
+
+    void LayerView::LayerRow::update_frame(size_t i)
+    {
+        _layer_frame_displays.at(i).update();
     }
 }

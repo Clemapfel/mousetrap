@@ -22,6 +22,8 @@ namespace mousetrap
         instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
         instance->_layer_shape->as_rectangle({0, 0}, {1, 1});
 
+        instance->_gl_area.clear_render_tasks();
+
         auto task = RenderTask(instance->_transparency_tiling_shape, transparency_tiling_shader);
         task.register_vec2("_canvas_size", &instance->_canvas_size);
 
@@ -71,6 +73,7 @@ namespace mousetrap
 
     LayerView::LayerFrameDisplay::~LayerFrameDisplay()
     {
+        _gl_area.clear_render_tasks();
         delete _transparency_tiling_shape;
         delete _layer_shape;
     }
@@ -128,6 +131,17 @@ namespace mousetrap
     void LayerView::LayerFrameDisplay::set_frame(size_t i)
     {
         _frame = i;
-        _layer_shape->set_texture(state::layers.at(_layer)->frames.at(_frame).texture);
+
+        auto* layer = state::layers.at(_layer);
+        auto& frame = layer->frames.at(_frame);
+
+        size_t frame_i = _frame;
+        while (frame_i > 0 and layer->frames.at(frame_i).is_tween_repeat)
+            frame_i -= 1;
+
+        _layer_shape->set_texture(layer->frames.at(frame_i).texture);
+
+        _gl_area.set_opacity(frame.is_tween_repeat ? 0.3 : 1);
+        update_selection();
     }
 }

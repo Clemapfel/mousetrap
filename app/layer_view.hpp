@@ -167,7 +167,10 @@ namespace mousetrap
                     operator Widget*();
                     void update();
                     void update_selection();
+
+                    void update_frame(size_t);
                     void delete_frame(size_t);
+                    void insert_frame(size_t);
 
                 private:
                     size_t _layer;
@@ -220,6 +223,7 @@ namespace mousetrap
                     Button _frame_move_right_button;
                     static void on_frame_move_right_button_clicked(Button*, FrameControlBar* instance);
 
+                    void set_selected_frame_is_keyframe(bool);
                     Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
             };
 
@@ -325,6 +329,11 @@ namespace mousetrap
         _layer_row_list_view.get_selection_model()->set_signal_selection_changed_blocked(true);
         _layer_row_list_view.get_selection_model()->select(layer_i);
         _layer_row_list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
+
+        state::current_layer = _selected_layer;
+        state::current_frame = _selected_frame;
+
+        _frame_control_bar.update();
     }
 
     LayerView::LayerView()
