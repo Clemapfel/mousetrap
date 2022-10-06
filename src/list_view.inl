@@ -190,6 +190,18 @@ namespace mousetrap
         g_list_store_remove(list, i);
     }
 
+    void TreeListView::clear(Iterator it)
+    {
+        GListStore* list;
+        if (it == nullptr)
+            list = _root;
+        else
+            list = it->children;
+
+        gtk_selection_model_unselect_all(_selection_model->operator GtkSelectionModel*());
+        g_list_store_remove_all(list);
+    }
+
     Widget* TreeListView::get_widget_at(size_t i, Iterator it)
     {
         GListModel* list;

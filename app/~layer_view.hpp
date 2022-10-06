@@ -1,30 +1,35 @@
-//
+// 
 // Copyright 2022 Clemens Cords
-// Created on 9/16/22 by clem (mail@clemens-cords.com)
+// Created on 9/30/22 by clem (mail@clemens-cords.com)
 //
 
 #pragma once
 
-#include <include/column_view.hpp>
-#include <include/box.hpp>
-#include <include/gl_area.hpp>
-#include <include/scale.hpp>
-#include <include/label.hpp>
-#include <include/toggle_button.hpp>
 #include <include/image_display.hpp>
-#include <include/dropdown.hpp>
-#include <include/get_resource_path.hpp>
-#include <include/check_button.hpp>
-#include <include/aspect_frame.hpp>
+#include <include/toggle_button.hpp>
 #include <include/entry.hpp>
-#include <include/separator_line.hpp>
+#include <include/scale.hpp>
+#include <include/check_button.hpp>
+#include <include/get_resource_path.hpp>
+#include <include/box.hpp>
 #include <include/list_view.hpp>
-#include <include/button.hpp>
+#include <include/reorderable_list.hpp>
+#include <include/viewport.hpp>
+#include <include/gl_area.hpp>
+#include <include/aspect_frame.hpp>
+#include <include/label.hpp>
+#include <include/separator_line.hpp>
 #include <include/scrolled_window.hpp>
+#include <include/menu_button.hpp>
+#include <include/popover.hpp>
+#include <include/dropdown.hpp>
+#include <include/overlay.hpp>
+#include <include/center_box.hpp>
+#include <include/frame.hpp>
+#include <include/scrollbar.hpp>
 
-#include <app/app_component.hpp>
 #include <app/global_state.hpp>
-#include <app/layer.hpp>
+#include <app/app_component.hpp>
 
 namespace mousetrap
 {
@@ -32,171 +37,731 @@ namespace mousetrap
     {
         public:
             LayerView();
-            void update() override;
+
             operator Widget*() override;
+            void update();
 
         private:
-            static inline Shader* _noop_shader = nullptr;
-            static inline Shader* _transparency_tiling_shader = nullptr;
+            void update(size_t layer_i);
 
-            static inline size_t _layer_thumbnail_size = 48;
+            static inline float thumbnail_height = 5 * state::margin_unit;
+            static inline const float thumbnail_margin_top_bottom = 0.5 * state::margin_unit;
+            static inline const float thumbnail_margin_left_right = 0.25 * state::margin_unit;
+            static inline Shader* transparency_tiling_shader = nullptr;
 
-            struct LayerViewRow
+            static std::string generate_tooltip_text(std::string title, std::string description)
             {
-                LayerViewRow(Layer*, LayerView* parent);
+                std::stringstream str;
 
-                LayerView* parent;
-                Layer* layer;
+                str << "<b>" << title << "</b>";
 
-                GLArea texture_area;
-                Shape* transparency_tiling_shape;
-                Shape* layer_texture_shape;
-                AspectFrame texture_area_frame;
+                if (not description.empty())
+                    str << "\n\n" << "<span foreground=\"#BBBBBB\">" << description << "</span>";
 
-                Entry name;
-                FocusEventController name_focus_controller;
-
-                Box visible_button_box;
-                Label visible_button_label;
-                CheckButton visible_button;
-                static inline const char* layer_hidden_tooltip = "Layer is Hidden";
-                static inline const char* layer_visible_tooltip = "Layer is Visible";
-
-                Box locked_button_box;
-                Label locked_button_label;
-                CheckButton locked_button;
-                static inline const char* layer_locked_tooltip = "Layer is Locked";
-                static inline const char* layer_unlocked_tooltip = "Layer is Unlocked";
-
-                Scale opacity_scale;
-                DropDown blend_mode_dropdown;
-                std::vector<Label> blend_mode_dropdown_label_items;
-                std::vector<Label> blend_mode_dropdown_list_items;
-
-                std::vector<SeparatorLine> separators;
-
-                ListView main;
-
-                Vector2f* canvas_size;
-                static void on_gl_area_realize(GLArea*, LayerViewRow*);
-                static void on_gl_area_resize(GLArea*, int, int, LayerViewRow*);
-
-                static void on_visible_check_button_toggled(CheckButton*, LayerViewRow*);
-                static void on_locked_check_button_toggle(CheckButton*, LayerViewRow*);
-
-                static void on_opacity_scale_value_changed(Scale*, LayerViewRow*);
-
-                static void on_layer_name_entry_activate(Entry*, LayerViewRow*);
-                static void on_layer_name_entry_focus_lost(FocusEventController* self, LayerViewRow*);
-
-                using on_blendmode_selected_data = struct {LayerViewRow* instance; BlendMode mode;};
-                static void on_blendmode_selected(void*);
+                return str.str();
             };
+
+            struct WholeFrameDisplay
+            {
+                WholeFrameDisplay(size_t frame_i, LayerView* owner);
+                ~WholeFrameDisplay();
+
+                operator Widget*();
+
+                void update();
+
+                size_t _frame;
+                LayerView* _owner;
+
+                Shape* _transparency_tiling_shape;
+                GLArea _transparency_area;
+                Vector2f* _canvas_size;
+                static void on_transparency_area_realize(Widget*, WholeFrameDisplay*);
+                static void on_transparency_area_resize(GLArea*, int, int, WholeFrameDisplay*);
+
+                GLArea _layer_area;
+                std::deque<Shape> _layer_shapes;
+                static void on_layer_area_realize(Widget*, WholeFrameDisplay*);
+
+                AspectFrame _aspect_frame;
+                Overlay _overlay;
+
+                Label _label;
+                Frame _frame_widget = Frame();
+
+                void generate_tooltip() {
+                    _label.set_tooltip_text("Frame #" + std::to_string(_frame));
+                    _overlay.set_tooltip_text("Composite for Frame #" + std::to_string(_frame));
+                }
+            };
+
+            struct LayerFrameDisplay
+            {
+                LayerFrameDisplay(size_t layer, size_t frame, LayerView* owner);
+                ~LayerFrameDisplay();
+                operator Widget*();
+
+                void update();
+
+                size_t _layer;
+                size_t _frame;
+                LayerView* _owner;
+
+                Vector2f _canvas_size;
+                static void on_gl_area_realize(Widget*, LayerFrameDisplay*);
+                static void on_gl_area_resize(GLArea*, int, int, LayerFrameDisplay*);
+
+                GLArea _gl_area;
+                Shape* _transparency_tiling_shape;
+                Shape* _layer_shape;
+
+                static inline Texture* selection_indicator_texture = nullptr;
+
+                AspectFrame _aspect_frame;
+
+                ImageDisplay _layer_frame_active_icon = ImageDisplay(get_resource_path() + "icons/layer_frame_active.png");
+                Overlay _overlay;
+                Label _frame_widget_label;
+                Frame _frame_widget = Frame();
+                ListView _main = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
+
+                void generate_tooltip() {
+                    std::stringstream str;
+                    str << "Layer: " << _layer << " | Frame: " << _frame;
+                    _main.set_tooltip_text(str.str());
+                }
+            };
+
+            struct LayerPropertyOptions
+            {
+                LayerPropertyOptions(size_t layer_i, LayerView*);
+                operator Widget*();
+
+                void update();
+
+                LayerView* _owner;
+                size_t _layer;
+                Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+
+                ImageDisplay _locked_toggle_button_icon_locked = ImageDisplay(get_resource_path() + "icons/layer_locked.png", state::icon_scale);
+                ImageDisplay _locked_toggle_button_icon_not_locked = ImageDisplay(get_resource_path() + "icons/layer_not_locked.png", state::icon_scale);
+                ToggleButton _locked_toggle_button;
+                static void on_locked_toggle_button_toggled(ToggleButton*, LayerPropertyOptions*);
+
+                ImageDisplay _visible_toggle_button_icon_visible = ImageDisplay(get_resource_path() + "icons/layer_visible.png", state::icon_scale);
+                ImageDisplay _visible_toggle_button_icon_not_visible = ImageDisplay(get_resource_path() + "icons/layer_not_visible.png", state::icon_scale);
+                ToggleButton _visible_toggle_button;
+                static void on_visible_toggle_button_toggled(ToggleButton*, LayerPropertyOptions*);
+
+                Box _visible_locked_indicator_box = Box(GTK_ORIENTATION_HORIZONTAL, state::margin_unit * 0.5);
+
+                Label _menu_button_title_label;
+                ScrolledWindow _menu_button_title_label_viewport;
+                MenuButton _menu_button;
+                Popover _menu_button_popover;
+                Box _menu_button_popover_box = Box (GTK_ORIENTATION_VERTICAL);
+
+                Label _name_label = Label("Name");
+                SeparatorLine _name_separator;
+                Entry _name_entry;
+                Box _name_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                static void on_name_entry_activate(Entry*, LayerPropertyOptions* instance);
+
+                Label _visible_label = Label("Visible");
+                SeparatorLine _visible_separator;
+                CheckButton _visible_check_button;
+                Box _visible_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                static void on_visible_check_button_toggled(CheckButton*, LayerPropertyOptions* instance);
+
+                Label _locked_label = Label("Locked");
+                SeparatorLine _locked_separator;
+                CheckButton _locked_check_button;
+                Box _locked_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                static void on_locked_check_button_toggled(CheckButton*, LayerPropertyOptions* instance);
+
+                Label _opacity_label = Label("Opacity");
+                SeparatorLine _opacity_separator;
+                Scale _opacity_scale = Scale(0, 1, 0.01);
+                Box _opacity_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                static void on_opacity_scale_value_changed(Scale*, LayerPropertyOptions* instance);
+
+                Label _blend_mode_label = Label("Blend");
+                SeparatorLine _blend_mode_separator;
+                Box _blend_mode_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
+                DropDown _blend_mode_dropdown;
+                static inline const std::vector<BlendMode> _blend_modes_in_order = {
+                        BlendMode::NORMAL,
+                        BlendMode::ADD,
+                        BlendMode::SUBTRACT,
+                        BlendMode::REVERSE_SUBTRACT,
+                        BlendMode::MULTIPLY,
+                        BlendMode::MIN,
+                        BlendMode::MAX
+                };
+                std::vector<Label> _blend_mode_dropdown_label_items;
+                std::vector<Label> _blend_mode_dropdown_list_items;
+
+                using on_blend_mode_select_data = struct {BlendMode blend_mode; LayerPropertyOptions* instance;};
+                static void on_blend_mode_select(on_blend_mode_select_data*);
+
+                void generate_tooltip()
+                {
+                    _name_box.set_tooltip_text(generate_tooltip_text("Layer Name", "Layer names help to stay organized"));
+                    _visible_box.set_tooltip_text(generate_tooltip_text("Toggle Layer Visible", "Hidden layers will not appear in composite renders of the image"));
+                    _locked_box.set_tooltip_text(generate_tooltip_text("Toggle Layer Locked", "Locked layers cannot be edited"));
+                    _opacity_box.set_tooltip_text(generate_tooltip_text("Layer Opacity", "Alpha value of all pixels in a layer are multiplied with the layer opacity"));
+                    _blend_mode_label.set_tooltip_text(generate_tooltip_text("Layer Blend Mode", "Blend mode governs how a layer behaves when rendered on top of another layer"));
+                    _menu_button.set_tooltip_text(generate_tooltip_text("Layer Options", "Modify properties of layer #" + std::to_string(_layer)));
+                    _locked_toggle_button.set_tooltip_text(generate_tooltip_text("Toggle Layer Locked", "Locked layers cannot be edited"));
+                    _visible_toggle_button.set_tooltip_text(generate_tooltip_text("Toggle Layer Visible", "Hidden layers will not appear in composite renders of the image"));
+                }
+            };
+
+            struct LayerRow
+            {
+                LayerPropertyOptions* control_bar;
+                Viewport frame_display_list_viewport;
+                ScrolledWindow frame_display_list_scrolled_window;
+
+                Box main = Box(GTK_ORIENTATION_HORIZONTAL);
+                ListView frame_display_list = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
+                std::deque<LayerFrameDisplay> frame_display;
+            };
+
+            Adjustment _layer_row_frame_display_list_hadjustment;
+            Scrollbar _layer_row_frame_display_list_hscrollbar = Scrollbar(_layer_row_frame_display_list_hadjustment, GTK_ORIENTATION_HORIZONTAL);
+            static void on_layer_row_frame_display_list_hadjusment_value_changed(Adjustment*, LayerView* instance);
+
+            std::deque<LayerRow> _layer_rows;
+            ListView _layer_row_list_view = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_SINGLE);
+            Adjustment* _layer_row_list_view_vadjustment = new Adjustment();
+            Scrollbar _layer_row_list_view_vscrollbar = Scrollbar(*_layer_row_list_view_vadjustment, GTK_ORIENTATION_VERTICAL);
+            static void on_layer_row_list_view_reordered(ReorderableListView*, Widget* row_widget_moved, size_t previous_position, size_t next_position, LayerView* instance);
+
+            std::deque<WholeFrameDisplay> _whole_frame_displays;
+            ListView _whole_frame_display_list_view_inner = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
+            ListView _whole_frame_display_list_view_outer = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
+            
+            using on_layer_frame_view_selection_changed_data = struct {LayerView* instance; size_t layer;};
+            static void on_layer_frame_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed, on_layer_frame_view_selection_changed_data*);
+            static void on_whole_frame_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed, LayerView*);
+            static void on_whole_layer_row_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed, LayerView*);
+
+            void set_layer_frame_selection(size_t layer_i, size_t frame_i);
+
+            struct FrameControlBar
+            {
+                FrameControlBar(LayerView*);
+                operator Widget*();
+                void update();
+
+                LayerView* _owner;
+
+                ImageDisplay _frame_move_left_icon = ImageDisplay(get_resource_path() + "icons/frame_move_left.png");
+                Button _frame_move_left_button;
+                static void on_frame_move_left_button_clicked(Button*, FrameControlBar* instance);
+
+                ImageDisplay _frame_create_left_of_this_icon = ImageDisplay(get_resource_path() + "icons/frame_create_left_of_this.png");
+                Button _frame_create_left_of_this_button;
+                static void on_frame_create_left_of_this_button_clicked(Button*, FrameControlBar* instance);
+
+                ImageDisplay _frame_is_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_keyframe.png");
+                ImageDisplay _frame_is_not_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_not_keyframe.png");
+                ToggleButton _frame_keyframe_toggle_button;
+                static void on_frame_keyframe_toggle_button_toggled(ToggleButton*, FrameControlBar* instance);
+                void set_selected_frame_is_keyframe(bool);
+
+                ImageDisplay _frame_delete_icon = ImageDisplay(get_resource_path() + "icons/frame_delete.png");
+                Button _frame_delete_button;
+                static void on_frame_delete_button_clicked(Button*, FrameControlBar* instance);
+
+                ImageDisplay _frame_duplicate_icon = ImageDisplay(get_resource_path() + "icons/frame_duplicate.png");
+                Button _frame_duplicate_button;
+                static void on_frame_duplicate_button_clicked(Button*, FrameControlBar* instance);
+
+                ImageDisplay _frame_create_right_of_this_icon = ImageDisplay(get_resource_path() + "icons/frame_create_right_of_this.png");
+                Button _frame_create_right_of_this_button;
+                static void on_frame_create_right_of_this_button_clicked(Button*, FrameControlBar* instance);
+
+                ImageDisplay _frame_move_right_icon = ImageDisplay(get_resource_path() + "icons/frame_move_right.png");
+                Button _frame_move_right_button;
+                static void on_frame_move_right_button_clicked(Button*, FrameControlBar* instance);
+
+                Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+                void swap_frames(size_t current_pos, size_t new_pos);
+
+                void generate_tooltip()
+                {
+                    _frame_move_left_button.set_tooltip_text(generate_tooltip_text("Move Frame Left", "Move selected frame before previous frame"));
+                    _frame_create_left_of_this_button.set_tooltip_text(generate_tooltip_text("Create Frame Before", "Create new keyframe left of selected frame"));
+                    _frame_delete_button.set_tooltip_text(generate_tooltip_text("Delete Frame", "Delete currently selected frame"));
+                    _frame_duplicate_button.set_tooltip_text(generate_tooltip_text("Duplicate Frame", "Create new inbetween right of selected frame"));
+                    _frame_create_right_of_this_button.set_tooltip_text(generate_tooltip_text("Create Frame After", "Create new keyframe right of selected frame"));
+                    _frame_move_right_button.set_tooltip_text(generate_tooltip_text("Move Frame Right", "Move selected frame after next frame"));
+                    _frame_keyframe_toggle_button.set_tooltip_text(generate_tooltip_text("Toggle Keyframe / Inbetween", "Inbetweens always copy the content of the last keyframe"));
+                }
+            };
+
+            FrameControlBar _frame_control_bar;
+
+            struct PlaybackControlBar
+            {
+                PlaybackControlBar(LayerView*);
+                operator Widget*();
+
+                LayerView* _owner;
+
+                ImageDisplay _playback_jump_to_start_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
+                Button _playback_jump_to_start_button;
+                static void on_playback_jump_to_start_button_clicked(Button*, PlaybackControlBar* instance);
+
+                ImageDisplay _playback_pause_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_pause.png");
+                Button _playback_pause_button;
+                static void on_playback_pause_button_clicked(Button*, PlaybackControlBar* instance);
+
+                ImageDisplay _playback_play_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_play.png");
+                ToggleButton _playback_play_toggle_button;
+                static void on_playback_play_toggle_button_toggled(ToggleButton*, PlaybackControlBar* instance);
+
+                ImageDisplay _playback_jump_to_end_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_end.png");
+                Button _playback_jump_to_end_button;
+                static void on_playback_jump_to_end_button_clicked(Button*, PlaybackControlBar* instance);
+
+                Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+
+                void generate_tooltip()
+                {
+                    _playback_jump_to_start_button.set_tooltip_text(generate_tooltip_text("Jump to First Frame", "Skip to the beginning of the animation"));
+                    _playback_jump_to_end_button.set_tooltip_text(generate_tooltip_text("Jump to Last Fame", "Skip to the end of the animation"));
+                    _playback_play_toggle_button.set_tooltip_text(generate_tooltip_text("Start Animation Playback", "Play animation starting at selected frame"));
+                    _playback_pause_button.set_tooltip_text(generate_tooltip_text("Stop Animation Playback", "Stop playing animation"));
+                }
+            };
+
+            PlaybackControlBar _playback_control_bar;
 
             struct LayerControlBar
             {
-                LayerControlBar(LayerView* parent_instance);
+                LayerControlBar(LayerView*);
+
+                void update();
                 operator Widget*();
 
-                LayerView* parent;
-                Box main;
+                LayerView* _owner;
 
-                Button move_up_button;
-                ImageDisplay* move_up_label;
-                static void on_move_up_pressed(Button*, LayerControlBar*);
+                ImageDisplay _layer_move_up_icon = ImageDisplay(get_resource_path() + "icons/layer_move_up.png");
+                Button _layer_move_up_button;
+                static void on_layer_move_up_button_clicked(Button*, LayerControlBar* instance);
 
-                Button move_down_button;
-                ImageDisplay move_down_label;
-                static void on_move_down_pressed(Button*, LayerControlBar*);
+                ImageDisplay _layer_create_icon = ImageDisplay(get_resource_path() + "icons/layer_create.png");
+                Button _layer_create_button;
+                static void on_layer_create_button_clicked(Button*, LayerControlBar* instance);
 
-                Button create_button;
-                ImageDisplay create_label;
-                static void on_create_pressed(Button*, LayerControlBar*);
+                ImageDisplay _layer_duplicate_icon = ImageDisplay(get_resource_path() + "icons/layer_duplicate.png");
+                Button _layer_duplicate_button;
+                static void on_layer_duplicate_button_clicked(Button*, LayerControlBar* instance);
 
-                Button delete_button;
-                ImageDisplay delete_label;
-                static void on_delete_pressed(Button*, LayerControlBar*);
+                ImageDisplay _layer_delete_icon = ImageDisplay(get_resource_path() + "icons/layer_delete.png");
+                Button _layer_delete_button;
+                static void on_layer_delete_button_clicked(Button*, LayerControlBar* instance);
 
-                Button duplicate_button;
-                ImageDisplay duplicate_label;
-                static void on_duplicate_pressed(Button*, LayerControlBar*);
+                ImageDisplay _layer_move_down_icon = ImageDisplay(get_resource_path() + "icons/layer_move_down.png");
+                Button _layer_move_down_button;
+                static void on_layer_move_down_button_clicked(Button*, LayerControlBar* instance);
 
-                Button merge_down_button;
-                ImageDisplay merge_down_label;
-                static void on_merge_down_pressed(Button*, LayerControlBar*);
+                ImageDisplay _layer_merge_down_icon = ImageDisplay(get_resource_path() + "icons/layer_merge_down.png");
+                Button _layer_merge_down_button;
+                static void on_layer_merge_down_button_clicked(Button*, LayerControlBar* instance);
 
-                Button flatten_selected_button;
-                ImageDisplay flatten_selected_label;
-                static void on_flatten_selected_pressed(Button*, LayerControlBar*);
+                ImageDisplay _layer_flatten_all_icon = ImageDisplay(get_resource_path() + "icons/layer_flatten_all.png");
+                Button _layer_flatten_all_button;
+                static void on_layer_flatten_all_button_clicked(Button*, LayerControlBar* instance);
+
+                Box _main = Box(GTK_ORIENTATION_VERTICAL);
+                void generate_tooltip()
+                {
+                    _layer_move_up_button.set_tooltip_text(generate_tooltip_text("Move Layer Up", "Layers are rendered in order from top to bottom"));
+                    _layer_move_down_button.set_tooltip_text(generate_tooltip_text("Move Layer Down", "Layers are rendered in order from top to bottom"));
+                    _layer_create_button.set_tooltip_text(generate_tooltip_text("New Layer", "Create new layer above selected layer"));
+                    _layer_delete_button.set_tooltip_text(generate_tooltip_text("Delete Layer", "Delete selected layer"));
+                    _layer_duplicate_button.set_tooltip_text(generate_tooltip_text("Duplicate Layer", "Create copy of selected layer"));
+                    _layer_merge_down_button.set_tooltip_text(generate_tooltip_text("Merge Down", "Merge selected layer with layer below, according to the upper layers blend mode"));
+                    _layer_flatten_all_button.set_tooltip_text(generate_tooltip_text("Flatten All Layers", "Merge all layers onto the last"));
+                }
             };
 
-            LayerControlBar _control_bar;
+            size_t _selected_frame;
+            size_t _selected_layer;
 
-            ScrolledWindow _row_view_scrolled_window;
-            ListView _row_view;
-            std::deque<LayerViewRow> _rows;
+            ScrolledWindow _layer_row_list_viewport;
+            Box _layer_row_list_viewport_box = Box(GTK_ORIENTATION_VERTICAL);
+            SeparatorLine _layer_row_list_viewport_separator = SeparatorLine(GTK_ORIENTATION_VERTICAL);
+            Box _layer_row_list_area_right_box = Box(GTK_ORIENTATION_VERTICAL);
+            Box _layer_row_list_area_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Box _layer_control_bar_box = Box(GTK_ORIENTATION_VERTICAL);
+            SeparatorLine _layer_control_bar_separator = SeparatorLine(GTK_ORIENTATION_VERTICAL);
 
-            KeyEventController _shortcut_controller;
-            static gboolean on_shortcut_controller_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, void* data);
-            static void on_row_view_selection_changed(GtkSelectionModel* self, guint position, guint n_items, LayerView* instance);
+            Box _frame_playback_control_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            SeparatorLine _frame_playback_control_box_separator_a = SeparatorLine();
+            SeparatorLine _frame_playback_control_box_separator_b = SeparatorLine();
 
-            Box* _main;
-            bool initial_update_happened = false;
+            KeyEventController _layer_row_list_key_event_controller;
+            static bool on_layer_row_list_key_event_controller_key_pressed(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, LayerView* instance);
+
+            LayerControlBar _layer_control_bar;
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
 }
 
-// ###
-
-/*
 namespace mousetrap
 {
-    LayerView::LayerViewRow::LayerViewRow(Layer* layer, LayerView* parent)
-        : layer(layer), parent(parent)
+    // WHOLE FRAME DISPLAY
+
+    void LayerView::WholeFrameDisplay::on_transparency_area_realize(Widget*, WholeFrameDisplay* instance)
     {
-        texture_area = new GLArea();
-        texture_area->connect_signal("realize", on_texture_area_realize, this);
-        texture_area->connect_signal("resize", on_texture_area_resize, this);
+        instance->_transparency_area.make_current();
 
-        texture_area_frame = new AspectFrame(state::layer_resolution.x / float(state::layer_resolution.y));
-        texture_area_frame->set_child(texture_area);
+        if (transparency_tiling_shader == nullptr)
+        {
+            transparency_tiling_shader = new Shader();
+            transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
+        }
 
-        name = new Entry();
-        gtk_editable_set_width_chars(GTK_EDITABLE(name->operator GtkWidget*()), std::string("Layer_9999").size());
-        name->set_has_frame(false);
-        name->set_text(layer->name);
-        name->connect_signal("activate", on_layer_name_activate, this);
+        instance->_transparency_tiling_shape = new Shape();
+        instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
 
-        name_focus_controller = new FocusEventController();
-        name_focus_controller->connect_leave(on_layer_name_focus_lost, this);
-        name->add_controller(name_focus_controller);
+        auto task = RenderTask(instance->_transparency_tiling_shape, transparency_tiling_shader);
+        task.register_vec2("_canvas_size", instance->_canvas_size);
 
-        visible_button = new CheckButton();
-        visible_button->set_is_checked(layer->is_visible);
+        instance->_transparency_area.add_render_task(task);
+        instance->_transparency_area.queue_render();
+    }
 
-        visible_button_label = new Label("");
-        visible_button_label->set_use_markup(true);
-        visible_button_box = new Box(GTK_ORIENTATION_HORIZONTAL);
-        visible_button_box->push_back(visible_button_label);
-        visible_button_box->push_back(visible_button);
+    void LayerView::WholeFrameDisplay::on_transparency_area_resize(GLArea*, int w, int h, WholeFrameDisplay* instance)
+    {
+        *instance->_canvas_size = {w, h};
+        instance->_transparency_area.queue_render();
+    }
 
-        locked_button = new CheckButton();
-        locked_button->set_is_checked(layer->is_locked);
+    void LayerView::WholeFrameDisplay::on_layer_area_realize(Widget*, WholeFrameDisplay* instance)
+    {
+        instance->_layer_area.make_current();
 
-        locked_button_label = new Label("&#128274;");
-        locked_button_label->set_use_markup(true);
-        locked_button_box = new Box(GTK_ORIENTATION_HORIZONTAL);
-        locked_button_box->push_back(locked_button_label);
-        locked_button_box->push_back(locked_button);
+        instance->_layer_shapes.clear();
+        for (size_t i = 0; i < state::layers.size(); ++i)
+        {
+            auto& shape = instance->_layer_shapes.emplace_back();
+            shape.as_rectangle({0, 0}, {1, 1});
+            shape.set_texture(state::layers.at(i)->frames.at(instance->_frame).texture);
 
-        visible_button->connect_signal("toggled", on_is_visible_toggle, this);
-        locked_button->connect_signal("toggled", on_is_locked_toggle, this);
+            auto task = RenderTask(&shape, nullptr, nullptr, state::layers.at(i)->blend_mode);
+            instance->_layer_area.add_render_task(task);
+        }
 
-        opacity_scale = new Scale(0, 1, 0.01);
-        opacity_scale->set_value(layer->opacity);
-        opacity_scale->connect_signal("value-changed", on_opacity_select, this);
+        instance->update();
+        instance->_layer_area.queue_render();
+    }
 
-        blend_mode_dropdown = new DropDown();
+    void LayerView::WholeFrameDisplay::update()
+    {
+        if (not _layer_area.get_is_realized())
+            return;
 
+        if (_layer_shapes.size() != state::layers.size())
+        {
+            _layer_shapes.clear();
+            for (size_t i = 0; i < state::layers.size(); ++i)
+            {
+                auto& shape = _layer_shapes.emplace_back();
+                shape.as_rectangle({0, 0}, {1, 1});
+            }
+        }
+
+        _layer_area.clear_render_tasks();
+        for (size_t i = 0; i < state::layers.size(); ++i)
+        {
+            auto* shape = &_layer_shapes.at(i);
+            auto* layer = state::layers.at(i);
+
+            shape->set_visible(layer->is_visible);
+            shape->set_color(RGBA(1, 1, 1, layer->opacity));
+            shape->set_texture(layer->frames.at(_frame).texture);
+            auto task = RenderTask(shape, nullptr, nullptr, state::layers.at(i)->blend_mode);
+            _layer_area.add_render_task(task);
+        }
+
+        _layer_area.queue_render();
+        generate_tooltip();
+    }
+
+    LayerView::WholeFrameDisplay::~WholeFrameDisplay()
+    {
+        delete _transparency_tiling_shape;
+        delete _canvas_size;
+    }
+
+
+    LayerView::WholeFrameDisplay::WholeFrameDisplay(size_t frame, LayerView* owner)
+        : _frame(frame),
+          _owner(owner),
+          _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y)),
+          _label((frame <= 9 ? "00" : (frame <= 100 ? "0" : "")) + std::to_string(frame))
+    {
+        _canvas_size = new Vector2f(1, 1);
+
+        _transparency_area.connect_signal_realize(on_transparency_area_realize, this);
+        _transparency_area.connect_signal_resize(on_transparency_area_resize, this);
+        _layer_area.connect_signal_realize(on_layer_area_realize, this);
+
+        for (auto* area : {&_transparency_area, &_layer_area})
+        {
+            area->set_size_request({thumbnail_height, (thumbnail_height / float(state::layer_resolution.x)) * state::layer_resolution.y});
+            area->set_expand(false);
+        }
+
+        _overlay.set_child(&_transparency_area);
+        _overlay.add_overlay(&_layer_area);
+        _aspect_frame.set_child(&_overlay);
+        
+        _frame_widget.set_child(&_aspect_frame);
+        _frame_widget.set_label_align(0.5);
+        _frame_widget.set_label_widget(&_label);
+
+        _frame_widget.set_margin_start(thumbnail_margin_left_right);
+        _frame_widget.set_margin_end(thumbnail_margin_left_right);
+        _frame_widget.set_margin_top(thumbnail_margin_top_bottom);
+        _frame_widget.set_margin_bottom(thumbnail_margin_top_bottom);
+
+        generate_tooltip();
+        _frame_widget.set_cursor(GtkCursorType::POINTER);
+    }
+
+    LayerView::WholeFrameDisplay::operator Widget*()
+    {
+        return &_frame_widget;
+    }
+
+    // SINGLE FRAME DISPLAY
+
+    void LayerView::LayerFrameDisplay::on_gl_area_realize(Widget*, LayerFrameDisplay* instance)
+    {
+        instance->_gl_area.make_current();
+
+        if (transparency_tiling_shader == nullptr)
+        {
+            transparency_tiling_shader = new Shader();
+            transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
+        }
+
+        instance->_transparency_tiling_shape = new Shape();
+        instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
+
+        instance->_layer_shape = new Shape();
+        instance->_layer_shape->as_rectangle({0, 0}, {1, 1});
+        instance->_layer_shape->set_texture(state::layers.at(instance->_layer)->frames.at(instance->_frame).texture);
+
+        if (selection_indicator_texture == nullptr)
+        {
+            selection_indicator_texture = new Texture();
+            selection_indicator_texture->create_from_file(get_resource_path() + "frame/frame_vertical.png");
+        }
+
+        auto task = RenderTask(instance->_transparency_tiling_shape, transparency_tiling_shader);
+        task.register_vec2("_canvas_size", &instance->_canvas_size);
+
+        instance->_gl_area.add_render_task(task);
+        instance->_gl_area.add_render_task(instance->_layer_shape);
+        instance->_gl_area.queue_render();
+
+        // trigger selection coloring on realize
+        instance->_owner->set_layer_frame_selection(instance->_owner->_selected_layer, instance->_owner->_selected_frame);
+    }
+
+    void LayerView::LayerFrameDisplay::on_gl_area_resize(GLArea*, int w, int h, LayerFrameDisplay* instance)
+    {
+        instance->_canvas_size = {w, h};
+        instance->_gl_area.queue_render();
+    }
+
+    LayerView::LayerFrameDisplay::LayerFrameDisplay(size_t layer, size_t frame, LayerView* owner)
+            : _layer(layer),
+              _frame(frame),
+              _owner(owner),
+              _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y)),
+              _frame_widget_label((frame < 10 ? "00" : (frame < 100 ? "0" : "")) + std::to_string(_frame))
+    {
+        _gl_area.connect_signal_realize(on_gl_area_realize, this);
+        _gl_area.connect_signal_resize(on_gl_area_resize, this);
+        _gl_area.set_size_request({thumbnail_height, (thumbnail_height / float(state::layer_resolution.x)) * state::layer_resolution.y});
+        _gl_area.set_expand(false);
+
+        _aspect_frame.set_child(&_gl_area);
+        _frame_widget.set_child(&_aspect_frame);
+        _frame_widget.set_label_widget(&_frame_widget_label);
+        _frame_widget_label.set_visible(false);
+
+        _overlay.set_child(&_frame_widget);
+        _layer_frame_active_icon.set_align(GTK_ALIGN_END);
+        _layer_frame_active_icon.set_visible(false);
+        _layer_frame_active_icon.set_size_request(_layer_frame_active_icon.get_size());
+        _overlay.add_overlay(&_layer_frame_active_icon);
+
+        _main.push_back(&_overlay);
+        _gl_area.queue_render();
+
+        generate_tooltip();
+        _frame_widget.set_cursor(GtkCursorType::POINTER);
+    }
+
+    LayerView::LayerFrameDisplay::~LayerFrameDisplay()
+    {
+        delete _transparency_tiling_shape;
+        delete _layer_shape;
+    }
+
+    LayerView::LayerFrameDisplay::operator Widget*()
+    {
+        return &_main;
+    }
+
+    void LayerView::LayerFrameDisplay::update()
+    {
+        if (not _gl_area.get_is_realized())
+            return;
+
+        auto& layer = *state::layers.at(_layer);
+        auto& frame = layer.frames.at(_frame);
+
+        size_t frame_i = _frame;
+        _frame_widget_label.set_text((frame_i < 10 ? "00" : (frame_i < 100 ? "0" : "")) + std::to_string(frame_i));
+
+        while (frame_i > 0 and layer.frames.at(frame_i).is_tween_repeat)
+            frame_i -= 1;
+
+        _layer_shape->set_texture(layer.frames.at(frame_i).texture);
+
+        auto color = _layer_shape->get_vertex_color(0);
+        color.a = layer.opacity;
+        _layer_shape->set_color(color);
+
+        _gl_area.set_opacity(frame.is_tween_repeat ? 0.3 : 1);
+
+        generate_tooltip();
+        _gl_area.queue_render();
+    }
+
+    // LAYER PROPERTY OPTIONS
+
+    void LayerView::LayerPropertyOptions::update()
+    {
+        auto& layer = *state::layers.at(_layer);
+
+        _visible_toggle_button.set_all_signals_blocked(true);
+        _visible_toggle_button.set_active(not layer.is_visible);
+        _visible_toggle_button.set_child(layer.is_visible ? &_visible_toggle_button_icon_visible : &_visible_toggle_button_icon_not_visible);
+        _visible_toggle_button.set_all_signals_blocked(false);
+
+        _visible_check_button.set_all_signals_blocked(true);
+        _visible_check_button.set_is_checked(layer.is_visible);
+        _visible_check_button.set_all_signals_blocked(false);
+
+        _menu_button.set_opacity(layer.is_visible ? 1 : 0.3);
+
+        _locked_toggle_button.set_all_signals_blocked(true);
+        _locked_toggle_button.set_active(layer.is_locked);
+        _locked_toggle_button.set_child(layer.is_locked ? &_locked_toggle_button_icon_locked : &_locked_toggle_button_icon_not_locked);
+        _locked_toggle_button.set_all_signals_blocked(false);
+
+        _locked_check_button.set_all_signals_blocked(true);
+        _locked_check_button.set_is_checked(layer.is_locked);
+        _locked_check_button.set_all_signals_blocked(false);
+
+        _opacity_scale.set_all_signals_blocked(true);
+        _opacity_scale.set_value(layer.opacity);
+        _opacity_scale.set_all_signals_blocked(false);
+
+        _blend_mode_dropdown.set_list_item_activation_blocked(true);
+        size_t i = 0;
+        for (; i < _blend_modes_in_order.size(); ++i)
+            if (_blend_modes_in_order.at(i) == layer.blend_mode)
+                break;
+
+        _blend_mode_dropdown.set_selected(i);
+        _blend_mode_dropdown.set_list_item_activation_blocked(false);
+
+        _name_entry.set_all_signals_blocked(true);
+        _name_entry.set_text(layer.name);
+        _menu_button_title_label.set_text(layer.name);
+        _name_entry.set_all_signals_blocked(false);
+    }
+
+    LayerView::LayerPropertyOptions::LayerPropertyOptions(size_t layer_i, LayerView* owner)
+        : _layer(layer_i), _owner(owner)
+    {
+        auto icon_size = _locked_toggle_button_icon_locked.get_size();
+
+        for (auto* icon: {&_locked_toggle_button_icon_locked, &_locked_toggle_button_icon_not_locked,
+                          &_visible_toggle_button_icon_visible, &_visible_toggle_button_icon_not_visible})
+        {
+            icon->set_size_request(icon_size);
+            icon->set_expand(false);
+        }
+
+        for (auto* button: {&_visible_toggle_button, &_locked_toggle_button})
+        {
+            button->set_has_frame(false);
+            button->set_size_request(icon_size);
+            button->set_expand(false);
+            _visible_locked_indicator_box.push_back(button);
+        }
+
+        _locked_toggle_button.connect_signal_toggled(on_locked_toggle_button_toggled, this);
+        _visible_toggle_button.connect_signal_toggled(on_visible_toggle_button_toggled, this);
+
+        _name_box.push_back(&_name_label);
+        _name_box.push_back(&_name_separator);
+        _name_box.push_back(&_name_entry);
+        _name_entry.set_text(state::layers.at(_layer)->name);
+        _name_entry.set_margin_start(state::margin_unit);
+        _name_entry.set_hexpand(true);
+        _name_entry.connect_signal_activate(on_name_entry_activate, this);
+
+        auto* entry_natural = gtk_requisition_new();
+        auto* button_natural = gtk_requisition_new();
+
+        gtk_widget_get_preferred_size(_name_entry.operator GtkWidget*(), nullptr, entry_natural);
+        gtk_widget_get_preferred_size(_visible_check_button.operator GtkWidget*(), nullptr, button_natural);
+
+        float right_margin = entry_natural->width * 0.5 - button_natural->width * 0.5;
+
+        gtk_requisition_free(entry_natural);
+        gtk_requisition_free(button_natural);
+
+        _visible_box.push_back(&_visible_label);
+        _visible_box.push_back(&_visible_separator);
+        _visible_box.push_back(&_visible_check_button);
+        _visible_check_button.set_halign(GTK_ALIGN_END);
+        _visible_check_button.set_hexpand(true);
+        _visible_check_button.set_margin_end(right_margin);
+        _visible_check_button.connect_signal_toggled(on_visible_check_button_toggled, this);
+
+        _locked_box.push_back(&_locked_label);
+        _locked_box.push_back(&_locked_separator);
+        _locked_box.push_back(&_locked_check_button);
+        _locked_check_button.set_halign(GTK_ALIGN_END);
+        _locked_check_button.set_hexpand(true);
+        _locked_check_button.set_margin_end(right_margin);
+        _locked_check_button.connect_signal_toggled(on_locked_check_button_toggled, this);
+
+        _opacity_box.push_back(&_opacity_label);
+        _opacity_box.push_back(&_opacity_separator);
+        _opacity_box.push_back(&_opacity_scale);
+        _opacity_scale.set_hexpand(true);
+        _opacity_scale.set_value(state::layers.at(_layer)->opacity);
+        _opacity_scale.connect_signal_value_changed(on_opacity_scale_value_changed, this);
+
+        _blend_mode_dropdown.set_list_item_activation_blocked(true);
         auto add_dropdown_item = [&](BlendMode mode) -> void {
 
             std::string label;
@@ -209,519 +774,687 @@ namespace mousetrap
                 list_item = "Normal";
                 label = "Normal";
                 label_tooltip = "Blend Mode: Alpha";
-                list_tooltip = "<b>Alpha Blending</b>\n<tt>color.rgb = source.a * source.rgb + (1-source.a) * destination.rgb</tt>";
+                list_tooltip = generate_tooltip_text("Alpha Blending", "<tt>color = mix(source.rgb, destination.rgb, source.a)</tt>");
             }
             else if (mode == BlendMode::ADD)
             {
                 list_item = "Add";
                 label = "Add";
                 label_tooltip = "Blend Mode: Additive";
-                list_tooltip = "<b>Additive Blending</b>\n<tt>color = source.rgba + destination.rgba</tt>";
+                list_tooltip = generate_tooltip_text("Additive Blending", "<tt>color = source.rgba + destination.rgba</tt>");
             }
             else if (mode == BlendMode::SUBTRACT)
             {
                 list_item = "Subtract";
                 label = "Subtract";
                 label_tooltip = "Blend Mode: Subtractive";
-                list_tooltip = "<b>Subtractive Blending</b>\n<tt>color = destination.rgba - source.rgba</tt>";
+                list_tooltip = generate_tooltip_text("Subtractive Blending", "<tt>color = source.rgba - destination.rgba</tt>");
+            }
+            else if (mode == BlendMode::REVERSE_SUBTRACT)
+            {
+                list_item = "Reverse Subtract";
+                label = "Reverse Subtract";
+                label_tooltip = "Blend Mode: Subtractive Reversed";
+                list_tooltip = generate_tooltip_text("Reverse Subtractive Blending", "<tt>color = destination.rgba - source.rgba</tt>");
             }
             else if (mode == BlendMode::MULTIPLY)
             {
                 list_item = "Multiply";
                 label = "Multiply";
                 label_tooltip = "Blend Mode: Multiplicative";
-                list_tooltip = "<b>Multiplicative Blending</b>\n<tt>color = source.rgba * destination.rgba</tt>";
+                list_tooltip = generate_tooltip_text("Multiplicative Blending", "<tt>color = destination.rgba * source.rgba</tt>");
             }
             else if (mode == BlendMode::MIN)
             {
                 list_item = "Minimum";
                 label = "Min";
                 label_tooltip = "Blend Mode: Minimum";
-                list_tooltip = "<b>Minimum Blending</b>\n<tt>color = min(source.rgba, destination.rgba)</tt>";
+                list_tooltip = generate_tooltip_text("Minimum Blending", "<tt>color = min(destination.rgba, source.rgba)</tt>");
             }
             else if (mode == BlendMode::MAX)
             {
                 list_item = "Maximum";
                 label = "Max";
                 label_tooltip = "Blend Mode: Maximum";
-                list_tooltip = "<b>Maximum Blending</b>\n<tt>color = max(source.rgba, destination.rgba)</tt>";
+                list_tooltip = generate_tooltip_text("Maximum Blending", "<tt>color = max(destination.rgba, source.rgba)</tt>");
             }
 
-            blend_mode_dropdown_list_items.emplace_back(new Label(list_item));
-            blend_mode_dropdown_list_items.back()->set_use_markup(true);
-            blend_mode_dropdown_list_items.back()->set_tooltip_text(list_tooltip);
-            blend_mode_dropdown_list_items.back()->set_halign(GTK_ALIGN_START);
+            _blend_mode_dropdown_list_items.emplace_back(list_item);
+            _blend_mode_dropdown_list_items.back().set_tooltip_text(list_tooltip);
+            _blend_mode_dropdown_list_items.back().set_halign(GTK_ALIGN_START);
 
-            blend_mode_dropdown_label_items.emplace_back(new Label("<span size=\"small\">" + label + "</span>"));
-            blend_mode_dropdown_label_items.back()->set_use_markup(true);
-            blend_mode_dropdown_label_items.back()->set_tooltip_text(label_tooltip);
+            _blend_mode_dropdown_label_items.emplace_back(label);
+            _blend_mode_dropdown_label_items.back().set_tooltip_text(label_tooltip);
 
-            blend_mode_dropdown->push_back(
-                blend_mode_dropdown_list_items.back(),
-                blend_mode_dropdown_label_items.back(),
-                on_blendmode_selected,
-                new on_blendmode_selected_data{this, mode}
+            _blend_mode_dropdown.push_back(
+                    &_blend_mode_dropdown_list_items.back(),
+                    &_blend_mode_dropdown_label_items.back(),
+                    on_blend_mode_select,
+                    new on_blend_mode_select_data{mode, this}
             );
         };
 
-        for (auto mode : {BlendMode::NORMAL, BlendMode::ADD, BlendMode::SUBTRACT, BlendMode::MULTIPLY, BlendMode::MIN, BlendMode::MAX})
+        _blend_mode_dropdown_label_items.reserve(_blend_modes_in_order.size());
+        _blend_mode_dropdown_list_items.reserve(_blend_modes_in_order.size());
+
+        for (auto mode: _blend_modes_in_order)
             add_dropdown_item(mode);
 
-        float row_margin = 1 * state::margin_unit;
+        _blend_mode_box.push_back(&_blend_mode_label);
+        _blend_mode_box.push_back(&_blend_mode_separator);
+        _blend_mode_box.push_back(&_blend_mode_dropdown);
+        _blend_mode_dropdown.set_hexpand(true);
+        _blend_mode_dropdown.set_halign(GTK_ALIGN_CENTER);
 
-        visible_button->set_margin_start(0.5 * state::margin_unit);
-        visible_button->set_margin_end(0.5 * state::margin_unit);
-        visible_button_box->set_tooltip_text(layer->is_visible ? layer_visible_tooltip : layer_hidden_tooltip);
-        visible_button_box->set_margin_top(row_margin);
-        visible_button_box->set_margin_bottom(row_margin);
+        _blend_mode_dropdown.set_list_item_activation_blocked(false);
 
-        locked_button->set_margin_start(0.5 * state::margin_unit);
-        locked_button_box->set_tooltip_text(layer->is_locked ? layer_locked_tooltip : layer_unlocked_tooltip);
-        locked_button_box->set_margin_top(row_margin);
-        locked_button_box->set_margin_bottom(row_margin);
+        for (auto* box: {&_name_box, &_opacity_box, &_visible_box, &_locked_box, &_blend_mode_box})
+            _menu_button_popover_box.push_back(box);
 
-        texture_area_frame->set_vexpand(true);
-        texture_area_frame->set_size_request({(float(_layer_thumbnail_size) / state::layer_resolution.y) * state::layer_resolution.x, _layer_thumbnail_size});
-        texture_area_frame->set_tooltip_text("Layer Preview");
+        _menu_button_popover_box.set_homogeneous(true);
+        _menu_button_popover.set_child(&_menu_button_popover_box);
+        _menu_button.set_popover(&_menu_button_popover);
+        _menu_button.set_has_frame(false);
 
-        name->set_margin_top(row_margin);
-        name->set_margin_bottom(row_margin);
-        name->set_tooltip_text("Layer Name");
+        _menu_button_title_label.set_text(state::layers.at(_layer)->name);
+        _menu_button_title_label.set_halign(GTK_ALIGN_START);
+        _menu_button_title_label.set_hexpand(false);
+        _menu_button_title_label_viewport.set_child(&_menu_button_title_label);
+        _menu_button_title_label_viewport.set_size_request({10 * state::margin_unit, 0});
+        _menu_button_title_label_viewport.set_has_frame(false);
+        _menu_button_title_label_viewport.set_propagate_natural_height(true);
+        _menu_button_title_label_viewport.set_policy(GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+        _menu_button_title_label_viewport.set_can_respond_to_input(false);
+        _menu_button.set_child(&_menu_button_title_label_viewport);
+        _menu_button.set_hexpand(false);
 
-        //opacity_scale->set_margin_start(state::margin_unit);
-        //opacity_scale->set_margin_end(0.5 * state::margin_unit);
-        opacity_scale->set_size_request({100, 0});
-        opacity_scale->set_tooltip_text("Layer Opacity");
-        opacity_scale->set_hexpand(true);
-        opacity_scale->set_margin_top(row_margin);
-        opacity_scale->set_margin_bottom(row_margin);
+        _main.push_back(&_visible_locked_indicator_box);
+        _main.push_back(&_menu_button);
 
-        blend_mode_dropdown->set_margin_top(row_margin);
-        blend_mode_dropdown->set_margin_bottom(row_margin);
+        generate_tooltip();
+        for (auto* widget : std::vector<Widget*>{
+            &_locked_toggle_button,
+            &_visible_toggle_button,
+            &_menu_button,
+            &_visible_check_button,
+            &_locked_check_button,
+            &_opacity_scale,
+            &_blend_mode_box
+        })
+            widget->set_cursor(GtkCursorType::POINTER);
 
-        main = new ListView(GTK_ORIENTATION_HORIZONTAL);
-        main->set_show_separators(true);
+        for (auto& label : _blend_mode_dropdown_label_items)
+            label.set_cursor(GtkCursorType::POINTER);
 
-        auto add_separator = [&]() {
+        for (auto& sep : {&_name_separator, &_visible_separator, &_locked_separator, &_opacity_separator, &_blend_mode_separator})
+            sep->set_opacity(0);
 
-            separators.emplace_back(new SeparatorLine());
-            separators.back()->set_vexpand(true);
-            separators.back()->set_size_request({2, 0});
-            main->push_back(separators.back());
-        };
-
-        main->push_back(visible_button_box);
-        main->push_back(texture_area_frame);
-        main->push_back(name);
-        main->push_back(opacity_scale);
-        main->push_back(blend_mode_dropdown);
-        main->push_back(locked_button_box);
+        update();
     }
 
-    void LayerView::LayerViewRow::on_texture_area_realize(GtkGLArea* area, LayerViewRow* instance)
+    LayerView::LayerPropertyOptions::operator Widget*()
     {
-        gtk_gl_area_make_current(area);
+        return &_main;
+    }
 
-        if (LayerView::_noop_shader == nullptr)
-            LayerView::_noop_shader = new Shader();
+    void LayerView::LayerPropertyOptions::on_locked_toggle_button_toggled(ToggleButton* button, LayerPropertyOptions* instance)
+    {
+        auto& layer = *state::layers.at(instance->_layer);
+        layer.is_locked = button->get_active();
 
-        if (LayerView::_transparency_tiling_shader == nullptr)
+        instance->update();
+    }
+
+    void LayerView::LayerPropertyOptions::on_visible_toggle_button_toggled(ToggleButton* button, LayerPropertyOptions* instance)
+    {
+        auto& layer = *state::layers.at(instance->_layer);
+        layer.is_visible = not button->get_active();
+
+        instance->update();
+
+        for (auto& display : instance->_owner->_layer_rows.at(instance->_layer).frame_display)
+            display.update();
+
+        for (auto& display : instance->_owner->_whole_frame_displays)
+            display.update();
+    }
+
+    void LayerView::LayerPropertyOptions::on_name_entry_activate(Entry* entry, LayerPropertyOptions* instance)
+    {
+        auto& layer = *state::layers.at(instance->_layer);
+        layer.name = entry->get_text();
+
+        for (auto& display : instance->_owner->_layer_rows.at(instance->_layer).frame_display)
+            display.update();
+
+        instance->update();
+    }
+
+    void LayerView::LayerPropertyOptions::on_locked_check_button_toggled(CheckButton* button, LayerPropertyOptions* instance)
+    {
+        auto& layer = *state::layers.at(instance->_layer);
+        layer.is_locked = button->get_is_checked();
+
+        instance->update();
+    }
+
+    void LayerView::LayerPropertyOptions::on_visible_check_button_toggled(CheckButton* button, LayerPropertyOptions* instance)
+    {
+        auto& layer = *state::layers.at(instance->_layer);
+        layer.is_visible = button->get_is_checked();
+
+        instance->update();
+
+        for (auto& display : instance->_owner->_layer_rows.at(instance->_layer).frame_display)
+            display.update();
+
+        for (auto& display : instance->_owner->_whole_frame_displays)
+            display.update();
+    }
+
+    void LayerView::LayerPropertyOptions::on_opacity_scale_value_changed(Scale* scale, LayerPropertyOptions* instance)
+    {
+        auto& layer = *state::layers.at(instance->_layer);
+        layer.opacity = scale->get_value();
+
+        instance->update();
+
+        for (auto& display : instance->_owner->_layer_rows.at(instance->_layer).frame_display)
+            display.update();
+
+        for (auto& display : instance->_owner->_whole_frame_displays)
+            display.update();
+    }
+
+    void LayerView::LayerPropertyOptions::on_blend_mode_select(on_blend_mode_select_data* data)
+    {
+        auto& layer = *state::layers.at(data->instance->_layer);
+        layer.blend_mode = data->blend_mode;
+
+        for (auto& display : data->instance->_owner->_whole_frame_displays)
+            display.update();
+    }
+
+    // FRAME CONTROL BAR
+
+    void LayerView::FrameControlBar::swap_frames(size_t current_pos, size_t new_pos)
+    {
+        for (size_t i = 0; i < state::layers.size(); ++i)
         {
-            LayerView::_transparency_tiling_shader = new Shader();
-            LayerView::_transparency_tiling_shader->create_from_file(
-                get_resource_path() + "shaders/transparency_tiling.frag",
-                ShaderType::FRAGMENT
-            );
+            auto* layer = state::layers.at(i);
+
+            auto temp = Layer::Frame(layer->frames.at(current_pos));
+            layer->frames.at(current_pos) = layer->frames.at(new_pos);
+            layer->frames.at(new_pos) = temp;
+
+            for (auto update_pos : {current_pos, new_pos})
+                _owner->_layer_rows.at(i).frame_display.at(update_pos).update();
         }
 
-        instance->canvas_size = new Vector2f(1, 1);
-        instance->layer_texture_shape = new Shape();
-        instance->layer_texture_shape->as_rectangle({0, 0}, {1, 1});
-        instance->layer_texture_shape->set_texture(instance->layer->texture);
-
-        instance->transparency_tiling_shape = new Shape();
-        instance->transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
-
-        auto task = RenderTask(instance->transparency_tiling_shape, LayerView::_transparency_tiling_shader);
-        task.register_vec2("_canvas_size", instance->canvas_size);
-
-        instance->texture_area->add_render_task(task);
-        instance->texture_area->add_render_task(instance->layer_texture_shape, LayerView::_noop_shader);
-
-        gtk_gl_area_queue_render(area);
+        _owner->set_layer_frame_selection(_owner->_selected_layer, new_pos);
     }
 
-    void LayerView::LayerViewRow::on_texture_area_resize(GtkGLArea* area, int w, int h, LayerViewRow* instance)
+    void LayerView::FrameControlBar::on_frame_move_right_button_clicked(Button*, FrameControlBar* instance)
     {
-        gtk_gl_area_make_current(area);
-        instance->canvas_size->x = w;
-        instance->canvas_size->y = h;
-        gtk_gl_area_queue_render(area);
+        size_t current_pos = instance->_owner->_selected_frame;
+        size_t new_pos = instance->_owner->_selected_frame + 1;
+
+        if (new_pos == state::n_frames)
+            return;
+
+        instance->swap_frames(current_pos, new_pos);
     }
 
-    void LayerView::LayerViewRow::on_is_visible_toggle(GtkCheckButton* button, LayerViewRow* instance)
+    void LayerView::FrameControlBar::on_frame_move_left_button_clicked(Button*, FrameControlBar* instance)
     {
-        static const float hidden_opacity = 0.2;
+        size_t current_pos = instance->_owner->_selected_frame;
+        size_t new_pos = instance->_owner->_selected_frame - 1;
 
-        if (gtk_check_button_get_active(button))
+        if (current_pos == 0)
+            return;
+
+        instance->swap_frames(current_pos, new_pos);
+    }
+
+    void LayerView::FrameControlBar::on_frame_create_left_of_this_button_clicked(Button*, FrameControlBar* instance)
+    {}
+
+    void LayerView::FrameControlBar::on_frame_create_right_of_this_button_clicked(Button*, FrameControlBar* instance)
+    {}
+
+    void LayerView::FrameControlBar::on_frame_delete_button_clicked(Button*, FrameControlBar* instance)
+    {
+        if (state::n_frames <= 1)
+            return;
+
+        auto frame_i = instance->_owner->_selected_frame;
+        instance->_owner->set_layer_frame_selection(instance->_owner->_selected_layer, frame_i == 0 ? 1 : frame_i - 1);
+
+        for (size_t i = 0; i < state::layers.size(); ++i)
         {
-            instance->layer->is_visible = true;
-            instance->locked_button_box->set_opacity(1);
-            instance->texture_area_frame->set_opacity(1);
-            instance->name->set_opacity(1);
-            instance->opacity_scale->set_opacity(1);
-            instance->blend_mode_dropdown->set_opacity(1);
-            instance->visible_button_box->set_tooltip_text(layer_visible_tooltip);
+            auto& layer_row = instance->_owner->_layer_rows.at(i);
+            layer_row.frame_display_list.remove(state::n_frames-1);
+
+            layer_row.frame_display.erase(layer_row.frame_display.end());
+            state::layers.at(i)->frames.erase(state::layers.at(i)->frames.end() - 1);
         }
+    }
+
+    void LayerView::FrameControlBar::set_selected_frame_is_keyframe(bool is_key)
+    {
+        if (is_key)
+            _frame_keyframe_toggle_button.set_child(&_frame_is_keyframe_icon);
         else
+            _frame_keyframe_toggle_button.set_child(&_frame_is_not_keyframe_icon);
+
+        _frame_keyframe_toggle_button.set_signal_toggled_blocked(true);
+        _frame_keyframe_toggle_button.set_active(not is_key);
+        _frame_keyframe_toggle_button.set_signal_toggled_blocked(false);
+    }
+
+    void LayerView::FrameControlBar::on_frame_keyframe_toggle_button_toggled(ToggleButton* button, FrameControlBar* instance)
+    {
+        bool is_key = not button->get_active();
+
+        auto layer_i = instance->_owner->_selected_layer;
+        auto frame_i = instance->_owner->_selected_frame;
+
+        state::layers.at(layer_i)->frames.at(frame_i).is_tween_repeat = not is_key;
+
+        for (auto& frame :  instance->_owner->_layer_rows.at(layer_i).frame_display)
+            frame.update();
+
+        instance->set_selected_frame_is_keyframe(is_key);
+    }
+
+    void LayerView::FrameControlBar::on_frame_duplicate_button_clicked(Button*, FrameControlBar* instance)
+    {}
+
+    LayerView::FrameControlBar::FrameControlBar(LayerView* owner)
+        : _owner(owner)
+    {
+        for (auto* display : {&_frame_move_left_icon, &_frame_create_left_of_this_icon, &_frame_delete_icon, &_frame_duplicate_icon, &_frame_create_right_of_this_icon, &_frame_move_right_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
+            display->set_size_request(display->get_size());
+
+        _frame_move_left_button.set_child(&_frame_move_left_icon);
+        _frame_move_left_button.connect_signal_clicked(on_frame_move_left_button_clicked, this);
+
+        _frame_create_left_of_this_button.set_child(&_frame_create_left_of_this_icon);
+        _frame_create_left_of_this_button.connect_signal_clicked(on_frame_create_left_of_this_button_clicked, this);
+
+        _frame_delete_button.set_child(&_frame_delete_icon);
+        _frame_delete_button.connect_signal_clicked(on_frame_delete_button_clicked, this);
+
+        _frame_keyframe_toggle_button.set_child(&_frame_is_keyframe_icon);
+        _frame_keyframe_toggle_button.connect_signal_toggled(on_frame_keyframe_toggle_button_toggled, this);
+
+        _frame_duplicate_button.set_child(&_frame_duplicate_icon);
+        _frame_duplicate_button.connect_signal_clicked(on_frame_duplicate_button_clicked, this);
+
+        _frame_create_right_of_this_button.set_child(&_frame_create_right_of_this_icon);
+        _frame_create_right_of_this_button.connect_signal_clicked(on_frame_create_right_of_this_button_clicked, this);
+
+        _frame_move_right_button.set_child(&_frame_move_right_icon);
+        _frame_move_right_button.connect_signal_clicked(on_frame_move_right_button_clicked, this);
+
+        _main.push_back(&_frame_move_left_button);
+        _main.push_back(&_frame_create_left_of_this_button);
+        _main.push_back(&_frame_keyframe_toggle_button);
+        _main.push_back(&_frame_duplicate_button);
+        _main.push_back(&_frame_delete_button);
+        _main.push_back(&_frame_create_right_of_this_button);
+        _main.push_back(&_frame_move_right_button);
+
+        generate_tooltip();
+    }
+
+    void LayerView::FrameControlBar::update()
+    {
+        _frame_create_left_of_this_button.set_can_respond_to_input(_owner->_selected_frame != 0);
+        _frame_create_left_of_this_button.set_can_respond_to_input(_owner->_selected_frame != state::n_frames - 1);
+
+        auto is_key = not state::layers.at(_owner->_selected_layer)->frames.at(_owner->_selected_frame).is_tween_repeat;
+
+        _frame_duplicate_button.set_can_respond_to_input(is_key);
+        set_selected_frame_is_keyframe(is_key);
+    }
+
+    LayerView::FrameControlBar::operator Widget*()
+    {
+        return &_main;
+    }
+
+    // PLAYBACK CONTROL BAR
+
+    void LayerView::PlaybackControlBar::on_playback_pause_button_clicked(Button*, PlaybackControlBar* instance)
+    {}
+
+    void LayerView::PlaybackControlBar::on_playback_play_toggle_button_toggled(ToggleButton*, PlaybackControlBar* instance)
+    {}
+
+    void LayerView::PlaybackControlBar::on_playback_jump_to_end_button_clicked(Button*, PlaybackControlBar* instance)
+    {}
+
+    void LayerView::PlaybackControlBar::on_playback_jump_to_start_button_clicked(Button*, PlaybackControlBar* instance)
+    {}
+
+    LayerView::PlaybackControlBar::PlaybackControlBar(LayerView* owner)
+        : _owner(owner)
+    {
+        for (ImageDisplay* icon : {&_playback_jump_to_start_icon, &_playback_pause_icon, &_playback_play_icon, &_playback_jump_to_end_icon})
+            icon->set_size_request(icon->get_size());
+
+        _playback_jump_to_start_button.set_child(&_playback_jump_to_start_icon);
+        _playback_jump_to_start_button.connect_signal_clicked(&on_playback_jump_to_start_button_clicked, this);
+
+        _playback_pause_button.set_child(&_playback_pause_icon);
+        _playback_pause_button.connect_signal_clicked(&on_playback_pause_button_clicked, this);
+
+        _playback_play_toggle_button.set_child(&_playback_play_icon);
+        _playback_play_toggle_button.connect_signal_toggled(&on_playback_play_toggle_button_toggled, this);
+
+        _playback_jump_to_end_button.set_child(&_playback_jump_to_end_icon);
+        _playback_jump_to_end_button.connect_signal_clicked(&on_playback_jump_to_end_button_clicked, this);
+
+        for (auto* button : std::vector<Widget*>{&_playback_jump_to_start_button, &_playback_play_toggle_button, &_playback_pause_button, &_playback_jump_to_end_button})
+            _main.push_back(button);
+
+        generate_tooltip();
+    }
+
+    LayerView::PlaybackControlBar::operator Widget*()
+    {
+        return &_main;
+    }
+
+    // LAYER CONTROL BAR
+
+    void LayerView::LayerControlBar::on_layer_move_up_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    void LayerView::LayerControlBar::on_layer_move_down_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    void LayerView::LayerControlBar::on_layer_create_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    void LayerView::LayerControlBar::on_layer_delete_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    void LayerView::LayerControlBar::on_layer_duplicate_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    void LayerView::LayerControlBar::on_layer_merge_down_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    void LayerView::LayerControlBar::on_layer_flatten_all_button_clicked(Button*, LayerControlBar* instance)
+    {}
+
+    LayerView::LayerControlBar::operator Widget*()
+    {
+        return &_main;
+    }
+
+    LayerView::LayerControlBar::LayerControlBar(LayerView* owner)
+        : _owner(owner)
+    {
+        for (auto* display : {&_layer_move_up_icon, &_layer_create_icon, &_layer_duplicate_icon, &_layer_delete_icon, &_layer_move_down_icon, &_layer_merge_down_icon, &_layer_flatten_all_icon})
+            display->set_size_request(display->get_size());
+
+        _layer_move_up_button.set_child(&_layer_move_up_icon);
+        _layer_move_up_button.connect_signal_clicked(on_layer_move_up_button_clicked, this);
+
+        _layer_create_button.set_child(&_layer_create_icon);
+        _layer_create_button.connect_signal_clicked(on_layer_create_button_clicked, this);
+
+        _layer_duplicate_button.set_child(&_layer_duplicate_icon);
+        _layer_duplicate_button.connect_signal_clicked(on_layer_duplicate_button_clicked, this);
+
+        _layer_delete_button.set_child(&_layer_delete_icon);
+        _layer_delete_button.connect_signal_clicked(on_layer_delete_button_clicked, this);
+
+        _layer_move_down_button.set_child(&_layer_move_down_icon);
+        _layer_move_down_button.connect_signal_clicked(on_layer_move_down_button_clicked, this);
+
+        _layer_merge_down_button.set_child(&_layer_merge_down_icon);
+        _layer_merge_down_button.connect_signal_clicked(on_layer_merge_down_button_clicked, this);
+
+        _layer_flatten_all_button.set_child(&_layer_flatten_all_icon);
+        _layer_flatten_all_button.connect_signal_clicked(on_layer_flatten_all_button_clicked, this);
+
+        for (auto* button : {&_layer_move_up_button, &_layer_create_button, &_layer_duplicate_button, &_layer_delete_button, &_layer_move_down_button, &_layer_merge_down_button, &_layer_flatten_all_button})
+            _main.push_back(button);
+
+        generate_tooltip();
+    }
+
+    // LAYER VIEW
+
+    void LayerView::set_layer_frame_selection(size_t layer_i, size_t frame_i)
+    {
         {
-            instance->layer->is_visible = false;
-            instance->locked_button_box->set_opacity(hidden_opacity);
-            instance->texture_area_frame->set_opacity(hidden_opacity);
-            instance->name->set_opacity(hidden_opacity);
-            instance->opacity_scale->set_opacity(hidden_opacity);
-            instance->blend_mode_dropdown->set_opacity(hidden_opacity);
-            instance->visible_button_box->set_tooltip_text(layer_hidden_tooltip);
-        }
-    }
-
-    void LayerView::LayerViewRow::on_is_locked_toggle(GtkCheckButton* button, LayerViewRow* instance)
-    {
-        static const char* unlocked_lock = "&#128275;";
-        static const char* locked_lock = "&#128274;";
-
-        if (gtk_check_button_get_active(button))
-        {
-            instance->layer->is_locked = true;
-            instance->opacity_scale->set_visible(false);
-            instance->blend_mode_dropdown->set_visible(false);
-            instance->locked_button_label->set_text(locked_lock);
-            instance->locked_button_box->set_tooltip_text(layer_locked_tooltip);
-            instance->locked_button_label->set_use_markup(true);
-        }
-        else
-        {
-            instance->layer->is_locked = false;
-            instance->opacity_scale->set_visible(true);
-            instance->blend_mode_dropdown->set_visible(true);
-            instance->locked_button_label->set_text(locked_lock);
-            instance->locked_button_box->set_tooltip_text(layer_unlocked_tooltip);
-            instance->locked_button_label->set_use_markup(true);
-        }
-    }
-
-    void LayerView::LayerViewRow::on_blendmode_selected(void* data)
-    {
-        auto* instance = ((on_blendmode_selected_data*) data)->instance;
-        auto mode = ((on_blendmode_selected_data*) data)->mode;
-
-        instance->layer->blend_mode = mode;
-    }
-
-    void LayerView::LayerViewRow::on_opacity_select(GtkScale* scale, LayerViewRow* instance)
-    {
-        auto value = gtk_range_get_value(GTK_RANGE(scale));
-        instance->layer->opacity = value;
-        instance->layer_texture_shape->set_color(RGBA(1, 1, 1, value));
-        instance->texture_area->queue_render();
-    }
-
-    void LayerView::LayerViewRow::on_layer_name_activate(GtkEntry* entry, LayerViewRow* instance)
-    {
-        auto* buffer = gtk_entry_get_buffer(entry);
-        instance->layer->name = gtk_entry_buffer_get_text(buffer);
-        gtk_editable_set_text(GTK_EDITABLE(entry), instance->layer->name.c_str());
-        std::cout << instance->layer->name << std::endl;
-    }
-
-    void LayerView::LayerViewRow::on_layer_name_focus_lost(GtkEventControllerFocus* self, void* data)
-    {
-        auto* instance = (LayerViewRow*) data;
-        instance->name->set_text(instance->layer->name);
-    }
-    
-    LayerView::LayerControlBar::LayerControlBar(LayerView* parent_instance)
-    {
-        parent = parent_instance;
-        
-        static auto new_label = [](const std::string& id) -> ImageDisplay*
-        {
-            auto* out = new ImageDisplay(get_resource_path() + "icons/" + id + ".png");
-            out->set_size_request({32, 32});
-            return out;
-        };
-
-        move_up_button = new Button();
-        move_up_label = new_label("layer_move_up");
-        move_up_button->set_child(move_up_label);
-        move_up_button->connect_signal("clicked", on_move_up_pressed, this);
-        move_up_button->set_tooltip_text("Move Layer Up");
-
-        move_down_button = new Button();
-        move_down_label = new_label("layer_move_down");
-        move_down_button->set_child(move_down_label);
-        move_down_button->connect_signal("clicked", on_move_down_pressed, this);
-        move_down_button->set_tooltip_text("Move Layer Down");
-
-        create_button = new Button();
-        create_label = new_label("layer_create");
-        create_button->set_child(create_label);
-        create_button->connect_signal("clicked", on_create_pressed, this);
-        create_button->set_tooltip_text("New Layer");
-
-        delete_button = new Button();
-        delete_label = new_label("layer_delete");
-        delete_button->set_child(delete_label);
-        delete_button->connect_signal("clicked", on_delete_pressed, this);
-        delete_button->set_tooltip_text("Delete Layer(s)");
-
-        duplicate_button = new Button();
-        duplicate_label = new_label("layer_duplicate");
-        duplicate_button->set_child(duplicate_label);
-        duplicate_button->connect_signal("clicked", on_duplicate_pressed, this);
-        duplicate_button->set_tooltip_text("Duplicate Layer");
-
-        merge_down_button = new Button();
-        merge_down_label = new_label("layer_merge_down");
-        merge_down_button->set_child(merge_down_label);
-        merge_down_button->connect_signal("clicked", on_merge_down_pressed, this);
-        merge_down_button->set_tooltip_text("Merge Layer Down");
-
-        flatten_selected_button = new Button();
-        flatten_selected_label = new_label("layer_flatten_selected");
-        flatten_selected_button->set_child(flatten_selected_label);
-        flatten_selected_button->connect_signal("clicked", on_flatten_selected_pressed, this);
-        flatten_selected_button->set_tooltip_text("Flatten Selected Layers");
-
-        for (auto* button : {move_up_button, move_down_button, create_button, delete_button, duplicate_button, merge_down_button, flatten_selected_button})
-        {
-            button->set_expand(true);
-            button->set_cursor(GtkCursorType::POINTER);
-        }
-
-        main = new Box(GTK_ORIENTATION_HORIZONTAL);
-        main->push_back(create_button);
-        main->push_back(duplicate_button);
-        main->push_back(move_up_button);
-        main->push_back(move_down_button);
-        main->push_back(merge_down_button);
-        main->push_back(flatten_selected_button);
-        main->push_back(delete_button);
-    }
-
-    LayerView::LayerControlBar::operator GtkWidget*()
-    {
-        return main->operator GtkWidget*();
-    }
-
-    void LayerView::LayerControlBar::on_move_up_pressed(GtkButton*, LayerControlBar* instance)
-    {
-        auto* selection = instance->parent->_row_view->get_selection_model();
-
-        std::vector<size_t> selected;
-        auto bitset = gtk_selection_model_get_selection(selection);
-        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
-            selected.push_back(gtk_bitset_get_nth(bitset, i));
-
-        assert(selected.size() == 1);
-
-        auto i = selected.at(0);
-        std::cout << "moved layer " << state::layers.at(i)->name << " up" << std::endl;
-    }
-
-    void LayerView::LayerControlBar::on_move_down_pressed(GtkButton*, LayerControlBar* instance)
-    {
-        auto* selection = instance->parent->_row_view->get_selection_model();
-
-        std::vector<size_t> selected;
-        auto bitset = gtk_selection_model_get_selection(selection);
-        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
-            selected.push_back(gtk_bitset_get_nth(bitset, i));
-
-        assert(selected.size() == 1);
-
-        auto i = selected.at(0);
-        std::cout << "moved layer " << state::layers.at(i)->name << " down" << std::endl;
-    }
-
-    void LayerView::LayerControlBar::on_create_pressed(GtkButton*, LayerControlBar* instance)
-    {
-        std::cout << "created new layer" << std::endl;
-    }
-
-    void LayerView::LayerControlBar::on_delete_pressed(GtkButton*, LayerControlBar* instance)
-    {
-        auto* selection = instance->parent->_row_view->get_selection_model();
-
-        std::vector<size_t> selected;
-        auto bitset = gtk_selection_model_get_selection(selection);
-        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
-            selected.push_back(gtk_bitset_get_nth(bitset, i));
-
-        for (auto i : selected)
-            std::cout << "deleted layer " << state::layers.at(i)->name << std::endl;
-    }
-
-    void LayerView::LayerControlBar::on_duplicate_pressed(GtkButton*, LayerControlBar* instance)
-    {
-        auto* selection = instance->parent->_row_view->get_selection_model();
-
-        std::vector<size_t> selected;
-        auto bitset = gtk_selection_model_get_selection(selection);
-        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
-            selected.push_back(gtk_bitset_get_nth(bitset, i));
-
-        assert(selected.size() == 1);
-
-        auto i = selected.at(0);
-        std::cout << "duplicated layer " << state::layers.at(i)->name<< std::endl;
-    }
-
-    void LayerView::LayerControlBar::on_merge_down_pressed(GtkButton*, LayerControlBar* instance)
-    {
-        auto* selection = instance->parent->_row_view->get_selection_model();
-
-        std::vector<size_t> selected;
-        auto bitset = gtk_selection_model_get_selection(selection);
-        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
-            selected.push_back(gtk_bitset_get_nth(bitset, i));
-
-        assert(selected.size() == 1);
-
-        auto i = selected.at(0);
-        std::cout << "merged layer " << state::layers.at(i)->name << " onto " << state::layers.at(i+1)->name << std::endl;
-    }
-
-    void LayerView::LayerControlBar::on_flatten_selected_pressed(GtkButton*, LayerControlBar* instance)
-    {
-        auto* selection = instance->parent->_row_view->get_selection_model();
-
-        std::vector<size_t> selected;
-        auto bitset = gtk_selection_model_get_selection(selection);
-        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
-            selected.push_back(gtk_bitset_get_nth(bitset, i));
-
-        std::cout << "Flattening layers ";
-        for (auto i : selected)
-            std::cout << state::layers.at(i)->name << " ";
-
-        std::cout << std::endl;
-    }
-
-    void LayerView::on_row_view_selection_changed(
-        GtkSelectionModel* self,
-        guint position,
-        guint n_items,
-        LayerView* instance)
-    {
-        size_t temp;
-        std::vector<size_t> selected;
-
-        auto bitset = gtk_selection_model_get_selection(self);
-        for (size_t i = 0; i < gtk_bitset_get_size(bitset); ++i)
-            selected.push_back(gtk_bitset_get_nth(bitset, i));
-
-        static auto set_active = [](Button* button, bool b) {
-
-            button->set_all_signals_blocked(not b);
-            button->set_opacity(b ? 1 : 0.2);
-            button->set_cursor(b ? GtkCursorType::POINTER : GtkCursorType::NOT_ALLOWED);
-        };
-
-        set_active(instance->_control_bar->move_up_button,
-            selected.size() == 1 and selected.back() != 0
-        );
-
-        set_active(instance->_control_bar->move_down_button,
-            selected.size() == 1 and selected.back() != state::layers.size() - 1
-        );
-
-        set_active(instance->_control_bar->merge_down_button,
-            selected.size() == 1 and selected.back() != state::layers.size() - 1
-        );
-
-        set_active(instance->_control_bar->duplicate_button, selected.size() == 1);
-
-        set_active(instance->_control_bar->flatten_selected_button, selected.size() > 1);
-        set_active(instance->_control_bar->delete_button, selected.size() >= 1);
-    }
-
-    gboolean LayerView::on_shortcut_controller_pressed(
-        GtkEventControllerKey* self, guint keyval, guint keycode,
-        GdkModifierType modifier, void* data)
-    {
-        auto* instance = (LayerView*) data;
-
-        bool shift = modifier & GdkModifierType::GDK_SHIFT_MASK;
-        bool alt = modifier & GdkModifierType::GDK_ALT_MASK;
-        bool control = modifier & GdkModifierType::GDK_CONTROL_MASK;
-
-        // Ctrl + A: Select All
-        if (keyval == GDK_KEY_a) // TODO and control and not alt and not shift)
-        {
-            auto* selection = instance->_row_view->get_selection_model();
-            gtk_selection_model_select_all(selection);
+            auto* model = _layer_row_list_view.get_selection_model();
+            model->set_signal_selection_changed_blocked(true);
+            model->select(layer_i);
+            model->set_signal_selection_changed_blocked(false);
         }
 
-        if (keyval == GDK_KEY_Delete)
+        for (size_t i = 0; i < _layer_rows.size(); ++i)
         {
-            instance->_control_bar->on_delete_pressed(
-                GTK_BUTTON(instance->_control_bar->delete_button->operator GtkWidget*()),
-                instance->_control_bar
-            );
+            auto& row = _layer_rows.at(i);
+            auto* model = row.frame_display_list.get_selection_model();
+            model->set_signal_selection_changed_blocked(true);
+            model->select(frame_i);
+            model->set_signal_selection_changed_blocked(false);
+
+            for (auto& display : row.frame_display)
+                display._layer_frame_active_icon.set_visible(false);
         }
 
-        return false;
+        {
+            auto* model = _whole_frame_display_list_view_inner.get_selection_model();
+            model->set_signal_selection_changed_blocked(true);
+            model->select(frame_i);
+            model->set_signal_selection_changed_blocked(false);
+        }
+
+        _layer_rows.at(layer_i).frame_display.at(frame_i)._layer_frame_active_icon.set_visible(true);
+
+        for (size_t row_i = 0; row_i < _layer_rows.size(); ++row_i)
+        {
+            auto& row = _layer_rows.at(row_i);
+            for (size_t col_i = 0; col_i < row.frame_display.size(); ++col_i)
+            {
+                if (not row.frame_display.at(col_i)._gl_area.get_is_realized())
+                    break;
+
+                float k;
+
+                if (col_i == frame_i and row_i == layer_i)
+                    k = 1;
+                else if (col_i == frame_i or row_i == layer_i)
+                    k = 1;
+                else
+                    k = 0.6;
+
+                auto opacity = row.frame_display.at(col_i)._transparency_tiling_shape->get_vertex_color(0).a;
+                row.frame_display.at(col_i)._transparency_tiling_shape->set_color(RGBA(k, k, k, opacity));
+
+                opacity = row.frame_display.at(col_i)._layer_shape->get_vertex_color(0).a;
+                row.frame_display.at(col_i)._layer_shape->set_color(RGBA(k, k, k, opacity));
+                row.frame_display.at(col_i)._gl_area.queue_render();
+                row.frame_display.at(col_i)._frame_widget_label.set_visible(row_i == layer_i);
+            }
+        }
+
+        _selected_frame = frame_i;
+        _selected_layer = layer_i;
+
+        _frame_control_bar._frame_move_left_button.set_can_respond_to_input(_selected_frame != 0);
+        _frame_control_bar._frame_move_right_button.set_can_respond_to_input(_selected_frame < state::n_frames - 1);
+
+        _frame_control_bar.update();
+    }
+
+    void LayerView::on_layer_frame_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed,
+                                                          on_layer_frame_view_selection_changed_data* data)
+    {
+        state::current_frame = first_item_position;
+        state::current_layer = data->layer;
+        data->instance->set_layer_frame_selection(state::current_layer, state::current_frame);
+    }
+
+    void LayerView::on_whole_frame_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed,
+                                                          LayerView* instance)
+    {
+        state::current_frame = first_item_position;
+        instance->set_layer_frame_selection(state::current_layer, state::current_frame);
+    }
+
+    void LayerView::on_whole_layer_row_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed,
+                                                         LayerView* instance)
+    {
+        state::current_layer = first_item_position;
+        instance->set_layer_frame_selection(state::current_layer, state::current_frame);
+    }
+
+    void LayerView::on_layer_row_frame_display_list_hadjusment_value_changed(Adjustment* adjustment, LayerView* instance)
+    {}
+
+    bool LayerView::on_layer_row_list_key_event_controller_key_pressed(KeyEventController*, guint keyval, guint keycode,
+                                                                       GdkModifierType state, LayerView* instance)
+    {
+        if (keyval == GDK_KEY_Right)
+            instance->set_layer_frame_selection(instance->_selected_layer, std::min(instance->_selected_frame+1, state::n_frames - 1));
+        if (keyval == GDK_KEY_Left)
+            instance->set_layer_frame_selection(instance->_selected_layer, instance->_selected_frame - (instance->_selected_frame != 0 ? 1 : 0));
+        if (keyval == GDK_KEY_Down)
+            instance->set_layer_frame_selection(std::min(instance->_selected_layer+1, state::layers.size()-1), instance->_selected_frame);
+        if (keyval == GDK_KEY_Up)
+            instance->set_layer_frame_selection(instance->_selected_layer - (instance->_selected_layer != 0 ? 1 : 0), instance->_selected_frame);
+
+        return true;
     }
 
     LayerView::LayerView()
+        : _playback_control_bar(this), _frame_control_bar(this), _layer_control_bar(this)
     {
-        _row_view = new ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_MULTIPLE);
-        _row_view->set_show_separators(true);
-        _row_view->set_hexpand(true);
+        _layer_row_frame_display_list_hadjustment.connect_signal_value_changed(
+                on_layer_row_frame_display_list_hadjusment_value_changed, this);
 
-        auto image = Image();
-        image.create_from_file(get_resource_path() + "mole.png");
-        state::add_layer(image);
-        state::add_layer(RGBA(1, 0, 1, 1));
-        state::add_layer(RGBA(0, 0, 1, 1));
-        state::add_layer(RGBA(0, 1, 1, 1));
-
-        for (auto* layer : state::layers)
+        for (size_t layer_i = 0; layer_i < state::layers.size(); ++layer_i)
         {
-            _rows.emplace_back(new LayerViewRow(layer, this));
-            _rows.back()->main->set_hexpand(true);
-            _row_view->push_back(_rows.back()->main);
+            _layer_rows.push_back(LayerRow{
+                new LayerPropertyOptions(layer_i, this)
+            });
+
+            auto& row = _layer_rows.back();
+            row.frame_display_list_scrolled_window.set_propagate_natural_height(true);
+            row.frame_display_list_scrolled_window.set_policy(GTK_POLICY_EXTERNAL, GTK_POLICY_NEVER);
+            row.frame_display_list_scrolled_window.set_hadjustment(_layer_row_frame_display_list_hadjustment);
+            row.main.push_back(row.control_bar->operator Widget*());
+
+            for (size_t frame_i = 0; frame_i < state::n_frames; ++frame_i)
+            {
+                row.frame_display.emplace_back(layer_i, frame_i, this);
+                row.frame_display_list.push_back(row.frame_display.back());
+                row.frame_display_list.get_selection_model()->connect_signal_selection_changed(
+                    on_layer_frame_view_selection_changed,
+                    new on_layer_frame_view_selection_changed_data{this, layer_i}
+                );
+            }
+
+            row.frame_display_list_viewport.set_child(&row.frame_display_list);
+            row.frame_display_list_viewport.set_scroll_to_focus(false);
+            row.frame_display_list_scrolled_window.set_child(&row.frame_display_list_viewport);
+            row.frame_display_list_scrolled_window.set_expand(true);
+            row.frame_display_list_scrolled_window.set_has_frame(false);
+            row.main.push_back(&row.frame_display_list_scrolled_window);
+            _layer_row_list_view.push_back(&row.main);
         }
 
-        auto* selection_model = _row_view->get_selection_model();
-        g_signal_connect(selection_model, "selection-changed", G_CALLBACK(on_row_view_selection_changed), this);
+        _layer_row_list_view.get_selection_model()->connect_signal_selection_changed(
+                on_whole_layer_row_selection_changed, this);
 
-        _row_view_scrolled_window = new ScrolledWindow();
-        _row_view_scrolled_window->set_child(_row_view);
-        _row_view_scrolled_window->set_vexpand(true);
-        gtk_scrolled_window_set_propagate_natural_width(
-            GTK_SCROLLED_WINDOW(_row_view_scrolled_window->operator GtkWidget*()),
-            true
-        );
 
-        _shortcut_controller = new KeyEventController();
-        _shortcut_controller->connect_key_pressed(on_shortcut_controller_pressed, this);
-        _row_view_scrolled_window->add_controller(_shortcut_controller);
+        for (size_t frame_i = 0; frame_i < state::n_frames; ++frame_i)
+        {
+            _whole_frame_displays.emplace_back(frame_i, this);
+            _whole_frame_display_list_view_inner.push_back(_whole_frame_displays.back());
+        }
 
-        _control_bar = new LayerControlBar(this);
-        _control_bar->set_hexpand(true);
-        _control_bar->set_vexpand(false);
-        on_row_view_selection_changed(_row_view->get_selection_model(), 0, 0, this);
+        _whole_frame_display_list_view_inner.get_selection_model()->connect_signal_selection_changed(
+                on_whole_frame_view_selection_changed, this);
 
-        _main = new Box(GTK_ORIENTATION_VERTICAL);;
-        _main->push_back(_row_view_scrolled_window);
-        _main->push_back(_control_bar);
+        _whole_frame_display_list_view_outer.push_back(&_whole_frame_display_list_view_inner);
+        _whole_frame_display_list_view_outer.set_halign(GTK_ALIGN_END);
+
+        // main layout
+
+        _layer_row_list_viewport.set_placement(GTK_CORNER_TOP_RIGHT);
+        _layer_row_list_viewport.set_propagate_natural_width(true);
+        _layer_row_list_viewport.set_policy(GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC); //TODO why does external scrollbar break?
+        _layer_row_list_view_vscrollbar.set_visible(false); // TODO
+        _layer_row_list_viewport.set_has_frame(false);
+        _layer_row_list_viewport.set_vadjustment(*_layer_row_list_view_vadjustment);
+
+        _layer_row_list_viewport_separator.set_expand(true);
+
+        _layer_row_list_viewport_box.push_back(&_layer_row_list_view);
+        _layer_row_list_viewport_box.push_back(&_layer_row_list_viewport_separator);
+        _layer_row_list_viewport.set_child(&_layer_row_list_viewport_box);
+        _layer_row_list_area_right_box.push_back(&_layer_row_list_viewport);
+        _layer_row_list_area_right_box.push_back(&_layer_row_frame_display_list_hscrollbar);
+
+        _layer_control_bar.operator Widget *()->set_valign(GTK_ALIGN_START);
+
+        _layer_control_bar_box.push_back(_layer_control_bar);
+        _layer_control_bar_box.push_back(&_layer_control_bar_separator);
+
+        _layer_row_list_area_box.push_back(&_layer_control_bar_box);
+        _layer_row_list_area_box.push_back(&_layer_row_list_view_vscrollbar);
+        _layer_row_list_area_box.push_back(&_layer_row_list_area_right_box);
+
+        _layer_row_list_key_event_controller.connect_signal_key_pressed(on_layer_row_list_key_event_controller_key_pressed, this);
+        _layer_row_list_view.add_controller(&_layer_row_list_key_event_controller);
+
+        _frame_playback_control_box_separator_a.set_size_request({_layer_control_bar._layer_create_button.get_preferred_size().natural_size.x, 0});
+        _frame_playback_control_box_separator_a.set_hexpand(true);
+
+        _frame_playback_control_box_separator_b.set_size_request({_layer_control_bar._layer_create_button.get_preferred_size().natural_size.x, 0});
+        _frame_playback_control_box_separator_b.set_hexpand(false);
+
+        _playback_control_bar.operator Widget *()->set_halign(GTK_ALIGN_END);
+
+        _frame_playback_control_box.push_back(&_frame_playback_control_box_separator_a);
+        _frame_playback_control_box.push_back(_playback_control_bar);
+        _frame_playback_control_box.push_back(&_frame_playback_control_box_separator_b);
+        _frame_playback_control_box.push_back(_frame_control_bar);
+        _frame_playback_control_box.set_hexpand(true);
+
+        _main.push_back(&_layer_row_list_area_box);
+        _main.push_back(&_frame_playback_control_box);
+        //_main.push_back(&_whole_frame_display_list_view_outer);
+
+        set_layer_frame_selection(state::current_layer, state::current_frame);
+        update();
     }
 
-    LayerView::operator GtkWidget*()
+    void LayerView::update()
     {
-        return _main->operator GtkWidget*();
+        for (auto& row : _layer_rows)
+        {
+            row.control_bar->update();
+            for (auto& display : row.frame_display)
+                display.update();
+        }
+
+        for (auto& display : _whole_frame_displays)
+            display.update();
+    }
+
+    LayerView::operator Widget*()
+    {
+        return &_main;
     }
 }
- */
