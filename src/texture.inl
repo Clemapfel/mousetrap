@@ -33,7 +33,7 @@ namespace mousetrap
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     GL_RGBA16F,
+                     GL_RGBA32F,
                      image.get_size().x,
                      image.get_size().y,
                      0,

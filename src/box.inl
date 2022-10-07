@@ -13,6 +13,10 @@ namespace mousetrap
         : WidgetImplementation<GtkBox>(GTK_BOX(gtk_box_new(orientation, spacing)))
     {}
 
+    Box::Box(GtkBox* instance)
+        : WidgetImplementation<GtkBox>(instance)
+    {}
+
     void Box::push_back(Widget* widget)
     {
         gtk_box_append(get_native(), widget->operator GtkWidget*());

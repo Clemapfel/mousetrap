@@ -23,6 +23,7 @@
 #include <include/check_button.hpp>
 #include <include/grid_view.hpp>
 #include <include/reorderable_list.hpp>
+#include <include/dialog.hpp>
 
 #include <app/global_state.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
@@ -111,6 +112,28 @@ static void activate(GtkApplication* app, void*)
     state::main_window->present();
     state::main_window->set_focusable(true);
     state::main_window->grab_focus();
+
+
+    auto* entry = new Entry();
+    auto* dialog = new Dialog(state::main_window);
+
+    static auto activate = [&](Entry* in)
+    {
+        std::cout << in->get_text() << std::endl;
+    };
+
+    static auto close = [&](Dialog* in)
+    {
+        in->close();
+    };
+
+    dialog->add_action_button("ok", activate, entry);
+    dialog->add_action_button("close", close, dialog);
+
+    auto& content_area = dialog->get_content_area();
+    content_area.push_back(entry);
+
+    dialog->show();
 }
 
 int main()

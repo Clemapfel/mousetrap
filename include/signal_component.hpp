@@ -852,6 +852,35 @@ namespace mousetrap
             void* _on_selection_changed_data;
     };
 
+    template<typename Owner_t>
+    class HasCloseSignal
+    {
+        public:
+            template<typename T>
+            using on_close_function_t = void(Owner_t*, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_close(Function_t, T);
+
+            void set_signal_close_blocked(bool b) {
+                _blocked = b;
+            }
+
+        protected:
+            HasCloseSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_close_wrapper(Widget*, HasCloseSignal<Owner_t>* instance);
+
+            bool _blocked = false;
+            std::function<on_close_function_t<void*>> _on_close_f;
+            void* _on_close_data;
+    };
+
 }
 
 // ###
@@ -1444,5 +1473,25 @@ namespace mousetrap
 
             self->_on_selection_changed_f(self->_instance, position, n_items, self->_on_selection_changed_data);
         }
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasCloseSignal<Owner_t>::connect_signal_close(Function_t function, T data)
+    {
+        auto temp =  std::function<on_close_function_t<T>>(function);
+        _on_close_f = std::function<on_close_function_t<void*>>(*((std::function<on_close_function_t<void*>>*) &temp));
+        _on_close_data = data;
+
+        _instance->connect_signal("close", on_close_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasCloseSignal<Owner_t>::on_close_wrapper(Widget*, HasCloseSignal<Owner_t>* self)
+    {
+        if (self->_on_close_f != nullptr and not self->_blocked)
+            self->_on_close_f(self->_instance, self->_on_close_data);
     }
 }

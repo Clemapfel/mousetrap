@@ -12,6 +12,7 @@ namespace mousetrap
     class Box : public WidgetImplementation<GtkBox>
     {
         public:
+            Box(GtkBox*);
             Box(GtkOrientation, float spacing = 0);
 
             void push_back(Widget*);
