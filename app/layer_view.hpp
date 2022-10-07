@@ -57,6 +57,7 @@ namespace mousetrap
                     void update_selection();
 
                     void set_frame(size_t);
+                    void set_layer(size_t);
 
                 private:
                     size_t _layer;
@@ -172,6 +173,8 @@ namespace mousetrap
                     void delete_frame(size_t);
                     void insert_frame(size_t);
 
+                    void set_layer(size_t);
+
                 private:
                     size_t _layer;
                     LayerView* _owner;
@@ -282,6 +285,10 @@ namespace mousetrap
             KeyEventController _layer_row_list_view_key_event_controller;
             static bool on_layer_row_list_view_key_event_controller_key_pressed(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, LayerView* instance);
 
+            ScrolledWindow _layer_row_list_view_viewport;
+            SeparatorLine _layer_row_list_view_viewport_spacer;
+            Box _layer_row_list_view_viewport_box = Box(GTK_ORIENTATION_VERTICAL);
+
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
 }
@@ -355,9 +362,16 @@ namespace mousetrap
                 on_layer_row_list_view_key_event_controller_key_pressed, this);
         _layer_row_list_view.add_controller(&_layer_row_list_view_key_event_controller);
 
-        _main.push_back(&_layer_row_list_view);
+        _layer_row_list_view_viewport_box.push_back(&_layer_row_list_view);
+        _layer_row_list_view_viewport_box.push_back(&_layer_row_list_view_viewport_spacer);
+        _layer_row_list_view_viewport.set_child(&_layer_row_list_view_viewport_box);
+        _layer_row_list_view_viewport.set_propagate_natural_width(true);
+
+        _main.push_back(&_layer_row_list_view_viewport);
         _main.push_back(_frame_control_bar);
         _main.push_back(_layer_control_bar);
+
+        _main.set_expand(true);
     }
 
     void LayerView::update()

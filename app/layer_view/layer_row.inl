@@ -54,6 +54,8 @@ namespace mousetrap
 
         for (auto& display : _layer_frame_displays)
             display.update();
+
+        _layer_property_options.update();
     }
 
     void LayerView::LayerRow::delete_frame(size_t to_delete)
@@ -87,5 +89,14 @@ namespace mousetrap
     void LayerView::LayerRow::update_frame(size_t i)
     {
         _layer_frame_displays.at(i).update();
+    }
+
+    void LayerView::LayerRow::set_layer(size_t i)
+    {
+        _layer = i;
+        for (auto& frame : _layer_frame_displays)
+            frame.set_layer(_layer);
+
+        _layer_property_options.update();
     }
 }

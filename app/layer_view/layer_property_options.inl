@@ -241,7 +241,7 @@ namespace mousetrap
         _menu_button_title_label_viewport.set_size_request({10 * state::margin_unit, 0});
         _menu_button_title_label_viewport.set_has_frame(false);
         _menu_button_title_label_viewport.set_propagate_natural_height(true);
-        _menu_button_title_label_viewport.set_policy(GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+        _menu_button_title_label_viewport.set_policy(GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
         _menu_button_title_label_viewport.set_can_respond_to_input(false);
         _menu_button.set_child(&_menu_button_title_label_viewport);
         _menu_button.set_hexpand(false);

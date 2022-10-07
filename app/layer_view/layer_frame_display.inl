@@ -147,4 +147,21 @@ namespace mousetrap
         _gl_area.set_opacity(frame.is_tween_repeat ? 0.3 : 1);
         update_selection();
     }
+
+    void LayerView::LayerFrameDisplay::set_layer(size_t i)
+    {
+        _layer = i;
+
+        auto* layer = state::layers.at(_layer);
+        auto& frame = layer->frames.at(_frame);
+
+        size_t frame_i = _frame;
+        while (frame_i > 0 and layer->frames.at(frame_i).is_tween_repeat)
+            frame_i -= 1;
+
+        _layer_shape->set_texture(layer->frames.at(frame_i).texture);
+
+        _gl_area.set_opacity(frame.is_tween_repeat ? 0.3 : 1);
+        update_selection();
+    }
 }

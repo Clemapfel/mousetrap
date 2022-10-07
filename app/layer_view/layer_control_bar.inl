@@ -6,19 +6,106 @@
 namespace mousetrap
 {
     void LayerView::LayerControlBar::on_layer_move_up_button_clicked(Button*, LayerControlBar* instance)
-    {}
+    {
+        if (instance->_owner->_selected_layer == 0)
+            return;
+
+        size_t current_pos = instance->_owner->_selected_layer;
+        size_t new_pos = instance->_owner->_selected_layer - 1;
+
+        auto* current = state::layers.at(current_pos);
+        auto* above = state::layers.at(new_pos);
+
+        state::layers.at(current_pos) = above;
+        state::layers.at(new_pos) = current;
+
+        instance->_owner->_layer_rows.at(current_pos).update();
+        instance->_owner->_layer_rows.at(new_pos).update();
+
+        instance->_owner->set_selection(new_pos, instance->_owner->_selected_frame);
+    }
 
     void LayerView::LayerControlBar::on_layer_move_down_button_clicked(Button*, LayerControlBar* instance)
-    {}
+    {
+        if (instance->_owner->_selected_layer == state::n_frames - 1)
+            return;
+
+        size_t current_pos = instance->_owner->_selected_layer;
+        size_t new_pos = instance->_owner->_selected_layer + 1;
+
+        auto* current = state::layers.at(current_pos);
+        auto* above = state::layers.at(new_pos);
+
+        state::layers.at(current_pos) = above;
+        state::layers.at(new_pos) = current;
+
+        instance->_owner->_layer_rows.at(current_pos).update();
+        instance->_owner->_layer_rows.at(new_pos).update();
+
+        instance->_owner->set_selection(new_pos, instance->_owner->_selected_frame);
+    }
 
     void LayerView::LayerControlBar::on_layer_create_button_clicked(Button*, LayerControlBar* instance)
-    {}
+    {
+        Layer* layer = *state::layers.insert(state::layers.begin() + instance->_owner->_selected_layer, new Layer{"new layer"});
+
+        for (size_t i = 0; i < state::n_frames; ++i)
+        {
+            layer->frames.emplace_back();
+            layer->frames.back().image = new Image();
+            layer->frames.back().texture = new Texture();
+            layer->frames.back().image->create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 1, 1, 0));
+            layer->frames.back().texture->create_from_image(*layer->frames.back().image);
+        }
+
+        instance->_owner->_layer_rows.emplace_back(instance->_owner->_selected_layer + 1, instance->_owner);
+        instance->_owner->_layer_row_list_view.push_back(instance->_owner->_layer_rows.back());
+
+        for (auto& row : instance->_owner->_layer_rows)
+            row.update();
+    }
 
     void LayerView::LayerControlBar::on_layer_delete_button_clicked(Button*, LayerControlBar* instance)
-    {}
+    {
+        size_t selected_i = instance->_owner->_selected_layer;
+
+        if (selected_i == state::layers.size() - 1)
+            instance->_owner->set_selection(selected_i - 1, instance->_owner->_selected_frame);
+
+        state::delete_layer(state::layers.at(selected_i));
+
+        instance->_owner->_layer_row_list_view.clear();
+        instance->_owner->_layer_rows.erase(instance->_owner->_layer_rows.end() - 1);
+
+        for (size_t i = 0; i < instance->_owner->_layer_rows.size(); ++i)
+        {
+            auto& row = instance->_owner->_layer_rows.at(i);
+            row.update();
+        }
+
+        for (auto& row : instance->_owner->_layer_rows)
+            instance->_owner->_layer_row_list_view.push_back(row);
+    }
 
     void LayerView::LayerControlBar::on_layer_duplicate_button_clicked(Button*, LayerControlBar* instance)
-    {}
+    {
+        auto* current = state::layers.at(instance->_owner->_selected_layer);
+        Layer* layer = *state::layers.insert(state::layers.begin() + instance->_owner->_selected_layer, new Layer{current->name + " (copy)"});
+
+        for (size_t i = 0; i < state::n_frames; ++i)
+        {
+            layer->frames.emplace_back();
+            layer->frames.back().image = new Image(*current->frames.at(i).image);
+            layer->frames.back().texture = new Texture();
+            layer->frames.back().texture->create_from_image(*layer->frames.back().image);
+        }
+
+        instance->_owner->_layer_rows.emplace_back(state::layers.size() - 1, instance->_owner);
+        instance->_owner->_layer_row_list_view.push_back(instance->_owner->_layer_rows.back());
+
+        for (auto& row : instance->_owner->_layer_rows)
+            row.update();
+    }
 
     void LayerView::LayerControlBar::on_layer_merge_down_button_clicked(Button*, LayerControlBar* instance)
     {}
@@ -81,6 +168,11 @@ namespace mousetrap
 
         _layer_delete_button.set_tooltip_title("Delete Layer");
         _layer_delete_button.set_tooltip_description("Delete layer, unless it is the only layer");
+
+        // TODO
+        _layer_merge_down_button.set_can_respond_to_input(false);
+        _layer_flatten_all_button.set_can_respond_to_input(false);
+        // TODO
     }
 
     void LayerView::LayerControlBar::update()
