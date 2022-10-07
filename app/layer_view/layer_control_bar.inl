@@ -60,6 +60,36 @@ namespace mousetrap
 
         for (auto* button : {&_layer_move_up_button, &_layer_create_button, &_layer_duplicate_button, &_layer_delete_button, &_layer_move_down_button, &_layer_merge_down_button, &_layer_flatten_all_button})
             _main.push_back(button);
+
+        _layer_move_up_button.set_tooltip_title("Move Layer Up");
+        _layer_move_up_button.set_tooltip_description("Move layer above selected layer");
+
+        _layer_move_down_button.set_tooltip_title("Move Layer Down");
+        _layer_move_down_button.set_tooltip_description("Move layer below selected layer");
+
+        _layer_create_button.set_tooltip_title("New Layer");
+        _layer_create_button.set_tooltip_description("Create layer above selected layer");
+
+        _layer_duplicate_button.set_tooltip_title("Duplicate Layer");
+        _layer_duplicate_button.set_tooltip_description("Create copy of selected layer");
+
+        _layer_merge_down_button.set_tooltip_title("Merge Layer Down");
+        _layer_merge_down_button.set_tooltip_description("Combine selected layer with layer below");
+
+        _layer_flatten_all_button.set_tooltip_title("Flatten All Layers");
+        _layer_flatten_all_button.set_tooltip_description("Merge all layers in order");
+
+        _layer_delete_button.set_tooltip_title("Delete Layer");
+        _layer_delete_button.set_tooltip_description("Delete layer, unless it is the only layer");
+    }
+
+    void LayerView::LayerControlBar::update()
+    {
+        _layer_move_up_button.set_can_respond_to_input(_owner->_selected_layer != 0);
+        _layer_move_down_button.set_can_respond_to_input(_owner->_selected_layer < state::layers.size() - 1);
+        _layer_merge_down_button.set_can_respond_to_input(_owner->_selected_layer < state::layers.size() - 1);
+        _layer_delete_button.set_can_respond_to_input(state::layers.size() > 1);
+        _layer_flatten_all_button.set_can_respond_to_input(state::layers.size() > 1);
     }
 }
 

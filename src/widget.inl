@@ -4,6 +4,7 @@
 //
 
 #include <iostream>
+#include <sstream>
 
 namespace mousetrap
 {
@@ -310,5 +311,28 @@ namespace mousetrap
     void Widget::set_can_respond_to_input(bool b)
     {
         gtk_widget_set_sensitive(_native, b);
+    }
+
+    void Widget::set_tooltip_title(const std::string& str)
+    {
+        _tooltip_title = str;
+        generate_tooltip();
+    }
+
+    void Widget::set_tooltip_description(const std::string& str)
+    {
+        _tooltip_description = str;
+        generate_tooltip();
+    }
+
+    void Widget::generate_tooltip()
+    {
+        std::stringstream str;
+        str << "<b>" << _tooltip_title << "</b>";
+
+        if (not _tooltip_description.empty())
+            str << "\n\n<span foreground=\"#BBBBBB\">" << _tooltip_description << "</span>";
+
+        set_tooltip_text(str.str());
     }
 }

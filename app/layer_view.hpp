@@ -334,6 +334,7 @@ namespace mousetrap
         state::current_frame = _selected_frame;
 
         _frame_control_bar.update();
+        _layer_control_bar.update();
     }
 
     LayerView::LayerView()

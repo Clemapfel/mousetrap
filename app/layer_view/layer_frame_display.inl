@@ -99,6 +99,7 @@ namespace mousetrap
                 frame_i -= 1;
 
             _layer_shape->set_texture(layer.frames.at(frame_i).texture);
+            _layer_shape->set_color(RGBA(1, 1, 1, layer.opacity));
         }
 
         update_selection();
@@ -118,6 +119,8 @@ namespace mousetrap
             k = 1;
         else
             k = 0.6;
+
+        _layer_frame_active_icon.set_visible(_frame == _owner->_selected_frame and _layer == _owner->_selected_layer);
 
         float opacity = _transparency_tiling_shape->get_vertex_color(0).a;
         _transparency_tiling_shape->set_color(RGBA(k, k, k, opacity));

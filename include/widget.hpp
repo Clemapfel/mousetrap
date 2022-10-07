@@ -75,6 +75,9 @@ namespace mousetrap
             void unparent();
             void set_can_respond_to_input(bool);
 
+            void set_tooltip_title(const std::string&);
+            void set_tooltip_description(const std::string&);
+
         protected:
             Widget() = delete;
 
@@ -89,6 +92,10 @@ namespace mousetrap
 
             GtkWidget* _native;
             std::vector<GObject*> _refs;
+
+            std::string _tooltip_title;
+            std::string _tooltip_description;
+            void generate_tooltip();
     };
 
     template<typename GtkWidget_t>

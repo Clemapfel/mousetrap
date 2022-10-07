@@ -50,6 +50,8 @@ namespace mousetrap
         _name_entry.set_text(layer.name);
         _menu_button_title_label.set_text(layer.name);
         _name_entry.set_all_signals_blocked(false);
+
+        _menu_button.set_tooltip_title("Layer #" + std::to_string(_layer) + ": \"" + state::layers.at(_layer)->name + "\"");
     }
 
     LayerView::LayerPropertyOptions::LayerPropertyOptions(size_t layer_i, LayerView* owner)
@@ -111,9 +113,10 @@ namespace mousetrap
         _locked_check_button.connect_signal_toggled(on_locked_check_button_toggled, this);
 
         _opacity_box.push_back(&_opacity_label);
-        _opacity_box.push_back(&_opacity_separator);
+        //_opacity_box.push_back(&_opacity_separator);
         _opacity_box.push_back(&_opacity_scale);
         _opacity_scale.set_hexpand(true);
+        _opacity_scale.set_margin_start(state::margin_unit);
         _opacity_scale.set_value(state::layers.at(_layer)->opacity);
         _opacity_scale.connect_signal_value_changed(on_opacity_scale_value_changed, this);
 
@@ -264,6 +267,27 @@ namespace mousetrap
                          &_blend_mode_separator})
             sep->set_opacity(0);
 
+        _visible_toggle_button.set_tooltip_title("Toggle Layer Visible");
+        _visible_box.set_tooltip_title("Toggle Layer Visible");
+        _visible_check_button.set_tooltip_description("A hidden layer will not be shown");
+        _visible_box.set_tooltip_description("A hidden layer will not be shown");
+
+        _locked_toggle_button.set_tooltip_title("Toggle Layer Locked");
+        _locked_box.set_tooltip_title("Toggle Layer Locked");
+        _locked_check_button.set_tooltip_description("A locked layers pixels cannot be modified");
+        _locked_box.set_tooltip_description("A locked layers pixels cannot be modified");
+
+        _opacity_box.set_tooltip_title("Set Layer Opacity");
+        _opacity_box.set_tooltip_description("Alpha value of all pixels in the layer will be multiplied with layer opacity");
+
+        _name_box.set_tooltip_title("Set Layer Name");
+        _name_box.set_tooltip_description("Naming layers helps to stay organized");
+
+        _blend_mode_box.set_tooltip_title("Set Layer Blend Mode");
+        _blend_mode_box.set_tooltip_description("Blend mode governs how layers behave when rendered on top of another layer");
+
+        _menu_button.set_tooltip_description("Click to modify layer properties");
+
         update();
     }
 
@@ -272,28 +296,52 @@ namespace mousetrap
         return &_main;
     }
 
-    void LayerView::LayerPropertyOptions::on_locked_toggle_button_toggled(ToggleButton* button,
-                                                                          LayerPropertyOptions* instance)
-    {}
+    void LayerView::LayerPropertyOptions::on_locked_toggle_button_toggled(ToggleButton* button, LayerPropertyOptions* instance)
+    {
+        bool is_locked = button->get_active();
+        state::layers.at(instance->_layer)->is_locked = is_locked;
+        instance->update();
+    }
 
-    void LayerView::LayerPropertyOptions::on_visible_toggle_button_toggled(ToggleButton* button,
-                                                                           LayerPropertyOptions* instance)
-    {}
+    void LayerView::LayerPropertyOptions::on_visible_toggle_button_toggled(ToggleButton* button, LayerPropertyOptions* instance)
+    {
+        bool is_hidden = button->get_active();
+        state::layers.at(instance->_layer)->is_visible = not is_hidden;
+        instance->update();
+    }
 
     void LayerView::LayerPropertyOptions::on_name_entry_activate(Entry* entry, LayerPropertyOptions* instance)
-    {}
+    {
+        auto name = entry->get_text();
+        state::layers.at(instance->_layer)->name = name;
+        instance->_menu_button_title_label.set_text(name);
+    }
 
-    void
-    LayerView::LayerPropertyOptions::on_locked_check_button_toggled(CheckButton* button, LayerPropertyOptions* instance)
-    {}
+    void LayerView::LayerPropertyOptions::on_locked_check_button_toggled(CheckButton* button, LayerPropertyOptions* instance)
+    {
+        bool is_locked = button->get_is_checked();
+        state::layers.at(instance->_layer)->is_locked = is_locked;
+        instance->update();
+    }
 
-    void LayerView::LayerPropertyOptions::on_visible_check_button_toggled(CheckButton* button,
-                                                                          LayerPropertyOptions* instance)
-    {}
+    void LayerView::LayerPropertyOptions::on_visible_check_button_toggled(CheckButton* button, LayerPropertyOptions* instance)
+    {
+        bool is_visible = button->get_is_checked();
+        state::layers.at(instance->_layer)->is_visible = is_visible;
+        instance->update();
+    }
 
     void LayerView::LayerPropertyOptions::on_opacity_scale_value_changed(Scale* scale, LayerPropertyOptions* instance)
-    {}
+    {
+        float value = scale->get_value();
+        state::layers.at(instance->_layer)->opacity = value;
+
+        for (size_t i = 0; i < state::n_frames; ++i)
+        instance->_owner->_layer_rows.at(instance->_layer).update_frame(i);
+    }
 
     void LayerView::LayerPropertyOptions::on_blend_mode_select(on_blend_mode_select_data* data)
-    {}
+    {
+        state::layers.at(data->instance->_layer)->blend_mode = data->blend_mode;
+    }
 }
