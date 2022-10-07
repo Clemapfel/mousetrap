@@ -7,10 +7,11 @@ namespace mousetrap
 {
     Dialog::Dialog(Window* host_window, const std::string& title, bool is_modal)
             : WidgetImplementation<GtkDialog>(GTK_DIALOG(gtk_dialog_new_with_buttons(
-            title.c_str(),
-            host_window->operator GtkWindow*(),
-            static_cast<GtkDialogFlags>(GTK_DIALOG_DESTROY_WITH_PARENT | (is_modal ? GTK_DIALOG_MODAL : 0)),
-            nullptr))),
+                    title.c_str(),
+                    host_window->operator GtkWindow*(),
+                    static_cast<GtkDialogFlags>(GTK_DIALOG_DESTROY_WITH_PARENT | (is_modal ? GTK_DIALOG_MODAL : 0)),
+                    nullptr))),
+              HasCloseSignal<Dialog>(this),
               _content_area(GTK_BOX(gtk_dialog_get_content_area(get_native())))
     {
         g_signal_connect(get_native(), "response", G_CALLBACK(on_response_wrapper), this);

@@ -112,28 +112,6 @@ static void activate(GtkApplication* app, void*)
     state::main_window->present();
     state::main_window->set_focusable(true);
     state::main_window->grab_focus();
-
-
-    auto* entry = new Entry();
-    auto* dialog = new Dialog(state::main_window);
-
-    static auto activate = [&](Entry* in)
-    {
-        std::cout << in->get_text() << std::endl;
-    };
-
-    static auto close = [&](Dialog* in)
-    {
-        in->close();
-    };
-
-    dialog->add_action_button("ok", activate, entry);
-    dialog->add_action_button("close", close, dialog);
-
-    auto& content_area = dialog->get_content_area();
-    content_area.push_back(entry);
-
-    dialog->show();
 }
 
 int main()

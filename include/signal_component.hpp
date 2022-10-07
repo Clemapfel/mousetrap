@@ -1481,7 +1481,7 @@ namespace mousetrap
     template<typename Function_t, typename T>
     void HasCloseSignal<Owner_t>::connect_signal_close(Function_t function, T data)
     {
-        auto temp =  std::function<on_close_function_t<T>>(function);
+        auto temp = std::function<on_close_function_t<T>>(function);
         _on_close_f = std::function<on_close_function_t<void*>>(*((std::function<on_close_function_t<void*>>*) &temp));
         _on_close_data = data;
 

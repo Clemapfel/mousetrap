@@ -3,6 +3,8 @@
 // Created on 10/6/22 by clem (mail@clemens-cords.com)
 //
 
+#include <include/dialog.hpp>
+
 namespace mousetrap
 {
     void LayerView::LayerControlBar::on_layer_move_up_button_clicked(Button*, LayerControlBar* instance)
@@ -47,22 +49,55 @@ namespace mousetrap
 
     void LayerView::LayerControlBar::on_layer_create_button_clicked(Button*, LayerControlBar* instance)
     {
-        Layer* layer = *state::layers.insert(state::layers.begin() + instance->_owner->_selected_layer, new Layer{"new layer"});
+        auto* dialog = new Dialog(state::main_window, "Choose Layer Name");
+        auto* name_entry = new Entry();
+        name_entry->set_text("New Layer #" + std::to_string(instance->_owner->_selected_layer));
 
-        for (size_t i = 0; i < state::n_frames; ++i)
+        using on_ok_data = struct {Entry* entry; LayerControlBar* instance;};
+        static auto on_ok = [](on_ok_data* data)
         {
-            layer->frames.emplace_back();
-            layer->frames.back().image = new Image();
-            layer->frames.back().texture = new Texture();
-            layer->frames.back().image->create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 1, 1, 0));
-            layer->frames.back().texture->create_from_image(*layer->frames.back().image);
-        }
+            auto* entry = data->entry;
+            auto* instance = data->instance;
 
-        instance->_owner->_layer_rows.emplace_back(instance->_owner->_selected_layer + 1, instance->_owner);
-        instance->_owner->_layer_row_list_view.push_back(instance->_owner->_layer_rows.back());
+            Layer* layer = *state::layers.insert(state::layers.begin() + instance->_owner->_selected_layer, new Layer{entry->get_text()});
 
-        for (auto& row : instance->_owner->_layer_rows)
-            row.update();
+            for (size_t i = 0; i < state::n_frames; ++i)
+            {
+                layer->frames.emplace_back();
+                layer->frames.back().image = new Image();
+                layer->frames.back().texture = new Texture();
+                layer->frames.back().image->create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 1, 1, 0));
+                layer->frames.back().texture->create_from_image(*layer->frames.back().image);
+            }
+
+            instance->_owner->_layer_rows.emplace_back(instance->_owner->_selected_layer + 1, instance->_owner);
+            instance->_owner->_layer_row_list_view.push_back(instance->_owner->_layer_rows.back());
+
+            for (auto& row : instance->_owner->_layer_rows)
+                row.update();
+
+            dialog->close();
+        };
+
+        static auto on_cancel = [](Dialog* dialog)
+        {
+            dialog->close();
+        };
+
+        using on_close_data = struct{ Dialog* dialog; Entry* name_entry; };
+        static std::function<void(on_close_data*)> on_close = [](on_close_data* data)
+        {
+            delete data->dialog;
+            delete data->name_entry;
+        };
+
+        dialog->add_action_button("ok", on_ok, new on_ok_data{name_entry, instance});
+        dialog->add_action_button("cancel", on_cancel, dialog);
+        //dialog->connect_signal_close(on_close, new on_close_data{dialog, name_entry});
+
+        auto& content = dialog->get_content_area();
+        content.push_back(name_entry);
+        dialog->show();
     }
 
     void LayerView::LayerControlBar::on_layer_delete_button_clicked(Button*, LayerControlBar* instance)
