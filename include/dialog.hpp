@@ -27,6 +27,8 @@ namespace mousetrap
 
         private:
             Box _content_area;
+            Box _action_area;
+            std::vector<Button*> _buttons;
 
             using function_data = struct {std::function<void(void*)> function; void* data;};
             std::unordered_map<size_t, function_data*> _actions;

@@ -3,6 +3,9 @@
 // Created on 10/7/22 by clem (mail@clemens-cords.com)
 //
 
+#include <gtk/gtkdialog.h>
+#include <gtk-3.0/gtk/gtkdialog.h>
+
 namespace mousetrap
 {
     Dialog::Dialog(Window* host_window, const std::string& title, bool is_modal)
@@ -12,7 +15,8 @@ namespace mousetrap
                     static_cast<GtkDialogFlags>(GTK_DIALOG_DESTROY_WITH_PARENT | (is_modal ? GTK_DIALOG_MODAL : 0)),
                     nullptr))),
               HasCloseSignal<Dialog>(this),
-              _content_area(GTK_BOX(gtk_dialog_get_content_area(get_native())))
+              _content_area(GTK_BOX(gtk_dialog_get_content_area(get_native()))),
+              _action_area(GTK_ORIENTATION_HORIZONTAL)
     {
         g_signal_connect(get_native(), "response", G_CALLBACK(on_response_wrapper), this);
     }
@@ -37,6 +41,12 @@ namespace mousetrap
                 std::function<void(void*)>(*((std::function<void(void*)>*) &temp)),
                 (void*) data
         }});
+
+        auto* button = gtk_dialog_get_widget_for_response(get_native(), _actions.size()-1);
+        auto* action_area = GTK_BOX(gtk_widget_get_parent(button));
+        gtk_box_set_homogeneous(action_area, true);
+        gtk_box_set_spacing(action_area, 10);
+        gtk_widget_set_halign(GTK_WIDGET(action_area), GTK_ALIGN_CENTER);
     }
 
     template<typename Function_t, typename T>

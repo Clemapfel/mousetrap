@@ -53,13 +53,9 @@ namespace mousetrap
         auto* name_entry = new Entry();
         name_entry->set_text("New Layer #" + std::to_string(instance->_owner->_selected_layer));
 
-        using on_ok_data = struct {Entry* entry; LayerControlBar* instance;};
-        static auto on_ok = [](on_ok_data* data)
+        static auto on_ok = [dialog, name_entry, instance](void*)
         {
-            auto* entry = data->entry;
-            auto* instance = data->instance;
-
-            Layer* layer = *state::layers.insert(state::layers.begin() + instance->_owner->_selected_layer, new Layer{entry->get_text()});
+            Layer* layer = *state::layers.insert(state::layers.begin() + instance->_owner->_selected_layer, new Layer{name_entry->get_text()});
 
             for (size_t i = 0; i < state::n_frames; ++i)
             {
@@ -77,23 +73,21 @@ namespace mousetrap
                 row.update();
 
             dialog->close();
+
+            delete dialog;
+            delete name_entry;
         };
 
-        static auto on_cancel = [](Dialog* dialog)
+        auto on_cancel = [dialog, name_entry](void*)
         {
             dialog->close();
+
+            delete dialog;
+            delete name_entry;
         };
 
-        using on_close_data = struct{ Dialog* dialog; Entry* name_entry; };
-        static std::function<void(on_close_data*)> on_close = [](on_close_data* data)
-        {
-            delete data->dialog;
-            delete data->name_entry;
-        };
-
-        dialog->add_action_button("ok", on_ok, new on_ok_data{name_entry, instance});
-        dialog->add_action_button("cancel", on_cancel, dialog);
-        //dialog->connect_signal_close(on_close, new on_close_data{dialog, name_entry});
+        dialog->add_action_button("ok", on_ok, nullptr);
+        dialog->add_action_button("cancel", on_cancel, nullptr);
 
         auto& content = dialog->get_content_area();
         content.push_back(name_entry);
