@@ -119,6 +119,13 @@ namespace mousetrap
     void LayerView::FrameControlBar::on_frame_delete_button_clicked(Button*, FrameControlBar* instance)
     {
         const size_t frame_i = instance->_owner->_selected_frame;
+
+        if (state::n_frames == 1)
+            return;
+
+        if (frame_i == state::n_frames - 1)
+            instance->_owner->set_selection(instance->_owner->_selected_layer, frame_i - 1);
+
         for (auto* layer : state::layers)
         {
             delete layer->frames.at(frame_i).image;
@@ -127,8 +134,9 @@ namespace mousetrap
         }
 
         state::n_frames -= 1;
+
         for (auto& row : instance->_owner->_layer_rows)
-            row.delete_frame(instance->_owner->_selected_frame);
+            row.delete_frame(frame_i);
     }
 
     void LayerView::FrameControlBar::on_frame_keyframe_toggle_button_toggled(ToggleButton* button, FrameControlBar* instance)
