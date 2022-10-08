@@ -284,6 +284,17 @@ namespace mousetrap
             size_t _selected_layer;
             void set_selection(size_t layer_i, size_t frame_i);
 
+            MenuButton _setting_menu_button;
+            ImageDisplay _setting_menu_button_icon;
+
+            Popover _setting_menu_button_popover;
+            Box _setting_menu_button_popover_box = Box(GTK_ORIENTATION_VERTICAL);
+
+            Label _thumbnail_label = Label("Thumbnail Size: ");
+            Scale _thumbnail_scale = Scale(2 * state::margin_unit, 30 * state::margin_unit, 1);
+            static void on_thumbnail_scale_value_changed(Scale*, LayerView* instance);
+            Box _thumbnail_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
             std::deque<LayerRow> _layer_rows;
             FrameControlBar _frame_control_bar;
             SeparatorLine _frame_control_bar_spacer;
@@ -357,6 +368,15 @@ namespace mousetrap
         _layer_control_bar.update();
     }
 
+    void LayerView::on_thumbnail_scale_value_changed(Scale* scale, LayerView* instance)
+    {
+        instance->thumbnail_height = scale->get_value();
+
+        for (auto& row : instance->_layer_rows)
+            for (size_t i = 0; i < state::n_frames; ++i)
+                row.update_frame(i);
+    }
+
     LayerView::LayerView()
         : _frame_control_bar(this), _layer_control_bar(this)
     {
@@ -402,6 +422,22 @@ namespace mousetrap
         _layer_control_bar_box.push_back(_layer_control_bar);
         _layer_control_bar_box.push_back(&_layer_control_bar_spacer);
         _layer_control_bar_box.set_hexpand(false);
+
+        _setting_menu_button_icon.set_size_request(_setting_menu_button_icon.get_size());
+        _setting_menu_button.set_child(&_setting_menu_button_icon);
+        _setting_menu_button_popover.set_child(&_setting_menu_button_popover_box);
+        _setting_menu_button.set_popover(&_setting_menu_button_popover);
+
+        _thumbnail_box.push_back(&_thumbnail_label);
+        _thumbnail_box.push_back(&_thumbnail_scale);
+        _thumbnail_scale.set_hexpand(true);
+        _thumbnail_scale.set_size_request({state::margin_unit * 10, 0});
+        _thumbnail_scale.set_value(thumbnail_height);
+        _thumbnail_scale.connect_signal_value_changed(on_thumbnail_scale_value_changed, this);
+
+        _setting_menu_button_popover_box.push_back(&_thumbnail_box);
+        _setting_menu_button.set_margin_start(state::margin_unit);
+        _layer_control_bar_box.push_back(&_setting_menu_button);
 
         _main.push_back(&_layer_control_bar_box);
         _main.push_back(&_layer_row_list_view_box);
