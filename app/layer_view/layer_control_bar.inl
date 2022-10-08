@@ -197,11 +197,6 @@ namespace mousetrap
 
         _layer_delete_button.set_tooltip_title("Delete Layer");
         _layer_delete_button.set_tooltip_description("Delete layer, unless it is the only layer");
-
-        // TODO
-        _layer_merge_down_button.set_can_respond_to_input(false);
-        _layer_flatten_all_button.set_can_respond_to_input(false);
-        // TODO
     }
 
     void LayerView::LayerControlBar::update()
@@ -211,6 +206,11 @@ namespace mousetrap
         _layer_merge_down_button.set_can_respond_to_input(_owner->_selected_layer < state::layers.size() - 1);
         _layer_delete_button.set_can_respond_to_input(state::layers.size() > 1);
         _layer_flatten_all_button.set_can_respond_to_input(state::layers.size() > 1);
+
+        // TODO
+        _layer_merge_down_button.set_can_respond_to_input(false);
+        _layer_flatten_all_button.set_can_respond_to_input(false);
+        // TODO
     }
 }
 

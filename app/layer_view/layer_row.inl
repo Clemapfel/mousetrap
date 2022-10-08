@@ -9,9 +9,14 @@ namespace mousetrap
             : _layer(layer), _owner(owner), _layer_property_options(layer, owner)
     {
         _layer_frame_display_list_view.set_focusable(false);
+        _layer_frame_display_list_view_wrapper.set_child(&_layer_frame_display_list_view);
+        _layer_frame_display_list_view_wrapper.set_scroll_to_focus(false);
+        _layer_frame_display_list_view_viewport.set_child(&_layer_frame_display_list_view_wrapper);
+        _layer_frame_display_list_view_viewport.set_hexpand(true);
+        _layer_frame_display_list_view_viewport.set_policy(GTK_POLICY_EXTERNAL, GTK_POLICY_NEVER);
 
         _main.push_back(_layer_property_options);
-        _main.push_back(&_layer_frame_display_list_view);
+        _main.push_back(&_layer_frame_display_list_view_viewport);
     }
 
     LayerView::LayerRow::operator Widget*()
@@ -98,5 +103,10 @@ namespace mousetrap
             frame.set_layer(_layer);
 
         _layer_property_options.update();
+    }
+
+    void LayerView::LayerRow::connect_viewport_hadjustment(Adjustment& adjustment)
+    {
+        _layer_frame_display_list_view_viewport.set_hadjustment(adjustment);
     }
 }

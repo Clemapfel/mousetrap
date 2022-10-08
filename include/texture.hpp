@@ -26,7 +26,7 @@ namespace mousetrap
     {
         public:
             Texture(); // should be called while gl context is bound
-            ~Texture();
+            virtual ~Texture();
 
             void bind(size_t texture_unit) const;
 
