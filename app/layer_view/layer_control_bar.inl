@@ -101,7 +101,8 @@ namespace mousetrap
         if (selected_i == state::layers.size() - 1)
             instance->_owner->set_selection(selected_i - 1, instance->_owner->_selected_frame);
 
-        state::delete_layer(state::layers.at(selected_i));
+        auto* layer = state::layers.at(selected_i);
+        state::layers.erase(state::layers.begin() + selected_i);
 
         instance->_owner->_layer_row_list_view.clear();
         instance->_owner->_layer_rows.erase(instance->_owner->_layer_rows.end() - 1);
@@ -114,6 +115,12 @@ namespace mousetrap
 
         for (auto& row : instance->_owner->_layer_rows)
             instance->_owner->_layer_row_list_view.push_back(row);
+
+        for (auto& frame : layer->frames)
+        {
+            delete frame.image;
+            delete frame.texture;
+        }
     }
 
     void LayerView::LayerControlBar::on_layer_duplicate_button_clicked(Button*, LayerControlBar* instance)

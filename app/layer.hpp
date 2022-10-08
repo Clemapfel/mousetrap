@@ -6,6 +6,7 @@
 #pragma once
 
 #include <include/texture.hpp>
+#include <app/global_state.hpp>
 
 namespace mousetrap
 {
@@ -27,29 +28,14 @@ namespace mousetrap
         float opacity = 1;
         BlendMode blend_mode = NORMAL;
     };
-
-    namespace state
-    {
-        std::deque<Layer*> layers;
-        Vector2ui layer_resolution;
-        size_t n_frames = 0;
-
-        size_t current_frame = 2;
-        size_t current_layer = 0;
-
-        Layer* new_layer(const std::string& name, Layer* after = nullptr);
-        void new_frame(size_t index);
-
-        void delete_layer(Layer*);
-        void delete_frame(size_t index);
-    }
 }
 
 /// ###
 
-namespace mousetrap
+/*
+namespace mousetrap::state
 {
-    Layer* state::new_layer(const std::string& name, Layer* after)
+    Layer* new_layer(const std::string& name, Layer* after)
     {
         if (n_frames == 0)
             n_frames = 1;
@@ -161,7 +147,6 @@ namespace mousetrap
     {
         return new Layer(*layer);
     }
-     */
-
-
 }
+
+ */

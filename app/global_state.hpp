@@ -15,8 +15,8 @@
 #include <include/pixel_buffer.hpp>
 #include <include/shortcut_map.hpp>
 
-#include <app/app_component.hpp>
 #include <app/layer.hpp>
+#include <app/app_component.hpp>
 #include <app/palette.hpp>
 #include <app/tools.hpp>
 
@@ -72,6 +72,17 @@ namespace mousetrap::state
     float brush_opacity = 1;
 
     void update_brush_texture();
+
+    // ### LAYERS #####################################
+
+    std::deque<Layer*> layers;
+    Vector2ui layer_resolution;
+    size_t n_frames = 0;
+
+    size_t current_frame = 2;
+    size_t current_layer = 0;
+
+    AppComponent* layer_view = nullptr;
 
     // ### FORMATING ##################################
 

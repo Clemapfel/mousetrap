@@ -160,6 +160,9 @@ namespace mousetrap
                     static void on_blend_mode_select(on_blend_mode_select_data*);
             };
 
+            Adjustment _layer_row_frame_display_viewport_hadjustment;
+            Scrollbar _layer_row_frame_display_viewport_hscrollbar = Scrollbar(_layer_row_frame_display_viewport_hadjustment, GTK_ORIENTATION_HORIZONTAL);
+
             class LayerRow
             {
                 public:
@@ -175,12 +178,17 @@ namespace mousetrap
 
                     void set_layer(size_t);
 
+                    void connect_viewport_hadjustment(Adjustment&);
+
                 private:
                     size_t _layer;
                     LayerView* _owner;
 
                     std::deque<LayerFrameDisplay> _layer_frame_displays;
                     ListView _layer_frame_display_list_view = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
+
+                    Viewport _layer_frame_display_list_view_wrapper;
+                    ScrolledWindow _layer_frame_display_list_view_viewport;
                     static void on_layer_frame_display_list_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed, LayerRow* instance);
 
                     LayerPropertyOptions _layer_property_options;
@@ -269,7 +277,7 @@ namespace mousetrap
                     Button _layer_flatten_all_button;
                     static void on_layer_flatten_all_button_clicked(Button*, LayerControlBar* instance);
 
-                    Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+                    Box _main = Box(GTK_ORIENTATION_VERTICAL);
             };
 
             size_t _selected_frame;
@@ -278,7 +286,12 @@ namespace mousetrap
 
             std::deque<LayerRow> _layer_rows;
             FrameControlBar _frame_control_bar;
+            SeparatorLine _frame_control_bar_spacer;
+            Box _frame_control_bar_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
             LayerControlBar _layer_control_bar;
+            SeparatorLine _layer_control_bar_spacer;
+            Box _layer_control_bar_box = Box(GTK_ORIENTATION_VERTICAL);
 
             ListView _layer_row_list_view = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_SINGLE);
             static void on_layer_row_list_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed, LayerView*);
@@ -288,8 +301,8 @@ namespace mousetrap
             ScrolledWindow _layer_row_list_view_viewport;
             SeparatorLine _layer_row_list_view_viewport_spacer;
             Box _layer_row_list_view_viewport_box = Box(GTK_ORIENTATION_VERTICAL);
-
-            Box _main = Box(GTK_ORIENTATION_VERTICAL);
+            Box _layer_row_list_view_box = Box(GTK_ORIENTATION_VERTICAL);
+            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
     };
 }
 
@@ -351,6 +364,7 @@ namespace mousetrap
         {
             _layer_rows.emplace_back(layer_i, this);
             _layer_rows.back().update();
+            _layer_rows.back().connect_viewport_hadjustment(_layer_row_frame_display_viewport_hadjustment);
         }
 
         for (auto& row : _layer_rows)
@@ -362,15 +376,35 @@ namespace mousetrap
                 on_layer_row_list_view_key_event_controller_key_pressed, this);
         _layer_row_list_view.add_controller(&_layer_row_list_view_key_event_controller);
 
+        _layer_row_list_view_viewport_spacer.set_vexpand(true);
         _layer_row_list_view_viewport_box.push_back(&_layer_row_list_view);
         _layer_row_list_view_viewport_box.push_back(&_layer_row_list_view_viewport_spacer);
         _layer_row_list_view_viewport.set_child(&_layer_row_list_view_viewport_box);
         _layer_row_list_view_viewport.set_propagate_natural_width(true);
+        _layer_row_list_view_viewport.set_policy(GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+        _layer_row_list_view_viewport.set_placement(GTK_CORNER_TOP_RIGHT);
 
-        _main.push_back(&_layer_row_list_view_viewport);
-        _main.push_back(_frame_control_bar);
-        _main.push_back(_layer_control_bar);
+        _layer_row_list_view_box.push_back(&_layer_row_list_view_viewport);
+        _layer_row_list_view_box.push_back(&_layer_row_frame_display_viewport_hscrollbar);
 
+        _frame_control_bar.operator Widget *()->set_halign(GTK_ALIGN_END);
+        _frame_control_bar_spacer.set_size_request({_layer_control_bar_box.get_preferred_size().natural_size.x, 0});
+        _frame_control_bar_spacer.set_opacity(0);
+        _frame_control_bar_box.push_back(&_frame_control_bar_spacer);
+        _frame_control_bar_box.push_back(_frame_control_bar);
+        _layer_row_list_view_box.push_back(&_frame_control_bar_box);
+        _layer_row_list_view_box.set_hexpand(true);
+
+        _layer_control_bar.operator Widget*()->set_valign(GTK_ALIGN_END);
+        _layer_control_bar_spacer.set_size_request({0, _frame_control_bar_box.get_preferred_size().natural_size.y});
+        _layer_control_bar_spacer.set_vexpand(true);
+        _layer_control_bar_spacer.set_opacity(0);
+        _layer_control_bar_box.push_back(_layer_control_bar);
+        _layer_control_bar_box.push_back(&_layer_control_bar_spacer);
+        _layer_control_bar_box.set_hexpand(false);
+
+        _main.push_back(&_layer_control_bar_box);
+        _main.push_back(&_layer_row_list_view_box);
         _main.set_expand(true);
     }
 

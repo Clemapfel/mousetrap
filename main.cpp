@@ -32,7 +32,7 @@
 #include <app/toolbox.hpp>
 #include <app/color_picker.hpp>
 #include <app/widget_container.hpp>
-#include <app/layer.hpp>
+#include <app/global_state.hpp>
 #include <app/preview.hpp>
 #include <app/layer_view.hpp>
 
@@ -68,11 +68,9 @@ static void activate(GtkApplication* app, void*)
     state::color_picker = new ColorPicker();
 
     state::layer_resolution = {50, 50};
-    state::new_layer("overlay");
 
-    for (size_t i = 0; i < 5; ++i)
-        state::new_layer("number");
-
+    state::layers.emplace_back(new Layer{"number"});
+    state::layers.emplace_back(new Layer{"overlay"});
     state::layers.back()->blend_mode = BlendMode::MULTIPLY;
 
     auto* preview = new Preview();
@@ -105,9 +103,9 @@ static void activate(GtkApplication* app, void*)
         state::n_frames = layer->frames.size();
     }
 
-    auto* layer_view = new LayerView();
+    state::layer_view = new LayerView();
 
-    state::main_window->set_child(layer_view->operator Widget*());
+    state::main_window->set_child(state::layer_view->operator Widget*());
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

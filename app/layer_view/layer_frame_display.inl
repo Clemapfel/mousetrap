@@ -59,7 +59,9 @@ namespace mousetrap
         _aspect_frame.set_child(&_gl_area);
         _frame_widget.set_child(&_aspect_frame);
         _frame_widget.set_label_widget(&_frame_widget_label);
+        _frame_widget.set_label_align(0.5);
         _frame_widget_label.set_visible(false);
+        _frame_widget_label.set_halign(GTK_ALIGN_CENTER);
 
         _overlay.set_child(&_frame_widget);
         _layer_frame_active_icon.set_align(GTK_ALIGN_END);
@@ -102,12 +104,16 @@ namespace mousetrap
             _layer_shape->set_color(RGBA(1, 1, 1, layer.opacity));
         }
 
+        size_t width = thumbnail_height;
+        size_t height = (thumbnail_height / float(state::layer_resolution.x)) * state::layer_resolution.y;
+        _gl_area.set_size_request({width, height});
+
         update_selection();
     }
 
     void LayerView::LayerFrameDisplay::update_selection()
     {
-        _frame_widget_label.set_visible(_layer == _owner->_selected_layer);
+        _frame_widget_label.set_visible(_layer == _owner->_selected_layer and state::n_frames > 1);
 
         if (not _gl_area.get_is_realized())
             return;
