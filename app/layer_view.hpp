@@ -285,7 +285,7 @@ namespace mousetrap
             void set_selection(size_t layer_i, size_t frame_i);
 
             MenuButton _setting_menu_button;
-            ImageDisplay _setting_menu_button_icon;
+            ImageDisplay _setting_menu_button_icon = ImageDisplay(get_resource_path() + "icons/settings.png");
 
             Popover _setting_menu_button_popover;
             Box _setting_menu_button_popover_box = Box(GTK_ORIENTATION_VERTICAL);
@@ -408,20 +408,11 @@ namespace mousetrap
         _layer_row_list_view_box.push_back(&_layer_row_frame_display_viewport_hscrollbar);
 
         _frame_control_bar.operator Widget *()->set_halign(GTK_ALIGN_END);
-        _frame_control_bar_spacer.set_size_request({_layer_control_bar_box.get_preferred_size().natural_size.x, 0});
         _frame_control_bar_spacer.set_opacity(0);
         _frame_control_bar_box.push_back(&_frame_control_bar_spacer);
         _frame_control_bar_box.push_back(_frame_control_bar);
         _layer_row_list_view_box.push_back(&_frame_control_bar_box);
         _layer_row_list_view_box.set_hexpand(true);
-
-        _layer_control_bar.operator Widget*()->set_valign(GTK_ALIGN_END);
-        _layer_control_bar_spacer.set_size_request({0, _frame_control_bar_box.get_preferred_size().natural_size.y});
-        _layer_control_bar_spacer.set_vexpand(true);
-        _layer_control_bar_spacer.set_opacity(0);
-        _layer_control_bar_box.push_back(_layer_control_bar);
-        _layer_control_bar_box.push_back(&_layer_control_bar_spacer);
-        _layer_control_bar_box.set_hexpand(false);
 
         _setting_menu_button_icon.set_size_request(_setting_menu_button_icon.get_size());
         _setting_menu_button.set_child(&_setting_menu_button_icon);
@@ -431,13 +422,21 @@ namespace mousetrap
         _thumbnail_box.push_back(&_thumbnail_label);
         _thumbnail_box.push_back(&_thumbnail_scale);
         _thumbnail_scale.set_hexpand(true);
-        _thumbnail_scale.set_size_request({state::margin_unit * 10, 0});
+        _thumbnail_scale.set_size_request({state::margin_unit * 15, 0});
         _thumbnail_scale.set_value(thumbnail_height);
         _thumbnail_scale.connect_signal_value_changed(on_thumbnail_scale_value_changed, this);
-
         _setting_menu_button_popover_box.push_back(&_thumbnail_box);
-        _setting_menu_button.set_margin_start(state::margin_unit);
+        _setting_menu_button.set_hexpand(true);
+        _setting_menu_button.set_always_show_arrow(false);
+        _setting_menu_button.set_tooltip_title("Layer View Settings");
+
+        _layer_control_bar.operator Widget*()->set_valign(GTK_ALIGN_END);
+        _layer_control_bar_spacer.set_vexpand(true);
+        _layer_control_bar_spacer.set_opacity(0);
+        _layer_control_bar_box.push_back(_layer_control_bar);
+        _layer_control_bar_box.push_back(&_layer_control_bar_spacer);
         _layer_control_bar_box.push_back(&_setting_menu_button);
+        _layer_control_bar_box.set_hexpand(false);
 
         _main.push_back(&_layer_control_bar_box);
         _main.push_back(&_layer_row_list_view_box);
