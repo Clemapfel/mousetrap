@@ -33,8 +33,8 @@ namespace mousetrap
         private:
             void update(HSVA);
 
-            HSVA* _current_color = new HSVA(state::primary_color);
-            HSVA* _previous_color = new HSVA(state::secondary_color);
+            HSVA _current_color = HSVA(state::primary_color);
+            HSVA _previous_color = HSVA(state::secondary_color);
             
             static inline Shader* transparency_tiling_shader = nullptr;
 
@@ -90,13 +90,14 @@ namespace mousetrap
 
             HtmlCodeRegion _html_code_region;
 
-            class Slider
+            class SliderRegion
             {
                 public:
-                    Slider(float* target, VerboseColorPicker* owner, bool use_hue_shader = false);
+                    SliderRegion(char target_id, VerboseColorPicker* owner, bool use_hue_shader = false);
                     operator Widget*();
 
                     void update();
+                    void set_value(float);
 
                     void set_left_color(RGBA);
                     void set_right_color(RGBA);
@@ -104,7 +105,8 @@ namespace mousetrap
                 private:
                     static inline float slider_width_to_cursor_width_ratio = 0.025;
 
-                    float* _target;
+                    char _target_id;
+                    float _value;
                     VerboseColorPicker* _owner;
                     bool _use_shader;
 
@@ -119,20 +121,25 @@ namespace mousetrap
                     Vector2f _canvas_size;
 
                     GLArea _gl_area;
-                    static void on_gl_area_realize(Widget*, Slider* instance);
-                    static void on_gl_area_resize(GLArea*, int, int, Slider* instance);
+                    static void on_gl_area_realize(Widget*, SliderRegion* instance);
+                    static void on_gl_area_resize(GLArea*, int, int, SliderRegion* instance);
 
                     bool _drag_active = false;
 
                     ClickEventController _click_event_controller;
-                    static void on_slider_click_pressed(ClickEventController*, int, double, double, Slider*);
-                    static void on_slider_click_released(ClickEventController*, int, double, double, Slider*);
+                    static void on_slider_click_pressed(ClickEventController*, int, double, double, SliderRegion*);
+                    static void on_slider_click_released(ClickEventController*, int, double, double, SliderRegion*);
 
                     MotionEventController _motion_event_controller;
-                    static void on_slider_motion(MotionEventController*, double, double, Slider* instance);
+                    static void on_slider_motion(MotionEventController*, double, double, SliderRegion* instance);
+
+                    SpinButton _spin_button = SpinButton(0, 1, 0.01);
+                    static void on_spin_button_value_changed(SpinButton*, SliderRegion* instance);
+
+                    Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
             };
 
-            std::deque<Slider> _sliders;
+            std::unordered_map<char, SliderRegion*> _sliders;
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
@@ -265,7 +272,7 @@ namespace mousetrap
             instance->_owner->update(color.operator HSVA());
         }
         else
-            entry->set_text(color_to_code(*instance->_owner->_current_color));
+            entry->set_text(color_to_code(instance->_owner->_current_color));
     }
 
     std::string VerboseColorPicker::HtmlCodeRegion::color_to_code(RGBA in)
@@ -428,8 +435,8 @@ namespace mousetrap
 
     // SLIDER
 
-    VerboseColorPicker::Slider::Slider(float* target, VerboseColorPicker* owner, bool use_hue_shader)
-        : _target(target), _owner(owner), _use_shader(use_hue_shader)
+    VerboseColorPicker::SliderRegion::SliderRegion(char target_id, VerboseColorPicker* owner, bool use_hue_shader)
+        : _target_id(target_id), _owner(owner), _use_shader(use_hue_shader)
     {
         _gl_area.connect_signal_realize(on_gl_area_realize, this);
         _gl_area.connect_signal_resize(on_gl_area_resize, this);
@@ -440,16 +447,23 @@ namespace mousetrap
 
         _motion_event_controller.connect_signal_motion(on_slider_motion, this);
         _gl_area.add_controller(&_motion_event_controller);
-
         _gl_area.set_expand(true);
+
+        _spin_button.set_margin_start(state::margin_unit);
+        _spin_button.connect_signal_value_changed(on_spin_button_value_changed, this);
+
+        _main.push_back(&_gl_area);
+        _main.push_back(&_spin_button);
+
+        update();
     }
 
-    VerboseColorPicker::Slider::operator Widget*()
+    VerboseColorPicker::SliderRegion::operator Widget*()
     {
-        return &_gl_area;
+        return &_main;
     }
 
-    void VerboseColorPicker::Slider::on_gl_area_realize(Widget*, Slider* instance)
+    void VerboseColorPicker::SliderRegion::on_gl_area_realize(Widget*, SliderRegion* instance)
     {
         auto& area = instance->_gl_area;
         area.make_current();
@@ -519,7 +533,7 @@ namespace mousetrap
         if (instance->_use_shader)
         {
             auto bar_render_task = RenderTask(instance->_bar_shape, instance->_bar_shader);
-            bar_render_task.register_color("_current_color_hsva", instance->_owner->_current_color);
+            bar_render_task.register_color("_current_color_hsva", &instance->_owner->_current_color);
             instance->_gl_area.add_render_task(bar_render_task);
         }
         else
@@ -533,13 +547,13 @@ namespace mousetrap
         area.queue_render();
     };
 
-    void VerboseColorPicker::Slider::on_gl_area_resize(GLArea*, int w, int h, Slider* instance)
+    void VerboseColorPicker::SliderRegion::on_gl_area_resize(GLArea*, int w, int h, SliderRegion* instance)
     {
         instance->_canvas_size = {w, h};
         instance->_gl_area.queue_render();
     }
 
-    void VerboseColorPicker::Slider::on_slider_click_pressed(ClickEventController*, int, double x, double y, Slider* instance)
+    void VerboseColorPicker::SliderRegion::on_slider_click_pressed(ClickEventController*, int, double x, double y, SliderRegion* instance)
     {
         auto pos = Vector2f{x, y};
         pos.x /= instance->_canvas_size.x;
@@ -549,11 +563,12 @@ namespace mousetrap
         instance->_gl_area.set_cursor(GtkCursorType::GRABBING);
         auto value = glm::clamp<float>(pos.x, 0, 1);
 
-        *instance->_target = value;
+        instance->_value = value;
         instance->update();
+        instance->_owner->update(instance->_owner->_current_color);
     }
 
-    void VerboseColorPicker::Slider::on_slider_click_released(ClickEventController*, int, double x, double y, Slider* instance)
+    void VerboseColorPicker::SliderRegion::on_slider_click_released(ClickEventController*, int, double x, double y, SliderRegion* instance)
     {
         auto pos = Vector2f{x, y};
         pos.x /= instance->_canvas_size.x;
@@ -564,15 +579,16 @@ namespace mousetrap
             auto value = glm::clamp<float>(pos.x, 0, 1);
             auto color = state::primary_color;
 
-            *instance->_target = value;
+            instance->_value = value;
             instance->update();
+            instance->_owner->update(instance->_owner->_current_color);
 
             instance->_drag_active = false;
             instance->_gl_area.set_cursor(GtkCursorType::GRAB);
         }
     }
 
-    void VerboseColorPicker::Slider::on_slider_motion(MotionEventController*, double x, double y, Slider* instance)
+    void VerboseColorPicker::SliderRegion::on_slider_motion(MotionEventController*, double x, double y, SliderRegion* instance)
     {
         if (instance->_drag_active)
         {
@@ -581,17 +597,29 @@ namespace mousetrap
             pos.y /= instance->_canvas_size.y;
             auto value = glm::clamp<float>(pos.x, 0, 1);
 
-            *instance->_target = value;
+            instance->_value = value;
             instance->update();
+            instance->_owner->update(instance->_owner->_current_color);
         }
     }
 
-    void VerboseColorPicker::Slider::update()
+    void VerboseColorPicker::SliderRegion::on_spin_button_value_changed(SpinButton* button, SliderRegion* instance)
     {
-        if (not _gl_area.get_is_realized())
-            return;
+        float value = button->get_value();
+        instance->_value = value;
+        instance->update();
+        instance->_owner->update(instance->_owner->_current_color);
+    }
 
-        auto value = *_target;
+    void VerboseColorPicker::SliderRegion::set_value(float value)
+    {
+        _value = value;
+        update();
+    }
+
+    void VerboseColorPicker::SliderRegion::update()
+    {
+        auto value = _value;
 
         if (value < 0.001)
             value = 0;
@@ -599,17 +627,81 @@ namespace mousetrap
         if (value > 1 - 0.001)
             value = 1;
 
-        Vector2f centroid = {value, 0.5};
+        if (_gl_area.get_is_realized())
+        {
+            Vector2f centroid = {value, 0.5};
 
-        if (centroid.x < _cursor_shape->get_size().x * 0.5)
-            centroid.x = _cursor_shape->get_size().x * 0.5;
+            if (centroid.x < _cursor_shape->get_size().x * 0.5)
+                centroid.x = _cursor_shape->get_size().x * 0.5;
 
-        if (centroid.x > 1 - _cursor_shape->get_size().x * 0.5)
-            centroid.x = 1 - _cursor_shape->get_size().x * 0.5;
+            if (centroid.x > 1 - _cursor_shape->get_size().x * 0.5)
+                centroid.x = 1 - _cursor_shape->get_size().x * 0.5;
 
-        _cursor_shape->set_centroid(centroid);
-        _cursor_frame_shape->set_centroid(centroid);
+            _cursor_shape->set_centroid(centroid);
+            _cursor_frame_shape->set_centroid(centroid);
 
+            _gl_area.queue_render();
+        }
+
+        _spin_button.set_signal_value_changed_blocked(true);
+        _spin_button.set_value(value);
+        _spin_button.set_signal_value_changed_blocked(false);
+
+        if (_target_id == 'h' or _target_id == 'H')
+        {
+            _owner->_current_color.h = value;
+        }
+        else if (_target_id == 's' or _target_id == 'S')
+        {
+            _owner->_current_color.s = value;
+        }
+        else if (_target_id == 'v' or _target_id == 'V')
+        {
+            _owner->_current_color.v = value;
+        }
+        else if (_target_id == 'a' or _target_id == 'A')
+        {
+            _owner->_current_color.a = value;
+        }
+        else if (_target_id == 'r' or _target_id == 'R')
+        {
+            auto as_rgb = _owner->_current_color.operator RGBA();
+            as_rgb.r = value;
+            _owner->_current_color = as_rgb.operator HSVA();
+        }
+        else if (_target_id == 'g' or _target_id == 'G')
+        {
+            auto as_rgb = _owner->_current_color.operator RGBA();
+            as_rgb.g = value;
+            _owner->_current_color = as_rgb.operator HSVA();
+        }
+        else if (_target_id == 'b' or _target_id == 'B')
+        {
+            auto as_rgb = _owner->_current_color.operator RGBA();
+            as_rgb.b = value;
+            _owner->_current_color = as_rgb.operator HSVA();
+        }
+        else
+            assert(false && "In VerboseColorPicker::SliderRegion::update: unknown target id");
+    }
+
+    void VerboseColorPicker::SliderRegion::set_left_color(RGBA color)
+    {
+        if (not _gl_area.get_is_realized())
+            return;
+
+        _bar_shape->set_vertex_color(0, color);
+        _bar_shape->set_vertex_color(3, color);
+        _gl_area.queue_render();
+    }
+
+    void VerboseColorPicker::SliderRegion::set_right_color(RGBA color)
+    {
+        if (not _gl_area.get_is_realized())
+            return;
+
+        _bar_shape->set_vertex_color(1, color);
+        _bar_shape->set_vertex_color(2, color);
         _gl_area.queue_render();
     }
 
@@ -621,10 +713,16 @@ namespace mousetrap
         //_main.push_back(_current_color_region);
         //_main.push_back(_html_code_region);
 
-        _sliders.emplace_back(&_current_color->v, this, true);
+        auto add_slider = [&](char id)
+        {
+            _sliders.insert({id, new SliderRegion(id, this, id == 'h' or id == 'H')});
+        };
 
-        for (auto& slider : _sliders)
-            _main.push_back(slider);
+        for (char c : {'a', 'h', 's', 'v', 'r', 'g', 'b'})
+        {
+            add_slider(c);
+            _main.push_back(_sliders.at(c)->operator Widget*());
+        }
     }
 
     VerboseColorPicker::operator Widget*()
@@ -632,8 +730,71 @@ namespace mousetrap
         return &_main;
     }
 
-    void VerboseColorPicker::update(HSVA)
-    {}
+    void VerboseColorPicker::update(HSVA color_hsva)
+    {
+        auto color_rgba = color_hsva.operator RGBA();
+
+        auto it = _sliders.find('h');
+        if (it != _sliders.end())
+        {
+            auto& slider = *it->second;
+            slider.set_value(color_hsva.h);
+        }
+
+        it = _sliders.find('s');
+        if (it != _sliders.end())
+        {
+            auto& slider = *it->second;
+            slider.set_value(color_hsva.s);
+            slider.set_left_color(HSVA(color_hsva.h, 0, color_hsva.v, color_hsva.a));
+            slider.set_right_color(HSVA(color_hsva.h, 1, color_hsva.v, color_hsva.a));
+        }
+
+        it = _sliders.find('v');
+        if (it != _sliders.end())
+        {
+            auto& slider = *it->second;
+            slider.set_value(color_hsva.v);
+            slider.set_left_color(HSVA(color_hsva.h, color_hsva.s, 0, color_hsva.a));
+            slider.set_right_color(HSVA(color_hsva.h, color_hsva.s, 1, color_hsva.a));
+        }
+
+        it = _sliders.find('a');
+        if (it != _sliders.end())
+        {
+            auto& slider = *it->second;
+            slider.set_value(color_hsva.v);
+            slider.set_left_color(HSVA(color_hsva.h, color_hsva.s, color_hsva.v, 0));
+            slider.set_right_color(HSVA(color_hsva.h, color_hsva.s, color_hsva.v, 1));
+        }
+
+        it = _sliders.find('r');
+        if (it != _sliders.end())
+        {
+            auto& slider = *it->second;
+            slider.set_value(color_rgba.r);
+            slider.set_left_color(RGBA(0, color_rgba.g, color_rgba.b, color_rgba.a));
+            slider.set_right_color(RGBA(0, color_rgba.g, color_rgba.b, color_rgba.a));
+        }
+
+        it = _sliders.find('g');
+        if (it != _sliders.end())
+        {
+            auto& slider = *it->second;
+            slider.set_value(color_rgba.g);
+            slider.set_left_color(RGBA(color_rgba.r, 0, color_rgba.b, color_rgba.a));
+            slider.set_right_color(RGBA(color_rgba.r, 1, color_rgba.b, color_rgba.a));
+        }
+
+        it = _sliders.find('b');
+        if (it != _sliders.end())
+        {
+            auto& slider = *it->second;
+            slider.set_value(color_rgba.b);
+            slider.set_left_color(RGBA(color_rgba.r, color_rgba.g, 0, color_rgba.a));
+            slider.set_right_color(RGBA(color_rgba.r, color_rgba.g, 1, color_rgba.a));
+        }
+    }
 
     void VerboseColorPicker::update()
     {
