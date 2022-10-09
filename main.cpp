@@ -35,6 +35,7 @@
 #include <app/global_state.hpp>
 #include <app/preview.hpp>
 #include <app/layer_view.hpp>
+#include <app/verbose_color_picker.hpp>
 
 /*
 #include <app/toolbox.hpp>
@@ -104,8 +105,9 @@ static void activate(GtkApplication* app, void*)
     }
 
     state::layer_view = new LayerView();
+    state::verbose_color_picker = new VerboseColorPicker();
 
-    state::main_window->set_child(state::layer_view->operator Widget*());
+    state::main_window->set_child(state::verbose_color_picker->operator Widget*());
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);
