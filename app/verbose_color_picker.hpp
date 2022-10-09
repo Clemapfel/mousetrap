@@ -33,8 +33,8 @@ namespace mousetrap
         private:
             void update(HSVA);
 
-            HSVA _current_color;
-            HSVA _previous_color;
+            HSVA* _current_color = new HSVA(state::primary_color);
+            HSVA* _previous_color = new HSVA(state::secondary_color);
             
             static inline Shader* transparency_tiling_shader = nullptr;
 
@@ -89,6 +89,50 @@ namespace mousetrap
             };
 
             HtmlCodeRegion _html_code_region;
+
+            class Slider
+            {
+                public:
+                    Slider(float* target, VerboseColorPicker* owner, bool use_hue_shader = false);
+                    operator Widget*();
+
+                    void update();
+
+                    void set_left_color(RGBA);
+                    void set_right_color(RGBA);
+
+                private:
+                    static inline float slider_width_to_cursor_width_ratio = 0.025;
+
+                    float* _target;
+                    VerboseColorPicker* _owner;
+                    bool _use_shader;
+
+                    static inline Shader* _bar_shader = nullptr;
+                    Shape* _bar_shape;
+                    Shape* _bar_frame_shape;
+
+                    Shape* _cursor_shape;
+                    Shape* _cursor_frame_shape;
+
+                    Shape* _transparency_tiling_shape;
+                    Vector2f _canvas_size;
+
+                    GLArea _gl_area;
+                    static void on_gl_area_realize(Widget*, Slider* instance);
+                    static void on_gl_area_resize(GLArea*, int, int, Slider* instance);
+
+                    bool _drag_active = false;
+
+                    ClickEventController _click_event_controller;
+                    static void on_slider_click_pressed(ClickEventController*, int, double, double, Slider*);
+                    static void on_slider_click_released(ClickEventController*, int, double, double, Slider*);
+
+                    MotionEventController _motion_event_controller;
+                    static void on_slider_motion(MotionEventController*, double, double, Slider* instance);
+            };
+
+            std::deque<Slider> _sliders;
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
@@ -221,7 +265,7 @@ namespace mousetrap
             instance->_owner->update(color.operator HSVA());
         }
         else
-            entry->set_text(color_to_code(instance->_owner->_current_color));
+            entry->set_text(color_to_code(*instance->_owner->_current_color));
     }
 
     std::string VerboseColorPicker::HtmlCodeRegion::color_to_code(RGBA in)
@@ -382,16 +426,205 @@ namespace mousetrap
         return &_main;
     }
 
+    // SLIDER
+
+    VerboseColorPicker::Slider::Slider(float* target, VerboseColorPicker* owner, bool use_hue_shader)
+        : _target(target), _owner(owner), _use_shader(use_hue_shader)
+    {
+        _gl_area.connect_signal_realize(on_gl_area_realize, this);
+        _gl_area.connect_signal_resize(on_gl_area_resize, this);
+
+        _click_event_controller.connect_signal_click_pressed(on_slider_click_pressed, this);
+        _click_event_controller.connect_signal_click_released(on_slider_click_released, this);
+        _gl_area.add_controller(&_click_event_controller);
+
+        _motion_event_controller.connect_signal_motion(on_slider_motion, this);
+        _gl_area.add_controller(&_motion_event_controller);
+
+        _gl_area.set_expand(true);
+    }
+
+    VerboseColorPicker::Slider::operator Widget*()
+    {
+        return &_gl_area;
+    }
+
+    void VerboseColorPicker::Slider::on_gl_area_realize(Widget*, Slider* instance)
+    {
+        auto& area = instance->_gl_area;
+        area.make_current();
+
+        instance->_cursor_shape = new Shape();
+        instance->_cursor_shape->as_rectangle({0.5, 0}, {instance->slider_width_to_cursor_width_ratio, 1});
+
+        {
+            auto size = instance->_cursor_shape->get_size();
+            size.y -= 0.001;
+            auto top_left = instance->_cursor_shape->get_top_left();
+
+            std::vector<Vector2f> vertices = {
+                    {top_left.x , top_left.y},
+                    {top_left.x + size.x, top_left.y},
+                    {top_left.x + size.x, top_left.y + size.y},
+                    {top_left.x, top_left.y + size.y}
+            };
+
+            instance->_cursor_frame_shape = new Shape();
+            instance->_cursor_frame_shape->as_wireframe(vertices);
+            instance->_cursor_frame_shape->set_color(RGBA(0, 0, 0, 1));
+        }
+
+        static float bar_margin = 0.15;
+
+        instance->_bar_shape = new Shape();
+        instance->_bar_shape->as_rectangle({0, bar_margin}, {1, 1 - 2 * bar_margin});
+
+        {
+            auto size = instance->_bar_shape->get_size();
+            auto top_left = instance->_bar_shape->get_top_left();
+            size.x -= 0.0002;
+            top_left.x += 0.0001;
+
+            std::vector<Vector2f> vertices = {
+                    {top_left.x , top_left.y},
+                    {top_left.x + size.x, top_left.y},
+                    {top_left.x + size.x, top_left.y + size.y},
+                    {top_left.x, top_left.y + size.y}
+            };
+
+            instance->_bar_frame_shape = new Shape();
+            instance->_bar_frame_shape->as_wireframe(vertices);
+            instance->_bar_frame_shape->set_color(RGBA(0, 0, 0, 1));
+        }
+
+        if (VerboseColorPicker::transparency_tiling_shader == nullptr)
+        {
+            VerboseColorPicker::transparency_tiling_shader = new Shader();
+            VerboseColorPicker::transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
+        }
+
+        instance->_transparency_tiling_shape = new Shape();
+        instance->_transparency_tiling_shape->as_rectangle(instance->_bar_shape->get_top_left(), instance->_bar_shape->get_size());
+        auto transparency_render_task = RenderTask(instance->_transparency_tiling_shape, transparency_tiling_shader);
+        transparency_render_task.register_vec2("_canvas_size", &instance->_canvas_size);
+
+        instance->_gl_area.add_render_task(transparency_render_task);
+
+        if (_bar_shader == nullptr)
+        {
+            _bar_shader = new Shader();
+            _bar_shader->create_from_file(get_resource_path() + "shaders/verbose_color_picker_hue_gradient.frag", ShaderType::FRAGMENT);
+        }
+
+        if (instance->_use_shader)
+        {
+            auto bar_render_task = RenderTask(instance->_bar_shape, instance->_bar_shader);
+            bar_render_task.register_color("_current_color_hsva", instance->_owner->_current_color);
+            instance->_gl_area.add_render_task(bar_render_task);
+        }
+        else
+            instance->_gl_area.add_render_task(instance->_bar_shape);
+
+        instance->_gl_area.add_render_task(instance->_bar_frame_shape);
+        instance->_gl_area.add_render_task(instance->_cursor_shape);
+        instance->_gl_area.add_render_task(instance->_cursor_frame_shape);
+
+        instance->update();
+        area.queue_render();
+    };
+
+    void VerboseColorPicker::Slider::on_gl_area_resize(GLArea*, int w, int h, Slider* instance)
+    {
+        instance->_canvas_size = {w, h};
+        instance->_gl_area.queue_render();
+    }
+
+    void VerboseColorPicker::Slider::on_slider_click_pressed(ClickEventController*, int, double x, double y, Slider* instance)
+    {
+        auto pos = Vector2f{x, y};
+        pos.x /= instance->_canvas_size.x;
+        pos.y /= instance->_canvas_size.y;
+
+        instance->_drag_active = true;
+        instance->_gl_area.set_cursor(GtkCursorType::GRABBING);
+        auto value = glm::clamp<float>(pos.x, 0, 1);
+
+        *instance->_target = value;
+        instance->update();
+    }
+
+    void VerboseColorPicker::Slider::on_slider_click_released(ClickEventController*, int, double x, double y, Slider* instance)
+    {
+        auto pos = Vector2f{x, y};
+        pos.x /= instance->_canvas_size.x;
+        pos.y /= instance->_canvas_size.y;
+
+        if (instance->_drag_active)
+        {
+            auto value = glm::clamp<float>(pos.x, 0, 1);
+            auto color = state::primary_color;
+
+            *instance->_target = value;
+            instance->update();
+
+            instance->_drag_active = false;
+            instance->_gl_area.set_cursor(GtkCursorType::GRAB);
+        }
+    }
+
+    void VerboseColorPicker::Slider::on_slider_motion(MotionEventController*, double x, double y, Slider* instance)
+    {
+        if (instance->_drag_active)
+        {
+            auto pos = Vector2f(x, y);
+            pos.x /= instance->_canvas_size.x;
+            pos.y /= instance->_canvas_size.y;
+            auto value = glm::clamp<float>(pos.x, 0, 1);
+
+            *instance->_target = value;
+            instance->update();
+        }
+    }
+
+    void VerboseColorPicker::Slider::update()
+    {
+        if (not _gl_area.get_is_realized())
+            return;
+
+        auto value = *_target;
+
+        if (value < 0.001)
+            value = 0;
+
+        if (value > 1 - 0.001)
+            value = 1;
+
+        Vector2f centroid = {value, 0.5};
+
+        if (centroid.x < _cursor_shape->get_size().x * 0.5)
+            centroid.x = _cursor_shape->get_size().x * 0.5;
+
+        if (centroid.x > 1 - _cursor_shape->get_size().x * 0.5)
+            centroid.x = 1 - _cursor_shape->get_size().x * 0.5;
+
+        _cursor_shape->set_centroid(centroid);
+        _cursor_frame_shape->set_centroid(centroid);
+
+        _gl_area.queue_render();
+    }
+
     // VERBOSE COLOR PICKER
 
     VerboseColorPicker::VerboseColorPicker()
         : _current_color_region(this), _html_code_region(this)
     {
-        _current_color = state::primary_color;
-        _previous_color = state::primary_color;
+        //_main.push_back(_current_color_region);
+        //_main.push_back(_html_code_region);
 
-        _main.push_back(_current_color_region);
-        _main.push_back(_html_code_region);
+        _sliders.emplace_back(&_current_color->v, this, true);
+
+        for (auto& slider : _sliders)
+            _main.push_back(slider);
     }
 
     VerboseColorPicker::operator Widget*()
