@@ -33,7 +33,7 @@ namespace mousetrap::state
     // ### COLORS #####################################
 
     HSVA primary_color = RGBA(1, 0, 1, 1).operator HSVA();
-    HSVA secondary_color = RGBA(0, 1, 0, 1).operator HSVA();
+    HSVA secondary_color = RGBA(1, 1, 0, 1).operator HSVA();
 
     AppComponent* color_picker = nullptr;
     AppComponent* primary_secondary_color_swapper = nullptr;
