@@ -76,7 +76,7 @@ namespace mousetrap
                 private:
                     VerboseColorPicker* _owner;
 
-                    Label _label = Label("HTML Code:");
+                    Label _label = Label("HTML Code: ");
                     SeparatorLine _separator = SeparatorLine(GTK_ORIENTATION_HORIZONTAL);
                     Entry _entry;
                     Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
@@ -86,7 +86,6 @@ namespace mousetrap
                     static RGBA code_to_color(const std::string&);
                     static std::string color_to_code(RGBA);
                     static bool sanitize_code(std::string&);
-
             };
 
             HtmlCodeRegion _html_code_region;
@@ -143,9 +142,9 @@ namespace mousetrap
 
             std::unordered_map<char, SliderRegion*> _sliders;
 
-            Label _opacity_label = Label("<b>Opacity</b>");
-            Label _hsv_label = Label("<b>HSV</b>");
-            Label _rgb_label = Label("<b>RGB</b>");
+            Label _opacity_label = Label("Opacity");
+            Label _hsv_label = Label("HSV");
+            Label _rgb_label = Label("RGB");
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL, state::margin_unit * 0.25);
     };
@@ -163,6 +162,9 @@ namespace mousetrap
         _gl_area.connect_signal_realize(on_gl_area_realize, this);
         _gl_area.connect_signal_resize(on_gl_area_resize, this);
         _gl_area.set_expand(true);
+
+        _gl_area.set_tooltip_title("Current Color Preview");
+        _gl_area.set_tooltip_text("Compare previous color during selection");
     }
 
     void VerboseColorPicker::CurrentColorRegion::on_gl_area_realize(Widget* widget, CurrentColorRegion* instance)
@@ -258,6 +260,9 @@ namespace mousetrap
         _main.push_back(&_label);
         _main.push_back(&_separator);
         _main.push_back(&_entry);
+
+        _main.set_tooltip_title("HTML Code");
+        _main.set_tooltip_description("Hexadecimal code, format: <tt>#RRGGBB</tt>");
 
         _entry.connect_signal_activate(on_entry_activate, this);
         _entry.set_n_chars(7 + 1);
@@ -455,9 +460,11 @@ namespace mousetrap
         _motion_event_controller.connect_signal_motion(on_slider_motion, this);
         _gl_area.add_controller(&_motion_event_controller);
         _gl_area.set_expand(true);
+        _gl_area.set_cursor(GtkCursorType::GRAB);
 
         _spin_button.set_margin_start(state::margin_unit);
         _spin_button.connect_signal_value_changed(on_spin_button_value_changed, this);
+        _spin_button.set_wrap(_target_id == 'h' or _target_id == 'H');
 
         _main.push_back(&_label);
         _main.push_back(&_gl_area);
@@ -608,6 +615,9 @@ namespace mousetrap
             instance->_drag_active = false;
             instance->_gl_area.set_cursor(GtkCursorType::GRAB);
         }
+
+        *instance->_owner->_previous_color = *instance->_owner->_current_color;
+        instance->_owner->_current_color_region.update(*instance->_owner->_current_color, *instance->_owner->_previous_color);
     }
 
     void VerboseColorPicker::SliderRegion::on_slider_motion(MotionEventController*, double x, double y, SliderRegion* instance)
@@ -725,6 +735,7 @@ namespace mousetrap
         }
 
         *_current_color = color;
+        _current_color_region.update(color, *_previous_color);
     };
 
     VerboseColorPicker::VerboseColorPicker()
@@ -742,23 +753,46 @@ namespace mousetrap
             auto* slider = add_slider(c).first->second;
 
             if (c == 'a')
+            {
                 slider->set_value(_current_color->a);
+                slider->operator Widget*()->set_tooltip_title("Opacity (Alpha)");
+            }
             else if (c == 'h')
+            {
                 slider->set_value(_current_color->h);
+                slider->operator Widget*()->set_tooltip_title("Hue");
+            }
             else if (c == 's')
+            {
                 slider->set_value(_current_color->s);
+                slider->operator Widget*()->set_tooltip_title("Saturation");
+            }
             else if (c == 'v')
+            {
                 slider->set_value(_current_color->v);
+                slider->operator Widget*()->set_tooltip_title("Value (Chroma)");
+            }
             else if (c == 'r')
+            {
                 slider->set_value(_current_color->operator RGBA().r);
+                slider->operator Widget*()->set_tooltip_title("Red");
+            }
             else if (c == 'g')
+            {
                 slider->set_value(_current_color->operator RGBA().g);
+                slider->operator Widget*()->set_tooltip_title("Green");
+            }
             else if (c == 'b')
+            {
                 slider->set_value(_current_color->operator RGBA().b);
+                slider->operator Widget*()->set_tooltip_title("Blue");
+            }
         }
 
         for (auto* label : {&_opacity_label, &_hsv_label, &_rgb_label})
+        {
             label->set_halign(GTK_ALIGN_START);
+        }
 
         for (auto& pair : _sliders)
             pair.second->operator Widget *()->set_margin_start(2 * state::margin_unit);
@@ -852,6 +886,8 @@ namespace mousetrap
             slider.set_left_color(RGBA(color_rgba.r, color_rgba.g, 0, color_rgba.a));
             slider.set_right_color(RGBA(color_rgba.r, color_rgba.g, 1, color_rgba.a));
         }
+
+        _current_color_region.update(*_current_color, *_previous_color);
     }
 
     void VerboseColorPicker::update()
