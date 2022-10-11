@@ -26,9 +26,13 @@ namespace mousetrap
 
             using ActionSignature = void(*)(void* user_data);
 
+            /// name should **not** have app. prefix, for example `test_action`, not `app.test_action`
             template<typename Function_t, typename Data_t>
             void add_action(const std::string& id, Function_t, Data_t user_data);
 
+            template<typename Function_t>
+            void add_stateful_action(const std::string& id, Function_t, bool* state);
+            
             void activate_action(const std::string& id);
             GAction* get_action(const std::string& id);
 
@@ -36,9 +40,14 @@ namespace mousetrap
             void add_window(Window*);
 
         private:
-            static void action_wrapper(GSimpleAction*, GVariant*, std::pair<ActionSignature, void*>*);
-
             GtkApplication* _native;
+
+            using action_data = struct {std::function<void(void*)> function; void* data;};
+            using action_id = std::string;
+            std::unordered_map<action_id, action_data*> _actions;
+
+            using action_wrapper_data = struct {action_id id; Application* instance;};
+            static void action_wrapper(GSimpleAction*, GVariant*, action_wrapper_data*);
     };
 }
 

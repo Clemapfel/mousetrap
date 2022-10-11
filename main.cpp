@@ -36,6 +36,7 @@
 #include <app/preview.hpp>
 #include <app/layer_view.hpp>
 #include <app/verbose_color_picker.hpp>
+#include <app/menubar.hpp>
 
 /*
 #include <app/toolbox.hpp>
@@ -49,22 +50,6 @@
  */
 
 using namespace mousetrap;
-
-namespace mousetrap::state
-{
-    void test_action(void*) {
-        std::cout << "test" << std::endl;
-    }
-
-    void setup_global_menu_bar_model()
-    {
-        state::global_menu_bar_model = new MenuModel();
-        auto* inner = new MenuModel();
-        state::app->add_action("test_action", test_action, (void*) nullptr);
-        inner->add_action("test", "app.test_action");
-        state::global_menu_bar_model->add_submenu("Test", inner);
-    }
-}
 
 static void activate(GtkApplication* app, void*)
 {
@@ -125,7 +110,7 @@ static void activate(GtkApplication* app, void*)
     state::layer_view = new LayerView();
     state::verbose_color_picker = new VerboseColorPicker();
 
-    state::main_window->set_child(state::verbose_color_picker->operator Widget*());
+    state::main_window->set_child(state::layer_view->operator Widget*());
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

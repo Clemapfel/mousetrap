@@ -30,17 +30,31 @@ namespace mousetrap
         return G_OBJECT(_native);
     }
 
-    void Application::action_wrapper(GSimpleAction*, GVariant*, std::pair<ActionSignature, void*>* data)
+    void Application::action_wrapper(GSimpleAction*, GVariant*, action_wrapper_data* data)
     {
-        (*data->first)(data->second);
+        auto* action = data->instance->_actions.at(data->id);
+        action->function(action->data);
     }
 
     template<typename Function_t, typename Data_t>
     void Application::add_action(const std::string& id, Function_t f, Data_t user_data)
     {
+        auto temp = std::function<void(Data_t)>(f);
+        auto final_id = "app." + id;
+        auto inserted = _actions.insert({final_id, new action_data{
+            std::function<void(void*)>(*(reinterpret_cast<std::function<void(void*)>*>(&temp))),
+            reinterpret_cast<void*>(user_data)
+        }}).first->second;
+
         auto* action = g_simple_action_new(id.c_str(), nullptr);
-        g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(action_wrapper), (void*) (new std::pair<ActionSignature, void*>(f, reinterpret_cast<void*>(user_data))));
+        g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(action_wrapper), (void*) (new action_wrapper_data{final_id, this}));
         g_action_map_add_action(G_ACTION_MAP(_native), G_ACTION(action));
+    }
+
+    template<typename Function_t>
+    void Application::add_stateful_action(const std::string& id, Function_t f, bool* state)
+    {
+        auto* action = g_property_action_new(id.c_str(), state, "state");
     }
 
     void Application::activate_action(const std::string& id)
