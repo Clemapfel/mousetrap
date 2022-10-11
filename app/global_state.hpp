@@ -14,6 +14,7 @@
 #include <include/window.hpp>
 #include <include/pixel_buffer.hpp>
 #include <include/shortcut_map.hpp>
+#include <include/undo_stack.hpp>
 
 #include <app/layer.hpp>
 #include <app/app_component.hpp>
@@ -29,6 +30,7 @@ namespace mousetrap::state
     Window* main_window = nullptr;
     Application* app = nullptr;
     ShortcutMap* shortcut_map = nullptr;
+    MenuModel* global_menu_bar_model = nullptr;
 
     // ### COLORS #####################################
 
@@ -39,13 +41,6 @@ namespace mousetrap::state
     AppComponent* primary_secondary_color_swapper = nullptr;
     AppComponent* verbose_color_picker = nullptr;
     AppComponent* palette_view = nullptr;
-
-    void set_primary_color(HSVA color)
-    {
-        //primary_color = color;
-        //color_picker->update();
-        //primary_secondary_color_swapper->update();
-    }
 
     // ### PALETTES ###################################
 
@@ -84,7 +79,11 @@ namespace mousetrap::state
 
     AppComponent* layer_view = nullptr;
 
-    // ### FORMATING ##################################
+    // ### SYSTEM ######################################
+
+
+
+    // ### FORMATING ###################################
 
     float margin_unit = 10; // px
     size_t slider_min_width = 0;

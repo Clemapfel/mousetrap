@@ -50,6 +50,22 @@
 
 using namespace mousetrap;
 
+namespace mousetrap::state
+{
+    void test_action(void*) {
+        std::cout << "test" << std::endl;
+    }
+
+    void setup_global_menu_bar_model()
+    {
+        state::global_menu_bar_model = new MenuModel();
+        auto* inner = new MenuModel();
+        state::app->add_action("test_action", test_action, (void*) nullptr);
+        inner->add_action("test", "app.test_action");
+        state::global_menu_bar_model->add_submenu("Test", inner);
+    }
+}
+
 static void activate(GtkApplication* app, void*)
 {
     state::shortcut_map = new ShortcutMap();
@@ -57,6 +73,8 @@ static void activate(GtkApplication* app, void*)
 
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
+    state::app->add_window(state::main_window);
+    state::main_window->set_show_menubar(true);
 
     auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
 
@@ -114,9 +132,18 @@ static void activate(GtkApplication* app, void*)
     state::main_window->grab_focus();
 }
 
+static void startup(GApplication*)
+{
+    state::global_menu_bar_model = new MenuModel();
+    state::setup_global_menu_bar_model();
+    state::app->set_menubar(state::global_menu_bar_model);
+}
+
 int main()
 {
-    state::app = new Application(activate);
+    state::app = new Application();
+    state::app->connect_signal("activate", activate);
+    state::app->connect_signal("startup", startup);
     return state::app->run();
 }
 

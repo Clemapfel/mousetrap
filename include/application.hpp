@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include <include/signal_emitter.hpp>
+#include <include/menu_model.hpp>
 
 #include <string>
 
@@ -16,8 +17,7 @@ namespace mousetrap
     class Application : public SignalEmitter
     {
         public:
-            template<typename InitializeFunction_t>
-            Application(InitializeFunction_t*, void* = nullptr);
+            Application();
 
             virtual ~Application();
 
@@ -26,10 +26,14 @@ namespace mousetrap
 
             using ActionSignature = void(*)(void* user_data);
 
-            template<typename T>
-            void add_action(const std::string& id, ActionSignature, T user_data);
+            template<typename Function_t, typename Data_t>
+            void add_action(const std::string& id, Function_t, Data_t user_data);
+
             void activate_action(const std::string& id);
             GAction* get_action(const std::string& id);
+
+            void set_menubar(MenuModel*);
+            void add_window(Window*);
 
         private:
             static void action_wrapper(GSimpleAction*, GVariant*, std::pair<ActionSignature, void*>*);

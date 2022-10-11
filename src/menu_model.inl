@@ -19,6 +19,7 @@ namespace mousetrap
     {
         auto* item = g_menu_item_new(label.c_str(), action_id.c_str());
         g_menu_append_item(_native, item);
+        g_object_unref(item);
     }
 
     void MenuModel::add_section(const std::string& label, MenuModel* model)

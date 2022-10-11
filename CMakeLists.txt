@@ -195,7 +195,7 @@ add_library(mousetrap SHARED
     src/grid_view.inl
 
     include/reorderable_list.hpp
-        include/blend_mode.hpp src/blend_mode.inl include/viewport.hpp app/layer_view.hpp app/layer_view.hpp include/center_box.hpp include/selection_model.hpp app/layer_view.hpp include/texture_workspace.hpp include/dialog.hpp src/dialog.inl)
+        include/blend_mode.hpp src/blend_mode.inl include/viewport.hpp app/layer_view.hpp app/layer_view.hpp include/center_box.hpp include/selection_model.hpp app/layer_view.hpp include/texture_workspace.hpp include/dialog.hpp src/dialog.inl include/undo_stack.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -232,7 +232,7 @@ add_library(app STATIC
     app/layer_view.hpp
     app/layer_view/layer_row.inl
     app/layer_view/frame_control_bar.inl
-    app/layer_view/layer_control_bar.inl app/layer_view/layer_property_options.inl app/verbose_color_picker.hpp)
+    app/layer_view/layer_control_bar.inl app/layer_view/layer_property_options.inl app/verbose_color_picker.hpp app/menubar.hpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

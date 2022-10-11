@@ -26,6 +26,8 @@ namespace mousetrap
         private:
             void update(HSVA Color);
 
+            void register_undo_task(HSVA color_to_switch_to);
+
             static void on_render_area_realize(Widget*, ColorPicker* instance);
             static void on_render_area_resize(GLArea*, int, int , ColorPicker* instance);
 

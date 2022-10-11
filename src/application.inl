@@ -9,11 +9,9 @@
 
 namespace mousetrap
 {
-    template<typename InitializeFunction_t>
-    Application::Application(InitializeFunction_t* initialize, void* data)
+    Application::Application()
     {
         _native = gtk_application_new(nullptr, G_APPLICATION_FLAGS_NONE);
-        g_signal_connect(_native, "activate", G_CALLBACK(initialize), data);
         _native = g_object_ref(_native);
     }
 
@@ -37,8 +35,8 @@ namespace mousetrap
         (*data->first)(data->second);
     }
 
-    template<typename T>
-    void Application::add_action(const std::string& id, ActionSignature f, T user_data)
+    template<typename Function_t, typename Data_t>
+    void Application::add_action(const std::string& id, Function_t f, Data_t user_data)
     {
         auto* action = g_simple_action_new(id.c_str(), nullptr);
         g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(action_wrapper), (void*) (new std::pair<ActionSignature, void*>(f, reinterpret_cast<void*>(user_data))));
@@ -60,4 +58,15 @@ namespace mousetrap
     {
         return g_action_map_lookup_action(G_ACTION_MAP(_native), id.c_str());
     }
+
+    void Application::set_menubar(MenuModel* model)
+    {
+        gtk_application_set_menubar(_native, model->operator GMenuModel*());
+    }
+
+    void Application::add_window(Window* window)
+    {
+        gtk_application_add_window(_native, window->operator _GtkWindow *());
+    }
+
 }
