@@ -49,6 +49,7 @@ namespace mousetrap
 
             GLArea _layer_area;
             std::deque<LayerShape*> _layer_shapes;
+            std::vector<Shape*> _grid_shapes;
             SubtractOverlay _layer_subtract_overlay;
 
             static void on_layer_area_realize(Widget*, Canvas* instance);
@@ -179,7 +180,7 @@ namespace mousetrap
         };
 
         on_layer_area_resize(area, state::layer_resolution.x, state::layer_resolution.y, instance);
-        instance->schedule_layer_render_tasks();
+            // also schedules render tasks
     }
 
     void Canvas::on_layer_area_resize(GLArea* area, int w_in, int h_in, Canvas* instance)
@@ -214,6 +215,11 @@ namespace mousetrap
             }
         }
 
+        instance->_transparency_shape->as_rectangle(
+                {0.5 - width / 2, 0.5 - height / 2},
+                {width, height}
+        );
+
         instance->_layer_subtract_overlay.top->as_rectangle(
                 {x - a, y - b}, {x + w + a, y - b},
                 {x - a, y}, {x + w + a, y}
@@ -234,12 +240,47 @@ namespace mousetrap
                 {x + w + a, y + h}, {x + w, y + h}
         );
 
+        for (auto* line : instance->_grid_shapes)
+            delete line;
+
+        instance->_grid_shapes.clear();
+
+        x = instance->_layer_shapes.at(0)->frames.at(0)->get_top_left().x;
+        y = instance->_layer_shapes.at(0)->frames.at(0)->get_top_left().y;
+        w = instance->_layer_shapes.at(0)->frames.at(0)->get_size().x;
+        h = instance->_layer_shapes.at(0)->frames.at(0)->get_size().y;
+
+        std::cout << x << " " << y << " " << w << " " << h << std::endl;
+
+        for (size_t i = 0; i < state::layer_resolution.x + 1; ++i)
+        {
+            auto* line = instance->_grid_shapes.emplace_back(new Shape());
+            line->as_line(
+                    {x + ((float(i) / state::layer_resolution.x) * w), y},
+                    {x + ((float(i) / state::layer_resolution.x) * w), y + h}
+            );
+        }
+
+        for (size_t i = 0; i < state::layer_resolution.y + 1; ++i)
+        {
+            auto* line = instance->_grid_shapes.emplace_back(new Shape());
+            line->as_line(
+                    {x, y + ((float(i) / state::layer_resolution.y) * h)},
+                    {x + w, y + ((float(i) / state::layer_resolution.y) * h)}
+            );
+        }
+
+        for (auto* shape : instance->_grid_shapes)
+            shape->set_color(RGBA(1, 0, 1, 1));
+
+        instance->schedule_layer_render_tasks();
         area->queue_render();
     }
 
     void Canvas::schedule_layer_render_tasks()
     {
         _layer_area.clear_render_tasks();
+
         size_t frame_i = state::current_frame;
         for (size_t layer_i = 0; layer_i < state::layers.size(); ++layer_i)
         {
@@ -249,6 +290,20 @@ namespace mousetrap
                 _transform,
                 state::layers.at(layer_i)->blend_mode
             );
+            _layer_area.add_render_task(task);
+        }
+
+        for (auto* shape : _grid_shapes)
+        {
+            auto task = RenderTask(shape, nullptr, _transform);
+            _layer_area.add_render_task(task);
+        }
+
+        auto& overlay = _layer_subtract_overlay;
+        for (auto* shape : {overlay.top, overlay.bottom, overlay.left, overlay.right})
+        {
+            shape->set_color(RGBA(0, 0, 0, 0));
+            auto task = RenderTask(shape, nullptr, _transform, BlendMode::MULTIPLY);
             _layer_area.add_render_task(task);
         }
 
@@ -271,7 +326,7 @@ namespace mousetrap
         _overlay.set_child(&_transparency_area);
         _overlay.add_overlay(&_layer_area);
 
-        set_scale(16);
+        set_scale(8);
     }
 
     void Canvas::set_scale(float scale)

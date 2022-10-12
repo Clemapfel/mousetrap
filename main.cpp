@@ -60,7 +60,7 @@ static void activate(GtkApplication* app, void*)
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
     state::app->add_window(state::main_window);
-    //state::main_window->set_show_menubar(true);
+    state::main_window->set_show_menubar(true);
 
     auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
 
