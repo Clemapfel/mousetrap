@@ -79,6 +79,10 @@ namespace mousetrap::state
 
     AppComponent* layer_view = nullptr;
 
+    // ### RENDER DRAW #################################
+
+    AppComponent* canvas;
+
     // ### SYSTEM ######################################
 
 

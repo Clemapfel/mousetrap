@@ -232,7 +232,7 @@ add_library(app STATIC
     app/layer_view.hpp
     app/layer_view/layer_row.inl
     app/layer_view/frame_control_bar.inl
-    app/layer_view/layer_control_bar.inl app/layer_view/layer_property_options.inl app/verbose_color_picker.hpp app/menubar.hpp)
+    app/layer_view/layer_control_bar.inl app/layer_view/layer_property_options.inl app/verbose_color_picker.hpp app/menubar.hpp app/canvas.hpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

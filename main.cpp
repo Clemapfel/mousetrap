@@ -37,6 +37,7 @@
 #include <app/layer_view.hpp>
 #include <app/verbose_color_picker.hpp>
 #include <app/menubar.hpp>
+#include <app/canvas.hpp>
 
 /*
 #include <app/toolbox.hpp>
@@ -59,7 +60,7 @@ static void activate(GtkApplication* app, void*)
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
     state::app->add_window(state::main_window);
-    state::main_window->set_show_menubar(true);
+    //state::main_window->set_show_menubar(true);
 
     auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
 
@@ -109,8 +110,9 @@ static void activate(GtkApplication* app, void*)
 
     state::layer_view = new LayerView();
     state::verbose_color_picker = new VerboseColorPicker();
+    state::canvas = new Canvas();
 
-    state::main_window->set_child(state::layer_view->operator Widget*());
+    state::main_window->set_child(state::canvas->operator Widget*());
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

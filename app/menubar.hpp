@@ -30,6 +30,14 @@ Select >
     Select All
     Invert Selection
     Select Color...
+Image >
+    Canvas Size...
+    Scale
+    ---
+    Flip Horizontally
+    Flip Vertically
+    Rotate clockwise
+    Rotate counter-clockwise
 Colors >
     Palette >
         Load...
@@ -80,6 +88,12 @@ Settings >
     Animation >
         Set FPS...
         Set Show Onion Skin...
+Other >
+    Manual...
+    About...
+    GitHub
+    Donate
+
 */
 
     namespace MenuBar
@@ -123,6 +137,31 @@ Settings >
         {}
 
         void selection_select_by_color(void* = nullptr)
+        {}
+
+        static inline MenuModel* _image_menu_model;
+        static inline MenuModel* _image_size_menu_model;
+        static inline MenuModel* _image_transform_menu_model;
+
+        void image_resize_canvas(void* = nullptr)
+        {}
+
+        void image_scale_image(void* = nullptr)
+        {}
+
+        void image_crop_to_selection(void* = nullptr)
+        {}
+
+        void image_transform_flip_horizontally(void* = nullptr)
+        {}
+
+        void image_transform_flip_vertically(void* = nullptr)
+        {}
+
+        void image_transform_rotate_clockwise(void* = nullptr)
+        {}
+
+        void image_transform_rotate_counter_clockwise(void* = nullptr)
         {}
 
         static inline MenuModel* _colors_menu_model = nullptr;
@@ -257,6 +296,25 @@ Settings >
         
         void settings_animation_set_set_onion_skin(void* = nullptr)
         {}
+        
+        static inline MenuModel* _settings_image_menu_model = nullptr;
+        
+        void settings_set_show_grid(void* = nullptr)
+        {}
+
+        static inline MenuModel* _other_menu_model;
+
+        void other_show_manual(void* = nullptr)
+        {}
+
+        void other_show_about_info(void* = nullptr)
+        {}
+
+        void other_github_link(void* = nullptr)
+        {}
+
+        void other_donate_link(void* = nullptr)
+        {}
     }
 
     void setup_global_menu_bar_model()
@@ -300,7 +358,25 @@ Settings >
         add_action(_selection_menu_model, "Select All", "selection_select_all", selection_select_all);
         add_action(_selection_menu_model, "Invert", "selection_invert", selection_invert);
         add_action(_selection_menu_model, "Select By Color...", "selection_select_by_color", selection_select_by_color);
-        
+
+        // IMAGE
+
+        _image_menu_model = new MenuModel();
+        _image_size_menu_model = new MenuModel();
+        _image_transform_menu_model = new MenuModel();
+
+        state::global_menu_bar_model->add_submenu("Image", _image_menu_model);
+        _image_menu_model->add_section("Size", _image_size_menu_model);
+        add_action(_image_size_menu_model, "Resize Canvas...", "image_resize_canvas", image_resize_canvas);
+        add_action(_image_size_menu_model, "Scale...", "image_crop_to_selection", image_crop_to_selection);
+        add_action(_image_size_menu_model, "Crop to Selection", "image_scale_image", image_scale_image);
+
+        _image_menu_model->add_section("Transform", _image_transform_menu_model);
+        add_action(_image_transform_menu_model, "Flip Horizontally", "image_transform_flip_horizontally", image_transform_flip_horizontally);
+        add_action(_image_transform_menu_model, "Flip Vertically", "image_transform_flip_vertically", image_transform_flip_vertically);
+        add_action(_image_transform_menu_model, "Rotate Clockwise", "image_rotate_clockwise", image_transform_rotate_clockwise);
+        add_action(_image_transform_menu_model, "Rotate Counter-clockwise", "image_rotate_clockwise", image_transform_rotate_clockwise);
+
         // COLORS
 
         _colors_menu_model = new MenuModel();
@@ -339,10 +415,13 @@ Settings >
         add_action(_layers_menu_model, "Delete Layer", "layers_delete_layer", layers_delete_layer);
         add_action(_layers_menu_model, "Merge Down", "layers_merge_down", layers_merge_down);
         add_action(_layers_menu_model, "Flatten All", "layers_flatten_all", layers_flatten_all);
+
+        /*
         add_action(_layers_menu_model, "Set All Layers Hidden", "layers_hide_all", layers_hide_all);
         add_action(_layers_menu_model, "Set All Layers Visible", "layers_show_all", layers_show_all);
         add_action(_layers_menu_model, "Set All Layers Locked", "layers_lock_all", layers_lock_all);
         add_action(_layers_menu_model, "Set All Layers Unlocked", "layers_unlock_all", layers_unlock_all);
+         */
         
         _layers_frames_menu_model->add_section("Frames", _frames_menu_model);
         add_action(_frames_menu_model, "New Key Frame", "frames_new_key_frame", frames_new_key_frame);
@@ -370,13 +449,26 @@ Settings >
         _settings_menu_model = new MenuModel();
         _settings_keybinding_menu_model = new MenuModel();
         _settings_animation_menu_model = new MenuModel();
+        _settings_image_menu_model = new MenuModel();
 
         state::global_menu_bar_model->add_submenu("Settings", _settings_menu_model);
-        _settings_menu_model->add_section("Keymap", _settings_keybinding_menu_model);
-        add_action(_settings_keybinding_menu_model, "Show...", "settings_keybindings_show", settings_keybindings_show);
-        add_action(_settings_keybinding_menu_model, "Edit...", "settings_keybindings_edit", settings_keybindings_edit);
+        _settings_menu_model->add_section("Canvas", _settings_image_menu_model);
+        add_action(_settings_image_menu_model, "Grid...", "settings_set_show_grid", settings_set_show_grid);
         _settings_menu_model->add_section("Animation", _settings_animation_menu_model);
         add_action(_settings_animation_menu_model, "FPS...", "settings_animation_set_fps", settings_animation_set_fps);
         add_action(_settings_animation_menu_model, "Onion Skin...", "settings_animation_set_set_onion_skin", settings_animation_set_set_onion_skin);
+        _settings_menu_model->add_section("Keymap", _settings_keybinding_menu_model);
+        add_action(_settings_keybinding_menu_model, "Show", "settings_keybindings_show", settings_keybindings_show);
+        add_action(_settings_keybinding_menu_model, "Edit...", "settings_keybindings_edit", settings_keybindings_edit);
+
+        // OTHER
+
+        _other_menu_model = new MenuModel();
+        state::global_menu_bar_model->add_submenu("Other", _other_menu_model);
+
+        add_action(_other_menu_model, "Help...", "other_show_manual", other_show_manual);
+        add_action(_other_menu_model, "About...", "other_show_about_info", other_show_about_info);
+        add_action(_other_menu_model, "Contribute on GitHub", "other_github_link", other_github_link);
+        add_action(_other_menu_model, "Donate", "other_donate_link", other_github_link);
     }
 }
