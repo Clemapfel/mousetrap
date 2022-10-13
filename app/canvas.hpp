@@ -35,13 +35,14 @@ namespace mousetrap
             class RenderArea
             {
                 public:
-                    RenderArea();
+                    RenderArea(Canvas* owner);
                     operator Widget*();
 
                     void set_transform_offset(float x, float y);
                     void set_transform_scale(float);
 
                 private:
+                    Canvas* _owner;
                     Overlay _overlay;
 
                     struct SubtractOverlay
@@ -53,6 +54,7 @@ namespace mousetrap
                     };
     
                     Vector2f* _canvas_size = new Vector2f(state::layer_resolution);
+                    void update_canvas_size(float w, float h);
 
                     GLTransform* _transform = new GLTransform();
                     Vector2f _transform_offset = {0, 0};
@@ -68,7 +70,6 @@ namespace mousetrap
     
                     GLArea _layer_area;
                     std::deque<LayerShape*> _layer_shapes;
-                    SubtractOverlay _layer_subtract_overlay;
 
                     static void on_layer_area_realize(Widget*, Canvas::RenderArea* instance);
                     static void on_layer_area_resize(GLArea*, int, int, Canvas::RenderArea* instance);
@@ -97,15 +98,24 @@ namespace mousetrap
 
             RenderArea _render_area;
 
-            static inline const float max_offset = 1.49;
-            Adjustment _render_area_h_offset_adjustment = Adjustment(0, -max_offset, +max_offset, 0.001, 2*max_offset, 0);
-            Adjustment _render_area_v_offset_adjustment = Adjustment(0, -max_offset, +max_offset, 0.001, 2*max_offset, 0);
+            static inline const float page_size = 2 * 1.49;
+            Adjustment _render_area_h_offset_adjustment = Adjustment(0, -0.5 * page_size, +0.5 * page_size, 0.01, page_size, page_size);
+            Adjustment _render_area_v_offset_adjustment = Adjustment(0, -0.5 * page_size, +0.5 * page_size, 0.01, page_size, page_size);
 
             Scrollbar _render_area_h_scrollbar = Scrollbar(_render_area_h_offset_adjustment, GTK_ORIENTATION_HORIZONTAL);
             Scrollbar _render_area_v_scrollbar = Scrollbar(_render_area_v_offset_adjustment, GTK_ORIENTATION_VERTICAL);
 
+            static inline bool invert_h_scrollbar = false;
+            static inline bool invert_v_scrollbar = true;
+
             static void on_render_area_h_offset_adjustment_value_changed(Adjustment*, Canvas* instance);
             static void on_render_area_v_offset_adjustment_value_changed(Adjustment*, Canvas* instance);
+
+            ScrollEventController _scroll_event_controller;
+            static void on_scroll_event_controller_scroll(ScrollEventController*, double x, double y, Canvas* instance);
+
+            static inline float h_scroll_speed = 15;
+            static inline float v_scroll_speed = 15;
 
             Box _render_area_and_h_scrollbar = Box(GTK_ORIENTATION_VERTICAL);
             Box _render_area_and_v_scrollbar = Box(GTK_ORIENTATION_HORIZONTAL);
@@ -118,6 +128,28 @@ namespace mousetrap
 
 namespace mousetrap
 {
+    void Canvas::RenderArea::update_canvas_size(float w, float h)
+    {
+        *_canvas_size = {w, h};
+        _transparency_area.queue_render();
+
+        if (_layer_shapes.size() == 0 or _layer_shapes.at(0)->frames.at(0)->get_size().x == 0)
+            return;
+
+        auto& adjustment = _owner->_render_area_h_offset_adjustment;
+        float canvas_w = _layer_shapes.at(0)->frames.at(0)->get_size().x * _transform_scale.x;
+
+        if (canvas_w < 0)
+            canvas_w = 0.01;
+
+        //if (canvas_w > 1)
+            canvas_w = 0.4;
+
+        //adjustment.set_value(0);
+        //adjustment.set_page_increment(canvas_w * page_size);
+        _owner->_render_area_h_scrollbar.set_adjustment(adjustment);
+    }
+
     void Canvas::RenderArea::on_transparency_area_realize(Widget* widget, Canvas::RenderArea* instance)
     {
         auto* area = (GLArea*) widget;
@@ -147,8 +179,8 @@ namespace mousetrap
         for (auto* shape : {overlay.top, overlay.bottom, overlay.left, overlay.right})
         {
             shape->set_color(RGBA(0, 0, 0, 0));
-            auto task = RenderTask(shape, nullptr, nullptr, BlendMode::MULTIPLY);
-            //area->add_render_task(task);
+            auto task = RenderTask(shape, nullptr, instance->_transform, BlendMode::MULTIPLY);
+            area->add_render_task(task);
         }
 
         area->queue_render();
@@ -157,8 +189,7 @@ namespace mousetrap
     void Canvas::RenderArea::on_transparency_area_resize(GLArea* area, int w_in, int h_in, Canvas::RenderArea* instance)
     {
         area->make_current();
-
-        *instance->_canvas_size = {w_in, h_in};
+        instance->update_canvas_size(w_in, h_in);
 
         float width = state::layer_resolution.x / instance->_canvas_size->x;
         float height = state::layer_resolution.y / instance->_canvas_size->y;
@@ -169,14 +200,13 @@ namespace mousetrap
         float w = width - 2 * eps;
         float h = height - 2 * eps;
 
-        float a = 10e4;
-        float b = 10e4;
+        float a = 10;
+        float b = 10;
 
         instance->_transparency_shape->as_rectangle(
                 {-a, -b}, {2*a, 2*b}
         );
 
-        /*
         instance->_transparency_subtract_overlay.top->as_rectangle(
                 {x - a, y - b}, {x + w + a, y - b},
                 {x - a, y}, {x + w + a, y}
@@ -196,7 +226,6 @@ namespace mousetrap
                 {x + w, y}, {x + w + a, y},
                 {x + w + a, y + h}, {x + w, y + h}
         );
-         */
 
         area->queue_render();
     }
@@ -213,20 +242,13 @@ namespace mousetrap
                 layer_shape->frames.emplace_back(new Shape());
         }
 
-        instance->_layer_subtract_overlay = SubtractOverlay{
-                new Shape(),
-                new Shape(),
-                new Shape(),
-                new Shape()
-        };
-
         on_layer_area_resize(area, state::layer_resolution.x, state::layer_resolution.y, instance);
             // also schedules render tasks
     }
 
     void Canvas::RenderArea::on_layer_area_resize(GLArea* area, int w_in, int h_in, Canvas::RenderArea* instance)
     {
-        *instance->_canvas_size = {w_in, h_in};
+        instance->update_canvas_size(w_in, h_in);
 
         float width = state::layer_resolution.x / instance->_canvas_size->x;
         float height = state::layer_resolution.y / instance->_canvas_size->y;
@@ -258,26 +280,6 @@ namespace mousetrap
         instance->_transparency_shape->as_rectangle(
                 {0.5 - width / 2, 0.5 - height / 2},
                 {width, height}
-        );
-
-        instance->_layer_subtract_overlay.top->as_rectangle(
-                {x - a, y - b}, {x + w + a, y - b},
-                {x - a, y}, {x + w + a, y}
-        );
-
-        instance->_layer_subtract_overlay.bottom->as_rectangle(
-                {x - a, y + h}, {x + w + a, y + h},
-                {x - a, y + h + b}, {x + w + a, y + h + b}
-        );
-
-        instance->_layer_subtract_overlay.left->as_rectangle(
-                {x - a, y}, {x, y},
-                {x, y + h}, {x - a, y + h}
-        );
-
-        instance->_layer_subtract_overlay.right->as_rectangle(
-                {x + w, y}, {x + w + a, y},
-                {x + w + a, y + h}, {x + w, y + h}
         );
 
         for (auto* line : instance->_grid_shapes)
@@ -337,18 +339,11 @@ namespace mousetrap
             _layer_area.add_render_task(task);
         }
 
-        auto& overlay = _layer_subtract_overlay;
-        for (auto* shape : {overlay.top, overlay.bottom, overlay.left, overlay.right})
-        {
-            shape->set_color(RGBA(0, 0, 0, 0));
-            auto task = RenderTask(shape, nullptr, _transform, BlendMode::MULTIPLY);
-            //_layer_area.add_render_task(task);
-        }
-
         _layer_area.queue_render();
     }
 
-    Canvas::RenderArea::RenderArea()
+    Canvas::RenderArea::RenderArea(Canvas* owner)
+        : _owner(owner)
     {
         _transparency_area.connect_signal_realize(on_transparency_area_realize, this);
         _transparency_area.connect_signal_resize(on_transparency_area_resize, this);
@@ -387,6 +382,9 @@ namespace mousetrap
 
         _transparency_area.queue_render();
         _layer_area.queue_render();
+
+        if (_transparency_area.get_is_realized()) // TODO: why is this necessary?
+            on_transparency_area_resize(&_transparency_area, _canvas_size->x, _canvas_size->y, this);
     }
 
     void Canvas::RenderArea::set_grid_visible(bool b)
@@ -423,31 +421,52 @@ namespace mousetrap
 
     void Canvas::on_render_area_h_offset_adjustment_value_changed(Adjustment* adjustment, Canvas* instance)
     {
-        std::cout << "H: " << adjustment->get_value() << std::endl;
         instance->_render_area.set_transform_offset(
-            instance->_render_area_h_offset_adjustment.get_value(),
-            instance->_render_area_v_offset_adjustment.get_value()
+            (invert_h_scrollbar ? -1 : 1) * instance->_render_area_h_offset_adjustment.get_value(),
+            (invert_v_scrollbar ? -1 : 1) * instance->_render_area_v_offset_adjustment.get_value()
         );
     }
 
     void Canvas::on_render_area_v_offset_adjustment_value_changed(Adjustment* adjustment, Canvas* instance)
     {
-        std::cout << "V: " << adjustment->get_value() << std::endl;
         instance->_render_area.set_transform_offset(
-            instance->_render_area_h_offset_adjustment.get_value(),
-            instance->_render_area_v_offset_adjustment.get_value()
+            (invert_h_scrollbar ? -1 : 1) * instance->_render_area_h_offset_adjustment.get_value(),
+            (invert_v_scrollbar ? -1 : 1) * instance->_render_area_v_offset_adjustment.get_value()
         );
     }
 
-    Canvas::Canvas()
+    void Canvas::on_scroll_event_controller_scroll(ScrollEventController*, double x, double y, Canvas* instance)
     {
-        _render_area_h_offset_adjustment.connect_signal_value_changed(on_render_area_h_offset_adjustment_value_changed, this);
-        _render_area_v_offset_adjustment.connect_signal_value_changed(on_render_area_v_offset_adjustment_value_changed, this);
+        auto v = instance->_render_area_v_offset_adjustment.get_value();
+        auto h = instance->_render_area_h_offset_adjustment.get_value();
+
+        x /= instance->_render_area.operator Widget *()->get_size().x;
+        y /= instance->_render_area.operator Widget *()->get_size().y;
+
+        x *= h_scroll_speed;
+        y *= v_scroll_speed;
+
+        instance->_render_area_v_offset_adjustment.set_value(v + y);
+        instance->_render_area_h_offset_adjustment.set_value(h + x);
+    }
+
+    Canvas::Canvas()
+        : _render_area(this)
+    {
+        //_render_area_h_offset_adjustment.connect_signal_value_changed(on_render_area_h_offset_adjustment_value_changed, this);
+        //_render_area_v_offset_adjustment.connect_signal_value_changed(on_render_area_v_offset_adjustment_value_changed, this);
+
+        std::cout << _render_area_h_scrollbar.get_adjustment().get_page_increment() << std::endl;
+        _render_area_h_offset_adjustment.set_page_increment(0.5 * page_size);
+        std::cout << _render_area_h_scrollbar.get_adjustment().get_page_increment() << std::endl;
 
         _render_area_and_v_scrollbar.push_back(_render_area);
         _render_area_and_v_scrollbar.push_back(&_render_area_v_scrollbar);
         _render_area_and_h_scrollbar.push_back(&_render_area_and_v_scrollbar);
         _render_area_and_h_scrollbar.push_back(&_render_area_h_scrollbar);
+
+        _scroll_event_controller.connect_signal_scroll(on_scroll_event_controller_scroll, this);
+        //_render_area.operator Widget *()->add_controller(&_scroll_event_controller);
 
         _main.push_back(&_render_area_and_h_scrollbar);
     }

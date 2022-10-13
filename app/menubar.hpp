@@ -85,6 +85,8 @@ Settings >
     Keybindings >
         Show...
         Edit...
+    Canvas >
+        Scrolling... // invert, speed
     Animation >
         Set FPS...
         Set Show Onion Skin...
@@ -297,9 +299,12 @@ Other >
         void settings_animation_set_set_onion_skin(void* = nullptr)
         {}
         
-        static inline MenuModel* _settings_image_menu_model = nullptr;
+        static inline MenuModel* _setings_canvas_menu_model = nullptr;
         
-        void settings_set_show_grid(void* = nullptr)
+        void settings_canvas_set_show_grid(void* = nullptr)
+        {}
+
+        void settings_canvas_scroll_options(void* = nullptr)
         {}
 
         static inline MenuModel* _other_menu_model;
@@ -449,11 +454,12 @@ Other >
         _settings_menu_model = new MenuModel();
         _settings_keybinding_menu_model = new MenuModel();
         _settings_animation_menu_model = new MenuModel();
-        _settings_image_menu_model = new MenuModel();
+        _setings_canvas_menu_model = new MenuModel();
 
         state::global_menu_bar_model->add_submenu("Settings", _settings_menu_model);
-        _settings_menu_model->add_section("Canvas", _settings_image_menu_model);
-        add_action(_settings_image_menu_model, "Grid...", "settings_set_show_grid", settings_set_show_grid);
+        _settings_menu_model->add_section("Canvas", _setings_canvas_menu_model);
+        add_action(_setings_canvas_menu_model, "Grid...", "settings_canvas_set_show_grid", settings_canvas_set_show_grid);
+        add_action(_setings_canvas_menu_model, "Scroll...", "settings_canvas_scroll_options", settings_canvas_scroll_options);
         _settings_menu_model->add_section("Animation", _settings_animation_menu_model);
         add_action(_settings_animation_menu_model, "FPS...", "settings_animation_set_fps", settings_animation_set_fps);
         add_action(_settings_animation_menu_model, "Onion Skin...", "settings_animation_set_set_onion_skin", settings_animation_set_set_onion_skin);

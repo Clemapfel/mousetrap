@@ -35,6 +35,7 @@ namespace mousetrap
             void set_lower(float);
             void set_upper(float);
             void set_value(float);
+            void set_step_increment(float);
             void set_page_increment(float);
             void set_page_size(float);
 

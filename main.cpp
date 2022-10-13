@@ -112,7 +112,17 @@ static void activate(GtkApplication* app, void*)
     state::verbose_color_picker = new VerboseColorPicker();
     state::canvas = new Canvas();
 
-    state::main_window->set_child(state::canvas->operator Widget*());
+    // TODO
+    auto* window = state::main_window->operator GtkWindow*();
+
+    auto* adjustment = GTK_ADJUSTMENT(gtk_adjustment_new(0, -1, 1, 0.01, 2, 1));
+    auto* scrollbar = gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL, adjustment);
+    //gtk_adjustment_set_page_increment(adjustment, 1);
+    gtk_adjustment_set_value(adjustment, +1);
+    gtk_window_set_child(window, scrollbar);
+    // TODO
+
+    //state::main_window->set_child(state::canvas->operator Widget*());
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);
@@ -131,6 +141,7 @@ int main()
     state::app = new Application();
     state::app->connect_signal("activate", activate);
     state::app->connect_signal("startup", startup);
+
     return state::app->run();
 }
 

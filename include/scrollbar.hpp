@@ -14,6 +14,8 @@ namespace mousetrap
     {
         public:
             Scrollbar(Adjustment, GtkOrientation = GTK_ORIENTATION_HORIZONTAL);
+            void set_adjustment(Adjustment&);
+            Adjustment get_adjustment();
     };
 }
 

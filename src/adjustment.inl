@@ -106,4 +106,9 @@ namespace mousetrap
     {
         gtk_adjustment_set_value(_native, value);
     }
+
+    void Adjustment::set_step_increment(float value)
+    {
+        gtk_adjustment_set_step_increment(_native, value);
+    }
 }
