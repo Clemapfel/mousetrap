@@ -44,4 +44,9 @@ namespace mousetrap
     {
         transform = glm::scale(transform, Vector3f(x, y, 1));
     }
+
+    void GLTransform::reset()
+    {
+        transform = glm::mat4x4(1);
+    }
 }
