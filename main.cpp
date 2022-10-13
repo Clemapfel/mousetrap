@@ -115,11 +115,14 @@ static void activate(GtkApplication* app, void*)
     // TODO
     auto* window = state::main_window->operator GtkWindow*();
 
-    auto* adjustment = GTK_ADJUSTMENT(gtk_adjustment_new(0, -1, 1, 0.01, 2, 1));
-    auto* scrollbar = gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL, adjustment);
-    //gtk_adjustment_set_page_increment(adjustment, 1);
-    gtk_adjustment_set_value(adjustment, +1);
-    gtk_window_set_child(window, scrollbar);
+    auto* adjustment = GTK_ADJUSTMENT(gtk_adjustment_new(0, -1, 1, 0.01, 2, 2));
+    auto* scrollbar = GTK_SCROLLBAR(gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL, adjustment));
+
+    TODO: only way to change adjustment parameters is to create a new adjustment, then set scrollbar to new adjustment
+
+    adjustment = GTK_ADJUSTMENT(gtk_adjustment_new(0, -1, 1, 0.01, 2, 1));
+
+    gtk_window_set_child(window, GTK_WIDGET(scrollbar));
     // TODO
 
     //state::main_window->set_child(state::canvas->operator Widget*());
