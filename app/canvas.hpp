@@ -36,7 +36,9 @@ namespace mousetrap
                     void set_transform_offset(float x, float y);
                     void set_transform_scale(float );
 
-                    Vector2f get_canvas_size();
+                    Vector2f get_size();
+                    Vector2f get_layer_shape_size(); // in px
+                    void update_autohide_grid();
                     
                 private:
                     Canvas* _owner;
@@ -346,9 +348,17 @@ namespace mousetrap
         _overlay.add_overlay(&_layer_area);
     }
 
-    Vector2f Canvas::RenderArea::get_canvas_size()
+    Vector2f Canvas::RenderArea::get_size()
     {
         return *_canvas_size;
+    }
+
+    Vector2f Canvas::RenderArea::get_layer_shape_size()
+    {
+        if (_layer_shapes.empty())
+            return {1, 1};
+
+        return _layer_shapes.at(0)->frames.at(0)->get_size() * (*_canvas_size) * Vector2f(_transform_scale, _transform_scale);
     }
 
     void Canvas::RenderArea::set_transform_scale(float scale)
@@ -376,6 +386,9 @@ namespace mousetrap
         _layer_area.queue_render();
     }
 
+    void Canvas::RenderArea::update_autohide_grid()
+    {}
+
     Canvas::RenderArea::operator Widget*()
     {
         return &_overlay;
@@ -399,8 +412,8 @@ namespace mousetrap
 
     void Canvas::on_scroll_event_controller_scroll(ScrollEventController*, double x, double y, Canvas* instance)
     {
-        auto normalized_x = x / instance->_render_area.get_canvas_size().x;
-        auto normalized_y = y / instance->_render_area.get_canvas_size().y;
+        auto normalized_x = x / instance->_render_area.get_size().x;
+        auto normalized_y = y / instance->_render_area.get_size().y;
 
         if (instance->h_scroll_inverted)
             normalized_x *= -1;
@@ -415,6 +428,14 @@ namespace mousetrap
     void Canvas::on_zoom_scale_value_changed(Scale* scale, Canvas* instance)
     {
         instance->_render_area.set_transform_scale(scale->get_value());
+        instance->_render_area.update_autohide_grid();
+
+        auto canvas_size = instance->_render_area.get_layer_shape_size();
+        auto area_size = instance->_render_area.get_size();
+
+        float canvas_w = glm::clamp<float>(canvas_size.x / area_size.x, 0.001, 1);
+        instance->_render_area_h_adjustment.set_page_increment(canvas_w);
+        std::cout << instance->_render_area_h_adjustment.get_page_increment() << std::endl;
     }
 
     Canvas::operator Widget*()
