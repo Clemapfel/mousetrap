@@ -54,6 +54,13 @@ namespace mousetrap
         _refs.push_back(g_object_ref(G_OBJECT(ref)));
     }
 
+    void Widget::override_native(GtkWidget* new_native)
+    {
+        auto* old_native = _native;
+        _native = g_object_ref(new_native);
+        g_object_unref(old_native);
+    }
+
     Widget::~Widget()
     {
         if (gtk_widget_get_parent(_native) == nullptr)

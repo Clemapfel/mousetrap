@@ -12,18 +12,42 @@ namespace mousetrap
 
     Adjustment::~Adjustment()
     {
-        g_object_unref(_native);
+        if (_native != nullptr)
+            g_object_unref(_native);
     }
 
     Adjustment::Adjustment(float current, float lower, float upper, float increment, float page_size, float page_increment)
         : HasValueChangedSignal<Adjustment>(this)
     {
-        _native = g_object_ref(gtk_adjustment_new(current, lower, upper, increment, page_size, page_increment));
+        _native = g_object_ref(gtk_adjustment_new(current, lower, upper, increment, page_size, increment));
     }
 
     Adjustment::Adjustment()
-            : Adjustment(0, 0, 0, 0, 0, 0)
+            : Adjustment(0, 0, 1, 1, 1, 1)
     {}
+
+    Adjustment::Adjustment(const Adjustment& other)
+        : HasValueChangedSignal<Adjustment>(this), _native(g_object_ref(other._native))
+    {}
+
+    Adjustment& Adjustment::operator=(const Adjustment& other)
+    {
+        _native = g_object_ref(other._native);
+        return *this;
+    }
+
+    Adjustment::Adjustment(Adjustment&& other)
+        : HasValueChangedSignal<Adjustment>(this), _native(g_object_ref(other._native))
+    {
+        other._native = nullptr;
+    }
+
+    Adjustment& Adjustment::operator=(Adjustment&& other)
+    {
+        _native = g_object_ref(other._native);
+        other._native = nullptr;
+        return *this;
+    }
 
     Adjustment::Adjustment(GtkAdjustment* in)
         : HasValueChangedSignal<Adjustment>(this)
@@ -82,33 +106,76 @@ namespace mousetrap
         return gtk_adjustment_get_value(_native);
     }
 
+    void Adjustment::set_value(float value)
+    {
+        gtk_adjustment_configure(_native,
+             value,
+             gtk_adjustment_get_lower(_native),
+             gtk_adjustment_get_upper(_native),
+             gtk_adjustment_get_step_increment(_native),
+             gtk_adjustment_get_page_size(_native),
+             gtk_adjustment_get_page_increment(_native)
+        );
+    }
+
+
     void Adjustment::set_lower(float value)
     {
-        gtk_adjustment_set_lower(_native, value);
+        gtk_adjustment_configure(_native,
+            gtk_adjustment_get_value(_native),
+            value,
+            gtk_adjustment_get_upper(_native),
+            gtk_adjustment_get_step_increment(_native),
+            gtk_adjustment_get_page_size(_native),
+            gtk_adjustment_get_page_increment(_native)
+        );
     }
 
     void Adjustment::set_upper(float value)
     {
-        gtk_adjustment_set_upper(_native, value);
-    }
-
-    void Adjustment::set_page_increment(float value)
-    {
-        gtk_adjustment_set_page_increment(_native, value);
-    }
-
-    void Adjustment::set_page_size(float value)
-    {
-        gtk_adjustment_set_page_size(_native, value);
-    }
-
-    void Adjustment::set_value(float value)
-    {
-        gtk_adjustment_set_value(_native, value);
+        gtk_adjustment_configure(_native,
+             gtk_adjustment_get_value(_native),
+             gtk_adjustment_get_lower(_native),
+             value,
+             gtk_adjustment_get_step_increment(_native),
+             gtk_adjustment_get_page_size(_native),
+             gtk_adjustment_get_page_increment(_native)
+        );
     }
 
     void Adjustment::set_step_increment(float value)
     {
-        gtk_adjustment_set_step_increment(_native, value);
+        gtk_adjustment_configure(_native,
+             gtk_adjustment_get_value(_native),
+             gtk_adjustment_get_lower(_native),
+             gtk_adjustment_get_upper(_native),
+             value,
+             gtk_adjustment_get_page_size(_native),
+             gtk_adjustment_get_page_increment(_native)
+        );
+    }
+
+    void Adjustment::set_page_increment(float value)
+    {
+        gtk_adjustment_configure(_native,
+             gtk_adjustment_get_value(_native),
+             gtk_adjustment_get_lower(_native),
+             gtk_adjustment_get_upper(_native),
+             gtk_adjustment_get_step_increment(_native),
+             gtk_adjustment_get_page_size(_native),
+             value
+        );
+    }
+
+    void Adjustment::set_page_size(float value)
+    {
+        gtk_adjustment_configure(_native,
+             gtk_adjustment_get_value(_native),
+             gtk_adjustment_get_lower(_native),
+             gtk_adjustment_get_upper(_native),
+             gtk_adjustment_get_step_increment(_native),
+             value,
+             gtk_adjustment_get_page_increment(_native)
+        );
     }
 }

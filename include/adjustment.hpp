@@ -15,7 +15,13 @@ namespace mousetrap
             Adjustment();
             Adjustment(GtkAdjustment*);
             Adjustment(float current, float lower, float upper, float increment, float page_size = 0, float page_increment = 0);
-            ~Adjustment();
+            virtual ~Adjustment();
+
+            Adjustment(const Adjustment&);
+            Adjustment(Adjustment&&);
+
+            Adjustment& operator=(const Adjustment&);
+            Adjustment& operator=(Adjustment&&);
 
             operator GtkAdjustment*();
             operator GObject*() override;

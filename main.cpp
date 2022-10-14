@@ -113,19 +113,27 @@ static void activate(GtkApplication* app, void*)
     state::canvas = new Canvas();
 
     // TODO
-    auto* window = state::main_window->operator GtkWindow*();
 
-    auto* adjustment = GTK_ADJUSTMENT(gtk_adjustment_new(0, -1, 1, 0.01, 2, 2));
-    auto* scrollbar = GTK_SCROLLBAR(gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL, adjustment));
+    static auto on_value_changed = [](Adjustment* adjustment, void*) {
+        std::cout << adjustment->get_value() << std::endl;
+    };
 
-    TODO: only way to change adjustment parameters is to create a new adjustment, then set scrollbar to new adjustment
+    auto* adjustment = new Adjustment(0, -1, 1, 0, 0, 0);
+    adjustment->connect_signal_value_changed(on_value_changed, (void*) nullptr);
+    auto* scrollbar = new Scrollbar(*adjustment);
+    scrollbar->set_adjustment(*adjustment);
 
-    adjustment = GTK_ADJUSTMENT(gtk_adjustment_new(0, -1, 1, 0.01, 2, 1));
+    /*
+    delete adjustment;
+    adjustment = new Adjustment(0, -1, 1, 0, 0, 0.5);
+    adjustment->connect_signal_value_changed(on_value_changed, (void*) nullptr);
+    scrollbar->set_adjustment(*adjustment);
+     */
 
-    gtk_window_set_child(window, GTK_WIDGET(scrollbar));
+
     // TODO
 
-    //state::main_window->set_child(state::canvas->operator Widget*());
+    state::main_window->set_child(state::canvas->operator Widget*());
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

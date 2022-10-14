@@ -84,6 +84,8 @@ namespace mousetrap
             template<typename GObject_t>
             void add_reference(GObject_t*);
 
+            void override_native(GtkWidget*);
+
         private:
             template<typename GtkWidget_t>
             Widget(GtkWidget_t*);
