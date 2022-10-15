@@ -113,6 +113,62 @@ static void activate(GtkApplication* app, void*)
     auto* color_picker = state::color_picker->operator Widget*();
     auto* canvas = state::canvas->operator Widget*();
 
+    auto* left_column = new Box(GTK_ORIENTATION_VERTICAL);
+    auto* center_column = new Box(GTK_ORIENTATION_VERTICAL);
+    auto* right_column = new Box(GTK_ORIENTATION_VERTICAL);
+
+    for (auto* column : {left_column, right_column})
+        column->set_size_request({state::margin_unit * 2, 0});
+
+    left_column->set_hexpand(false);
+    right_column->set_hexpand(false);
+    center_column->set_hexpand(true);
+
+    auto* left_center_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
+    auto* center_right_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
+
+    left_center_paned->set_start_child(left_column);
+    left_center_paned->set_end_child(center_right_paned);
+    center_right_paned->set_start_child(center_column);
+    center_right_paned->set_end_child(right_column);
+
+    left_center_paned->set_start_child_shrinkable(false);
+    center_right_paned->set_end_child_shrinkable(false);
+
+    left_center_paned->set_hexpand(false);
+    center_right_paned->set_hexpand(false);
+
+    float color_picker_width = 20 * state::margin_unit;
+    float color_swapper_height = 5 * state::margin_unit;
+
+    color_picker->set_size_request({color_picker_width, color_picker_width});
+    color_swapper->set_size_request({color_picker_width, color_swapper_height});
+
+    for (auto* w : {color_picker, color_swapper})
+        w->set_valign(GTK_ALIGN_END);
+
+    auto* palette_view_spacer_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
+    auto* palette_view_spacer = new SeparatorLine();
+    palette_view_spacer->set_hexpand(true);
+    palette_view_spacer->set_size_request({state::margin_unit, 0});
+    palette_view_spacer->set_opacity(0);
+    palette_view->set_vexpand(true);
+
+    palette_view_spacer_paned->set_start_child(palette_view);
+    palette_view_spacer_paned->set_end_child(palette_view_spacer);
+    palette_view_spacer_paned->set_start_child_shrinkable(false);
+    palette_view_spacer_paned->set_end_child_shrinkable(false);
+
+    left_column->push_back(palette_view_spacer_paned);
+    left_column->push_back(color_swapper);
+    left_column->push_back(color_picker);
+
+    center_column->push_back(canvas);
+
+    auto* main = new Box(GTK_ORIENTATION_VERTICAL);
+    main->push_back(left_center_paned);
+    /*
+
     auto* palette_view_and_buffer_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
     auto* palette_view_and_buffer_buffer = new SeparatorLine();
     palette_view_and_buffer_buffer->set_opacity(0);
@@ -155,8 +211,6 @@ static void activate(GtkApplication* app, void*)
     center_bottom_paned->set_end_child(bottom_row_box);
     */
 
-    auto* main = new Box(GTK_ORIENTATION_VERTICAL);
-    main->push_back(left_column_center_paned);
     // TODO
 
     state::main_window->set_child(main);
