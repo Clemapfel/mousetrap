@@ -36,6 +36,9 @@ namespace mousetrap
                     void set_transform_offset(float x, float y);
                     void set_transform_scale(float );
 
+                    Vector2f get_transform_offset();
+                    float get_transform_scale();
+
                     Vector2f get_size();
                     Vector2f get_layer_shape_size(); // in px
                     void update_autohide_grid();
@@ -95,14 +98,17 @@ namespace mousetrap
             
             // Scroll
 
-            static inline const float page_size = 2 * 1.49;
+            static inline const float adjustment_page_size = 1;
 
             static inline bool h_scroll_inverted = false;
             static inline bool v_scroll_inverted = true;
-            static inline float scroll_speed = 10; // 1 * <scroll distance in px> = <scroll_speed> * <transform_offset in px>
+            static inline float scroll_speed = 10; // 1 * <scroll distance in px> => <scroll_speed> * <transform_offset in px>
 
-            Adjustment _render_area_h_adjustment = Adjustment(0, -0.5 * page_size, +0.5 * page_size, 0, 0, page_size);
-            Adjustment _render_area_v_adjustment = Adjustment(0, -0.5 * page_size, +0.5 * page_size, 0, 0, page_size);
+            static inline const float adjustment_lower = -0.5 * adjustment_page_size;
+            static inline const float adjustment_upper = +0.5 * adjustment_page_size;
+
+            Adjustment _render_area_h_adjustment = Adjustment(0, adjustment_lower, adjustment_upper, 0, 0, adjustment_page_size);
+            Adjustment _render_area_v_adjustment = Adjustment(0, adjustment_lower, adjustment_upper, 0, 0, adjustment_page_size);
 
             static void on_render_area_h_adjustment_value_changed(Adjustment* adjustment, Canvas* instance);
             static void on_render_area_v_adjustment_value_changed(Adjustment* adjustment, Canvas* instance);
@@ -112,11 +118,17 @@ namespace mousetrap
 
             ScrollEventController _scroll_event_controller;
             static void on_scroll_event_controller_scroll(ScrollEventController*, double x, double y, Canvas* instance);
+            void update_scrollbars();
 
             // Zoom
 
-            Scale _zoom_scale = Scale(1, (1920 / std::min(state::layer_resolution.x, state::layer_resolution.y)) * 2, 1);
+            Scale _zoom_scale = Scale(1, (1920 / std::min(state::layer_resolution.x, state::layer_resolution.y)) * 2.1, 1);
             static void on_zoom_scale_value_changed(Scale*, Canvas* instance);
+
+            KeyEventController _key_event_controller;
+            bool _control_active = false;
+            static bool on_key_event_controller_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, Canvas* instance);
+            static bool on_key_event_controller_key_released(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, Canvas* instance);
 
             // Layout
 
@@ -124,7 +136,6 @@ namespace mousetrap
             Box _render_area_and_h_scrollbar = Box(GTK_ORIENTATION_VERTICAL);
 
             Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
-
     };
 }
 
@@ -228,6 +239,9 @@ namespace mousetrap
 
         on_layer_area_resize(area, state::layer_resolution.x, state::layer_resolution.y, instance);
         // also schedules render tasks
+
+        // initial update of scrollbars on canvas realize:
+        instance->_owner->on_zoom_scale_value_changed(&instance->_owner->_zoom_scale, instance->_owner);
     }
 
     void Canvas::RenderArea::on_layer_area_resize(GLArea* area, int w_in, int h_in, RenderArea* instance)
@@ -330,9 +344,6 @@ namespace mousetrap
     Canvas::RenderArea::RenderArea(Canvas* owner)
         : _owner(owner)
     {
-        _transform->scale(8, 8);
-        _transform_scale = 8;
-
         _transparency_area.connect_signal_realize(on_transparency_area_realize, this);
         _transparency_area.connect_signal_resize(on_transparency_area_resize, this);
         _layer_area.connect_signal_realize(on_layer_area_realize, this);
@@ -371,6 +382,16 @@ namespace mousetrap
     {
         _transform_offset = {x, y};
         update_transform();
+    }
+
+    Vector2f Canvas::RenderArea::get_transform_offset()
+    {
+        return _transform_offset;
+    }
+
+    float Canvas::RenderArea::get_transform_scale()
+    {
+        return _transform_scale;
     }
 
     void Canvas::RenderArea::update_transform()
@@ -412,6 +433,14 @@ namespace mousetrap
 
     void Canvas::on_scroll_event_controller_scroll(ScrollEventController*, double x, double y, Canvas* instance)
     {
+        instance->_render_area.operator Widget*()->grab_focus();
+
+        if (instance->_control_active)
+        {
+            instance->_zoom_scale.set_value(instance->_zoom_scale.get_value() + y);
+            return;
+        }
+
         auto normalized_x = x / instance->_render_area.get_size().x;
         auto normalized_y = y / instance->_render_area.get_size().y;
 
@@ -425,17 +454,52 @@ namespace mousetrap
         instance->_render_area_v_adjustment.set_value(instance->_render_area_v_adjustment.get_value() + (normalized_y * scroll_speed));
     }
 
-    void Canvas::on_zoom_scale_value_changed(Scale* scale, Canvas* instance)
+    void Canvas::update_scrollbars()
     {
-        instance->_render_area.set_transform_scale(scale->get_value());
+        auto canvas_size = _render_area.get_layer_shape_size();
+        auto area_size = _render_area.get_size();
+        canvas_size /= area_size;
+
+        auto dist = canvas_size.x;
+        auto lower = 0 - dist;
+        auto upper = 0 + dist;
+
+        _render_area_h_adjustment.configure(0, lower, upper, 0, 0, 0);
+
+        dist = canvas_size.y;
+        lower = 0 - dist;
+        upper = 0 + dist;
+
+        _render_area_v_adjustment.configure(0, lower, upper, 0, 0, 0);
+
+        // TODO: resize scrollbar cursor
+    }
+
+    void Canvas::on_zoom_scale_value_changed(Scale* scale_widget, Canvas* instance)
+    {
+        instance->_render_area.set_transform_scale(scale_widget->get_value());
         instance->_render_area.update_autohide_grid();
+        instance->update_scrollbars();
+    }
 
-        auto canvas_size = instance->_render_area.get_layer_shape_size();
-        auto area_size = instance->_render_area.get_size();
+    bool Canvas::on_key_event_controller_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, Canvas* instance)
+    {
+        if (keyval == GDK_KEY_Control_L or keyval == GDK_KEY_Control_R)
+        {
+            instance->_control_active = true;
+        }
 
-        float canvas_w = glm::clamp<float>(canvas_size.x / area_size.x, 0.001, 1);
-        instance->_render_area_h_adjustment.set_page_increment(canvas_w);
-        std::cout << instance->_render_area_h_adjustment.get_page_increment() << std::endl;
+        return false;
+    }
+
+    bool Canvas::on_key_event_controller_key_released(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, Canvas* instance)
+    {
+        if (keyval == GDK_KEY_Control_L or keyval == GDK_KEY_Control_R)
+        {
+            instance->_control_active = false;
+        }
+
+        return false;
     }
 
     Canvas::operator Widget*()
@@ -455,6 +519,9 @@ namespace mousetrap
         _render_area_h_adjustment.connect_signal_value_changed(on_render_area_h_adjustment_value_changed, this);
         _render_area_v_adjustment.connect_signal_value_changed(on_render_area_v_adjustment_value_changed, this);
 
+        _render_area_h_adjustment.set_value(0);
+        _render_area_v_adjustment.set_value(0);
+
         _render_area_and_v_scrollbar.push_back(_render_area);
         _render_area_and_v_scrollbar.push_back(&_render_area_v_scroll);
         _render_area_and_h_scrollbar.push_back(&_render_area_and_v_scrollbar);
@@ -463,7 +530,14 @@ namespace mousetrap
         _render_area_and_h_scrollbar.push_back(&_zoom_scale);
 
         _scroll_event_controller.connect_signal_scroll(on_scroll_event_controller_scroll, this);
-        _render_area.operator Widget *()->add_controller(&_scroll_event_controller);
+        _key_event_controller.connect_signal_key_pressed(on_key_event_controller_key_pressed, this);
+        _key_event_controller.connect_signal_key_released(on_key_event_controller_key_released, this);
+
+        auto* area = _render_area.operator Widget *();
+        area->add_controller(&_scroll_event_controller);
+        area->add_controller(&_key_event_controller);
+        area->set_focusable(true);
+        gtk_widget_set_focus_on_click(area->operator GtkWidget*(), true);
 
         _main.push_back(&_render_area_and_h_scrollbar);
     }

@@ -263,7 +263,7 @@ namespace mousetrap
         private:
             Owner_t* _instance;
 
-            static void on_key_released_wrapper(void*, guint keyval, guint keycode, GdkModifierType state, HasKeyPressedSignal<Owner_t>* instance);
+            static void on_key_released_wrapper(void*, guint keyval, guint keycode, GdkModifierType state, HasKeyReleasedSignal<Owner_t>* instance);
 
             bool _blocked = false;
             std::function<on_key_released_function_t<void*>> _on_key_released_f;
@@ -1062,7 +1062,7 @@ namespace mousetrap
     }
 
     template<typename Owner_t>
-    void HasKeyReleasedSignal<Owner_t>::on_key_released_wrapper(void*, guint keyval, guint keycode, GdkModifierType state, HasKeyPressedSignal<Owner_t>* self)
+    void HasKeyReleasedSignal<Owner_t>::on_key_released_wrapper(void*, guint keyval, guint keycode, GdkModifierType state, HasKeyReleasedSignal<Owner_t>* self)
     {
         if (self->_on_key_released_f != nullptr and not self->_blocked)
             self->_on_key_released_f(self->_instance, keyval, keycode, state, self->_on_key_released_data);
