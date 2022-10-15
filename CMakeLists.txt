@@ -181,7 +181,7 @@ add_library(mousetrap SHARED
     src/expander.inl
 
     include/paned.hpp
-    src/paned.hpp
+    src/paned.inl
 
     include/dropdown.hpp
     src/dropdown.inl
@@ -232,7 +232,7 @@ add_library(app STATIC
     app/layer_view.hpp
     app/layer_view/layer_row.inl
     app/layer_view/frame_control_bar.inl
-    app/layer_view/layer_control_bar.inl app/layer_view/layer_property_options.inl app/verbose_color_picker.hpp app/menubar.hpp app/canvas.hpp)
+    app/layer_view/layer_control_bar.inl app/layer_view/layer_property_options.inl app/verbose_color_picker.hpp app/menubar.hpp app/canvas.hpp app/app_layout.hpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

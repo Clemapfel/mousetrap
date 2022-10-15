@@ -404,15 +404,15 @@ namespace mousetrap
         _layer_row_list_view_viewport.set_policy(GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
         _layer_row_list_view_viewport.set_placement(GTK_CORNER_TOP_RIGHT);
 
-        _layer_row_list_view_box.push_back(&_layer_row_list_view_viewport);
-        _layer_row_list_view_box.push_back(&_layer_row_frame_display_viewport_hscrollbar);
-
         _frame_control_bar.operator Widget *()->set_halign(GTK_ALIGN_END);
         _frame_control_bar_spacer.set_opacity(0);
         _frame_control_bar_box.push_back(&_frame_control_bar_spacer);
         _frame_control_bar_box.push_back(_frame_control_bar);
         _layer_row_list_view_box.push_back(&_frame_control_bar_box);
         _layer_row_list_view_box.set_hexpand(true);
+
+        _layer_row_list_view_box.push_back(&_layer_row_list_view_viewport);
+        _layer_row_list_view_box.push_back(&_layer_row_frame_display_viewport_hscrollbar);
 
         _setting_menu_button_icon.set_size_request(_setting_menu_button_icon.get_size());
         _setting_menu_button.set_child(&_setting_menu_button_icon);

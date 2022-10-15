@@ -6,13 +6,8 @@
 namespace mousetrap
 {
     Paned::Paned(GtkOrientation orientation)
-            : WidgetImplementation<GtkPaned>(GTK_PANED(gtk_paned_new(orientation)))
+        : WidgetImplementation<GtkPaned>(GTK_PANED(gtk_paned_new(orientation)))
     {}
-
-    Paned::operator GtkWidget*()
-    {
-        return GTK_WIDGET(get_native());
-    }
 
     void Paned::set_position(int v)
     {

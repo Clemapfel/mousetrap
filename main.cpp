@@ -38,45 +38,21 @@
 #include <app/verbose_color_picker.hpp>
 #include <app/menubar.hpp>
 #include <app/canvas.hpp>
-
-/*
-#include <app/toolbox.hpp>
-
-#include <app/color_picker.hpp>
-#include <app/verbose_color_picker.hpp>
-#include <app/palette_view.hpp>
-#include <app/widget_container.hpp>
-#include <app/canvas.hpp>
-#include <app/layer_view.hpp>
- */
+#include <app/app_layout.hpp>
 
 using namespace mousetrap;
 
-static void activate(GtkApplication* app, void*)
+void initialize_debug_layers()
 {
-    state::shortcut_map = new ShortcutMap();
-    state::shortcut_map->load_from_file("/home/clem/Workspace/mousetrap/app/keybindings.conf");
-
-    state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
-    gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
-    state::app->add_window(state::main_window);
-    state::main_window->set_show_menubar(true);
-
-    auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
-
-    state::primary_secondary_color_swapper = new PrimarySecondaryColorSwapper();
-    state::primary_secondary_color_swapper->operator Widget*()->set_expand(true);
-
-    state::palette_view = new PaletteView();
-    state::brush_options = new BrushOptions();
-    state::toolbox = new Toolbox(GTK_ORIENTATION_VERTICAL);
-    state::color_picker = new ColorPicker();
-
     state::layer_resolution = {50, 50};
 
     state::layers.emplace_back(new Layer{"number"});
-    state::layers.emplace_back(new Layer{"overlay"});
-    state::layers.back()->blend_mode = BlendMode::MULTIPLY;
+
+    for (size_t i = 0; i < 5; ++i)
+    {
+        state::layers.emplace_back(new Layer{"overlay"});
+        state::layers.back()->blend_mode = BlendMode::MULTIPLY;
+    }
 
     auto* preview = new Preview();
     for (auto* layer : state::layers)
@@ -107,33 +83,83 @@ static void activate(GtkApplication* app, void*)
 
         state::n_frames = layer->frames.size();
     }
+}
 
+static void activate(GtkApplication* app, void*)
+{
+    state::shortcut_map = new ShortcutMap();
+    state::shortcut_map->load_from_file("/home/clem/Workspace/mousetrap/app/keybindings.conf");
+
+    state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
+    gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
+    state::app->add_window(state::main_window);
+    state::main_window->set_show_menubar(true);
+
+    initialize_debug_layers();
+
+    state::primary_secondary_color_swapper = new PrimarySecondaryColorSwapper();
+    state::palette_view = new PaletteView();
+    state::brush_options = new BrushOptions();
+    state::toolbox = new Toolbox(GTK_ORIENTATION_VERTICAL);
+    state::color_picker = new ColorPicker();
     state::layer_view = new LayerView();
     state::verbose_color_picker = new VerboseColorPicker();
     state::canvas = new Canvas();
 
     // TODO
+    auto* layer_view = state::layer_view->operator Widget*();
+    auto* palette_view = state::palette_view->operator Widget*();
+    auto* color_swapper = state::primary_secondary_color_swapper->operator Widget*();
+    auto* color_picker = state::color_picker->operator Widget*();
+    auto* canvas = state::canvas->operator Widget*();
 
-    static auto on_value_changed = [](Adjustment* adjustment, void*) {
-        std::cout << adjustment->get_value() << std::endl;
-    };
+    auto* palette_view_and_buffer_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
+    auto* palette_view_and_buffer_buffer = new SeparatorLine();
+    palette_view_and_buffer_buffer->set_opacity(0);
+    palette_view_and_buffer_buffer->set_expand(true);
+    palette_view_and_buffer_buffer->set_size_request({state::margin_unit, 0});
+    palette_view_and_buffer_paned->set_start_child(palette_view);
+    palette_view_and_buffer_paned->set_end_child(palette_view_and_buffer_buffer);
+    palette_view_and_buffer_paned->set_start_child_shrinkable(false);
+    palette_view_and_buffer_paned->set_end_child_shrinkable(false);
 
-    auto* adjustment = new Adjustment(0, -1, 1, 0, 0, 0);
-    adjustment->connect_signal_value_changed(on_value_changed, (void*) nullptr);
-    auto* scrollbar = new Scrollbar(*adjustment);
-    scrollbar->set_adjustment(*adjustment);
+    palette_view_and_buffer_paned->set_hexpand(false);
+
+    auto* left_column = new Box(GTK_ORIENTATION_VERTICAL);
+    auto* right_column = new Box(GTK_ORIENTATION_VERTICAL);
+
+    color_swapper->set_size_request({0, state::margin_unit * 4});
+    color_picker->set_size_request({0, state::margin_unit * 20});
+
+    left_column->push_back(palette_view_and_buffer_paned);
+    left_column->push_back(color_swapper);
+    left_column->push_back(color_picker);
+
+    auto* left_column_center_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
+    auto* center_right_column_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
+    left_column_center_paned->set_start_child(left_column);
+    left_column_center_paned->set_end_child(center_right_column_paned);
+    center_right_column_paned->set_start_child(canvas);
+    center_right_column_paned->set_end_child(right_column);
+
+    left_column_center_paned->set_start_child_shrinkable(false);
 
     /*
-    delete adjustment;
-    adjustment = new Adjustment(0, -1, 1, 0, 0, 0.5);
-    adjustment->connect_signal_value_changed(on_value_changed, (void*) nullptr);
-    scrollbar->set_adjustment(*adjustment);
-     */
+    auto* layer_view_paned = new Paned(GTK_ORIENTATION_VERTICAL);
+    layer_view_paned->set_start_child(temp);
+    layer_view_paned->set_end_child(state::layer_view->operator Widget*());
+    layer_view_paned->set_end_child_shrinkable(false);
 
+    auto* center_bottom_paned = new Paned(GTK_ORIENTATION_VERTICAL);
+    center_bottom_paned->set_start_child(center_row_box);
+    center_bottom_paned->set_end_child(bottom_row_box);
+    */
 
+    auto* main = new Box(GTK_ORIENTATION_VERTICAL);
+    main->push_back(left_column_center_paned);
     // TODO
 
-    state::main_window->set_child(state::canvas->operator Widget*());
+    state::main_window->set_child(main);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

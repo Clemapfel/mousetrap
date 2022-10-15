@@ -29,4 +29,4 @@ namespace mousetrap
     };
 }
 
-#include <include/paned.hpp>
+#include <src/paned.inl>
