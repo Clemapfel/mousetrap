@@ -232,6 +232,9 @@ namespace mousetrap
 
     void VerboseColorPicker::CurrentColorRegion::update(HSVA current, HSVA previous)
     {
+        if (_current_color_shape == nullptr or _previous_color_shape == nullptr)
+            return;
+
         _current_color_shape->set_color(current.operator RGBA());
         _previous_color_shape->set_color(previous.operator RGBA());
         _gl_area.queue_render();
@@ -815,6 +818,7 @@ namespace mousetrap
 
         _main.push_back(_html_code_region);
         _current_color_region.operator Widget*()->set_size_request({0, _html_code_region.operator Widget*()->get_preferred_size().natural_size.y});
+        _current_color_region.operator Widget*()->set_visible(false);
     }
 
     VerboseColorPicker::operator Widget*()

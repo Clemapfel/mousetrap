@@ -100,7 +100,7 @@ static void activate(GtkApplication* app, void*)
     state::primary_secondary_color_swapper = new PrimarySecondaryColorSwapper();
     state::palette_view = new PaletteView();
     state::brush_options = new BrushOptions();
-    state::toolbox = new Toolbox(GTK_ORIENTATION_VERTICAL);
+    state::toolbox = new Toolbox();
     state::color_picker = new ColorPicker();
     state::layer_view = new LayerView();
     state::verbose_color_picker = new VerboseColorPicker();
@@ -111,7 +111,10 @@ static void activate(GtkApplication* app, void*)
     auto* palette_view = state::palette_view->operator Widget*();
     auto* color_swapper = state::primary_secondary_color_swapper->operator Widget*();
     auto* color_picker = state::color_picker->operator Widget*();
+    auto* verbose_color_picker = state::verbose_color_picker->operator Widget*();
     auto* canvas = state::canvas->operator Widget*();
+    auto* toolbox = state::toolbox->operator Widget*();
+    auto* brush_options = state::brush_options->operator Widget*();
 
     auto* left_column = new Box(GTK_ORIENTATION_VERTICAL);
     auto* center_column = new Box(GTK_ORIENTATION_VERTICAL);
@@ -138,6 +141,15 @@ static void activate(GtkApplication* app, void*)
     left_center_paned->set_hexpand(false);
     center_right_paned->set_hexpand(false);
 
+    auto add_spacer = [](Box* column)
+    {
+        auto* spacer = new SeparatorLine();
+        spacer->set_size_request({3, 3});
+        column->push_back(spacer);
+    };
+
+    // LEFT COLUMN
+
     float color_picker_width = 20 * state::margin_unit;
     float color_swapper_height = 5 * state::margin_unit;
 
@@ -151,7 +163,6 @@ static void activate(GtkApplication* app, void*)
     auto* palette_view_spacer = new SeparatorLine();
     palette_view_spacer->set_hexpand(true);
     palette_view_spacer->set_size_request({state::margin_unit, 0});
-    palette_view_spacer->set_opacity(0);
     palette_view->set_vexpand(true);
 
     palette_view_spacer_paned->set_start_child(palette_view);
@@ -159,57 +170,61 @@ static void activate(GtkApplication* app, void*)
     palette_view_spacer_paned->set_start_child_shrinkable(false);
     palette_view_spacer_paned->set_end_child_shrinkable(false);
 
-    left_column->push_back(palette_view_spacer_paned);
-    left_column->push_back(color_swapper);
-    left_column->push_back(color_picker);
+    auto* left_column_paned_top = new Box(GTK_ORIENTATION_VERTICAL);
+    auto* spacer = new SeparatorLine();
+    spacer->set_vexpand(true);
 
+    palette_view_spacer_paned->set_vexpand(true);
+    left_column_paned_top->push_back(palette_view_spacer_paned);
+    left_column_paned_top->push_back(color_swapper);
+    add_spacer(left_column_paned_top);
+    left_column_paned_top->push_back(color_picker);
+
+    verbose_color_picker->set_vexpand(false);
+
+    auto* left_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
+    left_column_paned->set_start_child(left_column_paned_top);
+    left_column_paned->set_end_child(verbose_color_picker);
+    left_column_paned->set_start_child_shrinkable(false);
+    left_column_paned->set_start_child_resizable(false);
+    left_column_paned->set_end_child_resizable(false);
+    left_column_paned->set_has_wide_handle(true);
+
+    //left_column->push_back(palette_view_spacer_paned);
+    //add_spacer(left_column);
+    left_column->push_back(left_column_paned);
+
+    // RIGHT COLUMN
+
+    brush_options->set_vexpand(false);
+    toolbox->set_vexpand(true);
+    layer_view->set_vexpand(true);
+
+    auto* right_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
+
+    right_column_paned->set_start_child(brush_options);
+    right_column_paned->set_end_child(layer_view);
+    right_column_paned->set_start_child_shrinkable(true);
+    right_column_paned->set_end_child_shrinkable(false);
+    right_column_paned->set_has_wide_handle(true);
+
+    right_column->push_back(toolbox);
+    add_spacer(right_column);
+    right_column->push_back(right_column_paned);
+
+    for (auto* w : {toolbox, brush_options})
+    {
+        w->set_valign(GTK_ALIGN_START);
+        w->set_vexpand(false);
+    }
+
+    // CENTER COLUMN
+
+    center_column->set_size_request({state::margin_unit * 50, 0});
     center_column->push_back(canvas);
 
     auto* main = new Box(GTK_ORIENTATION_VERTICAL);
     main->push_back(left_center_paned);
-    /*
-
-    auto* palette_view_and_buffer_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
-    auto* palette_view_and_buffer_buffer = new SeparatorLine();
-    palette_view_and_buffer_buffer->set_opacity(0);
-    palette_view_and_buffer_buffer->set_expand(true);
-    palette_view_and_buffer_buffer->set_size_request({state::margin_unit, 0});
-    palette_view_and_buffer_paned->set_start_child(palette_view);
-    palette_view_and_buffer_paned->set_end_child(palette_view_and_buffer_buffer);
-    palette_view_and_buffer_paned->set_start_child_shrinkable(false);
-    palette_view_and_buffer_paned->set_end_child_shrinkable(false);
-
-    palette_view_and_buffer_paned->set_hexpand(false);
-
-    auto* left_column = new Box(GTK_ORIENTATION_VERTICAL);
-    auto* right_column = new Box(GTK_ORIENTATION_VERTICAL);
-
-    color_swapper->set_size_request({0, state::margin_unit * 4});
-    color_picker->set_size_request({0, state::margin_unit * 20});
-
-    left_column->push_back(palette_view_and_buffer_paned);
-    left_column->push_back(color_swapper);
-    left_column->push_back(color_picker);
-
-    auto* left_column_center_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
-    auto* center_right_column_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
-    left_column_center_paned->set_start_child(left_column);
-    left_column_center_paned->set_end_child(center_right_column_paned);
-    center_right_column_paned->set_start_child(canvas);
-    center_right_column_paned->set_end_child(right_column);
-
-    left_column_center_paned->set_start_child_shrinkable(false);
-
-    /*
-    auto* layer_view_paned = new Paned(GTK_ORIENTATION_VERTICAL);
-    layer_view_paned->set_start_child(temp);
-    layer_view_paned->set_end_child(state::layer_view->operator Widget*());
-    layer_view_paned->set_end_child_shrinkable(false);
-
-    auto* center_bottom_paned = new Paned(GTK_ORIENTATION_VERTICAL);
-    center_bottom_paned->set_start_child(center_row_box);
-    center_bottom_paned->set_end_child(bottom_row_box);
-    */
 
     // TODO
 
