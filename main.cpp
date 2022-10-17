@@ -224,7 +224,7 @@ static void activate(GtkApplication* app, void*)
     auto* right_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
 
     right_column_paned->set_start_child(brush_options);
-    //right_column_paned->set_end_child(layer_view);
+    right_column_paned->set_end_child(layer_view);
     right_column_paned->set_start_child_shrinkable(true);
     right_column_paned->set_end_child_shrinkable(false);
     right_column_paned->set_has_wide_handle(true);

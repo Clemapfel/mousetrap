@@ -24,6 +24,8 @@ namespace mousetrap
             void clear();
 
             void set_homogeneous(bool);
+
+            size_t get_n_items();
     };
 }
 

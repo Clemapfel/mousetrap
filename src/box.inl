@@ -68,4 +68,17 @@ namespace mousetrap
     {
         gtk_box_set_homogeneous(get_native(), b);
     }
+
+    size_t Box::get_n_items()
+    {
+        size_t i = 0;
+        auto* child = gtk_widget_get_first_child(GTK_WIDGET(get_native()));
+        while(child != nullptr)
+        {
+            child = gtk_widget_get_next_sibling(child);
+            i++;
+        }
+
+        return i;
+    }
 }
