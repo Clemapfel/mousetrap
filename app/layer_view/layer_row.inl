@@ -17,6 +17,12 @@ namespace mousetrap
 
         _main.push_back(_layer_property_options);
         _main.push_back(&_layer_frame_display_list_view_viewport);
+        update_size_request();
+    }
+
+    void LayerView::LayerRow::update_size_request()
+    {
+        _main.set_size_request(Vector2f{_layer_property_options.operator Widget*()->get_preferred_size().natural_size.x + thumbnail_height + state::margin_unit * 2, 0});
     }
 
     LayerView::LayerRow::operator Widget*()

@@ -119,6 +119,8 @@ static void activate(GtkApplication* app, void*)
     auto* brush_options = state::brush_options->operator Widget*();
     auto* color_preview = state::color_preview->operator Widget*();
 
+    layer_view->set_valign(GTK_ALIGN_END);
+
     color_picker->set_margin_start(state::margin_unit);
     color_picker->set_margin_bottom(state::margin_unit);
     color_picker->set_margin_top(state::margin_unit);
@@ -126,6 +128,9 @@ static void activate(GtkApplication* app, void*)
     verbose_color_picker->set_margin(state::margin_unit);
     verbose_color_picker->set_vexpand(false);
     verbose_color_picker->set_valign(GTK_ALIGN_START);
+
+    color_preview->set_margin(state::margin_unit);
+    color_preview->set_vexpand(false);
 
     auto* left_column = new Box(GTK_ORIENTATION_VERTICAL);
     auto* center_column = new Box(GTK_ORIENTATION_VERTICAL);
@@ -151,7 +156,7 @@ static void activate(GtkApplication* app, void*)
     left_center_paned->set_has_wide_handle(true);
 
     center_right_paned->set_start_child_shrinkable(false);
-    center_right_paned->set_end_child_shrinkable(true);
+    center_right_paned->set_end_child_shrinkable(false);
     center_right_paned->set_has_wide_handle(true);
 
     left_center_paned->set_hexpand(false);
@@ -171,6 +176,7 @@ static void activate(GtkApplication* app, void*)
 
     color_picker->set_size_request({color_picker_width, color_picker_width});
     color_swapper->set_size_request({color_picker_width, color_swapper_height});
+    color_preview->set_size_request({color_picker_width, color_swapper_height});
 
     for (auto* w : {color_picker, color_swapper})
         w->set_valign(GTK_ALIGN_END);
@@ -215,7 +221,7 @@ static void activate(GtkApplication* app, void*)
     auto* right_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
 
     right_column_paned->set_start_child(brush_options);
-    right_column_paned->set_end_child(layer_view);
+    //right_column_paned->set_end_child(layer_view);
     right_column_paned->set_start_child_shrinkable(true);
     right_column_paned->set_end_child_shrinkable(false);
     right_column_paned->set_has_wide_handle(true);
@@ -223,9 +229,11 @@ static void activate(GtkApplication* app, void*)
     right_column_paned->set_valign(GTK_ALIGN_END);
     toolbox->set_valign(GTK_ALIGN_START);
 
-    right_column->push_back(toolbox);
-    add_spacer(right_column);
-    right_column->push_back(right_column_paned);
+    //right_column->push_back(toolbox);
+    //add_spacer(right_column);
+    //right_column->push_back(right_column_paned);
+
+    right_column->push_back(layer_view);
 
     for (auto* w : {toolbox, brush_options})
     {
@@ -236,6 +244,8 @@ static void activate(GtkApplication* app, void*)
     // CENTER COLUMN
 
     center_column->set_size_request({state::margin_unit * 50, 0});
+    center_column->push_back(toolbox);
+    add_spacer(center_column);
     center_column->push_back(canvas);
 
     auto* main = new Box(GTK_ORIENTATION_VERTICAL);

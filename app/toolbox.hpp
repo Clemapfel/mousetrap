@@ -109,7 +109,7 @@ namespace mousetrap
                 new IconWithPopover(GRADIENT_DITHERED, {{GRADIENT_DITHERED, GRADIENT_SMOOTH}}, this)
             };
 
-            FlowBox _flow_box = FlowBox(GTK_ORIENTATION_HORIZONTAL);
+            ListView _main = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
     };
 }
 //
@@ -263,11 +263,11 @@ namespace mousetrap
         for (auto e : _elements)
         {
             e->operator Widget *()->set_halign(GTK_ALIGN_START);
-            _flow_box.push_back(e->operator Widget*());
+            _main.push_back(e->operator Widget*());
         }
 
-        _flow_box.set_hexpand(false);
-        _flow_box.set_max_children_per_line(_elements.size() - 1);
+        _main.set_hexpand(false);
+        //_main.set_min_children_per_line(_elements.size() - 1);
             // for some reason going from 2 to 1 lines lags the ui, this prevents that
 
         select(state::active_tool);
@@ -275,7 +275,7 @@ namespace mousetrap
 
     Toolbox::operator Widget*()
     {
-        return &_flow_box;
+        return &_main;
     }
 
     void Toolbox::select(ToolID id)

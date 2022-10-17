@@ -179,6 +179,7 @@ namespace mousetrap
                     void set_layer(size_t);
 
                     void connect_viewport_hadjustment(Adjustment&);
+                    void update_size_request();
 
                 private:
                     size_t _layer;
@@ -373,8 +374,12 @@ namespace mousetrap
         instance->thumbnail_height = scale->get_value();
 
         for (auto& row : instance->_layer_rows)
+        {
             for (size_t i = 0; i < state::n_frames; ++i)
                 row.update_frame(i);
+
+            row.update_size_request();
+        }
     }
 
     LayerView::LayerView()
@@ -405,10 +410,14 @@ namespace mousetrap
         _layer_row_list_view_viewport.set_placement(GTK_CORNER_TOP_RIGHT);
 
         _frame_control_bar.operator Widget *()->set_halign(GTK_ALIGN_END);
-        _frame_control_bar_spacer.set_opacity(0);
         _frame_control_bar_box.push_back(&_frame_control_bar_spacer);
         _frame_control_bar_box.push_back(_frame_control_bar);
-        _layer_row_list_view_box.push_back(&_frame_control_bar_box);
+
+        auto* frame_control_bar_viewport = new ScrolledWindow();
+        frame_control_bar_viewport->set_policy(GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
+        frame_control_bar_viewport->set_child(&_frame_control_bar_box);
+
+        _layer_row_list_view_box.push_back(frame_control_bar_viewport);
         _layer_row_list_view_box.set_hexpand(true);
 
         _layer_row_list_view_box.push_back(&_layer_row_list_view_viewport);
@@ -432,15 +441,16 @@ namespace mousetrap
 
         _layer_control_bar.operator Widget*()->set_valign(GTK_ALIGN_END);
         _layer_control_bar_spacer.set_vexpand(true);
-        _layer_control_bar_spacer.set_opacity(0);
-        _layer_control_bar_box.push_back(_layer_control_bar);
         _layer_control_bar_box.push_back(&_layer_control_bar_spacer);
+        _layer_control_bar_box.push_back(_layer_control_bar);
         _layer_control_bar_box.push_back(&_setting_menu_button);
         _layer_control_bar_box.set_hexpand(false);
 
         _main.push_back(&_layer_control_bar_box);
         _main.push_back(&_layer_row_list_view_box);
         _main.set_expand(true);
+
+        _layer_row_list_view_viewport.set_propagate_natural_width(true);
     }
 
     void LayerView::update()
