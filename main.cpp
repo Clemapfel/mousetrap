@@ -39,6 +39,7 @@
 #include <app/menubar.hpp>
 #include <app/canvas.hpp>
 #include <app/app_layout.hpp>
+#include <app/color_preview.hpp>
 
 using namespace mousetrap;
 
@@ -105,6 +106,7 @@ static void activate(GtkApplication* app, void*)
     state::layer_view = new LayerView();
     state::verbose_color_picker = new VerboseColorPicker();
     state::canvas = new Canvas();
+    state::color_preview = new ColorPreview();
 
     // TODO
     auto* layer_view = state::layer_view->operator Widget*();
@@ -115,6 +117,7 @@ static void activate(GtkApplication* app, void*)
     auto* canvas = state::canvas->operator Widget*();
     auto* toolbox = state::toolbox->operator Widget*();
     auto* brush_options = state::brush_options->operator Widget*();
+    auto* color_preview = state::color_preview->operator Widget*();
 
     color_picker->set_margin_start(state::margin_unit);
     color_picker->set_margin_bottom(state::margin_unit);
@@ -193,35 +196,14 @@ static void activate(GtkApplication* app, void*)
     left_column_paned_top->push_back(color_swapper);
     add_spacer(left_column_paned_top);
     left_column_paned_top->push_back(color_picker);
+    add_spacer(left_column_paned_top);
+    left_column_paned_top->push_back(color_preview);
 
     auto* left_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
     left_column_paned->set_start_child(left_column_paned_top);
-    left_column_paned->set_end_child(verbose_color_picker);
     left_column_paned->set_start_child_shrinkable(false);
     left_column_paned->set_has_wide_handle(true);
 
-    auto* on_reveal_verbose_picker_controller = new ClickEventController();
-    using on_reveal_verbose_picker_data = struct {Paned* paned; Widget* verbose_color_picker; Widget* palette_view;};
-    static auto on_reveal_verbose_picker_click_pressed = [](ClickEventController*, gint n_press, double x, double y, on_reveal_verbose_picker_data* data)
-    {
-        std::cout << "pos  : " << data->paned->get_position() << std::endl
-                  << "paned: " << data->paned->get_preferred_size().natural_size.y << std::endl
-                  << "color: " << data->verbose_color_picker->get_preferred_size().natural_size.y << std::endl
-                  << "palet: " << data->palette_view->get_preferred_size().natural_size.y << std::endl;
-
-        //if (n_press == 2)
-          //  data->paned->set_position(offset);
-    };
-
-    on_reveal_verbose_picker_controller->connect_signal_click_pressed(on_reveal_verbose_picker_click_pressed, new on_reveal_verbose_picker_data{
-       left_column_paned,
-       verbose_color_picker,
-       palette_view
-    });
-    color_picker->add_controller(on_reveal_verbose_picker_controller);
-
-    //left_column->push_back(palette_view_spacer_paned);
-    //add_spacer(left_column);
     left_column->push_back(left_column_paned);
 
     // RIGHT COLUMN
