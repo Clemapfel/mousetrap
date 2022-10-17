@@ -445,6 +445,10 @@ namespace mousetrap
             instance->_render_area.set_cursor(GtkCursorType::CELL);
         else
             instance->_render_area.set_cursor(GtkCursorType::DEFAULT);
+
+        state::preview_color_current = state::primary_color;
+        state::preview_color_previous = state::primary_color;
+        state::update_color_preview();
     }
 
     void ColorPicker::update_primary_color(double x, double y)
@@ -460,6 +464,10 @@ namespace mousetrap
             state::primary_color = color;
             state::update_color_swapper();
             state::update_verbose_color_picker();
+            state::update_palette_view();
+
+            state::preview_color_current = color;
+            state::update_color_preview();
         }
         else if (_hsv_shape_active)
         {
@@ -476,6 +484,9 @@ namespace mousetrap
             state::primary_color = color;
             state::update_color_swapper();
             state::update_verbose_color_picker();
+
+            state::preview_color_current = color;
+            state::update_color_preview();
         }
 
         auto window_color = state::primary_color;

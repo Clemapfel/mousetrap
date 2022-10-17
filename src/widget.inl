@@ -20,7 +20,7 @@ namespace mousetrap
 
     template<typename T>
     Widget::Widget(T* in)
-        : HasRealizeSignal<Widget>(this)
+        : HasRealizeSignal<Widget>(this), HasMapSignal<Widget>(this), HasShowSignal<Widget>(this)
     {
         _native = g_object_ref(GTK_WIDGET(in));
     }

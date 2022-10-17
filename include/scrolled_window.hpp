@@ -28,7 +28,9 @@ namespace mousetrap
             void set_has_frame(bool);
 
             void set_hadjustment(Adjustment&);
+            Adjustment get_hadjustment();
             void set_vadjustment(Adjustment&);
+            Adjustment get_vadjustment();
 
             void set_kinetic_scrolling_enabled(bool);
 

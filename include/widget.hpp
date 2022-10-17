@@ -20,7 +20,10 @@ namespace mousetrap
     template<typename GtkWidget_t>
     struct WidgetImplementation;
 
-    class Widget : public SignalEmitter, public HasRealizeSignal<Widget>
+    class Widget : public SignalEmitter,
+        public HasRealizeSignal<Widget>,
+        public HasMapSignal<Widget>,
+        public HasShowSignal<Widget>
     {
         template<typename T>
         friend struct WidgetImplementation;

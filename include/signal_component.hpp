@@ -126,6 +126,64 @@ namespace mousetrap
     };
 
     template<typename Owner_t>
+    class HasMapSignal
+    {
+        public:
+            template<typename T>
+            using on_map_function_t = void(Owner_t*, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_map(Function_t, T);
+
+            void set_signal_map_blocked(bool b) {
+                _blocked = b;
+            }
+
+        protected:
+            HasMapSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_map_wrapper(void*, HasMapSignal<Owner_t>* instance);
+
+            bool _blocked = false;
+            std::function<on_map_function_t<void*>> _on_map_f;
+            void* _on_map_data;
+    };
+
+    template<typename Owner_t>
+    class HasShowSignal
+    {
+        public:
+            template<typename T>
+            using on_show_function_t = void(Owner_t*, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_show(Function_t, T);
+
+            void set_signal_show_blocked(bool b) {
+                _blocked = b;
+            }
+
+        protected:
+            HasShowSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_show_wrapper(void*, HasShowSignal<Owner_t>* instance);
+
+            bool _blocked = false;
+            std::function<on_show_function_t<void*>> _on_show_f;
+            void* _on_show_data;
+    };
+
+    template<typename Owner_t>
     class HasRenderSignal
     {
         public:
@@ -963,6 +1021,46 @@ namespace mousetrap
     {
         if (self->_on_realize_f != nullptr and not self->_blocked)
             self->_on_realize_f(self->_instance, self->_on_realize_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasShowSignal<Owner_t>::connect_signal_show(Function_t function, T data)
+    {
+        auto temp =  std::function<on_show_function_t<T>>(function);
+        _on_show_f = std::function<on_show_function_t<void*>>(*((std::function<on_show_function_t<void*>>*) &temp));
+        _on_show_data = data;
+
+        _instance->connect_signal("show", on_show_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasShowSignal<Owner_t>::on_show_wrapper(void*, HasShowSignal<Owner_t>* self)
+    {
+        if (self->_on_show_f != nullptr and not self->_blocked)
+            self->_on_show_f(self->_instance, self->_on_show_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasMapSignal<Owner_t>::connect_signal_map(Function_t function, T data)
+    {
+        auto temp =  std::function<on_map_function_t<T>>(function);
+        _on_map_f = std::function<on_map_function_t<void*>>(*((std::function<on_map_function_t<void*>>*) &temp));
+        _on_map_data = data;
+
+        _instance->connect_signal("map", on_map_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasMapSignal<Owner_t>::on_map_wrapper(void*, HasMapSignal<Owner_t>* self)
+    {
+        if (self->_on_map_f != nullptr and not self->_blocked)
+            self->_on_map_f(self->_instance, self->_on_map_data);
     }
 
     // ###

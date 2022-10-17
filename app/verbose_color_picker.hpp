@@ -39,33 +39,6 @@ namespace mousetrap
             void set_color_component_to(char c, float value);
             static inline Shader* transparency_tiling_shader = nullptr;
 
-            class CurrentColorRegion
-            {
-                public:
-                    CurrentColorRegion(VerboseColorPicker*);
-                    ~CurrentColorRegion();
-
-                    operator Widget*();
-                    void update(HSVA current, HSVA previous);
-
-                private:
-                    VerboseColorPicker* _owner;
-                    
-                    static inline const float _previous_to_color_current_width_ratio = 0.15;
-                    
-                    GLArea _gl_area;
-                    static void on_gl_area_realize(Widget*, CurrentColorRegion*);
-                    static void on_gl_area_resize(GLArea*, int, int, CurrentColorRegion*);
-                    Vector2f _canvas_size;
-                    
-                    Shape* _current_color_shape;
-                    Shape* _previous_color_shape;
-                    Shape* _frame_shape;
-                    Shape* _transparency_tiling_shape;
-            };
-            
-            CurrentColorRegion _current_color_region;
-
             class HtmlCodeRegion
             {
                 public:
@@ -103,7 +76,8 @@ namespace mousetrap
                     void set_right_color(RGBA);
 
                 private:
-                    static inline float slider_width = state::margin_unit * 0.5;
+                    static inline const float slider_width = state::margin_unit * 0.5;
+                    static inline const float bar_margin = 0.15;
 
                     char _target_id;
                     float _value;
@@ -154,105 +128,6 @@ namespace mousetrap
 
 namespace mousetrap
 {
-    // CURRENT COLOR REGION
-
-    VerboseColorPicker::CurrentColorRegion::CurrentColorRegion(VerboseColorPicker* owner)
-        : _owner(owner)
-    {
-        _gl_area.connect_signal_realize(on_gl_area_realize, this);
-        _gl_area.connect_signal_resize(on_gl_area_resize, this);
-        _gl_area.set_expand(true);
-
-        _gl_area.set_tooltip_title("Current Color Preview");
-        _gl_area.set_tooltip_text("Compare previous color during selection");
-    }
-
-    void VerboseColorPicker::CurrentColorRegion::on_gl_area_realize(Widget* widget, CurrentColorRegion* instance)
-    {
-        auto* area = (GLArea*) widget;
-        area->make_current();
-        
-        if (VerboseColorPicker::transparency_tiling_shader == nullptr)
-        {
-            VerboseColorPicker::transparency_tiling_shader = new Shader();
-            VerboseColorPicker::transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
-        }
-
-        instance->_transparency_tiling_shape = new Shape();
-        instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
-
-        instance->_previous_color_shape = new Shape();
-        instance->_previous_color_shape->as_rectangle({0, 0}, {_previous_to_color_current_width_ratio, 1});
-        instance->_previous_color_shape->set_color(state::primary_color);
-
-        instance->_current_color_shape = new Shape();
-        instance->_current_color_shape->as_rectangle({_previous_to_color_current_width_ratio, 0}, {1 - _previous_to_color_current_width_ratio, 1});
-        instance->_current_color_shape->set_color(state::primary_color);
-
-        {
-            auto size = instance->_transparency_tiling_shape->get_size();
-            size.y -= 0.0001;
-            auto top_left = instance->_transparency_tiling_shape->get_top_left();
-            top_left.x += 0.0001;
-
-            std::vector<Vector2f> vertices = {
-                    {top_left.x , top_left.y},
-                    {top_left.x + size.x, top_left.y},
-                    {top_left.x + size.x, top_left.y + size.y},
-                    {top_left.x, top_left.y + size.y}
-            };
-
-            instance->_frame_shape = new Shape();
-            instance->_frame_shape->as_wireframe(vertices);
-            instance->_frame_shape->set_color(RGBA(0, 0, 0, 1));
-        }
-
-        instance->_transparency_tiling_shape = new Shape();
-        instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
-
-        auto transparency_render_task = RenderTask(instance->_transparency_tiling_shape, VerboseColorPicker::transparency_tiling_shader);
-        transparency_render_task.register_vec2("_canvas_size", &instance->_canvas_size);
-
-        area->add_render_task(transparency_render_task);
-        area->add_render_task(instance->_current_color_shape);
-        area->add_render_task(instance->_previous_color_shape);
-        area->add_render_task(instance->_frame_shape);
-
-        instance->update(state::primary_color, state::secondary_color);
-        instance->_owner->update(*instance->_owner->_current_color);
-        area->queue_render();
-    }
-
-    void VerboseColorPicker::CurrentColorRegion::on_gl_area_resize(GLArea*, int w, int h, CurrentColorRegion* instance)
-    {
-        instance->_gl_area.make_current();
-        instance->_canvas_size = {w, h};
-        instance->_gl_area.queue_render();
-    }
-
-    void VerboseColorPicker::CurrentColorRegion::update(HSVA current, HSVA previous)
-    {
-        if (_current_color_shape == nullptr or _previous_color_shape == nullptr)
-            return;
-
-        _current_color_shape->set_color(current.operator RGBA());
-        _previous_color_shape->set_color(previous.operator RGBA());
-        _gl_area.queue_render();
-    }
-
-    VerboseColorPicker::CurrentColorRegion::~CurrentColorRegion()
-    {
-        delete _current_color_shape;
-        delete _previous_color_shape;
-        delete _frame_shape;
-        delete _transparency_tiling_shape;
-    }
-
-    VerboseColorPicker::CurrentColorRegion::operator Widget*()
-    {
-        return &_gl_area;
-    }
-
     // HTML CODE REGION
 
     VerboseColorPicker::HtmlCodeRegion::HtmlCodeRegion(VerboseColorPicker* owner)
@@ -490,8 +365,6 @@ namespace mousetrap
         instance->_cursor_frame_shape = new Shape();
         // shapes set during resize
 
-        static float bar_margin = 0.15;
-
         instance->_bar_shape = new Shape();
         instance->_bar_shape->as_rectangle({0, bar_margin}, {1, 1 - 2 * bar_margin});
 
@@ -620,11 +493,15 @@ namespace mousetrap
         }
 
         *instance->_owner->_previous_color = *instance->_owner->_current_color;
-        instance->_owner->_current_color_region.update(*instance->_owner->_current_color, *instance->_owner->_previous_color);
 
         state::primary_color = *instance->_owner->_current_color;
         state::update_color_picker();
         state::update_color_swapper();
+        state::update_palette_view();
+
+        state::preview_color_current = state::primary_color;
+        state::preview_color_previous = state::primary_color;
+        state::update_color_preview();
     }
 
     void VerboseColorPicker::SliderRegion::on_slider_motion(MotionEventController*, double x, double y, SliderRegion* instance)
@@ -668,8 +545,6 @@ namespace mousetrap
 
         if (_gl_area.get_is_realized())
         {
-            _gl_area.make_current();
-
             Vector2f centroid = {value, 0.5};
 
             if (centroid.x < _cursor_shape->get_size().x * 0.5)
@@ -742,14 +617,18 @@ namespace mousetrap
         }
 
         *_current_color = color;
-        _current_color_region.update(color, *_previous_color);
+        state::primary_color = color;
+        state::update_color_picker();
+        state::update_color_swapper();
+        state::update_palette_view();
+
+        state::preview_color_current = color;
+        state::update_color_preview();
     };
 
     VerboseColorPicker::VerboseColorPicker()
-        : _current_color_region(this), _html_code_region(this)
+        : _html_code_region(this)
     {
-        _main.push_back(_current_color_region);
-
         auto add_slider = [&](char id)
         {
             return _sliders.insert({id, new SliderRegion(id, this, id == 'h' or id == 'H')});
@@ -804,7 +683,6 @@ namespace mousetrap
         for (auto& pair : _sliders)
             pair.second->operator Widget *()->set_margin_start(2 * state::margin_unit);
 
-        _current_color_region.operator Widget*()->set_margin_bottom(state::margin_unit);
         _html_code_region.operator Widget *()->set_margin_top(state::margin_unit);
 
         _main.push_back(&_opacity_label);
@@ -821,8 +699,6 @@ namespace mousetrap
         _main.push_back(_sliders.at('b')->operator Widget*());
 
         _main.push_back(_html_code_region);
-        _current_color_region.operator Widget*()->set_size_request({0, _html_code_region.operator Widget*()->get_preferred_size().natural_size.y});
-        _current_color_region.operator Widget*()->set_visible(false);
     }
 
     VerboseColorPicker::operator Widget*()
@@ -895,11 +771,13 @@ namespace mousetrap
             slider.set_right_color(RGBA(color_rgba.r, color_rgba.g, 1, color_rgba.a));
         }
 
-        _current_color_region.update(*_current_color, *_previous_color);
+        _html_code_region.update(*_current_color);
     }
 
     void VerboseColorPicker::update()
     {
+        *_current_color = state::primary_color;
+        *_previous_color = state::primary_color;
         update(state::primary_color);
     }
 }

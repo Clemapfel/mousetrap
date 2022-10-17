@@ -54,16 +54,6 @@ namespace mousetrap
         gtk_flow_box_set_homogeneous(get_native(), b);
     }
 
-    GtkFlowBoxChild* FlowBox::get_child_at_index(size_t i)
-    {
-        return gtk_flow_box_get_child_at_index(get_native(), i);
-    }
-
-    GtkFlowBoxChild* FlowBox::get_child_at_pos(int x, int y)
-    {
-        return gtk_flow_box_get_child_at_pos(get_native(), x, y);
-    }
-
     void FlowBox::push_back(Widget* widget)
     {
         gtk_flow_box_append(get_native(), widget->operator GtkWidget*());
@@ -96,5 +86,15 @@ namespace mousetrap
 
         for (auto* w : to_remove)
             gtk_flow_box_remove(get_native(), w);
+    }
+
+    void FlowBox::select(size_t i)
+    {
+        gtk_flow_box_select_child(get_native(), gtk_flow_box_get_child_at_index(get_native(), i));
+    }
+
+    void FlowBox::unselect_all()
+    {
+        gtk_flow_box_unselect_all(get_native());
     }
 }

@@ -43,6 +43,10 @@ namespace mousetrap::state
     AppComponent* verbose_color_picker = nullptr;
     AppComponent* palette_view = nullptr;
 
+    HSVA preview_color_current = primary_color;
+    HSVA preview_color_previous = primary_color;
+    AppComponent* color_preview = nullptr;
+
     void update_color_picker()
     {
         if (color_picker != nullptr)
@@ -65,6 +69,12 @@ namespace mousetrap::state
     {
         if (palette_view != nullptr)
             palette_view->update();
+    }
+
+    void update_color_preview()
+    {
+        if (color_preview != nullptr)
+            color_preview->update();
     }
 
     // ### PALETTES ###################################

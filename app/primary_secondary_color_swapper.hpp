@@ -228,9 +228,13 @@ namespace mousetrap
 
         state::primary_color = current_secondary;
         state::secondary_color = current_primary;
+        state::preview_color_current = state::primary_color;
+        state::preview_color_previous = state::primary_color;
 
         state::update_verbose_color_picker();
         state::update_color_picker();
+        state::update_palette_view();
+        state::update_color_preview();
 
         _render_area.queue_render();
     }
