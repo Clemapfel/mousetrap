@@ -458,9 +458,8 @@ namespace mousetrap
             color.h = 1 - (hue - _hue_bar_shape->get_top_left().y) / _hue_bar_shape->get_size().y;
 
             state::primary_color = color;
-            //state::primary_secondary_color_swapper->update();
-            //state::verbose_color_picker->update();
-
+            state::update_color_swapper();
+            state::update_verbose_color_picker();
         }
         else if (_hsv_shape_active)
         {
@@ -475,8 +474,8 @@ namespace mousetrap
             color.s = glm::clamp<float>(color.s, 0, 1);
 
             state::primary_color = color;
-            //state::primary_secondary_color_swapper->update();
-            //state::verbose_color_picker->update();
+            state::update_color_swapper();
+            state::update_verbose_color_picker();
         }
 
         auto window_color = state::primary_color;

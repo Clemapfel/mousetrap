@@ -621,6 +621,10 @@ namespace mousetrap
 
         *instance->_owner->_previous_color = *instance->_owner->_current_color;
         instance->_owner->_current_color_region.update(*instance->_owner->_current_color, *instance->_owner->_previous_color);
+
+        state::primary_color = *instance->_owner->_current_color;
+        state::update_color_picker();
+        state::update_color_swapper();
     }
 
     void VerboseColorPicker::SliderRegion::on_slider_motion(MotionEventController*, double x, double y, SliderRegion* instance)

@@ -17,23 +17,23 @@
 
 namespace mousetrap
 {
-    class PrimarySecondaryColorSwapper : public AppComponent
+    class ColorSwapper : public AppComponent
     {
         public:
-            PrimarySecondaryColorSwapper();
-            ~PrimarySecondaryColorSwapper();
+            ColorSwapper();
+            ~ColorSwapper();
 
             operator Widget*() override;
             void update() override;
 
         private:
-            static void on_gl_area_realize(Widget* self, PrimarySecondaryColorSwapper* instance);
-            static void on_gl_area_resize(GLArea* self, int, int, PrimarySecondaryColorSwapper* instance);
+            static void on_gl_area_realize(Widget* self, ColorSwapper* instance);
+            static void on_gl_area_resize(GLArea* self, int, int, ColorSwapper* instance);
             void swap_colors();
 
             ClickEventController _click_event_controller;
             static void on_click_release(ClickEventController* self, gint n_press, gdouble x, gdouble y, void* user_data);
-            static void on_global_key_pressed(PrimarySecondaryColorSwapper* instance);
+            static void on_global_key_pressed(ColorSwapper* instance);
 
             MotionEventController _motion_event_controller;
             static void on_motion_enter(MotionEventController* self, gdouble x, gdouble y, void* user_data);
@@ -65,7 +65,7 @@ namespace mousetrap
 
 namespace mousetrap
 {
-    PrimarySecondaryColorSwapper::PrimarySecondaryColorSwapper()
+    ColorSwapper::ColorSwapper()
     {
         _render_area.connect_signal_realize(on_gl_area_realize, this);
         _render_area.connect_signal_resize(on_gl_area_resize, this);
@@ -92,10 +92,10 @@ namespace mousetrap
         _main.add_controller(&_click_event_controller);
         _main.add_controller(&_motion_event_controller);
 
-        state::main_window->register_global_shortcut<PrimarySecondaryColorSwapper*>(state::shortcut_map, "color_swapper.swap", on_global_key_pressed, this);
+        state::main_window->register_global_shortcut<ColorSwapper*>(state::shortcut_map, "color_swapper.swap", on_global_key_pressed, this);
     }
 
-    PrimarySecondaryColorSwapper::~PrimarySecondaryColorSwapper()
+    ColorSwapper::~ColorSwapper()
     {
         delete _primary_color_shape;
         delete _secondary_color_shape;
@@ -107,12 +107,12 @@ namespace mousetrap
         delete _secondary_color_shape_transparency_tiling;
     }
 
-    PrimarySecondaryColorSwapper::operator Widget*()
+    ColorSwapper::operator Widget*()
     {
         return &_main;
     }
 
-    void PrimarySecondaryColorSwapper::update()
+    void ColorSwapper::update()
     {
         if (_primary_color_shape != nullptr)
             _primary_color_shape->set_color(state::primary_color);
@@ -123,7 +123,7 @@ namespace mousetrap
         _render_area.queue_render();
     }
 
-    void PrimarySecondaryColorSwapper::on_gl_area_realize(Widget* widget, PrimarySecondaryColorSwapper* instance)
+    void ColorSwapper::on_gl_area_realize(Widget* widget, ColorSwapper* instance)
     {
         auto* self = (GLArea*) widget;
         self->make_current();
@@ -131,7 +131,7 @@ namespace mousetrap
         instance->_render_area.queue_render();
     }
 
-    void PrimarySecondaryColorSwapper::on_gl_area_resize(GLArea* self, int w, int h, PrimarySecondaryColorSwapper* instance)
+    void ColorSwapper::on_gl_area_resize(GLArea* self, int w, int h, ColorSwapper* instance)
     {
         instance->_canvas_size.x = w;
         instance->_canvas_size.y = h;
@@ -145,7 +145,7 @@ namespace mousetrap
         instance->_render_area.queue_render();
     }
 
-    void PrimarySecondaryColorSwapper::initialize_render_area()
+    void ColorSwapper::initialize_render_area()
     {
         if (_transparency_tiling_shader == nullptr)
         {
@@ -218,7 +218,7 @@ namespace mousetrap
         _render_area.queue_render();
     }
 
-    void PrimarySecondaryColorSwapper::swap_colors()
+    void ColorSwapper::swap_colors()
     {
         auto current_primary = state::primary_color;
         auto current_secondary = state::secondary_color;
@@ -229,27 +229,27 @@ namespace mousetrap
         state::primary_color = current_secondary;
         state::secondary_color = current_primary;
 
-        //state::color_picker->update();
-        //state::verbose_color_picker->update();
+        state::update_verbose_color_picker();
+        state::update_color_picker();
 
         _render_area.queue_render();
     }
 
-    void PrimarySecondaryColorSwapper::on_click_release(ClickEventController* self, gint n_press, gdouble x, gdouble y,
-                                                        void* instance)
+    void ColorSwapper::on_click_release(ClickEventController* self, gint n_press, gdouble x, gdouble y,
+                                        void* instance)
     {
-        ((PrimarySecondaryColorSwapper*) instance)->swap_colors();
-        gtk_widget_grab_focus(((PrimarySecondaryColorSwapper*) instance)->operator Widget*()->operator GtkWidget*());
+        ((ColorSwapper*) instance)->swap_colors();
+        gtk_widget_grab_focus(((ColorSwapper*) instance)->operator Widget*()->operator GtkWidget*());
     }
 
-    void PrimarySecondaryColorSwapper::on_global_key_pressed(PrimarySecondaryColorSwapper* instance)
+    void ColorSwapper::on_global_key_pressed(ColorSwapper* instance)
     {
         instance->swap_colors();
     }
 
-    void PrimarySecondaryColorSwapper::on_motion_enter(MotionEventController* self, gdouble x, gdouble y, void* instance)
+    void ColorSwapper::on_motion_enter(MotionEventController* self, gdouble x, gdouble y, void* instance)
     {
-        ((PrimarySecondaryColorSwapper*) instance)->_render_area.grab_focus();
+        ((ColorSwapper*) instance)->_render_area.grab_focus();
     }
 }
 

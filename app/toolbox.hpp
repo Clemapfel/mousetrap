@@ -280,14 +280,14 @@ namespace mousetrap
 
     void Toolbox::select(ToolID id)
     {
-        for (auto& element : _elements)
-            element->set_tool_selected(id);
-
         if (id == "shapes_outline")
             id = POLYGON_OUTLINE;
 
         if (id == "shapes_fill")
             id = POLYGON_FILL;
+
+        for (auto& element : _elements)
+            element->set_tool_selected(id);
 
         state::active_tool = id;
         _currently_selected = id;

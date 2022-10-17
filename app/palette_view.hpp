@@ -46,7 +46,7 @@ namespace mousetrap
 
         private:
             static inline size_t _tile_size = 32 + 16;
-            static inline RGBA _selection_frame_color = mousetrap::YELLOW;
+            static inline RGBA _selection_frame_color = RGBA(1, 1, 1, 1); //mousetrap::YELLOW;
 
             static void on_flow_box_child_activated(FlowBox* self, size_t child_i, PaletteView* instance);
 
@@ -146,7 +146,7 @@ namespace mousetrap
         _menu_button.set_model(&_menu);
         _menu_button.set_popover_position(GTK_POS_RIGHT);
 
-        _main.push_back(&_menu_button);
+        // TODO: _main.push_back(&_menu_button);
         _main.push_back(&_scrolled_window);
 
         _key_event_controller.connect_signal_key_pressed(on_key_event_controller_key_pressed, this);
@@ -292,9 +292,6 @@ namespace mousetrap
         _selected_index = i;
 
         state::primary_color = _tiles.at(i)->_color;
-        //state::color_picker->update();
-        //state::primary_secondary_color_swapper->update();
-        //state::verbose_color_picker->update();
     }
 
     void PaletteView::select_none()

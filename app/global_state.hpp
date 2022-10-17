@@ -39,9 +39,33 @@ namespace mousetrap::state
     HSVA secondary_color = RGBA(1, 1, 0, 1).operator HSVA();
 
     AppComponent* color_picker = nullptr;
-    AppComponent* primary_secondary_color_swapper = nullptr;
+    AppComponent* color_swapper = nullptr;
     AppComponent* verbose_color_picker = nullptr;
     AppComponent* palette_view = nullptr;
+
+    void update_color_picker()
+    {
+        if (color_picker != nullptr)
+            color_picker->update();
+    }
+
+    void update_color_swapper()
+    {
+        if (color_swapper != nullptr)
+            color_swapper->update();
+    }
+
+    void update_verbose_color_picker()
+    {
+        if (verbose_color_picker != nullptr)
+            verbose_color_picker->update();
+    }
+
+    void update_palette_view()
+    {
+        if (palette_view != nullptr)
+            palette_view->update();
+    }
 
     // ### PALETTES ###################################
 
