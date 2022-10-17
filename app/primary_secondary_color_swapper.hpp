@@ -38,6 +38,7 @@ namespace mousetrap
             MotionEventController _motion_event_controller;
             static void on_motion_enter(MotionEventController* self, gdouble x, gdouble y, void* user_data);
 
+            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
             AspectFrame _frame = AspectFrame(1);
             GLArea _render_area;
 
@@ -80,15 +81,19 @@ namespace mousetrap
         _frame.set_margin(state::margin_unit);
         _frame.set_tooltip_text(state::shortcut_map->generate_control_tooltip("color_swapper", "Swap Primary and Secondary Color"));
         _frame.set_child(&_arrow_overlay);
+        _frame.set_expand(true);
+
+        _main.push_back(&_frame);
+        _main.set_expand(false);
 
         _click_event_controller.connect_signal_click_pressed(on_click_release, this);
         _motion_event_controller.connect_signal_motion_enter(on_motion_enter, this);
 
-        _render_area.add_controller(&_click_event_controller);
-        _render_area.add_controller(&_motion_event_controller);
+        _main.add_controller(&_click_event_controller);
+        _main.add_controller(&_motion_event_controller);
 
         state::main_window->register_global_shortcut<PrimarySecondaryColorSwapper*>(state::shortcut_map, "color_swapper.swap", on_global_key_pressed, this);
-   }
+    }
 
     PrimarySecondaryColorSwapper::~PrimarySecondaryColorSwapper()
     {
@@ -104,7 +109,7 @@ namespace mousetrap
 
     PrimarySecondaryColorSwapper::operator Widget*()
     {
-        return &_frame;
+        return &_main;
     }
 
     void PrimarySecondaryColorSwapper::update()

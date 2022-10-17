@@ -18,6 +18,7 @@
 #include <include/gl_area.hpp>
 #include <include/aspect_frame.hpp>
 #include <include/grid_view.hpp>
+#include <include/viewport.hpp>
 
 #include <app/tools.hpp>
 #include <app/app_component.hpp>
@@ -50,21 +51,13 @@ namespace mousetrap
                     Toolbox* _owner;
                     ToolID _id;
 
-                    static inline Texture* has_popover_indicator_texture = nullptr;
-                    static inline Texture* child_selected_indicator_texture = nullptr;
-                    static inline Texture* selected_indicator_texture = nullptr;
+                    ImageDisplay _has_popover_indicator_icon = ImageDisplay(get_resource_path() + "icons/" + "has_popover_indicator" + ".png", state::icon_scale);
+                    ImageDisplay _child_selected_indicator_icon = ImageDisplay(get_resource_path() + "icons/" + "child_selected_horizontal" + ".png", state::icon_scale);
+                    ImageDisplay _selected_indicator_icon = ImageDisplay(get_resource_path() + "icons/" + "selected_indicator" + ".png", state::icon_scale);
 
-                    Texture* _tool_texture = nullptr;
-                    GLArea _render_area;
+                    ImageDisplay _tool_icon = ImageDisplay(get_resource_path() + "icons/" + _id + ".png", state::icon_scale);
 
-                    static void on_render_area_realize(Widget*, Icon* instance);
-                    static void on_render_area_resize(GLArea*, int, int, Icon* instance);
-
-                    Shape* _tool_shape;
-                    Shape* _has_popover_indicator_shape;
-                    Shape* _selected_indicator_shape;
-                    Shape* _child_selected_indicator_shape;
-
+                    Overlay _overlay;
                     AspectFrame _aspect_frame = AspectFrame(1);
             };
 
@@ -75,7 +68,7 @@ namespace mousetrap
                     operator Widget*();
 
                 private:
-                    ToggleButton _parent_button;
+                    Viewport _main;
 
                     std::vector<Box> _popover_rows;
                     Box _popover_box = Box(GTK_ORIENTATION_VERTICAL);
@@ -114,87 +107,33 @@ namespace mousetrap
     Toolbox::Icon::Icon(ToolID id, Toolbox* owner)
         : _id(id), _owner(owner)
     {
-        _render_area.connect_signal_realize(on_render_area_realize, this);
-        _render_area.connect_signal_resize(on_render_area_resize, this);
-        _aspect_frame.set_child(&_render_area);
-    }
-
-    void Toolbox::Icon::on_render_area_realize(Widget* widget, Icon* instance)
-    {
-        GLArea* area = (GLArea*) widget;
-        area->make_current();
-
-        if (has_popover_indicator_texture == nullptr)
+        for (auto* w : {&_has_popover_indicator_icon, &_child_selected_indicator_icon, &_selected_indicator_icon, &_tool_icon})
         {
-            has_popover_indicator_texture = new Texture();
-            has_popover_indicator_texture->create_from_file(get_resource_path() + "icons/" + "has_popover_indicator" + ".png");
+            w->set_size_request(w->get_size());
+            w->set_expand(false);
+            w->set_align(GTK_ALIGN_CENTER);
         }
 
-        if (child_selected_indicator_texture == nullptr)
-        {
-            child_selected_indicator_texture = new Texture();
-            child_selected_indicator_texture->create_from_file(get_resource_path() + "icons/" + "child_selected_horizontal" + ".png");
-        }
-
-        if (selected_indicator_texture == nullptr)
-        {
-            selected_indicator_texture = new Texture();
-            selected_indicator_texture->create_from_file(get_resource_path() + "icons/" + "selected_indicator" + ".png");
-        }
-
-        instance->_tool_texture = new Texture();
-        instance->_tool_texture->create_from_file(get_resource_path() + "icons/" + instance->_id + ".png");
-
-        float offset = 1 - instance->_tool_texture->get_size().x / selected_indicator_texture->get_size().x;
-        std::cout << offset << std::endl;
-
-        instance->_tool_shape = new Shape();
-        instance->_tool_shape->as_rectangle({offset, offset}, {1 - 2*offset, 1 - 2*offset});
-        instance->_tool_shape->set_texture(instance->_tool_texture);
-
-        instance->_has_popover_indicator_shape = new Shape();
-        instance->_has_popover_indicator_shape->as_rectangle({0, 0}, {1, 1});
-        instance->_has_popover_indicator_shape->set_texture(has_popover_indicator_texture);
-
-        instance->_selected_indicator_shape = new Shape();
-        instance->_selected_indicator_shape->as_rectangle({0, 0}, {1, 1});
-        instance->_selected_indicator_shape->set_texture(selected_indicator_texture);
-
-        instance->_child_selected_indicator_shape = new Shape();
-        instance->_child_selected_indicator_shape->as_rectangle({0, 0}, {1, 1});
-        instance->_child_selected_indicator_shape->set_texture(child_selected_indicator_texture);
-
-        area->add_render_task(instance->_tool_shape);
-        area->add_render_task(instance->_child_selected_indicator_shape);
-        area->add_render_task(instance->_selected_indicator_shape);
-        area->add_render_task(instance->_has_popover_indicator_shape);
-
-        area->set_size_request({
-            selected_indicator_texture->get_size().x * state::icon_scale,
-            selected_indicator_texture->get_size().y * state::icon_scale,
-        });
-
-        area->queue_render();
-    }
-
-    void Toolbox::Icon::on_render_area_resize(GLArea* area, int w, int h, Icon* instance)
-    {
-        area->queue_render();
+        _overlay.set_child(&_selected_indicator_icon);
+        _overlay.add_overlay(&_tool_icon);
+        _overlay.add_overlay(&_child_selected_indicator_icon);
+        _overlay.add_overlay(&_has_popover_indicator_icon);
+        _aspect_frame.set_child(&_overlay);
     }
 
     void Toolbox::Icon::set_has_popover(bool b)
     {
-        _has_popover_indicator_shape->set_visible(b);
+        _has_popover_indicator_icon.set_opacity(b ? 1 : 0);
     }
 
     void Toolbox::Icon::set_selection_indicator_visible(bool b)
     {
-        _selected_indicator_shape->set_visible(b);
+        _selected_indicator_icon.set_opacity(b ? 1 : 0);
     }
 
     void Toolbox::Icon::set_child_selection_indicator_visible(bool b)
     {
-        _child_selected_indicator_shape->set_visible(b);
+        _child_selected_indicator_icon.set_opacity(b ? 1 : 0);
     }
 
     Toolbox::Icon::operator Widget*()
@@ -222,12 +161,13 @@ namespace mousetrap
             _popover_box.push_back(&row);
 
         _popover.set_child(&_popover_box);
-        _popover.attach_to(&_parent_button);
+        _popover.attach_to(&_main);
+        _main.set_child(_parent_icon->operator Widget*());
     }
 
     Toolbox::IconWithPopover::operator Widget*()
     {
-        return _parent_icon->operator Widget*();
+        return &_main;
     }
 
     // TOOLBOX
@@ -240,7 +180,9 @@ namespace mousetrap
             _flow_box.push_back(e);
         }
 
-        _flow_box.set_max_children_per_line(5);
+        _flow_box.set_hexpand(false);
+        _flow_box.set_max_children_per_line(_elements.size() - 1);
+            // for some reason going from 2 to 1 lines lags the ui, this prevents that
     }
 
     Toolbox::operator Widget*()

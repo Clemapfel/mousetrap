@@ -116,6 +116,9 @@ static void activate(GtkApplication* app, void*)
     auto* toolbox = state::toolbox->operator Widget*();
     auto* brush_options = state::brush_options->operator Widget*();
 
+    color_picker->set_margin(state::margin_unit);
+    verbose_color_picker->set_margin(state::margin_unit);
+
     auto* left_column = new Box(GTK_ORIENTATION_VERTICAL);
     auto* center_column = new Box(GTK_ORIENTATION_VERTICAL);
     auto* right_column = new Box(GTK_ORIENTATION_VERTICAL);
@@ -135,8 +138,13 @@ static void activate(GtkApplication* app, void*)
     center_right_paned->set_start_child(center_column);
     center_right_paned->set_end_child(right_column);
 
-    left_center_paned->set_start_child_shrinkable(false);
-    center_right_paned->set_end_child_shrinkable(false);
+    left_center_paned->set_start_child_shrinkable(true);
+    left_center_paned->set_end_child_shrinkable(false);
+    left_center_paned->set_has_wide_handle(true);
+
+    center_right_paned->set_start_child_shrinkable(false);
+    center_right_paned->set_end_child_shrinkable(true);
+    center_right_paned->set_has_wide_handle(true);
 
     left_center_paned->set_hexpand(false);
     center_right_paned->set_hexpand(false);
@@ -151,7 +159,7 @@ static void activate(GtkApplication* app, void*)
     // LEFT COLUMN
 
     float color_picker_width = 20 * state::margin_unit;
-    float color_swapper_height = 5 * state::margin_unit;
+    float color_swapper_height = 8 * state::margin_unit;
 
     color_picker->set_size_request({color_picker_width, color_picker_width});
     color_swapper->set_size_request({color_picker_width, color_swapper_height});
@@ -176,6 +184,7 @@ static void activate(GtkApplication* app, void*)
 
     palette_view_spacer_paned->set_vexpand(true);
     left_column_paned_top->push_back(palette_view_spacer_paned);
+    add_spacer(left_column_paned_top);
     left_column_paned_top->push_back(color_swapper);
     add_spacer(left_column_paned_top);
     left_column_paned_top->push_back(color_picker);
@@ -190,6 +199,18 @@ static void activate(GtkApplication* app, void*)
     left_column_paned->set_end_child_resizable(false);
     left_column_paned->set_has_wide_handle(true);
 
+    auto* on_reveal_verbose_picker_controller = new ClickEventController();
+    using on_reveal_verbose_picker_data = struct {Paned* paned;};
+    static auto on_reveal_verbose_picker_click_pressed = [](ClickEventController*, gint n_press, double x, double y, on_reveal_verbose_picker_data* data)
+    {
+        if (n_press == 2)
+            data->paned->set_position(0); // +inf to hide, 0 to reveal
+    };
+    on_reveal_verbose_picker_controller->connect_signal_click_pressed(on_reveal_verbose_picker_click_pressed, new on_reveal_verbose_picker_data{
+       left_column_paned
+    });
+    color_picker->add_controller(on_reveal_verbose_picker_controller);
+
     //left_column->push_back(palette_view_spacer_paned);
     //add_spacer(left_column);
     left_column->push_back(left_column_paned);
@@ -203,10 +224,13 @@ static void activate(GtkApplication* app, void*)
     auto* right_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
 
     right_column_paned->set_start_child(brush_options);
-    right_column_paned->set_end_child(layer_view);
+    //right_column_paned->set_end_child(layer_view);
     right_column_paned->set_start_child_shrinkable(true);
     right_column_paned->set_end_child_shrinkable(false);
     right_column_paned->set_has_wide_handle(true);
+    right_column_paned->set_vexpand(false);
+    right_column_paned->set_valign(GTK_ALIGN_END);
+    toolbox->set_valign(GTK_ALIGN_START);
 
     right_column->push_back(toolbox);
     add_spacer(right_column);
