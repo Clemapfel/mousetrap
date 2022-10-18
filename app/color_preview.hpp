@@ -78,15 +78,14 @@ namespace mousetrap
 
         {
             auto size = instance->_transparency_tiling_shape->get_size();
-            size.y -= 0.0001;
             auto top_left = instance->_transparency_tiling_shape->get_top_left();
-            top_left.x += 0.0001;
 
+            float eps = 0.001;
             std::vector<Vector2f> vertices = {
-                    {top_left.x , top_left.y},
-                    {top_left.x + size.x, top_left.y},
-                    {top_left.x + size.x, top_left.y + size.y},
-                    {top_left.x, top_left.y + size.y}
+                    {top_left.x + eps, top_left.y + eps},
+                    {top_left.x + size.x - eps, top_left.y + eps},
+                    {top_left.x + size.x - eps, top_left.y + size.y - eps},
+                    {top_left.x + eps, top_left.y + size.y - eps}
             };
 
             instance->_frame_shape = new Shape();

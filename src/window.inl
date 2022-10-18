@@ -62,6 +62,28 @@ namespace mousetrap
         gtk_window_set_focus(get_native(), widget->operator GtkWidget*());
     }
 
+    void Window::set_hide_on_close(bool b)
+    {
+        gtk_window_set_hide_on_close(get_native(), b);
+    }
+
+    void Window::set_title(const std::string& str)
+    {
+        gtk_window_set_title(get_native(), str.c_str());
+    }
+
+    void Window::set_destroy_with_parent(bool b)
+    {
+        gtk_window_set_destroy_with_parent(get_native(), b);
+    }
+
+    void Window::set_titlebar_layout(const char* layout)
+    {
+        auto* titlebar = GTK_HEADER_BAR(gtk_header_bar_new());
+        gtk_header_bar_set_decoration_layout(titlebar, layout);
+        gtk_window_set_titlebar(get_native(), GTK_WIDGET(titlebar));
+    }
+
     bool Window::on_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, void*)
     {
         std::vector<std::pair<ShortcutID, GtkShortcutTrigger*>> triggered;

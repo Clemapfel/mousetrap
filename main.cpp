@@ -124,6 +124,7 @@ static void activate(GtkApplication* app, void*)
     color_picker->set_margin_start(state::margin_unit);
     color_picker->set_margin_bottom(state::margin_unit);
     color_picker->set_margin_top(state::margin_unit);
+    color_picker->set_expand(true);
 
     verbose_color_picker->set_margin(state::margin_unit);
     verbose_color_picker->set_vexpand(false);
@@ -131,6 +132,20 @@ static void activate(GtkApplication* app, void*)
 
     color_preview->set_margin(state::margin_unit);
     color_preview->set_vexpand(false);
+
+    auto* color_picker_revealer = new Revealer();
+    color_picker_revealer->set_transition_type(TransitionType::SLIDE_BOTTOM_TO_TOP);
+    color_picker_revealer->set_child(color_picker);
+    color_picker_revealer->set_revealed(false);
+
+    auto* show_color_picker_click_ec = new ClickEventController();
+    static auto show_color_picker = [](ClickEventController*, size_t n, double, double, Revealer* window)
+    {
+        if (n == 2)
+            window->set_revealed(not window->get_revealed());
+    };
+    show_color_picker_click_ec->connect_signal_click_pressed(show_color_picker, color_picker_revealer);
+    color_preview->add_controller(show_color_picker_click_ec);
 
     auto* left_column = new Box(GTK_ORIENTATION_VERTICAL);
     auto* center_column = new Box(GTK_ORIENTATION_VERTICAL);
@@ -201,12 +216,13 @@ static void activate(GtkApplication* app, void*)
     add_spacer(left_column_paned_top);
     left_column_paned_top->push_back(color_swapper);
     add_spacer(left_column_paned_top);
-    left_column_paned_top->push_back(color_picker);
-    add_spacer(left_column_paned_top);
     left_column_paned_top->push_back(color_preview);
+    add_spacer(left_column_paned_top);
+    left_column_paned_top->push_back(verbose_color_picker);
 
     auto* left_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
     left_column_paned->set_start_child(left_column_paned_top);
+    left_column_paned->set_end_child(color_picker_revealer);
     left_column_paned->set_start_child_shrinkable(false);
     left_column_paned->set_has_wide_handle(true);
 
@@ -220,7 +236,10 @@ static void activate(GtkApplication* app, void*)
 
     auto* right_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
 
-    right_column_paned->set_start_child(brush_options);
+    auto* right_column_paned_top = new Box(GTK_ORIENTATION_VERTICAL);
+    right_column_paned_top->push_back(brush_options);
+
+    right_column_paned->set_start_child(right_column_paned_top);
     right_column_paned->set_end_child(layer_view);
     right_column_paned->set_start_child_shrinkable(true);
     right_column_paned->set_end_child_shrinkable(false);

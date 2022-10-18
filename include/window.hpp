@@ -32,6 +32,15 @@ namespace mousetrap
             void register_global_shortcut(ShortcutMap*, const std::string& shortcut_id, std::function<void(T)>, T);
             void unregister_global_shortcut(const std::string& shortcut_id);
 
+            void set_hide_on_close(bool);
+            void set_destroy_with_parent(bool);
+
+            void set_title(const std::string&);
+
+            // https://docs.gtk.org/gtk4/property.Settings.gtk-decoration-layout.html
+            void set_titlebar_layout(const char*);
+
+
         private:
             using ShortcutID = std::string;
 
