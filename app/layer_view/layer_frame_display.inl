@@ -113,7 +113,7 @@ namespace mousetrap
 
     void LayerView::LayerFrameDisplay::update_selection()
     {
-        _frame_widget_label.set_visible(_layer == _owner->_selected_layer and state::n_frames > 1);
+        _frame_widget_label.set_visible(show_frame_index and _layer == _owner->_selected_layer and state::n_frames > 1);
 
         if (not _gl_area.get_is_realized())
             return;

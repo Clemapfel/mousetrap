@@ -176,7 +176,7 @@ static void activate(GtkApplication* app, void*)
 
     color_picker->set_size_request({color_picker_width, color_picker_width});
     color_swapper->set_size_request({color_picker_width, color_swapper_height});
-    color_preview->set_size_request({color_picker_width, color_swapper_height});
+    color_preview->set_size_request({color_picker_width + 2 * state::margin_unit, color_swapper_height * 0.5});
 
     for (auto* w : {color_picker, color_swapper})
         w->set_valign(GTK_ALIGN_END);
@@ -221,7 +221,7 @@ static void activate(GtkApplication* app, void*)
     auto* right_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
 
     right_column_paned->set_start_child(brush_options);
-    //right_column_paned->set_end_child(layer_view);
+    right_column_paned->set_end_child(layer_view);
     right_column_paned->set_start_child_shrinkable(true);
     right_column_paned->set_end_child_shrinkable(false);
     right_column_paned->set_has_wide_handle(true);
@@ -229,11 +229,7 @@ static void activate(GtkApplication* app, void*)
     right_column_paned->set_valign(GTK_ALIGN_END);
     toolbox->set_valign(GTK_ALIGN_START);
 
-    //right_column->push_back(toolbox);
-    //add_spacer(right_column);
-    //right_column->push_back(right_column_paned);
-
-    right_column->push_back(layer_view);
+    right_column->push_back(right_column_paned);
 
     for (auto* w : {toolbox, brush_options})
     {
@@ -243,10 +239,31 @@ static void activate(GtkApplication* app, void*)
 
     // CENTER COLUMN
 
-    center_column->set_size_request({state::margin_unit * 50, 0});
-    center_column->push_back(toolbox);
+    auto* toolbox_box = new Box(GTK_ORIENTATION_HORIZONTAL);
+    auto* toolbox_box_left_spacer = new SeparatorLine();
+    auto* toolbox_box_right_spacer = new SeparatorLine();
+
+    toolbox->set_halign(GTK_ALIGN_CENTER);
+
+    //toolbox_box_left_spacer->set_halign(GTK_ALIGN_START);
+    //toolbox_box_right_spacer->set_halign(GTK_ALIGN_END);
+
+    toolbox_box_left_spacer->set_hexpand(true);
+    toolbox_box_right_spacer->set_hexpand(true);
+    toolbox->set_hexpand(false);
+
+    toolbox_box->push_back(toolbox_box_left_spacer);
+    toolbox_box->push_back(toolbox);
+    toolbox_box->push_back(toolbox_box_right_spacer);
+
+    toolbox_box->set_vexpand(false);
+    canvas->set_vexpand(true);
+
+    add_spacer(center_column);
+    center_column->push_back(toolbox_box);
     add_spacer(center_column);
     center_column->push_back(canvas);
+    center_column->set_homogeneous(false);
 
     auto* main = new Box(GTK_ORIENTATION_VERTICAL);
     main->push_back(left_center_paned);

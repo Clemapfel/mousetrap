@@ -42,6 +42,7 @@ namespace mousetrap
 
         private:
             static inline float thumbnail_height = 5 * state::margin_unit;
+            static inline bool show_frame_index = true;
             static inline const float thumbnail_margin_top_bottom = 0.5 * state::margin_unit;
             static inline const float thumbnail_margin_left_right = 0.25 * state::margin_unit;
             static inline Shader* transparency_tiling_shader = nullptr;
@@ -289,12 +290,21 @@ namespace mousetrap
             ImageDisplay _setting_menu_button_icon = ImageDisplay(get_resource_path() + "icons/settings.png");
 
             Popover _setting_menu_button_popover;
-            Box _setting_menu_button_popover_box = Box(GTK_ORIENTATION_VERTICAL);
+            Box _settings_menu_button_popover_box = Box(GTK_ORIENTATION_VERTICAL, state::margin_unit);
 
-            Label _thumbnail_label = Label("Thumbnail Size: ");
-            Scale _thumbnail_scale = Scale(2 * state::margin_unit, 30 * state::margin_unit, 1);
-            static void on_thumbnail_scale_value_changed(Scale*, LayerView* instance);
-            Box _thumbnail_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Label _settings_header_label = Label("<b>Layer View Settings</b>");
+            
+            Label _settings_thumbnail_label = Label("Thumbnail Size (px): ");
+            SeparatorLine _settings_thumbnail_spacer;
+            SpinButton _settings_thumbnail_spin_button = SpinButton(1 * state::margin_unit, 40 * state::margin_unit, 1);
+            static void on_settings_thumbnail_spin_button_value_changed(SpinButton*, LayerView* instance);
+            Box _settings_thumbnail_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
+            Label _settings_show_frame_index_label = Label("Show Frame Index: ");
+            SeparatorLine _settings_show_frame_index_spacer;
+            CheckButton _settings_show_frame_index_check_button;
+            static void on_settings_show_frame_index_check_button_toggled(CheckButton*, LayerView* isntance);
+            Box _settings_show_frame_index_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
             std::deque<LayerRow> _layer_rows;
             FrameControlBar _frame_control_bar;
@@ -369,7 +379,7 @@ namespace mousetrap
         _layer_control_bar.update();
     }
 
-    void LayerView::on_thumbnail_scale_value_changed(Scale* scale, LayerView* instance)
+    void LayerView::on_settings_thumbnail_spin_button_value_changed(SpinButton* scale, LayerView* instance)
     {
         instance->thumbnail_height = scale->get_value();
 
@@ -380,6 +390,14 @@ namespace mousetrap
 
             row.update_size_request();
         }
+    }
+
+    void LayerView::on_settings_show_frame_index_check_button_toggled(CheckButton* button, LayerView* instance)
+    {
+        instance->show_frame_index = button->get_is_checked();
+
+        for (auto& row : instance->_layer_rows)
+            row.update_selection();
     }
 
     LayerView::LayerView()
@@ -425,16 +443,41 @@ namespace mousetrap
 
         _setting_menu_button_icon.set_size_request(_setting_menu_button_icon.get_size());
         _setting_menu_button.set_child(&_setting_menu_button_icon);
-        _setting_menu_button_popover.set_child(&_setting_menu_button_popover_box);
+        _setting_menu_button_popover.set_child(&_settings_menu_button_popover_box);
         _setting_menu_button.set_popover(&_setting_menu_button_popover);
 
-        _thumbnail_box.push_back(&_thumbnail_label);
-        _thumbnail_box.push_back(&_thumbnail_scale);
-        _thumbnail_scale.set_hexpand(true);
-        _thumbnail_scale.set_size_request({state::margin_unit * 15, 0});
-        _thumbnail_scale.set_value(thumbnail_height);
-        _thumbnail_scale.connect_signal_value_changed(on_thumbnail_scale_value_changed, this);
-        _setting_menu_button_popover_box.push_back(&_thumbnail_box);
+        _settings_thumbnail_label.set_halign(GTK_ALIGN_START);
+        _settings_thumbnail_spacer.set_opacity(0);
+        _settings_thumbnail_spacer.set_hexpand(true);
+        _settings_thumbnail_spin_button.set_halign(GTK_ALIGN_END);
+
+        _settings_thumbnail_box.push_back(&_settings_thumbnail_label);
+        _settings_thumbnail_box.push_back(&_settings_thumbnail_spacer);
+        _settings_thumbnail_box.push_back(&_settings_thumbnail_spin_button);
+        _settings_thumbnail_spin_button.set_margin_start(state::margin_unit * 4);
+        _settings_thumbnail_spin_button.set_hexpand(true);
+        _settings_thumbnail_spin_button.set_size_request({state::margin_unit * 15, 0});
+        _settings_thumbnail_spin_button.set_value(thumbnail_height);
+        _settings_thumbnail_spin_button.set_digits(0);
+        _settings_thumbnail_spin_button.connect_signal_value_changed(on_settings_thumbnail_spin_button_value_changed, this);
+        
+        _settings_show_frame_index_label.set_halign(GTK_ALIGN_START);
+        _settings_show_frame_index_spacer.set_opacity(0);
+        _settings_show_frame_index_spacer.set_hexpand(true);
+        _settings_show_frame_index_check_button.set_halign(GTK_ALIGN_END);
+
+        _settings_show_frame_index_box.push_back(&_settings_show_frame_index_label);
+        _settings_show_frame_index_box.push_back(&_settings_show_frame_index_spacer);
+        _settings_show_frame_index_box.push_back(&_settings_show_frame_index_check_button);
+        _settings_show_frame_index_box.set_hexpand(true);
+        _settings_show_frame_index_check_button.set_margin_end(state::margin_unit * 4);
+        _settings_show_frame_index_check_button.set_is_checked(show_frame_index);
+        _settings_show_frame_index_check_button.connect_signal_toggled(on_settings_show_frame_index_check_button_toggled, this);
+
+        _settings_menu_button_popover_box.push_back(&_settings_header_label);
+        _settings_menu_button_popover_box.push_back(&_settings_thumbnail_box);
+        _settings_menu_button_popover_box.push_back(&_settings_show_frame_index_box);
+
         _setting_menu_button.set_hexpand(true);
         _setting_menu_button.set_always_show_arrow(false);
         _setting_menu_button.set_tooltip_title("Layer View Settings");
