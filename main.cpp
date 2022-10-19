@@ -334,13 +334,33 @@ static void activate(GtkApplication* app, void*)
     auto* root = g_menu_new();
     auto* inner = g_menu_new();
 
-    auto* item = g_menu_item_new("<span weight=\"bold\">test</span>", "app.palette_view");
+    auto* section = g_menu_new();
+    g_menu_append_item(section, g_menu_item_new("section", "app.test_action"));
+    g_menu_append_item(section, g_menu_item_new("section", "app.test_action"));
+    g_menu_append_item(section, g_menu_item_new("section", "app.test_action"));
+
+    auto* submenu = g_menu_new();
+    g_menu_append_item(submenu, g_menu_item_new("submenu", "app.test_action"));
+    g_menu_append_item(submenu, g_menu_item_new("submenu", "app.test_action"));
+    g_menu_append_item(submenu, g_menu_item_new("submenu", "app.test_action"));
+
+    auto* item = g_menu_item_new("<b>test</b>", "app.palette_view");
     g_menu_item_set_attribute_value(item, G_MENU_ATTRIBUTE_ACTION, g_variant_new_string("app.test_action"));
     g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
-
     g_menu_append_item(inner, item);
-    g_menu_append_submenu(root, "menu", G_MENU_MODEL(inner));
 
+    auto* section_item = g_menu_item_new_section("section", G_MENU_MODEL(section));
+    g_menu_item_set_attribute_value(section_item, "display-hint", g_variant_new_string("circular-buttons"));
+    g_menu_append_item(inner, section_item);
+
+    auto* submenu_item = g_menu_item_new_submenu("submenu", G_MENU_MODEL(submenu));
+    g_menu_item_set_attribute_value(submenu_item, "icon", g_variant_new_string((get_resource_path() + "icons/palette_locked.png").c_str()));
+    g_menu_append_item(inner, submenu_item);
+
+    auto test = new std::vector<const char*>{"<Control>k"};
+    gtk_application_set_accels_for_action(state::app->operator GtkApplication*(), "app.test_action", test->data());
+
+    g_menu_append_submenu(root, "menu", G_MENU_MODEL(inner));
     auto* menu_bar = gtk_popover_menu_bar_new_from_model(G_MENU_MODEL(root));
     gtk_popover_menu_bar_add_child(GTK_POPOVER_MENU_BAR(menu_bar), widget, "id");
 

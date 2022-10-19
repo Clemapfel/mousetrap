@@ -23,6 +23,7 @@ namespace mousetrap
 
             int run();
             operator GObject*() override;
+            operator GtkApplication*();
 
             using ActionSignature = void(*)(void* user_data);
 

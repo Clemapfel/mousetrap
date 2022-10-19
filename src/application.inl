@@ -30,6 +30,11 @@ namespace mousetrap
         return G_OBJECT(_native);
     }
 
+    Application::operator GtkApplication*()
+    {
+        return _native;
+    }
+
     void Application::action_wrapper(GSimpleAction*, GVariant*, action_wrapper_data* data)
     {
         auto* action = data->instance->_actions.at(data->id);
