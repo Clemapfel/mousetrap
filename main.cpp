@@ -316,36 +316,28 @@ static void activate(GtkApplication* app, void*)
     state::main_window->set_child(menu_button);
     */
 
+    state::app->add_action("test_action", test_action, new std::string("test"));
     auto* widget = gtk_button_new();
 
     auto* inner = g_menu_new();
-    auto* inner_01 = g_menu_item_new("top 01", "app.palette_view.save");
-    auto* inner_02 = g_menu_item_new("top 02", "app.test_action");
-    g_menu_item_set_attribute_value(inner_02, "custom", g_variant_new_string("inner_02"));
+    auto* inner_01 = g_menu_item_new("inner_01", "app.test_action");
+    auto* inner_02 = g_menu_item_new("inner_02", "app.test_action");
+    g_menu_item_set_attribute_value(inner_02, "custom", g_variant_new_string("id"));
 
     for (auto* i : {inner_01, inner_02})
         g_menu_append_item(inner, i);
 
-    auto* inner_02_widget = gtk_button_new();
-    auto* inner_popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(inner));
-    gtk_popover_menu_add_child(GTK_POPOVER_MENU(inner_popover), widget, "inner_02");
-
     auto* outer = g_menu_new();
-    auto* outer_01 = g_menu_item_new("sub 01", "app.palette_view.save");
-    auto* outer_02 = g_menu_item_new("test 02", "app.dummy");
-    g_menu_item_set_attribute_value(outer_02, "custom", g_variant_new_string("outer_02"));
+    auto* outer_01 = g_menu_item_new("outer_01", "app.test_action");
+    g_menu_append_item(outer, outer_01);
+    g_menu_append_submenu(outer, "submenu", G_MENU_MODEL(inner));
 
-    for (auto* i : {outer_01, outer_02})
-        g_menu_append_item(outer, i);
-
-    auto* outer_popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(outer));
-    auto* inner_popover_button = gtk_menu_button_new();
-    gtk_menu_button_set_popover(GTK_MENU_BUTTON(inner_popover_button), inner_popover);
-
-    gtk_popover_menu_add_child(GTK_POPOVER_MENU(outer_popover), inner_popover_button, "outer_02");
+    //auto* popover = gtk_popover_menu_new_from_model_full(G_MENU_MODEL(outer), GTK_POPOVER_MENU_NESTED);
+    auto* popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(outer));
+    gtk_popover_menu_add_child(GTK_POPOVER_MENU(popover), widget, "id");
 
     auto* menu_button = gtk_menu_button_new();
-    gtk_menu_button_set_popover(GTK_MENU_BUTTON(menu_button), GTK_WIDGET(outer_popover));
+    gtk_menu_button_set_popover(GTK_MENU_BUTTON(menu_button), GTK_WIDGET(popover));
 
     auto* window = state::main_window->operator _GtkWindow *();
     gtk_window_set_child(window, menu_button);
