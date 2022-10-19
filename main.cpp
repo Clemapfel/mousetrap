@@ -24,6 +24,7 @@
 #include <include/grid_view.hpp>
 #include <include/reorderable_list.hpp>
 #include <include/dialog.hpp>
+#include <include/popover_menu_bar.hpp>
 
 #include <app/global_state.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
@@ -293,29 +294,37 @@ static void activate(GtkApplication* app, void*)
 
     // TODO
 
-    /*
     state::app->add_action("test_action", test_action, new std::string("test"));
 
     auto* widget = new Button();
+    auto* uproot = new MenuModel();
     auto* root = new MenuModel();
     auto* submenu = new MenuModel();
+    auto* subsubmenu = new MenuModel();
+
+    subsubmenu->add_action("subsubtest 06", "app.test_action");
+    subsubmenu->add_widget(widget);
+    subsubmenu->add_action("subsubtest 07", "app.test_action");
+
     submenu->add_action("subtest 04", "app.test_action");
-    submenu->add_widget(widget);
+    submenu->add_submenu("subsubmenu", subsubmenu);
     submenu->add_action("subtest 05", "app.test_action");
 
     root->add_action("test 01", "app.test_action");
     root->add_submenu("submenu", submenu);
     root->add_action("test 02", "app.test_action");
-    root->add_action("test 03", "app.test_action");
 
-    auto* popover_menu = new PopoverMenu(root, false);
+    uproot->add_submenu("root", root);
 
-    auto* menu_button = new MenuButton();
-    menu_button->set_popover(popover_menu);
+    //auto* popover_menu = new PopoverMenu(root);
+    //auto* menu_button = new MenuButton();
+    //menu_button->set_popover(popover_menu);
+    //state::main_window->set_child(menu_button);
 
-    state::main_window->set_child(menu_button);
-    */
+    auto* menubar = new PopoverMenuBar(uproot);
+    state::main_window->set_child(menubar);
 
+    /*
     state::app->add_action("test_action", test_action, new std::string("test"));
     auto* widget = gtk_button_new();
 
@@ -342,7 +351,7 @@ static void activate(GtkApplication* app, void*)
     auto* window = state::main_window->operator _GtkWindow *();
     gtk_window_set_child(window, menu_button);
     gtk_application_window_set_show_menubar(GTK_APPLICATION_WINDOW(window), false);
-
+    */
     // TODO
 
     //state::main_window->set_child(main);

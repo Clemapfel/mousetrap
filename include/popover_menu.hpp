@@ -28,9 +28,7 @@ namespace mousetrap
         ))
     {
         for (auto& pair : model->get_widgets())
-        {
-            std::cout << pair.first << " " << pair.second << std::endl;
-            gtk_popover_menu_add_child(get_native(), pair.second->operator GtkWidget*(), pair.first.c_str());
-        }
+            if (not gtk_popover_menu_add_child(get_native(), pair.second->operator GtkWidget*(), pair.first.c_str()))
+                std::cerr << "[WARNING] In PopoverMenu::PopoverMenu: Failed to add Widget " << pair.second->operator GtkWidget*() << " to submenu." << std::endl;
     }
 }
