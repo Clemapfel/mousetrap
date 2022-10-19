@@ -86,6 +86,11 @@ void initialize_debug_layers()
     }
 }
 
+void test_action(void* in)
+{
+    std::cout << *((std::string*) in) << std::endl;
+}
+
 static void activate(GtkApplication* app, void*)
 {
     state::shortcut_map = new ShortcutMap();
@@ -108,7 +113,6 @@ static void activate(GtkApplication* app, void*)
     state::canvas = new Canvas();
     state::color_preview = new ColorPreview();
 
-    // TODO
     auto* layer_view = state::layer_view->operator Widget*();
     auto* palette_view = state::palette_view->operator Widget*();
     auto* color_swapper = state::color_swapper->operator Widget*();
@@ -278,18 +282,78 @@ static void activate(GtkApplication* app, void*)
     toolbox_box->set_vexpand(false);
     canvas->set_vexpand(true);
 
-    add_spacer(center_column);
     center_column->push_back(toolbox_box);
     add_spacer(center_column);
     center_column->push_back(canvas);
     center_column->set_homogeneous(false);
 
     auto* main = new Box(GTK_ORIENTATION_VERTICAL);
+    add_spacer(main);
     main->push_back(left_center_paned);
 
     // TODO
 
-    state::main_window->set_child(main);
+    /*
+    state::app->add_action("test_action", test_action, new std::string("test"));
+
+    auto* widget = new Button();
+    auto* root = new MenuModel();
+    auto* submenu = new MenuModel();
+    submenu->add_action("subtest 04", "app.test_action");
+    submenu->add_widget(widget);
+    submenu->add_action("subtest 05", "app.test_action");
+
+    root->add_action("test 01", "app.test_action");
+    root->add_submenu("submenu", submenu);
+    root->add_action("test 02", "app.test_action");
+    root->add_action("test 03", "app.test_action");
+
+    auto* popover_menu = new PopoverMenu(root, false);
+
+    auto* menu_button = new MenuButton();
+    menu_button->set_popover(popover_menu);
+
+    state::main_window->set_child(menu_button);
+    */
+
+    auto* widget = gtk_button_new();
+
+    auto* inner = g_menu_new();
+    auto* inner_01 = g_menu_item_new("top 01", "app.palette_view.save");
+    auto* inner_02 = g_menu_item_new("top 02", "app.test_action");
+    g_menu_item_set_attribute_value(inner_02, "custom", g_variant_new_string("inner_02"));
+
+    for (auto* i : {inner_01, inner_02})
+        g_menu_append_item(inner, i);
+
+    auto* inner_02_widget = gtk_button_new();
+    auto* inner_popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(inner));
+    gtk_popover_menu_add_child(GTK_POPOVER_MENU(inner_popover), widget, "inner_02");
+
+    auto* outer = g_menu_new();
+    auto* outer_01 = g_menu_item_new("sub 01", "app.palette_view.save");
+    auto* outer_02 = g_menu_item_new("test 02", "app.dummy");
+    g_menu_item_set_attribute_value(outer_02, "custom", g_variant_new_string("outer_02"));
+
+    for (auto* i : {outer_01, outer_02})
+        g_menu_append_item(outer, i);
+
+    auto* outer_popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(outer));
+    auto* inner_popover_button = gtk_menu_button_new();
+    gtk_menu_button_set_popover(GTK_MENU_BUTTON(inner_popover_button), inner_popover);
+
+    gtk_popover_menu_add_child(GTK_POPOVER_MENU(outer_popover), inner_popover_button, "outer_02");
+
+    auto* menu_button = gtk_menu_button_new();
+    gtk_menu_button_set_popover(GTK_MENU_BUTTON(menu_button), GTK_WIDGET(outer_popover));
+
+    auto* window = state::main_window->operator _GtkWindow *();
+    gtk_window_set_child(window, menu_button);
+    gtk_application_window_set_show_menubar(GTK_APPLICATION_WINDOW(window), false);
+
+    // TODO
+
+    //state::main_window->set_child(main);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

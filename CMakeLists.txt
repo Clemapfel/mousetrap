@@ -195,7 +195,7 @@ add_library(mousetrap SHARED
     src/grid_view.inl
 
     include/reorderable_list.hpp
-        include/blend_mode.hpp src/blend_mode.inl include/viewport.hpp app/layer_view.hpp app/layer_view.hpp include/center_box.hpp include/selection_model.hpp app/layer_view.hpp include/texture_workspace.hpp include/dialog.hpp src/dialog.inl include/undo_stack.hpp)
+        include/blend_mode.hpp src/blend_mode.inl include/viewport.hpp app/layer_view.hpp app/layer_view.hpp include/center_box.hpp include/selection_model.hpp app/layer_view.hpp include/texture_workspace.hpp include/dialog.hpp src/dialog.inl include/undo_stack.hpp include/popover_menu.hpp include/popover_menu_bar.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

@@ -31,6 +31,11 @@ namespace mousetrap
         gtk_menu_button_set_popover(get_native(), popover->operator GtkWidget*());
     }
 
+    void MenuButton::set_popover(PopoverMenu* popover_menu)
+    {
+        gtk_menu_button_set_popover(get_native(), popover_menu->operator GtkWidget*());
+    }
+
     void MenuButton::popup()
     {
         gtk_menu_button_popup(get_native());

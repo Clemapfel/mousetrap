@@ -28,7 +28,7 @@ namespace mousetrap
 
             /// name should **not** have app. prefix, for example `test_action`, not `app.test_action`
             template<typename Function_t, typename Data_t>
-            void add_action(const std::string& id, Function_t, Data_t user_data);
+            void add_action(const std::string& id, Function_t, Data_t);
 
             template<typename Function_t>
             void add_stateful_action(const std::string& id, Function_t, bool* state);

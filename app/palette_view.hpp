@@ -46,6 +46,8 @@ namespace mousetrap
             void select(HSVA);
 
         private:
+            bool palette_locked = true;
+            
             class ColorTile
             {
                 public:
@@ -79,6 +81,42 @@ namespace mousetrap
                     Overlay _overlay;
             };
 
+            class PaletteControlBar
+            {
+                public:
+                    PaletteControlBar(PaletteView* owner);
+                    operator Widget*();
+                    
+                private:
+                    PaletteView* _owner;
+                    
+                    Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+
+                    ImageDisplay _palette_locked_icon = ImageDisplay(get_resource_path() + "icons/palette_locked.png");
+                    ImageDisplay _palette_not_locked_icon = ImageDisplay(get_resource_path() + "icons/palette_not_locked.png");
+                    ToggleButton _palette_locked_toggle_button;
+
+                    static void on_palette_locked_button_toggled(ToggleButton*, PaletteControlBar* instance);
+
+                    MenuButton _menu_button;
+                    MenuModel _menu;
+
+                    MenuModel _load_save_menu_section;
+                    static void on_menu_load(void*);
+                    static void on_menu_load_default(void*);
+                    static void on_menu_save(void*);
+                    static void on_menu_save_as(void*);
+                    static void on_menu_save_as_default(void*);
+
+                    MenuModel _sort_menu_section;
+                    static void on_menu_sort_by_default(void* data);
+                    static void on_menu_sort_by_hue(void* data);
+                    static void on_menu_sort_by_saturation(void* data);
+                    static void on_menu_sort_by_value(void* data);
+            };
+
+            PaletteControlBar _palette_control_bar = PaletteControlBar(this);
+
             size_t _previous_selected = 0;
             static void on_flowbox_child_selected(FlowBox*, size_t child_i, PaletteView* instance);
 
@@ -86,7 +124,8 @@ namespace mousetrap
             FlowBox _flow_box = FlowBox(GTK_ORIENTATION_HORIZONTAL);
             ScrolledWindow _scrolled_window;
 
-            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+            Box _palette_view_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Overlay _overlay;
     };
 }
 
@@ -94,6 +133,8 @@ namespace mousetrap
 
 namespace mousetrap
 {
+    // COLOR TILE
+    
     PaletteView::ColorTile::ColorTile(PaletteView* owner, HSVA color)
         : _owner(owner), _color(color)
     {
@@ -188,9 +229,90 @@ namespace mousetrap
         area->queue_render();
     }
 
-    PaletteView::operator Widget*()
+    // CONTROL BAR
+
+    void PaletteView::PaletteControlBar::on_palette_locked_button_toggled(ToggleButton* button, PaletteControlBar* instance)
+    {
+        auto value = button->get_active();
+        instance->_owner->palette_locked = value;
+        instance->_palette_locked_toggle_button.set_child(value ? &instance->_palette_locked_icon : &instance->_palette_not_locked_icon);
+    }
+
+    void PaletteView::PaletteControlBar::on_menu_load(void*)
+    {}
+
+    void PaletteView::PaletteControlBar::on_menu_load_default(void*)
+    {}
+
+    void PaletteView::PaletteControlBar::on_menu_save(void*)
+    {}
+
+    void PaletteView::PaletteControlBar::on_menu_save_as(void*)
+    {}
+
+    void PaletteView::PaletteControlBar::on_menu_save_as_default(void*)
+    {}
+
+    void PaletteView::PaletteControlBar::on_menu_sort_by_default(void* data)
+    {}
+
+    void PaletteView::PaletteControlBar::on_menu_sort_by_hue(void* data)
+    {}
+
+    void PaletteView::PaletteControlBar::on_menu_sort_by_saturation(void* data)
+    {}
+
+    void PaletteView::PaletteControlBar::on_menu_sort_by_value(void* data)
+    {}
+
+    PaletteView::PaletteControlBar::operator Widget*()
     {
         return &_main;
+    }
+
+    PaletteView::PaletteControlBar::PaletteControlBar(PaletteView* owner)
+        : _owner(owner)
+    {
+        _palette_locked_toggle_button.set_active(owner->palette_locked);
+        _palette_locked_toggle_button.set_child(owner->palette_locked ? &_palette_locked_icon : &_palette_not_locked_icon);
+        _palette_locked_toggle_button.connect_signal_toggled(on_palette_locked_button_toggled, this);
+        
+        state::app->add_action("palette_view.load", on_menu_load, (void*) nullptr);
+        state::app->add_action("palette_view.load_default", on_menu_load_default, (void*) nullptr);
+        state::app->add_action("palette_view.save", on_menu_save, (void*) nullptr);
+        state::app->add_action("palette_view.save_as", on_menu_save_as, (void*) nullptr);
+        state::app->add_action("palette_view.save_as_default", on_menu_save_as_default, (void*) nullptr);
+
+        _load_save_menu_section.add_action("Load...", "app.palette_view.load");
+        _load_save_menu_section.add_action("Load Default", "app.palette_view.load_default");
+        _load_save_menu_section.add_action("Save", "app.palette_view.save");
+        _load_save_menu_section.add_action("Save As...", "app.palette_view.save_as");
+        _load_save_menu_section.add_action("Save As Default", "app.palette_view.save_as_default");
+
+        state::app->add_action("palette_view.sort_by_default", on_menu_sort_by_default, this);
+        state::app->add_action("palette_view.sort_by_hue", on_menu_sort_by_hue, this);
+        state::app->add_action("palette_view.sort_by_saturation", on_menu_sort_by_saturation, this);
+        state::app->add_action("palette_view.sort_by_value", on_menu_sort_by_value, this);
+
+        _sort_menu_section.add_action("None", "app.palette_view.sort_by_default");
+        _sort_menu_section.add_action("Hue", "app.palette_view.sort_by_hue");
+        _sort_menu_section.add_action("Saturation", "app.palette_view.sort_by_saturation");
+        _sort_menu_section.add_action("Value", "app.palette_view.sort_by_saturation");
+
+        _menu.add_submenu("Sort By", &_sort_menu_section);
+        _menu.add_section("Save / Load", &_load_save_menu_section);
+
+        _menu_button.set_model(&_menu);
+        
+        _main.push_back(&_palette_locked_toggle_button);
+        _main.push_back(&_menu_button);
+    }
+    
+    // PALETTE VIEW
+
+    PaletteView::operator Widget*()
+    {
+        return &_overlay;
     }
 
     void PaletteView::select(HSVA color)
@@ -235,16 +357,23 @@ namespace mousetrap
 
         _scrolled_window.set_child(&_flow_box);
         _scrolled_window.set_policy(GTK_POLICY_NEVER, GTK_POLICY_EXTERNAL);
-        _main.push_back(&_scrolled_window);
+        _palette_view_box.push_back(&_scrolled_window);
 
         _scrolled_window.set_hexpand(true);
-        _main.set_hexpand(true);
+        _palette_view_box.set_hexpand(true);
 
         _flow_box.set_selection_mode(GTK_SELECTION_SINGLE);
         _flow_box.connect_signal_child_activated(on_flowbox_child_selected, this);
 
         _color_tiles.at(_previous_selected)->set_selected(true);
         _flow_box.unselect_all();
+
+        _overlay.set_child(&_palette_view_box);
+        auto* control_bar = _palette_control_bar.operator Widget*();
+        control_bar->set_expand(false);
+        control_bar->set_halign(GTK_ALIGN_END);
+        control_bar->set_valign(GTK_ALIGN_START);
+        _overlay.add_overlay(control_bar);
     }
 
     void PaletteView::update()

@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include <string>
+#include <set>
 
 namespace mousetrap
 {
@@ -18,13 +19,19 @@ namespace mousetrap
             ~MenuModel();
 
             void add_action(const std::string& label, const std::string& action_id);
+            void add_widget(Widget*);
             void add_section(const std::string& label, MenuModel*);
             void add_submenu(const std::string& label, MenuModel*);
 
             operator GMenuModel*();
+            std::unordered_map<std::string, Widget*> get_widgets();
 
         private:
             GMenu* _native;
+
+            static inline size_t current_id = 1;
+            std::unordered_map<std::string, Widget*> _id_to_widget;
+            std::set<MenuModel*> _submenus;
     };
 }
 
