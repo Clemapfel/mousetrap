@@ -294,6 +294,7 @@ static void activate(GtkApplication* app, void*)
 
     // TODO
 
+    /*
     state::app->add_action("test_action", test_action, new std::string("test"));
 
     auto* widget = new Button();
@@ -311,47 +312,41 @@ static void activate(GtkApplication* app, void*)
     submenu->add_action("subtest 05", "app.test_action");
 
     root->add_action("test 01", "app.test_action");
-    root->add_submenu("submenu", submenu);
+    root->add_submenu("<b>submenu</b>", submenu);
     root->add_action("test 02", "app.test_action");
 
     uproot->add_submenu("root", root);
 
-    //auto* popover_menu = new PopoverMenu(root);
     //auto* menu_button = new MenuButton();
     //menu_button->set_popover(popover_menu);
     //state::main_window->set_child(menu_button);
 
-    auto* menubar = new PopoverMenuBar(uproot);
-    state::main_window->set_child(menubar);
+    //auto* menubar = new PopoverMenuBar(uproot);
+    //state::main_window->set_child(menubar);
 
-    /*
+    auto* popover_menu = new PopoverMenu(root);
+    state::main_window->set_child(popover_menu);
+    */
+
     state::app->add_action("test_action", test_action, new std::string("test"));
     auto* widget = gtk_button_new();
 
+    auto* root = g_menu_new();
     auto* inner = g_menu_new();
-    auto* inner_01 = g_menu_item_new("inner_01", "app.test_action");
-    auto* inner_02 = g_menu_item_new("inner_02", "app.test_action");
-    g_menu_item_set_attribute_value(inner_02, "custom", g_variant_new_string("id"));
 
-    for (auto* i : {inner_01, inner_02})
-        g_menu_append_item(inner, i);
+    auto* item = g_menu_item_new("<span weight=\"bold\">test</span>", "app.palette_view");
+    g_menu_item_set_attribute_value(item, G_MENU_ATTRIBUTE_ACTION, g_variant_new_string("app.test_action"));
+    g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
 
-    auto* outer = g_menu_new();
-    auto* outer_01 = g_menu_item_new("outer_01", "app.test_action");
-    g_menu_append_item(outer, outer_01);
-    g_menu_append_submenu(outer, "submenu", G_MENU_MODEL(inner));
+    g_menu_append_item(inner, item);
+    g_menu_append_submenu(root, "menu", G_MENU_MODEL(inner));
 
-    //auto* popover = gtk_popover_menu_new_from_model_full(G_MENU_MODEL(outer), GTK_POPOVER_MENU_NESTED);
-    auto* popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(outer));
-    gtk_popover_menu_add_child(GTK_POPOVER_MENU(popover), widget, "id");
-
-    auto* menu_button = gtk_menu_button_new();
-    gtk_menu_button_set_popover(GTK_MENU_BUTTON(menu_button), GTK_WIDGET(popover));
+    auto* menu_bar = gtk_popover_menu_bar_new_from_model(G_MENU_MODEL(root));
+    gtk_popover_menu_bar_add_child(GTK_POPOVER_MENU_BAR(menu_bar), widget, "id");
 
     auto* window = state::main_window->operator _GtkWindow *();
-    gtk_window_set_child(window, menu_button);
+    gtk_window_set_child(window, menu_bar);
     gtk_application_window_set_show_menubar(GTK_APPLICATION_WINDOW(window), false);
-    */
     // TODO
 
     //state::main_window->set_child(main);

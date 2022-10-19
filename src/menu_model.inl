@@ -3,6 +3,8 @@
 // Created on 9/18/22 by clem (mail@clemens-cords.com)
 //
 
+#include <include/get_resource_path.hpp>
+
 namespace mousetrap
 {
     MenuModel::MenuModel()
@@ -26,7 +28,6 @@ namespace mousetrap
     {
         auto id = std::to_string(current_id).c_str();
         auto* item = g_menu_item_new(id, id);
-        g_menu_item_set_attribute_value(item, "custom", g_variant_new_string(id));
         g_menu_append_item(_native, item);
 
         _id_to_widget.insert({std::string(id), widget});
