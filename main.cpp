@@ -329,43 +329,43 @@ static void activate(GtkApplication* app, void*)
     */
 
     state::app->add_action("test_action", test_action, new std::string("test"));
-    auto* widget = gtk_button_new();
 
-    auto* root = g_menu_new();
-    auto* inner = g_menu_new();
+    auto* outer = new MenuModel();
+    auto* inner = new MenuModel();
 
-    auto* section = g_menu_new();
-    g_menu_append_item(section, g_menu_item_new("section", "app.test_action"));
-    g_menu_append_item(section, g_menu_item_new("section", "app.test_action"));
-    g_menu_append_item(section, g_menu_item_new("section", "app.test_action"));
+    inner->add_action("<b>bold test</b>", "app.test_action");
 
-    auto* submenu = g_menu_new();
-    g_menu_append_item(submenu, g_menu_item_new("submenu", "app.test_action"));
-    g_menu_append_item(submenu, g_menu_item_new("submenu", "app.test_action"));
-    g_menu_append_item(submenu, g_menu_item_new("submenu", "app.test_action"));
+    auto* section1 = new MenuModel();
+    section1->add_action("section11", "app.test_action");
+    section1->add_action("section12", "app.test_action");
+    section1->add_action("section13", "app.test_action");
+    inner->add_section("section1", section1, MenuModel::HORIZONTAL_BUTTONS_RIGHT_TO_LEFT);
 
-    auto* item = g_menu_item_new("<b>test</b>", "app.palette_view");
-    g_menu_item_set_attribute_value(item, G_MENU_ATTRIBUTE_ACTION, g_variant_new_string("app.test_action"));
-    g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
-    g_menu_append_item(inner, item);
+    auto* section2 = new MenuModel();
+    section2->add_action("section21", "app.test_action");
+    section2->add_action("section22", "app.test_action");
+    section2->add_action("section23", "app.test_action");
+    inner->add_section("section2", section1, MenuModel::CIRCULAR_BUTTONS);
 
-    auto* section_item = g_menu_item_new_section("section", G_MENU_MODEL(section));
-    g_menu_item_set_attribute_value(section_item, "display-hint", g_variant_new_string("circular-buttons"));
-    g_menu_append_item(inner, section_item);
+    auto* submenu = new MenuModel();
+    auto* subbutton = new Button();
+    submenu->add_widget(subbutton);
+    inner->add_submenu("bold submenu", submenu);
 
-    auto* submenu_item = g_menu_item_new_submenu("submenu", G_MENU_MODEL(submenu));
-    g_menu_item_set_attribute_value(submenu_item, "icon", g_variant_new_string((get_resource_path() + "icons/palette_locked.png").c_str()));
-    g_menu_append_item(inner, submenu_item);
+    outer->add_submenu("Menu", inner);
+    outer->add_widget(new Button());
+    auto* menu = new PopoverMenu(outer, PopoverMenu::SubmenuLayout::NESTED);
+    auto* menu_button = new MenuButton();
+    menu_button->set_popover(menu);
+    state::main_window->set_child(menu_button);
 
-    auto test = new std::vector<const char*>{"<Control>k"};
-    gtk_application_set_accels_for_action(state::app->operator GtkApplication*(), "app.test_action", test->data());
-
-    g_menu_append_submenu(root, "menu", G_MENU_MODEL(inner));
-    auto* menu_bar = gtk_popover_menu_bar_new_from_model(G_MENU_MODEL(root));
-    gtk_popover_menu_bar_add_child(GTK_POPOVER_MENU_BAR(menu_bar), widget, "id");
+    auto* shortcut_controller = GTK_SHORTCUT_CONTROLLER(gtk_shortcut_controller_new());
+    auto* shortcut_trigger = gtk_shortcut_trigger_parse_string("<Control>k");
+    auto* shortcut_action = gtk_shortcut_action_parse_string("app.test_action");
+    gtk_shortcut_controller_add_shortcut(shortcut_controller, gtk_shortcut_new(shortcut_trigger, shortcut_action));
 
     auto* window = state::main_window->operator _GtkWindow *();
-    gtk_window_set_child(window, menu_bar);
+    gtk_widget_add_controller(GTK_WIDGET(window), GTK_EVENT_CONTROLLER(shortcut_controller));
     gtk_application_window_set_show_menubar(GTK_APPLICATION_WINDOW(window), false);
     // TODO
 

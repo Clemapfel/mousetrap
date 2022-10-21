@@ -13,7 +13,13 @@ namespace mousetrap
     class PopoverMenu : public WidgetImplementation<GtkPopoverMenu>
     {
         public:
-            PopoverMenu(MenuModel*, bool use_sliding_layout = true);
+            enum SubmenuLayout : bool
+            {
+                SLIDING = true,
+                NESTED = false
+            };
+
+            PopoverMenu(MenuModel*, SubmenuLayout = SLIDING);
     };
 }
 
@@ -21,8 +27,8 @@ namespace mousetrap
 
 namespace mousetrap
 {
-    PopoverMenu::PopoverMenu(MenuModel* model, bool use_sliding_layout)
-        : WidgetImplementation<GtkPopoverMenu>(GTK_POPOVER_MENU(use_sliding_layout ?
+    PopoverMenu::PopoverMenu(MenuModel* model, SubmenuLayout layout)
+        : WidgetImplementation<GtkPopoverMenu>(GTK_POPOVER_MENU(layout == SLIDING ?
             gtk_popover_menu_new_from_model(model->operator GMenuModel*()) :
             gtk_popover_menu_new_from_model_full(model->operator GMenuModel*(), GTK_POPOVER_MENU_NESTED)
         ))
