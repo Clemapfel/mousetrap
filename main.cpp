@@ -294,45 +294,39 @@ static void activate(GtkApplication* app, void*)
     main->push_back(left_center_paned);
 
     // TODO
-    state::app->add_action("test_action", test_action, new std::string("test"));
+    auto action = Action("test_action");
 
-    auto* outer = new MenuModel();
-    auto* inner = new MenuModel();
+    {
+        action.set_do_function([](std::string arg) {
+            std::cout << "do with arg: " << arg << std::endl;
+        }, std::string("test"));
+    }
+    action.activate();
 
-    inner->add_action("<b>bold test</b>", "app.test_action");
+    {
+        action.set_do_function([]() {
+            std::cout << "do without arg" << std::endl;
+        });
+    }
+    action.activate();
 
-    auto* section1 = new MenuModel();
-    section1->add_action("section11", "app.test_action");
-    section1->add_action("section12", "app.test_action");
-    section1->add_action("section13", "app.test_action");
-    inner->add_section("section1", section1, MenuModel::HORIZONTAL_BUTTONS_RIGHT_TO_LEFT);
+    {
+        using complex_arg = struct {size_t arg1; void* arg2;};
+        action.set_do_function([](complex_arg in) {
+            std::cout << in.arg1 << " " << in.arg2 << std::endl;
+        }, complex_arg{1234, &action});
+    }
+    action.activate();
 
-    auto* section2 = new MenuModel();
-    section2->add_action("section21", "app.test_action");
-    section2->add_action("section22", "app.test_action");
-    section2->add_action("section23", "app.test_action");
-    inner->add_section("section2", section1, MenuModel::CIRCULAR_BUTTONS);
+    auto copy_action = Action(action);
+    copy_action.activate();
+    copy_action.undo();
 
-    auto* submenu = new MenuModel();
-    auto* subbutton = new Button();
-    submenu->add_widget(subbutton);
-    inner->add_submenu("bold submenu", submenu);
+    auto* g_action = copy_action.operator GAction *();
+    g_action_activate(g_action, nullptr);
 
-    outer->add_submenu("Menu", inner);
-    outer->add_widget(new Button());
-    auto* menu = new PopoverMenu(outer, PopoverMenu::SubmenuLayout::NESTED);
-    auto* menu_button = new MenuButton();
-    menu_button->set_popover(menu);
-    state::main_window->set_child(menu_button);
+    exit(0);
 
-    auto* shortcut_controller = GTK_SHORTCUT_CONTROLLER(gtk_shortcut_controller_new());
-    auto* shortcut_trigger = gtk_shortcut_trigger_parse_string("<Control>k");
-    auto* shortcut_action = gtk_shortcut_action_parse_string("app.test_action");
-    gtk_shortcut_controller_add_shortcut(shortcut_controller, gtk_shortcut_new(shortcut_trigger, shortcut_action));
-
-    auto* window = state::main_window->operator _GtkWindow *();
-    gtk_widget_add_controller(GTK_WIDGET(window), GTK_EVENT_CONTROLLER(shortcut_controller));
-    gtk_application_window_set_show_menubar(GTK_APPLICATION_WINDOW(window), false);
     // TODO
 
     //state::main_window->set_child(main);
