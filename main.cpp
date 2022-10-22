@@ -25,6 +25,7 @@
 #include <include/reorderable_list.hpp>
 #include <include/dialog.hpp>
 #include <include/popover_menu_bar.hpp>
+#include <include/action_map.hpp>
 
 #include <app/global_state.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
@@ -293,41 +294,6 @@ static void activate(GtkApplication* app, void*)
     main->push_back(left_center_paned);
 
     // TODO
-
-    /*
-    state::app->add_action("test_action", test_action, new std::string("test"));
-
-    auto* widget = new Button();
-    auto* uproot = new MenuModel();
-    auto* root = new MenuModel();
-    auto* submenu = new MenuModel();
-    auto* subsubmenu = new MenuModel();
-
-    subsubmenu->add_action("subsubtest 06", "app.test_action");
-    subsubmenu->add_widget(widget);
-    subsubmenu->add_action("subsubtest 07", "app.test_action");
-
-    submenu->add_action("subtest 04", "app.test_action");
-    submenu->add_submenu("subsubmenu", subsubmenu);
-    submenu->add_action("subtest 05", "app.test_action");
-
-    root->add_action("test 01", "app.test_action");
-    root->add_submenu("<b>submenu</b>", submenu);
-    root->add_action("test 02", "app.test_action");
-
-    uproot->add_submenu("root", root);
-
-    //auto* menu_button = new MenuButton();
-    //menu_button->set_popover(popover_menu);
-    //state::main_window->set_child(menu_button);
-
-    //auto* menubar = new PopoverMenuBar(uproot);
-    //state::main_window->set_child(menubar);
-
-    auto* popover_menu = new PopoverMenu(root);
-    state::main_window->set_child(popover_menu);
-    */
-
     state::app->add_action("test_action", test_action, new std::string("test"));
 
     auto* outer = new MenuModel();
