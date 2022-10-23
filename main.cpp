@@ -26,6 +26,7 @@
 #include <include/dialog.hpp>
 #include <include/popover_menu_bar.hpp>
 #include <include/action_map.hpp>
+#include <include/file_chooser.hpp>
 
 #include <app/global_state.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
@@ -294,38 +295,31 @@ static void activate(GtkApplication* app, void*)
     main->push_back(left_center_paned);
 
     // TODO
-    auto action = Action("test_action");
+    auto* chooser = new FileChooser(FileChooserAction::OPEN);
 
-    {
-        action.set_do_function([](std::string arg) {
-            std::cout << "do with arg: " << arg << std::endl;
-        }, std::string("test"));
-    }
-    action.activate();
+    auto* dialog_window = new Window();
+    auto* dialog = new Dialog(dialog_window);
+    dialog->get_content_area().push_back(chooser);
+    dialog_window->present();
 
-    {
-        action.set_do_function([]() {
-            std::cout << "do without arg" << std::endl;
-        });
-    }
-    action.activate();
-
-    {
-        using complex_arg = struct {size_t arg1; void* arg2;};
-        action.set_do_function([](complex_arg in) {
-            std::cout << in.arg1 << " " << in.arg2 << std::endl;
-        }, complex_arg{1234, &action});
-    }
-    action.activate();
-
-    auto copy_action = Action(action);
-    copy_action.activate();
-    copy_action.undo();
-
+    /*
     auto* g_action = copy_action.operator GAction *();
     g_action_activate(g_action, nullptr);
 
+    auto test = new std::vector<const char*>{"<Control>k"};
+    gtk_application_set_accels_for_action(state::app->operator GtkApplication*(), "app.test_action", test->data());
+
+    g_menu_append_submenu(root, "menu", G_MENU_MODEL(inner));
+    auto* menu_bar = gtk_popover_menu_bar_new_from_model(G_MENU_MODEL(root));
+    gtk_popover_menu_bar_add_child(GTK_POPOVER_MENU_BAR(menu_bar), widget, "id");
+
+    auto* shortcut_controller = GTK_SHORTCUT_CONTROLLER(gtk_shortcut_controller_new());
+    auto* shortcut_trigger = gtk_shortcut_trigger_parse_string("<Control>k");
+    auto* shortcut_action = gtk_shortcut_action_parse_string("app.test_action");
+    gtk_shortcut_controller_add_shortcut(shortcut_controller, gtk_shortcut_new(shortcut_trigger, shortcut_action));
+
     exit(0);
+     */
 
     // TODO
 
