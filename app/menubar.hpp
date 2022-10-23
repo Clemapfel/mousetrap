@@ -329,6 +329,7 @@ Other >
         
         using namespace MenuBar;
 
+        /*
         auto add_action = [&](MenuModel* model, const std::string label, const std::string& action_id, auto f){
             app->add_action(action_id, f, (void*) nullptr);
             model->add_action(label, "app." + action_id);
@@ -420,13 +421,6 @@ Other >
         add_action(_layers_menu_model, "Delete Layer", "layers_delete_layer", layers_delete_layer);
         add_action(_layers_menu_model, "Merge Down", "layers_merge_down", layers_merge_down);
         add_action(_layers_menu_model, "Flatten All", "layers_flatten_all", layers_flatten_all);
-
-        /*
-        add_action(_layers_menu_model, "Set All Layers Hidden", "layers_hide_all", layers_hide_all);
-        add_action(_layers_menu_model, "Set All Layers Visible", "layers_show_all", layers_show_all);
-        add_action(_layers_menu_model, "Set All Layers Locked", "layers_lock_all", layers_lock_all);
-        add_action(_layers_menu_model, "Set All Layers Unlocked", "layers_unlock_all", layers_unlock_all);
-         */
         
         _layers_frames_menu_model->add_section("Frames", _frames_menu_model);
         add_action(_frames_menu_model, "New Key Frame", "frames_new_key_frame", frames_new_key_frame);
@@ -476,5 +470,7 @@ Other >
         add_action(_other_menu_model, "About...", "other_show_about_info", other_show_about_info);
         add_action(_other_menu_model, "Contribute on GitHub", "other_github_link", other_github_link);
         add_action(_other_menu_model, "Donate", "other_donate_link", other_github_link);
+
+         */
     }
 }

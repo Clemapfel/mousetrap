@@ -276,7 +276,8 @@ namespace mousetrap
         _palette_locked_toggle_button.set_active(owner->palette_locked);
         _palette_locked_toggle_button.set_child(owner->palette_locked ? &_palette_locked_icon : &_palette_not_locked_icon);
         _palette_locked_toggle_button.connect_signal_toggled(on_palette_locked_button_toggled, this);
-        
+
+        /*
         state::app->add_action("palette_view.load", on_menu_load, (void*) nullptr);
         state::app->add_action("palette_view.load_default", on_menu_load_default, (void*) nullptr);
         state::app->add_action("palette_view.save", on_menu_save, (void*) nullptr);
@@ -298,7 +299,7 @@ namespace mousetrap
         _sort_menu_section.add_action("Hue", "app.palette_view.sort_by_hue");
         _sort_menu_section.add_action("Saturation", "app.palette_view.sort_by_saturation");
         _sort_menu_section.add_action("Value", "app.palette_view.sort_by_saturation");
-
+        */
         _menu.add_submenu("Sort By", &_sort_menu_section);
         _menu.add_section("Save / Load", &_load_save_menu_section);
 
