@@ -294,13 +294,23 @@ static void activate(GtkApplication* app, void*)
     add_spacer(main);
     main->push_back(left_center_paned);
 
-    // TODO
     auto* chooser = new FileChooser(FileChooserAction::OPEN);
+    chooser->add_boolean_choice("boolean_id", "Bool Choice");
+    chooser->add_choice("non_boolean_id", "Choice #2", {"id01", "id02"}, {"label01", "label02"}, "id01");
 
-    auto* dialog_window = new Window();
-    auto* dialog = new Dialog(dialog_window);
+    auto* filter = new FileFilter(".png");
+    filter->add_allowed_pattern("*.png");
+    chooser->add_filter(*filter);
+
+    auto* dialog = new Dialog(state::main_window);
+    dialog->add_action_button("ok", [](FileChooser* chooser)
+    {
+        auto selected = chooser->get_selected();
+        std::cout << (selected.empty() ? "" : selected.at(0).get_name()) << " " << chooser->get_choice("test") << std::endl;
+
+    }, chooser);
     dialog->get_content_area().push_back(chooser);
-    dialog_window->present();
+    dialog->show();
 
     /*
     auto* g_action = copy_action.operator GAction *();

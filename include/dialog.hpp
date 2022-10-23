@@ -16,11 +16,11 @@ namespace mousetrap
             Dialog(Window* host_window, const std::string& title = "", bool is_modal = true);
             ~Dialog();
 
-            template<typename Function_t, typename T>
-            void add_action_button(const std::string&, Function_t, T);
+            template<typename Function_t, typename Data_t>
+            void add_action_button(const std::string&, Function_t, Data_t);
 
-            template<typename Function_t, typename T>
-            void add_action_widget(Widget*, Function_t, T);
+            template<typename Function_t, typename Data_t>
+            void add_action_widget(Widget*, Function_t, Data_t);
 
             Box& get_content_area();
             void close();
@@ -30,8 +30,7 @@ namespace mousetrap
             Box _action_area;
             std::vector<Button*> _buttons;
 
-            using function_data = struct {std::function<void(void*)> function; void* data;};
-            std::unordered_map<size_t, function_data*> _actions;
+            std::unordered_map<size_t, std::function<void()>> _actions;
 
             static void on_response_wrapper(GtkDialog*, int response_id, Dialog* instance);
     };
