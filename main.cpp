@@ -304,15 +304,17 @@ static void activate(GtkApplication* app, void*)
 
     auto* menu = new MenuModel();
     auto* submenu = new MenuModel();
-    auto* menu_widget = new PopoverMenuBar(menu);
+    auto* menu_widget = new PopoverMenu(menu);
+    auto* menu_button = new MenuButton();
+    menu_button->set_popover(menu_widget);
 
     submenu->add_action("test action", "test_action");
     menu->add_submenu("test", submenu);
-    state::main_window->set_child(menu_widget);
+    state::main_window->set_child(menu_button);
 
     auto* shortcut_controller = new ShortcutController((ActionMap*) state::app);
     shortcut_controller->add_action("test_action");
-    state::main_window->add_controller(shortcut_controller);
+    gtk_widget_add_controller(menu_widget->operator GtkWidget*(), GTK_EVENT_CONTROLLER(shortcut_controller->operator GtkEventController*()));
 
     /*
     auto* shortcut_controller = GTK_SHORTCUT_CONTROLLER(gtk_shortcut_controller_new());

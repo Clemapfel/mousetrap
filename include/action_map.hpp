@@ -12,7 +12,15 @@
 
 namespace mousetrap
 {
+    // SHORTCUTS
+    // Add a shortcut via Action::get_shortcut. Then, any menu item that uses that same action will automatically
+    // display first shortcut for that action.
+    // For the shortcut to be activatable by the user, a widget has to add a ShortcutController to it's event
+    // controllers. Then, it will react to the user pressing the correct shortcut by triggering the action.
+
     using ActionID = std::string;
+    using ShortcutTriggerID = std::string;
+
     class Action
     {
         public:
@@ -36,8 +44,8 @@ namespace mousetrap
             void activate() const;
             void undo() const;
 
-            void add_shortcut(const std::string&);
-            const std::vector<std::string>& get_shortcuts() const;
+            void add_shortcut(const ShortcutTriggerID&);
+            const std::vector<ShortcutTriggerID>& get_shortcuts() const;
 
             operator GAction*() const;
 
@@ -47,7 +55,7 @@ namespace mousetrap
             std::function<void()> _do;
             std::function<void()> _undo;
 
-            std::vector<std::string> _shortcuts;
+            std::vector<ShortcutTriggerID> _shortcuts;
 
             static void on_action_activate(GSimpleAction*, GVariant*, Action* instance);
             GSimpleAction* _g_action = nullptr;
@@ -132,7 +140,7 @@ namespace mousetrap
             _undo();
     }
 
-    void Action::add_shortcut(const std::string& shortcut)
+    void Action::add_shortcut(const ShortcutTriggerID& shortcut)
     {
         if (gtk_shortcut_trigger_parse_string(shortcut.c_str()) == nullptr)
         {
@@ -144,7 +152,7 @@ namespace mousetrap
         _shortcuts.push_back(shortcut.c_str());
     }
 
-    const std::vector<std::string>& Action::get_shortcuts() const
+    const std::vector<ShortcutTriggerID>& Action::get_shortcuts() const
     {
         return _shortcuts;
     }

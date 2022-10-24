@@ -12,7 +12,13 @@
 
 namespace mousetrap
 {
-    using ShortcutCode = std::string;
+    enum ShortcutScope
+    {
+        LOCAL = GTK_SHORTCUT_SCOPE_LOCAL, // handled inside the widget the controller belongs to
+        MANAGED = GTK_SHORTCUT_SCOPE_MANAGED, // handled by the first ancestor that is a PopoverMenu or Window
+        GLOBAL = GTK_SHORTCUT_SCOPE_GLOBAL // always active
+    };
+
     class ShortcutController : public EventController
     {
         public:
@@ -22,6 +28,9 @@ namespace mousetrap
             /// \brief actions handled by self:
             void add_action(ActionID id);
             void remove_action(ActionID id);
+
+            void set_scope(ShortcutScope);
+            ShortcutScope get_scope();
 
         private:
             ActionMap* _action_map;
@@ -84,5 +93,15 @@ namespace mousetrap
         }
 
         _shortcuts.erase(it);
+    }
+
+    void ShortcutController::set_scope(ShortcutScope scope)
+    {
+        gtk_shortcut_controller_set_scope(GTK_SHORTCUT_CONTROLLER(_native), (GtkShortcutScope) scope);
+    }
+
+    ShortcutScope ShortcutController::get_scope()
+    {
+        return (ShortcutScope) gtk_shortcut_controller_get_scope(GTK_SHORTCUT_CONTROLLER(_native));
     }
 }

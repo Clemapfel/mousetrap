@@ -157,9 +157,6 @@ add_library(mousetrap SHARED
     include/menu_model.hpp
     src/menu_model.inl
 
-    include/shortcut_map.hpp
-    src/shortcut_map.inl
-
     include/list_view.hpp
     src/list_view.inl
 
@@ -195,7 +192,40 @@ add_library(mousetrap SHARED
     src/grid_view.inl
 
     include/reorderable_list.hpp
-        include/blend_mode.hpp src/blend_mode.inl include/viewport.hpp app/layer_view.hpp app/layer_view.hpp include/center_box.hpp include/selection_model.hpp app/layer_view.hpp include/texture_workspace.hpp include/dialog.hpp src/dialog.inl include/undo_stack.hpp include/popover_menu.hpp include/popover_menu_bar.hpp include/action_map.hpp include/shortcut_controller.hpp src/file_chooser.hpp src/file.hpp)
+
+    include/blend_mode.hpp
+    src/blend_mode.inl
+
+    include/viewport.hpp
+
+    app/layer_view.hpp
+    app/layer_view.hpp
+    app/layer_view.hpp
+
+    include/center_box.hpp
+
+    include/selection_model.hpp
+
+    include/texture_workspace.hpp
+
+    include/dialog.hpp
+    src/dialog.inl
+
+    include/undo_stack.hpp
+
+    include/popover_menu.hpp
+
+    include/popover_menu_bar.hpp
+
+    include/action_map.hpp
+
+    include/shortcut_controller.hpp
+
+    include/file_chooser.hpp
+
+    include/file.hpp
+
+    include/shortcut_mapping.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
