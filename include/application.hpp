@@ -23,7 +23,7 @@ namespace mousetrap
 
             int run();
             operator GObject*() override;
-            operator GtkApplication*();
+            operator GtkApplication*() override;
             operator GActionMap*() override;
 
             void set_menubar(MenuModel*);

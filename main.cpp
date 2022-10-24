@@ -27,6 +27,7 @@
 #include <include/popover_menu_bar.hpp>
 #include <include/action_map.hpp>
 #include <include/file_chooser.hpp>
+#include <include/shortcut_controller.hpp>
 
 #include <app/global_state.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
@@ -96,9 +97,6 @@ void test_action(void* in)
 
 static void activate(GtkApplication* app, void*)
 {
-    state::shortcut_map = new ShortcutMap();
-    state::shortcut_map->load_from_file("/home/clem/Workspace/mousetrap/app/keybindings.conf");
-
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
     state::app->add_window(state::main_window);
@@ -294,43 +292,34 @@ static void activate(GtkApplication* app, void*)
     add_spacer(main);
     main->push_back(left_center_paned);
 
-    auto* chooser = new FileChooser(FileChooserAction::OPEN);
-    chooser->add_boolean_choice("boolean_id", "Bool Choice");
-    chooser->add_choice("non_boolean_id", "Choice #2", {"id01", "id02"}, {"label01", "label02"}, "id01");
+    // TODO
 
-    auto* filter = new FileFilter(".png");
-    filter->add_allowed_pattern("*.png");
-    chooser->add_filter(*filter);
+    auto* action = new Action("test_action");
+    action->set_do_function([](){
+        std::cout << "test" << std::endl;
+    });
+    action->add_shortcut("<Alt>M");
+    action->add_shortcut("<Control>K");
+    state::app->add_action(*action);
 
-    auto* dialog = new Dialog(state::main_window);
-    dialog->add_action_button("ok", [](FileChooser* chooser)
-    {
-        auto selected = chooser->get_selected();
-        std::cout << (selected.empty() ? "" : selected.at(0).get_name()) << " " << chooser->get_choice("test") << std::endl;
+    auto* menu = new MenuModel();
+    auto* submenu = new MenuModel();
+    auto* menu_widget = new PopoverMenuBar(menu);
 
-    }, chooser);
-    dialog->get_content_area().push_back(chooser);
-    dialog->show();
+    submenu->add_action("test action", "test_action");
+    menu->add_submenu("test", submenu);
+    state::main_window->set_child(menu_widget);
+
+    auto* shortcut_controller = new ShortcutController((ActionMap*) state::app);
+    shortcut_controller->add_action("test_action");
+    state::main_window->add_controller(shortcut_controller);
 
     /*
-    auto* g_action = copy_action.operator GAction *();
-    g_action_activate(g_action, nullptr);
-
-    auto test = new std::vector<const char*>{"<Control>k"};
-    gtk_application_set_accels_for_action(state::app->operator GtkApplication*(), "app.test_action", test->data());
-
-    g_menu_append_submenu(root, "menu", G_MENU_MODEL(inner));
-    auto* menu_bar = gtk_popover_menu_bar_new_from_model(G_MENU_MODEL(root));
-    gtk_popover_menu_bar_add_child(GTK_POPOVER_MENU_BAR(menu_bar), widget, "id");
-
     auto* shortcut_controller = GTK_SHORTCUT_CONTROLLER(gtk_shortcut_controller_new());
     auto* shortcut_trigger = gtk_shortcut_trigger_parse_string("<Control>k");
     auto* shortcut_action = gtk_shortcut_action_parse_string("app.test_action");
     gtk_shortcut_controller_add_shortcut(shortcut_controller, gtk_shortcut_new(shortcut_trigger, shortcut_action));
-
-    exit(0);
-     */
-
+    */
     // TODO
 
     //state::main_window->set_child(main);

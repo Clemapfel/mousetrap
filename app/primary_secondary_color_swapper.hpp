@@ -79,7 +79,6 @@ namespace mousetrap
         _arrow_overlay.add_overlay(&_render_area);
 
         _frame.set_margin(state::margin_unit);
-        _frame.set_tooltip_text(state::shortcut_map->generate_control_tooltip("color_swapper", "Swap Primary and Secondary Color"));
         _frame.set_child(&_arrow_overlay);
         _frame.set_expand(true);
 
@@ -91,8 +90,6 @@ namespace mousetrap
 
         _main.add_controller(&_click_event_controller);
         _main.add_controller(&_motion_event_controller);
-
-        state::main_window->register_global_shortcut<ColorSwapper*>(state::shortcut_map, "color_swapper.swap", on_global_key_pressed, this);
     }
 
     ColorSwapper::~ColorSwapper()

@@ -13,14 +13,13 @@
 namespace mousetrap
 {
     using ActionID = std::string;
-
     class Action
     {
         public:
             Action(const std::string& id);
             ~Action() = default;
 
-            ActionID get_id();
+            ActionID get_id() const;
 
             template<typename DoFunction_t, typename DoData_t>
             void set_do_function(DoFunction_t, DoData_t);
@@ -34,16 +33,21 @@ namespace mousetrap
             template<typename UndoFunction_t>
             void set_undo_function(UndoFunction_t);
 
-            void activate();
-            void undo();
+            void activate() const;
+            void undo() const;
 
-            operator GAction*();
+            void add_shortcut(const std::string&);
+            const std::vector<std::string>& get_shortcuts() const;
+
+            operator GAction*() const;
 
         private:
             ActionID _id;
 
             std::function<void()> _do;
             std::function<void()> _undo;
+
+            std::vector<std::string> _shortcuts;
 
             static void on_action_activate(GSimpleAction*, GVariant*, Action* instance);
             GSimpleAction* _g_action = nullptr;
@@ -54,9 +58,12 @@ namespace mousetrap
         public:
             virtual operator GActionMap*() = 0;
 
-            void add_action(Action action);
+            void add_action(Action& action);
             void remove_action(const ActionID& id);
-            Action& get_action(const ActionID& id);
+            const Action& get_action(const ActionID& id);
+
+        protected:
+            virtual operator GtkApplication*() = 0;
 
         private:
             std::unordered_map<ActionID, Action> _actions;
@@ -113,34 +120,61 @@ namespace mousetrap
         instance->activate();
     }
 
-    void Action::activate()
+    void Action::activate() const
     {
         if (_do != nullptr)
             _do();
     }
 
-    void Action::undo()
+    void Action::undo() const
     {
         if (_undo != nullptr)
             _undo();
     }
 
-    Action::operator GAction*()
+    void Action::add_shortcut(const std::string& shortcut)
+    {
+        if (gtk_shortcut_trigger_parse_string(shortcut.c_str()) == nullptr)
+        {
+            std::cerr << "[WARNING] In Action::add_shortcut: Unable to parse shortcut trigger `" << shortcut
+                      << "`. Ignoring this shortcut binding" << std::endl;
+            return;
+        }
+
+        _shortcuts.push_back(shortcut.c_str());
+    }
+
+    const std::vector<std::string>& Action::get_shortcuts() const
+    {
+        return _shortcuts;
+    }
+
+    Action::operator GAction*() const
     {
         return G_ACTION(_g_action);
     }
 
-    ActionID Action::get_id()
+    ActionID Action::get_id() const
     {
         return _id;
     }
 
-    void ActionMap::add_action(Action action)
+    void ActionMap::add_action(Action& action)
     {
-        auto inserted = _actions.insert({action.get_id(), action});
+        auto inserted = _actions.insert({action.get_id(), action}).first->second;
 
         auto* self = operator GActionMap*();
-        g_action_map_add_action(self, inserted.first->second.operator GAction *());
+        g_action_map_add_action(self, inserted.operator GAction *());
+
+        auto* app = operator GtkApplication*();
+        auto accels = std::vector<const char*>();
+        for (auto& s : inserted.get_shortcuts())
+            accels.push_back(s.c_str());
+
+        for (auto* s : accels)
+            std::cout << s << std::endl;
+
+        gtk_application_set_accels_for_action(app, ("app." + inserted.get_id()).c_str(), accels.data());
     }
 
     void ActionMap::remove_action(const ActionID& id)
@@ -150,7 +184,7 @@ namespace mousetrap
         g_action_map_remove_action(self, ("app." + id).c_str());
     }
 
-    Action& ActionMap::get_action(const ActionID& id)
+    const Action& ActionMap::get_action(const ActionID& id)
     {
         return _actions.at(id);
     }

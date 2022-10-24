@@ -13,7 +13,6 @@
 #include <include/colors.hpp>
 #include <include/window.hpp>
 #include <include/pixel_buffer.hpp>
-#include <include/shortcut_map.hpp>
 #include <include/undo_stack.hpp>
 #include <include/ring_layout.hpp>
 
@@ -30,7 +29,6 @@ namespace mousetrap::state
 
     Window* main_window = nullptr;
     Application* app = nullptr;
-    ShortcutMap* shortcut_map = nullptr;
     MenuModel* global_menu_bar_model = nullptr;
 
     // ### COLORS #####################################

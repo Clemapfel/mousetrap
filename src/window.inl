@@ -117,53 +117,6 @@ namespace mousetrap
 
             std::cerr << " have the same global shortcut trigger: \"" << gtk_shortcut_trigger_to_string(triggered.front().second) << "\"" << std::endl;
         }
-
         return false;
-    }
-
-    template<typename T>
-    void Window::register_global_shortcut(ShortcutMap* map, const std::string& shortcut_id, std::function<void(T)> action, T data)
-    {
-        auto it = map->_bindings.find(shortcut_id);
-        if (it == map->_bindings.end())
-        {
-            std::cerr << "[ERROR] In Window::register_global_shortcut: Not shortcut trigger binding with id " << shortcut_id << " registered" << std::endl;
-            return;
-        }
-
-        std::string normalized = gtk_shortcut_trigger_to_string(it->second);
-        auto shift = normalized.find("Shift") != std::string::npos;
-
-        auto temp = std::function<void(T)>(action);
-        _global_shortcuts.push_back({
-            shortcut_id,
-            it->second,
-            std::function<void(void*)>(*((std::function<void(void*)>*) &temp)),
-            reinterpret_cast<void*>(data),
-            shift,
-            normalized.find("Control") != std::string::npos,
-            normalized.find("Alt") != std::string::npos,
-        });
-
-        if (shift)
-        {
-            auto start = normalized.find_last_of(">");
-            auto non_modifier = normalized.substr(start == std::string::npos ? 0 : start + 1, std::string::npos);
-
-            if (non_modifier.size() != 1 or not (static_cast<int>(non_modifier.at(0)) >= 97 and static_cast<int>(non_modifier.at(0)) <= 122))
-            {
-                std::cerr << "[WARNING] In Window::register_global_shortcut: Shortcut \"" << normalized << "\" for action \""
-                          << shortcut_id << "\" may be invalid on certain keyboard layouts. Consider using another modifier other than <Shift>." << std::endl;
-            }
-        }
-    }
-
-    void Window::unregister_global_shortcut(const std::string& shortcut_id)
-    {
-        for (size_t i = 0; i < _global_shortcuts.size(); ++i)
-        {
-            if (_global_shortcuts.at(i).id == shortcut_id)
-                _global_shortcuts.erase(_global_shortcuts.begin() + i);
-        }
     }
 }

@@ -189,22 +189,7 @@ namespace mousetrap
     bool Preview::on_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, Preview* instance)
     {
         GdkEvent* event = self->get_current_event();
-
-        if (state::shortcut_map->should_trigger(event, "preview.next_frame"))
-        {
-            instance->_play_pause_button.set_active(false);
-            instance->set_frame(instance->_current_frame == state::n_frames - 1 ? 0 : instance->_current_frame + 1);
-        }
-        else if (state::shortcut_map->should_trigger(event, "preview.previous_frame"))
-        {
-            instance->_play_pause_button.set_active(false);
-            instance->set_frame(instance->_current_frame == 0 ? state::n_frames - 1 : instance->_current_frame - 1);
-        }
-        else if (state::shortcut_map->should_trigger(event, "preview.pause_unpause_animation"))
-        {
-            instance->_play_pause_button.set_active(not instance->_play_pause_button.get_active());
-        }
-
+        throw std::invalid_argument("TODO");
         return FALSE;
     }
 
@@ -352,8 +337,6 @@ namespace mousetrap
         _main.set_child(&_gl_area_frame);
         _main.add_overlay(&_toolbox_revealer);
         _main.add_overlay(&_frame_label);
-
-        _main.set_tooltip_text(state::shortcut_map->generate_control_tooltip("preview", "Displays frames at screen resolution"));
 
         gtk_widget_add_tick_callback(_main.operator GtkWidget *(), (GtkTickCallback) G_CALLBACK(on_tick_callback), this, (GDestroyNotify) nullptr);
         _main.add_controller(&_motion_event_controller);

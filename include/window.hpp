@@ -7,11 +7,10 @@
 
 #include <gdk/gdk.h>
 #include <include/widget.hpp>
-#include <include/shortcut_map.hpp>
 
 namespace mousetrap
 {
-    class Window : public WidgetImplementation<GtkWindow>, public ShortcutMap
+    class Window : public WidgetImplementation<GtkWindow>
     {
         public:
             Window();
@@ -27,11 +26,6 @@ namespace mousetrap
             void remove_child();
 
             void set_focused_widget(Widget*);
-
-            template<typename T>
-            void register_global_shortcut(ShortcutMap*, const std::string& shortcut_id, std::function<void(T)>, T);
-            void unregister_global_shortcut(const std::string& shortcut_id);
-
             void set_hide_on_close(bool);
             void set_destroy_with_parent(bool);
 
@@ -39,7 +33,6 @@ namespace mousetrap
 
             // https://docs.gtk.org/gtk4/property.Settings.gtk-decoration-layout.html
             void set_titlebar_layout(const char*);
-
 
         private:
             using ShortcutID = std::string;

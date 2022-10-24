@@ -13,6 +13,8 @@ namespace mousetrap
 {
     class File
     {
+        friend struct FileSystem;
+
         public:
             File(GFile*);
             operator GFile*();
@@ -22,6 +24,11 @@ namespace mousetrap
 
         private:
             GFile* _native;
+    };
+
+    struct FileSystem
+    {
+
     };
 }
 
