@@ -1,29 +1,25 @@
 # Mousetrap: Gtk4-based GUI Library
 
-> **NOTE**: This repo is under rapid active development and not intended to be forked or worked with by third parties, as of August 2022
+> **NOTE**: This repo is under rapid active development and not intended to be forked or worked with by third parties, as of October 2022
 
-## Features
-+ OpenGL-based canvas, replaces Cairo entirely resulting in improved performance and hardware-accelerated rendering of widgets
-+ Shapes, Shaders, GPU- and CPU-side Texture Manipulation
-+ Abstracts all [GIO](https://docs.gtk.org/gio/) functionality and C-style memory handling 
+## Design Principles
 
-All widgets capable of having children can only have any other widgets as children. This means `ListView`, `GridView`, `TreeView` 
-  are completely generic out-of-the-box, as the underlying models wraps all objects, not just a specific type. This makes setting them up
- a one-liner:
+### All Widgets Only Contain Other Widgets
+
+Any container, be it Box, List, TreeView, GridView, etc. only contains other widgets. This is in contrast to the inconsistent 
+Factory / Model-View design of, for example, `GtkTreeView`. Instead of inserting widgets into `GtkTreeView`, Gtk4 requires users
+to construct a model holding non-widget items, specify a factory type, a render type for each type of item, 
+then let `GtkTreeView` construct the widgets from  that model. In `mousetrap`, you can simply do:
 
 ```cpp
-auto list_view = TreeListView();
-
-auto label = Label("test");
-auto button = Button();
-auto other_list_view = TreeListView();
-
-list_view.push_back(label);
-list_view.push_back(button);
-list_view.push_back(other_list_view);
+auto tree_view = ListTreeView();
+Widget some_widget = // ...
+tree_view.push_back(some_widget);
 ```
 
-+ Allow signals to trigger runtime-lambdas, which is impossible using just the Gtk4 C-Library
+This is true for all renderable container / layout manager objects in `mousetrap`.
+
+### 
 
 ## Dependencies
 + CMake 3.12+ including PkgConfig
