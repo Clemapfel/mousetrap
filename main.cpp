@@ -28,6 +28,7 @@
 #include <include/action_map.hpp>
 #include <include/file_chooser.hpp>
 #include <include/shortcut_controller.hpp>
+#include <include/config_file.hpp>
 
 #include <app/global_state.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
@@ -316,12 +317,16 @@ static void activate(GtkApplication* app, void*)
     shortcut_controller->add_action("test_action");
     gtk_widget_add_controller(menu_widget->operator GtkWidget*(), GTK_EVENT_CONTROLLER(shortcut_controller->operator GtkEventController*()));
 
-    /*
-    auto* shortcut_controller = GTK_SHORTCUT_CONTROLLER(gtk_shortcut_controller_new());
-    auto* shortcut_trigger = gtk_shortcut_trigger_parse_string("<Control>k");
-    auto* shortcut_action = gtk_shortcut_action_parse_string("app.test_action");
-    gtk_shortcut_controller_add_shortcut(shortcut_controller, gtk_shortcut_new(shortcut_trigger, shortcut_action));
-    */
+    // TODO
+    auto file = ConfigFile();
+    file.load_from_file("/home/clem/Workspace/mousetrap/app/keybindings.ini");
+
+    for (auto group : file.get_groups())
+        for (auto key : file.get_keys(group))
+            std::cout << group << "." << key << ": " << file.get_value_as<std::string>(group, key) << std::endl;
+
+    exit(0);
+
     // TODO
 
     //state::main_window->set_child(main);

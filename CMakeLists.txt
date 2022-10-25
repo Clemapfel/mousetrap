@@ -225,7 +225,7 @@ add_library(mousetrap SHARED
 
     include/file.hpp
 
-    include/shortcut_mapping.hpp)
+    include/shortcut_mapping.hpp include/config_file.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

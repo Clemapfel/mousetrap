@@ -179,9 +179,6 @@ namespace mousetrap
         for (auto& s : inserted.get_shortcuts())
             accels.push_back(s.c_str());
 
-        for (auto* s : accels)
-            std::cout << s << std::endl;
-
         gtk_application_set_accels_for_action(app, ("app." + inserted.get_id()).c_str(), accels.data());
     }
 
