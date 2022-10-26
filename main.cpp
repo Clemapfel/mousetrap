@@ -317,19 +317,7 @@ static void activate(GtkApplication* app, void*)
     shortcut_controller->add_action("test_action");
     gtk_widget_add_controller(menu_widget->operator GtkWidget*(), GTK_EVENT_CONTROLLER(shortcut_controller->operator GtkEventController*()));
 
-    // TODO
-    auto file = ConfigFile();
-    file.load_from_file("/home/clem/Workspace/mousetrap/app/keybindings.ini");
-
-    for (auto group : file.get_groups())
-        for (auto key : file.get_keys(group))
-            std::cout << group << "." << key << ": " << file.get_value_as<std::string>(group, key) << std::endl;
-
-    exit(0);
-
-    // TODO
-
-    //state::main_window->set_child(main);
+    state::main_window->set_child(main);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

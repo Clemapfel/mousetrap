@@ -197,35 +197,37 @@ add_library(mousetrap SHARED
     src/blend_mode.inl
 
     include/viewport.hpp
-
-    app/layer_view.hpp
-    app/layer_view.hpp
-    app/layer_view.hpp
+    src/viewport.inl
 
     include/center_box.hpp
+    src/center_box.inl
 
     include/selection_model.hpp
-
-    include/texture_workspace.hpp
+    src/selection_model.inl
 
     include/dialog.hpp
     src/dialog.inl
 
-    include/undo_stack.hpp
-
     include/popover_menu.hpp
+    src/popover_menu.inl
 
     include/popover_menu_bar.hpp
+    src/popover_menu_bar.inl
 
     include/action_map.hpp
+    src/action_map.inl
 
     include/shortcut_controller.hpp
+    src/shortcut_controller.inl
 
     include/file_chooser.hpp
+    src/file_chooser.inl
 
     include/file.hpp
 
-    include/shortcut_mapping.hpp include/config_file.hpp)
+    include/config_file.hpp
+    src/config_file.inl
+)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
