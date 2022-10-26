@@ -43,10 +43,10 @@ namespace mousetrap
             void set_can_create_folders(bool);
             bool get_can_create_fodlers();
 
-            std::vector<File> get_selected();
+            std::vector<FileDescriptor> get_selected();
 
-            File get_current_folder();
-            void set_current_folder(File*);
+            FileDescriptor get_current_folder();
+            void set_current_folder(FileDescriptor*);
 
             void set_current_name(const std::string&);
             std::string get_current_name();

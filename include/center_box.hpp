@@ -22,4 +22,4 @@ namespace mousetrap
     };
 }
 
-#include <src/center_box.hpp>
+#include <src/center_box.inl>

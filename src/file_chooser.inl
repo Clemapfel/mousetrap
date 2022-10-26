@@ -70,12 +70,12 @@ namespace mousetrap
         return gtk_file_chooser_get_create_folders(GTK_FILE_CHOOSER(get_native()));
     }
 
-    File FileChooser::get_current_folder()
+    FileDescriptor FileChooser::get_current_folder()
     {
-        return File(gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(get_native())));
+        return FileDescriptor(gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(get_native())));
     }
 
-    void FileChooser::set_current_folder(File* folder)
+    void FileChooser::set_current_folder(FileDescriptor* folder)
     {
         GError* error_maybe = nullptr;
         gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(get_native()), folder->operator GFile*(), &error_maybe);
@@ -94,10 +94,10 @@ namespace mousetrap
         gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(get_native()), name.c_str());
     }
 
-    std::vector<File> FileChooser::get_selected()
+    std::vector<FileDescriptor> FileChooser::get_selected()
     {
         auto* list = gtk_file_chooser_get_files(GTK_FILE_CHOOSER(get_native()));
-        std::vector<File> out;
+        std::vector<FileDescriptor> out;
         out.reserve(g_list_model_get_n_items(list));
 
         for (size_t i = 0; i < g_list_model_get_n_items(list); ++i)
