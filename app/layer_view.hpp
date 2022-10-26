@@ -394,7 +394,7 @@ namespace mousetrap
 
     void LayerView::on_settings_show_frame_index_check_button_toggled(CheckButton* button, LayerView* instance)
     {
-        instance->show_frame_index = button->get_is_checked();
+        instance->show_frame_index = button->get_active();
 
         for (auto& row : instance->_layer_rows)
             row.update_selection();
@@ -471,7 +471,7 @@ namespace mousetrap
         _settings_show_frame_index_box.push_back(&_settings_show_frame_index_check_button);
         _settings_show_frame_index_box.set_hexpand(true);
         _settings_show_frame_index_check_button.set_margin_end(state::margin_unit * 4);
-        _settings_show_frame_index_check_button.set_is_checked(show_frame_index);
+        _settings_show_frame_index_check_button.set_active(show_frame_index);
         _settings_show_frame_index_check_button.connect_signal_toggled(on_settings_show_frame_index_check_button_toggled, this);
 
         _settings_menu_button_popover_box.push_back(&_settings_header_label);

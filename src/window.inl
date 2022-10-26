@@ -26,6 +26,11 @@ namespace mousetrap
         gtk_window_present(get_native());
     }
 
+    void Window::close()
+    {
+        gtk_window_close(get_native());
+    }
+
     void Window::set_show_menubar(bool b)
     {
         gtk_application_window_set_show_menubar(GTK_APPLICATION_WINDOW(get_native()), b);

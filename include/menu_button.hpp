@@ -18,7 +18,6 @@ namespace mousetrap
             MenuButton();
 
             void set_child(Widget*);
-            void set_model(MenuModel*);
 
             void set_popover_position(GtkPositionType);
             void set_popover(Popover*);
@@ -29,6 +28,9 @@ namespace mousetrap
 
             void popup();
             void popdown();
+
+        private:
+            void set_model(MenuModel*);
     };
 }
 

@@ -39,6 +39,36 @@ namespace mousetrap
     };
 
     template<typename Owner_t>
+    class HasStateSetSignal
+    {
+        public:
+            template<typename T>
+            using on_state_set_function_t = void(Owner_t*, bool, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_state_set(Function_t, T);
+
+            void set_signal_state_set_blocked(bool b) {
+                _blocked = b;
+            }
+
+        protected:
+            HasStateSetSignal(Owner_t* instance)
+                : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_state_set_wrapper(void*, bool, HasStateSetSignal<Owner_t>* instance);
+
+            bool _blocked = false;
+            std::function<on_state_set_function_t<void*>> _on_state_set_f;
+            void* _on_state_set_data;
+    };
+
+
+    template<typename Owner_t>
     class HasClickedSignal
     {
         public:
@@ -961,6 +991,26 @@ namespace mousetrap
     {
         if (self->_on_toggled_f != nullptr and not self->_blocked)
             self->_on_toggled_f(self->_instance, self->_on_toggled_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasStateSetSignal<Owner_t>::connect_signal_state_set(Function_t function, T data)
+    {
+        auto temp =  std::function<on_state_set_function_t<T>>(function);
+        _on_state_set_f = std::function<on_state_set_function_t<void*>>(*((std::function<on_state_set_function_t<void*>>*) &temp));
+        _on_state_set_data = data;
+
+        _instance->connect_signal("state_set", on_state_set_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasStateSetSignal<Owner_t>::on_state_set_wrapper(void*, bool state, HasStateSetSignal<Owner_t>* self)
+    {
+        if (self->_on_state_set_f != nullptr and not self->_blocked)
+            self->_on_state_set_f(self->_instance, state, self->_on_state_set_data);
     }
 
     // ###

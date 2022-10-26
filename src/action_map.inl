@@ -9,6 +9,9 @@ namespace mousetrap
             : _id(id)
     {}
 
+    Action::~Action()
+    {}
+
     template<typename DoFunction_t, typename DoData_t>
     void Action::set_do_function(DoFunction_t f_in, DoData_t data_in)
     {
@@ -16,7 +19,7 @@ namespace mousetrap
             f(data);
         };
 
-        _g_action = g_simple_action_new(_id.c_str(), nullptr);
+        _g_action = g_object_ref(g_simple_action_new(_id.c_str(), nullptr));
         g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
     }
 
@@ -27,7 +30,7 @@ namespace mousetrap
             f();
         };
 
-        _g_action = g_simple_action_new(_id.c_str(), nullptr);
+        _g_action = g_object_ref(g_simple_action_new(_id.c_str(), nullptr));
         g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
     }
 
@@ -99,11 +102,13 @@ namespace mousetrap
         g_action_map_add_action(self, inserted.operator GAction *());
 
         auto* app = operator GtkApplication*();
+
         auto accels = std::vector<const char*>();
         for (auto& s : inserted.get_shortcuts())
             accels.push_back(s.c_str());
 
-        gtk_application_set_accels_for_action(app, ("app." + inserted.get_id()).c_str(), accels.data());
+        if (accels.size() != 0)
+            gtk_application_set_accels_for_action(app, ("app." + inserted.get_id()).c_str(), accels.data());
     }
 
     void ActionMap::remove_action(const ActionID& id)

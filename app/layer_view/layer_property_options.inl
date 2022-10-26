@@ -18,7 +18,7 @@ namespace mousetrap
         _visible_toggle_button.set_all_signals_blocked(false);
 
         _visible_check_button.set_all_signals_blocked(true);
-        _visible_check_button.set_is_checked(layer.is_visible);
+        _visible_check_button.set_active(layer.is_visible);
         _visible_check_button.set_all_signals_blocked(false);
 
         _menu_button.set_opacity(layer.is_visible ? 1 : 0.3);
@@ -30,7 +30,7 @@ namespace mousetrap
         _locked_toggle_button.set_all_signals_blocked(false);
 
         _locked_check_button.set_all_signals_blocked(true);
-        _locked_check_button.set_is_checked(layer.is_locked);
+        _locked_check_button.set_active(layer.is_locked);
         _locked_check_button.set_all_signals_blocked(false);
 
         _opacity_scale.set_all_signals_blocked(true);
@@ -319,14 +319,14 @@ namespace mousetrap
 
     void LayerView::LayerPropertyOptions::on_locked_check_button_toggled(CheckButton* button, LayerPropertyOptions* instance)
     {
-        bool is_locked = button->get_is_checked();
+        bool is_locked = button->get_active();
         state::layers.at(instance->_layer)->is_locked = is_locked;
         instance->update();
     }
 
     void LayerView::LayerPropertyOptions::on_visible_check_button_toggled(CheckButton* button, LayerPropertyOptions* instance)
     {
-        bool is_visible = button->get_is_checked();
+        bool is_visible = button->get_active();
         state::layers.at(instance->_layer)->is_visible = is_visible;
         instance->update();
     }

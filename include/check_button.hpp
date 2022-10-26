@@ -15,8 +15,8 @@ namespace mousetrap
             CheckButton();
             CheckButton(const std::string& label);
 
-            bool get_is_checked();
-            void set_is_checked(bool b);
+            bool get_active();
+            void set_active(bool b);
 
             bool get_is_inconsistent();
             void set_is_inconsistent(bool b);

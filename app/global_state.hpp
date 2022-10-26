@@ -30,6 +30,9 @@ namespace mousetrap::state
     Window* main_window = nullptr;
     Application* app = nullptr;
     MenuModel* global_menu_bar_model = nullptr;
+    ConfigFile* settings_file = nullptr;
+    ConfigFile* keybindings_file = nullptr;
+    ConfigFile* tooltips_file = nullptr;
 
     // ### COLORS #####################################
 
@@ -74,17 +77,6 @@ namespace mousetrap::state
         if (color_preview != nullptr)
             color_preview->update();
     }
-
-    // ### PALETTES ###################################
-
-    using PaletteID = std::string;
-
-    std::map<PaletteID, Palette> palettes = {
-        {"debug", debug_palette}
-    };
-
-    PaletteID default_palette_id = "debug";
-    PaletteID active_palette_id = "debug";
 
     // ### TOOLS ######################################
 

@@ -240,7 +240,7 @@ namespace mousetrap
             static_cast<GFileCopyFlags>(flags),
             io_priority,
             nullptr, nullptr, nullptr,
-            G_CALLBACK(async_callback),
+            nullptr,
             nullptr
         );
     }

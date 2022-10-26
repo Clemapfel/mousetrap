@@ -11,12 +11,12 @@ namespace mousetrap
         : WidgetImplementation<GtkCheckButton>(GTK_CHECK_BUTTON(gtk_check_button_new())), HasToggledSignal<CheckButton>(this)
     {}
 
-    bool CheckButton::get_is_checked()
+    bool CheckButton::get_active()
     {
         return gtk_check_button_get_active(get_native());
     }
 
-    void CheckButton::set_is_checked(bool b)
+    void CheckButton::set_active(bool b)
     {
         gtk_check_button_set_active(get_native(), b);
     }

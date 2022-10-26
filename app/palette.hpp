@@ -31,26 +31,6 @@ namespace mousetrap
         private:
             std::map<size_t, HSVA> _colors;
     };
-
-    static inline const Palette debug_palette = []() -> Palette
-    {
-        std::vector<HSVA> colors;
-
-        const size_t n_steps = 8;
-        for (size_t i = 0; i < n_steps; ++i)
-        {
-            float h = i / float(n_steps);
-
-            for (float s : {0.33f, 0.66f, 1.f})
-                for (float v : {0.33f, 0.66f, 1.f})
-                    colors.push_back(HSVA(h, s, v, 1));
-        }
-
-        for (size_t i = 0; i < n_steps; ++i)
-            colors.push_back(HSVA(0, 0, i / float(n_steps), 1));
-
-        return Palette(colors);
-    }();
 }
 
 // ###
@@ -118,12 +98,12 @@ namespace mousetrap
             if (a.s == b.s)
             {
                 if (a.v == b.v)
-                    return a.h < b.h;
+                    return a.h > b.h;
                 else
-                    return a.v < b.v;
+                    return a.v > b.v;
             }
             else
-                return a.s < b.s;
+                return a.s > b.s;
         });
 
         return out;

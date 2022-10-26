@@ -258,7 +258,13 @@ namespace mousetrap
             return "";
         }
 
-        return std::string(value);
+        auto string = std::string(value);
+        std::string out = "";
+        for (auto c : string)
+            if (c != '\\')
+                out.push_back(c);
+
+        return out;
     }
 
     template<>
@@ -276,7 +282,15 @@ namespace mousetrap
 
         std::vector<std::string> out;
         for (size_t i = 0; i < length; ++i)
-            out.emplace_back(value_list[i]);
+        {
+            auto string = std::string(value_list[i]);
+            std::string to_push = "";
+            for (auto c : string)
+                if (c != '\\')
+                    to_push.push_back(c);
+
+            out.push_back(to_push);
+        }
 
         return out;
     }

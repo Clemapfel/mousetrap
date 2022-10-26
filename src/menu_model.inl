@@ -68,6 +68,8 @@ namespace mousetrap
             // noop
         }
 
+        _submenus.insert(model);
+
         g_menu_append_item(_native, item);
     }
 

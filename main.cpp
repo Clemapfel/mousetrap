@@ -98,6 +98,10 @@ void test_action(void* in)
 
 static void activate(GtkApplication* app, void*)
 {
+    state::settings_file = new ConfigFile(get_resource_path() + "settings.ini");
+    state::keybindings_file = new ConfigFile(get_resource_path() + "keybindings.ini");
+    state::tooltips_file = new ConfigFile(get_resource_path() + "tooltips.ini");
+
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
     state::app->add_window(state::main_window);
@@ -125,6 +129,7 @@ static void activate(GtkApplication* app, void*)
     auto* brush_options = state::brush_options->operator Widget*();
     auto* color_preview = state::color_preview->operator Widget*();
 
+    /*
     layer_view->set_valign(GTK_ALIGN_END);
 
     color_picker->set_margin_start(state::margin_unit);
@@ -318,6 +323,9 @@ static void activate(GtkApplication* app, void*)
     gtk_widget_add_controller(menu_widget->operator GtkWidget*(), GTK_EVENT_CONTROLLER(shortcut_controller->operator GtkEventController*()));
 
     state::main_window->set_child(main);
+     */
+
+    state::main_window->set_child(palette_view);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

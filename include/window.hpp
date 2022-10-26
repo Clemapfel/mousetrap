@@ -21,6 +21,7 @@ namespace mousetrap
 
             void present();
             void set_show_menubar(bool);
+            void close();
 
             void set_child(Widget*);
             void remove_child();

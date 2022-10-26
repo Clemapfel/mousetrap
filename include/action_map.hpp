@@ -25,7 +25,7 @@ namespace mousetrap
     {
         public:
             Action(const std::string& id);
-            ~Action() = default;
+            ~Action();
 
             ActionID get_id() const;
 

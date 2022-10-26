@@ -170,7 +170,7 @@ namespace mousetrap
 
     void Preview::on_show_frame_i_label_button_toggled(CheckButton* button, Preview* instance)
     {
-        instance->_frame_i_visible = button->get_is_checked();
+        instance->_frame_i_visible = button->get_active();
         instance->_frame_label.set_visible(instance->_frame_i_visible);
     }
 
@@ -346,7 +346,7 @@ namespace mousetrap
         _fps_spin_button.set_value(_fps);
         _scale_spin_button.set_value(_scale);
         _play_pause_button.set_active(_is_unpaused);
-        _show_frame_i_check_button.set_is_checked(_frame_i_visible);
+        _show_frame_i_check_button.set_active(_frame_i_visible);
 
         _toolbox_revealer.set_revealed(false);
     }

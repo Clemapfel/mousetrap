@@ -32,6 +32,7 @@ namespace mousetrap
             bool has_key(GroupKey, KeyID);
             bool has_group(GroupKey);
 
+            /// \note if the value is a string, all control sequences will be escaped. To avoid this, use get_value_as<std::string> instead of get_value
             std::string get_value(GroupKey, KeyID);
 
             /// \tparam Return_t: One of std::string, bool, int, float or std::vector<T> where T is one of std::string, bool, int, float
