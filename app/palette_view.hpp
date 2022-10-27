@@ -472,7 +472,7 @@ namespace mousetrap
         if (selected.empty())
             return;
 
-        std::cout << "[TODO] Saving Palette to " << selected.at(0).get_path() << std::endl;
+        std::cout << "[TODO] Saving Palette as " << selected.at(0).get_path() << std::endl;
         _on_save_as_file_chooser_dialog.close();
     }
 

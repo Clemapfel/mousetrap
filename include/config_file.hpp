@@ -32,6 +32,15 @@ namespace mousetrap
             bool has_key(GroupKey, KeyID);
             bool has_group(GroupKey);
 
+            /// \brief add comment above group id
+            void add_comment_above(GroupKey, const std::string& comment);
+
+            /// \brief add coment above key
+            void add_comment_above(GroupKey, KeyID, const std::string& comment);
+
+            std::string get_comment_above(GroupKey);
+            std::string get_comment_above(GroupKey, KeyID);
+
             /// \note if the value is a string, all control sequences will be escaped. To avoid this, use get_value_as<std::string> instead of get_value
             std::string get_value(GroupKey, KeyID);
 

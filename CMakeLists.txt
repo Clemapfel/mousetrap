@@ -229,7 +229,7 @@ add_library(mousetrap SHARED
     src/config_file.inl
 
     include/switch.hpp
-)
+        include/info_message_bubble.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

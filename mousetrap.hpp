@@ -71,3 +71,4 @@
 #include <include/file.hpp>
 #include <include/config_file.hpp>
 #include <include/switch.hpp>
+#include <include/info_message_bubble.hpp>

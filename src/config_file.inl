@@ -127,6 +127,46 @@ namespace mousetrap
         return g_key_file_has_group(_native, group.c_str());
     }
 
+    void ConfigFile::add_comment_above(GroupKey group, KeyID key, const std::string& comment)
+    {
+        GError* error = nullptr;
+        g_key_file_set_comment(_native, group.c_str(), key.c_str(), (" " + comment).c_str(), &error);
+
+        if (error != nullptr)
+            std::cerr << "[ERROR] In ConfigFile::add_comment_above: Unable to add comment for `" << group << "." << key << "`: " << error->message << std::endl;
+    }
+
+    void ConfigFile::add_comment_above(GroupKey group, const std::string& comment)
+    {
+        GError* error = nullptr;
+        g_key_file_set_comment(_native, group.c_str(), nullptr, (" " + comment).c_str(), &error);
+
+        if (error != nullptr)
+            std::cerr << "[ERROR] In ConfigFile::add_comment_above: Unable to add comment for `" << group << "`: " << error->message << std::endl;
+    }
+
+    std::string ConfigFile::get_comment_above(GroupKey group, KeyID key)
+    {
+        GError* error = nullptr;
+        auto* out = g_key_file_get_comment(_native, group.c_str(), key.c_str(), &error);
+
+        if (error != nullptr)
+            std::cerr << "[ERROR] In ConfigFile::get_comment_above: Unable to retrieve comment for `" << group << "." << key << "`: " << error->message << std::endl;
+
+        return std::string(out);
+    }
+
+    std::string ConfigFile::get_comment_above(GroupKey group)
+    {
+        GError* error = nullptr;
+        auto* out = g_key_file_get_comment(_native, group.c_str(), nullptr, &error);
+
+        if (error != nullptr)
+            std::cerr << "[ERROR] In ConfigFile::get_comment_above: Unable to retrieve comment for `" << group << "`: " << error->message << std::endl;
+
+        return std::string(out);
+    }
+
     std::string ConfigFile::get_value(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
@@ -134,7 +174,7 @@ namespace mousetrap
 
         if (error != nullptr)
         {
-            std::cerr << "[ERROR] In ConfigFile::get_value: Unable to retrieve value for key `" << key << "` in group `" << group << "`" << error->message << std::endl;
+            std::cerr << "[ERROR] In ConfigFile::get_value: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
             return "";
         }
 
@@ -149,7 +189,7 @@ namespace mousetrap
 
         if (error != nullptr)
         {
-            std::cerr << "[ERROR] In ConfigFile::get_value_as<bool>: Unable to retrieve value for key `" << key << "` in group `" << group << "`" << error->message << std::endl;
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<bool>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
             return false;
         }
 
@@ -165,7 +205,7 @@ namespace mousetrap
 
         if (error != nullptr)
         {
-            std::cerr << "[ERROR] In ConfigFile::get_value_as<std::vector<bool>>: Unable to retrieve value for key `" << key << "` in group `" << group << "`" << error->message << std::endl;
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<std::vector<bool>>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
             return {};
         }
 
@@ -184,7 +224,7 @@ namespace mousetrap
 
         if (error != nullptr)
         {
-            std::cerr << "[ERROR] In ConfigFile::get_value_as<int>: Unable to retrieve value for key `" << key << "` in group `" << group << "`" << error->message << std::endl;
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<int>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
             return -1;
         }
 
@@ -200,7 +240,7 @@ namespace mousetrap
 
         if (error != nullptr)
         {
-            std::cerr << "[ERROR] In ConfigFile::get_value_as<std::vector<int>>: Unable to retrieve value for key `" << key << "` in group `" << group << "`" << error->message << std::endl;
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<std::vector<int>>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
             return {};
         }
 
@@ -219,7 +259,7 @@ namespace mousetrap
 
         if (error != nullptr)
         {
-            std::cerr << "[ERROR] In ConfigFile::get_value_as<double>: Unable to retrieve value for key `" << key << "` in group `" << group << "`" << error->message << std::endl;
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<double>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
             return -1;
         }
 
@@ -235,7 +275,7 @@ namespace mousetrap
 
         if (error != nullptr)
         {
-            std::cerr << "[ERROR] In ConfigFile::get_value_as<std::vector<double>>: Unable to retrieve value for key `" << key << "` in group `" << group << "`" << error->message << std::endl;
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<std::vector<double>>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
             return {};
         }
 
@@ -254,7 +294,7 @@ namespace mousetrap
 
         if (error != nullptr)
         {
-            std::cerr << "[ERROR] In ConfigFile::get_value_as<std::string>: Unable to retrieve value for key `" << key << "` in group `" << group << "`" << error->message << std::endl;
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<std::string>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
             return "";
         }
 
@@ -276,7 +316,7 @@ namespace mousetrap
 
         if (error != nullptr)
         {
-            std::cerr << "[ERROR] In ConfigFile::get_value_as<std::vector<std::string>>: Unable to retrieve value for key `" << key << "` in group `" << group << "`" << error->message << std::endl;
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<std::vector<std::string>>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
             return {};
         }
 
