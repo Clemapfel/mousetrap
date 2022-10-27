@@ -21,6 +21,7 @@
 #include <app/canvas.hpp>
 #include <app/app_layout.hpp>
 #include <app/color_preview.hpp>
+#include <app/bubble_log_area.hpp>
 
 using namespace mousetrap;
 
@@ -304,15 +305,18 @@ static void activate(GtkApplication* app, void*)
     // TODO
 
     auto* box = new Box(GTK_ORIENTATION_VERTICAL);
-    for (size_t i = 0; i < 4; ++i)
-    {
-        auto* bubble = new InfoMessageBubble();
-        bubble->set_hide_after(seconds(3), seconds(0.5));
-        bubble->add_child(new Label("Test Message 0" + std::to_string(i)));
-        bubble->set_has_close_button(true);
-        bubble->set_message_type((InfoMessageType) i);
-        box->push_back(bubble);
-    }
+    auto* button = new Button();
+    button->set_vexpand(false);
+    box->push_back(button);
+
+    auto* bubble_area = new BubbleLogArea();
+    button->connect_signal_clicked([](Button*, BubbleLogArea* area){
+        std::string msg;
+        for (size_t i = 0; i < rand() / float(RAND_MAX) * 30; ++i)
+            msg.push_back('A');
+        area->send_message(msg, InfoMessageType::INFO);
+    }, bubble_area);
+    box->push_back(bubble_area->operator Widget *());
 
     // TODO
 

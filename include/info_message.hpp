@@ -14,19 +14,21 @@ namespace mousetrap
     {
         INFO = GTK_MESSAGE_INFO,
         WARNING = GTK_MESSAGE_WARNING,
-        QUESTION = GTK_MESSAGE_QUESTION,
         ERROR = GTK_MESSAGE_ERROR,
         OTHER = GTK_MESSAGE_OTHER
     };
 
-    class InfoMessageBubble : public WidgetImplementation<GtkInfoBar>
+    class InfoMessage : public WidgetImplementation<GtkInfoBar>
     {
         public:
-            InfoMessageBubble();
+            InfoMessage();
 
             /// \brief message shown for <hold_duration>, then linear lower opacity from 1 to 0 in <decay_duration>
             ///        if user mouses over bubble, opacity and timer is reset to start
             void set_hide_after(Time hold_duration, Time decay_duration = seconds(0));
+
+            /// \brief if true, mousing over message will reset it's hide time
+            void set_hide_interruptable(bool);
 
             void set_message_type(InfoMessageType);
             void add_child(Widget*);
@@ -34,21 +36,30 @@ namespace mousetrap
             void set_revealed(bool);
             bool get_revealed();
 
+            template<typename Function_t, typename Data_t>
+            void connect_signal_hide(Function_t, Data_t);
+
+            void set_signal_hide_blocked(bool);
+
         private:
-            static void on_close(GtkInfoBar*);
-            static void on_response(GtkInfoBar*, int response);
+            static void on_close(GtkInfoBar*, InfoMessage* instance);
+            static void on_response(GtkInfoBar*, int response, InfoMessage* instance);
+
+            std::function<void()> _on_hide_f;
+            bool _on_hide_blocked;
 
             Time _hide_after_elapsed = seconds(0);
             Time _hide_after_hold_duration = seconds(0);
             Time _hide_after_decay_duration = seconds(0);
             bool _hide_after_timer_paused = true;
-            int _previous_frame_clock_time_stamp = 0;
+            int64_t _previous_frame_clock_time_stamp = 0;
 
-            static gboolean on_tick_callback_hide(GtkWidget*, GdkFrameClock* frame_clock, InfoMessageBubble* instance);
+            static gboolean on_tick_callback_hide(GtkWidget*, GdkFrameClock* frame_clock, InfoMessage* instance);
 
+            bool _hide_interruptable = true;
             MotionEventController _motion_event_controller;
-            static void on_motion_enter(MotionEventController*, double x, double y, InfoMessageBubble* instance);
-            static void on_motion_leave(MotionEventController*, InfoMessageBubble* instance);
+            static void on_motion_enter(MotionEventController*, double x, double y, InfoMessage* instance);
+            static void on_motion_leave(MotionEventController*, InfoMessage* instance);
     };
 }
 
@@ -56,53 +67,71 @@ namespace mousetrap
 
 namespace mousetrap
 {
-    InfoMessageBubble::InfoMessageBubble()
+    InfoMessage::InfoMessage()
         : WidgetImplementation<GtkInfoBar>(GTK_INFO_BAR(gtk_info_bar_new()))
     {
-        g_signal_connect(get_native(), "close", G_CALLBACK(on_close), nullptr);
-        g_signal_connect(get_native(), "response", G_CALLBACK(on_response), nullptr);
+        g_signal_connect(get_native(), "close", G_CALLBACK(on_close), this);
+        g_signal_connect(get_native(), "response", G_CALLBACK(on_response), this);
 
         // makes window react to mouseover
         //gtk_info_bar_set_default_response(get_native(), GTK_RESPONSE_OK);
     }
 
-    void InfoMessageBubble::on_close(GtkInfoBar* bar)
+    void InfoMessage::set_signal_hide_blocked(bool b)
+    {
+        _on_hide_blocked= b;
+    }
+
+    template<typename Function_t, typename Data_t>
+    void InfoMessage::connect_signal_hide(Function_t f_in, Data_t data_in)
+    {
+        _on_hide_f = [f = f_in, data = data_in, instance = this](){
+
+            if (instance->_on_hide_blocked)
+                return;
+
+            f(instance, data);
+        };
+    }
+
+    void InfoMessage::on_close(GtkInfoBar* bar, InfoMessage* instance)
     {
         gtk_widget_hide(GTK_WIDGET(bar));
+        instance->_on_hide_f();
     }
 
-    void InfoMessageBubble::on_response(GtkInfoBar* bar, int response)
+    void InfoMessage::on_response(GtkInfoBar* bar, int response, InfoMessage* instance)
     {
         if (response == GTK_RESPONSE_CLOSE)
-            gtk_widget_hide(GTK_WIDGET(bar));
+            on_close(instance->operator _GtkInfoBar*(), instance);
     }
 
-    void InfoMessageBubble::set_message_type(InfoMessageType type)
+    void InfoMessage::set_message_type(InfoMessageType type)
     {
         gtk_info_bar_set_message_type(get_native(), static_cast<GtkMessageType>(type));
     }
 
-    void InfoMessageBubble::add_child(Widget* widget)
+    void InfoMessage::add_child(Widget* widget)
     {
         gtk_info_bar_add_child(get_native(), widget->operator GtkWidget*());
     }
 
-    void InfoMessageBubble::set_has_close_button(bool b)
+    void InfoMessage::set_has_close_button(bool b)
     {
         gtk_info_bar_set_show_close_button(get_native(), b);
     }
 
-    void InfoMessageBubble::set_revealed(bool b)
+    void InfoMessage::set_revealed(bool b)
     {
         gtk_info_bar_set_revealed(get_native(), b);
     }
 
-    bool InfoMessageBubble::get_revealed()
+    bool InfoMessage::get_revealed()
     {
         return gtk_info_bar_get_revealed(get_native());
     }
 
-    void InfoMessageBubble::set_hide_after(Time hold_duration, Time decay_duration)
+    void InfoMessage::set_hide_after(Time hold_duration, Time decay_duration)
     {
         _hide_after_elapsed = microseconds(0);
         _hide_after_hold_duration = hold_duration;
@@ -122,27 +151,37 @@ namespace mousetrap
         );
     }
 
-    void InfoMessageBubble::on_motion_enter(MotionEventController*, double x, double y, InfoMessageBubble* instance)
+    void InfoMessage::set_hide_interruptable(bool b)
     {
+        _hide_interruptable = b;
+    }
+
+    void InfoMessage::on_motion_enter(MotionEventController*, double x, double y, InfoMessage* instance)
+    {
+        if (not instance->_hide_interruptable)
+            return;
+
         instance->_hide_after_elapsed = seconds(0);
         instance->set_opacity(1);
         instance->_hide_after_timer_paused = true;
     }
 
-    void InfoMessageBubble::on_motion_leave(MotionEventController*, InfoMessageBubble* instance)
+    void InfoMessage::on_motion_leave(MotionEventController*, InfoMessage* instance)
     {
+
         instance->_hide_after_timer_paused = false;
     }
 
-    gboolean InfoMessageBubble::on_tick_callback_hide(GtkWidget*, GdkFrameClock* frame_clock, InfoMessageBubble* instance)
+    gboolean InfoMessage::on_tick_callback_hide(GtkWidget*, GdkFrameClock* frame_clock, InfoMessage* instance)
     {
         if (instance->_hide_after_timer_paused)
             return G_SOURCE_CONTINUE;
 
-        if (instance->_previous_frame_clock_time_stamp == 0)
-            instance->_previous_frame_clock_time_stamp = gdk_frame_clock_get_frame_time(frame_clock);
-
         auto current = gdk_frame_clock_get_frame_time(frame_clock);
+
+        if (instance->_previous_frame_clock_time_stamp == 0)
+            instance->_previous_frame_clock_time_stamp = current;
+
         instance->_hide_after_elapsed += microseconds(current - instance->_previous_frame_clock_time_stamp);
 
         if (instance->_hide_after_elapsed > instance->_hide_after_hold_duration)
@@ -153,7 +192,7 @@ namespace mousetrap
             if (opacity <= 0)
             {
                 instance->set_visible(false);
-                instance->unparent();
+                instance->_on_hide_f();
                 return G_SOURCE_REMOVE;
             }
         }

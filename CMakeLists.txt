@@ -229,7 +229,8 @@ add_library(mousetrap SHARED
     src/config_file.inl
 
     include/switch.hpp
-        include/info_message_bubble.hpp)
+        include/info_message.hpp
+        include/fixed.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -266,7 +267,7 @@ add_library(app STATIC
     app/layer_view.hpp
     app/layer_view/layer_row.inl
     app/layer_view/frame_control_bar.inl
-    app/layer_view/layer_control_bar.inl app/layer_view/layer_property_options.inl app/verbose_color_picker.hpp app/menubar.hpp app/canvas.hpp app/app_layout.hpp app/textured_spacer.hpp app/palette_view.hpp app/color_preview.hpp app/palette_view.hpp)
+    app/layer_view/layer_control_bar.inl app/layer_view/layer_property_options.inl app/verbose_color_picker.hpp app/menubar.hpp app/canvas.hpp app/app_layout.hpp app/textured_spacer.hpp app/palette_view.hpp app/color_preview.hpp app/palette_view.hpp app/bubble_log_area.hpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES
