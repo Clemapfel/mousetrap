@@ -59,6 +59,58 @@ namespace mousetrap
         return _ns.count();
     }
 
+    Time& Time::operator+=(const Time& other)
+    {
+        this->_ns += other._ns;
+        return *this;
+    }
+
+    Time& Time::operator-=(const Time& other)
+    {
+        this->_ns -= other._ns;
+        return *this;
+    }
+
+    Time Time::operator+(const Time& other)
+    {
+        return Time(this->_ns.count() + other._ns.count());
+    }
+
+    Time Time::operator-(const Time& other)
+    {
+        return Time(this->_ns.count() - other._ns.count());
+    }
+
+    bool Time::operator==(const Time& other)
+    {
+        return this->_ns == other._ns;
+    }
+
+    bool Time::operator!=(const Time& other)
+    {
+        return not (*this == other);
+    }
+
+    bool Time::operator<(const Time& other)
+    {
+        return this->_ns < other._ns;
+    }
+
+    bool Time::operator>(const Time& other)
+    {
+        return this->_ns > other._ns;
+    }
+
+    bool Time::operator<=(const Time& other)
+    {
+        return (*this == other) or (*this < other);
+    }
+
+    bool Time::operator>=(const Time& other)
+    {
+        return (*this == other) or (*this < other);
+    }
+
     Clock::Clock()
             : _start(std::chrono::steady_clock::now())
     {}

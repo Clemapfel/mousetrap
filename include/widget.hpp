@@ -64,6 +64,7 @@ namespace mousetrap
             // for pictures, c.f. https://docs.gtk.org/gdk4/ctor.Cursor.new_from_name.html
             void set_cursor(GtkCursorType type);
 
+            void hide();
             void show();
             void add_controller(EventController*);
 

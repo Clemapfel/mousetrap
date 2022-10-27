@@ -4,31 +4,7 @@
 
 #include <gtk/gtk.h>
 
-#include <include/window.hpp>
-#include <include/box.hpp>
-#include <include/entry.hpp>
-#include <include/application.hpp>
-#include <include/gl_area.hpp>
-#include <include/image_display.hpp>
-#include <include/event_controller.hpp>
-#include <include/menu_model.hpp>
-#include <include/menu_button.hpp>
-#include <include/column_view.hpp>
-#include <include/image_display.hpp>
-#include <include/list_view.hpp>
-#include <include/detachable_box.hpp>
-#include <include/paned.hpp>
-#include <include/dropdown.hpp>
-#include <include/button.hpp>
-#include <include/check_button.hpp>
-#include <include/grid_view.hpp>
-#include <include/reorderable_list.hpp>
-#include <include/dialog.hpp>
-#include <include/popover_menu_bar.hpp>
-#include <include/action_map.hpp>
-#include <include/file_chooser.hpp>
-#include <include/shortcut_controller.hpp>
-#include <include/config_file.hpp>
+#include <mousetrap.hpp>
 
 #include <app/global_state.hpp>
 #include <app/primary_secondary_color_swapper.hpp>
@@ -325,7 +301,22 @@ static void activate(GtkApplication* app, void*)
     state::main_window->set_child(main);
      */
 
-    state::main_window->set_child(palette_view);
+    // TODO
+
+    auto* box = new Box(GTK_ORIENTATION_VERTICAL);
+    for (size_t i = 0; i < 4; ++i)
+    {
+        auto* bubble = new InfoMessageBubble();
+        bubble->set_hide_after(seconds(3), seconds(0.5));
+        bubble->add_child(new Label("Test Message 0" + std::to_string(i)));
+        bubble->set_has_close_button(true);
+        bubble->set_message_type((InfoMessageType) i);
+        box->push_back(bubble);
+    }
+
+    // TODO
+
+    state::main_window->set_child(box);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

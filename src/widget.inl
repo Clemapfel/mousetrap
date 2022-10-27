@@ -193,6 +193,11 @@ namespace mousetrap
         gtk_widget_show(this->operator GtkWidget*());
     }
 
+    void Widget::hide()
+    {
+        gtk_widget_hide(this->operator GtkWidget*());
+    }
+
     void Widget::set_cursor(GtkCursorType cursor)
     {
         switch (cursor)
@@ -312,7 +317,8 @@ namespace mousetrap
 
     void Widget::unparent()
     {
-        gtk_widget_unparent(_native);
+        if (gtk_widget_get_parent(_native) != nullptr)
+            gtk_widget_unparent(_native);
     }
 
     void Widget::set_can_respond_to_input(bool b)
