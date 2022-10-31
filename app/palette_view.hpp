@@ -76,6 +76,7 @@ namespace mousetrap
                 public:
                     PaletteControlBar(PaletteView* owner);
                     operator Widget*();
+                    void update();
 
                 private:
                     PaletteView* _owner;
@@ -110,7 +111,7 @@ namespace mousetrap
 
             PaletteControlBar _palette_control_bar = PaletteControlBar(this);
 
-            size_t _previous_selected = 0;
+            size_t _selected_i = 0;
             static void on_flowbox_child_selected(FlowBox*, size_t child_i, PaletteView* instance);
 
             std::vector<ColorTile*> _color_tiles;
@@ -410,6 +411,12 @@ namespace mousetrap
         _main.push_back(&_palette_editing_active_toggle_button);
     }
 
+    void PaletteView::PaletteControlBar::update()
+    {
+        update_palette_locked();
+        update_tile_size_changed();
+    }
+
     // PALETTE VIEW
 
     PaletteView::operator Widget*()
@@ -419,9 +426,9 @@ namespace mousetrap
 
     void PaletteView::on_flowbox_child_selected(FlowBox* flowbox, size_t child_i, PaletteView* instance)
     {
-        instance->_color_tiles.at(instance->_previous_selected)->set_selected(false);
+        instance->_color_tiles.at(instance->_selected_i)->set_selected(false);
         instance->_color_tiles.at(child_i)->set_selected(true);
-        instance->_previous_selected = child_i;
+        instance->_selected_i = child_i;
 
         state::primary_color = instance->_color_tiles.at(child_i)->get_color();
         state::preview_color_current = state::primary_color;
@@ -538,8 +545,8 @@ namespace mousetrap
         _flow_box.set_selection_mode(GTK_SELECTION_SINGLE);
         _flow_box.connect_signal_child_activated(on_flowbox_child_selected, this);
 
-        _color_tiles.at(_previous_selected)->set_selected(true);
         _flow_box.unselect_all();
+        _color_tiles.at(_selected_i)->set_selected(true);
 
         _palette_control_bar.operator Widget *()->set_vexpand(false);
         _palette_view_box.set_vexpand(true);
@@ -548,6 +555,8 @@ namespace mousetrap
         _main.push_back(_palette_control_bar);
         _main.push_back(&_palette_view_box);
         _main.set_vexpand(true);
+
+        _palette_control_bar.update();
 
         // ACTION: load
 
@@ -656,16 +665,27 @@ namespace mousetrap
     void PaletteView::update()
     {
         auto color = state::primary_color;
-        _flow_box.unselect_all();
 
-        for (size_t i = 0; i < _color_tiles.size(); ++i)
+        _palette_control_bar.update();
+
+        if (not palette_locked)
         {
-            auto* tile = _color_tiles.at(i);
-            bool should_select = tile->get_color() == color;
-            tile->set_selected(should_select);
+            _flow_box.unselect_all();
+            bool once = true;
 
-            if (should_select)
-                _flow_box.select(i);
+            for (size_t i = 0; i < _color_tiles.size(); ++i)
+            {
+                auto* tile = _color_tiles.at(i);
+                bool should_select = tile->get_color() == color;
+                tile->set_selected(should_select);
+
+                if (should_select)
+                    _flow_box.select(i);
+            }
+
+            return;
         }
+
+        _color_tiles.at(_selected_i)->set_color(state::primary_color);
     }
 }

@@ -275,52 +275,24 @@ static void activate(GtkApplication* app, void*)
     add_spacer(main);
     main->push_back(left_center_paned);
 
-    // TODO
-
-    auto* action = new Action("test_action");
-    action->set_do_function([](){
-        std::cout << "test" << std::endl;
-    });
-    action->add_shortcut("<Alt>M");
-    action->add_shortcut("<Control>K");
-    state::app->add_action(*action);
-
-    auto* menu = new MenuModel();
-    auto* submenu = new MenuModel();
-    auto* menu_widget = new PopoverMenu(menu);
-    auto* menu_button = new MenuButton();
-    menu_button->set_popover(menu_widget);
-
-    submenu->add_action("test action", "test_action");
-    menu->add_submenu("test", submenu);
-    state::main_window->set_child(menu_button);
-
-    auto* shortcut_controller = new ShortcutController((ActionMap*) state::app);
-    shortcut_controller->add_action("test_action");
-    gtk_widget_add_controller(menu_widget->operator GtkWidget*(), GTK_EVENT_CONTROLLER(shortcut_controller->operator GtkEventController*()));
-
     state::main_window->set_child(main);
      */
 
-    // TODO
 
-    auto* box = new Box(GTK_ORIENTATION_VERTICAL);
-    auto* button = new Button();
-    button->set_vexpand(false);
-    box->push_back(button);
+    auto* scale = new Scale(1, 50, 1);
+    scale->connect_signal_value_changed([](Scale* scale, Canvas* instance){
+        instance->set_transform_scale(scale->get_value());
+    }, (Canvas*) state::canvas);
 
-    auto* bubble_area = new BubbleLogArea();
-    button->connect_signal_clicked([](Button*, BubbleLogArea* area){
-        std::string msg;
-        for (size_t i = 0; i < rand() / float(RAND_MAX) * 30; ++i)
-            msg.push_back('A');
-        area->send_message(msg, InfoMessageType::INFO);
-    }, bubble_area);
-    box->push_back(bubble_area->operator Widget *());
+    auto* canvas_box = new Box(GTK_ORIENTATION_VERTICAL);
+    canvas_box->push_back(canvas);
+    canvas_box->push_back(scale);
 
-    // TODO
+    scale->set_vexpand(false);
+    canvas->set_vexpand(true);
 
-    state::main_window->set_child(box);
+    state::main_window->set_child(canvas_box);
+
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);
