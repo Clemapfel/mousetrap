@@ -335,6 +335,48 @@ namespace mousetrap
         return out;
     }
 
+    template<>
+    HSVA ConfigFile::get_value_as(GroupKey group, KeyID key)
+    {
+        auto list = get_value_as<std::vector<float>>(group, key);
+        if (list.size() != 3 or list.size() != 4)
+        {
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<HSVA>: Unable to retrieve value for key `" << key << "` in group `" << group << ": Incorrect number of color components";
+            return HSVA(0, 0, 0, 0);
+        }
+
+        for (auto& e : list)
+            e = glm::clamp<float>(e, 0, 1);
+
+        return HSVA(
+            list.at(0),
+            list.at(1),
+            list.at(2),
+            list.size() == 3 ? 1 : list.at(3)
+        );
+    }
+
+    template<>
+    RGBA ConfigFile::get_value_as(GroupKey group, KeyID key)
+    {
+        auto list = get_value_as<std::vector<float>>(group, key);
+        if (list.size() != 3 or list.size() != 4)
+        {
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<RGBA>: Unable to retrieve value for key `" << key << "` in group `" << group << ": Incorrect number of color components";
+            return HSVA(0, 0, 0, 0);
+        }
+
+        for (auto& e : list)
+            e = glm::clamp<float>(e, 0, 1);
+
+        return RGBA(
+            list.at(0),
+            list.at(1),
+            list.at(2),
+            list.size() == 3 ? 1 : list.at(3)
+        );
+    }
+
     void ConfigFile::set_value(GroupKey group, KeyID key, const std::string& value)
     {
         g_key_file_set_value(_native, group.c_str(), key.c_str(), value.c_str());
@@ -398,5 +440,17 @@ namespace mousetrap
             to_add.push_back(static_cast<gdouble>(f));
 
         g_key_file_set_double_list(_native, group.c_str(), key.c_str(), to_add.data(), value.size());
+    }
+
+    template<>
+    void ConfigFile::set_value_as(GroupKey group, KeyID key, HSVA hsva)
+    {
+        set_value_as<std::vector<float>>(group, key, {hsva.h, hsva.s, hsva.v, hsva.a});
+    }
+
+    template<>
+    void ConfigFile::set_value_as(GroupKey group, KeyID key, RGBA rgba)
+    {
+        set_value_as<std::vector<float>>(group, key, {rgba.r, rgba.g, rgba.b, rgba.a});
     }
 }
