@@ -339,7 +339,7 @@ namespace mousetrap
     HSVA ConfigFile::get_value_as(GroupKey group, KeyID key)
     {
         auto list = get_value_as<std::vector<float>>(group, key);
-        if (list.size() != 3 or list.size() != 4)
+        if (not (list.size() != 3 or list.size() != 4))
         {
             std::cerr << "[ERROR] In ConfigFile::get_value_as<HSVA>: Unable to retrieve value for key `" << key << "` in group `" << group << ": Incorrect number of color components";
             return HSVA(0, 0, 0, 0);
@@ -360,7 +360,7 @@ namespace mousetrap
     RGBA ConfigFile::get_value_as(GroupKey group, KeyID key)
     {
         auto list = get_value_as<std::vector<float>>(group, key);
-        if (list.size() != 3 or list.size() != 4)
+        if (not (list.size() != 3 or list.size() != 4))
         {
             std::cerr << "[ERROR] In ConfigFile::get_value_as<RGBA>: Unable to retrieve value for key `" << key << "` in group `" << group << ": Incorrect number of color components";
             return HSVA(0, 0, 0, 0);
