@@ -71,6 +71,7 @@ namespace mousetrap
             instance->_v_lines.emplace_back(new Shape());
 
         instance->reformat();
+        instance->_area.clear_render_tasks();
 
         for (auto* shape : instance->_h_lines)
         {

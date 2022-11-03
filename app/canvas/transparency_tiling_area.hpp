@@ -45,6 +45,7 @@ namespace mousetrap
         instance->_subtract_left = new Shape();
 
         instance->reformat();
+        instance->_area.clear_render_tasks();
 
         auto task = RenderTask(instance->_shape, _shader, nullptr);
         task.register_vec2("_canvas_size", instance->_canvas_size);
