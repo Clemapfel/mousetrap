@@ -279,7 +279,7 @@ static void activate(GtkApplication* app, void*)
      */
 
 
-    auto* scale = new Scale(1, 50, 1);
+    auto* scale = new Scale(1, 100, 1);
     scale->connect_signal_value_changed([](Scale* scale, Canvas* instance){
         instance->set_transform_scale(scale->get_value());
     }, (Canvas*) state::canvas);
