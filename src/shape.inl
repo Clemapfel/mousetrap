@@ -289,6 +289,33 @@ namespace mousetrap
         initialize();
     }
 
+    void Shape::as_ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices)
+    {
+        const float step = 360.f / n_outer_vertices;
+
+        _vertices.clear();
+        _vertices.push_back(Vertex(center.x, center.y, _color));
+
+        for (float angle = 0; angle < 360; angle += step)
+        {
+            auto as_radians = angle * M_PI / 180.f;
+            _vertices.emplace_back(
+                center.x + cos(as_radians) * x_radius,
+                center.y + sin(as_radians) * y_radius,
+                _color
+            );
+        }
+
+        _indices.clear();
+        for (size_t i = 0; i < _vertices.size(); ++i)
+            _indices.push_back(i);
+
+        _indices.push_back(1);
+
+        _render_type = GL_TRIANGLE_FAN;
+        initialize();
+    }
+
     void Shape::as_line_strip(std::vector<Vector2f> positions)
     {
         _vertices.clear();

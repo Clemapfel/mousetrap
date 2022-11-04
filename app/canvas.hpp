@@ -170,9 +170,9 @@ namespace mousetrap
                     operator Widget*();
 
                 private:
-                    float _margin = state::margin_unit; // in px
-                    Vector2f _centroid = Vector2f(0.5, 0.5);
-                    Vector2f _size = Vector2f(0.75, 0.75);
+                    float _margin = state::margin_unit * 2; // in px
+                    Vector2f _centroid = Vector2f(0.5, 0.5); // in gl coords
+                    Vector2f _size = Vector2f(0.3, 0.7); // in gl coords
                     bool _initialized = false;
 
                     void reformat();
@@ -186,7 +186,7 @@ namespace mousetrap
                     Shape* _circle;
             };
 
-            ShapeToolLayer* _shape_tool_layer;
+            ShapeToolLayer _shape_tool_layer = ShapeToolLayer(this);
 
             // main
             Overlay _render_area_overlay;
@@ -237,7 +237,7 @@ namespace mousetrap
             delete s;
         delete instance->_circle;
 
-        _edges.clear();
+        instance->_edges.clear();
 
         instance->_initialized = false;
         instance->reformat();
@@ -256,7 +256,10 @@ namespace mousetrap
     {
         auto x = _centroid.x - _size.x;
         auto y = _centroid.y - _size.y;
-        auto m = _margin;
+        auto xm = _margin / _canvas_size->x;
+        auto ym = _margin / _canvas_size->y;
+        auto ixm = 1 * xm;
+        auto iym = 1 * ym;
         auto w = _size.x;
         auto h = _size.y;
 
@@ -272,56 +275,86 @@ namespace mousetrap
                 out = _edges.at(count);
 
             count += 1;
+
+            Vector2f a = {a_x, a_y};
+            a *= *_canvas_size;
+            a.x = round(a.x);
+            a.y = round(a.y);
+            a /= *_canvas_size;
+
+            Vector2f b = {b_x, b_y};
+            b *= *_canvas_size;
+            b.x = round(b.x);
+            b.y = round(b.y);
+            b /= *_canvas_size;
+
             out->as_line(Vector2f(a_x, a_y), Vector2f(b_x, b_y));
         };
 
         // center cross
-
         auto c = Vector2f(x + 0.5 * w, y + 0.5 * h);
 
-        add(c.x, c.y, c.x + 0, c.y - m);
-        add(c.x, c.y, c.x + m, c.y + 0);
-        add(c.x, c.y, c.x + 0, c.y - m);
-        add(c.x, c.y, c.x - m, c.y + 0);
+        add(c.x, c.y, c.x + 0, c.y - iym);
+        add(c.x, c.y, c.x + ixm, c.y + 0);
+        add(c.x, c.y, c.x + 0, c.y + iym);
+        add(c.x, c.y, c.x - ixm, c.y + 0);
 
         // top left square
-        add(x, y, x + m, y);
-        add(x + m, y, x + m, y + m);
-        add(x + m, y + m, x, y + m);
-        add(x, y + m, x, y);
+        add(x, y, x + xm, y);
+        add(x + xm, y, x + xm, y + ym);
+        add(x + xm, y + ym, x, y + ym);
+        add(x, y + ym, x, y);
 
         // top right square
-        add(x + w - m, y, x + w, y);
-        add(x + w, y, x + w, y + m);
-        add(x + w, y + m, x + w - m, y + m);
-        add(x + w - m, y + m, x + w - m, y);
+        add(x + w - xm, y, x + w, y);
+        add(x + w, y, x + w, y + ym);
+        add(x + w, y + ym, x + w - xm, y + ym);
+        add(x + w - xm, y + ym, x + w - xm, y);
 
         // bottom right square
-        add(x + w - m, y + h - m, x + w, y + h - m);
-        add(x + w, y + h - m, x + w, y + h);
-        add(x + w, y + h, x + w - m, y + h);
-        add(x + w - m, y + h, x + w - m, y + h - m);
+        add(x + w - xm, y + h - ym, x + w, y + h - ym);
+        add(x + w, y + h - ym, x + w, y + h);
+        add(x + w, y + h, x + w - xm, y + h);
+        add(x + w - xm, y + h, x + w - xm, y + h - ym);
 
         // bottom left square
-        add(x, y + h - m, x + m, y + h - m);
-        add(x + m, y + h - m, y + m, y + h);
-        add(x + m, y + h, x, y + h);
-        add(x, y + h, x, y + h - m);
+        add(x, y + h - ym, x + xm, y + h - ym);
+        add(x + xm, y + h - ym, x + xm, y + h);
+        add(x + xm, y + h, x, y + h);
+        add(x, y + h, x, y + h - ym);
 
         // outline
-        add(x + m, y, x + w - m, y);
-        add(x + w, y + m, x + w, y + h - m);
-        add(x + w - m, y + h, x + m, y + h);
-        add(x, y + h - m, x, y + m);
+        add(x + xm, y, x + w - xm, y);
+        add(x + w, y + ym, x + w, y + h - ym);
+        add(x + w - xm, y + h, x + xm, y + h);
+        add(x, y + h - ym, x, y + ym);
 
         // half margin outline
-        add(x + m, y + 0.5 * m, x + w - m, y + 0.5 * m);
-        add(x + w - 0.5 * m, y + m, x + w - 0.5 * m, y + h - m);
-        add(x + w - m, y + h - 0.5 * m, x + m, y + h - 0.5 * m);
-        add(x + 0.5 * m, y + h - m, x + 0.5 * m, y + m);
+        add(x + xm, y + iym, x + w - xm, y + iym);
+        add(x + w - ixm, y + ym, x + w - ixm, y + h - ym);
+        add(x + w - xm, y + h - iym, x + xm, y + h - iym);
+        add(x + ixm, y + h - ym, x + ixm, y + ym);
 
-        // circlefir
-        _circle->as_ellipse(c, w, h, 32);
+        for (auto* s : _edges)
+            s->set_color(RGBA(1, 0, 1, 1));
+
+        // circle
+        if (not _initialized)
+            _circle = new Shape();
+
+        std::vector<Vector2f> ellipse_points;
+
+        const float step = 360.f / 64;
+        for (float angle = 0; angle < 360; angle += step)
+        {
+            auto as_radians = angle * M_PI / 180.f;
+            ellipse_points.emplace_back(
+                c.x + cos(as_radians) * _size.x * 0.5,
+                c.y + sin(as_radians) * _size.y * 0.5
+            );
+        }
+
+        _circle->as_wireframe(ellipse_points);
     }
 
     // CANVAS
@@ -332,6 +365,7 @@ namespace mousetrap
         _render_area_overlay.add_overlay(_layers_layer);
         _render_area_overlay.add_overlay(_grid_layer);
         _render_area_overlay.add_overlay(_pixel_highlight_layer);
+        _render_area_overlay.add_overlay(_shape_tool_layer);
 
         _grid_layer.operator Widget*()->set_visible(_grid_visible);
 

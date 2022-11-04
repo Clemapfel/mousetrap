@@ -12,7 +12,6 @@ namespace mousetrap
         _area.connect_signal_resize(on_resize, this);
 
         _motion_controller.connect_signal_motion(on_motion, this);
-        _area.add_controller(&_motion_controller);
     }
 
     Canvas::PixelHighlightLayer::operator Widget*()
