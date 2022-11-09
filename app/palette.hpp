@@ -16,6 +16,8 @@ namespace mousetrap
 {
     class Palette
     {
+        static inline const float truncate_float_after = 10e4;
+
         public:
             Palette() = default;
             Palette(const std::vector<HSVA>&);
@@ -112,6 +114,12 @@ namespace mousetrap
                 }
             }
 
+            static const float factor = truncate_float_after;
+            h = float(int(h * factor)) / factor;
+            s = float(int(s * factor)) / factor;
+            v = float(int(v * factor)) / factor;
+            a = float(int(a * factor)) / factor;
+
             _colors.insert({key_index, HSVA(h, s, v, a)});
             key_index += 1;
         }
@@ -132,7 +140,19 @@ namespace mousetrap
         for (auto& pair : _colors)
         {
             auto& color = pair.second;
-            std::vector<float> list = {color.h, color.s, color.v, color.a};
+
+            auto h = color.h;
+            auto s = color.s;
+            auto v = color.v;
+            auto a = color.a;
+
+            static const float factor = truncate_float_after;
+            h = float(int(h * factor)) / factor;
+            s = float(int(s * factor)) / factor;
+            v = float(int(v * factor)) / factor;
+            a = float(int(a * factor)) / factor;
+
+            std::vector<float> list = {h, v, s, a};
             file.set_value_as<std::vector<float>>("palette", std::to_string(pair.first), list);
         }
 

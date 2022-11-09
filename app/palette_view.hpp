@@ -97,7 +97,7 @@ namespace mousetrap
                     static void on_palette_locked_switch_state_set(Switch*, bool, PaletteControlBar* instance);
 
                     Box _tile_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
-                    Label _tile_size_label = Label("Tile Size: ");
+                    Label _tile_size_label = Label("Tile Size (px): ");
                     SeparatorLine _tile_size_spacer;
                     SpinButton _tile_size_scale = SpinButton(2, 512, 1);
                     static void on_tile_size_scale_value_changed(SpinButton*, PaletteControlBar* instance);
@@ -113,10 +113,10 @@ namespace mousetrap
             PaletteControlBar _palette_control_bar = PaletteControlBar(this);
 
             size_t _selected_i = 0;
-            static void on_flowbox_child_selected(FlowBox*, size_t child_i, PaletteView* instance);
+            static void on_color_tile_view_selection_model_selection_changed(SelectionModel*, size_t child_i, size_t n_items, PaletteView* instance);
 
             std::vector<ColorTile*> _color_tiles;
-            FlowBox _flow_box = FlowBox(GTK_ORIENTATION_HORIZONTAL);
+            GridView _color_tile_view = GridView(GTK_SELECTION_SINGLE);
             ScrolledWindow _scrolled_window;
 
             Box _palette_view_box = Box(GTK_ORIENTATION_HORIZONTAL);
@@ -197,6 +197,8 @@ namespace mousetrap
 
     void PaletteView::ColorTile::set_size(size_t size)
     {
+        _color_area.set_size_request({size, size});
+        _selection_frame_area.set_size_request({size, size});
         _aspect_frame.set_size_request({size, size});
     }
 
@@ -423,7 +425,7 @@ namespace mousetrap
         return &_main;
     }
 
-    void PaletteView::on_flowbox_child_selected(FlowBox* flowbox, size_t child_i, PaletteView* instance)
+    void PaletteView::on_color_tile_view_selection_model_selection_changed(SelectionModel*, size_t child_i, size_t n_items, PaletteView* instance)
     {
         instance->_color_tiles.at(instance->_selected_i)->set_selected(false);
         instance->_color_tiles.at(child_i)->set_selected(true);
@@ -462,16 +464,14 @@ namespace mousetrap
 
     void PaletteView::load_from_file(const std::string& path)
     {
-        _flow_box.unparent();
-
         palette.load_from(path);
         update_from_palette();
-
-        _scrolled_window.set_child(&_flow_box);
     }
 
     void PaletteView::save_to_file(const std::string& path)
-    {}
+    {
+        palette.save_to(path);
+    }
 
     void PaletteView::on_load_ok_pressed()
     {
@@ -485,29 +485,25 @@ namespace mousetrap
 
     void PaletteView::on_save_as_ok_pressed()
     {
-        auto selected = _on_save_as_file_chooser.get_selected();
-        if (selected.empty())
+        auto title = _on_save_as_file_chooser.get_current_name();
+        auto folder = _on_save_as_file_chooser.get_current_folder();
+
+        if (title.empty())
             return;
 
-        save_to_file(selected.at(0).get_path());
+        save_to_file(folder.get_path() + title);
         _on_save_as_file_chooser_dialog.close();
     }
 
     void PaletteView::update_from_palette()
     {
-        _flow_box.clear();
+        _color_tile_view.clear();
 
         for (auto* tile : _color_tiles)
-        {
             tile->set_color(HSVA(0, 0, 0, 1));
-            tile->operator Widget*()->set_visible(false);
-        }
 
         for (size_t i = 0; palette.get_n_colors() > _color_tiles.size() and i < palette.get_n_colors() - _color_tiles.size(); ++i)
-        {
-            _color_tiles.emplace_back(new ColorTile(this, HSVA(0, 0, 0, 0)));
-            _color_tiles.back()->operator Widget*()->set_visible(false);
-        }
+            _color_tiles.emplace_back(new ColorTile(this, HSVA(0, 0, 0, 1)));
 
         std::vector<HSVA> colors;
         if (sort_mode == PaletteSortMode::NONE)
@@ -521,29 +517,26 @@ namespace mousetrap
 
         for (size_t i = 0; i < colors.size(); ++i)
         {
-            _color_tiles.at(i)->set_color(colors.at(i));
-            _color_tiles.at(i)->operator Widget*()->set_visible(true);
-            _flow_box.push_back(_color_tiles.at(i)->operator Widget*());
+            auto color = colors.at(i);
+            color.a = 1;
+            _color_tiles.at(i)->set_color(color);
+            _color_tile_view.push_back(_color_tiles.at(i)->operator Widget*());
         }
 
         if (colors.size() == 0)
         {
             _color_tiles.at(0)->set_color(HSVA(0, 0, 0, 1));
-            _color_tiles.at(0)->operator Widget*()->set_visible(true);
-            _flow_box.push_back(_color_tiles.at(0)->operator Widget*());
+            _color_tile_view.push_back(_color_tiles.at(0)->operator Widget*());
         }
     }
 
     PaletteView::PaletteView()
     {
-        for (size_t i = 0; i < 256; ++i)
-        {
+        for (size_t i = 0; i < 256; ++i) // pre allocate to reduce load time
             _color_tiles.emplace_back(new ColorTile(this, HSVA(0, 0, 0, 0)));
-            _color_tiles.back()->operator Widget*()->set_visible(false);
-        }
 
         for (auto* tile : _color_tiles)
-            _flow_box.push_back(tile->operator Widget*());
+            _color_tile_view.push_back(tile->operator Widget*());
 
         auto path = state::settings_file->get_value_as<std::string>("palette_view", "default_palette");
         if (path == "DEBUG")
@@ -553,17 +546,16 @@ namespace mousetrap
 
         update_from_palette();
 
-        _scrolled_window.set_child(&_flow_box);
+        _scrolled_window.set_child(&_color_tile_view);
         _scrolled_window.set_policy(GTK_POLICY_NEVER, GTK_POLICY_EXTERNAL);
         _palette_view_box.push_back(&_scrolled_window);
 
         _scrolled_window.set_hexpand(true);
         _palette_view_box.set_hexpand(true);
 
-        _flow_box.set_selection_mode(GTK_SELECTION_SINGLE);
-        _flow_box.connect_signal_child_activated(on_flowbox_child_selected, this);
+        _color_tile_view.get_selection_model()->connect_signal_selection_changed(on_color_tile_view_selection_model_selection_changed, this);
+        _color_tile_view.get_selection_model()->unselect_all();
 
-        _flow_box.unselect_all();
         _color_tiles.at(_selected_i)->set_selected(true);
 
         _palette_control_bar.operator Widget *()->set_vexpand(false);
@@ -579,7 +571,7 @@ namespace mousetrap
         // ACTION: load
 
         auto on_load_filter = FileFilter("Mousetrap Palette File");
-        on_load_filter.add_allowed_suffix(".palette");
+        on_load_filter.add_allowed_suffix("palette");
         _on_load_file_chooser.add_filter(on_load_filter);
         _on_load_file_chooser.set_can_select_multiple(false);
         _on_load_file_chooser.set_expand(true);
@@ -638,7 +630,7 @@ namespace mousetrap
             std::cout << "[TODO] Loading default palette..." << std::endl;
         }, this);
 
-        _on_load_default_action.set_do_function([](PaletteView* instance) {
+        _on_load_default_action.set_undo_function([](PaletteView* instance) {
             std::cout << "[TODO] Undoing loading default palette..." << std::endl;
         }, this);
 
@@ -647,7 +639,6 @@ namespace mousetrap
         // Action: Save As Default
 
         _on_save_as_default_action.set_do_function([](PaletteView* isntance){
-            std::cout << "[TODO] Saving as default palette..." << std::endl;
         }, this);
 
         _on_save_as_default_action.set_undo_function([](PaletteView* isntance){
@@ -690,7 +681,7 @@ namespace mousetrap
 
         if (palette_locked)
         {
-            _flow_box.unselect_all();
+            _color_tile_view.get_selection_model()->unselect_all();
             bool once = true;
 
             for (size_t i = 0; i < _color_tiles.size(); ++i)
@@ -700,7 +691,7 @@ namespace mousetrap
                 tile->set_selected(should_select);
 
                 if (should_select)
-                    _flow_box.select(i);
+                    _color_tile_view.get_selection_model()->select(i);
             }
 
             return;

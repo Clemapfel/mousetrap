@@ -25,6 +25,8 @@ namespace mousetrap
 
             void add_allowed_pattern(const std::string& glob);
             void add_allow_all_supported_image_formats();
+
+            /// \brief no "." in suffix
             void add_allowed_suffix(const std::string& suffix);
             void add_allowed_mime_type(const std::string& mime_type_id);
 

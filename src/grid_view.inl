@@ -121,6 +121,11 @@ namespace mousetrap
         g_list_store_insert(G_LIST_STORE(_list_store), i, item);
     }
 
+    void GridView::clear()
+    {
+        g_list_store_remove_all(_list_store);
+    }
+
     void GridView::remove(Widget* widget)
     {
         size_t i = 0;

@@ -106,7 +106,6 @@ static void activate(GtkApplication* app, void*)
     auto* brush_options = state::brush_options->operator Widget*();
     auto* color_preview = state::color_preview->operator Widget*();
 
-    /*
     layer_view->set_valign(GTK_ALIGN_END);
 
     color_picker->set_margin_start(state::margin_unit);
@@ -274,9 +273,8 @@ static void activate(GtkApplication* app, void*)
     auto* main = new Box(GTK_ORIENTATION_VERTICAL);
     add_spacer(main);
     main->push_back(left_center_paned);
-    */
 
-    state::main_window->set_child(palette_view);
+    state::main_window->set_child(main);
 
     state::main_window->show();
     state::main_window->present();

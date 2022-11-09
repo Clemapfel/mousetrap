@@ -19,6 +19,8 @@ namespace mousetrap
             void push_back(Widget*);
             void insert(Widget*, size_t);
 
+            void clear();
+
             void remove(Widget*);
             size_t get_n_items() const;
 
