@@ -10,6 +10,7 @@
 #include <app/app_component.hpp>
 #include <app/palette.hpp>
 #include <app/global_state.hpp>
+#include <app/bubble_log_area.hpp>
 
 namespace mousetrap
 {
@@ -470,7 +471,10 @@ namespace mousetrap
 
     void PaletteView::save_to_file(const std::string& path)
     {
-        palette.save_to(path);
+        if (palette.save_to(path))
+            ((BubbleLogArea*) state::bubble_log)->send_message("Saved current palette as \"" + path + "\"");
+        else
+            ((BubbleLogArea*) state::bubble_log)->send_message("Unable to save palette as \"" + path + "\"", InfoMessageType::ERROR);
     }
 
     void PaletteView::on_load_ok_pressed()
@@ -479,7 +483,8 @@ namespace mousetrap
         if (selected.empty())
             return;
 
-        load_from_file(selected.at(0).get_path());
+        auto path = selected.at(0).get_path();
+        load_from_file(path);
         _on_load_file_chooser_dialog.close();
     }
 
@@ -491,7 +496,8 @@ namespace mousetrap
         if (title.empty())
             return;
 
-        save_to_file(folder.get_path() + title);
+        auto path = folder.get_path() + "/" + title;
+        save_to_file(path);
         _on_save_as_file_chooser_dialog.close();
     }
 
@@ -639,6 +645,7 @@ namespace mousetrap
         // Action: Save As Default
 
         _on_save_as_default_action.set_do_function([](PaletteView* isntance){
+            std::cout << "[TODO] Saving as default palette..." << std::endl;
         }, this);
 
         _on_save_as_default_action.set_undo_function([](PaletteView* isntance){

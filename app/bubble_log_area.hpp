@@ -18,6 +18,8 @@ namespace mousetrap
             void update() override {};
 
             void send_message(const std::string&, InfoMessageType type = InfoMessageType::INFO);
+            void set_has_close_button(bool);
+            void set_bubble_reveal_transition_type(TransitionType);
 
         private:
             struct Message
@@ -28,6 +30,9 @@ namespace mousetrap
                 Time elapsed = seconds(0);
                 int previous_timestamp = 0;
             };
+
+            bool _has_close_button = true;
+            TransitionType _transition_type = TransitionType::SLIDE_RIGHT_TO_LEFT;
 
             static inline bool _suppress_info = false;
             static inline bool _suppress_warning = false;
@@ -55,6 +60,16 @@ namespace mousetrap
 
 namespace mousetrap
 {
+    void BubbleLogArea::set_has_close_button(bool b)
+    {
+        _has_close_button = b;
+    }
+
+    void BubbleLogArea::set_bubble_reveal_transition_type(TransitionType type)
+    {
+        _transition_type = type;
+    }
+
     BubbleLogArea::BubbleLogArea()
     {
         _scrolled_window.set_policy(GTK_POLICY_NEVER, GTK_POLICY_EXTERNAL);
@@ -129,7 +144,7 @@ namespace mousetrap
 
         auto id = _current_id++;
         auto& message = _messages.insert({id, new Message{
-            Revealer(TransitionType::SLIDE_BOTTOM_TO_TOP),
+            Revealer(_transition_type),
             InfoMessage()
         }}).first->second;
 
@@ -137,7 +152,7 @@ namespace mousetrap
         message->revealer.set_revealed(false);
         message->message.add_child(new Label(text));
         message->message.set_message_type(type);
-        message->message.set_has_close_button(true);
+        message->message.set_has_close_button(_has_close_button);
         message->message.set_valign(GTK_ALIGN_END);
         message->message.set_vexpand(false);
         message->message.set_halign(GTK_ALIGN_END);

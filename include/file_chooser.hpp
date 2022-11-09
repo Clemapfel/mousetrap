@@ -12,8 +12,7 @@ namespace mousetrap
 {
     enum class FileChooserAction
     {
-        OPEN = GTK_FILE_CHOOSER_ACTION_OPEN,
-        SAVE = GTK_FILE_CHOOSER_ACTION_SAVE,
+        SELECT_FILE = GTK_FILE_CHOOSER_ACTION_OPEN,
         SELECT_FOLDER = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER
     };
 

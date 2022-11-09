@@ -25,8 +25,8 @@ namespace mousetrap
             void set_name(const std::string& name);
             std::string get_name();
 
-            void load_from(const std::string& file);
-            void save_to(const std::string& file);
+            bool load_from(const std::string& file);
+            bool save_to(const std::string& file);
 
             size_t get_n_colors();
             std::vector<HSVA> get_colors();
@@ -67,7 +67,7 @@ namespace mousetrap
         return _colors.size();
     }
 
-    void Palette::load_from(const std::string& path)
+    bool Palette::load_from(const std::string& path)
     {
         auto file = ConfigFile();
         _colors.clear();
@@ -124,17 +124,19 @@ namespace mousetrap
             key_index += 1;
         }
 
-        return;
+        return true;
 
         abort:
         {
             std::cerr << "[ERROR] In Palette::load_from: Unable to load palette file from `" << path << "`: " <<  error_reason << std::endl;
             if (_colors.empty())
                 _colors.insert({0, HSVA(0, 0, 0, 1)});
+
+            return false;
         }
     }
 
-    void Palette::save_to(const std::string& path)
+    bool Palette::save_to(const std::string& path)
     {
         auto file = ConfigFile();
         for (auto& pair : _colors)
@@ -157,7 +159,7 @@ namespace mousetrap
         }
 
         file.add_comment_above("palette", "mousetrap palette file\n format: index=hue;saturation;value[;alpha] (index in {0, 1, 2, ...}, components in [0, 1])\n generated " + std::string(g_date_time_format_iso8601(g_date_time_new_now(g_time_zone_new_local()))));
-        file.save_to_file(path);
+        return file.save_to_file(path);
     }
 
     std::vector<HSVA> Palette::get_colors()

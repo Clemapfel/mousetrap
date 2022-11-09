@@ -95,6 +95,7 @@ static void activate(GtkApplication* app, void*)
     state::verbose_color_picker = new VerboseColorPicker();
     state::canvas = new Canvas();
     state::color_preview = new ColorPreview();
+    state::bubble_log = new BubbleLogArea();
 
     auto* layer_view = state::layer_view->operator Widget*();
     auto* palette_view = state::palette_view->operator Widget*();
@@ -105,6 +106,7 @@ static void activate(GtkApplication* app, void*)
     auto* toolbox = state::toolbox->operator Widget*();
     auto* brush_options = state::brush_options->operator Widget*();
     auto* color_preview = state::color_preview->operator Widget*();
+    auto* bubble_log = state::bubble_log->operator Widget*();
 
     layer_view->set_valign(GTK_ALIGN_END);
 
@@ -270,9 +272,18 @@ static void activate(GtkApplication* app, void*)
     center_column->push_back(canvas);
     center_column->set_homogeneous(false);
 
-    auto* main = new Box(GTK_ORIENTATION_VERTICAL);
-    add_spacer(main);
-    main->push_back(left_center_paned);
+    auto* all_columns = new Box(GTK_ORIENTATION_VERTICAL);
+    add_spacer(all_columns);
+    all_columns->push_back(left_center_paned);
+
+    bubble_log->set_margin(2 * state::margin_unit);
+    bubble_log->set_hexpand(false);
+    bubble_log->set_vexpand(true);
+    bubble_log->set_halign(GTK_ALIGN_END);
+
+    auto* main = new Overlay();
+    main->set_child(all_columns);
+    main->add_overlay(bubble_log);
 
     state::main_window->set_child(main);
 

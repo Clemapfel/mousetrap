@@ -110,7 +110,7 @@ namespace mousetrap::state
 
     // ### SYSTEM ######################################
 
-
+    AppComponent* bubble_log;
 
     // ### FORMATING ###################################
 
