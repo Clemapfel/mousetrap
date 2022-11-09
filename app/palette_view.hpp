@@ -1,4 +1,4 @@
-// 
+//
 // Copyright 2022 Clemens Cords
 // Created on 10/17/22 by clem (mail@clemens-cords.com)
 //
@@ -126,7 +126,7 @@ namespace mousetrap
 
             Action _on_load_action = Action("palette_view.load");
             Window _on_load_file_chooser_dialog_window;
-            Dialog _on_load_file_chooser_dialog = Dialog(&_on_load_file_chooser_dialog_window, "Load Palette...");        
+            Dialog _on_load_file_chooser_dialog = Dialog(&_on_load_file_chooser_dialog_window, "Load Palette...");
             Box _on_load_file_chooser_dialog_box = Box(GTK_ORIENTATION_VERTICAL);
             FileChooser _on_load_file_chooser = FileChooser(FileChooserAction::OPEN);
             void on_load_ok_pressed();
@@ -366,17 +366,17 @@ namespace mousetrap
         }
 
         auto* settings_section = new MenuModel();
-        
+
         auto* tile_size_submenu = new MenuModel();
         tile_size_submenu->add_widget(&_tile_size_box);
-        
+
         auto* palette_locked_submenu = new MenuModel();
         palette_locked_submenu->add_widget(&_palette_locked_box);
-        
+
         settings_section->add_submenu("Tile Size...", tile_size_submenu);
         settings_section->add_submenu("Editing...", palette_locked_submenu);
         _menu.add_section("Setting", settings_section);
-       
+
         auto* load_save_submenu = new MenuModel();
         load_save_submenu->add_action("Load...", "palette_view.load");
         load_save_submenu->add_action("Load Default", "palette_view.load_default");
@@ -384,7 +384,7 @@ namespace mousetrap
         load_save_submenu->add_action("Save As...", "palette_view.save_as");
         load_save_submenu->add_action("Save As Default", "palette_view.save_as_default");
         _menu.add_section("Load / Save", load_save_submenu);
-        
+
         auto* sort_by_section = new MenuModel();
         auto* sort_by_submenu = new MenuModel();
         sort_by_submenu->add_action("None", "palette_view.sort_by_default");
@@ -457,12 +457,17 @@ namespace mousetrap
             colors.push_back(HSVA(0, 0, i / float(n_steps), 1));
 
         palette = Palette(colors);
+        update_from_palette();
     }
 
     void PaletteView::load_from_file(const std::string& path)
     {
+        _flow_box.unparent();
+
         palette.load_from(path);
         update_from_palette();
+
+        _scrolled_window.set_child(&_flow_box);
     }
 
     void PaletteView::save_to_file(const std::string& path)
@@ -490,58 +495,57 @@ namespace mousetrap
 
     void PaletteView::update_from_palette()
     {
-        auto clock = Clock();
-        clock.restart();
-
-        _flow_box.set_visible(false);
+        _flow_box.clear();
 
         for (auto* tile : _color_tiles)
         {
-            _flow_box.remove(*tile);
-            delete tile;
+            tile->set_color(HSVA(0, 0, 0, 1));
+            tile->operator Widget*()->set_visible(false);
         }
 
-        _color_tiles.clear();
+        for (size_t i = 0; palette.get_n_colors() > _color_tiles.size() and i < palette.get_n_colors() - _color_tiles.size(); ++i)
+        {
+            _color_tiles.emplace_back(new ColorTile(this, HSVA(0, 0, 0, 0)));
+            _color_tiles.back()->operator Widget*()->set_visible(false);
+        }
 
+        std::vector<HSVA> colors;
         if (sort_mode == PaletteSortMode::NONE)
-        {
-            for (auto& color : palette.get_colors())
-                _color_tiles.emplace_back(new ColorTile(this, color));
-        }
+            colors = palette.get_colors();
         else if (sort_mode == PaletteSortMode::BY_HUE)
-        {
-            for (auto& color : palette.get_colors_by_hue())
-                _color_tiles.emplace_back(new ColorTile(this, color));
-        }
+            colors = palette.get_colors_by_hue();
         else if (sort_mode == PaletteSortMode::BY_VALUE)
-        {
-            for (auto& color : palette.get_colors_by_value())
-                _color_tiles.emplace_back(new ColorTile(this, color));
-        }
+            colors = palette.get_colors_by_value();
         else if (sort_mode == PaletteSortMode::BY_SATURATION)
+            colors = palette.get_colors_by_saturation();
+
+        for (size_t i = 0; i < colors.size(); ++i)
         {
-            for (auto& color : palette.get_colors_by_saturation())
-                _color_tiles.emplace_back(new ColorTile(this, color));
+            _color_tiles.at(i)->set_color(colors.at(i));
+            _color_tiles.at(i)->operator Widget*()->set_visible(true);
+            _flow_box.push_back(_color_tiles.at(i)->operator Widget*());
         }
 
-        if (_color_tiles.empty())
-            _color_tiles.emplace_back(new ColorTile(this, HSVA(0, 0, 0, 1)));
-
-        for (auto* tile : _color_tiles)
-            _flow_box.push_back(tile->operator Widget*());
-
-        _flow_box.set_visible(true);
-
-        std::cout << clock.elapsed().as_seconds() << std::endl;
+        if (colors.size() == 0)
+        {
+            _color_tiles.at(0)->set_color(HSVA(0, 0, 0, 1));
+            _color_tiles.at(0)->operator Widget*()->set_visible(true);
+            _flow_box.push_back(_color_tiles.at(0)->operator Widget*());
+        }
     }
 
     PaletteView::PaletteView()
     {
+        for (size_t i = 0; i < 256; ++i)
+        {
+            _color_tiles.emplace_back(new ColorTile(this, HSVA(0, 0, 0, 0)));
+            _color_tiles.back()->operator Widget*()->set_visible(false);
+        }
+
         for (auto* tile : _color_tiles)
             _flow_box.push_back(tile->operator Widget*());
 
         auto path = state::settings_file->get_value_as<std::string>("palette_view", "default_palette");
-
         if (path == "DEBUG")
             load_as_debug();
         else
@@ -590,7 +594,7 @@ namespace mousetrap
         _on_load_file_chooser_dialog.add_action_button("Cancel", [](PaletteView* instance){
             instance->_on_load_file_chooser_dialog.close();
         }, this);
-        
+
         _on_load_action.set_do_function([](PaletteView* instance){
             instance->_on_load_file_chooser_dialog.show();
         }, this);

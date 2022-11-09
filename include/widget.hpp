@@ -82,6 +82,8 @@ namespace mousetrap
             void set_tooltip_title(const std::string&);
             void set_tooltip_description(const std::string&);
 
+            void beep();
+
         protected:
             Widget() = delete;
 

@@ -274,8 +274,6 @@ static void activate(GtkApplication* app, void*)
     auto* main = new Box(GTK_ORIENTATION_VERTICAL);
     add_spacer(main);
     main->push_back(left_center_paned);
-
-    state::main_window->set_child(main);
     */
 
     state::main_window->set_child(palette_view);

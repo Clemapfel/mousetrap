@@ -338,6 +338,12 @@ namespace mousetrap
         generate_tooltip();
     }
 
+    void Widget::beep()
+    {
+        if (gtk_widget_get_parent(_native) != nullptr)
+            gtk_widget_error_bell(_native);
+    }
+
     void Widget::generate_tooltip()
     {
         std::stringstream str;

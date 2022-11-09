@@ -26,6 +26,7 @@ namespace mousetrap
             void load_from(const std::string& file);
             void save_to(const std::string& file);
 
+            size_t get_n_colors();
             std::vector<HSVA> get_colors();
             std::vector<HSVA> get_colors_by_hue();
             std::vector<HSVA> get_colors_by_value();
@@ -57,6 +58,11 @@ namespace mousetrap
     std::string Palette::get_name()
     {
         return _name;
+    }
+
+    size_t Palette::get_n_colors()
+    {
+        return _colors.size();
     }
 
     void Palette::load_from(const std::string& path)
