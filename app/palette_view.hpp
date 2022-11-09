@@ -32,6 +32,8 @@ namespace mousetrap
             void load_from_file(const std::string& path);
             void load_as_debug();
 
+            void save_to_file(const std::string& path);
+
         private:
             bool palette_locked = state::settings_file->get_value_as<bool>("palette_view", "palette_locked");
             float tile_size = state::settings_file->get_value_as<float>("palette_view", "tile_size");
@@ -85,8 +87,8 @@ namespace mousetrap
 
                     ImageDisplay _palette_locked_icon = ImageDisplay(get_resource_path() + "icons/palette_locked.png");
                     ImageDisplay _palette_not_locked_icon = ImageDisplay(get_resource_path() + "icons/palette_not_locked.png");
-                    ToggleButton _palette_editing_active_toggle_button;
-                    static void on_palette_locked_button_toggled(ToggleButton*, PaletteControlBar* instance);
+                    ToggleButton _palette_not_locked_button;
+                    static void on_palette_not_locked_button_toggled(ToggleButton*, PaletteControlBar* instance);
 
                     Box _palette_locked_box = Box(GTK_ORIENTATION_HORIZONTAL);
                     Label _palette_locked_label = Label("Palette Editing Enabled: ");
@@ -105,7 +107,6 @@ namespace mousetrap
 
                     Label _menu_button_label = Label("Palette");
                     MenuButton _menu_button;
-                    
                     MenuModel _menu;
             };
 
@@ -191,7 +192,6 @@ namespace mousetrap
         std::stringstream tooltip;
         tooltip << "HSVA (" << round(color.h) << ", " << round(color.v) << ", " << round(color.a) << ")";
         _aspect_frame.set_tooltip_text(tooltip.str());
-
         _color_area.queue_render();
     }
 
@@ -267,25 +267,24 @@ namespace mousetrap
 
     void PaletteView::PaletteControlBar::update_palette_locked()
     {
-        auto currently_editing = not _owner->palette_locked;
-        if (currently_editing)
+        if (_owner->palette_locked)
         {
-            _palette_editing_active_toggle_button.set_child(&_palette_not_locked_icon);
-            _palette_editing_active_toggle_button.set_tooltip_text(state::tooltips_file->get_value("palette_view.control_bar", "palette_editing_active"));
+            _palette_not_locked_button.set_child(&_palette_locked_icon);
+            _palette_not_locked_button.set_tooltip_text(state::tooltips_file->get_value("palette_view.control_bar", "palette_editing_not_active"));
         }
         else
         {
-            _palette_editing_active_toggle_button.set_child(&_palette_locked_icon);
-            _palette_editing_active_toggle_button.set_tooltip_text(state::tooltips_file->get_value("palette_view.control_bar", "palette_editing_active"));
+            _palette_not_locked_button.set_child(&_palette_not_locked_icon);
+            _palette_not_locked_button.set_tooltip_text(state::tooltips_file->get_value("palette_view.control_bar", "palette_editing_active"));
         }
 
-        _palette_editing_active_toggle_button.set_signal_toggled_blocked(true);
-        _palette_editing_active_toggle_button.set_active(currently_editing);
-        _palette_editing_active_toggle_button.set_signal_toggled_blocked(false);
+        _palette_not_locked_button.set_signal_toggled_blocked(true);
+        _palette_not_locked_button.set_active(not _owner->palette_locked);
+        _palette_not_locked_button.set_signal_toggled_blocked(false);
 
         _palette_locked_switch.set_signal_state_set_blocked(true);
-        _palette_locked_switch.set_active(currently_editing);
-        _palette_locked_switch.set_state(currently_editing ? Switch::State::ON : Switch::State::OFF);
+        _palette_locked_switch.set_active(_owner->palette_locked);
+        _palette_locked_switch.set_state(_owner->palette_locked ? Switch::State::ON : Switch::State::OFF);
         _palette_locked_switch.set_signal_state_set_blocked(false);
     }
 
@@ -296,7 +295,7 @@ namespace mousetrap
         _tile_size_scale.set_signal_value_changed_blocked(false);
     }
 
-    void PaletteView::PaletteControlBar::on_palette_locked_button_toggled(ToggleButton* button, PaletteControlBar* instance)
+    void PaletteView::PaletteControlBar::on_palette_not_locked_button_toggled(ToggleButton* button, PaletteControlBar* instance)
     {
         instance->_owner->palette_locked = not button->get_active();
         instance->update_palette_locked();
@@ -304,7 +303,7 @@ namespace mousetrap
 
     void PaletteView::PaletteControlBar::on_palette_locked_switch_state_set(Switch* button, bool value, PaletteControlBar* instance)
     {
-        instance->_owner->palette_locked = not button->get_active();
+        instance->_owner->palette_locked = button->get_active();
         instance->update_palette_locked();
     }
 
@@ -323,9 +322,9 @@ namespace mousetrap
     PaletteView::PaletteControlBar::PaletteControlBar(PaletteView* owner)
             : _owner(owner)
     {
-        _palette_editing_active_toggle_button.set_active(owner->palette_locked);
-        _palette_editing_active_toggle_button.set_child(owner->palette_locked ? &_palette_locked_icon : &_palette_not_locked_icon);
-        _palette_editing_active_toggle_button.connect_signal_toggled(on_palette_locked_button_toggled, this);
+        _palette_not_locked_button.set_active(not owner->palette_locked);
+        _palette_not_locked_button.set_child(owner->palette_locked ? &_palette_locked_icon : &_palette_not_locked_icon);
+        _palette_not_locked_button.connect_signal_toggled(on_palette_not_locked_button_toggled, this);
 
         _palette_locked_icon.set_size_request(_palette_locked_icon.get_size());
         _palette_not_locked_icon.set_size_request(_palette_not_locked_icon.get_size());
@@ -402,13 +401,13 @@ namespace mousetrap
         _menu_button_label.set_hexpand(true);
         _menu_button_label.set_halign(GTK_ALIGN_START);
         _menu_button.set_hexpand(true);
-        _palette_editing_active_toggle_button.set_hexpand(false);
+        _palette_not_locked_button.set_hexpand(false);
 
         //_menu_button.set_cursor(GtkCursorType::POINTER);
         //_palette_editing_active_toggle_button.set_cursor(GtkCursorType::POINTER);
 
         _main.push_back(&_menu_button);
-        _main.push_back(&_palette_editing_active_toggle_button);
+        _main.push_back(&_palette_not_locked_button);
     }
 
     void PaletteView::PaletteControlBar::update()
@@ -461,6 +460,12 @@ namespace mousetrap
     }
 
     void PaletteView::load_from_file(const std::string& path)
+    {
+        palette.load_from(path);
+        update_from_palette();
+    }
+
+    void PaletteView::save_to_file(const std::string& path)
     {}
 
     void PaletteView::on_load_ok_pressed()
@@ -469,7 +474,7 @@ namespace mousetrap
         if (selected.empty())
             return;
 
-        std::cout << "[TODO] Loading Palette from " << selected.at(0).get_path() << std::endl;
+        load_from_file(selected.at(0).get_path());
         _on_load_file_chooser_dialog.close();
     }
 
@@ -479,12 +484,17 @@ namespace mousetrap
         if (selected.empty())
             return;
 
-        std::cout << "[TODO] Saving Palette as " << selected.at(0).get_path() << std::endl;
+        save_to_file(selected.at(0).get_path());
         _on_save_as_file_chooser_dialog.close();
     }
 
     void PaletteView::update_from_palette()
     {
+        auto clock = Clock();
+        clock.restart();
+
+        _flow_box.set_visible(false);
+
         for (auto* tile : _color_tiles)
         {
             _flow_box.remove(*tile);
@@ -519,6 +529,10 @@ namespace mousetrap
 
         for (auto* tile : _color_tiles)
             _flow_box.push_back(tile->operator Widget*());
+
+        _flow_box.set_visible(true);
+
+        std::cout << clock.elapsed().as_seconds() << std::endl;
     }
 
     PaletteView::PaletteView()
@@ -564,6 +578,7 @@ namespace mousetrap
         on_load_filter.add_allowed_suffix(".palette");
         _on_load_file_chooser.add_filter(on_load_filter);
         _on_load_file_chooser.set_can_select_multiple(false);
+        _on_load_file_chooser.set_expand(true);
 
         _on_load_file_chooser_dialog_box.push_back(&_on_load_file_chooser);
         _on_load_file_chooser_dialog.get_content_area().push_back(&_on_load_file_chooser_dialog_box);
@@ -586,6 +601,7 @@ namespace mousetrap
 
         _on_save_as_file_chooser.add_filter(on_load_filter);
         _on_save_as_file_chooser.set_can_select_multiple(false);
+        _on_save_as_file_chooser.set_expand(true);
 
         _on_save_as_file_chooser_dialog_box.push_back(&_on_save_as_file_chooser);
         _on_save_as_file_chooser_dialog.get_content_area().push_back(&_on_save_as_file_chooser_dialog_box);
@@ -668,7 +684,7 @@ namespace mousetrap
 
         _palette_control_bar.update();
 
-        if (not palette_locked)
+        if (palette_locked)
         {
             _flow_box.unselect_all();
             bool once = true;
@@ -686,6 +702,7 @@ namespace mousetrap
             return;
         }
 
-        _color_tiles.at(_selected_i)->set_color(state::primary_color);
+        color.a = 1;
+        _color_tiles.at(_selected_i)->set_color(color);
     }
 }

@@ -276,22 +276,9 @@ static void activate(GtkApplication* app, void*)
     main->push_back(left_center_paned);
 
     state::main_window->set_child(main);
-     */
+    */
 
-
-    auto* scale = new Scale(1, 100, 1);
-    scale->connect_signal_value_changed([](Scale* scale, Canvas* instance){
-        instance->set_transform_scale(scale->get_value());
-    }, (Canvas*) state::canvas);
-
-    auto* canvas_box = new Box(GTK_ORIENTATION_VERTICAL);
-    canvas_box->push_back(canvas);
-    canvas_box->push_back(scale);
-
-    scale->set_vexpand(false);
-    canvas->set_vexpand(true);
-
-    state::main_window->set_child(canvas_box);
+    state::main_window->set_child(palette_view);
 
     state::main_window->show();
     state::main_window->present();
