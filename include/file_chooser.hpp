@@ -34,7 +34,10 @@ namespace mousetrap
             GtkFileFilter* _native;
     };
 
-    class FileChooser : public WidgetImplementation<GtkFileChooserWidget>
+    class FileChooser : public WidgetImplementation<GtkFileChooserWidget>//,
+        //public HasFileSelectionChangedSignal<FileChooser>,
+        //public HasFileActivatedSignal<FileChooser>
+        //public HasActivateSignal<FileChooser>
     {
         public:
             FileChooser(FileChooserAction = FileChooserAction::SELECT_FILE);

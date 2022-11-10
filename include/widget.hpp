@@ -14,6 +14,7 @@
 
 #include <map>
 #include <string>
+#include <include/frame_clock.hpp>
 
 namespace mousetrap
 {
@@ -85,6 +86,11 @@ namespace mousetrap
 
             void beep();
 
+            /// \brief f(FrameClock, Arg_t data) -> Bool
+            /// \returns true if tick should continue, false if it should break
+            template<typename Function_t, typename Arg_t>
+            void add_tick_callback(Function_t, Arg_t);
+
         protected:
             Widget() = delete;
 
@@ -105,6 +111,12 @@ namespace mousetrap
             std::string _tooltip_title;
             std::string _tooltip_description;
             void generate_tooltip();
+
+            std::function<bool(GdkFrameClock*)> _tick_callback_f;
+            std::function<void(void*)> _destroy_notify_f;
+
+            static gboolean tick_callback_wrapper(GtkWidget*, GdkFrameClock*, Widget* instance);
+            static void tick_callback_destroy_notify(void*);
     };
 
     template<typename GtkWidget_t>

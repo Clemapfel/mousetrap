@@ -349,6 +349,30 @@ namespace mousetrap
             gtk_widget_error_bell(_native);
     }
 
+    template<typename Function_t, typename Arg_t>
+    void Widget::add_tick_callback(Function_t f_in, Arg_t arg_in)
+    {
+        _tick_callback_f = [f = f_in, arg = arg_in](GdkFrameClock* clock) -> bool{
+            return f(FrameClock(clock), arg);
+        };
+
+        gtk_widget_add_tick_callback(
+            _native,
+            (GtkTickCallback) G_CALLBACK(tick_callback_wrapper),
+            this,
+            (GDestroyNotify) G_CALLBACK(tick_callback_destroy_notify)
+        );
+    }
+
+    gboolean Widget::tick_callback_wrapper(GtkWidget*, GdkFrameClock* clock, Widget* instance)
+    {
+        if (instance->_tick_callback_f)
+            return instance->_tick_callback_f(clock);
+    }
+
+    void Widget::tick_callback_destroy_notify(void*)
+    {}
+
     void Widget::generate_tooltip()
     {
         std::stringstream str;

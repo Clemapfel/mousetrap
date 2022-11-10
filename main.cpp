@@ -288,6 +288,9 @@ static void activate(GtkApplication* app, void*)
 
     state::main_window->set_child(main);
 
+    //auto* file_dialog = gtk_file_dialog_new();
+    //gtk_file_dialog_show(file_dialog);
+
     // TODO
     auto* save_as = new SaveAsDialog("Debug");
     save_as->set_on_ok_pressed([](SaveAsDialog* dialog, nullptr_t) {

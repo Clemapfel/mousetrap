@@ -34,6 +34,9 @@ namespace mousetrap
             bool operator==(const FileDescriptor& other);
             bool operator!=(const FileDescriptor& other);
 
+            bool is_folder();
+            bool is_file();
+
         private:
 
             GFile* _native;
@@ -122,6 +125,16 @@ namespace mousetrap
     FileDescriptor::operator GFile*()
     {
         return _native;
+    }
+
+    bool FileDescriptor::is_file()
+    {
+        return g_file_test(get_path().c_str(), G_FILE_TEST_IS_REGULAR);
+    }
+
+    bool FileDescriptor::is_folder()
+    {
+        return g_file_test(get_path().c_str(), G_FILE_TEST_IS_DIR);
     }
 
     FilePath FileDescriptor::get_name()

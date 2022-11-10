@@ -41,8 +41,8 @@ namespace mousetrap
 
             FileChooser _file_chooser = FileChooser(FileChooserAction::TODO);
 
-            ClickEventController _click_event_controller;
-            static void on_click_event_controller_click_pressed(ClickEventController*, gint n_clicks, double, double, SaveAsDialog* instance);
+            //static void on_file_chooser_file_selection_changed(FileChooser*, SaveAsDialog*);
+            static void on_file_chooser_file_activated(FileChooser*, SaveAsDialog*);
     };
 }
 
@@ -78,11 +78,6 @@ namespace mousetrap
         _dialog.get_content_area().push_back(&_main);
 
         _dialog.add_action_button("OK", [](SaveAsDialog* instance){
-
-            auto selected = instance->_file_chooser.get_selected();
-            if (instance->_name_entry.get_text().empty() and not selected.empty())
-                instance->_name_entry.set_text(selected.at(0).get_path());
-
             if (instance->_on_ok_pressed)
                 instance->_on_ok_pressed(instance);
         }, this);
@@ -92,11 +87,14 @@ namespace mousetrap
                 instance->_on_cancel_pressed(instance);
         }, this);
 
-        _click_event_controller.connect_signal_click_pressed(on_click_event_controller_click_pressed, this);
-        _main.add_controller(&_click_event_controller);
+        _file_chooser.add_tick_callback([](FrameClock clock, SaveAsDialog* instance) -> bool {
 
-        // TODO
-        _file_chooser.set_focusable(false);
+            auto selected = instance->_file_chooser.get_selected();
+            if (not selected.empty() and selected.at(0).is_file())
+                instance->_name_entry.set_text(selected.at(0).get_name());
+
+            return true;
+        }, this);
     }
 
     template<typename Function_t, typename Arg_t>
@@ -115,13 +113,20 @@ namespace mousetrap
         };
     }
 
-    void SaveAsDialog::on_click_event_controller_click_pressed(ClickEventController*, gint n_clicks, double, double,
-                                                               SaveAsDialog* instance)
+    /*
+    void SaveAsDialog::on_file_chooser_file_selection_changed(FileChooser* file_chooser, SaveAsDialog* instance)
     {
-        auto selected = instance->_file_chooser.get_selected();
+        auto selected = file_chooser->get_selected();
 
-        if (not selected.empty())
+        if (not selected.empty() and selected.at(0).is_file())
             instance->_name_entry.set_text(selected.at(0).get_name());
+    }
+     */
+
+    void SaveAsDialog::on_file_chooser_file_activated(FileChooser* file_chooser, SaveAsDialog* instance)
+    {
+        if (instance->_on_ok_pressed)
+            instance->_on_ok_pressed(instance);
     }
 
     FileChooser& SaveAsDialog::get_file_chooser()

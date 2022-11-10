@@ -127,6 +127,35 @@ namespace mousetrap
     };
 
     template<typename Owner_t>
+    class HasUpdateSignal
+    {
+        public:
+            template<typename T>
+            using on_update_function_t = void(Owner_t*, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_update(Function_t, T);
+
+            void set_signal_update_blocked(bool b) {
+                _blocked = b;
+            }
+
+        protected:
+            HasUpdateSignal(Owner_t* instance)
+                    : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_update_wrapper(void*, HasUpdateSignal<Owner_t>* instance);
+
+            bool _blocked = false;
+            std::function<on_update_function_t<void*>> _on_update_f;
+            void* _on_update_data;
+    };
+
+    template<typename Owner_t>
     class HasRealizeSignal
     {
         public:
@@ -1051,6 +1080,26 @@ namespace mousetrap
     {
         if (self->_on_activate_f != nullptr and not self->_blocked)
             self->_on_activate_f(self->_instance, self->_on_activate_data);
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasUpdateSignal<Owner_t>::connect_signal_update(Function_t function, T data)
+    {
+        auto temp =  std::function<on_update_function_t<T>>(function);
+        _on_update_f = std::function<on_update_function_t<void*>>(*((std::function<on_update_function_t<void*>>*) &temp));
+        _on_update_data = data;
+
+        _instance->connect_signal("update", on_update_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasUpdateSignal<Owner_t>::on_update_wrapper(void*, HasUpdateSignal<Owner_t>* self)
+    {
+        if (self->_on_update_f != nullptr and not self->_blocked)
+            self->_on_update_f(self->_instance, self->_on_activate_data);
     }
 
     // ###

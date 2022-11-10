@@ -230,7 +230,7 @@ add_library(mousetrap SHARED
 
     include/switch.hpp
         include/info_message.hpp
-        include/fixed.hpp)
+        include/fixed.hpp src/frame_clock.inl include/frame_clock.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

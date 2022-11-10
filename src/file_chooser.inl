@@ -37,7 +37,10 @@ namespace mousetrap
     }
 
     FileChooser::FileChooser(FileChooserAction action)
-            : WidgetImplementation<GtkFileChooserWidget>(GTK_FILE_CHOOSER_WIDGET(gtk_file_chooser_widget_new((GtkFileChooserAction) action)))
+            : WidgetImplementation<GtkFileChooserWidget>(GTK_FILE_CHOOSER_WIDGET(gtk_file_chooser_widget_new((GtkFileChooserAction) action)))//,
+              //HasActivateSignal<FileChooser>(this)
+              //HasFileActivatedSignal<FileChooser>(this),
+              //HasFileSelectionChangedSignal<FileChooser>(this)
     {
         auto* all_filter = gtk_file_filter_new();
         gtk_file_filter_set_name(all_filter, "(No Filter)");
