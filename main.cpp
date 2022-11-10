@@ -22,6 +22,7 @@
 #include <app/app_layout.hpp>
 #include <app/color_preview.hpp>
 #include <app/bubble_log_area.hpp>
+#include <app/file_chooser_dialog.hpp>
 
 using namespace mousetrap;
 
@@ -286,6 +287,15 @@ static void activate(GtkApplication* app, void*)
     main->add_overlay(bubble_log);
 
     state::main_window->set_child(main);
+
+    // TODO
+    auto* save_as = new SaveAsDialog("Debug");
+    save_as->set_on_ok_pressed([](SaveAsDialog* dialog, nullptr_t) {
+        std::cout << dialog->get_current_name() << std::endl;
+        dialog->get_dialog().close();
+    }, nullptr);
+    save_as->get_dialog().show();
+    // TODO
 
     state::main_window->show();
     state::main_window->present();

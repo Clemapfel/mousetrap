@@ -12,6 +12,7 @@ namespace mousetrap
 {
     enum class FileChooserAction
     {
+        TODO = GTK_FILE_CHOOSER_ACTION_SAVE,
         SELECT_FILE = GTK_FILE_CHOOSER_ACTION_OPEN,
         SELECT_FOLDER = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER
     };
@@ -36,7 +37,7 @@ namespace mousetrap
     class FileChooser : public WidgetImplementation<GtkFileChooserWidget>
     {
         public:
-            FileChooser(FileChooserAction);
+            FileChooser(FileChooserAction = FileChooserAction::SELECT_FILE);
 
             void set_can_select_multiple(bool);
             bool get_can_select_multiple();

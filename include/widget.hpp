@@ -70,6 +70,7 @@ namespace mousetrap
 
             void set_focusable(bool);
             void grab_focus();
+            void set_focus_on_click(bool);
 
             bool get_is_realized();
 

@@ -129,14 +129,14 @@ namespace mousetrap
             Window _on_load_file_chooser_dialog_window;
             Dialog _on_load_file_chooser_dialog = Dialog(&_on_load_file_chooser_dialog_window, "Load Palette...");
             Box _on_load_file_chooser_dialog_box = Box(GTK_ORIENTATION_VERTICAL);
-            FileChooser _on_load_file_chooser = FileChooser(FileChooserAction::OPEN);
+            FileChooser _on_load_file_chooser = FileChooser(FileChooserAction::SELECT_FILE);
             void on_load_ok_pressed();
 
             Action _on_save_as_action = Action("palette_view.save_as");
             Window _on_save_as_file_chooser_dialog_window;
             Dialog _on_save_as_file_chooser_dialog = Dialog(&_on_load_file_chooser_dialog_window, "Load Palette...");
             Box _on_save_as_file_chooser_dialog_box = Box(GTK_ORIENTATION_VERTICAL);
-            FileChooser _on_save_as_file_chooser = FileChooser(FileChooserAction::SAVE);
+            FileChooser _on_save_as_file_chooser = FileChooser(FileChooserAction::SELECT_FILE);
             void on_save_as_ok_pressed();
 
             Action _on_load_default_action = Action("palette_view.load_default");

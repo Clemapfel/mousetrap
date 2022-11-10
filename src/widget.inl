@@ -296,6 +296,11 @@ namespace mousetrap
         gtk_widget_set_focusable(this->operator GtkWidget*(), b);
     }
 
+    void Widget::set_focus_on_click(bool b)
+    {
+        gtk_widget_set_focus_on_click(this->operator GtkWidget*(), b);
+    }
+
     void Widget::grab_focus()
     {
         gtk_widget_grab_focus(this->operator GtkWidget*());
