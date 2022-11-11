@@ -67,6 +67,7 @@ namespace mousetrap
             FileDescriptor* _file;
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
+            ScrolledWindow _window;
 
             GtkImage* _icon_image;
 
@@ -100,8 +101,7 @@ namespace mousetrap
 
             std::string _previously_selected_path = "";
 
-            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
-            SeparatorLine _main_separator;
+            Box _main = Box(GTK_ORIENTATION_HORIZONTAL, 0.5 * state::margin_unit);
 
             std::function<void(OpenDialog*)> _on_open_pressed;
             std::function<void(OpenDialog*)> _on_cancel_pressed;
@@ -246,13 +246,14 @@ namespace mousetrap
 {
     FilePreview::FilePreview()
     {
-        _icon_image_box.set_size_request({preview_icon_pixel_size_factor * state::margin_unit, 0});
         _icon_image_box.set_halign(GTK_ALIGN_CENTER);
 
         _main.push_back(&_icon_image_box);
         _main.push_back(&_file_name_label);
         _main.push_back(&_file_type_label);
         _main.push_back(&_file_size_label);
+
+        _main.set_margin_horizontal(state::margin_unit);
 
         _file_name_label.set_halign(GTK_ALIGN_CENTER);
         _file_name_label.set_ellipsize_mode(EllipsizeMode::END);
@@ -268,11 +269,16 @@ namespace mousetrap
         _file_name_label.set_margin_bottom(state::margin_unit);
         _main.set_hexpand(false);
         _main.set_vexpand(true);
+
+        _window.set_size_request({preview_icon_pixel_size_factor * state::margin_unit, 0});
+        _window.set_policy(GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+        _window.set_propagate_natural_height(true);
+        _window.set_child(&_main);
     }
 
     FilePreview::operator Widget*()
     {
-        return &_main;
+        return &_window;
     }
 
     void FilePreview::update()
@@ -301,7 +307,7 @@ namespace mousetrap
         }
 
         std::stringstream file_name_text;
-        file_name_text << "<span weight=\"bold\" size=\"125%\">"
+        file_name_text << "<span weight=\"bold\" size=\"100%\">"
                        << _file->query_info(G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME)
                        << "</span>";
 
@@ -336,12 +342,8 @@ namespace mousetrap
         _preview_frame.set_margin_start(state::margin_unit * 0.5);
         _preview_frame.set_label_widget(&_preview_label);
 
-        _main_separator.set_size_request({2, 0});
-        _main_separator.set_hexpand(false);
-
         _main.set_margin_horizontal(state::margin_unit);
         _main.push_back(&_file_chooser_frame);
-        _main.push_back(&_main_separator);
         _main.push_back(&_preview_frame);
 
         _main.set_margin_vertical(state::margin_unit);
