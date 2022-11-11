@@ -49,6 +49,9 @@ namespace mousetrap
 
             std::string get_content_type();
 
+            /// \note list of attributes available here: https://www.freedesktop.org/software/gstreamer-sdk/data/docs/2012.5/gio/GFileInfo.html
+            std::string query_info(const char* attribute_query_string);
+
         private:
             GFile* _native;
     };
@@ -155,19 +158,24 @@ namespace mousetrap
 
     FilePath FileDescriptor::get_path()
     {
-        return g_file_get_path(_native);
+        auto* path = g_file_get_path(_native);
+        return path == nullptr ? "" : path;
     }
 
     FileURI FileDescriptor::get_uri()
     {
-        return g_file_get_uri(_native);
+        auto* uri = g_file_get_uri(_native);
+        return uri == nullptr ? "" : uri;
     }
 
     std::string FileDescriptor::get_content_type()
     {
+        if (is_folder())
+            return "folder";
+
         gboolean uncertain;
         auto* type = g_content_type_guess(g_file_get_path(_native), nullptr, 0, &uncertain);
-        return type;
+        return (type == nullptr) ? "unknown" : type;
 
         /*
         GError* error = nullptr;
@@ -183,6 +191,21 @@ namespace mousetrap
         g_object_unref(info);
         return std::string(out == nullptr ? "" : out);
          */
+    }
+
+    std::string FileDescriptor::query_info(const char* attribute_query_string)
+    {
+        GError* error = nullptr;
+        auto* info = g_file_query_info(_native, attribute_query_string, G_FILE_QUERY_INFO_NONE, nullptr, &error);
+
+        if (error != nullptr)
+        {
+            std::cerr << "[ERROR] In FileDescriptor::query_info: Unable to retrieve info for attribute `" << attribute_query_string << "`: " << error->message << std::endl;
+            return "";
+        }
+
+        auto* out = g_file_info_get_attribute_as_string(info, attribute_query_string);
+        return out == nullptr ? "" : out;
     }
 
     bool FileDescriptor::operator==(const FileDescriptor& other)
