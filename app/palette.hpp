@@ -81,7 +81,7 @@ namespace mousetrap
             goto abort;
         }
 
-        if (not file.get_groups().size() == 1)
+        if (not (file.get_groups().size() == 1))
         {
             error_reason = "More than one palette name present in file";
             goto abort;

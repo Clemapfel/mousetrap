@@ -9,6 +9,8 @@
 
 namespace mousetrap
 {
+    // TODO: select with preview: https://stackoverflow.com/questions/2817763/finding-file-icon-given-a-mime-type-using-gtk
+
     class SaveAsDialog
     {
         public:
@@ -40,11 +42,54 @@ namespace mousetrap
             std::function<void(SaveAsDialog*)> _on_ok_pressed;
             std::function<void(SaveAsDialog*)> _on_cancel_pressed;
 
-            FileChooser _file_chooser = FileChooser();
+            FileChooser _file_chooser;
             std::string _previously_selected_path = "";
 
             Button _ok_button;
             Label _ok_button_label = Label("OK");
+
+            Button _cancel_button;
+            Label _cancel_button_label = Label("Cancel");
+    };
+
+    class OpenDialog
+    {
+        public:
+            OpenDialog(const std::string& window_title);
+
+            template<typename Function_t, typename Arg_t>
+            void set_on_open_pressed(Function_t, Arg_t);
+
+            template<typename Function_t, typename Arg_t>
+            void set_on_cancel_pressed(Function_t, Arg_t);
+
+            FileChooser& get_file_chooser();
+            Dialog& get_dialog();
+
+        private:
+            Window _window;
+            Dialog _dialog;
+
+            Frame _file_chooser_frame;
+            Frame _preview_frame;
+
+            Box _preview_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            SeparatorLine _preview_background;
+            Label _preview_label = Label("<span weight=\"bold\" color=\"#AAAAAA\">Preview</span>");
+
+            ImageDisplay _preview_image;
+            std::string _previously_selected_path = "";
+
+            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+            SeparatorLine _main_separator;
+
+            std::function<void(OpenDialog*)> _on_open_pressed;
+            std::function<void(OpenDialog*)> _on_cancel_pressed;
+
+            FileChooser _file_chooser;
+
+            Button _open_button;
+            Label _open_button_label = Label("Open");
 
             Button _cancel_button;
             Label _cancel_button_label = Label("Cancel");
@@ -56,9 +101,8 @@ namespace mousetrap
 namespace mousetrap
 {
     SaveAsDialog::SaveAsDialog(const std::string& window_title)
+        : _dialog(&_window, window_title)
     {
-        _window.set_title(window_title);
-
         _name_entry.connect_signal_activate([&](Widget*, SaveAsDialog* instance){
             if (instance->_on_ok_pressed)
                 instance->_on_ok_pressed(instance);
@@ -134,6 +178,8 @@ namespace mousetrap
                 instance->_previously_selected_path = name;
             }
 
+            instance->_ok_button.set_can_respond_to_input(not instance->_name_entry.get_text().empty());
+
             return true;
         }, this);
     }
@@ -170,6 +216,108 @@ namespace mousetrap
     }
 
     Dialog& SaveAsDialog::get_dialog()
+    {
+        return _dialog;
+    }
+}
+
+namespace mousetrap
+{
+    OpenDialog::OpenDialog(const std::string& window_title)
+        : _dialog(&_window, window_title)
+    {
+        _window.set_title(window_title);
+
+        _file_chooser.set_expand(true);
+        _file_chooser_frame.set_child(&_file_chooser);
+        _file_chooser_frame.set_label_widget(nullptr);
+
+        _preview_background.set_size_request({0.3 * _file_chooser.get_preferred_size().natural_size.x, 0});
+        _preview_background.set_opacity(0.5);
+        _preview_frame.set_child(&_preview_background);
+
+        _file_chooser_frame.set_margin_end(state::margin_unit * 0.5);
+        _preview_frame.set_margin_start(state::margin_unit * 0.5);
+        _preview_frame.set_label_widget(&_preview_label);
+
+        _main_separator.set_size_request({2, 0});
+        _main_separator.set_hexpand(false);
+
+        _main.set_margin_horizontal(state::margin_unit);
+        _main.push_back(&_file_chooser_frame);
+        _main.push_back(&_main_separator);
+        _main.push_back(&_preview_frame);
+
+        _main.set_margin_vertical(state::margin_unit);
+
+        _dialog.get_content_area().push_back(&_main);
+
+        _open_button_label.set_margin_horizontal(state::margin_unit);
+        _cancel_button_label.set_margin_horizontal(state::margin_unit);
+
+        _open_button.set_child(&_open_button_label);
+        _cancel_button.set_child(&_cancel_button_label);
+
+        auto size = std::max(
+            _open_button_label.get_preferred_size().natural_size.x,
+            _cancel_button_label.get_preferred_size().natural_size.x
+        );
+
+        _open_button.set_size_request({size, 0});
+        _cancel_button.set_size_request({size, 0});
+
+        _dialog.add_action_widget(&_cancel_button, [](OpenDialog* instance){
+            if (instance->_on_cancel_pressed)
+                instance->_on_cancel_pressed(instance);
+        }, this);
+
+        _dialog.add_action_widget(&_open_button, [](OpenDialog* instance){
+            if (instance->_on_open_pressed)
+                instance->_on_open_pressed(instance);
+        }, this);
+
+        auto* temp = gtk_widget_get_parent(_cancel_button.operator GtkWidget*());
+        gtk_widget_set_margin_bottom(temp, state::margin_unit);
+        gtk_widget_set_margin_end(temp, state::margin_unit);
+        gtk_box_set_spacing(GTK_BOX(temp), state::margin_unit);
+
+        // TODO: Workaround until https://discourse.gnome.org/t/gtk4-filechooser-selection-changed-signal-alternative/12180 is answered
+        _file_chooser.add_tick_callback([](FrameClock clock, OpenDialog* instance) -> bool {
+
+            auto selected = instance->_file_chooser.get_selected();
+            instance->_open_button.set_can_respond_to_input(not selected.empty());
+
+            if (not selected.empty() and selected.at(0).get_name() != instance->_previously_selected_path)
+            {
+                auto type = selected.at(0).
+            }
+
+            return true;
+        }, this);
+    }
+
+    template<typename Function_t, typename Arg_t>
+    void OpenDialog::set_on_open_pressed(Function_t f_in, Arg_t arg_in)
+    {
+        _on_open_pressed = [f = f_in, arg = arg_in, this](OpenDialog* instance){
+            f(instance, arg);
+        };
+    }
+
+    template<typename Function_t, typename Arg_t>
+    void OpenDialog::set_on_cancel_pressed(Function_t f_in, Arg_t arg_in)
+    {
+        _on_cancel_pressed = [f = f_in, arg = arg_in, this](OpenDialog* instance){
+            f(instance, arg);
+        };
+    }
+
+    FileChooser& OpenDialog::get_file_chooser()
+    {
+        return _file_chooser;
+    }
+
+    Dialog& OpenDialog::get_dialog()
     {
         return _dialog;
     }
