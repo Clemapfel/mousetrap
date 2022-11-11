@@ -305,10 +305,10 @@ static void activate(GtkApplication* app, void*)
     save_as->get_dialog().show();
     // TODO
 
-    state::main_window->show();
-    state::main_window->present();
-    state::main_window->set_focusable(true);
-    state::main_window->grab_focus();
+    //state::main_window->show();
+    //state::main_window->present();
+    //state::main_window->set_focusable(true);
+    //state::main_window->grab_focus();
 }
 
 static void startup(GApplication*)

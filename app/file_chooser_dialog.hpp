@@ -52,6 +52,30 @@ namespace mousetrap
             Label _cancel_button_label = Label("Cancel");
     };
 
+    class FilePreview : public AppComponent
+    {
+        public:
+            FilePreview();
+
+            operator Widget*() override;
+            void update();
+            void update_from(FileDescriptor*);
+
+        private:
+            size_t preview_icon_pixel_size_factor = state::settings_file->get_value_as<float>("file_chooser_dialog.file_preview", "preview_icon_pixel_size_factor");
+
+            FileDescriptor* _file;
+
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
+
+            GtkImage* _icon_image;
+
+            Box _icon_image_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Label _file_name_label;
+            Label _file_type_label;
+            Label _file_size_label;
+    };
+
     class OpenDialog
     {
         public:
@@ -70,14 +94,10 @@ namespace mousetrap
             Window _window;
             Dialog _dialog;
 
-            Frame _file_chooser_frame;
+            FilePreview _file_preview;
             Frame _preview_frame;
-
-            Box _preview_box = Box(GTK_ORIENTATION_HORIZONTAL);
-            SeparatorLine _preview_background;
             Label _preview_label = Label("<span weight=\"bold\" color=\"#AAAAAA\">Preview</span>");
 
-            ImageDisplay _preview_image;
             std::string _previously_selected_path = "";
 
             Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
@@ -86,6 +106,7 @@ namespace mousetrap
             std::function<void(OpenDialog*)> _on_open_pressed;
             std::function<void(OpenDialog*)> _on_cancel_pressed;
 
+            Frame _file_chooser_frame;
             FileChooser _file_chooser;
 
             Button _open_button;
@@ -223,6 +244,84 @@ namespace mousetrap
 
 namespace mousetrap
 {
+    FilePreview::FilePreview()
+    {
+        _icon_image_box.set_size_request({preview_icon_pixel_size_factor * state::margin_unit, 0});
+        _icon_image_box.set_halign(GTK_ALIGN_CENTER);
+
+        _main.push_back(&_icon_image_box);
+        _main.push_back(&_file_name_label);
+        _main.push_back(&_file_type_label);
+        _main.push_back(&_file_size_label);
+
+        _file_name_label.set_halign(GTK_ALIGN_CENTER);
+        _file_name_label.set_ellipsize_mode(EllipsizeMode::END);
+        _file_type_label.set_ellipsize_mode(EllipsizeMode::START);
+
+        for (auto* label : {&_file_name_label, &_file_type_label, &_file_size_label})
+        {
+            label->set_wrap_mode(LabelWrapMode::ONLY_ON_CHAR);
+            label->set_max_width_chars(8);
+            auto* glabel = label->operator GtkLabel*();
+        }
+
+        _file_name_label.set_margin_bottom(state::margin_unit);
+        _main.set_hexpand(false);
+        _main.set_vexpand(true);
+    }
+
+    FilePreview::operator Widget*()
+    {
+        return &_main;
+    }
+
+    void FilePreview::update()
+    {
+        update_from(_file);
+    }
+
+    void FilePreview::update_from(FileDescriptor* file)
+    {
+        _file = file;
+
+        if (_file == nullptr)
+            return;
+
+        GError* error = nullptr;
+        auto* info = g_file_query_info(_file->operator GFile*(), G_FILE_ATTRIBUTE_PREVIEW_ICON, G_FILE_QUERY_INFO_NONE, nullptr, &error);
+        auto* icon = g_content_type_get_icon(_file->get_content_type().c_str());
+
+        _icon_image_box.clear();
+        if (error == nullptr and icon != nullptr)
+        {
+            _icon_image = GTK_IMAGE(gtk_image_new_from_gicon(G_ICON(icon)));
+            gtk_widget_set_halign(GTK_WIDGET(_icon_image), GTK_ALIGN_CENTER);
+            gtk_image_set_pixel_size(_icon_image, preview_icon_pixel_size_factor * state::margin_unit);
+            gtk_box_append(_icon_image_box.operator GtkBox*(), GTK_WIDGET(_icon_image));
+        }
+
+        std::stringstream file_name_text;
+        file_name_text << "<span weight=\"bold\" size=\"125%\">"
+                       << _file->query_info(G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME)
+                       << "</span>";
+
+        _file_name_label.set_text(file_name_text.str());
+        _file_type_label.set_text(_file->get_content_type());
+
+        size_t size_byte = 0;
+
+        try {
+            size_byte = std::stoi(_file->query_info(G_FILE_ATTRIBUTE_STANDARD_ALLOCATED_SIZE));
+        }
+        catch (...)
+        {}
+
+        _file_size_label.set_text(_file->is_folder() ? "" : g_format_size(size_byte));
+    }
+}
+
+namespace mousetrap
+{
     OpenDialog::OpenDialog(const std::string& window_title)
         : _dialog(&_window, window_title)
     {
@@ -231,12 +330,9 @@ namespace mousetrap
         _file_chooser.set_expand(true);
         _file_chooser_frame.set_child(&_file_chooser);
         _file_chooser_frame.set_label_widget(nullptr);
-
-        _preview_background.set_size_request({0.3 * _file_chooser.get_preferred_size().natural_size.x, 0});
-        _preview_background.set_opacity(0.5);
-        _preview_frame.set_child(&_preview_background);
-
         _file_chooser_frame.set_margin_end(state::margin_unit * 0.5);
+
+        _preview_frame.set_child(_file_preview.operator Widget*());
         _preview_frame.set_margin_start(state::margin_unit * 0.5);
         _preview_frame.set_label_widget(&_preview_label);
 
@@ -289,13 +385,8 @@ namespace mousetrap
             if (not selected.empty() and selected.at(0).get_name() != instance->_previously_selected_path)
             {
                 auto file = selected.at(0);
-                instance->_previously_selected_path = file.get_path();
-
-                auto* frame = instance->_preview_frame.operator _GtkFrame *();
-                auto* icon = g_content_type_get_icon(file.get_content_type().c_str());
-                auto* image = gtk_image_new_from_gicon(icon);
-                gtk_image_set_pixel_size(GTK_IMAGE(image), 256);
-                gtk_frame_set_child(frame, image);
+                instance->_previously_selected_path = file.get_name();
+                instance->_file_preview.update_from(&file);
             }
 
             return true;
