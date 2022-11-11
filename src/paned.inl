@@ -21,7 +21,7 @@ namespace mousetrap
 
     void Paned::set_start_child(Widget* widget)
     {
-        gtk_paned_set_start_child(get_native(), widget->operator GtkWidget*());
+        gtk_paned_set_start_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 
     void Paned::set_start_child_resizable(bool b)
@@ -36,7 +36,7 @@ namespace mousetrap
 
     void Paned::set_end_child(Widget* widget)
     {
-        gtk_paned_set_end_child(get_native(), widget->operator GtkWidget*());
+        gtk_paned_set_end_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 
     void Paned::set_end_child_resizable(bool b)

@@ -11,7 +11,7 @@ namespace mousetrap
     
     void ScrolledWindow::set_child(Widget* widget)
     {
-        gtk_scrolled_window_set_child(get_native(), widget->operator GtkWidget*());
+        gtk_scrolled_window_set_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 
     void ScrolledWindow::set_propagate_natural_height(bool b)

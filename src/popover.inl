@@ -26,7 +26,7 @@ namespace mousetrap
 
     void Popover::set_child(Widget* widget)
     {
-        gtk_popover_set_child(get_native(), widget->operator GtkWidget*());
+        gtk_popover_set_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 
     void Popover::set_relative_position(GtkPositionType position)

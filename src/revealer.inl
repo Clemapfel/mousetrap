@@ -16,7 +16,7 @@ namespace mousetrap
 
     void Revealer::set_child(Widget* widget)
     {
-        gtk_revealer_set_child(get_native(), widget->operator GtkWidget*());
+        gtk_revealer_set_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 
     void Revealer::set_revealed(bool b)

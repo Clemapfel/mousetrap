@@ -11,7 +11,7 @@ namespace mousetrap
 
     void Overlay::set_child(Widget* in)
     {
-        gtk_overlay_set_child(get_native(), in->operator GtkWidget*());
+        gtk_overlay_set_child(get_native(), in == nullptr ? nullptr : in->operator GtkWidget*());
     }
 
     void Overlay::add_overlay(Widget* in)

@@ -23,7 +23,7 @@ namespace mousetrap
 
     void Viewport::set_child(Widget* widget)
     {
-        gtk_viewport_set_child(get_native(), widget->operator GtkWidget*());
+        gtk_viewport_set_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 
     void Viewport::set_scroll_to_focus(bool b)

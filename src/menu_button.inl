@@ -13,7 +13,7 @@ namespace mousetrap
 
     void MenuButton::set_child(Widget* widget)
     {
-        gtk_menu_button_set_child(get_native(), widget->operator GtkWidget*());
+        gtk_menu_button_set_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 
     void MenuButton::set_model(MenuModel* model)

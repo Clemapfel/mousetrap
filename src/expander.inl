@@ -12,7 +12,7 @@ namespace mousetrap
 
     void Expander::set_child(Widget* widget)
     {
-        gtk_expander_set_child(get_native(), widget->operator GtkWidget*());
+        gtk_expander_set_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 
     bool Expander::get_expanded()

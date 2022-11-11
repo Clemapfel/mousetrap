@@ -54,7 +54,7 @@ namespace mousetrap
 
     void Window::set_child(Widget* widget)
     {
-        gtk_window_set_child(get_native(), widget->operator GtkWidget *());
+        gtk_window_set_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget *());
     }
 
     void Window::remove_child()

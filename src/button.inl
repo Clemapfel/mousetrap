@@ -19,6 +19,6 @@ namespace mousetrap
 
     void Button::set_child(Widget* widget)
     {
-        gtk_button_set_child(get_native(), widget->operator GtkWidget*());
+        gtk_button_set_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 }

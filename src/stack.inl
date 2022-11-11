@@ -27,7 +27,7 @@ namespace mousetrap
     StackID Stack::add_child(Widget* widget, const std::string& title)
     {
         auto id = _current_id++;
-        gtk_stack_add_titled(get_native(), widget->operator GtkWidget*(), std::to_string(id).c_str(), title.c_str());
+        gtk_stack_add_titled(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*(), std::to_string(id).c_str(), title.c_str());
         _id_to_widget.insert({id, widget});
         return id;
     }

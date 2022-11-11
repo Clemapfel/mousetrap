@@ -13,7 +13,7 @@ namespace mousetrap
 
     void Frame::set_child(Widget* in)
     {
-        gtk_frame_set_child(get_native(), in->operator GtkWidget *());
+        gtk_frame_set_child(get_native(), in == nullptr ? nullptr : in->operator GtkWidget *());
     }
 
     void Frame::remove_child()
