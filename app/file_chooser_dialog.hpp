@@ -281,7 +281,6 @@ namespace mousetrap
         gtk_widget_set_margin_end(temp, state::margin_unit);
         gtk_box_set_spacing(GTK_BOX(temp), state::margin_unit);
 
-        // TODO: Workaround until https://discourse.gnome.org/t/gtk4-filechooser-selection-changed-signal-alternative/12180 is answered
         _file_chooser.add_tick_callback([](FrameClock clock, OpenDialog* instance) -> bool {
 
             auto selected = instance->_file_chooser.get_selected();
@@ -289,7 +288,14 @@ namespace mousetrap
 
             if (not selected.empty() and selected.at(0).get_name() != instance->_previously_selected_path)
             {
-                auto type = selected.at(0).
+                auto file = selected.at(0);
+                instance->_previously_selected_path = file.get_path();
+
+                auto* frame = instance->_preview_frame.operator _GtkFrame *();
+                auto* icon = g_content_type_get_icon(file.get_content_type().c_str());
+                auto* image = gtk_image_new_from_gicon(icon);
+                gtk_image_set_pixel_size(GTK_IMAGE(image), 256);
+                gtk_frame_set_child(frame, image);
             }
 
             return true;

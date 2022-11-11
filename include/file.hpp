@@ -15,6 +15,16 @@ namespace mousetrap
     using FilePath = std::string;
     using FileURI = std::string;
 
+    class Icon
+    {
+        public:
+            Icon(GIcon*);
+            ~Icon();
+
+        private:
+            GIcon* _native;
+    };
+
     class FileDescriptor
     {
         public:
@@ -37,8 +47,9 @@ namespace mousetrap
             bool is_folder();
             bool is_file();
 
-        private:
+            std::string get_content_type();
 
+        private:
             GFile* _native;
     };
 
@@ -150,6 +161,28 @@ namespace mousetrap
     FileURI FileDescriptor::get_uri()
     {
         return g_file_get_uri(_native);
+    }
+
+    std::string FileDescriptor::get_content_type()
+    {
+        gboolean uncertain;
+        auto* type = g_content_type_guess(g_file_get_path(_native), nullptr, 0, &uncertain);
+        return type;
+
+        /*
+        GError* error = nullptr;
+        auto* info = g_file_query_info(_native, G_FILE_ATTRIBUTE_PREVIEW_ICON, G_FILE_QUERY_INFO_NONE, nullptr, &error);
+
+        if (error != nullptr)
+        {
+            std::cerr << "[ERROR] In FileDescriptor::get_icon_id: " << error->message << std::endl;
+            return "";
+        }
+
+        auto* out = g_file_info_get_attribute_string(info, G_FILE_ATTRIBUTE_PREVIEW_ICON);
+        g_object_unref(info);
+        return std::string(out == nullptr ? "" : out);
+         */
     }
 
     bool FileDescriptor::operator==(const FileDescriptor& other)
