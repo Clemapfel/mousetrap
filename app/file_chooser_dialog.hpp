@@ -293,17 +293,36 @@ namespace mousetrap
         if (_file == nullptr)
             return;
 
-        GError* error = nullptr;
-        auto* info = g_file_query_info(_file->operator GFile*(), G_FILE_ATTRIBUTE_PREVIEW_ICON, G_FILE_QUERY_INFO_NONE, nullptr, &error);
-        auto* icon = g_content_type_get_icon(_file->get_content_type().c_str());
+        auto* pixbuf_maybe = gdk_pixbuf_new_from_file(_file->get_path().c_str(), nullptr);
 
         _icon_image_box.clear();
-        if (error == nullptr and icon != nullptr)
+        if (pixbuf_maybe != nullptr)
         {
-            _icon_image = GTK_IMAGE(gtk_image_new_from_gicon(G_ICON(icon)));
+            auto target_width = preview_icon_pixel_size_factor * state::margin_unit;
+            auto target_height = (gdk_pixbuf_get_height(pixbuf_maybe) / float(gdk_pixbuf_get_width(pixbuf_maybe))) * target_width;
+
+            auto* pixbuf_scaled = gdk_pixbuf_scale_simple(pixbuf_maybe, target_width, target_height, GDK_INTERP_NEAREST);
+            _icon_image = GTK_IMAGE(gtk_image_new_from_pixbuf(pixbuf_scaled));
+
+            gtk_widget_set_size_request(GTK_WIDGET(_icon_image), target_width, target_height);
             gtk_widget_set_halign(GTK_WIDGET(_icon_image), GTK_ALIGN_CENTER);
-            gtk_image_set_pixel_size(_icon_image, preview_icon_pixel_size_factor * state::margin_unit);
             gtk_box_append(_icon_image_box.operator GtkBox*(), GTK_WIDGET(_icon_image));
+
+            g_object_unref(pixbuf_maybe);
+            g_object_unref(pixbuf_scaled);
+        }
+        else
+        {
+            auto* info = g_file_query_info(_file->operator GFile*(), G_FILE_ATTRIBUTE_PREVIEW_ICON, G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
+            auto* icon = g_content_type_get_icon(_file->get_content_type().c_str());
+
+            if (icon != nullptr)
+            {
+                _icon_image = GTK_IMAGE(gtk_image_new_from_gicon(G_ICON(icon)));
+                gtk_widget_set_halign(GTK_WIDGET(_icon_image), GTK_ALIGN_CENTER);
+                gtk_image_set_pixel_size(_icon_image, preview_icon_pixel_size_factor * state::margin_unit);
+                gtk_box_append(_icon_image_box.operator GtkBox*(), GTK_WIDGET(_icon_image));
+            }
         }
 
         std::stringstream file_name_text;
@@ -312,7 +331,7 @@ namespace mousetrap
                        << "</span>";
 
         _file_name_label.set_text(file_name_text.str());
-        _file_type_label.set_text(_file->get_content_type());
+        _file_type_label.set_text(_file->query_info(G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE));
 
         size_t size_byte = 0;
 

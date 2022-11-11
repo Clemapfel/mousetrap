@@ -55,6 +55,7 @@ namespace mousetrap
         }
 
         create_from_pixbuf(pixbuf);
+        g_object_unref(pixbuf);
     }
 
     GdkPixbuf* Image::to_pixbuf() const
