@@ -41,15 +41,19 @@ namespace mousetrap
               //HasActivateSignal<FileChooser>(this)
               //HasFileActivatedSignal<FileChooser>(this),
               //HasFileSelectionChangedSignal<FileChooser>(this)
-    {
-        auto* all_filter = gtk_file_filter_new();
-        gtk_file_filter_set_name(all_filter, "(No Filter)");
-        gtk_file_filter_add_pattern(all_filter, "*");
-        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(get_native()), all_filter);
-    }
+    {}
 
     void FileChooser::add_filter(FileFilter filter)
     {
+        if (not _non_filter_added)
+        {
+            auto* all_filter = gtk_file_filter_new();
+            gtk_file_filter_set_name(all_filter, "(No Filter)");
+            gtk_file_filter_add_pattern(all_filter, "*");
+            gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(get_native()), all_filter);
+            _non_filter_added = true;
+        }
+        
         gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(get_native()), filter.operator GtkFileFilter*());
     }
 

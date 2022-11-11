@@ -30,6 +30,7 @@ namespace mousetrap
             Window _window;
             Dialog _dialog = Dialog(&_window, "Save as...");
 
+            Frame _main_frame;
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
 
             Box _name_entry_box = Box(GTK_ORIENTATION_HORIZONTAL);
@@ -41,8 +42,6 @@ namespace mousetrap
 
             FileChooser _file_chooser = FileChooser();
             std::string _previously_selected_path = "";
-
-            KeyEventController _key_event_controller;
 
             Button _ok_button;
             Label _ok_button_label = Label("OK");
@@ -65,8 +64,10 @@ namespace mousetrap
                 instance->_on_ok_pressed(instance);
         }, this);
         _name_entry.set_hexpand(true);
+        _name_entry.set_vexpand(false);
 
         _name_entry_label.set_margin_start(state::margin_unit);
+
         _name_entry.set_margin_start(state::margin_unit);
         _name_entry.set_margin_end(2 * state::margin_unit);
         _name_entry.set_margin_bottom(state::margin_unit);
@@ -74,13 +75,18 @@ namespace mousetrap
         _name_entry_box.push_back(&_name_entry_label);
         _name_entry_box.push_back(&_name_entry);
         _name_entry_box.set_vexpand(false);
+        _name_entry_box.set_hexpand(true);
 
         _file_chooser.set_expand(true);
         _file_chooser.set_focus_on_click(true);
         _name_entry.set_focus_on_click(true);
 
+        _main_frame.set_label_widget(nullptr);
+        _main_frame.set_child(&_file_chooser);
+        _main_frame.set_margin_horizontal(state::margin_unit);
+
         _main.push_back(&_name_entry_box);
-        _main.push_back(&_file_chooser);
+        _main.push_back(&_main_frame);
         _main.set_margin_vertical(state::margin_unit);
 
         _dialog.get_content_area().push_back(&_main);
@@ -130,16 +136,6 @@ namespace mousetrap
 
             return true;
         }, this);
-
-
-        _key_event_controller.connect_signal_key_pressed([](KeyEventController*, guint keyval, guint keycode, GdkModifierType state, SaveAsDialog*) -> bool {
-
-            //if (keyval == GDK_KEY_Return)
-                std::cout << "activate" << std::endl;
-
-            return false;
-        }, this);
-        _main.add_controller(&_key_event_controller);
     }
 
     template<typename Function_t, typename Arg_t>

@@ -73,6 +73,8 @@ namespace mousetrap
             bool get_boolean_choice(ChoiceID);
 
         private:
+            bool _non_filter_added = false;
+
             using choice_option = struct {std::vector<const char*> option_ids; std::vector<const char*> labels;};
            std::unordered_map<ChoiceID, choice_option> _choice_options;
     };
