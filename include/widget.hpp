@@ -45,6 +45,8 @@ namespace mousetrap
             void set_margin_start(float);
             void set_margin_end(float);
             void set_margin(float);
+            void set_margin_horizontal(float);
+            void set_margin_vertical(float);
 
             void set_hexpand(bool should_expand);
             void set_vexpand(bool should_expand);
@@ -72,6 +74,7 @@ namespace mousetrap
             void set_focusable(bool);
             void grab_focus();
             void set_focus_on_click(bool);
+            bool get_has_focus();
 
             bool get_is_realized();
 

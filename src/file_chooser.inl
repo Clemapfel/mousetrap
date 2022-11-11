@@ -87,16 +87,6 @@ namespace mousetrap
             std::cerr << "[WARNING] In FileChooser::set_current_folder: Unable to to set location to " << folder->get_path() << ": " << error_maybe->message << std::endl;
     }
 
-    std::string FileChooser::get_current_name()
-    {
-        return gtk_file_chooser_get_current_name(GTK_FILE_CHOOSER(get_native()));
-    }
-
-    void FileChooser::set_current_name(const std::string& name)
-    {
-        gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(get_native()), name.c_str());
-    }
-
     std::vector<FileDescriptor> FileChooser::get_selected()
     {
         auto* list = gtk_file_chooser_get_files(GTK_FILE_CHOOSER(get_native()));

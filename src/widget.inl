@@ -85,6 +85,18 @@ namespace mousetrap
         set_margin_end(value);
     }
 
+    void Widget::set_margin_horizontal(float value)
+    {
+        set_margin_start(value);
+        set_margin_end(value);
+    }
+
+    void Widget::set_margin_vertical(float value)
+    {
+        set_margin_top(value);
+        set_margin_bottom(value);
+    }
+
     void Widget::set_margin_bottom(float value)
     {
         gtk_widget_set_margin_bottom(this->operator GtkWidget*(), value);
@@ -301,6 +313,11 @@ namespace mousetrap
         gtk_widget_set_focus_on_click(this->operator GtkWidget*(), b);
     }
 
+    bool Widget::get_has_focus()
+    {
+        gtk_widget_has_visible_focus(this->operator GtkWidget*());
+    }
+
     void Widget::grab_focus()
     {
         gtk_widget_grab_focus(this->operator GtkWidget*());
@@ -315,20 +332,20 @@ namespace mousetrap
     {
         auto min = gtk_requisition_new();
         auto nat = gtk_requisition_new();
-        gtk_widget_get_preferred_size(_native, min, nat);
+        gtk_widget_get_preferred_size(this->operator GtkWidget*(), min, nat);
 
         return Widget::preferred_size{{min->width, min->height}, {nat->width, nat->height}};
     }
 
     void Widget::unparent()
     {
-        if (gtk_widget_get_parent(_native) != nullptr)
-            gtk_widget_unparent(_native);
+        if (gtk_widget_get_parent(this->operator GtkWidget*()) != nullptr)
+            gtk_widget_unparent(this->operator GtkWidget*());
     }
 
     void Widget::set_can_respond_to_input(bool b)
     {
-        gtk_widget_set_sensitive(_native, b);
+        gtk_widget_set_sensitive(this->operator GtkWidget*(), b);
     }
 
     void Widget::set_tooltip_title(const std::string& str)
@@ -345,8 +362,8 @@ namespace mousetrap
 
     void Widget::beep()
     {
-        if (gtk_widget_get_parent(_native) != nullptr)
-            gtk_widget_error_bell(_native);
+        if (gtk_widget_get_parent(this->operator GtkWidget*()) != nullptr)
+            gtk_widget_error_bell(this->operator GtkWidget*());
     }
 
     template<typename Function_t, typename Arg_t>

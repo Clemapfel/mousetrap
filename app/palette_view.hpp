@@ -490,7 +490,7 @@ namespace mousetrap
 
     void PaletteView::on_save_as_ok_pressed()
     {
-        auto title = _on_save_as_file_chooser.get_current_name();
+        std::string title = "";//_on_save_as_file_chooser.get_current_name();
         auto folder = _on_save_as_file_chooser.get_current_folder();
 
         if (title.empty())

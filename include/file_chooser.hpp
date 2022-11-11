@@ -12,7 +12,6 @@ namespace mousetrap
 {
     enum class FileChooserAction
     {
-        TODO = GTK_FILE_CHOOSER_ACTION_SAVE,
         SELECT_FILE = GTK_FILE_CHOOSER_ACTION_OPEN,
         SELECT_FOLDER = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER
     };
@@ -52,9 +51,6 @@ namespace mousetrap
 
             FileDescriptor get_current_folder();
             void set_current_folder(FileDescriptor*);
-
-            void set_current_name(const std::string&);
-            std::string get_current_name();
 
             void add_filter(FileFilter);
 
