@@ -9,61 +9,6 @@
 
 namespace mousetrap
 {
-    // TODO: select with preview: https://stackoverflow.com/questions/2817763/finding-file-icon-given-a-mime-type-using-gtk
-
-    class SaveAsDialog
-    {
-        public:
-            SaveAsDialog(const std::string& window_title);
-
-            template<typename Function_t, typename Arg_t>
-            void set_on_ok_pressed(Function_t, Arg_t);
-
-            template<typename Function_t, typename Arg_t>
-            void set_on_cancel_pressed(Function_t, Arg_t);
-
-            FileChooser& get_file_chooser();
-
-            std::string get_current_name();
-            std::string get_current_path();
-
-            void show();
-            void close();
-
-        private:
-            Window _window;
-            Dialog _dialog;
-
-            Frame _main_frame;
-            Box _main = Box(GTK_ORIENTATION_VERTICAL);
-
-            Box _name_entry_box = Box(GTK_ORIENTATION_HORIZONTAL);
-            Entry _name_entry;
-            Label _name_entry_label = Label("Name: ");
-
-            std::function<void(SaveAsDialog*)> _on_ok_pressed;
-            std::function<void(SaveAsDialog*)> _on_cancel_pressed;
-
-            FileChooser _file_chooser;
-            std::string _previously_selected_path = "";
-
-            Button _ok_button;
-            Label _ok_button_label = Label("OK");
-
-            Button _cancel_button;
-            Label _cancel_button_label = Label("Cancel");
-
-            Dialog _warn_on_override_dialog = Dialog(&_window, "Warning");
-
-            Viewport  _warn_on_override_content_box;
-            Label _warn_on_override_content;
-
-            Button _warn_on_override_continue_button;
-            Label  _warn_on_override_continue_label = Label("Continue");
-            Button _warn_on_override_cancel_button;
-            Label  _warn_on_override_cancel_label = Label("Cancel");
-    };
-
     class FilePreview : public AppComponent
     {
         public:
@@ -88,6 +33,65 @@ namespace mousetrap
             Label _file_type_label;
             Label _file_size_label;
     };
+    
+    class SaveAsDialog
+    {
+        public:
+            SaveAsDialog(const std::string& window_title);
+
+            template<typename Function_t, typename Arg_t>
+            void set_on_ok_pressed(Function_t, Arg_t);
+
+            template<typename Function_t, typename Arg_t>
+            void set_on_cancel_pressed(Function_t, Arg_t);
+
+            FileChooser& get_file_chooser();
+
+            std::string get_current_name();
+            std::string get_current_path();
+
+            void show();
+            void close();
+
+        private:
+            Window _window;
+            Dialog _dialog;
+
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
+
+            Box _name_entry_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Entry _name_entry;
+            Label _name_entry_label = Label("Name: ");
+
+            std::function<void(SaveAsDialog*)> _on_ok_pressed;
+            std::function<void(SaveAsDialog*)> _on_cancel_pressed;
+
+            FilePreview _file_preview;
+            Frame _preview_frame;
+            Label _preview_label = Label("<span weight=\"bold\" color=\"#AAAAAA\">Preview</span>");
+
+            FileChooser _file_chooser;
+            Frame _file_chooser_frame;
+            std::string _previously_selected_path = "";
+            
+            Box _file_chooser_and_preview_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
+            Button _ok_button;
+            Label _ok_button_label = Label("OK");
+
+            Button _cancel_button;
+            Label _cancel_button_label = Label("Cancel");
+
+            Dialog _warn_on_override_dialog = Dialog(&_window, "Warning");
+
+            Viewport  _warn_on_override_content_box;
+            Label _warn_on_override_content;
+
+            Button _warn_on_override_continue_button;
+            Label  _warn_on_override_continue_label = Label("Continue");
+            Button _warn_on_override_cancel_button;
+            Label  _warn_on_override_cancel_label = Label("Cancel");
+    };
 
     class OpenDialog
     {
@@ -101,7 +105,9 @@ namespace mousetrap
             void set_on_cancel_pressed(Function_t, Arg_t);
 
             FileChooser& get_file_chooser();
-            Dialog& get_dialog();
+
+            void show();
+            void close();
 
         private:
             Window _window;
@@ -160,12 +166,18 @@ namespace mousetrap
         _file_chooser.add_boolean_choice("WARN_ON_OVERRIDE", "Warn if file already exists", true);
         _name_entry.set_focus_on_click(true);
 
-        _main_frame.set_label_widget(nullptr);
-        _main_frame.set_child(&_file_chooser);
-        _main_frame.set_margin_horizontal(state::margin_unit);
+        _file_chooser_frame.set_label_widget(nullptr);
+        _file_chooser_frame.set_child(&_file_chooser);
+
+        _preview_frame.set_label_widget(&_preview_label);
+        _preview_frame.set_child(_file_preview);
+        
+        _file_chooser_and_preview_box.push_back(&_file_chooser_frame);
+        _file_chooser_and_preview_box.push_back(&_preview_frame);
+        _file_chooser_and_preview_box.set_margin_horizontal(state::margin_unit);
 
         _main.push_back(&_name_entry_box);
-        _main.push_back(&_main_frame);
+        _main.push_back(&_file_chooser_and_preview_box);
         _main.set_margin_vertical(state::margin_unit);
 
         _dialog.get_content_area().push_back(&_main);
@@ -503,8 +515,13 @@ namespace mousetrap
         return _file_chooser;
     }
 
-    Dialog& OpenDialog::get_dialog()
+    void OpenDialog::show()
     {
-        return _dialog;
+        _dialog.show();
+    }
+
+    void OpenDialog::close()
+    {
+        _dialog.close();
     }
 }
