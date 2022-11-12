@@ -55,7 +55,7 @@ namespace mousetrap
 
             Dialog _warn_on_override_dialog = Dialog(&_window, "Warning");
 
-            ScrolledWindow  _warn_on_override_content_box;
+            Viewport  _warn_on_override_content_box;
             Label _warn_on_override_content;
 
             Button _warn_on_override_continue_button;
@@ -170,14 +170,12 @@ namespace mousetrap
 
         _dialog.get_content_area().push_back(&_main);
 
-        _warn_on_override_content_box.set_policy(GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-        _warn_on_override_content_box.set_propagate_natural_height(true);
-        _warn_on_override_content_box.set_propagate_natural_width(true);
-        _warn_on_override_content_box.set_expand(true);
         _warn_on_override_content.set_wrap_mode(LabelWrapMode::ONLY_ON_WORD);
         _warn_on_override_content.set_justify_mode(JustifyMode::LEFT);
         _warn_on_override_content.set_expand(false);
+        _warn_on_override_content.set_halign(GTK_ALIGN_START);
 
+        _warn_on_override_content_box.set_margin(state::margin_unit);
         _warn_on_override_content_box.set_child(&_warn_on_override_content);
         _warn_on_override_dialog.get_content_area().push_back(&_warn_on_override_content_box);
         _warn_on_override_dialog.get_content_area().set_expand(true);
