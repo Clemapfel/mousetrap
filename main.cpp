@@ -292,8 +292,8 @@ static void activate(GtkApplication* app, void*)
     //gtk_file_dialog_show(file_dialog);
 
     // TODO
-    auto* save_as = new OpenDialog("Debug");
-    save_as->set_on_open_pressed([](OpenDialog* dialog, nullptr_t) {
+    auto* save_as = new SaveAsDialog("Debug");
+    save_as->set_on_ok_pressed([](SaveAsDialog* dialog, nullptr_t) {
 
         auto selected = dialog->get_file_chooser().get_selected();
         if (selected.empty())

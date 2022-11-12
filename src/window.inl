@@ -89,6 +89,11 @@ namespace mousetrap
         gtk_window_set_titlebar(get_native(), GTK_WIDGET(titlebar));
     }
 
+    void Window::set_titlebar_widget(Widget* widget)
+    {
+        gtk_window_set_titlebar(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget *());
+    }
+
     bool Window::on_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, void*)
     {
         std::vector<std::pair<ShortcutID, GtkShortcutTrigger*>> triggered;

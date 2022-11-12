@@ -983,6 +983,12 @@ namespace mousetrap
                 _blocked = b;
             }
 
+            void emit_signal_close()
+            {
+                if (_on_close_f != nullptr and not _blocked)
+                    _on_close_f(_instance, _on_close_data);
+            };
+
         protected:
             HasCloseSignal(Owner_t* instance)
                     : _instance(instance)
@@ -991,7 +997,7 @@ namespace mousetrap
         private:
             Owner_t* _instance;
 
-            static void on_close_wrapper(Widget*, HasCloseSignal<Owner_t>* instance);
+            static gboolean on_close_wrapper(Widget*, HasCloseSignal<Owner_t>* instance);
 
             bool _blocked = false;
             std::function<on_close_function_t<void*>> _on_close_f;
@@ -1682,13 +1688,15 @@ namespace mousetrap
         _on_close_f = std::function<on_close_function_t<void*>>(*((std::function<on_close_function_t<void*>>*) &temp));
         _on_close_data = data;
 
-        _instance->connect_signal("close", on_close_wrapper, this);
+        _instance->connect_signal("close-request", on_close_wrapper, this);
     }
 
     template<typename Owner_t>
-    void HasCloseSignal<Owner_t>::on_close_wrapper(Widget*, HasCloseSignal<Owner_t>* self)
+    gboolean HasCloseSignal<Owner_t>::on_close_wrapper(Widget*, HasCloseSignal<Owner_t>* self)
     {
         if (self->_on_close_f != nullptr and not self->_blocked)
             self->_on_close_f(self->_instance, self->_on_close_data);
+
+        return true;
     }
 }

@@ -34,6 +34,7 @@ namespace mousetrap
 
             // https://docs.gtk.org/gtk4/property.Settings.gtk-decoration-layout.html
             void set_titlebar_layout(const char*);
+            void set_titlebar_widget(Widget*);
 
         private:
             using ShortcutID = std::string;

@@ -27,6 +27,7 @@ namespace mousetrap
     void Dialog::close()
     {
         gtk_window_close(GTK_WINDOW(get_native()));
+        emit_signal_close();
     }
 
     template<typename Function_t, typename T>
@@ -60,6 +61,9 @@ namespace mousetrap
 
     void Dialog::on_response_wrapper(GtkDialog*, int response_id, Dialog* instance)
     {
+        if (response_id == GTK_RESPONSE_CLOSE)
+            instance->emit_signal_close();
+
         if (response_id >= 0)
             instance->_actions.at(response_id)();
     }

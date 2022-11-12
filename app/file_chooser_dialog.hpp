@@ -30,7 +30,7 @@ namespace mousetrap
 
         private:
             Window _window;
-            Dialog _dialog = Dialog(&_window, "Save as...");
+            Dialog _dialog;
 
             Frame _main_frame;
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
@@ -50,6 +50,18 @@ namespace mousetrap
 
             Button _cancel_button;
             Label _cancel_button_label = Label("Cancel");
+
+            Window _warn_on_override_window;
+            Dialog _warn_on_override_dialog = Dialog(&_warn_on_override_window, "Warning");
+
+            Box  _warn_on_override_content_box = Box(GTK_ORIENTATION_VERTICAL, state::margin_unit);
+            Label _warn_on_override_content_01;
+            Label _warn_on_override_content_02;
+
+            Button _warn_on_override_continue_button;
+            Label  _warn_on_override_continue_label = Label("Continue");
+            Button _warn_on_override_cancel_button;
+            Label  _warn_on_override_cancel_label = Label("Cancel");
     };
 
     class FilePreview : public AppComponent
@@ -144,6 +156,7 @@ namespace mousetrap
 
         _file_chooser.set_expand(true);
         _file_chooser.set_focus_on_click(true);
+        _file_chooser.add_boolean_choice("WARN_ON_OVERRIDE", "Warn if file already exists", true);
         _name_entry.set_focus_on_click(true);
 
         _main_frame.set_label_widget(nullptr);
@@ -156,31 +169,97 @@ namespace mousetrap
 
         _dialog.get_content_area().push_back(&_main);
 
+        for (auto* content : {&_warn_on_override_content_01, &_warn_on_override_content_02})
+        {
+            content->set_wrap_mode(LabelWrapMode::ONLY_ON_WORD);
+            content->set_justify_mode(JustifyMode::LEFT);
+            content->set_halign(GTK_ALIGN_START);
+        }
+
+        _warn_on_override_content_box.push_back(&_warn_on_override_content_01);
+        _warn_on_override_content_box.push_back(&_warn_on_override_content_02);
+
+        _warn_on_override_dialog.get_content_area().push_back(&_warn_on_override_content_box);
+        _warn_on_override_content_box.set_margin(2* state::margin_unit);
+
+        _warn_on_override_dialog.connect_signal_close([](Dialog*, SaveAsDialog* instance) {
+            instance->_dialog.set_can_respond_to_input(true);
+        }, this);
+
+        _warn_on_override_dialog.connect_signal_show([](Widget*, SaveAsDialog* instance) {
+            instance->_dialog.set_can_respond_to_input(false);
+        }, this);
+
         _ok_button_label.set_margin_horizontal(state::margin_unit);
         _cancel_button_label.set_margin_horizontal(state::margin_unit);
+        _warn_on_override_continue_label.set_margin_horizontal(state::margin_unit);
+        _warn_on_override_cancel_label.set_margin_horizontal(state::margin_unit);
 
         _ok_button.set_child(&_ok_button_label);
         _cancel_button.set_child(&_cancel_button_label);
+        _warn_on_override_continue_button.set_child(&_warn_on_override_continue_label);
+        _warn_on_override_cancel_button.set_child(&_warn_on_override_cancel_label);
 
         auto size = std::max(
             _ok_button_label.get_preferred_size().natural_size.x,
             _cancel_button_label.get_preferred_size().natural_size.x
         );
 
-        _ok_button.set_size_request({size, 0});
-        _cancel_button.set_size_request({size, 0});
+        _ok_button_label.set_size_request({size, 0});
+        _cancel_button_label.set_size_request({size, 0});
+
+        size = std::max(
+            _warn_on_override_continue_label.get_preferred_size().natural_size.x,
+            _warn_on_override_cancel_label.get_preferred_size().natural_size.x
+        );
+
+        _warn_on_override_continue_label.set_size_request({size, 0});
+        _warn_on_override_cancel_label.set_size_request({size, 0});
+
+        _warn_on_override_dialog.add_action_widget(&_warn_on_override_cancel_button, [](SaveAsDialog* instance){
+            instance->_warn_on_override_dialog.close();
+        }, this);
+
+        _warn_on_override_dialog.add_action_widget(&_warn_on_override_continue_button, [](SaveAsDialog* instance){
+            if (instance->_on_ok_pressed)
+                instance->_on_ok_pressed(instance);
+
+            instance->_warn_on_override_dialog.close();
+            instance->_dialog.close();
+        }, this);
 
         _dialog.add_action_widget(&_cancel_button, [](SaveAsDialog* instance){
             if (instance->_on_cancel_pressed)
                 instance->_on_cancel_pressed(instance);
+
+            instance->_warn_on_override_dialog.close();
+            instance->_dialog.close();
         }, this);
 
         _dialog.add_action_widget(&_ok_button, [](SaveAsDialog* instance){
-            if (instance->_on_ok_pressed)
-                instance->_on_ok_pressed(instance);
+
+            if (instance->_file_chooser.get_boolean_choice("WARN_ON_OVERRIDE"))
+            {
+                instance->_warn_on_override_content_01.set_text("<b>A file named `" + instance->_name_entry.get_text() + "` already exists. Do you want to replace it?</b>");
+                instance->_warn_on_override_content_02.set_text("This will override the files contents.\nThis operation cannot be undone, continue anyway?");
+                instance->_warn_on_override_dialog.show();
+            }
+            else
+            {
+                if (instance->_on_ok_pressed)
+                    instance->_on_ok_pressed(instance);
+
+                instance->_warn_on_override_dialog.close();
+                instance->_dialog.close();
+            }
         }, this);
 
         auto* temp = gtk_widget_get_parent(_cancel_button.operator GtkWidget*());
+        gtk_widget_set_margin_bottom(temp, state::margin_unit);
+        gtk_widget_set_margin_end(temp, state::margin_unit);
+        gtk_box_set_spacing(GTK_BOX(temp), state::margin_unit);
+
+        temp = gtk_widget_get_parent(_warn_on_override_cancel_button.operator GtkWidget*());
         gtk_widget_set_margin_bottom(temp, state::margin_unit);
         gtk_widget_set_margin_end(temp, state::margin_unit);
         gtk_box_set_spacing(GTK_BOX(temp), state::margin_unit);
