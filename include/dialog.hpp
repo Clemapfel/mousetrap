@@ -23,6 +23,8 @@ namespace mousetrap
             void add_action_widget(Widget*, Function_t, Data_t);
 
             Box& get_content_area();
+
+            void present();
             void close();
 
         private:

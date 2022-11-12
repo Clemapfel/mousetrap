@@ -298,11 +298,9 @@ static void activate(GtkApplication* app, void*)
         auto selected = dialog->get_file_chooser().get_selected();
         if (selected.empty())
             return;
-
         std::cout << selected.at(0).get_name() << std::endl;
-        dialog->get_dialog().close();
     }, nullptr);
-    save_as->get_dialog().show();
+    save_as->show();
     // TODO
 
     //state::main_window->show();

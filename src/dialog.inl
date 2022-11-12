@@ -19,6 +19,7 @@ namespace mousetrap
               _action_area(GTK_ORIENTATION_HORIZONTAL)
     {
         g_signal_connect(get_native(), "response", G_CALLBACK(on_response_wrapper), this);
+        gtk_window_set_hide_on_close(GTK_WINDOW(get_native()), true);
     }
 
     Dialog::~Dialog() noexcept
@@ -28,6 +29,11 @@ namespace mousetrap
     {
         gtk_window_close(GTK_WINDOW(get_native()));
         emit_signal_close();
+    }
+
+    void Dialog::present()
+    {
+        gtk_window_present(GTK_WINDOW(get_native()));
     }
 
     template<typename Function_t, typename T>

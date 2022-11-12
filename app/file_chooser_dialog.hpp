@@ -23,10 +23,12 @@ namespace mousetrap
             void set_on_cancel_pressed(Function_t, Arg_t);
 
             FileChooser& get_file_chooser();
-            Dialog& get_dialog();
 
             std::string get_current_name();
             std::string get_current_path();
+
+            void show();
+            void close();
 
         private:
             Window _window;
@@ -51,12 +53,10 @@ namespace mousetrap
             Button _cancel_button;
             Label _cancel_button_label = Label("Cancel");
 
-            Window _warn_on_override_window;
-            Dialog _warn_on_override_dialog = Dialog(&_warn_on_override_window, "Warning");
+            Dialog _warn_on_override_dialog = Dialog(&_window, "Warning");
 
-            Box  _warn_on_override_content_box = Box(GTK_ORIENTATION_VERTICAL, state::margin_unit);
-            Label _warn_on_override_content_01;
-            Label _warn_on_override_content_02;
+            ScrolledWindow  _warn_on_override_content_box;
+            Label _warn_on_override_content;
 
             Button _warn_on_override_continue_button;
             Label  _warn_on_override_continue_label = Label("Continue");
@@ -136,6 +136,7 @@ namespace mousetrap
     SaveAsDialog::SaveAsDialog(const std::string& window_title)
         : _dialog(&_window, window_title)
     {
+        _window.set_titlebar_layout("close");
         _name_entry.connect_signal_activate([&](Widget*, SaveAsDialog* instance){
             if (instance->_on_ok_pressed)
                 instance->_on_ok_pressed(instance);
@@ -169,26 +170,18 @@ namespace mousetrap
 
         _dialog.get_content_area().push_back(&_main);
 
-        for (auto* content : {&_warn_on_override_content_01, &_warn_on_override_content_02})
-        {
-            content->set_wrap_mode(LabelWrapMode::ONLY_ON_WORD);
-            content->set_justify_mode(JustifyMode::LEFT);
-            content->set_halign(GTK_ALIGN_START);
-        }
+        _warn_on_override_content_box.set_policy(GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+        _warn_on_override_content_box.set_propagate_natural_height(true);
+        _warn_on_override_content_box.set_propagate_natural_width(true);
+        _warn_on_override_content_box.set_expand(true);
+        _warn_on_override_content.set_wrap_mode(LabelWrapMode::ONLY_ON_WORD);
+        _warn_on_override_content.set_justify_mode(JustifyMode::LEFT);
+        _warn_on_override_content.set_expand(false);
 
-        _warn_on_override_content_box.push_back(&_warn_on_override_content_01);
-        _warn_on_override_content_box.push_back(&_warn_on_override_content_02);
-
+        _warn_on_override_content_box.set_child(&_warn_on_override_content);
         _warn_on_override_dialog.get_content_area().push_back(&_warn_on_override_content_box);
+        _warn_on_override_dialog.get_content_area().set_expand(true);
         _warn_on_override_content_box.set_margin(2* state::margin_unit);
-
-        _warn_on_override_dialog.connect_signal_close([](Dialog*, SaveAsDialog* instance) {
-            instance->_dialog.set_can_respond_to_input(true);
-        }, this);
-
-        _warn_on_override_dialog.connect_signal_show([](Widget*, SaveAsDialog* instance) {
-            instance->_dialog.set_can_respond_to_input(false);
-        }, this);
 
         _ok_button_label.set_margin_horizontal(state::margin_unit);
         _cancel_button_label.set_margin_horizontal(state::margin_unit);
@@ -225,32 +218,24 @@ namespace mousetrap
                 instance->_on_ok_pressed(instance);
 
             instance->_warn_on_override_dialog.close();
-            instance->_dialog.close();
         }, this);
 
         _dialog.add_action_widget(&_cancel_button, [](SaveAsDialog* instance){
             if (instance->_on_cancel_pressed)
                 instance->_on_cancel_pressed(instance);
-
-            instance->_warn_on_override_dialog.close();
-            instance->_dialog.close();
         }, this);
 
         _dialog.add_action_widget(&_ok_button, [](SaveAsDialog* instance){
 
             if (instance->_file_chooser.get_boolean_choice("WARN_ON_OVERRIDE"))
             {
-                instance->_warn_on_override_content_01.set_text("<b>A file named `" + instance->_name_entry.get_text() + "` already exists. Do you want to replace it?</b>");
-                instance->_warn_on_override_content_02.set_text("This will override the files contents.\nThis operation cannot be undone, continue anyway?");
-                instance->_warn_on_override_dialog.show();
+                instance->_warn_on_override_content.set_text("<b>A file named `" + instance->_name_entry.get_text() + "` already exists. Do you want to replace it?</b>\n\nThis will override the files contents. This operation cannot be undone, continue anyway?");
+                instance->_warn_on_override_dialog.present();
             }
             else
             {
                 if (instance->_on_ok_pressed)
                     instance->_on_ok_pressed(instance);
-
-                instance->_warn_on_override_dialog.close();
-                instance->_dialog.close();
             }
         }, this);
 
@@ -284,6 +269,17 @@ namespace mousetrap
         }, this);
     }
 
+    void SaveAsDialog::show()
+    {
+        _dialog.show();
+    }
+
+    void SaveAsDialog::close()
+    {
+        _warn_on_override_dialog.close();
+        _dialog.close();
+    }
+
     template<typename Function_t, typename Arg_t>
     void SaveAsDialog::set_on_ok_pressed(Function_t f_in, Arg_t arg_in)
     {
@@ -313,11 +309,6 @@ namespace mousetrap
     std::string SaveAsDialog::get_current_path()
     {
         return _file_chooser.get_current_folder().get_name() + "/" + get_current_name();
-    }
-
-    Dialog& SaveAsDialog::get_dialog()
-    {
-        return _dialog;
     }
 }
 
