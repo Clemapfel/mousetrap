@@ -292,14 +292,27 @@ static void activate(GtkApplication* app, void*)
     //gtk_file_dialog_show(file_dialog);
 
     // TODO
-    auto* save_as = new SaveAsDialog("Debug");
-    save_as->set_on_ok_pressed([](SaveAsDialog* dialog, nullptr_t) {
+    auto* open = new OpenFileDialog("Debug");
+    auto* save_as = new SaveAsFileDialog("Debug");
+
+    open->set_on_accept_pressed([other = save_as](OpenFileDialog* dialog, nullptr_t) {
 
         auto selected = dialog->get_file_chooser().get_selected();
         if (selected.empty())
             return;
         std::cout << selected.at(0).get_name() << std::endl;
+        other->show();
     }, nullptr);
+
+    save_as->set_on_accept_pressed([other = open](SaveAsFileDialog* dialog, nullptr_t) {
+
+        auto selected = dialog->get_file_chooser().get_selected();
+        if (selected.empty())
+            return;
+        std::cout << selected.at(0).get_name() << std::endl;
+        other->show();
+    }, nullptr);
+
     save_as->show();
     // TODO
 

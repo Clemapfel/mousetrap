@@ -53,7 +53,7 @@ namespace mousetrap
             gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(get_native()), all_filter);
             _non_filter_added = true;
         }
-        
+
         gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(get_native()), filter.operator GtkFileFilter*());
     }
 
@@ -151,6 +151,15 @@ namespace mousetrap
 
         if (default_choice != "")
             gtk_file_chooser_set_choice(GTK_FILE_CHOOSER(get_native()), id.c_str(), default_choice.c_str());
+
+        if (not _non_filter_added) // adding a choice but no filter will otherwise display (None)
+        {
+            auto* all_filter = gtk_file_filter_new();
+            gtk_file_filter_set_name(all_filter, "(No Filter)");
+            gtk_file_filter_add_pattern(all_filter, "*");
+            gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(get_native()), all_filter);
+            _non_filter_added = true;
+        }
     }
 
     void FileChooser::add_boolean_choice(ChoiceID id, const std::string& label, bool default_choice)
@@ -161,5 +170,14 @@ namespace mousetrap
             gtk_file_chooser_set_choice(GTK_FILE_CHOOSER(get_native()), id.c_str(), "true");
         else
             gtk_file_chooser_set_choice(GTK_FILE_CHOOSER(get_native()), id.c_str(), "false");
+
+        if (not _non_filter_added) // adding a choice but no filter will otherwise display (None)
+        {
+            auto* all_filter = gtk_file_filter_new();
+            gtk_file_filter_set_name(all_filter, "(No Filter)");
+            gtk_file_filter_add_pattern(all_filter, "*");
+            gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(get_native()), all_filter);
+            _non_filter_added = true;
+        }
     }
 }
