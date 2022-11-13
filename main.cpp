@@ -341,10 +341,24 @@ static void activate(GtkApplication* app, void*)
 <object class="GtkShortcutsGroup" id="object">
 <property name="title" translatable="yes">Controls</property>
 <child>
-<object class="GtkShortcutsShortcut">
-<property name="title" translatable="yes">
- go to child of selected folder</property><property name="accelerator">&lt;Alt&gt;Down</property></object>
+  <object class="GtkShortcutsShortcut">
+    <property name="title" translatable="yes">Global Search</property>
+    <property name="accelerator">&lt;ctrl&gt;period</property>
+  </object>
 </child>
+<child>
+  <object class="GtkShortcutsShortcut">
+    <property name="title" translatable="yes">Preferences</property>
+    <property name="accelerator">&lt;ctrl&gt;comma</property>
+  </object>
+</child>
+<child>
+    <object class="GtkShortcutsShortcut">
+        <property name="title" translatable="yes">go to child of selected folder</property>
+        <property name="accelerator">&lt;Alt&gt;Down</property>
+    </object>
+</child>
+
 <child>
 <object class="GtkShortcutsShortcut">
 <property name="title" translatable="yes">
@@ -390,7 +404,7 @@ static void activate(GtkApplication* app, void*)
     auto shortcut_info = ShortcutInformation();
     shortcut_info.set_title("Controls");
     shortcut_info.create_from_group("file_chooser_dialog", state::keybindings_file);
-    //state::main_window->set_child(shortcut_info);
+    state::main_window->set_child(shortcut_info);
 
     state::main_window->show();
     state::main_window->present();

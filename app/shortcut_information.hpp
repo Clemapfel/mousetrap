@@ -1,4 +1,4 @@
-// 
+//
 // Copyright 2022 Clemens Cords
 // Created on 11/13/22 by clem (mail@clemens-cords.com)
 //
@@ -17,19 +17,20 @@ namespace mousetrap
             ~ShortcutInformation();
 
             operator Widget*();
-            void update();
+            void update() override {};
 
             void set_title(const std::string&);
+            void set_description(const std::string&);
             void add_shortcut(const std::string& accelerator, const std::string& description);
 
-            void create_from_group(const std::string& section, ConfigFile* file);
+            void create_from_group(const std::string& group, ConfigFile* file);
 
         private:
-           std::string _title;
-           std::vector<std::pair<std::string, std::string>> _accelerators_and_description;
+            Label _title = Label("");
+            Label _description = Label("");
+            std::vector<AcceleratorDisplay*> _shortcut_views;
 
-           ShortcutGroupDisplay* _display = nullptr;
-           Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
 }
 
@@ -38,7 +39,10 @@ namespace mousetrap
 namespace mousetrap
 {
     ShortcutInformation::ShortcutInformation()
-    {}
+    {
+        _main.push_back(&_title);
+        _main.push_back(&_description);
+    }
 
     ShortcutInformation::operator Widget*()
     {
@@ -47,38 +51,32 @@ namespace mousetrap
 
     ShortcutInformation::~ShortcutInformation()
     {
-        delete _display;
+        for (auto* view : _shortcut_views)
+            delete view;
     }
 
-    void ShortcutInformation::update()
+    void ShortcutInformation::set_title(const std::string& text)
     {
-        _main.clear();
-        delete _display;
-
-        _display = new ShortcutGroupDisplay(_title, _accelerators_and_description);
-        _main.push_back(_display);
+        _title.set_text("<b>" + text + "</b>");
     }
 
-    void ShortcutInformation::set_title(const std::string& title)
+    void ShortcutInformation::set_description(const std::string& text)
     {
-        _title = title;
-        update();
+        _description.set_text(text);
     }
 
     void ShortcutInformation::add_shortcut(const std::string& accelerator, const std::string& description)
     {
-        _accelerators_and_description.emplace_back(accelerator, description);
-        update();
+        _shortcut_views.emplace_back(new AcceleratorDisplay(accelerator, description));
+        _main.push_back(_shortcut_views.back());
     }
 
-    void ShortcutInformation::create_from_group(const std::string& section, ConfigFile* file)
+    void ShortcutInformation::create_from_group(const std::string& group, ConfigFile* file)
     {
-        auto keys = file->get_keys(section);
-        _accelerators_and_description.clear();
+        auto keys = file->get_keys(group);
+        for (auto& key : keys)
+            add_shortcut(file->get_value(group, key), file->get_comment_above(group, key));
 
-        for (auto key : keys)
-            _accelerators_and_description.emplace_back(file->get_value(section, key), file->get_comment_above(section, key));
-
-        update();
+        set_description(file->get_comment_above(group));
     }
 }
