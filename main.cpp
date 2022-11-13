@@ -312,26 +312,7 @@ static void activate(GtkApplication* app, void*)
         std::cout << selected.at(0).get_name() << std::endl;
         other->show();
     }, nullptr);
-
-    // TODO
-    auto* box = new Box(GTK_ORIENTATION_VERTICAL, state::margin_unit);
-
-    for (auto e : {
-        GESTURE_SWIPE_LEFT,
-        GESTURE_SWIPE_RIGHT,
-        GESTURE_TWO_FINGER_SWIPE_RIGHT,
-        GESTURE_TWO_FINGER_SWIPE_LEFT,
-        GESTURE_STRETCH,
-        GESTURE_PINCH,
-        GESTURE_ROTATE_CLOCKWISE,
-        GESTURE_ROTATE_COUNTERCLOCKWISE
-    })
-    {
-        std::cout << e << std::endl;
-        box->push_back(new ShortcutView(e, "Test"));
-    }
-
-    state::main_window->set_child(box);
+    save_as->show();
 
     state::main_window->show();
     state::main_window->present();

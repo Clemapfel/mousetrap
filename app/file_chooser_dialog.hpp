@@ -9,6 +9,7 @@
 
 #include <app/global_state.hpp>
 #include <app/app_component.hpp>
+#include <app/shortcut_information.hpp>
 
 namespace mousetrap
 {
@@ -72,12 +73,6 @@ namespace mousetrap
             Button _cancel_button;
             Label _cancel_button_label = Label("Cancel");
 
-            MenuButton _help_button;
-            Popover _help_popover;
-            Box _help_popover_content = Box(GTK_ORIENTATION_HORIZONTAL);
-
-            SeparatorLine _button_separator;
-
             FilePreview _file_preview;
             Frame _preview_frame;
             Label _preview_label = Label("<span weight=\"bold\" color=\"#AAAAAA\">Preview</span>");
@@ -93,8 +88,6 @@ namespace mousetrap
             
             Box _content_area = Box(GTK_ORIENTATION_VERTICAL);
             Box _file_chooser_preview_area = Box(GTK_ORIENTATION_HORIZONTAL);
-
-            std::string _previously_selected_path = "";
 
             std::function<void(FileChooserDialog*)> _on_accept_pressed;
             std::function<void(FileChooserDialog*)> _on_cancel_pressed;
@@ -352,27 +345,12 @@ namespace mousetrap
             }
         }, this);
 
-        _help_popover.set_child(&_help_popover_content);
-        _help_button.set_popover(&_help_popover);
-
         auto* button_area = gtk_widget_get_parent(_cancel_button.operator GtkWidget*());
 
         gtk_widget_set_margin_bottom(button_area, state::margin_unit);
         gtk_widget_set_margin_end(button_area, state::margin_unit);
         gtk_widget_set_margin_start(button_area, state::margin_unit);
         gtk_box_set_spacing(GTK_BOX(button_area), state::margin_unit);
-
-        gtk_box_prepend(GTK_BOX(button_area), _button_separator);
-        gtk_box_prepend(GTK_BOX(button_area), _help_button);
-
-        _help_button.set_hexpand(false);
-        _cancel_button.set_hexpand(false);
-        _accept_button.set_hexpand(false);
-        _button_separator.set_hexpand(true);
-
-        _help_button.set_halign(GTK_ALIGN_START);
-        _cancel_button.set_has_frame(GTK_ALIGN_END);
-        _accept_button.set_has_frame(GTK_ALIGN_END);
 
         button_area = gtk_widget_get_parent(_warn_on_override_cancel_button.operator GtkWidget*());
         gtk_widget_set_margin_bottom(button_area, state::margin_unit);
