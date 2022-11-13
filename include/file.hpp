@@ -1,4 +1,4 @@
-// 
+//
 // Copyright 2022 Clemens Cords
 // Created on 10/23/22 by clem (mail@clemens-cords.com)
 //
@@ -173,24 +173,7 @@ namespace mousetrap
         if (is_folder())
             return "folder";
 
-        gboolean uncertain;
-        auto* type = g_content_type_guess(g_file_get_path(_native), nullptr, 0, &uncertain);
-        return (type == nullptr) ? "unknown" : type;
-
-        /*
-        GError* error = nullptr;
-        auto* info = g_file_query_info(_native, G_FILE_ATTRIBUTE_PREVIEW_ICON, G_FILE_QUERY_INFO_NONE, nullptr, &error);
-
-        if (error != nullptr)
-        {
-            std::cerr << "[ERROR] In FileDescriptor::get_icon_id: " << error->message << std::endl;
-            return "";
-        }
-
-        auto* out = g_file_info_get_attribute_string(info, G_FILE_ATTRIBUTE_PREVIEW_ICON);
-        g_object_unref(info);
-        return std::string(out == nullptr ? "" : out);
-         */
+        return query_info(G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE);
     }
 
     std::string FileDescriptor::query_info(const char* attribute_query_string)

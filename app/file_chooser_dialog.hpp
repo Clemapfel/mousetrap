@@ -37,13 +37,14 @@ namespace mousetrap
             Label _file_size_label;
     };
 
-    enum class FileChooserMode
+    enum class FileChooserDialogMode
     {
         OPEN,
-        SAVE_AS
+        SAVE_AS,
+        CHOOSE_FOLDER
     };
     
-    template<FileChooserMode Mode>
+    template<FileChooserDialogMode Mode>
     class FileChooserDialog
     {
         public:
@@ -56,7 +57,6 @@ namespace mousetrap
             void set_on_cancel_pressed(Function_t, Arg_t);
 
             FileChooser& get_file_chooser();
-
             std::string get_current_name();
 
             void show();
@@ -67,7 +67,7 @@ namespace mousetrap
             Dialog _dialog;
 
             Button _accept_button;
-            Label _accept_button_label = Label(Mode == FileChooserMode::SAVE_AS ? "OK" : "Open");
+            Label _accept_button_label = Label(Mode == FileChooserDialogMode::SAVE_AS ? "OK" : "Open");
 
             Button _cancel_button;
             Label _cancel_button_label = Label("Cancel");
@@ -77,7 +77,9 @@ namespace mousetrap
             Label _preview_label = Label("<span weight=\"bold\" color=\"#AAAAAA\">Preview</span>");
             
             Frame _file_chooser_frame;
-            FileChooser _file_chooser;
+            FileChooser _file_chooser = FileChooser(
+                Mode == FileChooserDialogMode::CHOOSE_FOLDER ? FileChooserAction::SELECT_FOLDER : FileChooserAction::SELECT_FILE
+            );
 
             Box _name_entry_box = Box(GTK_ORIENTATION_HORIZONTAL);
             Entry _name_entry;
@@ -104,8 +106,9 @@ namespace mousetrap
             Label  _warn_on_override_cancel_label = Label("Cancel");
     };
     
-    using SaveAsFileDialog = FileChooserDialog<FileChooserMode::SAVE_AS>;
-    using OpenFileDialog = FileChooserDialog<FileChooserMode::OPEN>;
+    using SaveAsFileDialog = FileChooserDialog<FileChooserDialogMode::SAVE_AS>;
+    using OpenFileDialog = FileChooserDialog<FileChooserDialogMode::OPEN>;
+    using ChooseFolderDialog = FileChooserDialog<FileChooserDialogMode::CHOOSE_FOLDER>;
 }
 
 ///
@@ -126,6 +129,7 @@ namespace mousetrap
         _file_name_label.set_halign(GTK_ALIGN_CENTER);
         _file_name_label.set_ellipsize_mode(EllipsizeMode::END);
         _file_type_label.set_ellipsize_mode(EllipsizeMode::START);
+        _file_size_label.set_ellipsize_mode(EllipsizeMode::NONE);
 
         for (auto* label : {&_file_name_label, &_file_type_label, &_file_size_label})
         {
@@ -182,7 +186,7 @@ namespace mousetrap
         else
         {
             auto* info = g_file_query_info(_file->operator GFile*(), G_FILE_ATTRIBUTE_PREVIEW_ICON, G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
-            auto* icon = g_content_type_get_icon(_file->get_content_type().c_str());
+            auto* icon = g_content_type_get_icon(_file->query_info(G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE).c_str());
 
             if (icon != nullptr)
             {
@@ -209,15 +213,26 @@ namespace mousetrap
         catch (...)
         {}
 
-        _file_size_label.set_text(_file->is_folder() ? "" : g_format_size(size_byte));
+        _file_size_label.set_text(_file->is_folder() ? g_format_size(size_byte) : g_format_size(size_byte));
     }
 }
 
 namespace mousetrap
 {
-    template<FileChooserMode M>
+    template<FileChooserDialogMode M>
     FileChooserDialog<M>::FileChooserDialog(const std::string& window_title)
-        : _dialog(&_window, window_title)
+        : _dialog(&_window, [&]() -> std::string
+        {
+            if (not window_title.empty())
+                return window_title;
+
+            if (M == FileChooserDialogMode::OPEN)
+                return "Open File...";
+            else if (M == FileChooserDialogMode::SAVE_AS)
+                return "Save As...";
+            else if (M == FileChooserDialogMode::CHOOSE_FOLDER)
+                return "Select Folder...";
+        }())
     {
         _window.set_titlebar_layout("close");
         
@@ -227,8 +242,9 @@ namespace mousetrap
 
         _file_chooser.set_expand(true);
         _file_chooser.set_focus_on_click(true);
+        _file_chooser.set_can_create_folders(M != FileChooserDialogMode::OPEN);
 
-        if (M == FileChooserMode::SAVE_AS)
+        if (M == FileChooserDialogMode::SAVE_AS)
             _file_chooser.add_boolean_choice("WARN_ON_OVERRIDE", "Warn if file already exists", true);
 
         _preview_frame.set_child(_file_preview.operator Widget*());
@@ -255,7 +271,7 @@ namespace mousetrap
         _name_entry_box.set_hexpand(true);
         _name_entry_box.set_margin_start(state::margin_unit);
 
-        if (M == FileChooserMode::SAVE_AS)
+        if (M == FileChooserDialogMode::SAVE_AS)
             _content_area.push_back(&_name_entry_box);
         
         _content_area.push_back(&_file_chooser_preview_area);
@@ -318,7 +334,7 @@ namespace mousetrap
 
         _dialog.add_action_widget(&_accept_button, [](FileChooserDialog* instance){
 
-            if (M == FileChooserMode::SAVE_AS and instance->_file_chooser.get_boolean_choice("WARN_ON_OVERRIDE"))
+            if (M == FileChooserDialogMode::SAVE_AS and instance->_file_chooser.get_boolean_choice("WARN_ON_OVERRIDE"))
             {
                 instance->_warn_on_override_content.set_text("<b>A file named `" + instance->_name_entry.get_text() + "` already exists. Do you want to replace it?</b>\n\nThis will override the files contents. This operation cannot be undone, continue anyway?");
                 instance->_warn_on_override_dialog.present();
@@ -345,17 +361,18 @@ namespace mousetrap
             auto selected = instance->_file_chooser.get_selected();
             if (not instance->_name_entry.get_has_focus() and
                 not selected.empty() and
-                selected.at(0).is_file() and
                 instance->_previously_selected_path != selected.at(0).get_name())
             {
                 auto file = selected.at(0);
                 instance->_file_preview.update_from(&file);
                 instance->_name_entry.set_text(file.get_name());
-                instance->_previously_selected_path = file.get_name();
+                instance->_previously_selected_path = file.get_path();
             }
 
-            if (M == FileChooserMode::SAVE_AS)
+            if (M == FileChooserDialogMode::SAVE_AS)
                 instance->_accept_button.set_can_respond_to_input(not instance->_name_entry.get_text().empty());
+            else if (M == FileChooserDialogMode::CHOOSE_FOLDER)
+                instance->_accept_button.set_can_respond_to_input(not selected.empty() and selected.at(0).is_folder());
             else
                 instance->_accept_button.set_can_respond_to_input(not selected.empty());
 
@@ -363,7 +380,7 @@ namespace mousetrap
         }, this);
     }
 
-    template<FileChooserMode M>
+    template<FileChooserDialogMode M>
     template<typename Function_t, typename Arg_t>
     void FileChooserDialog<M>::set_on_accept_pressed(Function_t f_in, Arg_t arg_in)
     {
@@ -372,7 +389,7 @@ namespace mousetrap
         };
     }
 
-    template<FileChooserMode M>
+    template<FileChooserDialogMode M>
     template<typename Function_t, typename Arg_t>
     void FileChooserDialog<M>::set_on_cancel_pressed(Function_t f_in, Arg_t arg_in)
     {
@@ -381,16 +398,16 @@ namespace mousetrap
         };
     }
 
-    template<FileChooserMode M>
+    template<FileChooserDialogMode M>
     FileChooser& FileChooserDialog<M>::get_file_chooser()
     {
         return _file_chooser;
     }
 
-    template<FileChooserMode M>
+    template<FileChooserDialogMode M>
     std::string FileChooserDialog<M>::get_current_name()
     {
-        if (M == FileChooserMode::SAVE_AS)
+        if (M == FileChooserDialogMode::SAVE_AS)
             return _file_chooser.get_current_folder().get_path() + "/" + _name_entry.get_text();
         else
         {
@@ -402,18 +419,18 @@ namespace mousetrap
         }
     }
     
-    template<FileChooserMode M>
+    template<FileChooserDialogMode M>
     void FileChooserDialog<M>::show()
     {
         _dialog.show();
     }
 
-    template<FileChooserMode M>
+    template<FileChooserDialogMode M>
     void FileChooserDialog<M>::close()
     {
         _dialog.close();
         
-        if (M == FileChooserMode::SAVE_AS)
+        if (M == FileChooserDialogMode::SAVE_AS)
             _warn_on_override_dialog.close();
     }
 }
