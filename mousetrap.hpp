@@ -73,3 +73,4 @@
 #include <include/switch.hpp>
 #include <include/info_message.hpp>
 #include <include/fixed.hpp>
+#include <include/shortcut_viewer.hpp>

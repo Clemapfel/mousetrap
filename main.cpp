@@ -313,13 +313,30 @@ static void activate(GtkApplication* app, void*)
         other->show();
     }, nullptr);
 
-    open->show();
     // TODO
+    auto* box = new Box(GTK_ORIENTATION_VERTICAL, state::margin_unit);
 
-    //state::main_window->show();
-    //state::main_window->present();
-    //state::main_window->set_focusable(true);
-    //state::main_window->grab_focus();
+    for (auto e : {
+        GESTURE_SWIPE_LEFT,
+        GESTURE_SWIPE_RIGHT,
+        GESTURE_TWO_FINGER_SWIPE_RIGHT,
+        GESTURE_TWO_FINGER_SWIPE_LEFT,
+        GESTURE_STRETCH,
+        GESTURE_PINCH,
+        GESTURE_ROTATE_CLOCKWISE,
+        GESTURE_ROTATE_COUNTERCLOCKWISE
+    })
+    {
+        std::cout << e << std::endl;
+        box->push_back(new ShortcutView(e, "Test"));
+    }
+
+    state::main_window->set_child(box);
+
+    state::main_window->show();
+    state::main_window->present();
+    state::main_window->set_focusable(true);
+    state::main_window->grab_focus();
 }
 
 static void startup(GApplication*)
