@@ -20,11 +20,24 @@ namespace mousetrap
         GESTURE_ROTATE_COUNTERCLOCKWISE = GTK_SHORTCUT_GESTURE_ROTATE_COUNTERCLOCKWISE
     };
 
-    class ShortcutView : public WidgetImplementation<GtkShortcutsShortcut>
+    std::string shortcut_gesture_name_to_xml_code(ShortcutGestureName);
+    std::string accelerator_to_xml_code(const std::string& accelerator);
+
+    class AcceleratorDisplay : public WidgetImplementation<GtkShortcutsShortcut>
     {
         public:
-            ShortcutView(const std::string& accelerator, const std::string& title);
-            ShortcutView(ShortcutGestureName, const std::string& title);
+            AcceleratorDisplay(const std::string& accelerator);
+            AcceleratorDisplay(ShortcutGestureName);
+
+        private:
+            static inline GtkBuilder* builder = nullptr;
+    };
+
+    class ShortcutGroupDisplay : public WidgetImplementation<GtkShortcutsGroup>
+    {
+        public:
+            using AcceleratorAndDescription = std::pair<std::string, std::string>;
+            ShortcutGroupDisplay(const std::string& title, const std::vector<AcceleratorAndDescription>&);
 
         private:
             static inline GtkBuilder* builder = nullptr;
@@ -35,7 +48,47 @@ namespace mousetrap
 
 namespace mousetrap
 {
-    ShortcutView::ShortcutView(const std::string& accelerator, const std::string& title)
+    std::string shortcut_gesture_name_to_xml_code(ShortcutGestureName gesture)
+    {
+        std::string shortcut_type;
+
+        if (gesture == GESTURE_SWIPE_LEFT)
+            shortcut_type = "gesture-swipe-left";
+        else if (gesture == GESTURE_SWIPE_RIGHT)
+            shortcut_type = "gesture-swipe-right";
+        else if (gesture == GESTURE_TWO_FINGER_SWIPE_RIGHT)
+            shortcut_type = "gesture-two-finger-swipe-right";
+        else if (gesture == GESTURE_TWO_FINGER_SWIPE_LEFT)
+            shortcut_type = "gesture-two-finger-swipe-left";
+        else if (gesture == GESTURE_STRETCH)
+            shortcut_type = "gesture-stretch";
+        else if (gesture == GESTURE_PINCH)
+            shortcut_type = "gesture-pinch";
+        else if (gesture == GESTURE_ROTATE_CLOCKWISE)
+            shortcut_type = "gesture-rotate-clockwise";
+        else if (gesture == GESTURE_ROTATE_COUNTERCLOCKWISE)
+            shortcut_type = "gesture-rotate-counterclockwise";
+
+        return shortcut_type;
+    }
+
+    std::string accelerator_to_xml_code(const std::string& accelerator)
+    {
+        std::stringstream out;
+        for (auto& c : accelerator)
+        {
+            if (c == '<')
+                out << "&lt;";
+            else if (c == '>')
+                out << "&gt;";
+            else
+                out << c;
+        }
+
+        return out.str();
+    }
+
+    AcceleratorDisplay::AcceleratorDisplay(const std::string& accelerator)
         : WidgetImplementation<GtkShortcutsShortcut>([&]() -> GtkShortcutsShortcut*
         {
             // assemble xml string and use builder because for some reason there's no gtk_shortcuts_shortcut_new
@@ -43,21 +96,7 @@ namespace mousetrap
             std::stringstream str;
             str << "<interface>\n"
                 << "<object class=\"GtkShortcutsShortcut\" id=\"object\">\n"
-                << "<property name=\"accelerator\">";
-
-                for (auto& c : accelerator)
-                {
-                    if (c == '<')
-                        str << "&lt;";
-                    else if (c == '>')
-                        str << "&gt;";
-                    else
-                        str << c;
-                }
-
-            str << "</property>\n"
-                << "<property name=\"title\" translatable=\"yes\">"
-                << title << "</property>\n"
+                << "<property name=\"accelerator\">" << accelerator_to_xml_code(accelerator) << "</property>\n"
                 << "</object>\n"
                 << "</interface>\n"
                 << std::endl;
@@ -70,7 +109,7 @@ namespace mousetrap
 
             if (error != nullptr)
             {
-                std::cerr << "[ERROR] In ShortcutView::ShortcutView(" << accelerator << ", " << title << "): "
+                std::cerr << "[ERROR] In ShortcutView::ShortcutView(" << accelerator << "): "
                           << error->message << std::endl;
             }
 
@@ -78,33 +117,14 @@ namespace mousetrap
         }())
     {}
 
-    ShortcutView::ShortcutView(ShortcutGestureName gesture, const std::string& title)
+    AcceleratorDisplay::AcceleratorDisplay(ShortcutGestureName gesture)
             : WidgetImplementation<GtkShortcutsShortcut>([&]() -> GtkShortcutsShortcut*
      {
-         std::string shortcut_type;
-
-         if (gesture == GESTURE_SWIPE_LEFT)
-             shortcut_type = "gesture-swipe-left";
-         else if (gesture == GESTURE_SWIPE_RIGHT)
-             shortcut_type = "gesture-swipe-right";
-         else if (gesture == GESTURE_TWO_FINGER_SWIPE_RIGHT)
-             shortcut_type = "gesture-two-finger-swipe-right";
-         else if (gesture == GESTURE_TWO_FINGER_SWIPE_LEFT)
-             shortcut_type = "gesture-two-finger-swipe-left";
-         else if (gesture == GESTURE_STRETCH)
-             shortcut_type = "gesture-stretch";
-         else if (gesture == GESTURE_PINCH)
-             shortcut_type = "gesture-pinch";
-         else if (gesture == GESTURE_ROTATE_CLOCKWISE)
-             shortcut_type = "gesture-rotate-clockwise";
-         else if (gesture == GESTURE_ROTATE_COUNTERCLOCKWISE)
-             shortcut_type = "gesture-rotate-counterclockwise";
 
          std::stringstream str;
          str << "<interface>\n"
              << "<object class=\"GtkShortcutsShortcut\" id=\"object\">\n"
-             << "<property name=\"shortcut-type\">" << shortcut_type << "</property>\n"
-             << "<property name=\"title\" translatable=\"yes\">" << title << "</property>\n"
+             << "<property name=\"shortcut-type\">" << shortcut_gesture_name_to_xml_code(gesture) << "</property>\n"
              << "</object>\n"
              << "</interface>\n"
              << std::endl;
@@ -117,11 +137,48 @@ namespace mousetrap
 
          if (error != nullptr)
          {
-             std::cerr << "[ERROR] In ShortcutView::ShortcutView(" << shortcut_type << ", " << title << "): "
+             std::cerr << "[ERROR] In ShortcutView::ShortcutView(" << shortcut_gesture_name_to_xml_code(gesture)  << "): "
                        << error->message << std::endl;
          }
 
          return GTK_SHORTCUTS_SHORTCUT(gtk_builder_get_object(builder, "object"));
      }())
+    {}
+
+    ShortcutGroupDisplay::ShortcutGroupDisplay(const std::string& title, const std::vector<AcceleratorAndDescription>& pairs)
+        : WidgetImplementation<GtkShortcutsGroup>([&]() -> GtkShortcutsGroup* {
+
+            std::stringstream str;
+
+            str << "<interface>\n"
+                << "<object class=\"GtkShortcutsGroup\" id=\"object\">\n"
+                << "<property name=\"title\" translatable=\"yes\">" << title << "</property>\n";
+
+            for (auto& pair : pairs)
+            {
+                str << "<child>\n"
+                    << "<object class=\"GtkShortcutsShortcut\">\n"
+                    << "<property name=\"title\" translatable=\"yes\">" << pair.second << "</property>"
+                    << "<property name=\"accelerator\">" << accelerator_to_xml_code(pair.first) << "</property>"
+                    << "</object>\n"
+                    << "</child>\n";
+            }
+
+            str << "</object>\n"
+                << "</interface>\n";
+
+            std::cout << str.str() << std::endl;
+
+        if (builder == nullptr)
+                builder = gtk_builder_new();
+
+            GError* error = nullptr;
+            gtk_builder_add_from_string(builder, str.str().c_str(), str.str().size(), &error);
+
+            if (error != nullptr)
+                std::cerr << "[ERROR] In ShortcutGroupDisplay::ShortcutGroupDisplay: " << error->message << std::endl;
+
+            return GTK_SHORTCUTS_GROUP(gtk_builder_get_object(builder, "object"));
+    }())
     {}
 }
