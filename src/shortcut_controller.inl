@@ -18,7 +18,7 @@ namespace mousetrap
 
     void ShortcutController::add_action(ActionID id)
     {
-        auto* action = gtk_shortcut_action_parse_string(("app." + id).c_str());
+        auto* action = gtk_shortcut_action_parse_string(("action(" + ("app." + id) + ")").c_str());
         if (action == nullptr)
         {
             std::cerr << "[ERROR] In ShortcutController::add_action: No action with ID `" << id << "` registered." << std::endl;
@@ -28,6 +28,11 @@ namespace mousetrap
         for (auto& s : _action_map->get_action(id).get_shortcuts())
         {
             auto* trigger = gtk_shortcut_trigger_parse_string(s.c_str());
+            if (trigger == nullptr)
+            {
+                std::cerr << "[ERROR] In ShortcutController::add_action: Unable to parse trigger `" << s << "` for action `" << id << "`" << std::endl;
+                return;
+            }
 
             if (_shortcuts.find(id) == _shortcuts.end())
                 _shortcuts.insert({id, {}});
