@@ -112,7 +112,15 @@ namespace mousetrap
         if (message->elapsed > _message_reveal_delay)
         {
             message->revealer.set_revealed(true);
-            message->message.set_hide_after(_message_hold_duration, _message_decay_duration);
+
+            auto hold_duration = _message_hold_duration;
+            if (message->message.get_message_type() == InfoMessageType::ERROR)
+                _message_hold_duration = microseconds(_message_hold_duration.as_microseconds() * 3);
+
+            message->message.set_hide_after(
+                hold_duration,
+                _message_decay_duration
+            );
 
             return G_SOURCE_REMOVE;
         }

@@ -31,6 +31,7 @@ namespace mousetrap
             void set_hide_interruptable(bool);
 
             void set_message_type(InfoMessageType);
+            InfoMessageType get_message_type();
             void add_child(Widget*);
             void set_has_close_button(bool);
             void set_revealed(bool);
@@ -109,6 +110,11 @@ namespace mousetrap
     void InfoMessage::set_message_type(InfoMessageType type)
     {
         gtk_info_bar_set_message_type(get_native(), static_cast<GtkMessageType>(type));
+    }
+
+    InfoMessageType InfoMessage::get_message_type()
+    {
+        (InfoMessageType) gtk_info_bar_get_message_type(get_native());
     }
 
     void InfoMessage::add_child(Widget* widget)
