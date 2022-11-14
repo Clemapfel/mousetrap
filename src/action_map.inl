@@ -105,7 +105,10 @@ namespace mousetrap
 
         auto accels = std::vector<const char*>();
         for (auto& s : inserted.get_shortcuts())
-            accels.push_back(s.c_str());
+        {
+            if (s != "never")
+                accels.push_back(s.c_str());
+        }
 
         if (accels.size() != 0)
             gtk_application_set_accels_for_action(app, ("app." + inserted.get_id()).c_str(), accels.data());
