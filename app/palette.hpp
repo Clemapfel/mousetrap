@@ -27,6 +27,7 @@ namespace mousetrap
 
             bool load_from(const std::string& file);
             bool save_to(const std::string& file);
+            std::string serialize();
 
             size_t get_n_colors();
             std::vector<HSVA> get_colors();

@@ -134,6 +134,8 @@ namespace mousetrap
             SaveAsFileDialog _on_save_as_dialog = SaveAsFileDialog("Save Palette As");
             void on_save_as_ok_pressed();
 
+            std::string _save_to_path = "";
+
             Action _on_load_default_action = Action("palette_view.load_default");
             Action _on_save_action = Action("palette_view.save");
             Action _on_save_as_default_action = Action("palette_view.save_as_default");
@@ -565,11 +567,11 @@ namespace mousetrap
 
         _palette_control_bar.update();
 
-        // ACTION: load
+        FileFilter palette_filer = FileFilter("Mousetrap Palette File");
+        palette_filer.add_allowed_suffix("palette");
 
-        FileFilter load_filter = FileFilter("Mousetrap Palette File");
-        load_filter.add_allowed_suffix("palette");
-        _on_load_dialog.get_file_chooser().add_filter(load_filter, true);
+        // ACTION: load
+        _on_load_dialog.get_file_chooser().add_filter(palette_filer, true);
 
         _on_load_dialog.set_on_accept_pressed([](OpenFileDialog*, PaletteView* instance){
             instance->on_load_ok_pressed();
@@ -587,6 +589,7 @@ namespace mousetrap
         state::app->add_action(_on_load_action);
 
         // ACTION: save as
+        _on_save_as_dialog.get_file_chooser().add_filter(palette_filer, true);
 
         _on_save_as_dialog.set_on_accept_pressed([](SaveAsFileDialog*, PaletteView* instance){
             instance->on_save_as_ok_pressed();
@@ -607,7 +610,13 @@ namespace mousetrap
         // Action:: Save
 
         _on_save_action.set_do_function([](PaletteView* instance){
-            std::cout << "[TODO] Saving palette..." << std::endl;
+            if (instance->_save_to_path == "")
+            {
+                instance->_on_save_as_dialog.get_name_entry().set_text("Untitled.palette");
+                instance->_on_save_as_dialog.show();
+            }
+            else
+                instance->save_to_file(instance->_save_to_path);
         }, this);
 
         state::app->add_action(_on_save_action);
@@ -615,23 +624,13 @@ namespace mousetrap
         // Action: Load Default
 
         _on_load_default_action.set_do_function([](PaletteView* instance) {
-            std::cout << "[TODO] Loading default palette..." << std::endl;
-        }, this);
-
-        _on_load_default_action.set_undo_function([](PaletteView* instance) {
-            std::cout << "[TODO] Undoing loading default palette..." << std::endl;
         }, this);
 
         state::app->add_action(_on_load_default_action);
 
         // Action: Save As Default
 
-        _on_save_as_default_action.set_do_function([](PaletteView* isntance){
-            std::cout << "[TODO] Saving as default palette..." << std::endl;
-        }, this);
-
-        _on_save_as_default_action.set_undo_function([](PaletteView* isntance){
-            std::cout << "[TODO] Undoing saving as default palette..." << std::endl;
+        _on_save_as_default_action.set_do_function([](PaletteView* instance){
         }, this);
 
         state::app->add_action(_on_save_as_default_action);

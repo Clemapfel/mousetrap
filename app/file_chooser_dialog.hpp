@@ -91,7 +91,9 @@ namespace mousetrap
             FileChooser _file_chooser = FileChooser([]() -> FileChooserAction {
                 if (Mode == FileChooserDialogMode::OPEN)
                     return FileChooserAction::SELECT_FILE;
-                else if (Mode == FileChooserDialogMode::SAVE_AS or Mode == FileChooserDialogMode::CHOOSE_FOLDER)
+                else if (Mode == FileChooserDialogMode::SAVE_AS)
+                    return FileChooserAction::SELECT_FILE;
+                else if (Mode == FileChooserDialogMode::CHOOSE_FOLDER)
                     return FileChooserAction::SELECT_FOLDER;
             }());
 
@@ -356,7 +358,10 @@ namespace mousetrap
 
         _dialog.add_action_widget(&_accept_button, [](FileChooserDialog* instance){
 
-            if (M == FileChooserDialogMode::SAVE_AS and instance->_file_chooser.get_boolean_choice("WARN_ON_OVERRIDE"))
+            if (M == FileChooserDialogMode::SAVE_AS and
+                instance->_file_chooser.get_boolean_choice("WARN_ON_OVERRIDE") and
+                FileSystem::file_exists(instance->_file_chooser.get_current_folder().get_path() + "/" + instance->_name_entry.get_text())
+            )
             {
                 instance->_warn_on_override_content.set_text("<b>A file named `" + instance->_name_entry.get_text() + "` already exists. Do you want to replace it?</b>\n\nThis will override the files contents. This operation cannot be undone, continue anyway?");
                 instance->_warn_on_override_dialog.present();

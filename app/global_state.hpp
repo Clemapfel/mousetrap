@@ -30,6 +30,7 @@ namespace mousetrap::state
     Window* main_window = nullptr;
     Application* app = nullptr;
     MenuModel* global_menu_bar_model = nullptr;
+    ConfigFile* profile_file = nullptr
     ConfigFile* settings_file = nullptr;
     ConfigFile* keybindings_file = nullptr;
     ConfigFile* tooltips_file = nullptr;
