@@ -155,7 +155,7 @@ namespace mousetrap
             v = float(int(v * factor)) / factor;
             a = float(int(a * factor)) / factor;
 
-            std::vector<float> list = {h, v, s, a};
+            std::vector<float> list = {h, s, v, a};
             file.set_value_as<std::vector<float>>("palette", std::to_string(pair.first), list);
         }
 

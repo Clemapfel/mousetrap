@@ -622,15 +622,21 @@ namespace mousetrap
         state::app->add_action(_on_save_action);
 
         // Action: Load Default
-
-        _on_load_default_action.set_do_function([](PaletteView* instance) {
+        _on_load_default_action.set_do_function([](PaletteView* instance)
+        {
+            instance->load_from_file(get_resource_path() + "default.palette");
         }, this);
 
         state::app->add_action(_on_load_default_action);
 
         // Action: Save As Default
 
-        _on_save_as_default_action.set_do_function([](PaletteView* instance){
+        _on_save_as_default_action.set_do_function([](PaletteView* instance)
+        {
+            if (instance->palette.save_to(get_resource_path() + "default.palette"))
+                ((BubbleLogArea*) state::bubble_log)->send_message("Current palette saved as default");
+            else
+                ((BubbleLogArea*) state::bubble_log)->send_message("Unable to save current palette as default");
         }, this);
 
         state::app->add_action(_on_save_as_default_action);
@@ -659,6 +665,13 @@ namespace mousetrap
 
         for (auto* action : {&_on_sort_by_default_action, &_on_sort_by_hue_action, &_on_sort_by_value_action, &_on_sort_by_saturation_action})
             state::app->add_action(*action);
+
+        // on startup: make first color current color
+        operator Widget*()->add_tick_callback([](FrameClock, PaletteView* instance) -> bool
+        {
+            instance->on_color_tile_view_selection_model_selection_changed(instance->_color_tile_view.get_selection_model(), 0, 1, instance);
+            return false;
+        }, this);
     }
 
     void PaletteView::update()

@@ -79,7 +79,6 @@ static void activate(GtkApplication* app, void*)
     state::settings_file = new ConfigFile(get_resource_path() + "settings.ini");
     state::keybindings_file = new ConfigFile(get_resource_path() + "keybindings.ini");
     state::tooltips_file = new ConfigFile(get_resource_path() + "tooltips.ini");
-    state::profile_file = new ConfigFile(get_resource_path() + "profile.ini");
 
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
