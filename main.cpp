@@ -292,7 +292,6 @@ static void activate(GtkApplication* app, void*)
     //gtk_file_dialog_show(file_dialog);
 
     // TODO
-    /*
     auto* open = new ChooseFolderDialog("Debug");
     auto* save_as = new SaveAsFileDialog("Debug");
 
@@ -314,97 +313,6 @@ static void activate(GtkApplication* app, void*)
         other->show();
     }, nullptr);
     save_as->show();
-     */
-
-    std::string str = R"(
-<interface>
-    <object class="GtkShortcutsGroup" id="object">
-        <property name="title" translatable="yes">General</property>
-        <child>
-          <object class="GtkShortcutsShortcut">
-            <property name="title" translatable="yes">Global Search</property>
-            <property name="accelerator">&lt;ctrl&gt;period</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkShortcutsShortcut">
-            <property name="title" translatable="yes">Preferences</property>
-            <property name="accelerator">&lt;ctrl&gt;comma</property>
-          </object>
-        </child>
-    </object>
-</interface>
-)";
-
-    std::string str2 = R"(
-<interface>
-<object class="GtkShortcutsGroup" id="object">
-<property name="title" translatable="yes">Controls</property>
-<child>
-  <object class="GtkShortcutsShortcut">
-    <property name="title" translatable="yes">Global Search</property>
-    <property name="accelerator">&lt;ctrl&gt;period</property>
-  </object>
-</child>
-<child>
-  <object class="GtkShortcutsShortcut">
-    <property name="title" translatable="yes">Preferences</property>
-    <property name="accelerator">&lt;ctrl&gt;comma</property>
-  </object>
-</child>
-<child>
-    <object class="GtkShortcutsShortcut">
-        <property name="title" translatable="yes">go to child of selected folder</property>
-        <property name="accelerator">&lt;Alt&gt;Down</property>
-    </object>
-</child>
-
-<child>
-<object class="GtkShortcutsShortcut">
-<property name="title" translatable="yes">
- go to parent of selected folder</property><property name="accelerator">&lt;Alt&gt;Up</property></object>
-</child>
-<child>
-<object class="GtkShortcutsShortcut">
-<property name="title" translatable="yes">
- toggle show location popup</property><property name="accelerator">&lt;Control&gt;L</property></object>
-</child>
-<child>
-<object class="GtkShortcutsShortcut">
-<property name="title" translatable="yes">
- jump to `Recent`</property><property name="accelerator">&lt;Alt&gt;R</property></object>
-</child>
-<child>
-<object class="GtkShortcutsShortcut">
-<property name="title" translatable="yes">
- jump to `Desktop`</property><property name="accelerator">&lt;Alt&gt;D</property></object>
-</child>
-<child>
-<object class="GtkShortcutsShortcut">
-<property name="title" translatable="yes">
- jump to `Home`</property><property name="accelerator">&lt;Alt&gt;Home</property></object>
-</child>
-<child>
-<object class="GtkShortcutsShortcut">
-<property name="title" translatable="yes">
- toggle show search entry</property><property name="accelerator">&lt;Alt&gt;S</property></object>
-</child>
-<child>
-<object class="GtkShortcutsShortcut">
-<property name="title" translatable="yes">
- toggle show hidden files</property><property name="accelerator">&lt;Control&gt;H</property></object>
-</child>
-</object>
-</interface>
-)";
-
-    auto* builder = gtk_builder_new_from_string(str2.c_str(), str2.size());
-    gtk_window_set_child(state::main_window->operator GtkWindow*(), GTK_WIDGET(gtk_builder_get_object(builder, "object")));
-
-    auto shortcut_info = ShortcutInformation();
-    shortcut_info.set_title("Controls");
-    shortcut_info.create_from_group("file_chooser_dialog", state::keybindings_file);
-    state::main_window->set_child(shortcut_info);
 
     state::main_window->show();
     state::main_window->present();

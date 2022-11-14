@@ -64,7 +64,6 @@ namespace mousetrap
             void close();
             
         private:
-            Window _window;
             Dialog _dialog;
 
             Button _accept_button;
@@ -72,6 +71,15 @@ namespace mousetrap
 
             Button _cancel_button;
             Label _cancel_button_label = Label("Cancel");
+
+            SeparatorLine _action_button_area_spacer;
+
+            std::string _previously_selected_path = "";
+
+            Label _show_keybindings_button_label = Label(state::settings_file->get_value("global", "show_keybinding_shortcut_label"));
+            MenuButton _show_keybindings_button;
+            Popover _show_keybindings_popover;
+            ShortcutInformation _show_keybindings_content;
 
             FilePreview _file_preview;
             Frame _preview_frame;
@@ -94,7 +102,7 @@ namespace mousetrap
             
             // warn if overriding file dialog:
 
-            Dialog _warn_on_override_dialog = Dialog(&_window, "Warning");
+            Dialog _warn_on_override_dialog = Dialog(state::main_window, "Warning");
 
             Viewport  _warn_on_override_content_box;
             Label _warn_on_override_content;
@@ -103,6 +111,10 @@ namespace mousetrap
             Label  _warn_on_override_continue_label = Label("Continue");
             Button _warn_on_override_cancel_button;
             Label  _warn_on_override_cancel_label = Label("Cancel");
+
+            ShortcutController _shortcut_controller = ShortcutController(state::app);
+
+            Overlay _show_keybinds_overlay;
     };
     
     using SaveAsFileDialog = FileChooserDialog<FileChooserDialogMode::SAVE_AS>;
@@ -220,7 +232,7 @@ namespace mousetrap
 {
     template<FileChooserDialogMode M>
     FileChooserDialog<M>::FileChooserDialog(const std::string& window_title)
-        : _dialog(&_window, [&]() -> std::string
+        : _dialog(state::main_window, [&]() -> std::string
         {
             if (not window_title.empty())
                 return window_title;
@@ -231,10 +243,11 @@ namespace mousetrap
                 return "Save As...";
             else if (M == FileChooserDialogMode::CHOOSE_FOLDER)
                 return "Select Folder...";
-        }())
+        }(), false)
     {
-        _window.set_titlebar_layout("close");
-        
+        _dialog.operator Window().set_titlebar_layout("title:close");
+        _warn_on_override_dialog.operator Window().set_titlebar_layout("title:close");
+
         _file_chooser_frame.set_child(&_file_chooser);
         _file_chooser_frame.set_label_widget(nullptr);
         _file_chooser_frame.set_margin_end(state::margin_unit * 0.5);
@@ -275,6 +288,11 @@ namespace mousetrap
         
         _content_area.push_back(&_file_chooser_preview_area);
         _content_area.set_margin(state::margin_unit);
+
+        _show_keybindings_button.set_halign(GTK_ALIGN_START);
+        _show_keybindings_button.set_valign(GTK_ALIGN_END);
+        _show_keybindings_button.set_always_show_arrow(true);
+        _show_keybindings_button.set_child(&_show_keybindings_button_label);
 
         _dialog.get_content_area().push_back(&_content_area);
 
@@ -345,12 +363,68 @@ namespace mousetrap
             }
         }, this);
 
-        auto* button_area = gtk_widget_get_parent(_cancel_button.operator GtkWidget*());
+        // use tempfile instead of keybindings.ini because these cannot be changed, they are hardcoded into GtkFileChooserWidget
+        auto temp_file = ConfigFile();
+        temp_file.load_from_memory(R"(
+            [file_chooser_dialog]
 
+            # Toggle show location popup
+            location_popup = <Control>L
+
+            # Toggle show search entry
+            search_shortcut = <Alt>S
+
+            # Toggle show hidden files
+            show_hidden = <Control>H
+
+            # Go to parent of current folder
+            up_folder = <Alt>Up
+
+            # Go to child of current folder
+            down_folder = <Alt>Down
+
+            # Jump to `Recent`
+            recent_shortcut = <Alt>R
+
+            # Jump to `Desktop`
+            desktop_folder = <Alt>D
+
+            # Jump to `Home`
+            home_folder = <Alt>Home
+        )");
+
+        _show_keybindings_content.set_title("Keybinding Shortcuts");
+        _show_keybindings_content.create_from_group("file_chooser_dialog", &temp_file);
+        _show_keybindings_popover.set_child(_show_keybindings_content);
+        _show_keybindings_button.set_popover(&_show_keybindings_popover);
+        _show_keybindings_button.set_tooltip_text("Show Keybindings");
+
+        auto* button_area = gtk_widget_get_parent(_cancel_button.operator GtkWidget*());
         gtk_widget_set_margin_bottom(button_area, state::margin_unit);
         gtk_widget_set_margin_end(button_area, state::margin_unit);
         gtk_widget_set_margin_start(button_area, state::margin_unit);
         gtk_box_set_spacing(GTK_BOX(button_area), state::margin_unit);
+
+        _accept_button.set_hexpand(false);
+        _cancel_button.set_hexpand(false);
+        _accept_button.set_halign(GTK_ALIGN_END);
+        _cancel_button.set_halign(GTK_ALIGN_END);
+
+        _action_button_area_spacer.set_hexpand(true);
+        _action_button_area_spacer.set_halign(GTK_ALIGN_START);
+
+        gtk_box_prepend(GTK_BOX(button_area), _action_button_area_spacer.operator GtkWidget*());
+        gtk_box_prepend(GTK_BOX(button_area), _show_keybindings_button.operator GtkWidget*());
+
+        // can't get button_area to expand no matter what so the length needs to hardcoded
+        // button_area doesn't even have a getter to access it so this is jank to begin with
+
+        float spacer_width = _content_area.get_preferred_size().natural_size.x;
+        spacer_width -= _accept_button.get_preferred_size().natural_size.x;
+        spacer_width -= _cancel_button.get_preferred_size().natural_size.x;
+        spacer_width -= _show_keybindings_button.get_preferred_size().natural_size.x;
+        _action_button_area_spacer.set_size_request({spacer_width, 0});
+        _action_button_area_spacer.set_opacity(0);
 
         button_area = gtk_widget_get_parent(_warn_on_override_cancel_button.operator GtkWidget*());
         gtk_widget_set_margin_bottom(button_area, state::margin_unit);
@@ -379,6 +453,23 @@ namespace mousetrap
 
             return true;
         }, this);
+
+
+        // keybindings
+
+        // TODO
+        _shortcut_controller.set_scope(ShortcutScope::LOCAL);
+
+        auto* up_folder_action = new Action("up_folder");
+        up_folder_action->set_do_function([](){
+            std::cout << "called" << std::endl;
+            //g_signal_emit_by_name(file_chooser->operator GtkFileChooserWidget*(), "up-folder");
+        });
+        up_folder_action->add_shortcut("<Control>m"); //state::keybindings_file->get_value("file_chooser_dialog", "up_folder"));
+        state::app->add_action(*up_folder_action);
+        _shortcut_controller.add_action("up_folder");
+        _file_chooser.add_controller(&_shortcut_controller);
+        // TODO
     }
 
     template<FileChooserDialogMode M>

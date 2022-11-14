@@ -27,6 +27,8 @@ namespace mousetrap
             void present();
             void close();
 
+            operator Window();
+
         private:
             Box _content_area;
             Box _action_area;

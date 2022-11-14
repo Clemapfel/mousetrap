@@ -65,6 +65,11 @@ namespace mousetrap
         return _content_area;
     }
 
+    Dialog::operator Window()
+    {
+        return Window(GTK_WINDOW(get_native()));
+    }
+
     void Dialog::on_response_wrapper(GtkDialog*, int response_id, Dialog* instance)
     {
         if (response_id == GTK_RESPONSE_CLOSE)

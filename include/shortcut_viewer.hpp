@@ -36,7 +36,7 @@ namespace mousetrap
             static inline GtkBuilder* builder = nullptr;
     };
 
-    class ShortcutGroupDisplay : public WidgetImplementation<GtkShortcutsGroup>
+    class ShortcutGroupDisplay : public WidgetImplementation<GtkShortcutsSection>
     {
         public:
             using AcceleratorAndDescription = std::pair<std::string, std::string>;
@@ -109,8 +109,6 @@ namespace mousetrap
                 << "  </object>\n"
                 << "</interface>" << std::endl;
 
-            std::cout << str.str() << std::endl;
-
             if (builder == nullptr)
                 builder = gtk_builder_new();
 
@@ -160,12 +158,15 @@ namespace mousetrap
     {}
 
     ShortcutGroupDisplay::ShortcutGroupDisplay(const std::string& title, const std::vector<AcceleratorAndDescription>& pairs)
-            : WidgetImplementation<GtkShortcutsGroup>([&]() -> GtkShortcutsGroup* {
+            : WidgetImplementation<GtkShortcutsSection>([&]() -> GtkShortcutsSection* {
 
         std::stringstream str;
 
         str << "<interface>\n"
-            << "<object class=\"GtkShortcutsGroup\" id=\"object\">\n";
+            << "<object class=\"GtkShortcutsSection\" id=\"object\">\n"
+            << "<child>"
+            << "<object class=\"GtkShortcutsGroup\">\n"
+            << "<property name=\"title\">" << title << "</property>\n";
 
         for (auto& pair : pairs)
         {
@@ -183,9 +184,9 @@ namespace mousetrap
         }
 
         str << "</object>\n"
+            << "</child>\n"
+            << "</object>\n"
             << "</interface>\n";
-
-        std::cout << str.str() << std::endl;
 
         if (builder == nullptr)
             builder = gtk_builder_new();
@@ -196,7 +197,7 @@ namespace mousetrap
         if (error != nullptr)
             std::cerr << "[ERROR] In ShortcutGroupDisplay::ShortcutGroupDisplay: " << error->message << std::endl;
 
-        return GTK_SHORTCUTS_GROUP(gtk_builder_get_object(builder, "object"));
+        return GTK_SHORTCUTS_SECTION(gtk_builder_get_object(builder, "object"));
     }())
     {}
 }

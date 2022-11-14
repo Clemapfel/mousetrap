@@ -17,7 +17,7 @@ namespace mousetrap
             ~ShortcutInformation();
 
             operator Widget*();
-            void update() override {};
+            void update() override;
 
             void set_title(const std::string&);
             void set_description(const std::string&);
@@ -26,9 +26,11 @@ namespace mousetrap
             void create_from_group(const std::string& group, ConfigFile* file);
 
         private:
-            Label _title = Label("");
-            Label _description = Label("");
-            std::vector<AcceleratorDisplay*> _shortcut_views;
+            std::string _title;
+            std::string _description;
+            ShortcutGroupDisplay* _shortcuts = nullptr;
+
+            std::vector<std::pair<std::string, std::string>> _accelerators_and_descriptions;
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
@@ -39,9 +41,17 @@ namespace mousetrap
 namespace mousetrap
 {
     ShortcutInformation::ShortcutInformation()
+    {}
+
+    void ShortcutInformation::update()
     {
-        _main.push_back(&_title);
-        _main.push_back(&_description);
+        _main.clear();
+
+        delete _shortcuts;
+        _shortcuts = new ShortcutGroupDisplay(_title, _accelerators_and_descriptions);
+
+        _main.clear();
+        _main.push_back(_shortcuts);
     }
 
     ShortcutInformation::operator Widget*()
@@ -51,32 +61,34 @@ namespace mousetrap
 
     ShortcutInformation::~ShortcutInformation()
     {
-        for (auto* view : _shortcut_views)
-            delete view;
+        delete _shortcuts;
     }
 
     void ShortcutInformation::set_title(const std::string& text)
     {
-        _title.set_text("<b>" + text + "</b>");
+        _title = text;
     }
 
     void ShortcutInformation::set_description(const std::string& text)
     {
-        _description.set_text(text);
+        _description = text;
     }
 
     void ShortcutInformation::add_shortcut(const std::string& accelerator, const std::string& description)
     {
-        _shortcut_views.emplace_back(new AcceleratorDisplay(accelerator, description));
-        _main.push_back(_shortcut_views.back());
+        _accelerators_and_descriptions.emplace_back(accelerator, description);
+        update();
     }
 
     void ShortcutInformation::create_from_group(const std::string& group, ConfigFile* file)
     {
         auto keys = file->get_keys(group);
+        _accelerators_and_descriptions.clear();
+
         for (auto& key : keys)
-            add_shortcut(file->get_value(group, key), file->get_comment_above(group, key));
+            _accelerators_and_descriptions.emplace_back(file->get_value(group, key), file->get_comment_above(group, key));
 
         set_description(file->get_comment_above(group));
+        update();
     }
 }
