@@ -58,7 +58,9 @@ namespace mousetrap
             void set_on_cancel_pressed(Function_t, Arg_t);
 
             FileChooser& get_file_chooser();
+
             std::string get_current_name();
+            Entry& get_name_entry();
 
             void show();
             void close();
@@ -86,9 +88,12 @@ namespace mousetrap
             Label _preview_label = Label("<span weight=\"bold\" color=\"#AAAAAA\">Preview</span>");
             
             Frame _file_chooser_frame;
-            FileChooser _file_chooser = FileChooser(
-                Mode == FileChooserDialogMode::CHOOSE_FOLDER ? FileChooserAction::SELECT_FOLDER : FileChooserAction::SELECT_FILE
-            );
+            FileChooser _file_chooser = FileChooser([]() -> FileChooserAction {
+                if (Mode == FileChooserDialogMode::OPEN)
+                    return FileChooserAction::SELECT_FILE;
+                else if (Mode == FileChooserDialogMode::SAVE_AS or Mode == FileChooserDialogMode::CHOOSE_FOLDER)
+                    return FileChooserAction::SELECT_FOLDER;
+            }());
 
             Box _name_entry_box = Box(GTK_ORIENTATION_HORIZONTAL);
             Entry _name_entry;
@@ -366,31 +371,31 @@ namespace mousetrap
         // use tempfile instead of keybindings.ini because these cannot be changed, they are hardcoded into GtkFileChooserWidget
         auto temp_file = ConfigFile();
         temp_file.load_from_memory(R"(
-            [file_chooser_dialog]
+[file_chooser_dialog]
 
-            # Toggle show location popup
-            location_popup = <Control>L
+# Toggle show location popup
+location_popup = <Control>L
 
-            # Toggle show search entry
-            search_shortcut = <Alt>S
+# Toggle show search entry
+search_shortcut = <Alt>S
 
-            # Toggle show hidden files
-            show_hidden = <Control>H
+# Toggle show hidden files
+show_hidden = <Control>H
 
-            # Go to parent of current folder
-            up_folder = <Alt>Up
+# Go to parent of current folder
+up_folder = <Alt>Up
 
-            # Go to child of current folder
-            down_folder = <Alt>Down
+# Go to child of current folder
+down_folder = <Alt>Down
 
-            # Jump to `Recent`
-            recent_shortcut = <Alt>R
+# Jump to `Recent`
+recent_shortcut = <Alt>R
 
-            # Jump to `Desktop`
-            desktop_folder = <Alt>D
+# Jump to `Desktop`
+desktop_folder = <Alt>D
 
-            # Jump to `Home`
-            home_folder = <Alt>Home
+# Jump to `Home`
+home_folder = <Alt>Home
         )");
 
         _show_keybindings_content.set_title("Keybinding Shortcuts");
@@ -434,13 +439,11 @@ namespace mousetrap
         _file_chooser.add_tick_callback([](FrameClock clock, FileChooserDialog* instance) -> bool {
 
             auto selected = instance->_file_chooser.get_selected();
-            if (not instance->_name_entry.get_has_focus() and
-                not selected.empty() and
-                instance->_previously_selected_path != selected.at(0).get_name())
+            if (not selected.empty() and instance->_previously_selected_path != selected.at(0).get_name() and
+                selected.at(0).is_file())
             {
                 auto file = selected.at(0);
                 instance->_file_preview.update_from(&file);
-                instance->_name_entry.set_text(file.get_name());
                 instance->_previously_selected_path = file.get_path();
             }
 
@@ -453,30 +456,13 @@ namespace mousetrap
 
             return true;
         }, this);
-
-
-        // keybindings
-
-        // TODO
-        _shortcut_controller.set_scope(ShortcutScope::LOCAL);
-
-        auto* up_folder_action = new Action("up_folder");
-        up_folder_action->set_do_function([](){
-            std::cout << "called" << std::endl;
-            //g_signal_emit_by_name(file_chooser->operator GtkFileChooserWidget*(), "up-folder");
-        });
-        up_folder_action->add_shortcut("<Control>m"); //state::keybindings_file->get_value("file_chooser_dialog", "up_folder"));
-        state::app->add_action(*up_folder_action);
-        _shortcut_controller.add_action("up_folder");
-        _file_chooser.add_controller(&_shortcut_controller);
-        // TODO
     }
 
     template<FileChooserDialogMode M>
     template<typename Function_t, typename Arg_t>
     void FileChooserDialog<M>::set_on_accept_pressed(Function_t f_in, Arg_t arg_in)
     {
-        _on_accept_pressed = [f = f_in, arg = arg_in, this](FileChooserDialog* instance){
+        _on_accept_pressed = [f = f_in, arg = arg_in](FileChooserDialog* instance){
             f(instance, arg);
         };
     }
@@ -485,7 +471,7 @@ namespace mousetrap
     template<typename Function_t, typename Arg_t>
     void FileChooserDialog<M>::set_on_cancel_pressed(Function_t f_in, Arg_t arg_in)
     {
-        _on_cancel_pressed = [f = f_in, arg = arg_in, this](FileChooserDialog* instance){
+        _on_cancel_pressed = [f = f_in, arg = arg_in](FileChooserDialog* instance){
             f(instance, arg);
         };
     }
@@ -505,10 +491,16 @@ namespace mousetrap
         {
             auto selected = _file_chooser.get_selected();
             if (not selected.empty())
-                return selected.at(0).get_name();
+                return selected.at(0).get_path();
             else
                 return "";
         }
+    }
+
+    template<FileChooserDialogMode M>
+    Entry& FileChooserDialog<M>::get_name_entry()
+    {
+        return _name_entry;
     }
     
     template<FileChooserDialogMode M>

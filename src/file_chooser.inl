@@ -43,7 +43,7 @@ namespace mousetrap
               //HasFileSelectionChangedSignal<FileChooser>(this)
     {}
 
-    void FileChooser::add_filter(FileFilter filter)
+    void FileChooser::add_filter(FileFilter filter, bool make_active)
     {
         if (not _non_filter_added)
         {
@@ -55,6 +55,9 @@ namespace mousetrap
         }
 
         gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(get_native()), filter.operator GtkFileFilter*());
+
+        if (make_active)
+            gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(get_native()), filter.operator GtkFileFilter*());
     }
 
     void FileChooser::set_can_select_multiple(bool b)

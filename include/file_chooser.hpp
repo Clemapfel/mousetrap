@@ -52,7 +52,7 @@ namespace mousetrap
             FileDescriptor get_current_folder();
             void set_current_folder(FileDescriptor*);
 
-            void add_filter(FileFilter);
+            void add_filter(FileFilter, bool make_active_filer = false);
 
             using ChoiceID = std::string;
             using OptionID = std::string;

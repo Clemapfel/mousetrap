@@ -11,6 +11,7 @@
 #include <app/palette.hpp>
 #include <app/global_state.hpp>
 #include <app/bubble_log_area.hpp>
+#include <app/file_chooser_dialog.hpp>
 
 namespace mousetrap
 {
@@ -126,17 +127,11 @@ namespace mousetrap
             // actions
 
             Action _on_load_action = Action("palette_view.load");
-            Window _on_load_file_chooser_dialog_window;
-            Dialog _on_load_file_chooser_dialog = Dialog(&_on_load_file_chooser_dialog_window, "Load Palette...");
-            Box _on_load_file_chooser_dialog_box = Box(GTK_ORIENTATION_VERTICAL);
-            FileChooser _on_load_file_chooser = FileChooser(FileChooserAction::SELECT_FILE);
+            OpenFileDialog _on_load_dialog = OpenFileDialog("Load Palette");
             void on_load_ok_pressed();
 
             Action _on_save_as_action = Action("palette_view.save_as");
-            Window _on_save_as_file_chooser_dialog_window;
-            Dialog _on_save_as_file_chooser_dialog = Dialog(&_on_load_file_chooser_dialog_window, "Load Palette...");
-            Box _on_save_as_file_chooser_dialog_box = Box(GTK_ORIENTATION_VERTICAL);
-            FileChooser _on_save_as_file_chooser = FileChooser(FileChooserAction::SELECT_FILE);
+            SaveAsFileDialog _on_save_as_dialog = SaveAsFileDialog("Save Palette As");
             void on_save_as_ok_pressed();
 
             Action _on_load_default_action = Action("palette_view.load_default");
@@ -465,7 +460,13 @@ namespace mousetrap
 
     void PaletteView::load_from_file(const std::string& path)
     {
-        palette.load_from(path);
+        auto palette_backup = palette;
+        if (not palette.load_from(path))
+        {
+            palette = palette_backup;
+            ((BubbleLogArea*) state::bubble_log)->send_message("Unable to load palette at \"" + path + "\"");
+            return;
+        }
         update_from_palette();
     }
 
@@ -479,26 +480,16 @@ namespace mousetrap
 
     void PaletteView::on_load_ok_pressed()
     {
-        auto selected = _on_load_file_chooser.get_selected();
-        if (selected.empty())
-            return;
-
-        auto path = selected.at(0).get_path();
+        auto path = _on_load_dialog.get_current_name();
         load_from_file(path);
-        _on_load_file_chooser_dialog.close();
+        _on_load_dialog.close();
     }
 
     void PaletteView::on_save_as_ok_pressed()
     {
-        std::string title = "";//_on_save_as_file_chooser.get_current_name();
-        auto folder = _on_save_as_file_chooser.get_current_folder();
-
-        if (title.empty())
-            return;
-
-        auto path = folder.get_path() + "/" + title;
+        auto path = _on_save_as_dialog.get_current_name();
         save_to_file(path);
-        _on_save_as_file_chooser_dialog.close();
+        _on_save_as_dialog.close();
     }
 
     void PaletteView::update_from_palette()
@@ -576,48 +567,39 @@ namespace mousetrap
 
         // ACTION: load
 
-        auto on_load_filter = FileFilter("Mousetrap Palette File");
-        on_load_filter.add_allowed_suffix("palette");
-        _on_load_file_chooser.add_filter(on_load_filter);
-        _on_load_file_chooser.set_can_select_multiple(false);
-        _on_load_file_chooser.set_expand(true);
+        FileFilter load_filter = FileFilter("Mousetrap Palette File");
+        load_filter.add_allowed_suffix("palette");
+        _on_load_dialog.get_file_chooser().add_filter(load_filter, true);
 
-        _on_load_file_chooser_dialog_box.push_back(&_on_load_file_chooser);
-        _on_load_file_chooser_dialog.get_content_area().push_back(&_on_load_file_chooser_dialog_box);
-
-        _on_load_file_chooser_dialog.add_action_button("OK", [](PaletteView* instance) {
+        _on_load_dialog.set_on_accept_pressed([](OpenFileDialog*, PaletteView* instance){
             instance->on_load_ok_pressed();
+            instance->_on_load_dialog.close();
         }, this);
 
-        _on_load_file_chooser_dialog.add_action_button("Cancel", [](PaletteView* instance){
-            instance->_on_load_file_chooser_dialog.close();
+        _on_load_dialog.set_on_cancel_pressed([](OpenFileDialog*, PaletteView* instance){
+            instance->_on_load_dialog.close();
         }, this);
 
         _on_load_action.set_do_function([](PaletteView* instance){
-            instance->_on_load_file_chooser_dialog.show();
+            instance->_on_load_dialog.show();
         }, this);
 
         state::app->add_action(_on_load_action);
 
         // ACTION: save as
 
-        _on_save_as_file_chooser.add_filter(on_load_filter);
-        _on_save_as_file_chooser.set_can_select_multiple(false);
-        _on_save_as_file_chooser.set_expand(true);
-
-        _on_save_as_file_chooser_dialog_box.push_back(&_on_save_as_file_chooser);
-        _on_save_as_file_chooser_dialog.get_content_area().push_back(&_on_save_as_file_chooser_dialog_box);
-
-        _on_save_as_file_chooser_dialog.add_action_button("OK", [](PaletteView* instance) {
+        _on_save_as_dialog.set_on_accept_pressed([](SaveAsFileDialog*, PaletteView* instance){
             instance->on_save_as_ok_pressed();
+            instance->_on_save_as_dialog.close();
         }, this);
 
-        _on_save_as_file_chooser_dialog.add_action_button("Cancel", [](PaletteView* instance){
-            instance->_on_save_as_file_chooser_dialog.close();
+        _on_save_as_dialog.set_on_cancel_pressed([](SaveAsFileDialog*, PaletteView* instance){
+            instance->_on_save_as_dialog.close();
         }, this);
 
         _on_save_as_action.set_do_function([](PaletteView* instance){
-            instance->_on_save_as_file_chooser_dialog.show();
+            instance->_on_save_as_dialog.get_name_entry().set_text("Untitled.palette");
+            instance->_on_save_as_dialog.show();
         }, this);
 
         state::app->add_action(_on_save_as_action);

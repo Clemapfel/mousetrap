@@ -292,6 +292,7 @@ static void activate(GtkApplication* app, void*)
     //gtk_file_dialog_show(file_dialog);
 
     // TODO
+    /*
     auto* open = new ChooseFolderDialog("Debug");
     auto* save_as = new SaveAsFileDialog("Debug");
 
@@ -313,6 +314,7 @@ static void activate(GtkApplication* app, void*)
         other->show();
     }, nullptr);
     save_as->show();
+     */
 
     state::main_window->show();
     state::main_window->present();

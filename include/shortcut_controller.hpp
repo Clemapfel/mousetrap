@@ -25,7 +25,13 @@ namespace mousetrap
             ShortcutController(ActionMap*);
             ~ShortcutController();
 
-            /// \brief actions handled by self:
+            /// \brief
+            /// To add a shortcut action:
+            /// 1. action = Action("id")
+            /// 2. A.set_do_function and A.set_shortcut
+            /// 3. state::app->add_action
+            /// 4. shortcut_controller->add_action("id")
+            /// 5. widget->add_controller(&shortcut_controller)
             void add_action(ActionID id);
             void remove_action(ActionID id);
 

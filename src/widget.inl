@@ -315,7 +315,7 @@ namespace mousetrap
 
     bool Widget::get_has_focus()
     {
-        gtk_widget_has_visible_focus(this->operator GtkWidget*());
+        return gtk_widget_has_focus(this->operator GtkWidget*());
     }
 
     void Widget::grab_focus()
