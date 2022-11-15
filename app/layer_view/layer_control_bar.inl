@@ -184,6 +184,7 @@ namespace mousetrap
         for (auto* button : {&_layer_move_up_button, &_layer_create_button, &_layer_duplicate_button, &_layer_delete_button, &_layer_move_down_button, &_layer_merge_down_button, &_layer_flatten_all_button})
             _main.push_back(button);
 
+        /*
         _layer_move_up_button.set_tooltip_title("Move Layer Up");
         _layer_move_up_button.set_tooltip_description("Move layer above selected layer");
 
@@ -204,6 +205,7 @@ namespace mousetrap
 
         _layer_delete_button.set_tooltip_title("Delete Layer");
         _layer_delete_button.set_tooltip_description("Delete layer, unless it is the only layer");
+         */
     }
 
     void LayerView::LayerControlBar::update()

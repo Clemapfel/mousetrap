@@ -50,7 +50,7 @@ namespace mousetrap
         _gl_area.connect_signal_resize(on_gl_area_resize, this);
         _gl_area.set_expand(true);
 
-        _gl_area.set_tooltip_title("Current Color Preview");
+        //_gl_area.set_tooltip_title("Current Color Preview");
         _gl_area.set_tooltip_text("Compare previous color during selection");
     }
 

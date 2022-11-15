@@ -63,6 +63,7 @@ namespace mousetrap
             bool get_visible();
 
             void set_tooltip_text(const std::string&);
+            void set_tooltip_widget(Widget*);
 
             // for pictures, c.f. https://docs.gtk.org/gdk4/ctor.Cursor.new_from_name.html
             void set_cursor(GtkCursorType type);
@@ -83,9 +84,6 @@ namespace mousetrap
 
             void unparent();
             void set_can_respond_to_input(bool);
-
-            void set_tooltip_title(const std::string&);
-            void set_tooltip_description(const std::string&);
 
             void beep();
 
@@ -111,15 +109,14 @@ namespace mousetrap
             GtkWidget* _native;
             std::vector<GObject*> _refs;
 
-            std::string _tooltip_title;
-            std::string _tooltip_description;
-            void generate_tooltip();
-
             std::function<bool(GdkFrameClock*)> _tick_callback_f;
             std::function<void(void*)> _destroy_notify_f;
 
             static gboolean tick_callback_wrapper(GtkWidget*, GdkFrameClock*, Widget* instance);
             static void tick_callback_destroy_notify(void*);
+
+            Widget* _tooltip_widget = nullptr;
+            static gboolean on_query_tooltip(GtkWidget*, gint x, gint y, gboolean, GtkTooltip* tooltip, Widget* instance);
     };
 
     template<typename GtkWidget_t>

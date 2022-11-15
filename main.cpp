@@ -23,6 +23,7 @@
 #include <app/color_preview.hpp>
 #include <app/bubble_log_area.hpp>
 #include <app/file_chooser_dialog.hpp>
+#include <app/shortcut_information.hpp>
 
 using namespace mousetrap;
 
@@ -286,13 +287,10 @@ static void activate(GtkApplication* app, void*)
     main->set_child(all_columns);
     main->add_overlay(bubble_log);
 
+    auto* tt = new ShortcutInformation();
+    tt->create_from_group("palette_view", state::keybindings_file);
+
     state::main_window->set_child(main);
-
-    //auto* file_dialog = gtk_file_dialog_new();
-    //gtk_file_dialog_show(file_dialog);
-
-    // TODO
-
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

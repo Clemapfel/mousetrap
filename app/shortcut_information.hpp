@@ -24,6 +24,7 @@ namespace mousetrap
             void add_shortcut(const std::string& accelerator, const std::string& description);
 
             void create_from_group(const std::string& group, ConfigFile* file);
+            size_t get_n_shortcuts();
 
         private:
             std::string _title;
@@ -90,5 +91,10 @@ namespace mousetrap
 
         set_description(file->get_comment_above(group));
         update();
+    }
+
+    size_t ShortcutInformation::get_n_shortcuts()
+    {
+        return _accelerators_and_descriptions.size();
     }
 }

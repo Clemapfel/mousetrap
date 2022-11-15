@@ -139,8 +139,8 @@ namespace mousetrap
         _main.push_back(&_separator);
         _main.push_back(&_entry);
 
-        _main.set_tooltip_title("HTML Code");
-        _main.set_tooltip_description("Hexadecimal code, format: <tt>#RRGGBB</tt>");
+        //_main.set_tooltip_title("HTML Code");
+        //_main.set_tooltip_description("Hexadecimal code, format: <tt>#RRGGBB</tt>");
 
         _entry.connect_signal_activate(on_entry_activate, this);
         _entry.set_n_chars(7 + 1);
@@ -641,37 +641,37 @@ namespace mousetrap
             if (c == 'a')
             {
                 slider->set_value(_current_color->a);
-                slider->operator Widget*()->set_tooltip_title("Opacity (Alpha)");
+                //slider->operator Widget*()->set_tooltip_title("Opacity (Alpha)");
             }
             else if (c == 'h')
             {
                 slider->set_value(_current_color->h);
-                slider->operator Widget*()->set_tooltip_title("Hue");
+                //slider->operator Widget*()->set_tooltip_title("Hue");
             }
             else if (c == 's')
             {
                 slider->set_value(_current_color->s);
-                slider->operator Widget*()->set_tooltip_title("Saturation");
+                //slider->operator Widget*()->set_tooltip_title("Saturation");
             }
             else if (c == 'v')
             {
                 slider->set_value(_current_color->v);
-                slider->operator Widget*()->set_tooltip_title("Value (Chroma)");
+                //slider->operator Widget*()->set_tooltip_title("Value (Chroma)");
             }
             else if (c == 'r')
             {
                 slider->set_value(_current_color->operator RGBA().r);
-                slider->operator Widget*()->set_tooltip_title("Red");
+                //slider->operator Widget*()->set_tooltip_title("Red");
             }
             else if (c == 'g')
             {
                 slider->set_value(_current_color->operator RGBA().g);
-                slider->operator Widget*()->set_tooltip_title("Green");
+                //slider->operator Widget*()->set_tooltip_title("Green");
             }
             else if (c == 'b')
             {
                 slider->set_value(_current_color->operator RGBA().b);
-                slider->operator Widget*()->set_tooltip_title("Blue");
+                //slider->operator Widget*()->set_tooltip_title("Blue");
             }
         }
 

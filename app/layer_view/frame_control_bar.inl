@@ -203,6 +203,7 @@ namespace mousetrap
         _main.push_back(&_frame_create_right_of_this_button);
         _main.push_back(&_frame_move_right_button);
 
+        /*
         _frame_move_left_button.set_tooltip_title("Move Frame Left");
         _frame_move_left_button.set_tooltip_description("Swap selected frame with frame before it");
 
@@ -223,6 +224,7 @@ namespace mousetrap
 
         _frame_delete_button.set_tooltip_title("Delete Frame");
         _frame_delete_button.set_tooltip_description("Delete selected frame, unless it is the only frame");
+         */
     }
 
     void LayerView::FrameControlBar::update()

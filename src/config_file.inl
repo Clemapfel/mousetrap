@@ -153,7 +153,7 @@ namespace mousetrap
         if (error != nullptr)
             std::cerr << "[ERROR] In ConfigFile::get_comment_above: Unable to retrieve comment for `" << group << "." << key << "`: " << error->message << std::endl;
 
-        return std::string(out);
+        return std::string(out == nullptr ? "" : out);
     }
 
     std::string ConfigFile::get_comment_above(GroupKey group)
@@ -164,7 +164,7 @@ namespace mousetrap
         if (error != nullptr)
             std::cerr << "[ERROR] In ConfigFile::get_comment_above: Unable to retrieve comment for `" << group << "`: " << error->message << std::endl;
 
-        return std::string(out);
+        return std::string(out == nullptr ? "" : out);
     }
 
     std::string ConfigFile::get_value(GroupKey group, KeyID key)

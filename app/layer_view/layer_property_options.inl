@@ -51,7 +51,7 @@ namespace mousetrap
         _menu_button_title_label.set_text(layer.name);
         _name_entry.set_all_signals_blocked(false);
 
-        _menu_button.set_tooltip_title("Layer #" + std::to_string(_layer) + ": \"" + state::layers.at(_layer)->name + "\"");
+        //_menu_button.set_tooltip_title("Layer #" + std::to_string(_layer) + ": \"" + state::layers.at(_layer)->name + "\"");
     }
 
     LayerView::LayerPropertyOptions::LayerPropertyOptions(size_t layer_i, LayerView* owner)
@@ -267,6 +267,7 @@ namespace mousetrap
                          &_blend_mode_separator})
             sep->set_opacity(0);
 
+        /*
         _visible_toggle_button.set_tooltip_title("Toggle Layer Visible");
         _visible_box.set_tooltip_title("Toggle Layer Visible");
         _visible_check_button.set_tooltip_description("A hidden layer will not be shown");
@@ -287,6 +288,7 @@ namespace mousetrap
         _blend_mode_box.set_tooltip_description("Blend mode governs how layers behave when rendered on top of another layer");
 
         _menu_button.set_tooltip_description("Click to modify layer properties");
+         */
 
         update();
     }

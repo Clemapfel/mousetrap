@@ -170,6 +170,9 @@ namespace mousetrap
 
         for (auto& pair : pairs)
         {
+            if (pair.first == "never")
+                continue;
+
             std::string description_parsed;
             for (auto& c : pair.second)
                 if (c != '\n')

@@ -12,6 +12,7 @@
 #include <app/global_state.hpp>
 #include <app/bubble_log_area.hpp>
 #include <app/file_chooser_dialog.hpp>
+#include <app/tooltip.hpp>
 
 namespace mousetrap
 {
@@ -29,6 +30,8 @@ namespace mousetrap
             PaletteView();
             operator Widget*() override;
             void update() override;
+
+            void select(size_t i);
 
         protected:
             void load_from_file(const std::string& path);
@@ -144,6 +147,21 @@ namespace mousetrap
             Action _on_sort_by_hue_action = Action("palette_view.sort_by_hue");
             Action _on_sort_by_saturation_action = Action("palette_view.sort_by_saturation");
             Action _on_sort_by_value_action = Action("palette_view.sort_by_value");
+
+            Action _select_color_0 = Action("palette_view.select_color_0");
+            Action _select_color_1 = Action("palette_view.select_color_1");
+            Action _select_color_2 = Action("palette_view.select_color_2");
+            Action _select_color_3 = Action("palette_view.select_color_3");
+            Action _select_color_4 = Action("palette_view.select_color_4");
+            Action _select_color_5 = Action("palette_view.select_color_5");
+            Action _select_color_6 = Action("palette_view.select_color_6");
+            Action _select_color_7 = Action("palette_view.select_color_7");
+            Action _select_color_8 = Action("palette_view.select_color_8");
+            Action _select_color_9 = Action("palette_view.select_color_9");
+
+            ShortcutController _shortcut_controller = ShortcutController(state::app);
+
+            Tooltip _tooltip;
     };
 }
 
@@ -351,7 +369,6 @@ namespace mousetrap
 
         _palette_locked_box.set_tooltip_text(state::tooltips_file->get_value_as<std::string>("palette_view.control_bar", "palette_editing_menu_item"));
         _tile_size_box.set_tooltip_text(state::tooltips_file->get_value_as<std::string>("palette_view.control_bar", "tile_size_menu_item"));
-        _menu_button.set_tooltip_text(state::tooltips_file->get_value_as<std::string>("palette_view.control_bar", "main"));
 
         update_palette_locked();
         update_tile_size_changed();
@@ -669,9 +686,45 @@ namespace mousetrap
         // on startup: make first color current color
         operator Widget*()->add_tick_callback([](FrameClock, PaletteView* instance) -> bool
         {
-            instance->on_color_tile_view_selection_model_selection_changed(instance->_color_tile_view.get_selection_model(), 0, 1, instance);
+            instance->select(0);
             return false;
         }, this);
+
+        // keybinding
+
+        std::vector<Action*> select_color_actions = {
+            &_select_color_0,
+            &_select_color_1,
+            &_select_color_2,
+            &_select_color_3,
+            &_select_color_4,
+            &_select_color_5,
+            &_select_color_6,
+            &_select_color_7,
+            &_select_color_8,
+            &_select_color_9
+        };
+
+        for (size_t i = 0; i < select_color_actions.size(); ++i)
+        {
+            auto* action = select_color_actions.at(i);
+            action->set_do_function([index = i](PaletteView* instance){
+                instance->select(index);
+            }, this);
+
+            auto shortcut = state::keybindings_file->get_value_as<std::string>("palette_view", "select_color_" + std::to_string(i));
+            action->add_shortcut(shortcut);
+            state::app->add_action(*action);
+            _shortcut_controller.add_action(action->get_id());
+        }
+
+        _shortcut_controller.set_scope(ShortcutScope::GLOBAL);
+        operator Widget*()->add_controller(&_shortcut_controller);
+
+        _tooltip.set_title(state::tooltips_file->get_value("palette_view", "title"));
+        _tooltip.set_description(state::tooltips_file->get_value("palette_view", "description"));
+        _tooltip.create_shortcut_information_from("palette_view", state::keybindings_file);
+        operator Widget*()->set_tooltip_widget(_tooltip.operator Widget*());
     }
 
     void PaletteView::update()
@@ -700,5 +753,14 @@ namespace mousetrap
 
         color.a = 1;
         _color_tiles.at(_selected_i)->set_color(color);
+    }
+
+    void PaletteView::select(size_t i)
+    {
+        if (i > _color_tiles.size())
+            i = _color_tiles.size() - 1;
+
+        _color_tile_view.get_selection_model()->select(i);
+        on_color_tile_view_selection_model_selection_changed(_color_tile_view.get_selection_model(), i, 1, this);
     }
 }

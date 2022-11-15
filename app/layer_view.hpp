@@ -480,7 +480,7 @@ namespace mousetrap
 
         _setting_menu_button.set_hexpand(true);
         _setting_menu_button.set_always_show_arrow(false);
-        _setting_menu_button.set_tooltip_title("Layer View Settings");
+        //_setting_menu_button.set_tooltip_title("Layer View Settings");
 
         _layer_control_bar.operator Widget*()->set_valign(GTK_ALIGN_END);
         _layer_control_bar_spacer.set_vexpand(true);
