@@ -5,11 +5,9 @@
 
 #pragma once
 
-#include <include/gl_area.hpp>
-#include <include/aspect_frame.hpp>
-#include <include/event_controller.hpp>
-#include <include/get_resource_path.hpp>
+#include <mousetrap.hpp>
 
+#include <app/tooltip.hpp>
 #include <app/global_state.hpp>
 
 namespace mousetrap
@@ -76,6 +74,8 @@ namespace mousetrap
 
             void update_primary_color(double x, double y);
             void reformat();
+
+            Tooltip _tooltip;
     };
 }
 
@@ -97,6 +97,9 @@ namespace mousetrap
         _render_area.add_controller(&_render_area_button_event_controller);
 
         _main.set_child(&_render_area);
+
+        _tooltip.create_from("color_picker", state::tooltips_file, state::keybindings_file);
+        operator Widget*()->set_tooltip_widget(_tooltip);
     }
 
     ColorPicker::~ColorPicker()

@@ -64,6 +64,8 @@ namespace mousetrap
         private:
             std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<int64_t, std::nano>> _start;
     };
+
+    std::string get_timestamp_now();
 }
 
 #include <src/time.inl>

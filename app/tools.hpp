@@ -8,6 +8,9 @@
 namespace mousetrap
 {
     using ToolID = std::string;
+
+    static inline const ToolID SHAPES_FILL = "shapes_fill";
+    static inline const ToolID SHAPES_OUTLINE = "shapes_outline";
     
     static inline const ToolID MARQUEE_NEIGHBORHODD_SELECT = "marquee_neighborhood_select";
     static inline const ToolID MARQUEE_RECTANGLE = "marquee_rectangle";

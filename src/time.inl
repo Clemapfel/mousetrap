@@ -3,6 +3,8 @@
 // Created on 8/15/22 by clem (mail@clemens-cords.com)
 //
 
+#include <glib.h>
+
 namespace mousetrap
 {
     Time::Time(int64_t n_nanoseconds)
@@ -128,5 +130,17 @@ namespace mousetrap
         Time since = elapsed();
         _start = std::chrono::steady_clock::now();
         return since;
+    }
+
+    std::string get_timestamp_now()
+    {
+        auto* time = g_date_time_new_now(g_time_zone_new_local());
+        std::string microseconds = g_date_time_format(time, "%f");
+        std::string out = g_date_time_format(time, "%y-%m-%d %H:%M:%S,");
+
+        for (size_t i = 0; i < 3; ++i)
+            out.push_back(microseconds.at(i));
+
+        return out;
     }
 }

@@ -146,8 +146,8 @@ namespace mousetrap
                     RGBA cursor_color = state::settings_file->get_value_as<RGBA>("canvas", "cursor_color");
                     GLArea _area;
 
-                    Shape* _outline_shape;
-                    Shape* _fill_shape;
+                    Shape* _outline_shape = nullptr;
+                    Shape* _fill_shape = nullptr;
 
                     Vector2f* _canvas_size = new Vector2f(1, 1);
 
@@ -183,7 +183,7 @@ namespace mousetrap
                     static void on_resize(GLArea*, int, int, ShapeToolLayer* instance);
 
                     std::vector<Shape*> _edges;
-                    Shape* _circle;
+                    Shape* _circle = nullptr;
             };
 
             ShapeToolLayer _shape_tool_layer = ShapeToolLayer(this);

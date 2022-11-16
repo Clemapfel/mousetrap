@@ -5,24 +5,12 @@
 
 #pragma once
 
-#include <include/widget.hpp>
-#include <include/flow_box.hpp>
-#include <include/box.hpp>
-#include <include/image_display.hpp>
-#include <include/toggle_button.hpp>
-#include <include/popover.hpp>
-#include <include/time.hpp>
-#include <include/overlay.hpp>
-#include <include/get_resource_path.hpp>
-#include <include/list_view.hpp>
-#include <include/gl_area.hpp>
-#include <include/aspect_frame.hpp>
-#include <include/grid_view.hpp>
-#include <include/viewport.hpp>
+#include <mousetrap.hpp>
 
 #include <app/tools.hpp>
 #include <app/app_component.hpp>
 #include <app/global_state.hpp>
+#include <app/tooltip.hpp>
 
 namespace mousetrap
 {
@@ -68,6 +56,11 @@ namespace mousetrap
 
                     ClickEventController _click_event_controller;
                     static void on_click_pressed(ClickEventController*, size_t, double, double, Icon* instance);
+
+                    Tooltip _tooltip;
+
+                    Action _select_action;
+                    ShortcutController _shortcut_controller = ShortcutController(state::app);
             };
 
             class IconWithPopover
@@ -104,10 +97,13 @@ namespace mousetrap
                 new IconWithPopover(EYEDROPPER, {}, this),
                 new IconWithPopover(BUCKET_FILL, {}, this),
                 new IconWithPopover(LINE, {}, this),
-                new IconWithPopover("shapes_outline", {{RECTANGLE_OUTLINE, CIRCLE_OUTLINE, POLYGON_OUTLINE}}, this),
-                new IconWithPopover("shapes_fill", {{RECTANGLE_FILL, CIRCLE_FILL, POLYGON_FILL}}, this),
+                new IconWithPopover(SHAPES_OUTLINE, {{RECTANGLE_OUTLINE, CIRCLE_OUTLINE, POLYGON_OUTLINE}}, this),
+                new IconWithPopover(SHAPES_FILL, {{RECTANGLE_FILL, CIRCLE_FILL, POLYGON_FILL}}, this),
                 new IconWithPopover(GRADIENT_DITHERED, {{GRADIENT_DITHERED, GRADIENT_SMOOTH}}, this)
             };
+
+            static inline ToolID _shapes_fill_forwarding_id = POLYGON_FILL;
+            static inline ToolID _shapes_outline_forwarding_id = POLYGON_OUTLINE;
 
             ListView _main = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
     };
@@ -124,7 +120,7 @@ namespace mousetrap
     }
 
     Toolbox::Icon::Icon(ToolID id, Toolbox* owner)
-        : _id(id), _owner(owner)
+        : _id(id), _owner(owner), _select_action("toolbox.select_" + id)
     {
         for (auto* w : {&_has_popover_indicator_icon, &_child_selected_indicator_icon, &_selected_indicator_icon, &_tool_icon})
         {
@@ -143,6 +139,37 @@ namespace mousetrap
 
         _click_event_controller.connect_signal_click_pressed(on_click_pressed, this);
         _main.add_controller(&_click_event_controller);
+
+        _tooltip.set_title(state::tooltips_file->get_value("toolbox." + id, "title"));
+        _tooltip.set_description(state::tooltips_file->get_value("toolbox." + id, "description"));
+
+        auto add_shortcut = [&](const std::string& id)
+        {
+            auto value = state::keybindings_file->get_value("toolbox", "select_" + id);
+            if (value != "never")
+            {
+                _tooltip.add_shortcut(
+                    value,
+                    state::keybindings_file->get_comment_above("toolbox", "select_" + id)
+                );
+            }
+        };
+
+        if (id == SHAPES_FILL)
+        {
+            for (auto name : {RECTANGLE_OUTLINE, CIRCLE_OUTLINE, POLYGON_OUTLINE})
+                add_shortcut(name);
+        }
+        else if (id == SHAPES_OUTLINE)
+        {
+            for (auto name : {RECTANGLE_FILL, CIRCLE_FILL, POLYGON_FILL})
+                add_shortcut(name);
+        }
+        else
+            add_shortcut(id);
+
+
+        operator Widget*()->set_tooltip_widget(_tooltip);
     }
 
     void Toolbox::Icon::set_has_popover_indicator_visible(bool b)
@@ -280,10 +307,10 @@ namespace mousetrap
 
     void Toolbox::select(ToolID id)
     {
-        if (id == "shapes_outline")
+        if (id == SHAPES_OUTLINE)
             id = POLYGON_OUTLINE;
 
-        if (id == "shapes_fill")
+        if (id == SHAPES_FILL)
             id = POLYGON_FILL;
 
         for (auto& element : _elements)

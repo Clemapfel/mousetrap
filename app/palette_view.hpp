@@ -721,9 +721,7 @@ namespace mousetrap
         _shortcut_controller.set_scope(ShortcutScope::GLOBAL);
         operator Widget*()->add_controller(&_shortcut_controller);
 
-        _tooltip.set_title(state::tooltips_file->get_value("palette_view", "title"));
-        _tooltip.set_description(state::tooltips_file->get_value("palette_view", "description"));
-        _tooltip.create_shortcut_information_from("palette_view", state::keybindings_file);
+        _tooltip.create_from("palette_view", state::tooltips_file, state::keybindings_file);
         operator Widget*()->set_tooltip_widget(_tooltip.operator Widget*());
     }
 
@@ -736,7 +734,6 @@ namespace mousetrap
         if (palette_locked)
         {
             _color_tile_view.get_selection_model()->unselect_all();
-            bool once = true;
 
             for (size_t i = 0; i < _color_tiles.size(); ++i)
             {
@@ -745,7 +742,7 @@ namespace mousetrap
                 tile->set_selected(should_select);
 
                 if (should_select)
-                    _color_tile_view.get_selection_model()->select(i);
+                    select(i);
             }
 
             return;

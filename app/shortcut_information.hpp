@@ -20,7 +20,6 @@ namespace mousetrap
             void update() override;
 
             void set_title(const std::string&);
-            void set_description(const std::string&);
             void add_shortcut(const std::string& accelerator, const std::string& description);
 
             void create_from_group(const std::string& group, ConfigFile* file);
@@ -28,7 +27,6 @@ namespace mousetrap
 
         private:
             std::string _title;
-            std::string _description;
             ShortcutGroupDisplay* _shortcuts = nullptr;
 
             std::vector<std::pair<std::string, std::string>> _accelerators_and_descriptions;
@@ -70,11 +68,6 @@ namespace mousetrap
         _title = text;
     }
 
-    void ShortcutInformation::set_description(const std::string& text)
-    {
-        _description = text;
-    }
-
     void ShortcutInformation::add_shortcut(const std::string& accelerator, const std::string& description)
     {
         _accelerators_and_descriptions.emplace_back(accelerator, description);
@@ -89,7 +82,6 @@ namespace mousetrap
         for (auto& key : keys)
             _accelerators_and_descriptions.emplace_back(file->get_value(group, key), file->get_comment_above(group, key));
 
-        set_description(file->get_comment_above(group));
         update();
     }
 

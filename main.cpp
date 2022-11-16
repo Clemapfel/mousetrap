@@ -85,6 +85,18 @@ static void activate(GtkApplication* app, void*)
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
     state::app->add_window(state::main_window);
     state::main_window->set_show_menubar(true);
+    state::main_window->connect_signal_close([](Window*, Application* app) -> bool {
+
+        auto* list = gtk_application_get_windows(app->operator GtkApplication*());
+        auto* e = g_list_first(list);
+        while (e != nullptr)
+        {
+            gtk_window_close(GTK_WINDOW(e));
+            e = g_list_next(e);
+        }
+
+        return true;
+    }, state::app);
 
     initialize_debug_layers();
 
@@ -110,6 +122,9 @@ static void activate(GtkApplication* app, void*)
     auto* color_preview = state::color_preview->operator Widget*();
     auto* bubble_log = state::bubble_log->operator Widget*();
 
+    color_picker->set_margin(state::margin_unit);
+    color_picker->set_expand(true);
+
     layer_view->set_valign(GTK_ALIGN_END);
 
     color_picker->set_margin_start(state::margin_unit);
@@ -124,18 +139,26 @@ static void activate(GtkApplication* app, void*)
     color_preview->set_margin(state::margin_unit);
     color_preview->set_vexpand(false);
 
-    auto* color_picker_revealer = new Revealer();
-    color_picker_revealer->set_transition_type(TransitionType::SLIDE_BOTTOM_TO_TOP);
-    color_picker_revealer->set_child(color_picker);
-    color_picker_revealer->set_revealed(false);
+    auto* color_picker_window = new Window();
+    color_picker_window->set_child(color_picker);
+    color_picker_window->set_titlebar_layout("title:close");
+    color_picker_window->set_modal(false);
+    color_picker_window->set_title("HSV Color Picker");
+    color_picker_window->set_transient_for(state::main_window);
+
+    state::app->add_window(color_picker_window);
 
     auto* show_color_picker_click_ec = new ClickEventController();
-    static auto show_color_picker = [](ClickEventController*, size_t n, double, double, Revealer* window)
+    static auto show_color_picker = [](ClickEventController*, size_t n, double, double, Window* window)
     {
         if (n == 2)
-            window->set_revealed(not window->get_revealed());
+        {
+            window->show();
+            window->present();
+        }
     };
-    show_color_picker_click_ec->connect_signal_click_pressed(show_color_picker, color_picker_revealer);
+
+    show_color_picker_click_ec->connect_signal_click_pressed(show_color_picker, color_picker_window);
     color_preview->add_controller(show_color_picker_click_ec);
 
     auto* left_column = new Box(GTK_ORIENTATION_VERTICAL);
@@ -211,13 +234,7 @@ static void activate(GtkApplication* app, void*)
     add_spacer(left_column_paned_top);
     left_column_paned_top->push_back(verbose_color_picker);
 
-    auto* left_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
-    left_column_paned->set_start_child(left_column_paned_top);
-    left_column_paned->set_end_child(color_picker_revealer);
-    left_column_paned->set_start_child_shrinkable(false);
-    left_column_paned->set_has_wide_handle(true);
-
-    left_column->push_back(left_column_paned);
+    left_column->push_back(left_column_paned_top);
 
     // RIGHT COLUMN
 

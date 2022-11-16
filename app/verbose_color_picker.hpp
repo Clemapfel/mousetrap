@@ -121,6 +121,8 @@ namespace mousetrap
             Label _rgb_label = Label("RGB");
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL, state::margin_unit * 0.25);
+
+            Tooltip _tooltip;
     };
 }
 
@@ -138,9 +140,6 @@ namespace mousetrap
         _main.push_back(&_label);
         _main.push_back(&_separator);
         _main.push_back(&_entry);
-
-        //_main.set_tooltip_title("HTML Code");
-        //_main.set_tooltip_description("Hexadecimal code, format: <tt>#RRGGBB</tt>");
 
         _entry.connect_signal_activate(on_entry_activate, this);
         _entry.set_n_chars(7 + 1);
@@ -699,6 +698,18 @@ namespace mousetrap
         _main.push_back(_sliders.at('b')->operator Widget*());
 
         _main.push_back(_html_code_region);
+
+        _sliders.at('a')->operator Widget*()->set_tooltip_text(state::tooltips_file->get_value("verbose_color_picker", "opacity"));
+        _sliders.at('h')->operator Widget*()->set_tooltip_text(state::tooltips_file->get_value("verbose_color_picker", "hue"));
+        _sliders.at('s')->operator Widget*()->set_tooltip_text(state::tooltips_file->get_value("verbose_color_picker", "saturation"));
+        _sliders.at('v')->operator Widget*()->set_tooltip_text(state::tooltips_file->get_value("verbose_color_picker", "value"));
+        _sliders.at('r')->operator Widget*()->set_tooltip_text(state::tooltips_file->get_value("verbose_color_picker", "red"));
+        _sliders.at('g')->operator Widget*()->set_tooltip_text(state::tooltips_file->get_value("verbose_color_picker", "green"));
+        _sliders.at('b')->operator Widget*()->set_tooltip_text(state::tooltips_file->get_value("verbose_color_picker", "blue"));
+        _html_code_region.operator Widget*()->set_tooltip_text(state::tooltips_file->get_value("verbose_color_picker", "html_code"));
+
+        _tooltip.create_from("verbose_color_picker", state::tooltips_file, state::keybindings_file);
+        operator Widget*()->set_tooltip_widget(_tooltip);
     }
 
     VerboseColorPicker::operator Widget*()

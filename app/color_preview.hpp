@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include <include/gl_area.hpp>
-#include <include/get_resource_path.hpp>
+#include <mousetrap.hpp>
 
 #include <app/global_state.hpp>
+#include <app/tooltip.hpp>
 
 namespace mousetrap
 {
@@ -36,6 +36,8 @@ namespace mousetrap
             Shape* _previous_color_shape;
             Shape* _frame_shape;
             Shape* _transparency_tiling_shape;
+
+            Tooltip _tooltip;
     };
 }
 
@@ -50,8 +52,8 @@ namespace mousetrap
         _gl_area.connect_signal_resize(on_gl_area_resize, this);
         _gl_area.set_expand(true);
 
-        //_gl_area.set_tooltip_title("Current Color Preview");
-        _gl_area.set_tooltip_text("Compare previous color during selection");
+        _tooltip.create_from("color_preview", state::tooltips_file, state::keybindings_file);
+        operator Widget*()->set_tooltip_widget(_tooltip);
     }
 
     void ColorPreview::on_gl_area_realize(Widget* widget, ColorPreview* instance)

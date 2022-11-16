@@ -17,12 +17,16 @@ namespace mousetrap
             Tooltip();
             operator Widget*();
 
+            /// \brief reads tooltips.ini for `title` and `descriptions`, as well as keybindings.ini
+            void create_from(const std::string& group_name, ConfigFile* tooltip_file, ConfigFile* keybindings_file);
+
             void set_title(const std::string&);
             void set_description(const std::string&);
             void create_shortcut_information_from(const std::string& group, ConfigFile* file);
+            void add_shortcut(const std::string& shortcut, const std::string& description);
 
         private:
-            Viewport _main;
+            Revealer _window;
             Box _box = Box(GTK_ORIENTATION_VERTICAL);
 
             void reformat();
@@ -33,7 +37,6 @@ namespace mousetrap
             Label _title_label;
             Label _description_label;
 
-            Frame _shortcut_frame;
             ShortcutInformation _shortcut_information;
     };
 }
@@ -46,32 +49,56 @@ namespace mousetrap
     {
         _box.push_back(&_title_label);
         _box.push_back(&_description_label);
-
-        _shortcut_frame.set_child(_shortcut_information);
-        _box.push_back(&_shortcut_frame);
+        _box.push_back(_shortcut_information);
 
         _shortcut_information.set_title("Keybindings");
+        _shortcut_information.operator Widget*()->set_valign(GTK_ALIGN_END);
 
-        _main.set_child(&_box);
-        //_main.set_policy(GTK_POLICY_NEVER, GTK_POLICY_NEVER);
-        //_main.set_propagate_natural_height(true);
-        _main.set_hexpand(false);
+        _description_label.set_wrap_mode(LabelWrapMode::WORD_OR_CHAR);
+
+        _window.set_child(&_box);
+        _window.set_expand(true);
+
+        for (auto* label : {&_title_label, &_description_label})
+        {
+            label->set_margin_top(2 * state::margin_unit);
+            label->set_margin_horizontal(2 * state::margin_unit);
+            label->set_align(GTK_ALIGN_START);
+            label->set_justify_mode(JustifyMode::LEFT);
+        }
     }
 
     Tooltip::operator Widget*()
     {
-        return &_main;
+        return &_window;
+    }
+
+    void Tooltip::create_from(const std::string& group_name, ConfigFile* tooltip_file, ConfigFile* keybindings_file)
+    {
+        if (tooltip_file != nullptr and tooltip_file->has_group(group_name))
+        {
+            if (tooltip_file->has_key(group_name, "title"))
+                set_title(tooltip_file->get_value(group_name, "title"));
+
+            if (tooltip_file->has_key(group_name, "description"))
+                set_description(tooltip_file->get_value(group_name, "description"));
+        }
+
+        if (tooltip_file != nullptr and keybindings_file->has_group(group_name))
+            create_shortcut_information_from(group_name, keybindings_file);
     }
 
     void Tooltip::set_title(const std::string& title)
     {
         _title = title;
+        _title_label.set_text("<b>" + _title + "</b>");
         reformat();
     }
 
     void Tooltip::set_description(const std::string& description)
     {
         _description = description;
+        _description_label.set_text(_description);
         reformat();
     }
 
@@ -81,20 +108,15 @@ namespace mousetrap
         reformat();
     }
 
+    void Tooltip::add_shortcut(const std::string& shortcut, const std::string& description)
+    {
+        _shortcut_information.add_shortcut(shortcut, description);
+        reformat();
+    }
+
     void Tooltip::reformat()
     {
-        _title_label.set_text("<b>" + _title + "</b>");
-        _description_label.set_text(_description);
-        _shortcut_frame.set_visible(_shortcut_information.get_n_shortcuts() != 0);
-        _main.set_size_request(_shortcut_information.operator Widget*()->get_preferred_size().natural_size);
-
-        for (auto* label : {&_title_label, &_description_label})
-        {
-            label->set_margin_top(2 * state::margin_unit);
-            label->set_margin_horizontal(2 * state::margin_unit);
-            label->set_halign(GTK_ALIGN_START);
-            label->set_wrap_mode(LabelWrapMode::WORD_OR_CHAR);
-            label->set_justify_mode(JustifyMode::LEFT);
-        }
+        _window.set_size_request({_shortcut_information.operator Widget*()->get_preferred_size().natural_size.x, 0});
+        _description_label.set_margin_bottom(_shortcut_information.get_n_shortcuts() > 0 ? 0 : 2 * state::margin_unit);
     }
 }

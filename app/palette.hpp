@@ -159,7 +159,7 @@ namespace mousetrap
             file.set_value_as<std::vector<float>>("palette", std::to_string(pair.first), list);
         }
 
-        file.add_comment_above("palette", "mousetrap palette file\n format: index=hue;saturation;value[;alpha] (index in {0, 1, 2, ...}, components in [0, 1])\n generated " + std::string(g_date_time_format_iso8601(g_date_time_new_now(g_time_zone_new_local()))));
+        file.add_comment_above("palette", "mousetrap palette file\n format: index=hue;saturation;value[;alpha] (index in {0, 1, 2, ...}, components in [0, 1])\n");
         return file.save_to_file(path);
     }
 

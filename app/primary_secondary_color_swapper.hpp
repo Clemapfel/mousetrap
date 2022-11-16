@@ -5,15 +5,11 @@
 
 #pragma once
 
-#include <include/gl_area.hpp>
-#include <include/aspect_frame.hpp>
-#include <include/label.hpp>
-#include <include/overlay.hpp>
-#include <include/event_controller.hpp>
-#include <include/get_resource_path.hpp>
+#include <mousetrap.hpp>
 
 #include <app/app_component.hpp>
 #include <app/global_state.hpp>
+#include <app/tooltip.hpp>
 
 namespace mousetrap
 {
@@ -58,6 +54,11 @@ namespace mousetrap
 
             Label _arrow = Label("");
             Overlay _arrow_overlay = Overlay();
+
+            ShortcutController _shortcut_controller = ShortcutController(state::app);
+            Action _swap_action = Action("color_swapper.swap");
+
+            Tooltip _tooltip;
     };
 }
 
@@ -90,6 +91,19 @@ namespace mousetrap
 
         _main.add_controller(&_click_event_controller);
         _main.add_controller(&_motion_event_controller);
+
+        _swap_action.set_do_function([](ColorSwapper* instance) {
+            instance->swap_colors();
+        }, this);
+        _swap_action.add_shortcut(state::keybindings_file->get_value("color_swapper", "swap"));
+        state::app->add_action(_swap_action);
+        _shortcut_controller.add_action(_swap_action.get_id());
+        _shortcut_controller.set_scope(ShortcutScope::GLOBAL);
+
+        _main.add_controller(&_shortcut_controller);
+
+        _tooltip.create_from("color_swapper", state::tooltips_file, state::keybindings_file);
+        operator Widget*()->set_tooltip_widget(_tooltip);
     }
 
     ColorSwapper::~ColorSwapper()

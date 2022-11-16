@@ -7,10 +7,12 @@ namespace mousetrap
 {
     Window::Window()
         : Window(GTK_WINDOW(gtk_window_new()))
-    {}
+    {
+        gtk_window_set_hide_on_close(get_native(), true);
+    }
 
     Window::Window(GtkWindow* window)
-        : WidgetImplementation<GtkWindow>(window)
+        : WidgetImplementation<GtkWindow>(window), HasCloseSignal<Window>(this)
     {
         if (_global_shortcut_controller == nullptr)
         {
@@ -92,6 +94,21 @@ namespace mousetrap
     void Window::set_titlebar_widget(Widget* widget)
     {
         gtk_window_set_titlebar(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget *());
+    }
+
+    void Window::set_modal(bool b)
+    {
+        gtk_window_set_modal(get_native(), b);
+    }
+
+    void Window::set_transient_for(Window* partner)
+    {
+        gtk_window_set_transient_for(get_native(), partner->operator GtkWindow*());
+    }
+
+    void Window::set_decorated(bool b)
+    {
+        gtk_window_set_decorated(get_native(), b);
     }
 
     bool Window::on_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, void*)

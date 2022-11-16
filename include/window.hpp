@@ -10,7 +10,7 @@
 
 namespace mousetrap
 {
-    class Window : public WidgetImplementation<GtkWindow>
+    class Window : public WidgetImplementation<GtkWindow>, public HasCloseSignal<Window>
     {
         public:
             Window();
@@ -35,6 +35,10 @@ namespace mousetrap
             // https://docs.gtk.org/gtk4/property.Settings.gtk-decoration-layout.html
             void set_titlebar_layout(const char*);
             void set_titlebar_widget(Widget*);
+
+            void set_modal(bool);
+            void set_transient_for(Window* partner);
+            void set_decorated(bool);
 
         private:
             using ShortcutID = std::string;
