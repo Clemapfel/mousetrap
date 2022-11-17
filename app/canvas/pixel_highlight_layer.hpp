@@ -11,7 +11,10 @@ namespace mousetrap
         _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);
 
+        _motion_controller.connect_signal_motion_enter(on_motion_enter, this);
         _motion_controller.connect_signal_motion(on_motion, this);
+        _motion_controller.connect_signal_motion_leave(on_motion_leave, this);
+        _area.add_controller(&_motion_controller);
     }
 
     Canvas::PixelHighlightLayer::operator Widget*()
@@ -52,11 +55,11 @@ namespace mousetrap
             return;
 
         _outline_shape->as_wireframe({
-                                             {0, 0},
-                                             {pixel_w, 0},
-                                             {pixel_w, pixel_h},
-                                             {0, pixel_h}
-                                     });
+                 {0, 0},
+                 {pixel_w, 0},
+                 {pixel_w, pixel_h},
+                 {0, pixel_h}
+         });
         _fill_shape->as_rectangle(
                 _outline_shape->get_vertex_position(0),
                 _outline_shape->get_vertex_position(1),
@@ -134,6 +137,20 @@ namespace mousetrap
             instance->_outline_shape->set_centroid(centroid);
         }
 
+        instance->_area.queue_render();
+    }
+
+    void Canvas::PixelHighlightLayer::on_motion_enter(MotionEventController*, double, double, PixelHighlightLayer* instance)
+    {
+        instance->_outline_shape->set_visible(true);
+        instance->_fill_shape->set_visible(true);
+        instance->_area.queue_render();
+    }
+
+    void Canvas::PixelHighlightLayer::on_motion_leave(MotionEventController*, PixelHighlightLayer* instance)
+    {
+        instance->_outline_shape->set_visible(false);
+        instance->_fill_shape->set_visible(false);
         instance->_area.queue_render();
     }
 }

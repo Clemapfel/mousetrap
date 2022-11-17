@@ -155,6 +155,8 @@ namespace mousetrap
                     static void on_resize(GLArea*, int, int, PixelHighlightLayer* instance);
 
                     MotionEventController _motion_controller;
+                    static void on_motion_enter(MotionEventController*, double x, double y, PixelHighlightLayer* instance);
+                    static void on_motion_leave(MotionEventController*, PixelHighlightLayer* instance);
                     static void on_motion(MotionEventController*, double x, double y, PixelHighlightLayer* instance);
             };
             PixelHighlightLayer _pixel_highlight_layer = PixelHighlightLayer(this);
@@ -185,8 +187,6 @@ namespace mousetrap
                     std::vector<Shape*> _edges;
                     Shape* _circle = nullptr;
             };
-
-            ShapeToolLayer _shape_tool_layer = ShapeToolLayer(this);
 
             // main
             Overlay _render_area_overlay;
@@ -365,7 +365,6 @@ namespace mousetrap
         _render_area_overlay.add_overlay(_layers_layer);
         _render_area_overlay.add_overlay(_grid_layer);
         _render_area_overlay.add_overlay(_pixel_highlight_layer);
-        _render_area_overlay.add_overlay(_shape_tool_layer);
 
         _grid_layer.operator Widget*()->set_visible(_grid_visible);
 

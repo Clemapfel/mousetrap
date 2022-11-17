@@ -193,8 +193,6 @@ static void activate(GtkApplication* app, void*)
     color_picker->set_expand(true);
 
     verbose_color_picker->set_margin(state::margin_unit);
-    verbose_color_picker->set_vexpand(false);
-    verbose_color_picker->set_valign(GTK_ALIGN_START);
 
     color_preview->set_margin(state::margin_unit);
     color_preview->set_vexpand(false);
@@ -206,7 +204,7 @@ static void activate(GtkApplication* app, void*)
     color_picker_window->set_title("HSV Color Picker");
     color_picker_window->set_transient_for(state::main_window);
 
-    state::app->add_window(color_picker_window);
+    //state::app->add_window(color_picker_window);
 
     auto* show_color_picker_click_ec = new ClickEventController();
     static auto show_color_picker = [](ClickEventController*, size_t n, double, double, Window* window)
@@ -291,10 +289,24 @@ static void activate(GtkApplication* app, void*)
     left_column_paned_top->push_back(color_swapper);
     add_spacer(left_column_paned_top);
     left_column_paned_top->push_back(color_preview);
-    add_spacer(left_column_paned_top);
-    left_column_paned_top->push_back(verbose_color_picker);
 
-    left_column->push_back(left_column_paned_top);
+    left_column_paned_top->set_vexpand(false);
+    verbose_color_picker->set_vexpand(true);
+    verbose_color_picker->set_valign(GTK_ALIGN_CENTER);
+
+    auto* left_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
+    left_column_paned->set_start_child(left_column_paned_top);
+    left_column_paned->set_end_child(verbose_color_picker);
+
+    left_column_paned->set_start_child_shrinkable(false);
+    left_column_paned->set_end_child_shrinkable(false);
+    left_column_paned->set_start_child_resizable(false);
+    left_column_paned->set_end_child_resizable(true);
+
+    left_column_paned->set_has_wide_handle(true);
+
+    verbose_color_picker->set_size_request({0, 100});
+    left_column->push_back(left_column_paned);
 
     // RIGHT COLUMN
 
@@ -326,27 +338,10 @@ static void activate(GtkApplication* app, void*)
 
     // CENTER COLUMN
 
-    auto* toolbox_box = new Box(GTK_ORIENTATION_HORIZONTAL);
-    auto* toolbox_box_left_spacer = new SeparatorLine();
-    auto* toolbox_box_right_spacer = new SeparatorLine();
-
-    toolbox->set_halign(GTK_ALIGN_CENTER);
-
-    //toolbox_box_left_spacer->set_halign(GTK_ALIGN_START);
-    //toolbox_box_right_spacer->set_halign(GTK_ALIGN_END);
-
-    toolbox_box_left_spacer->set_hexpand(true);
-    toolbox_box_right_spacer->set_hexpand(true);
-    toolbox->set_hexpand(false);
-
-    toolbox_box->push_back(toolbox_box_left_spacer);
-    toolbox_box->push_back(toolbox);
-    toolbox_box->push_back(toolbox_box_right_spacer);
-
-    toolbox_box->set_vexpand(false);
+    toolbox->set_vexpand(false);
     canvas->set_vexpand(true);
 
-    center_column->push_back(toolbox_box);
+    center_column->push_back(toolbox);
     add_spacer(center_column);
     center_column->push_back(canvas);
     center_column->set_homogeneous(false);

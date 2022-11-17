@@ -48,6 +48,5 @@ namespace mousetrap
     void Application::add_window(Window* window)
     {
         gtk_application_add_window(_native, window->operator  GtkWindow*());
-        gtk_window_set_destroy_with_parent(window->operator GtkWindow*(), true);
     }
 }

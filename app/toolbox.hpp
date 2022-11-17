@@ -105,7 +105,10 @@ namespace mousetrap
             static inline ToolID _shapes_fill_forwarding_id = POLYGON_FILL;
             static inline ToolID _shapes_outline_forwarding_id = POLYGON_OUTLINE;
 
-            ListView _main = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
+            ListView _element_container = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
+
+            SeparatorLine _spacer_left, _spacer_right;
+            Box _outer = Box(GTK_ORIENTATION_HORIZONTAL);
     };
 }
 //
@@ -155,12 +158,12 @@ namespace mousetrap
             }
         };
 
-        if (id == SHAPES_FILL)
+        if (id == SHAPES_OUTLINE)
         {
             for (auto name : {RECTANGLE_OUTLINE, CIRCLE_OUTLINE, POLYGON_OUTLINE})
                 add_shortcut(name);
         }
-        else if (id == SHAPES_OUTLINE)
+        else if (id == SHAPES_FILL)
         {
             for (auto name : {RECTANGLE_FILL, CIRCLE_FILL, POLYGON_FILL})
                 add_shortcut(name);
@@ -290,19 +293,27 @@ namespace mousetrap
         for (auto e : _elements)
         {
             e->operator Widget *()->set_halign(GTK_ALIGN_START);
-            _main.push_back(e->operator Widget*());
+            _element_container.push_back(e->operator Widget*());
         }
 
-        _main.set_hexpand(false);
-        //_main.set_min_children_per_line(_elements.size() - 1);
-            // for some reason going from 2 to 1 lines lags the ui, this prevents that
+        _element_container.set_align(GTK_ALIGN_CENTER);
+        _element_container.set_hexpand(false);
+
+        _spacer_right.set_hexpand(true);
+        _spacer_left.set_hexpand(true);
+
+        _outer.push_back(&_spacer_left);
+        _outer.push_back(&_element_container);
+        _outer.push_back(&_spacer_right);
+
+        _outer.set_hexpand(true);
 
         select(state::active_tool);
     }
 
     Toolbox::operator Widget*()
     {
-        return &_main;
+        return &_outer;
     }
 
     void Toolbox::select(ToolID id)

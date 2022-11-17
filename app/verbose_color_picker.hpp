@@ -640,37 +640,30 @@ namespace mousetrap
             if (c == 'a')
             {
                 slider->set_value(_current_color->a);
-                //slider->operator Widget*()->set_tooltip_title("Opacity (Alpha)");
             }
             else if (c == 'h')
             {
                 slider->set_value(_current_color->h);
-                //slider->operator Widget*()->set_tooltip_title("Hue");
             }
             else if (c == 's')
             {
                 slider->set_value(_current_color->s);
-                //slider->operator Widget*()->set_tooltip_title("Saturation");
             }
             else if (c == 'v')
             {
                 slider->set_value(_current_color->v);
-                //slider->operator Widget*()->set_tooltip_title("Value (Chroma)");
             }
             else if (c == 'r')
             {
                 slider->set_value(_current_color->operator RGBA().r);
-                //slider->operator Widget*()->set_tooltip_title("Red");
             }
             else if (c == 'g')
             {
                 slider->set_value(_current_color->operator RGBA().g);
-                //slider->operator Widget*()->set_tooltip_title("Green");
             }
             else if (c == 'b')
             {
                 slider->set_value(_current_color->operator RGBA().b);
-                //slider->operator Widget*()->set_tooltip_title("Blue");
             }
         }
 
@@ -684,8 +677,8 @@ namespace mousetrap
 
         _html_code_region.operator Widget *()->set_margin_top(state::margin_unit);
 
-        _main.push_back(&_opacity_label);
-        _main.push_back(_sliders.at('a')->operator Widget*());
+        //_main.push_back(&_opacity_label);
+        //_main.push_back(_sliders.at('a')->operator Widget*());
 
         _main.push_back(&_hsv_label);
         _main.push_back(_sliders.at('h')->operator Widget*());
