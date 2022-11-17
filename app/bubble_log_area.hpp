@@ -17,7 +17,7 @@ namespace mousetrap
             operator Widget*() override;
             void update() override {};
 
-            void send_message(const std::string&, InfoMessageType type = InfoMessageType::INFO);
+            void send_message(const std::string&, InfoMessageType type = InfoMessageType::INFO, bool sticky = false);
             void set_has_close_button(bool);
             void set_bubble_reveal_transition_type(TransitionType);
 
@@ -26,6 +26,7 @@ namespace mousetrap
             {
                 Revealer revealer;
                 InfoMessage message;
+                Label label;
 
                 Time elapsed = seconds(0);
                 int previous_timestamp = 0;
@@ -139,26 +140,41 @@ namespace mousetrap
         data.instance->_messages.erase(data.id);
     }
 
-    void BubbleLogArea::send_message(const std::string& text, InfoMessageType type)
+    void BubbleLogArea::send_message(const std::string& text, InfoMessageType type, bool sticky)
     {
+        std::string prefix = "";
+
         if (type == INFO and _suppress_info)
             return;
 
-        if (type == WARNING and _suppress_warning)
-            return;
+        if (type == WARNING)
+        {
+            if (_suppress_warning)
+                return;
+            else
+                prefix = "<span color=\"orange\"><b>Warning</b></span>: ";
+        }
 
-        if (type == ERROR and _suppress_error)
-            return;
+        if (type == ERROR)
+        {
+            if (_suppress_error)
+                return;
+            else
+                prefix = "<span color=\"red\"><b>Error</b></span>: ";
+        }
 
         auto id = _current_id++;
         auto& message = _messages.insert({id, new Message{
             Revealer(_transition_type),
-            InfoMessage()
+            InfoMessage(),
+            Label(prefix + text)
         }}).first->second;
+
+        message->label.set_margin(state::margin_unit);
 
         message->revealer.set_child(&message->message);
         message->revealer.set_revealed(false);
-        message->message.add_child(new Label(text));
+        message->message.add_child(&message->label);
         message->message.set_message_type(type);
         message->message.set_has_close_button(_has_close_button);
         message->message.set_valign(GTK_ALIGN_END);
@@ -167,6 +183,7 @@ namespace mousetrap
         message->message.set_hexpand(false);
         message->message.connect_signal_hide(on_message_hide, on_message_hide_data{this, id});
         message->message.set_hide_interruptable(false);
+        message->message.set_autohide(not sticky);
 
         auto* w = message->revealer.operator GtkWidget*();
         gtk_widget_add_tick_callback(w, (GtkTickCallback) G_CALLBACK(delayed_reveal), message, (GDestroyNotify) nullptr);

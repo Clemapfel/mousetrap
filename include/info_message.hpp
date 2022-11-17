@@ -37,9 +37,10 @@ namespace mousetrap
             void set_revealed(bool);
             bool get_revealed();
 
+            void set_autohide(bool);
+
             template<typename Function_t, typename Data_t>
             void connect_signal_hide(Function_t, Data_t);
-
             void set_signal_hide_blocked(bool);
 
         private:
@@ -47,7 +48,9 @@ namespace mousetrap
             static void on_response(GtkInfoBar*, int response, InfoMessage* instance);
 
             std::function<void()> _on_hide_f;
-            bool _on_hide_blocked;
+            bool _on_hide_blocked = false;
+
+            bool _should_hide = true;
 
             Time _hide_after_elapsed = seconds(0);
             Time _hide_after_hold_duration = seconds(0);
@@ -132,6 +135,11 @@ namespace mousetrap
         gtk_info_bar_set_revealed(get_native(), b);
     }
 
+    void InfoMessage::set_autohide(bool b)
+    {
+        _should_hide = b;
+    }
+
     bool InfoMessage::get_revealed()
     {
         return gtk_info_bar_get_revealed(get_native());
@@ -190,7 +198,7 @@ namespace mousetrap
 
         instance->_hide_after_elapsed += microseconds(current - instance->_previous_frame_clock_time_stamp);
 
-        if (instance->_hide_after_elapsed > instance->_hide_after_hold_duration)
+        if (instance->_should_hide and instance->_hide_after_elapsed > instance->_hide_after_hold_duration)
         {
             auto opacity = 1 - (instance->_hide_after_elapsed - instance->_hide_after_hold_duration).as_microseconds() / (instance->_hide_after_decay_duration).as_microseconds();
             instance->set_opacity(opacity);

@@ -70,9 +70,81 @@ void initialize_debug_layers()
     }
 }
 
-void test_action(void* in)
+void validate_keybindings_file(ConfigFile* file)
 {
-    std::cout << *((std::string*) in) << std::endl;
+    std::map<std::string, std::vector<std::string>> map;
+
+    auto notify_invalid_shortcut = [](const std::string& action, const std::string& shortcut)
+    {
+        std::stringstream str;
+        str << "<b>Invalid Shortcut</b>\n" << "Shortcut `" << shortcut << "` for action `" << action << "` is invalid. Ignoring assignment.";
+        ((BubbleLogArea*) state::bubble_log)->send_message(str.str(), InfoMessageType::ERROR, true);
+    };
+
+    bool conflict = false;
+    for (auto group : file->get_groups())
+    {
+        for (auto key : file->get_keys(group))
+        {
+            auto value = file->get_value(group, key);
+
+            if (value == "never")
+                continue;
+
+            auto* trigger = gtk_shortcut_trigger_parse_string(value.c_str());
+
+            if (trigger == nullptr)
+            {
+                notify_invalid_shortcut(group + "." + key, value);
+                continue;
+            }
+
+            auto hash = gtk_shortcut_trigger_to_string(trigger);
+
+            auto it = map.find(hash);
+            if (it != map.end())
+            {
+                it->second.push_back(group + "." + key);
+                conflict = true;
+            }
+            else
+                map.insert({hash, {group + "." + key}});
+        }
+    }
+
+    if (not conflict)
+        return;
+
+    std::stringstream message;
+    message << "<b>Keybinding conflict detected</b>\n"
+            << "(In " << get_resource_path() << "/keybindings.ini)\n\n";
+
+    for (auto& pair : map)
+    {
+        if (pair.second.size() <= 1)
+            continue;
+
+        message << "\tShortcut `<tt>";
+
+        for (auto c : pair.first)
+        {
+            if (c == '<')
+                message << "&lt;";
+            else if (c == '>')
+                message << "&gt;";
+            else
+                message << c;
+        }
+
+        message << "</tt>` was assigned to all of the following actions:" << std::endl;
+
+        for (size_t i = 0; i < pair.second.size(); ++i)
+            message << "\t\t<tt>" << pair.second.at(i) << "</tt>" << std::endl;
+    }
+
+    message << "\nPlease resolve these conflicts via the settings menu or by editing keybindings.ini";
+
+    ((BubbleLogArea*) state::bubble_log)->send_message(message.str(), InfoMessageType::ERROR, true);
 }
 
 static void activate(GtkApplication* app, void*)
@@ -85,18 +157,6 @@ static void activate(GtkApplication* app, void*)
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
     state::app->add_window(state::main_window);
     state::main_window->set_show_menubar(true);
-    state::main_window->connect_signal_close([](Window*, Application* app) -> bool {
-
-        auto* list = gtk_application_get_windows(app->operator GtkApplication*());
-        auto* e = g_list_first(list);
-        while (e != nullptr)
-        {
-            gtk_window_close(GTK_WINDOW(e));
-            e = g_list_next(e);
-        }
-
-        return true;
-    }, state::app);
 
     initialize_debug_layers();
 
@@ -312,6 +372,8 @@ static void activate(GtkApplication* app, void*)
     state::main_window->present();
     state::main_window->set_focusable(true);
     state::main_window->grab_focus();
+
+    validate_keybindings_file(state::keybindings_file);
 }
 
 static void startup(GApplication*)

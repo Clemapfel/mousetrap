@@ -111,6 +111,7 @@ namespace mousetrap::state
     // ### SYSTEM ######################################
 
     AppComponent* bubble_log;
+    void validate_keybindings_file();
 
     // ### FORMATING ###################################
 
