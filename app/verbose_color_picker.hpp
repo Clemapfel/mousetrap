@@ -703,6 +703,8 @@ namespace mousetrap
 
         _tooltip.create_from("verbose_color_picker", state::tooltips_file, state::keybindings_file);
         operator Widget*()->set_tooltip_widget(_tooltip);
+
+        _main.set_homogeneous(false);
     }
 
     VerboseColorPicker::operator Widget*()

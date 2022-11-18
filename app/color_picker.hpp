@@ -97,6 +97,7 @@ namespace mousetrap
         _render_area.add_controller(&_render_area_button_event_controller);
 
         _main.set_child(&_render_area);
+        _main.set_expand(true);
 
         _tooltip.create_from("color_picker", state::tooltips_file, state::keybindings_file);
         operator Widget*()->set_tooltip_widget(_tooltip);
@@ -487,6 +488,7 @@ namespace mousetrap
             state::primary_color = color;
             state::update_color_swapper();
             state::update_verbose_color_picker();
+            state::update_palette_view();
 
             state::preview_color_current = color;
             state::update_color_preview();

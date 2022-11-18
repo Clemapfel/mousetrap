@@ -182,18 +182,8 @@ static void activate(GtkApplication* app, void*)
     auto* color_preview = state::color_preview->operator Widget*();
     auto* bubble_log = state::bubble_log->operator Widget*();
 
-    color_picker->set_margin(state::margin_unit);
-    color_picker->set_expand(true);
-
     layer_view->set_valign(GTK_ALIGN_END);
-
-    color_picker->set_margin_start(state::margin_unit);
-    color_picker->set_margin_bottom(state::margin_unit);
-    color_picker->set_margin_top(state::margin_unit);
-    color_picker->set_expand(true);
-
     verbose_color_picker->set_margin(state::margin_unit);
-
     color_preview->set_margin(state::margin_unit);
     color_preview->set_vexpand(false);
 
@@ -203,6 +193,9 @@ static void activate(GtkApplication* app, void*)
     color_picker_window->set_modal(false);
     color_picker_window->set_title("HSV Color Picker");
     color_picker_window->set_transient_for(state::main_window);
+
+    color_picker->set_expand(true);
+    color_picker->set_margin_horizontal(state::margin_unit);
 
     //state::app->add_window(color_picker_window);
 
@@ -258,15 +251,15 @@ static void activate(GtkApplication* app, void*)
 
     // LEFT COLUMN
 
-    float color_picker_width = 20 * state::margin_unit;
+    float color_picker_width = 25 * state::margin_unit;
     float color_swapper_height = 8 * state::margin_unit;
 
-    color_picker->set_size_request({color_picker_width, color_picker_width});
+    color_picker->set_size_request(Vector2f(color_picker_width));
     color_swapper->set_size_request({color_picker_width, color_swapper_height});
     color_preview->set_size_request({color_picker_width + 2 * state::margin_unit, color_swapper_height * 0.5});
+    color_swapper->set_valign(GTK_ALIGN_END);
+    color_preview->set_cursor(GtkCursorType::POINTER);
 
-    for (auto* w : {color_picker, color_swapper})
-        w->set_valign(GTK_ALIGN_END);
 
     auto* palette_view_spacer_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
     auto* palette_view_spacer = new SeparatorLine();
@@ -297,6 +290,7 @@ static void activate(GtkApplication* app, void*)
     auto* left_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
     left_column_paned->set_start_child(left_column_paned_top);
     left_column_paned->set_end_child(verbose_color_picker);
+    left_column_paned->set_position(9999);
 
     left_column_paned->set_start_child_shrinkable(false);
     left_column_paned->set_end_child_shrinkable(false);
