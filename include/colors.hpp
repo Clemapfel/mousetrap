@@ -71,6 +71,28 @@ namespace mousetrap
 
     RGBA html_code_to_rgba(const std::string& code);
 
+    RGBA quantize(RGBA in, size_t n_values_per_component)
+    {
+        RGBA out;
+        out.r = (int(in.r * n_values_per_component) / float(n_values_per_component));
+        out.g = (int(in.g * n_values_per_component) / float(n_values_per_component));
+        out.b = (int(in.b * n_values_per_component) / float(n_values_per_component));
+        out.a = (int(in.a * n_values_per_component) / float(n_values_per_component));
+
+        return out;
+    }
+
+    HSVA quantize(HSVA in, size_t n_values_per_component)
+    {
+        HSVA out;
+        out.h = (int(in.h * n_values_per_component) / float(n_values_per_component));
+        out.s = (int(in.s * n_values_per_component) / float(n_values_per_component));
+        out.v = (int(in.v * n_values_per_component) / float(n_values_per_component));
+        out.a = (int(in.a * n_values_per_component) / float(n_values_per_component));
+
+        return out;
+    }
+
     static inline const RGBA YELLOW = RGBA(1, 232 / 255.f, 15 / 255.f, 1);
 }
 

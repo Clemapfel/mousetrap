@@ -7,7 +7,10 @@ namespace mousetrap
 {
     Paned::Paned(GtkOrientation orientation)
         : WidgetImplementation<GtkPaned>(GTK_PANED(gtk_paned_new(orientation)))
-    {}
+    {
+        set_start_child_resizable(true);
+        set_end_child_resizable(true);
+    }
 
     void Paned::set_position(int v)
     {

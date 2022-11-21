@@ -182,6 +182,7 @@ static void activate(GtkApplication* app, void*)
     auto* color_preview = state::color_preview->operator Widget*();
     auto* bubble_log = state::bubble_log->operator Widget*();
 
+    /*
     layer_view->set_valign(GTK_ALIGN_END);
     verbose_color_picker->set_margin(state::margin_unit);
     color_preview->set_margin(state::margin_unit);
@@ -219,9 +220,9 @@ static void activate(GtkApplication* app, void*)
     for (auto* column : {left_column, right_column})
         column->set_size_request({state::margin_unit * 2, 0});
 
-    left_column->set_hexpand(false);
-    right_column->set_hexpand(false);
-    center_column->set_hexpand(true);
+    //left_column->set_hexpand(false);
+    //right_column->set_hexpand(false);
+    //center_column->set_hexpand(true);
 
     auto* left_center_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
     auto* center_right_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
@@ -233,10 +234,16 @@ static void activate(GtkApplication* app, void*)
 
     left_center_paned->set_start_child_shrinkable(true);
     left_center_paned->set_end_child_shrinkable(false);
+    left_center_paned->set_start_child_resizable(true);
+    left_center_paned->set_end_child_resizable(true);
+
     left_center_paned->set_has_wide_handle(true);
 
     center_right_paned->set_start_child_shrinkable(false);
     center_right_paned->set_end_child_shrinkable(false);
+    center_right_paned->set_start_child_resizable(true);
+    center_right_paned->set_end_child_resizable(true);
+
     center_right_paned->set_has_wide_handle(true);
 
     left_center_paned->set_hexpand(false);
@@ -257,14 +264,11 @@ static void activate(GtkApplication* app, void*)
     color_picker->set_size_request(Vector2f(color_picker_width));
     color_swapper->set_size_request({color_picker_width, color_swapper_height});
     color_preview->set_size_request({color_picker_width + 2 * state::margin_unit, color_swapper_height * 0.5});
-    color_swapper->set_valign(GTK_ALIGN_END);
     color_preview->set_cursor(GtkCursorType::POINTER);
-
 
     auto* palette_view_spacer_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
     auto* palette_view_spacer = new SeparatorLine();
     palette_view_spacer->set_hexpand(true);
-    palette_view_spacer->set_size_request({state::margin_unit, 0});
     palette_view->set_vexpand(true);
 
     palette_view_spacer_paned->set_start_child(palette_view);
@@ -289,18 +293,22 @@ static void activate(GtkApplication* app, void*)
 
     auto* left_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
     left_column_paned->set_start_child(left_column_paned_top);
-    left_column_paned->set_end_child(verbose_color_picker);
+    //left_column_paned->set_end_child(verbose_color_picker);
     left_column_paned->set_position(9999);
+
+    verbose_color_picker->set_size_request({0, 2000});
 
     left_column_paned->set_start_child_shrinkable(false);
     left_column_paned->set_end_child_shrinkable(false);
-    left_column_paned->set_start_child_resizable(false);
+    left_column_paned->set_start_child_resizable(true);
     left_column_paned->set_end_child_resizable(true);
 
     left_column_paned->set_has_wide_handle(true);
 
     verbose_color_picker->set_size_request({0, 100});
-    left_column->push_back(left_column_paned);
+    left_column->clear();
+    left_column->set_vexpand(true);
+    //left_column->push_back(verbose_color_picker);
 
     // RIGHT COLUMN
 
@@ -355,8 +363,9 @@ static void activate(GtkApplication* app, void*)
 
     auto* tt = new ShortcutInformation();
     tt->create_from_group("palette_view", state::keybindings_file);
+    */
 
-    state::main_window->set_child(main);
+    state::main_window->set_child(brush_options);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

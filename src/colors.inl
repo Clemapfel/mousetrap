@@ -329,4 +329,9 @@ namespace mousetrap
 
         return str.str();
     }
+
+    void quantize(RGBA&, size_t n_values_per_component)
+    {
+
+    }
 }

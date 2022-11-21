@@ -120,7 +120,7 @@ namespace mousetrap
             Label _hsv_label = Label("HSV");
             Label _rgb_label = Label("RGB");
 
-            Box _main = Box(GTK_ORIENTATION_VERTICAL, state::margin_unit * 0.25);
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
 
             Tooltip _tooltip;
     };
@@ -140,6 +140,16 @@ namespace mousetrap
         _main.push_back(&_label);
         _main.push_back(&_separator);
         _main.push_back(&_entry);
+
+        _label.set_hexpand(false);
+        _label.set_halign(GTK_ALIGN_START);
+        _separator.set_hexpand(true);
+        _entry.set_hexpand(false);
+        _entry.set_halign(GTK_ALIGN_END);
+
+        _label.set_vexpand(true);
+        _separator.set_vexpand(true);
+        _entry.set_vexpand(true);
 
         _entry.connect_signal_activate(on_entry_activate, this);
         _entry.set_n_chars(7 + 1);
@@ -346,6 +356,8 @@ namespace mousetrap
         _main.push_back(&_label);
         _main.push_back(&_gl_area);
         _main.push_back(&_spin_button);
+
+        _spin_button.set_hexpand(false);
 
         update();
     }
@@ -689,7 +701,6 @@ namespace mousetrap
         _main.push_back(_sliders.at('r')->operator Widget*());
         _main.push_back(_sliders.at('g')->operator Widget*());
         _main.push_back(_sliders.at('b')->operator Widget*());
-
         _main.push_back(_html_code_region);
 
         _sliders.at('a')->operator Widget*()->set_tooltip_text(state::tooltips_file->get_value("verbose_color_picker", "opacity"));
@@ -705,6 +716,10 @@ namespace mousetrap
         operator Widget*()->set_tooltip_widget(_tooltip);
 
         _main.set_homogeneous(false);
+        for (Label* l : {&_opacity_label, &_hsv_label, &_rgb_label})
+            l->set_vexpand(false);
+
+        _html_code_region.operator Widget*()->set_vexpand(false);
     }
 
     VerboseColorPicker::operator Widget*()
