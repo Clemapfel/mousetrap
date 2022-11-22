@@ -31,6 +31,12 @@ namespace mousetrap
             FileDescriptor();
             FileDescriptor(const FilePath& path);
             FileDescriptor(GFile*);
+            ~FileDescriptor();
+
+            FileDescriptor(const FileDescriptor& other);
+            FileDescriptor(FileDescriptor&& other);
+            FileDescriptor& operator=(const FileDescriptor& other);
+            FileDescriptor& operator=(FileDescriptor&& other);
 
             operator GFile*();
 
@@ -40,6 +46,7 @@ namespace mousetrap
             FilePath get_name();
             FilePath get_path();
             FileURI  get_uri();
+            std::string get_extension();
 
             bool operator==(const FileDescriptor& other);
             bool operator!=(const FileDescriptor& other);
@@ -107,6 +114,14 @@ namespace mousetrap
 
         FileURI file_path_to_file_uri(const FilePath& path);
         FilePath file_uri_to_file_path(const FileURI& uri);
+
+        /// \param recursive: also list files in subfolders
+        /// \param list_directories: should folders themself be included
+        std::vector<FileDescriptor> get_all_files_in_directory(
+            const FilePath& path,
+            bool recursive = false,
+            bool list_directories = true
+        );
     };
 }
 
@@ -115,16 +130,25 @@ namespace mousetrap
 namespace mousetrap
 {
     FileDescriptor::FileDescriptor()
-        : _native(g_file_new_for_path(""))
+        : FileDescriptor(g_file_new_for_path(""))
     {}
 
     FileDescriptor::FileDescriptor(const FilePath& path)
-        : _native(g_file_new_for_path(path.c_str()))
+        : FileDescriptor(g_file_new_for_path(path.c_str()))
     {}
 
-    FileDescriptor::FileDescriptor(GFile * file)
+    FileDescriptor::FileDescriptor(GFile* file)
         : _native(file)
-    {}
+    {
+        if (_native != nullptr)
+            g_object_ref(file);
+    }
+
+    FileDescriptor::~FileDescriptor()
+    {
+        if (_native != nullptr)
+            g_object_unref(_native);
+    }
 
     void FileDescriptor::create_for_path(const FilePath& path)
     {
@@ -134,6 +158,32 @@ namespace mousetrap
     void FileDescriptor::create_for_uri(const FileURI& uri)
     {
         _native = g_file_new_for_uri(uri.c_str());
+    }
+
+    FileDescriptor::FileDescriptor(const FileDescriptor& other)
+        : _native(other._native)
+    {
+        g_object_ref(other._native);
+    }
+
+    FileDescriptor::FileDescriptor(FileDescriptor&& other)
+        : _native(other._native)
+    {
+        g_object_ref(other._native);
+        other._native = nullptr;
+    }
+
+    FileDescriptor& FileDescriptor::operator=(const FileDescriptor& other)
+    {
+        g_object_ref(other._native);
+        this->_native = other._native;
+    }
+
+    FileDescriptor& FileDescriptor::operator=(FileDescriptor&& other)
+    {
+        g_object_ref(other._native);
+        this->_native = other._native;
+        other._native = nullptr;
     }
 
     FileDescriptor::operator GFile*()
@@ -166,6 +216,17 @@ namespace mousetrap
     {
         auto* uri = g_file_get_uri(_native);
         return uri == nullptr ? "" : uri;
+    }
+
+    std::string FileDescriptor::get_extension()
+    {
+        auto name = get_name();
+
+        size_t i = name.size()-1;
+        while (i > 0 and name.at(i) != '.')
+            i -= 1;
+
+        return std::string(name.begin() + i, name.end());
     }
 
     std::string FileDescriptor::get_content_type()
@@ -432,6 +493,56 @@ namespace mousetrap
             return "";
         }
 
+        return out;
+    }
+
+    std::vector<FileDescriptor> get_all_files_in_directory(const FilePath& path, bool recursive, bool list_directories)
+    {
+        std::vector<FileDescriptor> out;
+
+        auto folder = FileDescriptor(path);
+        if (not folder.is_folder())
+            return out;
+
+        GError* error = nullptr;
+        auto* enumerator = g_file_enumerate_children(
+            folder.operator GFile *(),
+            G_FILE_ATTRIBUTE_STANDARD_NAME,
+            G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
+            nullptr,
+            &error
+        );
+
+        if (error != nullptr)
+        {
+            std::cerr << "[ERROR] In filesystem::get_all_files_in(" << path << "): " << error->message << std::endl;
+            return out;
+        }
+
+        auto* current = g_file_enumerator_next_file(enumerator, nullptr, &error);
+        while (current != nullptr)
+        {
+            if (error != nullptr)
+            {
+                std::cerr << "[ERROR] In filesystem::get_all_files_in(" << path << "): " << error->message << std::endl;
+                return out;
+            }
+
+            auto to_push = FileDescriptor(g_file_enumerator_get_child(enumerator, current));
+
+            if (not to_push.is_folder() or list_directories)
+                out.emplace_back(to_push);
+
+            if (recursive)
+            {
+                std::cerr << "[FATAL] TODO: IMPLEMENT RECURSIVE" << std::endl;
+                exit(1);
+            }
+
+            current = g_file_enumerator_next_file(enumerator, nullptr, &error);
+        }
+
+        g_object_unref(enumerator);
         return out;
     }
 }

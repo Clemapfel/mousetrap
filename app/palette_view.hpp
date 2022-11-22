@@ -392,7 +392,7 @@ namespace mousetrap
 
         settings_section->add_submenu("Tile Size...", tile_size_submenu);
         settings_section->add_submenu("Editing...", palette_locked_submenu);
-        _menu.add_section("Setting", settings_section);
+        _menu.add_section("Settings", settings_section);
 
         auto* load_save_submenu = new MenuModel();
         load_save_submenu->add_action("Load...", "palette_view.load");
@@ -719,6 +719,8 @@ namespace mousetrap
         }
 
         _shortcut_controller.set_scope(ShortcutScope::GLOBAL);
+        _shortcut_controller.set_propagation_phase(GTK_PHASE_BUBBLE);
+
         operator Widget*()->add_controller(&_shortcut_controller);
 
         _tooltip.create_from("palette_view", state::tooltips_file, state::keybindings_file);

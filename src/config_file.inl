@@ -252,7 +252,42 @@ namespace mousetrap
     }
 
     template<>
-    float ConfigFile::get_value_as(GroupKey group, KeyID key)
+    size_t ConfigFile::get_value_as(GroupKey group, KeyID key)
+    {
+        GError* error = nullptr;
+        int value = g_key_file_get_uint64(_native, group.c_str(), key.c_str(), &error);
+
+        if (error != nullptr)
+        {
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<size_t>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
+            return -1;
+        }
+
+        return value;
+    }
+
+    template<>
+    std::vector<size_t> ConfigFile::get_value_as(GroupKey group, KeyID key)
+    {
+        GError* error = nullptr;
+        gsize length;
+        auto* value_list = g_key_file_get_integer_list(_native, group.c_str(), key.c_str(), &length, &error);
+
+        if (error != nullptr)
+        {
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<std::vector<int>>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
+            return {};
+        }
+
+        std::vector<size_t> out;
+        for (size_t i = 0; i < length; ++i)
+            out.push_back(value_list[i]);
+
+        return out;
+    }
+
+    template<>
+    double ConfigFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         double value = g_key_file_get_double(_native, group.c_str(), key.c_str(), &error);
@@ -267,7 +302,7 @@ namespace mousetrap
     }
 
     template<>
-    std::vector<float> ConfigFile::get_value_as(GroupKey group, KeyID key)
+    std::vector<double> ConfigFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -276,6 +311,32 @@ namespace mousetrap
         if (error != nullptr)
         {
             std::cerr << "[ERROR] In ConfigFile::get_value_as<std::vector<double>>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
+            return {};
+        }
+
+        std::vector<double> out;
+        for (size_t i = 0; i < length; ++i)
+            out.push_back(value_list[i]);
+
+        return out;
+    }
+
+    template<>
+    float ConfigFile::get_value_as(GroupKey group, KeyID key)
+    {
+        return get_value_as<double>(group, key);
+    }
+
+    template<>
+    std::vector<float> ConfigFile::get_value_as(GroupKey group, KeyID key)
+    {
+        GError* error = nullptr;
+        gsize length;
+        auto* value_list = g_key_file_get_double_list(_native, group.c_str(), key.c_str(), &length, &error);
+
+        if (error != nullptr)
+        {
+            std::cerr << "[ERROR] In ConfigFile::get_value_as<std::vector<float>>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message << std::endl;
             return {};
         }
 

@@ -15,7 +15,7 @@ namespace mousetrap
     {
         public:
             void create(size_t width, size_t height, RGBA default_color = RGBA(0, 0, 0, 1));
-            void create_from_file(const std::string&);
+            bool create_from_file(const std::string&);
             void create_from_pixbuf(GdkPixbuf*);
 
             void* data() const;

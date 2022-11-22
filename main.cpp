@@ -182,7 +182,6 @@ static void activate(GtkApplication* app, void*)
     auto* color_preview = state::color_preview->operator Widget*();
     auto* bubble_log = state::bubble_log->operator Widget*();
 
-    /*
     layer_view->set_valign(GTK_ALIGN_END);
     verbose_color_picker->set_margin(state::margin_unit);
     color_preview->set_margin(state::margin_unit);
@@ -293,7 +292,7 @@ static void activate(GtkApplication* app, void*)
 
     auto* left_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
     left_column_paned->set_start_child(left_column_paned_top);
-    //left_column_paned->set_end_child(verbose_color_picker);
+    left_column_paned->set_end_child(verbose_color_picker);
     left_column_paned->set_position(9999);
 
     verbose_color_picker->set_size_request({0, 2000});
@@ -308,7 +307,7 @@ static void activate(GtkApplication* app, void*)
     verbose_color_picker->set_size_request({0, 100});
     left_column->clear();
     left_column->set_vexpand(true);
-    //left_column->push_back(verbose_color_picker);
+    left_column->push_back(left_column_paned);
 
     // RIGHT COLUMN
 
@@ -363,9 +362,8 @@ static void activate(GtkApplication* app, void*)
 
     auto* tt = new ShortcutInformation();
     tt->create_from_group("palette_view", state::keybindings_file);
-    */
 
-    state::main_window->set_child(brush_options);
+    state::main_window->set_child(main);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

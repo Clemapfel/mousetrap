@@ -41,7 +41,7 @@ namespace mousetrap
         }
     }
 
-    void Image::create_from_file(const std::string& path)
+    bool Image::create_from_file(const std::string& path)
     {
         GError* error_maybe = nullptr;
         auto* pixbuf = gdk_pixbuf_new_from_file(path.c_str(), &error_maybe);
@@ -51,11 +51,12 @@ namespace mousetrap
             std::cerr << "[WARNING] In Image::create_from_file: unable to open file \"" << path << "\"" << std::endl;
             _data.clear();
             _size = {0, 0};
-            return;
+            return false;
         }
 
         create_from_pixbuf(pixbuf);
         g_object_unref(pixbuf);
+        return true;
     }
 
     GdkPixbuf* Image::to_pixbuf() const
