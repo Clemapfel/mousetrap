@@ -196,6 +196,13 @@ namespace mousetrap
         return out;
     }
 
+    void Shape::as_pointer(Vector2f a)
+    {
+        _vertices = {Vertex(a.x, a.y, _color)};
+        _indices = {0};
+        _render_type = GL_
+    }
+
     void Shape::as_triangle(Vector2f a, Vector2f b, Vector2f c)
     {
         _vertices =

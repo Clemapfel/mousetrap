@@ -79,7 +79,6 @@ namespace mousetrap
              {pixel_w, pixel_h},
              {0, pixel_h}
          );
-
         _cursor_shape->set_texture(state::current_brush->get_texture());
         _cursor_shape->set_color(HSVA(
             state::primary_color.h,
@@ -87,6 +86,14 @@ namespace mousetrap
             state::primary_color.v,
             state::brush_opacity
         ));
+
+        const auto& vertices = state::current_brush->get_outline_vertices();
+        while (_cursor_outline_shapes.size() < vertices.size())
+            _cursor_outline_shapes.emplace_back(new Shape());
+
+        for (size_t i = 0; i < vertices.size(); ++i)
+            _cursor_outline_shapes.at(i)->as_po
+
 
         _area.queue_render();
     }

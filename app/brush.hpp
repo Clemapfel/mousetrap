@@ -19,7 +19,8 @@ namespace mousetrap
             void create_from_file(const std::string& path);
 
             Texture* get_texture();
-            std::string get_name();
+            const std::string& get_name();
+            const std::deque<Vector2i>& get_outline_vertices();
 
         private:
             Texture* _texture = nullptr;
@@ -120,9 +121,14 @@ namespace mousetrap
         return _texture;
     }
 
-    std::string Brush::get_name()
+    const std::string& Brush::get_name()
     {
         return _name;
+    }
+
+    const std::deque<Vector2i>& Brush::get_outline_vertices()
+    {
+        return _outline_vertices;
     }
 
     void Brush::generate_outline_vertices(Image& image)

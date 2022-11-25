@@ -149,7 +149,7 @@ namespace mousetrap
 
                     Shader* _brush_texture_shader = nullptr;
                     Shape* _cursor_shape = nullptr;
-                    std::vector<Shape*> _cursor_outline_shape;
+                    std::vector<Shape*> _cursor_outline_shapes;
 
                     Vector2f* _canvas_size = new Vector2f(1, 1);
                     Vector2f* _cursor_position = new Vector2f(0, 0);
