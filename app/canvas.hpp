@@ -22,6 +22,7 @@ namespace mousetrap
             void set_transform_scale(float);
 
             void set_current_pixel_position(int x, int y);
+            void update_brush_cursor();
 
         private:
             Vector2f _transform_offset = {0, 0};
@@ -133,33 +134,36 @@ namespace mousetrap
 
             // PIXEL HIGHLIGHT
 
-            class PixelHighlightLayer : public CanvasLayer
+            class BrushCursorLayer : public CanvasLayer
             {
                 public:
-                    PixelHighlightLayer(Canvas* owner);
-                    ~PixelHighlightLayer();
+                    BrushCursorLayer(Canvas* owner);
+                    ~BrushCursorLayer();
 
                     operator Widget*();
                     void update();
+
+                    void set_brush_texture(Texture*);
 
                 private:
                     RGBA cursor_color = state::settings_file->get_value_as<RGBA>("canvas", "cursor_color");
                     GLArea _area;
 
-                    Shape* _outline_shape = nullptr;
-                    Shape* _fill_shape = nullptr;
-
+                    Shader* _brush_texture_shader = nullptr;
+                    Shape* _cursor_shape = nullptr;
                     Vector2f* _canvas_size = new Vector2f(1, 1);
 
-                    static void on_realize(Widget*, PixelHighlightLayer* instance);
-                    static void on_resize(GLArea*, int, int, PixelHighlightLayer* instance);
+                    Overlay _overlay;
+
+                    static void on_realize(Widget*, BrushCursorLayer* instance);
+                    static void on_resize(GLArea*, int, int, BrushCursorLayer* instance);
 
                     MotionEventController _motion_controller;
-                    static void on_motion_enter(MotionEventController*, double x, double y, PixelHighlightLayer* instance);
-                    static void on_motion_leave(MotionEventController*, PixelHighlightLayer* instance);
-                    static void on_motion(MotionEventController*, double x, double y, PixelHighlightLayer* instance);
+                    static void on_motion_enter(MotionEventController*, double x, double y, BrushCursorLayer* instance);
+                    static void on_motion_leave(MotionEventController*, BrushCursorLayer* instance);
+                    static void on_motion(MotionEventController*, double x, double y, BrushCursorLayer* instance);
             };
-            PixelHighlightLayer _pixel_highlight_layer = PixelHighlightLayer(this);
+            BrushCursorLayer _brush_cursor_layer = BrushCursorLayer(this);
 
             // TOOL: SHAPES
 
@@ -196,7 +200,7 @@ namespace mousetrap
 #include <app/canvas/transparency_tiling_area.hpp>
 #include <app/canvas/grid_layer.hpp>
 #include <app/canvas/layers_layer.hpp>
-#include <app/canvas/pixel_highlight_layer.hpp>
+#include <app/canvas/brush_cursor_area.hpp>
 
 namespace mousetrap
 {
@@ -364,7 +368,7 @@ namespace mousetrap
         _render_area_overlay.set_child(_transparency_tiling_layer);
         _render_area_overlay.add_overlay(_layers_layer);
         _render_area_overlay.add_overlay(_grid_layer);
-        _render_area_overlay.add_overlay(_pixel_highlight_layer);
+        _render_area_overlay.add_overlay(_brush_cursor_layer);
 
         _grid_layer.operator Widget*()->set_visible(_grid_visible);
 
@@ -399,13 +403,13 @@ namespace mousetrap
 
     void Canvas::signal_transform_updated()
     {
-        _pixel_highlight_layer.update();
+        _brush_cursor_layer.update();
 
         for (auto* widget : {
                 _transparency_tiling_layer.operator Widget *(),
                 _layers_layer.operator Widget *(),
                 _grid_layer.operator Widget *(),
-                _pixel_highlight_layer.operator Widget*()
+                _brush_cursor_layer.operator Widget*()
         })
             ((GLArea*) widget)->queue_render();
     }
@@ -413,6 +417,11 @@ namespace mousetrap
     void Canvas::set_current_pixel_position(int x, int y)
     {
         _selected_pixel = {x, y};
+    }
+
+    void Canvas::update_brush_cursor()
+    {
+        _brush_cursor_layer.update();
     }
 
     void Canvas::update()

@@ -9,6 +9,7 @@
 
 #include <app/global_state.hpp>
 #include <app/app_component.hpp>
+#include <app/canvas.hpp>
 
 namespace mousetrap
 {
@@ -24,6 +25,7 @@ namespace mousetrap
         private:
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
 
+            // settings
             MenuModel _menu;
             MenuModel _tile_size_submenu;
             PopoverMenu _popover_menu = PopoverMenu(&_menu);
@@ -34,6 +36,12 @@ namespace mousetrap
             Label _tile_size_label = Label("Tile Size (px): ");
             SpinButton _tile_size_spin_button = SpinButton(2, 256, 1);
             static void on_tile_size_spin_button_value_changed(SpinButton*, BrushOptions* instance);
+
+            bool _downscaling_enabled = true;
+            Box _downscale_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Label _downscale_label = Label("Downscaling Enabled: ");
+            Switch _downscale_switch = Switch();
+            static void on_downscale_switch_state_set(Switch*, bool, BrushOptions* instance);
 
             MenuButton _menu_button;
             Label _menu_button_label = Label("Brush Options");
@@ -180,11 +188,22 @@ namespace mousetrap
         _tile_size_box.push_back(&_tile_size_label);
         _tile_size_box.push_back(&_tile_size_spin_button);
 
-        auto* settings_section = new MenuModel();
-        auto* tile_size_menu = new MenuModel();
-        tile_size_menu->add_widget(&_tile_size_box);
-        settings_section->add_submenu("Tile Size...", tile_size_menu);
-        _menu.add_section("Settings", settings_section);
+        _downscale_switch.connect_signal_state_set(on_downscale_switch_state_set, this);
+        _downscale_switch.set_margin_horizontal(state::margin_unit);
+        _downscale_box.push_back(&_downscale_label);
+        _downscale_box.push_back(&_downscale_switch);
+
+        auto settings_section = MenuModel();
+
+        auto tile_size_menu = MenuModel();
+        tile_size_menu.add_widget(&_tile_size_box);
+        settings_section.add_submenu("Tile Size...", &tile_size_menu);
+
+        auto downscale_menu = MenuModel();
+        downscale_menu.add_widget(&_downscale_box);
+        settings_section.add_submenu("Allow Downscaling...", &downscale_menu);
+
+        _menu.add_section("Settings", &settings_section);
         auto* popover = new PopoverMenu(&_menu);
 
         _menu_button_label.set_size_request({32, 32});
@@ -220,6 +239,11 @@ namespace mousetrap
         instance->_opacity_spin_button.set_signal_value_changed_blocked(true);
         instance->_opacity_spin_button.set_value(instance->_opacity);
         instance->_opacity_spin_button.set_signal_value_changed_blocked(false);
+
+        state::brush_opacity = instance->_opacity;
+
+        if (state::canvas != nullptr)
+            ((Canvas*) state::canvas)->update_brush_cursor();
     }
 
     void BrushOptions::on_opacity_spin_button_value_changed(SpinButton* scale, BrushOptions* instance)
@@ -228,7 +252,11 @@ namespace mousetrap
         instance->_opacity_scale.set_signal_value_changed_blocked(true);
         instance->_opacity_scale.set_value(instance->_opacity);
         instance->_opacity_scale.set_signal_value_changed_blocked(false);
-    }
+
+        state::brush_opacity = instance->_opacity;
+
+        if (state::canvas != nullptr)
+            ((Canvas*) state::canvas)->update_brush_cursor();    }
 
     void BrushOptions::on_size_scale_value_changed(Scale* scale, BrushOptions* instance)
     {
@@ -252,6 +280,13 @@ namespace mousetrap
         for (auto* tile : instance->_brush_shapes)
             tile->update_tile_size();
     };
+
+    void BrushOptions::on_downscale_switch_state_set(Switch* , bool state, BrushOptions* instance)
+    {
+        instance->_downscaling_enabled = state;
+        instance->_downscale_switch.set_active(state);
+        instance->_downscale_switch.set_state(state ? Switch::State::ON : Switch::State::OFF);
+    }
 
     BrushOptions::BrushShapeIcon::BrushShapeIcon(BrushOptions* owner)
         : _owner(owner)
@@ -380,5 +415,6 @@ namespace mousetrap
                                                         BrushOptions* instance)
     {
         state::brush_texture = instance->_brush_shapes.at(first_item_position)->get_texture();
+        ((Canvas*) state::canvas)->update_brush_cursor();
     }
 }

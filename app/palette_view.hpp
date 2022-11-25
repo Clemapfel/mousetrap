@@ -382,34 +382,34 @@ namespace mousetrap
             spacer->set_size_request({state::margin_unit, 0});
         }
 
-        auto* settings_section = new MenuModel();
+        auto settings_section = MenuModel();
 
-        auto* tile_size_submenu = new MenuModel();
-        tile_size_submenu->add_widget(&_tile_size_box);
+        auto tile_size_submenu = MenuModel();
+        tile_size_submenu.add_widget(&_tile_size_box);
 
-        auto* palette_locked_submenu = new MenuModel();
-        palette_locked_submenu->add_widget(&_palette_locked_box);
+        auto palette_locked_submenu = MenuModel();
+        palette_locked_submenu.add_widget(&_palette_locked_box);
 
-        settings_section->add_submenu("Tile Size...", tile_size_submenu);
-        settings_section->add_submenu("Editing...", palette_locked_submenu);
-        _menu.add_section("Settings", settings_section);
+        settings_section.add_submenu("Tile Size...", &tile_size_submenu);
+        settings_section.add_submenu("Editing...", &palette_locked_submenu);
+        _menu.add_section("Settings", &settings_section);
 
-        auto* load_save_submenu = new MenuModel();
-        load_save_submenu->add_action("Load...", "palette_view.load");
-        load_save_submenu->add_action("Load Default", "palette_view.load_default");
-        load_save_submenu->add_action("Save", "palette_view.save");
-        load_save_submenu->add_action("Save As...", "palette_view.save_as");
-        load_save_submenu->add_action("Save As Default", "palette_view.save_as_default");
-        _menu.add_section("Load / Save", load_save_submenu);
+        auto load_save_submenu = MenuModel();
+        load_save_submenu.add_action("Load...", "palette_view.load");
+        load_save_submenu.add_action("Load Default", "palette_view.load_default");
+        load_save_submenu.add_action("Save", "palette_view.save");
+        load_save_submenu.add_action("Save As...", "palette_view.save_as");
+        load_save_submenu.add_action("Save As Default", "palette_view.save_as_default");
+        _menu.add_section("Load / Save", &load_save_submenu);
 
-        auto* sort_by_section = new MenuModel();
-        auto* sort_by_submenu = new MenuModel();
-        sort_by_submenu->add_action("None", "palette_view.sort_by_default");
-        sort_by_submenu->add_action("Hue", "palette_view.sort_by_hue");
-        sort_by_submenu->add_action("Saturation", "palette_view.sort_by_saturation");
-        sort_by_submenu->add_action("Value", "palette_view.sort_by_value");
-        sort_by_section->add_submenu("Sort By...", sort_by_submenu);
-        _menu.add_section("Sorting", sort_by_section);
+        auto sort_by_section = MenuModel();
+        auto sort_by_submenu = MenuModel();
+        sort_by_submenu.add_action("None", "palette_view.sort_by_default");
+        sort_by_submenu.add_action("Hue", "palette_view.sort_by_hue");
+        sort_by_submenu.add_action("Saturation", "palette_view.sort_by_saturation");
+        sort_by_submenu.add_action("Value", "palette_view.sort_by_value");
+        sort_by_section.add_submenu("Sort By...", &sort_by_submenu);
+        _menu.add_section("Sorting", &sort_by_section);
 
         auto* popover_menu = new PopoverMenu(&_menu);
         _menu_button.set_popover(popover_menu);
@@ -454,6 +454,7 @@ namespace mousetrap
         state::update_verbose_color_picker();
         state::update_color_swapper();
         state::update_color_preview();
+        ((Canvas*) state::canvas)->update_brush_cursor();
     }
 
     void PaletteView::load_as_debug()

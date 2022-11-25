@@ -158,6 +158,12 @@ static void activate(GtkApplication* app, void*)
     state::app->add_window(state::main_window);
     state::main_window->set_show_menubar(true);
 
+    auto default_brush_image = Image();
+    default_brush_image.create(1, 1, RGBA(1, 1, 1, 1));
+    state::default_brush_texture = new Texture();
+    state::default_brush_texture->create_from_image(default_brush_image);
+    state::brush_texture = state::default_brush_texture;
+
     initialize_debug_layers();
 
     state::color_swapper = new ColorSwapper();

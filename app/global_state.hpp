@@ -87,11 +87,10 @@ namespace mousetrap::state
 
     AppComponent* brush_options = nullptr;
 
+    Texture* default_brush_texture = nullptr;
     Texture* brush_texture = nullptr;
     size_t brush_size = 1;
     float brush_opacity = 1;
-
-    void update_brush_texture();
 
     // ### LAYERS #####################################
 

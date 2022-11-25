@@ -509,6 +509,7 @@ namespace mousetrap
         state::update_color_picker();
         state::update_color_swapper();
         state::update_palette_view();
+        ((Canvas*) state::canvas)->update_brush_cursor();
 
         state::preview_color_current = state::primary_color;
         state::preview_color_previous = state::primary_color;
@@ -632,6 +633,7 @@ namespace mousetrap
         state::update_color_picker();
         state::update_color_swapper();
         state::update_palette_view();
+        ((Canvas*) state::canvas)->update_brush_cursor();
 
         state::preview_color_current = color;
         state::update_color_preview();

@@ -10,6 +10,7 @@
 #include <app/app_component.hpp>
 #include <app/global_state.hpp>
 #include <app/tooltip.hpp>
+#include <app/canvas.hpp>
 
 namespace mousetrap
 {
@@ -246,6 +247,7 @@ namespace mousetrap
         state::update_color_picker();
         state::update_palette_view();
         state::update_color_preview();
+        ((Canvas*) state::canvas)->update_brush_cursor();
 
         _render_area.queue_render();
     }
