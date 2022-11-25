@@ -89,20 +89,14 @@ namespace mousetrap
         ));
 
         auto vertices = state::current_brush->get_outline_vertices();
-        vertices.clear();
-
-        // TODO
         auto texture_size = state::current_brush->get_texture()->get_size();
-        for (size_t x = 0; x < texture_size.x + 1; ++x)
-            for (size_t y = 0; y < texture_size.y + 1; ++y)
-                vertices.push_back({x, y});
-        // TODO
 
         std::vector<Vector2f> outline_vertices;
+        auto adjusted_pixel_size = Vector2f(pixel_w / texture_size.x, pixel_h / texture_size.y);
         for (size_t i = 0; i < vertices.size(); ++i)
             outline_vertices.push_back({
-                vertices.at(i).x * (pixel_w / texture_size.x),
-                vertices.at(i).y * (pixel_h / texture_size.y)
+                vertices.at(i).x * adjusted_pixel_size.x,
+                vertices.at(i).y * adjusted_pixel_size.y
             });
 
         _cursor_outline_shape->as_point_cloud(outline_vertices);

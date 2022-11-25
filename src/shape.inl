@@ -523,11 +523,27 @@ namespace mousetrap
 
     Vector2f Shape::get_centroid() const
     {
-        Vector3f sum = Vector3f(0);
-        for (auto& v : _vertices)
-            sum += v.position;
+        static const auto negative_infinity = std::numeric_limits<float>::min();
+        static const auto positive_infinity = std::numeric_limits<float>::max();
 
-        return sum / Vector3f(_vertices.size());
+        Vector3f min = Vector3f(positive_infinity);
+        Vector3f max = Vector3f(negative_infinity);
+
+        for (auto& v : _vertices)
+        {
+            min.x = std::min(min.x, v.position.x);
+            min.y = std::min(min.y, v.position.y);
+            min.z = std::min(min.z, v.position.z);
+            max.x = std::max(max.x, v.position.x);
+            max.y = std::max(max.y, v.position.y);
+            max.z = std::max(max.z, v.position.z);
+        }
+
+        return Vector3f(
+            min.x + (max.x - min.x) / 2,
+            min.y + (max.y - min.y) / 2,
+            min.z + (max.z - min.z) / 2
+        );
     }
 
     void Shape::set_centroid(Vector2f position)

@@ -161,6 +161,10 @@ namespace mousetrap
             {
                 if (image.get_pixel(x, y).a < alpha_eps)
                     continue;
+                else
+                    push_vertex({x, y});
+
+                continue;
 
                 // is neighbor pixel part of shape
                 bool top = y == 0 or image.get_pixel(x, y - 1).a > alpha_eps;
