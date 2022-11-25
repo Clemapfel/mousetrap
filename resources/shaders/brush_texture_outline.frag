@@ -18,5 +18,5 @@ vec3 hsv_to_rgb(vec3 c)
 
 void main()
 {
-    _fragment_color = vec4(hsv_to_rgb(vec3(_vertex_position.x, 1, 1)), 1) * texture2D(_texture, _texture_coordinates);
+    _fragment_color = texture2D(_texture, _texture_coordinates) * _vertex_color;
 }

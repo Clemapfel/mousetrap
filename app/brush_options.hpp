@@ -77,15 +77,16 @@ namespace mousetrap
                     BrushShapeIcon(BrushOptions* owner);
                     ~BrushShapeIcon();
 
-                    bool load_from(const std::string& path);
+                    void set_brush(Brush*);
+                    Brush* get_brush();
                     operator Widget*();
 
                     void update_tile_size();
                     Vector2ui get_texture_size();
-                    Texture* get_texture();
 
                 private:
                     BrushOptions* _owner;
+                    Brush* _brush;
 
                     Frame _frame;
                     AspectFrame _aspect_frame = AspectFrame(1);
@@ -95,7 +96,6 @@ namespace mousetrap
                     GLArea _area;
                     Shape* _shape = nullptr;
                     Shape* _background = nullptr;
-                    Texture* _texture = nullptr;
 
                     std::string _path;
                     Vector2ui _size;
@@ -156,19 +156,11 @@ namespace mousetrap
         for (auto* box : {&_opacity_box, &_size_box})
             box->set_margin_start(state::margin_unit);
 
-        auto files = get_all_files_in_directory(get_resource_path() + "brushes", false, false);
-        std::sort(files.begin(), files.end(), [](FileDescriptor& a, FileDescriptor& b) -> bool {
-            return a.get_name() < b.get_name();
-        });
-
-        for (auto& file : files)
+        for (auto* brush : state::brushes)
         {
             auto* icon = _brush_shapes.emplace_back(new BrushShapeIcon(this));
-            icon->load_from(file.get_path());
-
-            auto name = file.get_name();
-            name = std::string(name.begin(), name.end() - file.get_extension().size());
-            icon->operator Widget*()->set_tooltip_text(name);
+            icon->set_brush(brush);
+            icon->operator Widget*()->set_tooltip_text(brush->get_name());
             _brush_shape_view.push_back(icon->operator Widget*());
         }
 
@@ -311,53 +303,10 @@ namespace mousetrap
         delete _shape;
     }
 
-    bool BrushOptions::BrushShapeIcon::load_from(const std::string& path)
+    void BrushOptions::BrushShapeIcon::set_brush(Brush* brush)
     {
-        _path = path;
-
-        auto image = Image();
-        if (not image.create_from_file(_path))
-        {
-            std::cerr << "[WARNING] Unable to loa brush at `" << path << "`: Image.create_from_file failed" << std::endl;
-            return false;
-        }
-
-        if (image.get_size().x != image.get_size().y)
-        {
-            std::cerr << "[WARNING] Unable to load brush at `" << path << "`: Brush textures have to be square"
-                      << std::endl;
-
-            _path = "";
-            return false;
-        }
-
-        _texture = new Texture();
-
-        const auto size = image.get_size();
-        static bool once = true;
-        for (size_t x = 0; x < size.x; ++x)
-        {
-            for (size_t y = 0; y < size.y; ++y)
-            {
-                RGBA color = image.get_pixel(x, y);
-
-                auto as_hsva = color.operator HSVA();
-                color.r = as_hsva.v;
-                color.g = as_hsva.v;
-                color.b = as_hsva.v;
-
-                if (as_hsva.v < 0.05 or color.a < 0.05)
-                    color.a = 0;
-                else
-                    color.a = 1;
-
-                image.set_pixel(x, y, color);
-            }
-        }
-
-        _texture->create_from_image(image);
-        _size = _texture->get_size();
-
+        _brush = brush;
+        _size = _brush->get_texture()->get_size();
         auto w = _size.x;
         auto h = _size.y;
 
@@ -367,7 +316,7 @@ namespace mousetrap
         _size_label.set_text(label_text.str());
 
         if (_shape != nullptr)
-            _shape->set_texture(_texture);
+            _shape->set_texture(_brush->get_texture());
 
         _area.queue_render();
     }
@@ -390,7 +339,7 @@ namespace mousetrap
 
         instance->_shape = new Shape();
         instance->_shape->as_rectangle({0, 0}, {1, 1});
-        instance->_shape->set_texture(instance->_texture);
+        instance->_shape->set_texture(instance->_brush->get_texture());
 
         area->add_render_task(instance->_background);
         area->add_render_task(instance->_shape);
@@ -398,7 +347,7 @@ namespace mousetrap
 
     Vector2ui BrushOptions::BrushShapeIcon::get_texture_size()
     {
-        return _texture->get_size();
+        return _brush->get_texture()->get_size();
     }
 
     void BrushOptions::BrushShapeIcon::update_tile_size()
@@ -406,15 +355,15 @@ namespace mousetrap
         _frame.set_size_request(Vector2f(_owner->_tile_size));
     }
 
-    Texture* BrushOptions::BrushShapeIcon::get_texture()
+    Brush* BrushOptions::BrushShapeIcon::get_brush()
     {
-        return _texture;
+        return _brush;
     }
 
     void BrushOptions::on_brush_shape_selection_changed(SelectionModel*, size_t first_item_position, size_t,
                                                         BrushOptions* instance)
     {
-        state::brush_texture = instance->_brush_shapes.at(first_item_position)->get_texture();
+        state::current_brush = instance->_brush_shapes.at(first_item_position)->get_brush();
         ((Canvas*) state::canvas)->update_brush_cursor();
     }
 }

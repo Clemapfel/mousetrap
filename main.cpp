@@ -33,11 +33,13 @@ void initialize_debug_layers()
 
     state::layers.emplace_back(new Layer{"number"});
 
+    /*
     for (size_t i = 0; i < 5; ++i)
     {
         state::layers.emplace_back(new Layer{"overlay"});
-        state::layers.back()->blend_mode = BlendMode::MULTIPLY;
+        state::layers.back()->blend_mode = BlendMode::NORMAL;
     }
+    */
 
     auto* preview = new Preview();
     for (auto* layer : state::layers)
@@ -68,6 +70,26 @@ void initialize_debug_layers()
 
         state::n_frames = layer->frames.size();
     }
+}
+
+void load_brushes()
+{
+    auto files = get_all_files_in_directory(get_resource_path() + "brushes", false, false);
+    std::sort(files.begin(), files.end(), [](FileDescriptor& a, FileDescriptor& b) -> bool {
+        return a.get_name() < b.get_name();
+    });
+
+    for (auto& file : files)
+        state::brushes.emplace_back(new Brush())->create_from_file(file.get_path());
+
+    if (state::brushes.empty())
+    {
+        auto default_brush_image = Image();
+        default_brush_image.create(1, 1, RGBA(1, 1, 1, 1));
+        state::brushes.emplace_back(new Brush())->create_from_image(default_brush_image, "default");
+    }
+
+    state::current_brush = state::brushes.at(0);
 }
 
 void validate_keybindings_file(ConfigFile* file)
@@ -158,12 +180,7 @@ static void activate(GtkApplication* app, void*)
     state::app->add_window(state::main_window);
     state::main_window->set_show_menubar(true);
 
-    auto default_brush_image = Image();
-    default_brush_image.create(1, 1, RGBA(1, 1, 1, 1));
-    state::default_brush_texture = new Texture();
-    state::default_brush_texture->create_from_image(default_brush_image);
-    state::brush_texture = state::default_brush_texture;
-
+    load_brushes();
     initialize_debug_layers();
 
     state::color_swapper = new ColorSwapper();

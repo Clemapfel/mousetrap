@@ -19,6 +19,7 @@
 #include <app/layer.hpp>
 #include <app/app_component.hpp>
 #include <app/palette.hpp>
+#include <app/brush.hpp>
 #include <app/tools.hpp>
 
 namespace mousetrap::state
@@ -87,10 +88,11 @@ namespace mousetrap::state
 
     AppComponent* brush_options = nullptr;
 
-    Texture* default_brush_texture = nullptr;
-    Texture* brush_texture = nullptr;
+    Brush* current_brush = nullptr;
     size_t brush_size = 1;
     float brush_opacity = 1;
+
+    std::vector<Brush*> brushes;
 
     // ### LAYERS #####################################
 

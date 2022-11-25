@@ -37,7 +37,9 @@ namespace mousetrap
     Canvas::BrushCursorLayer::~BrushCursorLayer()
     {
         delete _cursor_shape;
+        delete _brush_texture_shader;
         delete _canvas_size;
+        delete _cursor_position;
     }
 
     void Canvas::BrushCursorLayer::on_realize(Widget* widget, BrushCursorLayer* instance)
@@ -65,10 +67,10 @@ namespace mousetrap
         if (_cursor_shape == nullptr)
             return;
 
-        if (state::brush_texture != nullptr)
+        if (state::current_brush != nullptr)
         {
-            pixel_w *= state::brush_texture->get_size().x;
-            pixel_h *= state::brush_texture->get_size().y;
+            pixel_w *= state::current_brush->get_texture()->get_size().x;
+            pixel_h *= state::current_brush->get_texture()->get_size().y;
         }
 
         _cursor_shape->as_rectangle(
@@ -77,7 +79,8 @@ namespace mousetrap
              {pixel_w, pixel_h},
              {0, pixel_h}
          );
-        _cursor_shape->set_texture(state::brush_texture);
+
+        _cursor_shape->set_texture(state::current_brush->get_texture());
         _cursor_shape->set_color(HSVA(
             state::primary_color.h,
             state::primary_color.s,
@@ -145,10 +148,12 @@ namespace mousetrap
             float x_offset = 0.5;
             float y_offset = 0.5;
 
-            if (state::brush_texture and state::brush_texture->get_size().x % 2 == 0)
+            auto* brush_texture = state::current_brush->get_texture();
+
+            if (brush_texture and brush_texture->get_size().x % 2 == 0)
                 x_offset = 1;
 
-            if (state::brush_texture and state::brush_texture->get_size().y % 2 == 0)
+            if (brush_texture and brush_texture->get_size().y % 2 == 0)
                 y_offset = 1;
 
             Vector2f centroid = {

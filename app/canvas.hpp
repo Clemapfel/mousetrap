@@ -143,15 +143,16 @@ namespace mousetrap
                     operator Widget*();
                     void update();
 
-                    void set_brush_texture(Texture*);
-
                 private:
                     RGBA cursor_color = state::settings_file->get_value_as<RGBA>("canvas", "cursor_color");
                     GLArea _area;
 
                     Shader* _brush_texture_shader = nullptr;
                     Shape* _cursor_shape = nullptr;
+                    std::vector<Shape*> _cursor_outline_shape;
+
                     Vector2f* _canvas_size = new Vector2f(1, 1);
+                    Vector2f* _cursor_position = new Vector2f(0, 0);
 
                     Overlay _overlay;
 
