@@ -148,7 +148,11 @@ namespace mousetrap
         {
             if (already_pushed_x.find(v.x) != already_pushed_x.end() and
                 already_pushed_y.find(v.y) != already_pushed_y.end())
-                vertices.push_back(v);
+                return;
+
+            vertices.push_back(v);
+            already_pushed_x.insert(v.x);
+            already_pushed_y.insert(v.y);
         };
 
         for (size_t x = 0; x < w; ++x)
@@ -159,10 +163,10 @@ namespace mousetrap
                     continue;
 
                 // is neighbor pixel part of shape
-                bool top = y > 0 and image.get_pixel(x, y - 1).a > alpha_eps;
-                bool right = x < w-1 and image.get_pixel(x + 1, y).a > alpha_eps;
-                bool bottom = y < h-1 and image.get_pixel(x, y + 1).a > alpha_eps;
-                bool left = x > 0 and image.get_pixel(x - 1, y).a > alpha_eps;
+                bool top = y == 0 or image.get_pixel(x, y - 1).a > alpha_eps;
+                bool right = x == w-1 or image.get_pixel(x + 1, y).a > alpha_eps;
+                bool bottom = y == h-1 or image.get_pixel(x, y + 1).a > alpha_eps;
+                bool left = x == 0 or image.get_pixel(x - 1, y).a > alpha_eps;
 
                 if (left or top)
                     push_vertex({x, y});

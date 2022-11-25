@@ -26,6 +26,7 @@ namespace mousetrap
             ~Shape();
 
             void as_point(Vector2f);
+            void as_point_cloud(std::vector<Vector2f>);
             void as_triangle(Vector2f a, Vector2f b, Vector2f c);
             void as_rectangle(Vector2f top_left, Vector2f size);
             void as_rectangle(Vector2f, Vector2f, Vector2f, Vector2f);

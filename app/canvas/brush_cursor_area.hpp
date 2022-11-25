@@ -48,11 +48,11 @@ namespace mousetrap
         area->make_current();
 
         instance->_cursor_shape = new Shape();
+        instance->_cursor_outline_shape = new Shape();
         instance->_brush_texture_shader = new Shader();
         instance->_brush_texture_shader->create_from_file(get_resource_path() + "shaders/brush_texture_outline.frag", ShaderType::FRAGMENT);
         instance->update();
-        instance->_area.clear_render_tasks();
-        area->add_render_task(instance->_cursor_shape, instance->_brush_texture_shader);
+
         area->queue_render();
     }
 
@@ -79,6 +79,7 @@ namespace mousetrap
              {pixel_w, pixel_h},
              {0, pixel_h}
          );
+
         _cursor_shape->set_texture(state::current_brush->get_texture());
         _cursor_shape->set_color(HSVA(
             state::primary_color.h,
@@ -87,14 +88,29 @@ namespace mousetrap
             state::brush_opacity
         ));
 
-        const auto& vertices = state::current_brush->get_outline_vertices();
-        while (_cursor_outline_shapes.size() < vertices.size())
-            _cursor_outline_shapes.emplace_back(new Shape());
+        auto vertices = state::current_brush->get_outline_vertices();
+        vertices.clear();
 
+        // TODO
+        auto texture_size = state::current_brush->get_texture()->get_size();
+        for (size_t x = 0; x < texture_size.x + 1; ++x)
+            for (size_t y = 0; y < texture_size.y + 1; ++y)
+                vertices.push_back({x, y});
+        // TODO
+
+        std::vector<Vector2f> outline_vertices;
         for (size_t i = 0; i < vertices.size(); ++i)
-            _cursor_outline_shapes.at(i)->as_po
+            outline_vertices.push_back({
+                vertices.at(i).x * (pixel_w / texture_size.x),
+                vertices.at(i).y * (pixel_h / texture_size.y)
+            });
 
+        _cursor_outline_shape->as_point_cloud(outline_vertices);
+        _cursor_outline_shape->set_color(RGBA(0, 1, 0, 1));
 
+        _area.clear_render_tasks();
+        _area.add_render_task(_cursor_shape, _brush_texture_shader);
+        _area.add_render_task(_cursor_outline_shape);
         _area.queue_render();
     }
 
@@ -168,6 +184,7 @@ namespace mousetrap
                 pos.y + pixel_size.y * y_offset
             };
             instance->_cursor_shape->set_centroid(centroid);
+            instance->_cursor_outline_shape->set_centroid(centroid);
         }
 
         instance->_area.queue_render();

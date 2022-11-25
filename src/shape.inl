@@ -196,11 +196,28 @@ namespace mousetrap
         return out;
     }
 
-    void Shape::as_pointer(Vector2f a)
+    void Shape::as_point(Vector2f a)
     {
-        _vertices = {Vertex(a.x, a.y, _color)};
+        _vertices = {};
         _indices = {0};
-        _render_type = GL_
+        _render_type = GL_POINTS;
+        initialize();
+    }
+
+    void Shape::as_point_cloud(std::vector<Vector2f> points)
+    {
+        _vertices.clear();
+        _indices.clear();
+
+        for (size_t i = 0; i < points.size(); ++i)
+        {
+            auto p = points.at(i);
+            _vertices.push_back(Vertex(p.x, p.y, _color));
+            _indices.push_back(i);
+        }
+
+        _render_type = GL_POINTS;
+        initialize();
     }
 
     void Shape::as_triangle(Vector2f a, Vector2f b, Vector2f c)
