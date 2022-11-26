@@ -177,8 +177,11 @@ namespace mousetrap
                 pos.x + pixel_size.x * x_offset,
                 pos.y + pixel_size.y * y_offset
             };
+
+            auto offset = instance->_cursor_shape->get_centroid() - instance->_cursor_outline_shape->get_centroid();
+
             instance->_cursor_shape->set_centroid(centroid);
-            instance->_cursor_outline_shape->set_centroid(centroid);
+            instance->_cursor_outline_shape->set_centroid(centroid - offset);
         }
 
         instance->_area.queue_render();

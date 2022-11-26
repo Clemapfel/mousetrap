@@ -162,4 +162,25 @@ namespace mousetrap
             _data.at(i+3)
         );
     }
+
+    Image Image::as_cropped(size_t x_min, size_t y_min, size_t x_max, size_t y_max)
+    {
+        size_t w = get_size().x;
+        size_t h = get_size().y;
+
+        if (x_min > x_max)
+            x_min = x_max;
+
+        if (y_min > y_max)
+            y_min = y_max;
+
+        auto out = Image();
+        out.create(x_max - x_min, y_max - y_min);
+
+        for (size_t x = x_min; x < x_max; ++x)
+            for (size_t y = y_min; y < y_max; ++y)
+                out.set_pixel(x, y, get_pixel(x, y));
+
+        return out;
+    }
 }

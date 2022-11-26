@@ -23,6 +23,8 @@ namespace mousetrap
             const std::deque<Vector2i>& get_outline_vertices();
 
         private:
+            static inline const float alpha_eps = 0.00001; // lowest alpha value that is still registered as non-transparent
+
             Texture* _texture = nullptr;
             std::string _name;
 
@@ -86,7 +88,8 @@ namespace mousetrap
 
     void Brush::create_from_image(Image& image, const std::string& name)
     {
-        const auto size = image.get_size();
+        auto size = image.get_size();
+
         static bool once = true;
         for (size_t x = 0; x < size.x; ++x)
         {
@@ -136,56 +139,50 @@ namespace mousetrap
         auto w = image.get_size().x;
         auto h = image.get_size().y;
 
-        float alpha_eps = 0.00001;
-        std::deque<Vector2i> vertices;
-
         // get all vertex candidates
-
-        std::set<int> already_pushed_x;
-        std::set<int> already_pushed_y;
-
-        auto push_vertex = [&](Vector2i v) -> void
+        struct Vector2iCompare
         {
-            if (already_pushed_x.find(v.x) != already_pushed_x.end() and
-                already_pushed_y.find(v.y) != already_pushed_y.end())
-                return;
-
-            vertices.push_back(v);
-            already_pushed_x.insert(v.x);
-            already_pushed_y.insert(v.y);
+            bool operator()(Vector2i a, Vector2i b) const {
+                if (a.x < b.x)
+                    return true;
+                else
+                    return (a.y < b.y);
+            }
         };
 
+        std::set<Vector2i, Vector2iCompare> vertices;
+
+        // add all canddia
         for (size_t x = 0; x < w; ++x)
         {
             for (size_t y = 0; y < h; ++y)
             {
-                if (image.get_pixel(x, y).a < alpha_eps)
-                    continue;
-                else
-                    push_vertex({x, y});
-
-                continue;
-
-                // is neighbor pixel part of shape
-                bool top = y == 0 or image.get_pixel(x, y - 1).a > alpha_eps;
-                bool right = x == w-1 or image.get_pixel(x + 1, y).a > alpha_eps;
-                bool bottom = y == h-1 or image.get_pixel(x, y + 1).a > alpha_eps;
-                bool left = x == 0 or image.get_pixel(x - 1, y).a > alpha_eps;
-
-                if (left or top)
-                    push_vertex({x, y});
-
-                if (top or right)
-                    push_vertex({x + 1, y});
-
-                if (right or bottom)
-                    push_vertex({x + 1, y + 1});
-
-                if (bottom or left)
-                    push_vertex({x, y + 1});
+                if (image.get_pixel(x, y).a > alpha_eps)
+                {
+                    vertices.insert({x, y});
+                    vertices.insert({x + 1, y});
+                    vertices.insert({x + 1, y + 1});
+                    vertices.insert({x, y + 1});
+                }
             }
         }
 
-        _outline_vertices = vertices;
+        _outline_vertices.clear();
+
+        for (const auto& v : vertices)
+        {
+            auto top_left = (v.x == 0 and v.y == 0) or image.get_pixel(v.x - 1, v.y - 1).a > alpha_eps;
+            auto top_right = v.y == 0 or image.get_pixel(v.x, v.y - 1).a > alpha_eps;
+            auto bottom_right = image.get_pixel(v.x, v.y).a > alpha_eps;
+            auto bottom_left = v.x == 0 or image.get_pixel(v.x - 1, v.y).a > alpha_eps;
+
+            auto left_border = v.x == 0;
+            auto top_border = v.y == 0;
+            auto right_border = v.x == w;
+            auto bottom_border = v.y == h;
+
+            if ((left_border or top_border or right_border or bottom_border) or not (top_left and top_right and bottom_right and bottom_left))
+                _outline_vertices.push_back(v);
+        }
     }
 }

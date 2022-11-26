@@ -34,9 +34,11 @@ namespace mousetrap
             void set_pixel(size_t linear_index, HSVA);
             RGBA get_pixel(size_t linear_index) const;
 
+            Image as_cropped(size_t x_min, size_t y_min, size_t x_max, size_t y_max);
+
         private:
             Vector2i _size;
-            std::vector<float> _data; // rgba 32f bpc
+            std::vector<float> _data; // rgba 32f per component
 
             size_t to_linear_index(size_t, size_t) const;
     };
