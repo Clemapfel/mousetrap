@@ -26,17 +26,18 @@ namespace mousetrap
             ~Shape();
 
             void as_point(Vector2f);
-            void as_point_cloud(std::vector<Vector2f>);
+            void as_points(const std::vector<Vector2f>&);
             void as_triangle(Vector2f a, Vector2f b, Vector2f c);
             void as_rectangle(Vector2f top_left, Vector2f size);
             void as_rectangle(Vector2f, Vector2f, Vector2f, Vector2f);
             void as_circle(Vector2f center, float radius, size_t n_outer_vertices);
             void as_ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices);
             void as_line(Vector2f a, Vector2f b);
-            void as_line_strip(std::vector<Vector2f>);
-            void as_polygon(std::vector<Vector2f> positions); // bounding polygon
+            void as_lines(const std::vector<std::pair<Vector2f, Vector2f>>&);
+            void as_line_strip(const std::vector<Vector2f>&);
+            void as_polygon(const std::vector<Vector2f>& positions); // bounding polygon
 
-            void as_wireframe(std::vector<Vector2f>);         // bounding polygon
+            void as_wireframe(const std::vector<Vector2f>&);         // bounding polygon
             void as_wireframe(const Shape&);
 
             void as_frame(Vector2f top_left, Vector2f size, float x_width, float y_width);

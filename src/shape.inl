@@ -204,7 +204,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_point_cloud(std::vector<Vector2f> points)
+    void Shape::as_points(const std::vector<Vector2f>& points)
     {
         _vertices.clear();
         _indices.clear();
@@ -276,12 +276,29 @@ namespace mousetrap
     void Shape::as_line(Vector2f a, Vector2f b)
     {
         _vertices =
-                {
-                        Vertex(a.x, a.y, _color),
-                        Vertex(b.x, b.y, _color)
-                };
+        {
+            Vertex(a.x, a.y, _color),
+            Vertex(b.x, b.y, _color)
+        };
 
         _indices = {0, 1};
+        _render_type = GL_LINES;
+        initialize();
+    }
+
+    void Shape::as_lines(const std::vector<std::pair<Vector2f, Vector2f>>& in)
+    {
+        _vertices.clear();
+        for (const auto& pair : in)
+        {
+            _vertices.emplace_back(pair.first.x, pair.first.y, _color);
+            _vertices.emplace_back(pair.second.x, pair.second.y, _color);
+        }
+
+        _indices.clear();
+        for (size_t i = 0; i < _vertices.size(); ++i)
+            _indices.push_back(i);
+
         _render_type = GL_LINES;
         initialize();
     }
@@ -340,7 +357,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_line_strip(std::vector<Vector2f> positions)
+    void Shape::as_line_strip(const std::vector<Vector2f>& positions)
     {
         _vertices.clear();
         _indices.clear();
@@ -356,12 +373,12 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_wireframe(std::vector<Vector2f> positions)
+    void Shape::as_wireframe(const std::vector<Vector2f>& positions_in)
     {
         _vertices.clear();
         _indices.clear();
 
-        positions = sort_by_angle(positions);
+        auto positions = sort_by_angle(positions_in);
 
         size_t i = 0;
         for (auto& position : positions)
@@ -394,12 +411,12 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_polygon(std::vector<Vector2f> positions)
+    void Shape::as_polygon(const std::vector<Vector2f>& positions_in)
     {
         _vertices.clear();
         _indices.clear();
 
-        positions = sort_by_angle(positions);
+        auto positions = sort_by_angle(positions_in);
 
         size_t i = 0;
         for (auto& position : positions)

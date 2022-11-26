@@ -147,9 +147,12 @@ namespace mousetrap
                     RGBA cursor_color = state::settings_file->get_value_as<RGBA>("canvas", "cursor_color");
                     GLArea _area;
 
-                    Shader* _brush_texture_shader = nullptr;
+                    float* _timer = new float(0); // seconds
+                    Shader* _brush_outline_shader = nullptr;
                     Shape* _cursor_shape = nullptr;
-                    Shape* _cursor_outline_shape = nullptr;
+
+                    Shape* _cursor_outline_shape_hlines = nullptr;
+                    Shape* _cursor_outline_shape_vlines = nullptr;
 
                     Vector2f* _canvas_size = new Vector2f(1, 1);
                     Vector2f* _cursor_position = new Vector2f(0, 0);

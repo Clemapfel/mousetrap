@@ -16,14 +16,20 @@ namespace mousetrap
         _motion_controller.connect_signal_motion_leave(on_motion_leave, this);
         _area.add_controller(&_motion_controller);
 
+        _area.add_tick_callback([](FrameClock clock, BrushCursorLayer* instance) -> bool {
+            *instance->_timer = clock.get_frame_time().as_seconds();
+            instance->_area.queue_render();
+            return true;
+        }, this);
+
         _overlay.set_child(&_area);
 
         auto* button = new Button();
         button->connect_signal_clicked([](Button*, BrushCursorLayer* instance){
 
             std::cout << "recompiling..." << std::endl;
-            if (instance->_brush_texture_shader != nullptr)
-                instance->_brush_texture_shader->create_from_file(get_resource_path() + "shaders/brush_texture_outline.frag", ShaderType::FRAGMENT);
+            if (instance->_brush_outline_shader != nullptr)
+                instance->_brush_outline_shader->create_from_file(get_resource_path() + "shaders/brush_outline.frag", ShaderType::FRAGMENT);
         }, this);
         button->set_align(GTK_ALIGN_END);
         _overlay.add_overlay(button);
@@ -37,7 +43,9 @@ namespace mousetrap
     Canvas::BrushCursorLayer::~BrushCursorLayer()
     {
         delete _cursor_shape;
-        delete _brush_texture_shader;
+        delete _brush_outline_shader;
+        delete _cursor_outline_shape_hlines;
+        delete _cursor_outline_shape_vlines;
         delete _canvas_size;
         delete _cursor_position;
     }
@@ -48,9 +56,10 @@ namespace mousetrap
         area->make_current();
 
         instance->_cursor_shape = new Shape();
-        instance->_cursor_outline_shape = new Shape();
-        instance->_brush_texture_shader = new Shader();
-        instance->_brush_texture_shader->create_from_file(get_resource_path() + "shaders/brush_texture_outline.frag", ShaderType::FRAGMENT);
+        instance->_cursor_outline_shape_hlines = new Shape();
+        instance->_cursor_outline_shape_vlines = new Shape();
+        instance->_brush_outline_shader = new Shader();
+        instance->_brush_outline_shader->create_from_file(get_resource_path() + "shaders/brush_outline.frag", ShaderType::FRAGMENT);
         instance->update();
 
         area->queue_render();
@@ -81,30 +90,60 @@ namespace mousetrap
          );
 
         _cursor_shape->set_texture(state::current_brush->get_texture());
-        _cursor_shape->set_color(HSVA(
+
+        auto cursor_color = HSVA(
             state::primary_color.h,
             state::primary_color.s,
             state::primary_color.v,
             state::brush_opacity
-        ));
+        );
+
+        _cursor_shape->set_color(cursor_color.operator RGBA());
 
         auto vertices = state::current_brush->get_outline_vertices();
         auto texture_size = state::current_brush->get_texture()->get_size();
 
-        std::vector<Vector2f> outline_vertices;
+        std::vector<std::pair<Vector2f, Vector2f>> outline_vertices_h;
+        std::vector<std::pair<Vector2f, Vector2f>> outline_vertices_v;
+
         auto adjusted_pixel_size = Vector2f(pixel_w / texture_size.x, pixel_h / texture_size.y);
         for (size_t i = 0; i < vertices.size(); ++i)
-            outline_vertices.push_back({
-                vertices.at(i).x * adjusted_pixel_size.x,
-                vertices.at(i).y * adjusted_pixel_size.y
-            });
+        {
+            auto v = vertices.at(i);
+            auto to_push = std::pair<Vector2f, Vector2f>{
+                {
+                    v.first.x * adjusted_pixel_size.x,
+                    v.first.y * adjusted_pixel_size.y
+                },
+                {
+                    v.second.x * adjusted_pixel_size.x,
+                    v.second.y * adjusted_pixel_size.y
+                }
+            };
 
-        _cursor_outline_shape->as_point_cloud(outline_vertices);
-        _cursor_outline_shape->set_color(RGBA(0, 1, 0, 1));
+            if (v.first.x < v.second.x)
+                outline_vertices_h.push_back(to_push);
+            else
+                outline_vertices_v.push_back(to_push);
+        }
+
+        _cursor_outline_shape_hlines->as_lines(outline_vertices_h);
+        _cursor_outline_shape_vlines->as_lines(outline_vertices_v);
 
         _area.clear_render_tasks();
-        _area.add_render_task(_cursor_shape, _brush_texture_shader);
-        _area.add_render_task(_cursor_outline_shape);
+        _area.add_render_task(_cursor_shape);
+
+        auto outline_task_h = RenderTask(_cursor_outline_shape_hlines, _brush_outline_shader);
+        outline_task_h.register_int("_horizontal", new int(1));
+        outline_task_h.register_float("_time_s", _timer);
+        _area.add_render_task(outline_task_h);
+
+        auto outline_task_v = RenderTask(_cursor_outline_shape_vlines, _brush_outline_shader);
+        outline_task_v.register_int("_horizontal", new int(0));
+        outline_task_v.register_float("_time_s", _timer);
+        _area.add_render_task(outline_task_v);
+
+
         _area.queue_render();
     }
 
@@ -178,10 +217,12 @@ namespace mousetrap
                 pos.y + pixel_size.y * y_offset
             };
 
-            auto offset = instance->_cursor_shape->get_centroid() - instance->_cursor_outline_shape->get_centroid();
+            auto h_offset = instance->_cursor_shape->get_centroid() - instance->_cursor_outline_shape_hlines->get_centroid();
+            auto v_offset = instance->_cursor_shape->get_centroid() - instance->_cursor_outline_shape_vlines->get_centroid();
 
             instance->_cursor_shape->set_centroid(centroid);
-            instance->_cursor_outline_shape->set_centroid(centroid - offset);
+            instance->_cursor_outline_shape_hlines->set_centroid(centroid - h_offset);
+            instance->_cursor_outline_shape_vlines->set_centroid(centroid - v_offset);
         }
 
         instance->_area.queue_render();

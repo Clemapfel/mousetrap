@@ -8,6 +8,8 @@ out vec4 _fragment_color;
 
 uniform int _texture_set;
 uniform sampler2D _texture;
+uniform float _time_s;
+uniform int _horizontal;
 
 vec3 hsv_to_rgb(vec3 c)
 {
@@ -18,5 +20,6 @@ vec3 hsv_to_rgb(vec3 c)
 
 void main()
 {
-    _fragment_color = texture2D(_texture, _texture_coordinates) * _vertex_color;
+    float value = (sin(40 * (_horizontal == 1 ? _vertex_position.x : _vertex_position.y) + _time_s * 10) + 1) / 2.0;
+    _fragment_color = vec4(hsv_to_rgb(vec3(0, 0, value)), 1.0);
 }

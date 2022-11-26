@@ -20,7 +20,7 @@ namespace mousetrap
 
             Texture* get_texture();
             const std::string& get_name();
-            const std::deque<Vector2i>& get_outline_vertices();
+            const std::deque<std::pair<Vector2i, Vector2i>>& get_outline_vertices();
 
         private:
             static inline const float alpha_eps = 0.00001; // lowest alpha value that is still registered as non-transparent
@@ -29,7 +29,7 @@ namespace mousetrap
             std::string _name;
 
             void generate_outline_vertices(Image&);
-            std::deque<Vector2i> _outline_vertices;
+            std::deque<std::pair<Vector2i, Vector2i>> _outline_vertices;
             // vertex position is top left of pixel coord, where top left of texture is (0, 0)
     };
 }
@@ -129,7 +129,7 @@ namespace mousetrap
         return _name;
     }
 
-    const std::deque<Vector2i>& Brush::get_outline_vertices()
+    const std::deque<std::pair<Vector2i, Vector2i>>& Brush::get_outline_vertices()
     {
         return _outline_vertices;
     }
@@ -139,6 +139,7 @@ namespace mousetrap
         auto w = image.get_size().x;
         auto h = image.get_size().y;
 
+        /*
         // get all vertex candidates
         struct Vector2iCompare
         {
@@ -152,7 +153,7 @@ namespace mousetrap
 
         std::set<Vector2i, Vector2iCompare> vertices;
 
-        // add all canddia
+        // add all candidates
         for (size_t x = 0; x < w; ++x)
         {
             for (size_t y = 0; y < h; ++y)
@@ -167,22 +168,76 @@ namespace mousetrap
             }
         }
 
-        _outline_vertices.clear();
+        auto matrix = std::vector<std::vector<bool>>();
+        matrix.resize(w+1);
 
+        for (auto& row : matrix)
+            row.resize(h+1);
+
+        // purge non-bounding vertices
         for (const auto& v : vertices)
         {
-            auto top_left = (v.x == 0 and v.y == 0) or image.get_pixel(v.x - 1, v.y - 1).a > alpha_eps;
-            auto top_right = v.y == 0 or image.get_pixel(v.x, v.y - 1).a > alpha_eps;
-            auto bottom_right = image.get_pixel(v.x, v.y).a > alpha_eps;
-            auto bottom_left = v.x == 0 or image.get_pixel(v.x - 1, v.y).a > alpha_eps;
-
             auto left_border = v.x == 0;
             auto top_border = v.y == 0;
             auto right_border = v.x == w;
             auto bottom_border = v.y == h;
 
-            if ((left_border or top_border or right_border or bottom_border) or not (top_left and top_right and bottom_right and bottom_left))
-                _outline_vertices.push_back(v);
+            if (left_border or top_border or right_border or bottom_border)
+            {
+                matrix[v.x][v.y] = true;
+                continue;
+            }
+
+            auto top_left = (v.x == 0 and v.y == 0) or image.get_pixel(v.x - 1, v.y - 1).a > alpha_eps;
+            auto top_right = v.y == 0 or image.get_pixel(v.x, v.y - 1).a > alpha_eps;
+            auto bottom_right = image.get_pixel(v.x, v.y).a > alpha_eps;
+            auto bottom_left = v.x == 0 or image.get_pixel(v.x - 1, v.y).a > alpha_eps;
+
+            if (not (top_left and top_right and bottom_right and bottom_left))
+                matrix[v.x][v.y] = true;
         }
+
+        auto debug_print = [&]()
+        {
+            std::cout << std::endl;
+            for (size_t x = 0; x < w + 1; ++x)
+            {
+                for (size_t y = 0; y < h + 1; ++y)
+                    std::cout << matrix[x][y] << " ";
+
+                std::cout << std::endl;
+            }
+        };
+        */
+
+        _outline_vertices.clear();
+
+        // hlines
+        for (size_t x = 0; x < w; ++x)
+            for (size_t y = 0; y < h-1; ++y)
+                if (image.get_pixel(x, y).a > alpha_eps != image.get_pixel(x, y+1).a > alpha_eps)
+                    _outline_vertices.push_back({{x, y+1}, {x+1, y+1}});
+
+        for (size_t x = 0; x < w; ++x)
+            if (image.get_pixel(x, 0).a > alpha_eps)
+                _outline_vertices.push_back({{x, 0}, {x+1, 0}});
+
+        for (size_t x = 0; x < w; ++x)
+            if (image.get_pixel(x, h-1).a > alpha_eps)
+                _outline_vertices.push_back({{x, h}, {x+1, h}});
+
+        // vlines
+        for (size_t y = 0; y < h; ++y)
+            for (size_t x = 0; x < w-1; ++x)
+                if (image.get_pixel(x, y).a > alpha_eps != image.get_pixel(x+1, y).a > alpha_eps)
+                    _outline_vertices.push_back({{x+1, y}, {x+1, y+1}});
+
+        for (size_t y = 0; y < h; ++y)
+            if (image.get_pixel(0, y).a > alpha_eps)
+                _outline_vertices.push_back({{0, y}, {0, y+1}});
+
+        for (size_t y = 0; y < h; ++y)
+            if (image.get_pixel(w-1, y).a > alpha_eps)
+                _outline_vertices.push_back({{w, y}, {w, y+1}});
     }
 }
