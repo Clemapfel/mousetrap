@@ -24,7 +24,7 @@ namespace mousetrap
             GdkPixbuf* to_pixbuf() const;
             Vector2ui get_size() const;
 
-            void scale(size_t factor);
+            Image as_scaled(size_t size_x, size_t size_y);
 
             void set_pixel(size_t, size_t, RGBA);
             void set_pixel(size_t, size_t, HSVA);

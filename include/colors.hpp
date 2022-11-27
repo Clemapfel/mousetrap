@@ -93,6 +93,16 @@ namespace mousetrap
         return out;
     }
 
+    RGBA invert(RGBA in)
+    {
+        return RGBA(1 - in.r, 1 - in.g, 1 - in.b, in.a);
+    }
+
+    HSVA invert(HSVA in)
+    {
+        return HSVA(1 - in.h, in.s, 1 - in.v, in.a);
+    }
+
     static inline const RGBA YELLOW = RGBA(1, 232 / 255.f, 15 / 255.f, 1);
 }
 

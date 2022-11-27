@@ -19,12 +19,17 @@ namespace mousetrap
             void create_from_file(const std::string& path);
 
             Texture* get_texture();
+
             const std::string& get_name();
             const std::deque<std::pair<Vector2i, Vector2i>>& get_outline_vertices();
+
+            /// \brief update texture as scaled version of base image
+            void set_size(size_t px);
 
         private:
             static inline const float alpha_eps = 0.00001; // lowest alpha value that is still registered as non-transparent
 
+            Image _image;
             Texture* _texture = nullptr;
             std::string _name;
 
@@ -88,6 +93,7 @@ namespace mousetrap
 
     void Brush::create_from_image(Image& image, const std::string& name)
     {
+        _image = image;
         auto size = image.get_size();
 
         static bool once = true;
@@ -132,6 +138,32 @@ namespace mousetrap
     const std::deque<std::pair<Vector2i, Vector2i>>& Brush::get_outline_vertices()
     {
         return _outline_vertices;
+    }
+
+    void Brush::set_size(size_t px)
+    {
+        int w = _image.get_size().x;
+        int h = _image.get_size().y;
+
+        size_t new_w, new_h;
+
+        if (w < h)
+        {
+            new_w = px;
+            new_h = new_w + std::abs(h - w);
+        }
+        else if (h > w)
+        {
+            new_h = px;
+            new_w = new_h + std::abs(w - h);
+        }
+        else
+        {
+            new_w = w;
+            new_h = h;
+        }
+
+        auto scaled = _image.sc
     }
 
     void Brush::generate_outline_vertices(Image& image)

@@ -144,7 +144,7 @@ namespace mousetrap
                     void update();
 
                 private:
-                    RGBA cursor_color = state::settings_file->get_value_as<RGBA>("canvas", "cursor_color");
+                    float brush_cursor_color_alpha = state::settings_file->get_value_as<float>("canvas", "brush_cursor_color_alpha");
                     GLArea _area;
 
                     float* _timer = new float(0); // seconds

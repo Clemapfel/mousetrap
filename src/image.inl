@@ -183,4 +183,17 @@ namespace mousetrap
 
         return out;
     }
+
+    Image Image::as_scaled(size_t size_x, size_t size_y)
+    {
+        auto unscaled = to_pixbuf();
+        auto scaled = gdk_pixbuf_scale_simple(unscaled, size_x, size_y, GDK_INTERP_NEAREST);
+        g_object_unref(unscaled);
+
+        auto out = Image();
+        out.create_from_pixbuf(scaled);
+        return out;
+
+        g_object_unref(scaled);
+    }
 }

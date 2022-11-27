@@ -62,7 +62,7 @@ namespace mousetrap
 
             Box _size_box = Box(GTK_ORIENTATION_HORIZONTAL);
             Label _size_label = Label("Size");
-            Scale _size_scale = Scale(0, 256, 1);
+            Scale _size_scale = Scale(0, 128, 1);
             SpinButton _size_spin_button = SpinButton(0, 10e4-1, 1);
 
             static void on_size_scale_value_changed(Scale*, BrushOptions*);
@@ -179,11 +179,13 @@ namespace mousetrap
         _tile_size_spin_button.connect_signal_value_changed(on_tile_size_spin_button_value_changed, this);
         _tile_size_box.push_back(&_tile_size_label);
         _tile_size_box.push_back(&_tile_size_spin_button);
+        _tile_size_box.set_margin(state::margin_unit);
 
         _downscale_switch.connect_signal_state_set(on_downscale_switch_state_set, this);
         _downscale_switch.set_margin_horizontal(state::margin_unit);
         _downscale_box.push_back(&_downscale_label);
         _downscale_box.push_back(&_downscale_switch);
+        _downscale_box.set_margin(state::margin_unit);
 
         auto settings_section = MenuModel();
 
@@ -209,6 +211,8 @@ namespace mousetrap
         _main.push_back(&_size_box);
         _main.push_back(&_brush_shape_label);
         _main.push_back(&_brush_shape_window_frame);
+
+        on_brush_shape_selection_changed(_brush_shape_view.get_selection_model(), 0, 0, this);
     }
 
     BrushOptions::~BrushOptions()
@@ -312,7 +316,7 @@ namespace mousetrap
 
         std::stringstream label_text;
         label_text << "<span font_scale=\"subscript\" bgcolor=\"black\" bgalpha=\"50%\" fgcolor=\"white\">";
-        label_text << std::to_string(w) << "</span>";
+        label_text << std::to_string(std::min(w, h)) << "</span>";
         _size_label.set_text(label_text.str());
 
         if (_shape != nullptr)
@@ -364,6 +368,22 @@ namespace mousetrap
                                                         BrushOptions* instance)
     {
         state::current_brush = instance->_brush_shapes.at(first_item_position)->get_brush();
-        ((Canvas*) state::canvas)->update_brush_cursor();
+
+        if (state::canvas != nullptr)
+            ((Canvas*) state::canvas)->update_brush_cursor();
+
+        instance->_size_spin_button.set_signal_value_changed_blocked(true);
+        instance->_size_scale.set_signal_value_changed_blocked(true);
+
+        auto size = std::min(
+            state::current_brush->get_texture()->get_size().x,
+            state::current_brush->get_texture()->get_size().y
+        );
+
+        instance->_size_spin_button.set_value(size);
+        instance->_size_scale.set_value(size);
+
+        instance->_size_spin_button.set_signal_value_changed_blocked(false);
+        instance->_size_scale.set_signal_value_changed_blocked(false);
     }
 }

@@ -18,8 +18,29 @@ vec3 hsv_to_rgb(vec3 c)
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
+float triangle_wave(float x)
+{
+    const float pi = 3.14159;
+    return 2 + abs(x / pi - floor(x / pi + 0.5));
+}
+
+float square_wave(float x)
+{
+    const float pi = 3.14159;
+    return pow(-1, floor(2*x*(1/pi)) + 1) / 2;
+}
+
+float sine_wave(float x)
+{
+    return (sin(x) + 1) / 2;
+}
+
 void main()
 {
-    float value = (sin(40 * (_horizontal == 1 ? _vertex_position.x : _vertex_position.y) + _time_s * 10) + 1) / 2.0;
-    _fragment_color = vec4(hsv_to_rgb(vec3(0, 0, value)), 1.0);
+    float x = _horizontal == 1 ? _vertex_position.x : _vertex_position.y;
+
+    float mod = mod(_time_s, 1);
+    float offset = mod > 0.5 ? 1 - mod : mod;
+    float value = sine_wave(2 * offset);
+    _fragment_color = vec4(hsv_to_rgb(vec3(0, 0, offset)), 1.0);
 }

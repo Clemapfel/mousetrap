@@ -130,20 +130,23 @@ namespace mousetrap
         _cursor_outline_shape_hlines->as_lines(outline_vertices_h);
         _cursor_outline_shape_vlines->as_lines(outline_vertices_v);
 
+        auto outline_color = HSVA(0, 0, cursor_color.v > 0.5 ? 0 : 1, brush_cursor_color_alpha);
+
+        _cursor_outline_shape_hlines->set_color(outline_color);
+        _cursor_outline_shape_vlines->set_color(outline_color);
+
         _area.clear_render_tasks();
         _area.add_render_task(_cursor_shape);
 
-        auto outline_task_h = RenderTask(_cursor_outline_shape_hlines, _brush_outline_shader);
-        outline_task_h.register_int("_horizontal", new int(1));
-        outline_task_h.register_float("_time_s", _timer);
+        auto outline_task_h = RenderTask(_cursor_outline_shape_hlines);//, _brush_outline_shader);
+        //outline_task_h.register_int("_horizontal", new int(1));
+        //outline_task_h.register_float("_time_s", _timer);
         _area.add_render_task(outline_task_h);
 
-        auto outline_task_v = RenderTask(_cursor_outline_shape_vlines, _brush_outline_shader);
-        outline_task_v.register_int("_horizontal", new int(0));
-        outline_task_v.register_float("_time_s", _timer);
+        auto outline_task_v = RenderTask(_cursor_outline_shape_vlines);//, _brush_outline_shader);
+        //outline_task_v.register_int("_horizontal", new int(0));
+        //outline_task_v.register_float("_time_s", _timer);
         _area.add_render_task(outline_task_v);
-
-
         _area.queue_render();
     }
 
@@ -231,12 +234,16 @@ namespace mousetrap
     void Canvas::BrushCursorLayer::on_motion_enter(MotionEventController*, double, double, BrushCursorLayer* instance)
     {
         instance->_cursor_shape->set_visible(true);
+        instance->_cursor_outline_shape_hlines->set_visible(true);
+        instance->_cursor_outline_shape_vlines->set_visible(true);
         instance->_area.queue_render();
     }
 
     void Canvas::BrushCursorLayer::on_motion_leave(MotionEventController*, BrushCursorLayer* instance)
     {
         instance->_cursor_shape->set_visible(false);
+        instance->_cursor_outline_shape_hlines->set_visible(false);
+        instance->_cursor_outline_shape_vlines->set_visible(false);
         instance->_area.queue_render();
     }
 }
