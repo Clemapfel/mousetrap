@@ -16,7 +16,7 @@ namespace mousetrap
             ~Brush();
 
             void create_from_image(Image&, const std::string& name);
-            void create_from_file(const std::string& path);
+            bool create_from_file(const std::string& path);
 
             Texture* get_texture();
             const Image& get_base_image();
@@ -26,6 +26,7 @@ namespace mousetrap
 
             /// \brief update texture as scaled version of base image
             void set_size(size_t px);
+            size_t get_size() const;
 
         private:
             static inline const float alpha_eps = 0.00001; // lowest alpha value that is still registered as non-transparent
@@ -52,44 +53,26 @@ namespace mousetrap
         delete _texture;
     }
 
-    void Brush::create_from_file(const std::string& path)
+    bool Brush::create_from_file(const std::string& path)
     {
         auto image = Image();
         if (not image.create_from_file(path))
         {
             std::cerr << "[WARNING] Unable to load brush at `" << path << "`: Image.create_from_file failed"
                       << std::endl;
-            return;
+            return false;
         }
 
-        if (image.get_size().x != image.get_size().y)
-        {
-            std::cerr << "[WARNING] Unable to load brush at `" << path << "`: Brush textures have to be square"
-                      << std::endl;
-
-            return;
-        }
-
-        size_t extension_size = 0;
-        for (auto it = path.end(); it != path.begin(); it--)
-        {
-            extension_size += 1;
-
-            if (*it == '.')
-                break;
-        }
+        FileDescriptor file;
+        file.create_for_path(path);
 
         std::stringstream name;
-        for (size_t i = 0; i < path.size() - extension_size; ++i)
-        {
-            auto c = path.at(i);
-            if (c == '_')
-                name << ' ';
-            else
-                name << c;
-        }
+        for (size_t i = 0; i < file.get_name().size() - file.get_extension().size(); ++i)
+            name << file.get_name().at(i);
 
         create_from_image(image, name.str());
+
+        return true;
     }
 
     void Brush::create_from_image(Image& image, const std::string& name)
@@ -183,6 +166,11 @@ namespace mousetrap
 
         _texture->create_from_image(scaled);
         generate_outline_vertices(scaled);
+    }
+
+    size_t Brush::get_size() const
+    {
+        return std::min(_image.get_size().x, _image.get_size().y);
     }
 
     void Brush::generate_outline_vertices(Image& image)

@@ -147,6 +147,10 @@ namespace mousetrap
         //outline_task_v.register_int("_horizontal", new int(0));
         //outline_task_v.register_float("_time_s", _timer);
         _area.add_render_task(outline_task_v);
+
+        // align with previous position
+        on_motion(&_motion_controller, _cursor_position->x, _cursor_position->y, this);
+
         _area.queue_render();
     }
 
@@ -159,6 +163,8 @@ namespace mousetrap
 
     void Canvas::BrushCursorLayer::on_motion(MotionEventController*, double x, double y, BrushCursorLayer* instance)
     {
+        *instance->_cursor_position = {x, y};
+
         float widget_w = instance->_area.get_size().x;
         float widget_h = instance->_area.get_size().y;
 

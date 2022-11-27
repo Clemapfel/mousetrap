@@ -80,7 +80,11 @@ void load_brushes()
     });
 
     for (auto& file : files)
-        state::brushes.emplace_back(new Brush())->create_from_file(file.get_path());
+    {
+        auto* brush = new Brush();
+        if (brush->create_from_file(file.get_path()))
+            state::brushes.emplace_back(brush);
+    }
 
     if (state::brushes.empty())
     {

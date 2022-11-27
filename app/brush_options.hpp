@@ -37,12 +37,6 @@ namespace mousetrap
             SpinButton _tile_size_spin_button = SpinButton(2, 256, 1);
             static void on_tile_size_spin_button_value_changed(SpinButton*, BrushOptions* instance);
 
-            bool _downscaling_enabled = true;
-            Box _downscale_box = Box(GTK_ORIENTATION_HORIZONTAL);
-            Label _downscale_label = Label("Downscaling Enabled: ");
-            Switch _downscale_switch = Switch();
-            static void on_downscale_switch_state_set(Switch*, bool, BrushOptions* instance);
-
             MenuButton _menu_button;
             Label _menu_button_label = Label("Brush Options");
 
@@ -62,8 +56,8 @@ namespace mousetrap
 
             Box _size_box = Box(GTK_ORIENTATION_HORIZONTAL);
             Label _size_label = Label("Size");
-            Scale _size_scale = Scale(0, 128, 1);
-            SpinButton _size_spin_button = SpinButton(0, 10e4-1, 1);
+            Scale _size_scale = Scale(1, 128, 1);
+            SpinButton _size_spin_button = SpinButton(1, 10e4-1, 1);
 
             static void on_size_scale_value_changed(Scale*, BrushOptions*);
             static void on_size_spin_button_value_changed(SpinButton*, BrushOptions*);
@@ -111,6 +105,12 @@ namespace mousetrap
             Frame _brush_shape_window_frame;
 
             static void on_brush_shape_selection_changed(SelectionModel*, size_t first_item_position, size_t, BrushOptions* instance);
+
+            ShortcutController _shortcut_controller = ShortcutController(state::app);
+            Action _increase_brushsize_action = Action("brush_options.increase_brush_size");
+            Action _decrease_brushsize_action = Action("brush_options.decrease_brush_size");
+
+            Tooltip _tooltip;
     };
 }
 
@@ -161,7 +161,13 @@ namespace mousetrap
         {
             auto* icon = _brush_shapes.emplace_back(new BrushShapeIcon(this));
             icon->set_brush(brush);
-            icon->operator Widget*()->set_tooltip_text(brush->get_name());
+
+            std::stringstream name;
+            name << brush->get_name() << " ("
+                 << brush->get_base_image().get_size().x << "x"
+                 << brush->get_base_image().get_size().y << ")";
+
+            icon->operator Widget*()->set_tooltip_text(name.str());
             _brush_shape_view.push_back(icon->operator Widget*());
         }
 
@@ -182,21 +188,11 @@ namespace mousetrap
         _tile_size_box.push_back(&_tile_size_spin_button);
         _tile_size_box.set_margin(state::margin_unit);
 
-        _downscale_switch.connect_signal_state_set(on_downscale_switch_state_set, this);
-        _downscale_switch.set_margin_horizontal(state::margin_unit);
-        _downscale_box.push_back(&_downscale_label);
-        _downscale_box.push_back(&_downscale_switch);
-        _downscale_box.set_margin(state::margin_unit);
-
         auto settings_section = MenuModel();
 
         auto tile_size_menu = MenuModel();
         tile_size_menu.add_widget(&_tile_size_box);
-        settings_section.add_submenu("Tile Size...", &tile_size_menu);
-
-        auto downscale_menu = MenuModel();
-        downscale_menu.add_widget(&_downscale_box);
-        settings_section.add_submenu("Allow Downscaling...", &downscale_menu);
+        settings_section.add_submenu("Preview Tile Size...", &tile_size_menu);
 
         _menu.add_section("Settings", &settings_section);
         auto* popover = new PopoverMenu(&_menu);
@@ -214,6 +210,35 @@ namespace mousetrap
         _main.push_back(&_brush_shape_window_frame);
 
         on_brush_shape_selection_changed(_brush_shape_view.get_selection_model(), 0, 0, this);
+
+        _increase_brushsize_action.set_do_function([](BrushOptions* instance){
+            instance->_size_spin_button.set_value(instance->_size_spin_button.get_value() + 1);
+        }, this);
+        _increase_brushsize_action.add_shortcut(state::keybindings_file->get_value("brush_options", "increase_brush_size"));
+        state::app->add_action(_increase_brushsize_action);
+        _shortcut_controller.add_action("brush_options.increase_brush_size");
+
+        _decrease_brushsize_action.set_do_function([](BrushOptions* instance){
+            instance->_size_spin_button.set_value(instance->_size_spin_button.get_value() - 1);
+        }, this);
+        _decrease_brushsize_action.add_shortcut(state::keybindings_file->get_value("brush_options", "decrease_brush_size"));
+        state::app->add_action(_decrease_brushsize_action);
+        _shortcut_controller.add_action("brush_options.decrease_brush_size");
+
+        _tooltip.create_from("brush_options", state::tooltips_file, state::keybindings_file);
+        operator Widget*()->set_tooltip_widget(_tooltip.operator Widget*());
+
+        auto size_tooltip = state::tooltips_file->get_value("brush_options", "brush_size");
+        _size_box.set_tooltip_text(size_tooltip);
+        _size_label.set_tooltip_text(size_tooltip);
+
+        auto opacity_tooltip = state::tooltips_file->get_value("brush_options", "brush_opacity");
+        _opacity_box.set_tooltip_text(opacity_tooltip);
+        _opacity_label.set_tooltip_text(opacity_tooltip);
+
+        auto shape_tooltip = state::tooltips_file->get_value("brush_options", "brush_shape");
+        _brush_shape_window_frame.set_tooltip_text(shape_tooltip);
+        _brush_shape_label.set_tooltip_text(shape_tooltip);
     }
 
     BrushOptions::~BrushOptions()
@@ -257,7 +282,9 @@ namespace mousetrap
 
     void BrushOptions::on_size_scale_value_changed(Scale* scale, BrushOptions* instance)
     {
-        instance->_size = scale->get_value();
+        auto value = scale->get_value();
+
+        instance->_size = value;
         instance->_size_spin_button.set_signal_value_changed_blocked(true);
         instance->_size_spin_button.set_value(instance->_size);
         instance->_size_spin_button.set_signal_value_changed_blocked(false);
@@ -270,7 +297,9 @@ namespace mousetrap
 
     void BrushOptions::on_size_spin_button_value_changed(SpinButton* scale, BrushOptions* instance)
     {
-        instance->_size = scale->get_value();
+        auto value = scale->get_value();
+
+        instance->_size = value;
         instance->_size_scale.set_signal_value_changed_blocked(true);
         instance->_size_scale.set_value(instance->_size);
         instance->_size_scale.set_signal_value_changed_blocked(false);
@@ -287,13 +316,6 @@ namespace mousetrap
         for (auto* tile : instance->_brush_shapes)
             tile->update_tile_size();
     };
-
-    void BrushOptions::on_downscale_switch_state_set(Switch* , bool state, BrushOptions* instance)
-    {
-        instance->_downscaling_enabled = state;
-        instance->_downscale_switch.set_active(state);
-        instance->_downscale_switch.set_state(state ? Switch::State::ON : Switch::State::OFF);
-    }
 
     BrushOptions::BrushShapeIcon::BrushShapeIcon(BrushOptions* owner)
         : _owner(owner)
@@ -327,7 +349,7 @@ namespace mousetrap
 
         std::stringstream label_text;
         label_text << "<span font_scale=\"subscript\" bgcolor=\"black\" bgalpha=\"50%\" fgcolor=\"white\">";
-        label_text << std::to_string(std::min(w, h)) << "</span>";
+        label_text << std::to_string(_brush->get_size()) << "</span>";
         _size_label.set_text(label_text.str());
 
         if (_texture != nullptr)
@@ -392,10 +414,7 @@ namespace mousetrap
         instance->_size_spin_button.set_signal_value_changed_blocked(true);
         instance->_size_scale.set_signal_value_changed_blocked(true);
 
-        auto size = std::min(
-            state::current_brush->get_base_image().get_size().x,
-            state::current_brush->get_base_image().get_size().y
-        );
+        auto size = state::current_brush->get_size();
 
         instance->_size_spin_button.set_value(size);
         instance->_size_scale.set_value(size);

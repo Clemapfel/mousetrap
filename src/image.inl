@@ -194,6 +194,12 @@ namespace mousetrap
         if (size_x == _size.x and size_y == _size.y)
             return *this;
 
+        if (size_x == 0)
+            size_x = 1;
+
+        if (size_y == 0)
+            size_y = 1;
+
         GdkPixbuf* unscaled = g_object_ref(to_pixbuf());
         auto scaled = g_object_ref(gdk_pixbuf_scale_simple(unscaled, size_x, size_y, GDK_INTERP_NEAREST));
 
