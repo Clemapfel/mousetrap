@@ -96,6 +96,7 @@ namespace mousetrap
                     GLArea _area;
                     Shape* _shape = nullptr;
                     Shape* _background = nullptr;
+                    Texture* _texture = nullptr;
 
                     std::string _path;
                     Vector2ui _size;
@@ -260,6 +261,11 @@ namespace mousetrap
         instance->_size_spin_button.set_signal_value_changed_blocked(true);
         instance->_size_spin_button.set_value(instance->_size);
         instance->_size_spin_button.set_signal_value_changed_blocked(false);
+
+        state::brush_size = instance->_size;
+        state::current_brush->set_size(state::brush_size);
+        if (state::canvas != nullptr)
+            ((Canvas*) state::canvas)->update_brush_cursor();
     }
 
     void BrushOptions::on_size_spin_button_value_changed(SpinButton* scale, BrushOptions* instance)
@@ -268,6 +274,11 @@ namespace mousetrap
         instance->_size_scale.set_signal_value_changed_blocked(true);
         instance->_size_scale.set_value(instance->_size);
         instance->_size_scale.set_signal_value_changed_blocked(false);
+
+        state::brush_size = instance->_size;
+        state::current_brush->set_size(state::brush_size);
+        if (state::canvas != nullptr)
+            ((Canvas*) state::canvas)->update_brush_cursor();
     }
 
     void BrushOptions::on_tile_size_spin_button_value_changed(SpinButton* scale, BrushOptions* instance)
@@ -310,7 +321,7 @@ namespace mousetrap
     void BrushOptions::BrushShapeIcon::set_brush(Brush* brush)
     {
         _brush = brush;
-        _size = _brush->get_texture()->get_size();
+        _size = _brush->get_base_image().get_size();
         auto w = _size.x;
         auto h = _size.y;
 
@@ -319,8 +330,11 @@ namespace mousetrap
         label_text << std::to_string(std::min(w, h)) << "</span>";
         _size_label.set_text(label_text.str());
 
+        if (_texture != nullptr)
+            _texture->create_from_image(_brush->get_base_image());
+
         if (_shape != nullptr)
-            _shape->set_texture(_brush->get_texture());
+            _shape->set_texture(_texture);
 
         _area.queue_render();
     }
@@ -341,12 +355,15 @@ namespace mousetrap
         instance->_background->as_rectangle({0, 0}, {1, 1});
         instance->_background->set_color(RGBA(0, 0, 0, 1));
 
+        instance->_texture = new Texture();
         instance->_shape = new Shape();
         instance->_shape->as_rectangle({0, 0}, {1, 1});
-        instance->_shape->set_texture(instance->_brush->get_texture());
+        instance->_shape->set_texture(instance->_texture);
 
         area->add_render_task(instance->_background);
         area->add_render_task(instance->_shape);
+
+        instance->set_brush(instance->_brush);
     }
 
     Vector2ui BrushOptions::BrushShapeIcon::get_texture_size()
@@ -376,8 +393,8 @@ namespace mousetrap
         instance->_size_scale.set_signal_value_changed_blocked(true);
 
         auto size = std::min(
-            state::current_brush->get_texture()->get_size().x,
-            state::current_brush->get_texture()->get_size().y
+            state::current_brush->get_base_image().get_size().x,
+            state::current_brush->get_base_image().get_size().y
         );
 
         instance->_size_spin_button.set_value(size);

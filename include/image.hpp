@@ -19,10 +19,14 @@ namespace mousetrap
             void create_from_pixbuf(GdkPixbuf*);
 
             void* data() const;
+            /// \returns <number of pixels> * <number of components>
             size_t get_data_size() const;
+
+            size_t get_n_pixels() const;
 
             GdkPixbuf* to_pixbuf() const;
             Vector2ui get_size() const;
+
 
             Image as_scaled(size_t size_x, size_t size_y);
 

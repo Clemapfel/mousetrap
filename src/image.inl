@@ -85,6 +85,11 @@ namespace mousetrap
         return _data.size();
     }
 
+    size_t Image::get_n_pixels() const
+    {
+        return get_size().x * get_size().y;
+    }
+
     size_t Image::to_linear_index(size_t x, size_t y) const
     {
         return y * (_size.x * 4) + (x * 4);
@@ -186,14 +191,18 @@ namespace mousetrap
 
     Image Image::as_scaled(size_t size_x, size_t size_y)
     {
-        auto unscaled = to_pixbuf();
-        auto scaled = gdk_pixbuf_scale_simple(unscaled, size_x, size_y, GDK_INTERP_NEAREST);
-        g_object_unref(unscaled);
+        if (size_x == _size.x and size_y == _size.y)
+            return *this;
+
+        GdkPixbuf* unscaled = g_object_ref(to_pixbuf());
+        auto scaled = g_object_ref(gdk_pixbuf_scale_simple(unscaled, size_x, size_y, GDK_INTERP_NEAREST));
 
         auto out = Image();
         out.create_from_pixbuf(scaled);
-        return out;
 
+        g_object_unref(unscaled);
         g_object_unref(scaled);
+
+        return out;
     }
 }

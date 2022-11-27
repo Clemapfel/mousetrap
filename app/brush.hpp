@@ -19,6 +19,7 @@ namespace mousetrap
             void create_from_file(const std::string& path);
 
             Texture* get_texture();
+            const Image& get_base_image();
 
             const std::string& get_name();
             const std::deque<std::pair<Vector2i, Vector2i>>& get_outline_vertices();
@@ -130,6 +131,11 @@ namespace mousetrap
         return _texture;
     }
 
+    const Image& Brush::get_base_image()
+    {
+        return _image;
+    }
+
     const std::string& Brush::get_name()
     {
         return _name;
@@ -159,11 +165,24 @@ namespace mousetrap
         }
         else
         {
-            new_w = w;
-            new_h = h;
+            new_w = px;
+            new_h = px;
         }
 
-        auto scaled = _image.sc
+        Image scaled = _image.as_scaled(new_w, new_h);
+
+        // prevent brush going invisible because of artifacting
+        for (size_t i = 0; i < scaled.get_n_pixels(); ++i)
+            if (scaled.get_pixel(i).a > alpha_eps)
+                goto skip_artifact_fix;
+
+        for (size_t i = 0; i < scaled.get_n_pixels(); ++i)
+            scaled.set_pixel(i, RGBA(1, 1, 1, 1));
+
+        skip_artifact_fix:
+
+        _texture->create_from_image(scaled);
+        generate_outline_vertices(scaled);
     }
 
     void Brush::generate_outline_vertices(Image& image)
