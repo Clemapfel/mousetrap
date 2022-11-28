@@ -10,6 +10,7 @@
 #include <app/global_state.hpp>
 #include <app/app_component.hpp>
 #include <app/canvas.hpp>
+#include <app/bubble_log_area.hpp>
 
 namespace mousetrap
 {
@@ -21,6 +22,8 @@ namespace mousetrap
 
             void update();
             operator Widget*();
+
+            void refresh_brushes();
 
         private:
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
@@ -110,8 +113,15 @@ namespace mousetrap
             Action _increase_brushsize_action = Action("brush_options.increase_brush_size");
             Action _decrease_brushsize_action = Action("brush_options.decrease_brush_size");
 
+            Action _refresh_brushes_action = Action("brush_options.refresh_brushes");
             Tooltip _tooltip;
     };
+
+
+    namespace state
+    {
+        void reload_brushes();
+    }
 }
 
 //
@@ -145,11 +155,6 @@ namespace mousetrap
         _size_spin_button.set_value(_size);
         _size_spin_button.set_focusable(true);
         _size_spin_button.set_focus_on_click(true);
-
-        float spin_button_max = std::max<float>(
-            _opacity_spin_button.get_preferred_size().natural_size.x,
-            _size_spin_button.get_preferred_size().natural_size.x
-        );
 
         for (auto* label : {&_opacity_label, &_size_label, &_brush_shape_label})
             label->set_halign(GTK_ALIGN_START);
@@ -188,13 +193,25 @@ namespace mousetrap
         _tile_size_box.push_back(&_tile_size_spin_button);
         _tile_size_box.set_margin(state::margin_unit);
 
+        _refresh_brushes_action.set_do_function([](BrushOptions* instance) {
+            state::reload_brushes();
+            instance->refresh_brushes();
+            ((BubbleLogArea*) state::bubble_log)->send_message("Reinitializing brushes from `" + get_resource_path() + "brushes`...");
+        }, this);
+        state::app->add_action(_refresh_brushes_action);
+
         auto settings_section = MenuModel();
 
         auto tile_size_menu = MenuModel();
         tile_size_menu.add_widget(&_tile_size_box);
         settings_section.add_submenu("Preview Tile Size...", &tile_size_menu);
 
+        auto brush_section = MenuModel();
+        brush_section.add_action("Refresh Brushes", "brush_options.refresh_brushes");
+
         _menu.add_section("Settings", &settings_section);
+        _menu.add_section("Brushes", &brush_section);
+
         auto* popover = new PopoverMenu(&_menu);
 
         _menu_button_label.set_size_request({32, 32});
@@ -337,15 +354,14 @@ namespace mousetrap
 
     BrushOptions::BrushShapeIcon::~BrushShapeIcon()
     {
-        delete _shape;
+        if (_shape != nullptr)
+            delete _shape;
     }
 
     void BrushOptions::BrushShapeIcon::set_brush(Brush* brush)
     {
         _brush = brush;
         _size = _brush->get_base_image().get_size();
-        auto w = _size.x;
-        auto h = _size.y;
 
         std::stringstream label_text;
         label_text << "<span font_scale=\"subscript\" bgcolor=\"black\" bgalpha=\"50%\" fgcolor=\"white\">";
@@ -421,5 +437,70 @@ namespace mousetrap
 
         instance->_size_spin_button.set_signal_value_changed_blocked(false);
         instance->_size_scale.set_signal_value_changed_blocked(false);
+    }
+
+    void state::reload_brushes()
+    {
+        state::brushes.clear();
+
+        auto files = get_all_files_in_directory(get_resource_path() + "brushes", false, false);
+        std::sort(files.begin(), files.end(), [](FileDescriptor& a, FileDescriptor& b) -> bool {
+            return a.get_name() < b.get_name();
+        });
+
+        for (auto& file : files)
+        {
+            auto* brush = new Brush();
+            if (brush->create_from_file(file.get_path()))
+                state::brushes.emplace_back(brush);
+        }
+
+        if (state::brushes.empty())
+        {
+            auto default_brush_image = Image();
+            default_brush_image.create(1, 1, RGBA(1, 1, 1, 1));
+            state::brushes.emplace_back(new Brush())->create_from_image(default_brush_image, "default");
+        }
+
+        state::current_brush = state::brushes.at(0);
+
+        if (state::brush_options != nullptr)
+            ((BrushOptions*) state::brush_options)->refresh_brushes();
+    }
+
+    void BrushOptions::refresh_brushes()
+    {
+        auto current_brush_name = state::current_brush->get_name();
+        auto current_brush_size = _size;
+
+        _brush_shape_view.get_selection_model()->set_all_signals_blocked(true);
+        _brush_shape_view.clear();
+
+        for (auto* ptr : _brush_shapes)
+            delete ptr;
+
+        _brush_shapes.clear();
+
+        for (auto* brush : state::brushes)
+        {
+            auto* icon = _brush_shapes.emplace_back(new BrushShapeIcon(this));
+            icon->set_brush(brush);
+
+            std::stringstream name;
+            name << brush->get_name() << " ("
+                 << brush->get_base_image().get_size().x << "x"
+                 << brush->get_base_image().get_size().y << ")";
+
+            icon->operator Widget*()->set_tooltip_text(name.str());
+            _brush_shape_view.push_back(icon->operator Widget*());
+        }
+
+        size_t to_select = 0;
+        for (size_t i = 0; i < _brush_shapes.size(); ++i)
+            if (_brush_shapes.at(i)->get_brush()->get_name() == current_brush_name)
+                to_select = i;
+
+        on_brush_shape_selection_changed(_brush_shape_view.get_selection_model(), to_select, 0, this);
+        _brush_shape_view.get_selection_model()->set_all_signals_blocked(false);
     }
 }
