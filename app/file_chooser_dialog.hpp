@@ -456,7 +456,7 @@ home_folder = <Alt>Home
             else if (M == FileChooserDialogMode::CHOOSE_FOLDER)
                 instance->_accept_button.set_can_respond_to_input(not selected.empty() and selected.at(0).is_folder());
             else
-                instance->_accept_button.set_can_respond_to_input(not selected.empty());
+                instance->_accept_button.set_can_respond_to_input(not selected.empty() and selected.at(0).is_file());
 
             return true;
         }, this);

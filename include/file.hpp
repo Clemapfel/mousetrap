@@ -327,7 +327,7 @@ namespace mousetrap
         );
 
         if (error != nullptr)
-            std::cerr << "[WARNING] In FileSystem::copy: Unable to copy file from `" << from.get_name() << "` to `" << to.get_name() << "`: " << error->message << std::endl;
+            std::cerr << "[WARNING] In FileSystem::copy: Unable to copy file from `" << from.get_path() << "` to `" << to.get_path() << "`: " << error->message << std::endl;
 
         return out;
     }

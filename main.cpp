@@ -145,7 +145,6 @@ void validate_keybindings_file(ConfigFile* file)
     }
 
     message << "\nPlease resolve these conflicts via the settings menu or by editing keybindings.ini";
-
     ((BubbleLogArea*) state::bubble_log)->send_message(message.str(), InfoMessageType::ERROR, true);
 }
 
@@ -324,14 +323,12 @@ static void activate(GtkApplication* app, void*)
     right_column_paned_top->push_back(brush_options);
 
     right_column_paned->set_start_child(right_column_paned_top);
-    right_column_paned->set_end_child(layer_view);
     right_column_paned->set_start_child_shrinkable(true);
     right_column_paned->set_end_child_shrinkable(false);
     right_column_paned->set_has_wide_handle(true);
     right_column_paned->set_vexpand(false);
     right_column_paned->set_valign(GTK_ALIGN_END);
     toolbox->set_valign(GTK_ALIGN_START);
-
     right_column->push_back(right_column_paned);
 
     for (auto* w : {toolbox, brush_options})
@@ -361,7 +358,13 @@ static void activate(GtkApplication* app, void*)
 
     auto* main = new Overlay();
     main->set_child(all_columns);
-    main->add_overlay(bubble_log);
+
+    auto* log_window = new ScrolledWindow();
+    log_window->set_halign(GTK_ALIGN_END);
+    log_window->set_propagate_natural_width(true);
+    log_window->set_policy(GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+    log_window->set_child(bubble_log);
+    main->add_overlay(log_window);
 
     auto* tt = new ShortcutInformation();
     tt->create_from_group("palette_view", state::keybindings_file);

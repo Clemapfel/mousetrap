@@ -11,6 +11,7 @@
 #include <app/app_component.hpp>
 #include <app/canvas.hpp>
 #include <app/bubble_log_area.hpp>
+#include <app/file_chooser_dialog.hpp>
 
 namespace mousetrap
 {
@@ -23,10 +24,14 @@ namespace mousetrap
             void update();
             operator Widget*();
 
-            void refresh_brushes();
+            void reload_default_brushes();
+            void select_brush(size_t);
 
         private:
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
+            Box _content_box = Box(GTK_ORIENTATION_VERTICAL);
+
+            size_t max_brush_size = state::settings_file->get_value_as<size_t>("brush_options", "maximum_brush_size");
 
             // settings
             MenuModel _menu;
@@ -59,8 +64,8 @@ namespace mousetrap
 
             Box _size_box = Box(GTK_ORIENTATION_HORIZONTAL);
             Label _size_label = Label("Size");
-            Scale _size_scale = Scale(1, 128, 1);
-            SpinButton _size_spin_button = SpinButton(1, 10e4-1, 1);
+            Scale _size_scale = Scale(1, max_brush_size, 1);
+            SpinButton _size_spin_button = SpinButton(1, max_brush_size, 1);
 
             static void on_size_scale_value_changed(Scale*, BrushOptions*);
             static void on_size_spin_button_value_changed(SpinButton*, BrushOptions*);
@@ -107,13 +112,18 @@ namespace mousetrap
             ScrolledWindow _brush_shape_window;
             Frame _brush_shape_window_frame;
 
+            void add_brush(Brush*);
             static void on_brush_shape_selection_changed(SelectionModel*, size_t first_item_position, size_t, BrushOptions* instance);
 
             ShortcutController _shortcut_controller = ShortcutController(state::app);
             Action _increase_brushsize_action = Action("brush_options.increase_brush_size");
             Action _decrease_brushsize_action = Action("brush_options.decrease_brush_size");
 
-            Action _refresh_brushes_action = Action("brush_options.refresh_brushes");
+            Action _reload_default_brushes_action = Action("brush_options.reload_default_brushes");
+
+            Action _add_brush_action = Action("brush_options.add_brush");
+            OpenFileDialog _add_brush_dialog = OpenFileDialog("Select Brush Image...");
+
             Tooltip _tooltip;
     };
 
@@ -193,12 +203,60 @@ namespace mousetrap
         _tile_size_box.push_back(&_tile_size_spin_button);
         _tile_size_box.set_margin(state::margin_unit);
 
-        _refresh_brushes_action.set_do_function([](BrushOptions* instance) {
+        _reload_default_brushes_action.set_do_function([](BrushOptions* instance) {
             state::reload_brushes();
-            instance->refresh_brushes();
-            ((BubbleLogArea*) state::bubble_log)->send_message("Reinitializing brushes from `" + get_resource_path() + "brushes`...");
+            instance->reload_default_brushes();
+            ((BubbleLogArea*) state::bubble_log)->send_message("Loaded brushes from `" + get_resource_path() + "brushes`");
         }, this);
-        state::app->add_action(_refresh_brushes_action);
+        state::app->add_action(_reload_default_brushes_action);
+
+        auto filter = FileFilter("Image File");
+        filter.add_allow_all_supported_image_formats();
+        _add_brush_dialog.get_file_chooser().add_filter(filter, true);
+        _add_brush_dialog.set_on_cancel_pressed([](OpenFileDialog*, BrushOptions* instance){
+            instance->_add_brush_dialog.close();
+        }, this);
+
+        _add_brush_dialog.set_on_accept_pressed([](OpenFileDialog* dialog, BrushOptions* instance){
+
+            auto path = dialog->get_current_name();
+            auto image = Image();
+
+            if (not image.create_from_file(path))
+            {
+                ((BubbleLogArea*) state::bubble_log)->send_message("Unable to open file `" + path  + "`", InfoMessageType::ERROR);
+                dialog->close();
+                return;
+            }
+
+            if (image.get_size().x > instance->max_brush_size or image.get_size().y > instance->max_brush_size)
+            {
+                std::stringstream message;
+                message << "Unable to add brush from `" << path << "`: Image is larger than " << instance->max_brush_size << "x" << instance->max_brush_size;
+                ((BubbleLogArea*) state::bubble_log)->send_message(message.str(), InfoMessageType::ERROR);
+                dialog->close();
+                return;
+            }
+
+            std::stringstream name;
+            auto file = FileDescriptor(path);
+            for (size_t i = 0; i < file.get_name().size() - file.get_extension().size(); ++i)
+                name << file.get_name().at(i);
+
+            auto brush = new Brush();
+            brush->create_from_image(image, name.str());
+            state::brushes.emplace_back(brush);
+            instance->add_brush(brush);
+            instance->select_brush(state::brushes.size() - 1);
+            ((BubbleLogArea*) state::bubble_log)->send_message("New Brush `" + brush->get_name() + "` added");
+            dialog->close();
+
+        }, this);
+
+        _add_brush_action.set_do_function([](BrushOptions* instance){
+            instance->_add_brush_dialog.show();
+        }, this);
+        state::app->add_action(_add_brush_action);
 
         auto settings_section = MenuModel();
 
@@ -207,7 +265,8 @@ namespace mousetrap
         settings_section.add_submenu("Preview Tile Size...", &tile_size_menu);
 
         auto brush_section = MenuModel();
-        brush_section.add_action("Refresh Brushes", "brush_options.refresh_brushes");
+        brush_section.add_action("Add...", "brush_options.add_brush");
+        brush_section.add_action("Load Defaults", "brush_options.reload_default_brushes");
 
         _menu.add_section("Settings", &settings_section);
         _menu.add_section("Brushes", &brush_section);
@@ -218,15 +277,20 @@ namespace mousetrap
         _menu_button.set_child(&_menu_button_label);
         _menu_button.set_popover(popover);
 
-        _main.push_back(&_menu_button);
-        _main.push_back(&_opacity_label);
-        _main.push_back(&_opacity_box);
-        _main.push_back(&_size_label);
-        _main.push_back(&_size_box);
-        _main.push_back(&_brush_shape_label);
-        _main.push_back(&_brush_shape_window_frame);
+        _content_box.push_back(&_opacity_label);
+        _content_box.push_back(&_opacity_box);
+        _content_box.push_back(&_size_label);
+        _content_box.push_back(&_size_box);
+        _content_box.push_back(&_brush_shape_label);
+        _content_box.push_back(&_brush_shape_window_frame);
 
-        on_brush_shape_selection_changed(_brush_shape_view.get_selection_model(), 0, 0, this);
+        _content_box.set_margin_top(state::margin_unit);
+        _content_box.set_margin_horizontal(state::margin_unit);
+
+        _main.push_back(&_menu_button);
+        _main.push_back(&_content_box);
+
+        select_brush(0);
 
         _increase_brushsize_action.set_do_function([](BrushOptions* instance){
             instance->_size_spin_button.set_value(instance->_size_spin_button.get_value() + 1);
@@ -272,6 +336,20 @@ namespace mousetrap
         return &_main;
     }
 
+    void BrushOptions::add_brush(Brush* brush)
+    {
+        auto* icon = _brush_shapes.emplace_back(new BrushShapeIcon(this));
+        icon->set_brush(brush);
+
+        std::stringstream name;
+        name << brush->get_name() << " ("
+             << brush->get_base_image().get_size().x << "x"
+             << brush->get_base_image().get_size().y << ")";
+
+        icon->operator Widget*()->set_tooltip_text(name.str());
+        _brush_shape_view.push_back(icon->operator Widget*());
+    }
+
     void BrushOptions::on_opacity_scale_value_changed(Scale* scale, BrushOptions* instance)
     {
         instance->_opacity = scale->get_value();
@@ -295,7 +373,8 @@ namespace mousetrap
         state::brush_opacity = instance->_opacity;
 
         if (state::canvas != nullptr)
-            ((Canvas*) state::canvas)->update_brush_cursor();    }
+            ((Canvas*) state::canvas)->update_brush_cursor();
+    }
 
     void BrushOptions::on_size_scale_value_changed(Scale* scale, BrushOptions* instance)
     {
@@ -465,10 +544,10 @@ namespace mousetrap
         state::current_brush = state::brushes.at(0);
 
         if (state::brush_options != nullptr)
-            ((BrushOptions*) state::brush_options)->refresh_brushes();
+            ((BrushOptions*) state::brush_options)->reload_default_brushes();
     }
 
-    void BrushOptions::refresh_brushes()
+    void BrushOptions::reload_default_brushes()
     {
         auto current_brush_name = state::current_brush->get_name();
         auto current_brush_size = _size;
@@ -482,25 +561,19 @@ namespace mousetrap
         _brush_shapes.clear();
 
         for (auto* brush : state::brushes)
-        {
-            auto* icon = _brush_shapes.emplace_back(new BrushShapeIcon(this));
-            icon->set_brush(brush);
-
-            std::stringstream name;
-            name << brush->get_name() << " ("
-                 << brush->get_base_image().get_size().x << "x"
-                 << brush->get_base_image().get_size().y << ")";
-
-            icon->operator Widget*()->set_tooltip_text(name.str());
-            _brush_shape_view.push_back(icon->operator Widget*());
-        }
+            add_brush(brush);
 
         size_t to_select = 0;
         for (size_t i = 0; i < _brush_shapes.size(); ++i)
             if (_brush_shapes.at(i)->get_brush()->get_name() == current_brush_name)
                 to_select = i;
 
-        on_brush_shape_selection_changed(_brush_shape_view.get_selection_model(), to_select, 0, this);
+        select_brush(to_select);
         _brush_shape_view.get_selection_model()->set_all_signals_blocked(false);
+    }
+
+    void BrushOptions::select_brush(size_t i)
+    {
+        on_brush_shape_selection_changed(_brush_shape_view.get_selection_model(), i, 0, this);
     }
 }

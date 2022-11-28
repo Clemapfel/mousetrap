@@ -156,9 +156,10 @@ namespace mousetrap
         Image scaled = _image.as_scaled(new_w, new_h);
 
         // prevent brush going invisible because of artifacting
-        for (size_t i = 0; i < scaled.get_n_pixels(); ++i)
-            if (scaled.get_pixel(i).a > alpha_eps)
-                goto skip_artifact_fix;
+        for (size_t x = 0; x < scaled.get_size().x; ++x)
+            for (size_t y = 0; y < scaled.get_size().y; ++y)
+                if (scaled.get_pixel(x, y).a > alpha_eps)
+                    goto skip_artifact_fix;
 
         for (size_t i = 0; i < scaled.get_n_pixels(); ++i)
             scaled.set_pixel(i, RGBA(1, 1, 1, 1));
