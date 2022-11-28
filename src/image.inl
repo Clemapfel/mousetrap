@@ -170,9 +170,6 @@ namespace mousetrap
 
     Image Image::as_cropped(size_t x_min, size_t y_min, size_t x_max, size_t y_max)
     {
-        size_t w = get_size().x;
-        size_t h = get_size().y;
-
         if (x_min > x_max)
             x_min = x_max;
 
@@ -191,13 +188,13 @@ namespace mousetrap
 
     Image Image::as_scaled(size_t size_x, size_t size_y)
     {
-        if (size_x == _size.x and size_y == _size.y)
+        if (int(size_x) == _size.x and int(size_y) == _size.y)
             return *this;
 
-        if (size_x == 0)
+        if (size_x == size_t(0))
             size_x = 1;
 
-        if (size_y == 0)
+        if (size_y == size_t(0))
             size_y = 1;
 
         GdkPixbuf* unscaled = g_object_ref(to_pixbuf());

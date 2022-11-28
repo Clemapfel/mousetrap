@@ -123,7 +123,7 @@ namespace mousetrap
     }
 
     Toolbox::Icon::Icon(ToolID id, Toolbox* owner)
-        : _id(id), _owner(owner), _select_action("toolbox.select_" + id)
+        : _owner(owner), _id(id), _select_action("toolbox.select_" + id)
     {
         for (auto* w : {&_has_popover_indicator_icon, &_child_selected_indicator_icon, &_selected_indicator_icon, &_tool_icon})
         {

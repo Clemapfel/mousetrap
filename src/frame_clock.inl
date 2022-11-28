@@ -10,7 +10,7 @@ namespace mousetrap
     }
 
     FrameClock::FrameClock(GdkFrameClock* native)
-        : _native(native), HasUpdateSignal<FrameClock>(this)
+        : HasUpdateSignal<FrameClock>(this), _native(native)
     {}
 
     Time FrameClock::get_frame_time()

@@ -30,9 +30,7 @@ namespace mousetrap
         auto* area = (GLArea*) widget;
         area->make_current();
 
-        size_t frame_i = state::current_frame;
-
-        for (auto& layer : state::layers)
+        for (size_t i = 0; i < state::layers.size(); ++i)
             instance->_layer_shapes.emplace_back(new Shape());
 
         instance->reformat();

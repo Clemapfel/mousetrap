@@ -389,6 +389,8 @@ namespace mousetrap
     {
         if (instance->_tick_callback_f)
             return instance->_tick_callback_f(clock);
+        else
+            return true;
     }
 
     void Widget::tick_callback_destroy_notify(void*)

@@ -72,30 +72,6 @@ void initialize_debug_layers()
     }
 }
 
-void load_brushes()
-{
-    auto files = get_all_files_in_directory(get_resource_path() + "brushes", false, false);
-    std::sort(files.begin(), files.end(), [](FileDescriptor& a, FileDescriptor& b) -> bool {
-        return a.get_name() < b.get_name();
-    });
-
-    for (auto& file : files)
-    {
-        auto* brush = new Brush();
-        if (brush->create_from_file(file.get_path()))
-            state::brushes.emplace_back(brush);
-    }
-
-    if (state::brushes.empty())
-    {
-        auto default_brush_image = Image();
-        default_brush_image.create(1, 1, RGBA(1, 1, 1, 1));
-        state::brushes.emplace_back(new Brush())->create_from_image(default_brush_image, "default");
-    }
-
-    state::current_brush = state::brushes.at(0);
-}
-
 void validate_keybindings_file(ConfigFile* file)
 {
     std::map<std::string, std::vector<std::string>> map;
@@ -184,7 +160,7 @@ static void activate(GtkApplication* app, void*)
     state::app->add_window(state::main_window);
     state::main_window->set_show_menubar(true);
 
-    load_brushes();
+    state::reload_brushes();
     initialize_debug_layers();
 
     state::color_swapper = new ColorSwapper();

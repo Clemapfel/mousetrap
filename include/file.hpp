@@ -177,6 +177,8 @@ namespace mousetrap
     {
         g_object_ref(other._native);
         this->_native = other._native;
+
+        return *this;
     }
 
     FileDescriptor& FileDescriptor::operator=(FileDescriptor&& other)
@@ -184,6 +186,8 @@ namespace mousetrap
         g_object_ref(other._native);
         this->_native = other._native;
         other._native = nullptr;
+
+        return *this;
     }
 
     FileDescriptor::operator GFile*()

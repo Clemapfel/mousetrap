@@ -76,7 +76,7 @@ namespace mousetrap
 
         assert(state::n_frames == _layer_frame_displays.size());
 
-        auto& layer = state::layers.at(_layer);
+        //auto& layer = state::layers.at(_layer);
         for (size_t i = 0; i < state::n_frames; ++i)
             _layer_frame_displays.at(i).set_frame(i);
 

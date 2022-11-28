@@ -45,8 +45,6 @@ namespace mousetrap
 
     void ShortcutController::remove_action(ActionID id)
     {
-        auto* action = gtk_shortcut_action_parse_string(("app." + id).c_str());
-
         auto it = _shortcuts.find(id);
         if (it == _shortcuts.end())
         {

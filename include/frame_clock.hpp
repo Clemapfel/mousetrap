@@ -30,7 +30,7 @@ namespace mousetrap
             void stop();
 
         private:
-            GdkFrameClock* _native;
+            GdkFrameClock* _native = nullptr;
     };
 }
 

@@ -274,7 +274,7 @@ namespace mousetrap
         _area.make_current();
 
         size_t count = 0;
-        auto add = [&](float a_x, float a_y, float b_x, float b_y) -> Shape* {
+        auto add = [&](float a_x, float a_y, float b_x, float b_y) -> void {
 
             Shape* out;
             if (not _initialized)

@@ -153,7 +153,6 @@ namespace mousetrap
         {
             label->set_wrap_mode(LabelWrapMode::ONLY_ON_CHAR);
             label->set_max_width_chars(8);
-            auto* glabel = label->operator GtkLabel*();
         }
 
         _file_name_label.set_margin_bottom(state::margin_unit);
@@ -203,7 +202,7 @@ namespace mousetrap
         }
         else
         {
-            auto* info = g_file_query_info(_file->operator GFile*(), G_FILE_ATTRIBUTE_PREVIEW_ICON, G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
+            //auto* info = g_file_query_info(_file->operator GFile*(), G_FILE_ATTRIBUTE_PREVIEW_ICON, G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
             auto* icon = g_content_type_get_icon(_file->query_info(G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE).c_str());
 
             if (icon != nullptr)

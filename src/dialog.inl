@@ -13,7 +13,7 @@ namespace mousetrap
                     title.c_str(),
                     host_window->operator GtkWindow*(),
                     static_cast<GtkDialogFlags>(GTK_DIALOG_DESTROY_WITH_PARENT | (is_modal ? GTK_DIALOG_MODAL : 0)),
-                    nullptr))),
+                    nullptr, GTK_RESPONSE_NONE, nullptr))),
               HasCloseSignal<Dialog>(this),
               _content_area(GTK_BOX(gtk_dialog_get_content_area(get_native()))),
               _action_area(GTK_ORIENTATION_HORIZONTAL)
