@@ -117,7 +117,7 @@ namespace mousetrap
 
     InfoMessageType InfoMessage::get_message_type()
     {
-        (InfoMessageType) gtk_info_bar_get_message_type(get_native());
+        return (InfoMessageType) gtk_info_bar_get_message_type(get_native());
     }
 
     void InfoMessage::add_child(Widget* widget)

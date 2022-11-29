@@ -22,17 +22,11 @@ namespace mousetrap
             return true;
         }, this);
 
+        _click_controller.connect_signal_click_pressed(on_click_pressed, this);
+        _click_controller.connect_signal_click_released(on_click_released, this);
+        _area.add_controller(&_click_controller);
+
         _overlay.set_child(&_area);
-
-        auto* button = new Button();
-        button->connect_signal_clicked([](Button*, BrushCursorLayer* instance){
-
-            std::cout << "recompiling..." << std::endl;
-            if (instance->_brush_outline_shader != nullptr)
-                instance->_brush_outline_shader->create_from_file(get_resource_path() + "shaders/brush_outline.frag", ShaderType::FRAGMENT);
-        }, this);
-        button->set_align(GTK_ALIGN_END);
-        _overlay.add_overlay(button);
     }
 
     Canvas::BrushCursorLayer::operator Widget*()
@@ -97,8 +91,15 @@ namespace mousetrap
             state::primary_color.v,
             state::brush_opacity
         );
+        auto outline_color = HSVA(0, 0, cursor_color.v > 0.5 ? 0 : 1, brush_cursor_color_alpha);
 
-        _cursor_shape->set_color(cursor_color.operator RGBA());
+        if (state::active_tool == ERASER)
+        {
+            cursor_color = HSVA(0, 0, 1, 0.25);
+            outline_color = HSVA(0, 0, 0, 1);
+        }
+
+        _cursor_shape->set_color(cursor_color);
 
         auto vertices = state::current_brush->get_outline_vertices();
         auto texture_size = state::current_brush->get_texture()->get_size();
@@ -130,7 +131,6 @@ namespace mousetrap
         _cursor_outline_shape_hlines->as_lines(outline_vertices_h);
         _cursor_outline_shape_vlines->as_lines(outline_vertices_v);
 
-        auto outline_color = HSVA(0, 0, cursor_color.v > 0.5 ? 0 : 1, brush_cursor_color_alpha);
 
         _cursor_outline_shape_hlines->set_color(outline_color);
         _cursor_outline_shape_vlines->set_color(outline_color);
@@ -199,6 +199,9 @@ namespace mousetrap
 
         instance->_owner->set_current_pixel_position(x_dist, y_dist);
 
+        if (instance->_click_active)
+            instance->_owner->draw_brush(x_dist, y_dist, state::current_brush);
+
         pos.x = layer_top_left.x + x_dist * pixel_size.x;
         pos.y = layer_top_left.y + y_dist * pixel_size.y;
 
@@ -251,5 +254,20 @@ namespace mousetrap
         instance->_cursor_outline_shape_hlines->set_visible(false);
         instance->_cursor_outline_shape_vlines->set_visible(false);
         instance->_area.queue_render();
+    }
+
+    void Canvas::BrushCursorLayer::on_click_pressed(ClickEventController*, size_t n, double x, double y,
+                                                    BrushCursorLayer* instance)
+    {
+        instance->_click_active = true;
+
+        auto pos = instance->_owner->get_current_pixel_position();
+        instance->_owner->draw_brush(pos.x, pos.y, state::current_brush);
+    }
+
+    void Canvas::BrushCursorLayer::on_click_released(ClickEventController*, size_t n, double x, double y,
+                                                    BrushCursorLayer* instance)
+    {
+        instance->_click_active = false;
     }
 }

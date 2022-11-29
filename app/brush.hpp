@@ -7,6 +7,8 @@
 
 #include <mousetrap.hpp>
 
+#include <app/settings_files.hpp>
+
 namespace mousetrap
 {
     class Brush
@@ -20,18 +22,23 @@ namespace mousetrap
 
             Texture* get_texture();
             const Image& get_base_image();
+            const Image& get_image();
 
             const std::string& get_name();
             const std::deque<std::pair<Vector2i, Vector2i>>& get_outline_vertices();
 
+            size_t get_base_size() const;
+
             /// \brief update texture as scaled version of base image
             void set_size(size_t px);
-            size_t get_size() const;
+            size_t get_size();
 
         private:
-            static inline const float alpha_eps = 0.00001; // lowest alpha value that is still registered as non-transparent
+            float alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
 
+            size_t _size;
             Image _image;
+            Image _image_scaled;
             Texture* _texture = nullptr;
             std::string _name;
 
@@ -73,7 +80,6 @@ namespace mousetrap
             name << file.get_name().at(i);
 
         create_from_image(image, name.str());
-
         return true;
     }
 
@@ -108,6 +114,7 @@ namespace mousetrap
         _texture->create_from_image(image);
 
         _name = name;
+        _size = get_base_size();
     }
 
     Texture* Brush::get_texture()
@@ -118,6 +125,14 @@ namespace mousetrap
     const Image& Brush::get_base_image()
     {
         return _image;
+    }
+
+    const Image& Brush::get_image()
+    {
+        if (_size == get_base_size())
+            return _image;
+        else
+            return _image_scaled;
     }
 
     const std::string& Brush::get_name()
@@ -132,6 +147,11 @@ namespace mousetrap
 
     void Brush::set_size(size_t px)
     {
+        if (_size == px)
+            return;
+
+        _size = px;
+
         int w = _image.get_size().x;
         int h = _image.get_size().y;
 
@@ -153,24 +173,24 @@ namespace mousetrap
             new_h = px;
         }
 
-        Image scaled = _image.as_scaled(new_w, new_h);
+        _image_scaled = _image.as_scaled(new_w, new_h);
 
         // prevent brush going invisible because of artifacting
-        for (size_t x = 0; x < scaled.get_size().x; ++x)
-            for (size_t y = 0; y < scaled.get_size().y; ++y)
-                if (scaled.get_pixel(x, y).a > alpha_eps)
+        for (size_t x = 0; x < _image_scaled.get_size().x; ++x)
+            for (size_t y = 0; y < _image_scaled.get_size().y; ++y)
+                if (_image_scaled.get_pixel(x, y).a > alpha_eps)
                     goto skip_artifact_fix;
 
-        for (size_t i = 0; i < scaled.get_n_pixels(); ++i)
-            scaled.set_pixel(i, RGBA(1, 1, 1, 1));
+        for (size_t i = 0; i < _image_scaled.get_n_pixels(); ++i)
+            _image_scaled.set_pixel(i, RGBA(1, 1, 1, 1));
 
         skip_artifact_fix:
 
-        _texture->create_from_image(scaled);
-        generate_outline_vertices(scaled);
+        _texture->create_from_image(_image_scaled);
+        generate_outline_vertices(_image_scaled);
     }
 
-    size_t Brush::get_size() const
+    size_t Brush::get_base_size() const
     {
         return std::min(_image.get_size().x, _image.get_size().y);
     }

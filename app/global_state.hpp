@@ -21,6 +21,7 @@
 #include <app/palette.hpp>
 #include <app/brush.hpp>
 #include <app/tools.hpp>
+#include <app/settings_files.hpp>
 
 namespace mousetrap::state
 {
@@ -31,9 +32,6 @@ namespace mousetrap::state
     Window* main_window = nullptr;
     Application* app = nullptr;
     MenuModel* global_menu_bar_model = nullptr;
-    ConfigFile* settings_file = nullptr;
-    ConfigFile* keybindings_file = nullptr;
-    ConfigFile* tooltips_file = nullptr;
 
     // ### COLORS #####################################
 

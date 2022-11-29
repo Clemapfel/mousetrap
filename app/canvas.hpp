@@ -22,7 +22,12 @@ namespace mousetrap
             void set_transform_scale(float);
 
             void set_current_pixel_position(int x, int y);
+            Vector2i get_current_pixel_position();
+
             void update_brush_cursor();
+
+            void draw_point(size_t x, size_t y, RGBA color);
+            void draw_brush(size_t x, size_t y, Brush*);
 
         private:
             Vector2f _transform_offset = {0, 0};
@@ -117,6 +122,7 @@ namespace mousetrap
                     ~LayersLayer();
 
                     operator Widget*();
+                    void refresh();
 
                 private:
                     void initialize();
@@ -132,7 +138,7 @@ namespace mousetrap
             };
             LayersLayer _layers_layer = LayersLayer(this);
 
-            // PIXEL HIGHLIGHT
+            // BRUSH
 
             class BrushCursorLayer : public CanvasLayer
             {
@@ -166,6 +172,11 @@ namespace mousetrap
                     static void on_motion_enter(MotionEventController*, double x, double y, BrushCursorLayer* instance);
                     static void on_motion_leave(MotionEventController*, BrushCursorLayer* instance);
                     static void on_motion(MotionEventController*, double x, double y, BrushCursorLayer* instance);
+
+                    ClickEventController _click_controller;
+                    bool _click_active;
+                    static void on_click_pressed(ClickEventController*, size_t n, double x, double y, BrushCursorLayer* instance);
+                    static void on_click_released(ClickEventController*, size_t n, double x, double y, BrushCursorLayer* instance);
             };
             BrushCursorLayer _brush_cursor_layer = BrushCursorLayer(this);
 
@@ -423,9 +434,32 @@ namespace mousetrap
         _selected_pixel = {x, y};
     }
 
+    Vector2i Canvas::get_current_pixel_position()
+    {
+        return _selected_pixel;
+    }
+
     void Canvas::update_brush_cursor()
     {
         _brush_cursor_layer.update();
+    }
+
+    void Canvas::draw_point(size_t x, size_t y, RGBA color)
+    {
+        auto frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
+        frame.draw_pixel({x, y}, color);
+        frame.update_texture();
+
+        _layers_layer.refresh();
+    }
+
+    void Canvas::draw_brush(size_t x, size_t y, Brush* brush)
+    {
+        auto frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
+        frame.draw_image({x, y}, brush->get_image());
+        frame.update_texture();
+
+        _layers_layer.refresh();
     }
 
     void Canvas::update()

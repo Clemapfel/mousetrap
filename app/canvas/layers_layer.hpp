@@ -17,6 +17,11 @@ namespace mousetrap
         return &_area;
     }
 
+    void Canvas::LayersLayer::refresh()
+    {
+        _area.queue_render();
+    }
+
     Canvas::LayersLayer::~LayersLayer()
     {
         for (auto* shape : _layer_shapes)
@@ -39,10 +44,10 @@ namespace mousetrap
         for (size_t layer_i = 0; layer_i < state::layers.size(); ++layer_i)
         {
             auto task = RenderTask(
-                    instance->_layer_shapes.at(layer_i),
-                    nullptr,
-                    instance->_owner->_transform,
-                    state::layers.at(layer_i)->blend_mode
+                instance->_layer_shapes.at(layer_i),
+                nullptr,
+                instance->_owner->_transform,
+                state::layers.at(layer_i)->blend_mode
             );
 
             instance->_area.add_render_task(task);
@@ -62,7 +67,6 @@ namespace mousetrap
         float width = state::layer_resolution.x / _canvas_size->x;
         float height = state::layer_resolution.y / _canvas_size->y;
 
-        size_t frame_i = state::current_frame;
         for (size_t layer_i = 0; layer_i < state::layers.size(); ++layer_i)
         {
             auto& layer = state::layers.at(layer_i);
@@ -72,7 +76,7 @@ namespace mousetrap
                 {0.5 - width / 2, 0.5 - height / 2},
                 {width, height}
             );
-            shape->set_texture(layer->frames.at(frame_i).texture);
+            shape->set_texture(layer->frames.at(state::current_frame).texture);
         }
 
         _area.queue_render();

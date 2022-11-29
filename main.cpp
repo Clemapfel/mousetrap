@@ -232,19 +232,6 @@ static void activate(GtkApplication* app, void*)
     left_center_paned->set_end_child(center_right_paned);
     center_right_paned->set_start_child(center_column);
     center_right_paned->set_end_child(right_column);
-
-    left_center_paned->set_start_child_shrinkable(true);
-    left_center_paned->set_end_child_shrinkable(false);
-    left_center_paned->set_start_child_resizable(true);
-    left_center_paned->set_end_child_resizable(true);
-
-    left_center_paned->set_has_wide_handle(true);
-
-    center_right_paned->set_start_child_shrinkable(false);
-    center_right_paned->set_end_child_shrinkable(false);
-    center_right_paned->set_start_child_resizable(true);
-    center_right_paned->set_end_child_resizable(true);
-
     center_right_paned->set_has_wide_handle(true);
 
     left_center_paned->set_hexpand(false);
@@ -324,7 +311,7 @@ static void activate(GtkApplication* app, void*)
 
     right_column_paned->set_start_child(right_column_paned_top);
     right_column_paned->set_start_child_shrinkable(true);
-    right_column_paned->set_end_child_shrinkable(false);
+    right_column_paned->set_end_child_shrinkable(true);
     right_column_paned->set_has_wide_handle(true);
     right_column_paned->set_vexpand(false);
     right_column_paned->set_valign(GTK_ALIGN_END);
@@ -352,22 +339,17 @@ static void activate(GtkApplication* app, void*)
     all_columns->push_back(left_center_paned);
 
     bubble_log->set_margin(2 * state::margin_unit);
-    bubble_log->set_hexpand(false);
-    bubble_log->set_vexpand(true);
-    bubble_log->set_halign(GTK_ALIGN_END);
+    bubble_log->set_align(GTK_ALIGN_END);
+    bubble_log->set_size_request({100, 100});
 
     auto* main = new Overlay();
     main->set_child(all_columns);
-
-    auto* log_window = new ScrolledWindow();
-    log_window->set_halign(GTK_ALIGN_END);
-    log_window->set_propagate_natural_width(true);
-    log_window->set_policy(GTK_POLICY_NEVER, GTK_POLICY_NEVER);
-    log_window->set_child(bubble_log);
-    main->add_overlay(log_window);
+    main->add_overlay(bubble_log);
 
     auto* tt = new ShortcutInformation();
     tt->create_from_group("palette_view", state::keybindings_file);
+
+    left_center_paned->set_position(left_column->get_preferred_size().natural_size.x);
 
     state::main_window->set_child(main);
     state::main_window->show();

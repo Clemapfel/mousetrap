@@ -444,7 +444,7 @@ namespace mousetrap
 
         std::stringstream label_text;
         label_text << "<span font_scale=\"subscript\" bgcolor=\"black\" bgalpha=\"50%\" fgcolor=\"white\">";
-        label_text << std::to_string(_brush->get_size()) << "</span>";
+        label_text << std::to_string(_brush->get_base_size()) << "</span>";
         _size_label.set_text(label_text.str());
 
         if (_texture != nullptr)
@@ -509,7 +509,7 @@ namespace mousetrap
         instance->_size_spin_button.set_signal_value_changed_blocked(true);
         instance->_size_scale.set_signal_value_changed_blocked(true);
 
-        auto size = state::current_brush->get_size();
+        auto size = state::current_brush->get_base_size();
 
         instance->_size_spin_button.set_value(size);
         instance->_size_scale.set_value(size);

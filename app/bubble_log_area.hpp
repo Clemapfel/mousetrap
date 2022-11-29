@@ -45,7 +45,7 @@ namespace mousetrap
 
             Adjustment _scrolled_window_vadjustment;
             ScrolledWindow _scrolled_window;
-            Box _box = Box(GTK_ORIENTATION_VERTICAL, state::margin_unit);
+            FlowBox _box;
             SeparatorLine _spacer;
 
             static inline size_t _current_id = 0;

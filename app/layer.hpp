@@ -6,7 +6,10 @@
 #pragma once
 
 #include <include/texture.hpp>
+
 #include <app/global_state.hpp>
+#include <app/brush.hpp>
+#include <app/settings_files.hpp>
 
 namespace mousetrap
 {
@@ -19,6 +22,10 @@ namespace mousetrap
             Image* image;
             Texture* texture;
             bool is_tween_repeat = false;
+
+            void draw_pixel(Vector2i, RGBA);
+            void draw_image(Vector2i centroid, const Image&);
+            void update_texture();
         };
 
         std::deque<Frame> frames = std::deque<Frame>();
@@ -32,121 +39,34 @@ namespace mousetrap
 
 /// ###
 
-/*
-namespace mousetrap::state
+namespace mousetrap
 {
-    Layer* new_layer(const std::string& name, Layer* after)
+    void Layer::Frame::draw_pixel(Vector2i xy, RGBA color)
     {
-        if (n_frames == 0)
-            n_frames = 1;
-
-        auto after_pos = state::layers.begin();
-        for (; after != nullptr and after_pos != state::layers.end(); ++after_pos)
-            if (*after_pos == after)
-                break;
-
-        auto it = layers.insert(after_pos, new Layer{name});
-        Layer* layer = *it;
-
-        for (size_t i = 0; i < n_frames; ++i)
-        {
-            layer->frames.emplace_back();
-            layer->frames.back().image = new Image();
-            layer->frames.back().texture = new Texture();
-            layer->frames.back().image->create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 1, 1, 0));
-            layer->frames.back().texture->create_from_image(*layer->frames.back().image);
-        }
-
-        return layer;
+        if (xy.x >= 0 and xy.x < image->get_size().x and xy.y >= 0 and xy.y < image->get_size().y)
+            image->set_pixel(xy.x, xy.y, color);
     }
 
-    void state::new_frame(size_t index)
+    void Layer::Frame::draw_image(Vector2i pos, const Image& image)
     {
-        if (index > n_frames)
-        {
-            std::cout << "[ERROR] In state::new_frame: Attempting to insert frame at position " << index << " but there are only " << n_frames << " frames" << std::endl;
-            return;
-        }
+        static float alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
 
-        for (auto& layer : state::layers)
-        {
-            auto it = layer->frames.emplace(layer->frames.begin() + index);
-            it->image->create(state::layer_resolution.x, state::layer_resolution.y, RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1));
-            it->texture->create_from_image(*it->image);
-        }
+        auto x_start = pos.x - image.get_size().x / 2;
+        auto y_start = pos.y - image.get_size().y / 2;
 
-        n_frames += 1;
-    }
-
-    void state::delete_layer(Layer* ptr)
-    {
-        for (auto it = state::layers.begin(); it != state::layers.end(); ++it)
+        for (size_t x = x_start; x < x_start + image.get_size().x; ++x)
         {
-            if (*it == ptr)
+            for (size_t y = y_start; y < y_start + image.get_size().y; ++y)
             {
-                state::layers.erase(it);
-                return;
+                auto color = image.get_pixel(x - x_start, y - y_start);
+                if (color.a > alpha_eps)
+                    draw_pixel({x, y}, color);
             }
         }
-
-        std::cout << "[ERROR] In state::delete_layer: Attempting to delete Layer " << ptr->name << " but it is not in the global state." << std::endl;
     }
 
-    void state::delete_frame(size_t index)
+    void Layer::Frame::update_texture()
     {
-        if (index > n_frames)
-        {
-            std::cout << "[ERROR] In state::delete_frame: Attempting to delete frame with index " << index
-                      << " but there are only " << n_frames << " frames." << std::endl;
-            return;
-        }
-
-        for (auto& layer : layers)
-            layer->frames.erase(layer->frames.begin() + index);
-
-        n_frames -= 1;
-    }
-
-
-    /*
-
-    Layer* state::new_layer(RGBA color)
-    {
-        auto image = Image();
-        image.create(state::layer_resolution.x, state::layer_resolution.y, color);
-        return new_layer(image);
-    }
-
-    Layer* state::new_layer(const Image& image)
-    {
-        auto out = new Layer();
-
-        //float width = state::layer_resolution.x;
-        //float height = state::layer_resolution.y;
-
-        auto image_size = Vector2ui(image.get_size().x, image.get_size().y);
-
-        if (image_size == state::layer_resolution)
-            ((Texture*) out->texture)->create_from_image(image);
-        else
-        {
-            auto image_padded = Image();
-            image_padded.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(0, 0, 0, 0));
-
-            for (size_t x = 0; x < std::min<size_t>(state::layer_resolution.x, image.get_size().x); ++x)
-                for (size_t y = 0; y < std::min<size_t>(state::layer_resolution.y, image.get_size().y); ++y)
-                    image_padded.set_pixel(x, y, image.get_pixel(x, y));
-
-            ((Texture*) out->texture)->create_from_image(image_padded);
-        }
-
-        return out;
-    }
-
-    Layer* state::new_layer(Layer* layer)
-    {
-        return new Layer(*layer);
+        texture->create_from_image(*image);
     }
 }
-
- */
