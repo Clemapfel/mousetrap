@@ -30,7 +30,6 @@ using namespace mousetrap;
 void initialize_debug_layers()
 {
     state::layer_resolution = {50, 50};
-
     state::layers.emplace_back(new Layer{"number"});
 
     /*
@@ -66,6 +65,8 @@ void initialize_debug_layers()
             frame.texture = new Texture();
             frame.texture->create_from_image(*frame.image);
             frame_i += 1;
+
+            frame.draw_rectangle({2, 2}, {40, 40}, 5, RGBA(0, 0, 0, 1));
         }
 
         state::n_frames = layer->frames.size();
