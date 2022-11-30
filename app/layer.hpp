@@ -58,49 +58,63 @@ namespace mousetrap
 {
     std::vector<Vector2i> get_line_points(Vector2i a, Vector2i b)
     {
+        std::vector<Vector2i> out = {};
+
+        if (a.x == b.x)
+        {
+            auto y_min = std::min(a.y, b.y);
+            auto y_max = std::max(a.y, b.y);
+            out.reserve(y_max - y_min);
+
+            for (int y = y_min; y < y_max; ++y)
+                out.push_back({a.x, y});
+
+            return out;
+        }
+        else if (a.y == b.x)
+        {
+            auto x_min = std::min(a.x, b.x);
+            auto x_max = std::max(a.x, b.x);
+            out.reserve(x_max - x_min);
+
+            for (int x = x_min; x < x_max; ++x)
+                out.push_back({x, a.y});
+
+            return out;
+        }
+
+        // source:
+        //  [1] https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)
+        //  [2] https://www.cs.virginia.edu/luther/blog/posts/492.html
+
         float x1 = a.x;
         float x2 = b.x;
         float y1 = a.y;
         float y2 = b.y;
 
-        std::vector<Vector2i> out = {a, b};
-
-        if (x2 == x1)
-        {
-            for (int y = std::min(y1, y2); y < std::max(y1, y2); ++y)
-                out.push_back({x1, y});
-
-            return out;
-        }
-        else if (y2 == y1)
-        {
-            for (int x = std::min(x1, x2); x < std::max(x1, x2); ++x)
-                out.push_back({x, y1});
-
-            return out;
-        }
-
         float dx = x2 - x1;
         float dy = y2 - y1;
-
         float slope = dy / dx;
-        float intercept = x1 * slope - y1;
+
+        auto n_steps = std::max(abs(dx), abs(dy));
+        out.reserve(n_steps);
+
+        const int eps = 10e4; // project into int range to avoid float precision resulting in non-deterministic results
 
         if (abs(dx) > abs(dy))
         {
             float x_step = x1 < x2 ? 1 : -1;
             float y_step = slope * x_step;
+
             float y = y1;
             float x = x1;
 
-            auto n_steps = std::max(abs(dx), abs(dy));
-
             for (size_t step = 0; step < n_steps; ++step)
             {
-                if (glm::fract(y) > 0.5)
-                    out.push_back({x, ceil(y)});
+                if (int(glm::fract(y) * eps) >= eps / 2)
+                    out.emplace_back(x, int(y+1));
                 else
-                    out.push_back({x, floor(y)});
+                    out.emplace_back(x, int(y));
 
                 x += x_step;
                 y += y_step;
@@ -114,14 +128,12 @@ namespace mousetrap
             float x = x1;
             float y = y1;
 
-            auto n_steps = std::max(abs(dx), abs(dy));
-
             for (size_t step = 0; step < n_steps; ++step)
             {
-                if (glm::fract(x) > 0.5)
-                    out.push_back({ceil(x), y});
+                if (int(glm::fract(x) * eps) >= eps / 2)
+                    out.emplace_back(int(x+1), y);
                 else
-                    out.push_back({floor(x), y});
+                    out.emplace_back(int(x), y);
 
                 x += x_step;
                 y += y_step;
