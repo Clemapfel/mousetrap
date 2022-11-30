@@ -80,39 +80,52 @@ namespace mousetrap
             return out;
         }
 
-        float slope = (y2 - y1) / float(x2 - x1);
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+
+        float slope = dy / dx;
         float intercept = x1 * slope - y1;
 
-        float w = abs(x2 - x1);
-        float h = abs(y2 - y1);
-        float n_pixels = std::max(w, h);
-
-        float x_step = w / n_pixels;
-        float y_step = h / n_pixels;
-
-        float x = x1;
-        float y = y1;
-
-        size_t step_i = 0;
-        while (step_i < n_pixels)
+        if (abs(dx) > abs(dy))
         {
-            Vector2i to_push;
+            float x_step = x1 < x2 ? 1 : -1;
+            float y_step = slope * x_step;
+            float y = y1;
+            float x = x1;
 
-            if (glm::fract(x) > 0.5)
-                to_push.x = ceil(x);
-            else
-                to_push.x = floor(x);
+            auto n_steps = std::max(abs(dx), abs(dy));
 
-            if (glm::fract(y) > 0.5)
-                to_push.y = ceil(y);
-            else
-                to_push.y = floor(y);
+            for (size_t step = 0; step < n_steps; ++step)
+            {
+                if (glm::fract(y) > 0.5)
+                    out.push_back({x, ceil(y)});
+                else
+                    out.push_back({x, floor(y)});
 
-            out.push_back(to_push);
+                x += x_step;
+                y += y_step;
+            }
+        }
+        else
+        {
+            float y_step = y1 < y2 ? 1 : -1;
+            float x_step = (1 / slope) * y_step;
 
-            x += x_step;
-            y += y_step;
-            step_i += 1;
+            float x = x1;
+            float y = y1;
+
+            auto n_steps = std::max(abs(dx), abs(dy));
+
+            for (size_t step = 0; step < n_steps; ++step)
+            {
+                if (glm::fract(x) > 0.5)
+                    out.push_back({ceil(x), y});
+                else
+                    out.push_back({floor(x), y});
+
+                x += x_step;
+                y += y_step;
+            }
         }
 
         return out;
