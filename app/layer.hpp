@@ -13,6 +13,8 @@
 
 namespace mousetrap
 {
+    std::vector<Vector2i> get_line_points(Vector2i start, Vector2i end);
+
     struct Layer
     {
         std::string name;
@@ -26,7 +28,18 @@ namespace mousetrap
             void draw_pixel(Vector2i, RGBA);
             void draw_image(Vector2i centroid, const Image&);
             void draw_line(Vector2i start, Vector2i end, RGBA);
-            void draw_rectangle(Vector2i top_left, Vector2i bottom_right, size_t px, RGBA);
+
+            void draw_rectangle_filled(Vector2i top_left, Vector2i bottom_right, RGBA);
+            void draw_rectangle(Vector2i top_left, Vector2i bottom_right, RGBA, size_t px = 1);
+
+            void draw_polygon(const std::vector<Vector2i>& points, RGBA);
+            void draw_polygon_filled(const std::vector<Vector2i>& points, RGBA);
+
+            /// \param aabb_top_left: bounding box top left pixel coordinate
+            /// \param aabb_bottom_right: bounding box bottom right pixel coordinate
+            void draw_ellipse(Vector2i aabb_top_left, Vector2i aabb_bottom_right, RGBA);
+            void draw_ellipse_filled(Vector2i aabb_top_left, Vector2i aabb_bottom_right, RGBA);
+
             void update_texture();
         };
 
@@ -43,6 +56,26 @@ namespace mousetrap
 
 namespace mousetrap
 {
+    std::vector<Vector2i> get_line_points(Vector2i a, Vector2i b)
+    {
+        auto x1 = std::min(a.x, b.x);
+        auto x2 = std::max(a.y, b.y);
+        auto y1 = std::min(a.x, b.x);
+        auto y2 = std::max(a.y, b.y);
+
+        float slope = (y2 - y1) / float(x2 - x1);
+        float intercept = y1 - x1 * slope;
+
+        std::vector<Vector2i> out;
+
+        for (size_t x = x1; x < x2; ++x)
+            for (size_t y = y1; y < y2; ++y)
+                if (abs((x * slope + intercept) - y) < 0.5)
+                    out.push_back({x, y});
+
+        return out;
+    }
+
     void Layer::Frame::draw_pixel(Vector2i xy, RGBA color)
     {
         if (xy.x >= 0 and xy.x < image->get_size().x and xy.y >= 0 and xy.y < image->get_size().y)
@@ -69,12 +102,57 @@ namespace mousetrap
 
     void Layer::Frame::draw_line(Vector2i start, Vector2i end, RGBA color)
     {
-        for (size_t x = start.x; x < end.x; ++x)
-            for (size_t y = start.y; x < end.y; ++y)
-                draw_pixel({x, y}, color);
+        for (auto& pos : get_line_points(start, end))
+            draw_pixel(pos, color);
     }
 
-    void Layer::Frame::draw_rectangle(Vector2i top_left, Vector2i bottom_right, size_t px, RGBA color)
+    void Layer::Frame::draw_polygon(const std::vector<Vector2i>& points, RGBA color)
+    {
+        for (size_t i = 0; i < points.size(); ++i)
+            for (auto& pos : get_line_points(points.at(i), points.at(i+1)))
+                draw_pixel(pos, color);
+
+        for (auto& pos : get_line_points(points.back(), points.front()))
+            draw_pixel(pos, color);
+    }
+
+    void Layer::Frame::draw_polygon_filled(const std::vector<Vector2i>& points, RGBA color)
+    {
+        // degenerate area into horizontal bands
+
+        struct Bounds
+        {
+            int64_t min;
+            int64_t max;
+        };
+
+        std::map<int, Bounds> coords;
+        auto add_point = [&](const Vector2i& pos) -> void
+        {
+            auto it = coords.find(pos.y);
+            if (it == coords.end())
+                coords.insert({pos.y, Bounds{pos.x, pos.x}});
+            else
+            {
+                auto& bounds = it->second;
+                bounds.min = std::min<int>(bounds.min, pos.x);
+                bounds.max = std::max<int>(bounds.max, pos.x);
+            }
+        };
+
+        for (size_t i = 0; i < points.size(); ++i)
+            for (auto& pos : get_line_points(points.at(i), points.at(i+1)))
+                add_point(pos);
+
+        for (auto& pos : get_line_points(points.back(), points.front()))
+            add_point(pos);
+
+        for (auto& pair : coords)
+            for (size_t x = pair.second.min; x < pair.second.max; ++x)
+                draw_pixel({x, pair.first}, color);
+    }
+
+    void Layer::Frame::draw_rectangle(Vector2i top_left, Vector2i bottom_right, RGBA color, size_t px)
     {
         // guaranteed to only call draw_pixel the minimum number of times, no matter the input
 
@@ -117,6 +195,30 @@ namespace mousetrap
         for (auto i = x + w - x_m; y_m != h / 2 and i < x + w; ++i)
             for (auto j = y + y_m; j < y + h - y_m; ++j)
                 draw_pixel({i, j}, color);
+    }
+
+    void Layer::Frame::draw_rectangle_filled(Vector2i top_left, Vector2i bottom_right, RGBA color)
+    {
+        auto min_x = std::min(top_left.x, bottom_right.x);
+        auto min_y = std::min(top_left.y, bottom_right.y);
+        auto max_x = std::max(top_left.x, bottom_right.x);
+        auto max_y = std::max(top_left.y, bottom_right.y);
+
+        if (min_x < 0)
+            min_x = 0;
+
+        if (min_y < 0)
+            min_y = 0;
+
+        if (max_x >= image->get_size().x - 1)
+            max_x = image->get_size().x - 1;
+
+        if (max_y >= image->get_size().y - 1)
+            max_y = image->get_size().y - 1;
+
+        for (size_t x = min_x; x < max_x; ++x)
+            for (size_t y = min_y; y < max_y; ++y)
+                draw_pixel({x, y}, color);
     }
 
     void Layer::Frame::update_texture()

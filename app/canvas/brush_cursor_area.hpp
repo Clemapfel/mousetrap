@@ -197,10 +197,15 @@ namespace mousetrap
         x_dist = floor(x_dist);
         y_dist = floor(y_dist);
 
-        instance->_owner->set_current_pixel_position(x_dist, y_dist);
+        auto previous_pixel_pos = instance->_owner->get_current_pixel_position();
+        auto current_pixel_pos = Vector2i{x_dist, y_dist};
+        instance->_owner->set_current_pixel_position(current_pixel_pos.x, current_pixel_pos.y);
 
         if (instance->_click_active)
-            instance->_owner->draw_brush(x_dist, y_dist, state::current_brush);
+        {
+            for (auto pos : get_line_points(previous_pixel_pos, current_pixel_pos))
+                instance->_owner->draw_brush(pos.x, pos.y, state::current_brush);
+        }
 
         pos.x = layer_top_left.x + x_dist * pixel_size.x;
         pos.y = layer_top_left.y + y_dist * pixel_size.y;
