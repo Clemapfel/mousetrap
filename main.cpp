@@ -65,8 +65,6 @@ void initialize_debug_layers()
             frame.texture = new Texture();
             frame.texture->create_from_image(*frame.image);
             frame_i += 1;
-
-            frame.draw_rectangle({2, 2}, {40, 40}, 5, RGBA(0, 0, 0, 1));
         }
 
         state::n_frames = layer->frames.size();
@@ -185,6 +183,7 @@ static void activate(GtkApplication* app, void*)
     auto* color_preview = state::color_preview->operator Widget*();
     auto* bubble_log = state::bubble_log->operator Widget*();
 
+    /*
     layer_view->set_valign(GTK_ALIGN_END);
     verbose_color_picker->set_margin(state::margin_unit);
     color_preview->set_margin(state::margin_unit);
@@ -351,8 +350,15 @@ static void activate(GtkApplication* app, void*)
     tt->create_from_group("palette_view", state::keybindings_file);
 
     left_center_paned->set_position(left_column->get_preferred_size().natural_size.x);
-
     state::main_window->set_child(main);
+     */
+
+    auto* box = new Box(GTK_ORIENTATION_HORIZONTAL);
+    box->push_back(palette_view);
+    box->push_back(canvas);
+
+    canvas->set_size_request({500, 500});
+    state::main_window->set_child(box);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

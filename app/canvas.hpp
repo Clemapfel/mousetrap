@@ -177,6 +177,8 @@ namespace mousetrap
                     bool _click_active;
                     static void on_click_pressed(ClickEventController*, size_t n, double x, double y, BrushCursorLayer* instance);
                     static void on_click_released(ClickEventController*, size_t n, double x, double y, BrushCursorLayer* instance);
+
+                    Vector2i widget_to_texture_coords(Vector2f);
             };
             BrushCursorLayer _brush_cursor_layer = BrushCursorLayer(this);
 
@@ -456,7 +458,7 @@ namespace mousetrap
     void Canvas::draw_brush(size_t x, size_t y, Brush* brush)
     {
         auto frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
-        frame.draw_image({x, y}, brush->get_image());
+        frame.draw_image({x, y}, brush->get_image(), state::primary_color);
         frame.update_texture();
 
         _layers_layer.refresh();

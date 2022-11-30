@@ -26,7 +26,7 @@ namespace mousetrap
             bool is_tween_repeat = false;
 
             void draw_pixel(Vector2i, RGBA);
-            void draw_image(Vector2i centroid, const Image&);
+            void draw_image(Vector2i centroid, const Image&, RGBA multiplication = RGBA(1, 1, 1, 1));
             void draw_line(Vector2i start, Vector2i end, RGBA);
 
             void draw_rectangle_filled(Vector2i top_left, Vector2i bottom_right, RGBA);
@@ -58,20 +58,38 @@ namespace mousetrap
 {
     std::vector<Vector2i> get_line_points(Vector2i a, Vector2i b)
     {
-        auto x1 = std::min(a.x, b.x);
-        auto x2 = std::max(a.y, b.y);
-        auto y1 = std::min(a.x, b.x);
-        auto y2 = std::max(a.y, b.y);
+        float x1 = a.x;
+        float x2 = b.x;
+        float y1 = a.y;
+        float y2 = b.y;
+
+        std::vector<Vector2i> out = {a, b};
+
+        if (x2 == x1)
+        {
+            for (size_t y = std::min(y1, y2); y < std::max(y1, y2); ++y)
+                out.push_back({x1, y});
+            return out;
+        }
+        else if (y2 == y1)
+        {
+            for (size_t x = std::min(x1, x2); x < std::max(x1, x2); ++x)
+                out.push_back({x, y1});
+            return out;
+        }
 
         float slope = (y2 - y1) / float(x2 - x1);
-        float intercept = y1 - x1 * slope;
+        float intercept = x1 * slope - y1;
 
-        std::vector<Vector2i> out;
-
-        for (size_t x = x1; x < x2; ++x)
-            for (size_t y = y1; y < y2; ++y)
-                if (abs((x * slope + intercept) - y) < 0.5)
+        float eps = state::tooltips_file->get_value_as<float>("TODO", "line_eps");
+        for (size_t x = std::min(x1, x2); x < std::max(x1, x2); ++x)
+        {
+            for (size_t y = std::min(y1, y2); y < std::max(y1, y2); ++y)
+            {
+                if (abs(y - x * slope + intercept) < eps)
                     out.push_back({x, y});
+            }
+        }
 
         return out;
     }
@@ -82,7 +100,7 @@ namespace mousetrap
             image->set_pixel(xy.x, xy.y, color);
     }
 
-    void Layer::Frame::draw_image(Vector2i pos, const Image& image)
+    void Layer::Frame::draw_image(Vector2i pos, const Image& image, RGBA multiplication)
     {
         static float alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
 
@@ -95,7 +113,12 @@ namespace mousetrap
             {
                 auto color = image.get_pixel(x - x_start, y - y_start);
                 if (color.a > alpha_eps)
-                    draw_pixel({x, y}, color);
+                    draw_pixel({x, y}, RGBA(
+                        color.r * multiplication.r,
+                        color.g * multiplication.g,
+                        color.b * multiplication.b,
+                        color.a * multiplication.a
+                    ));
             }
         }
     }
