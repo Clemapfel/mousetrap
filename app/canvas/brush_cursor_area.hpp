@@ -296,7 +296,6 @@ namespace mousetrap
         auto current = Vector2i(x_dist, y_dist);
 
         auto points = get_line_points(previous, current);
-        std::cout << previous.x << " " << previous.y << " -> " << current.x << " " << current.y << " : " << points.size() << std::endl;
         for (auto local : points)
             instance->_owner->draw_point(local.x, local.y, state::primary_color);
 
