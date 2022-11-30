@@ -83,115 +83,37 @@ namespace mousetrap
         float slope = (y2 - y1) / float(x2 - x1);
         float intercept = x1 * slope - y1;
 
-        int x_min = std::min(x1, x2);
-        int x_max = std::max(x1, x2);
-        int y_min = std::min(y1, y2);
-        int y_max = std::max(y1, y2);
+        float w = abs(x2 - x1);
+        float h = abs(y2 - y1);
+        float n_pixels = std::max(w, h);
 
-        float eps = state::tooltips_file->get_value_as<float>("TODO", "line_eps");
+        float x_step = w / n_pixels;
+        float y_step = h / n_pixels;
 
-        std::map<int, std::vector<int>> x_to_y;
-        std::map<int, std::vector<int>> y_to_x;
+        float x = x1;
+        float y = y1;
 
-        for (size_t x = x_min; x <= x_max; ++x)
-            x_to_y.insert({x, {}});
-
-        for (size_t y = y_min; y <= y_max; ++y)
-            y_to_x.insert({y, {}});
-
-        float current_eps = eps;
-
-        bool x_to_y_full = false;
-        bool y_to_x_full = false;
-
-        size_t n_loops = 0;
-        while (true)
+        size_t step_i = 0;
+        while (step_i < n_pixels)
         {
-            for (int x = x_min; x <= x_max; ++x)
-            {
-                for (int y = y_min; y <= y_max; ++y)
-                {
-                    if (abs(y - x * slope + intercept) < current_eps)
-                    {
-                        if (not x_to_y_full)
-                            x_to_y.at(x).push_back(y);
+            Vector2i to_push;
 
-                        if (not y_to_x_full)
-                            y_to_x.at(y).push_back(x);
-                    }
-                }
-            }
+            if (glm::fract(x) > 0.5)
+                to_push.x = ceil(x);
+            else
+                to_push.x = floor(x);
 
-            if (not x_to_y_full)
-            {
-                for (auto& pair: x_to_y)
-                {
-                    if (pair.second.empty())
-                        goto x_to_y_continue;
-                }
-                x_to_y_full = true;
-            }
-            x_to_y_continue:;
+            if (glm::fract(y) > 0.5)
+                to_push.y = ceil(y);
+            else
+                to_push.y = floor(y);
 
-            if (not y_to_x_full)
-            {
-                for (auto& pair: y_to_x)
-                {
-                    if (pair.second.empty())
-                        goto y_to_x_continue;
-                }
-                y_to_x_full = true;
-            }
-            y_to_x_continue:;
+            out.push_back(to_push);
 
-            if (x_to_y_full and y_to_x_full)
-            {
-                std::cout << n_loops << std::endl;
-                break; // done
-            }
-
-            current_eps += 0.05;
-            n_loops += 1;
+            x += x_step;
+            y += y_step;
+            step_i += 1;
         }
-
-        struct Vector2iCompare
-        {
-            bool operator()(const Vector2i& a, const Vector2i& b) const
-            {
-                if (a.x == b.x)
-                    return a.y < b.y;
-                else
-                    return a.x < b.x;
-            }
-        };
-
-        std::set<Vector2i, Vector2iCompare> all;
-
-        auto should_push = [&](int x, int y)
-        {
-            bool left = all.find({x - 1, y}) != all.end();
-            bool right = all.find({x + 1, y}) != all.end();
-            bool bottom = all.find({x, y + 1}) != all.end();
-            bool top = all.find({x, y - 1}) != all.end();
-
-            return not ((left or right) and (top or bottom));
-        };
-
-        auto w = x_max - x_min;
-        auto h = y_max - y_min;
-
-        for (auto& pair: y_to_x)
-            for (auto& i: pair.second)
-                if (should_push(i, pair.first))
-                    all.insert({i, pair.first});
-
-        for (auto& pair: x_to_y)
-            for (auto& i: pair.second)
-                if (should_push(pair.first, i))
-                    all.insert({pair.first, i});
-
-        for (auto& pos : all)
-            out.push_back(pos);
 
         return out;
     }
