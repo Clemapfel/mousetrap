@@ -224,6 +224,7 @@ namespace mousetrap
             };
 
             // UNDO
+            size_t _undo_queue_size_byte = 0;
             std::deque<SubImage> _undo_queue;
             std::deque<SubImage> _redo_queue;
 
@@ -551,8 +552,16 @@ namespace mousetrap
 
     void Canvas::undo_safepoint()
     {
+        if (not _undo_queue.empty())
+            _undo_queue_size_byte += _undo_queue.back().get_n_pixels() * (32 + 32 + 4 * 32);
+
         _undo_queue.emplace_back();
         _redo_queue.clear();
+
+        static size_t max_size_byte = state::settings_file->get_value_as<float>("canvas", "undo_cache_size") * 10e6;
+
+        if (_undo_queue_size_byte > max_size_byte)
+            _undo_queue.pop_front();
     }
 
     void Canvas::draw(const SubImage& subimage, BackupMode backup_mode)
@@ -562,6 +571,9 @@ namespace mousetrap
         for (auto& it : subimage)
         {
             auto pos = Vector2i(it.x, it.y);
+
+            if (pos.x < 0 or pos.x >= frame.image->get_size().x or pos.y < 0 or pos.y >= frame.image->get_size().y)
+                continue;
 
             if (backup_mode == BackupMode::UNDO)
                 _undo_queue.back().add(pos, frame.image->get_pixel(pos.x, pos.y));
@@ -593,6 +605,9 @@ namespace mousetrap
         {
             for (int y = y_start; y < y_start + image.get_size().y; ++y)
             {
+                if (x < 0 or x >= frame.image->get_size().x or y < 0 or y >= frame.image->get_size().y)
+                    continue;
+
                 auto source = image.get_pixel(x - x_start, y - y_start);
                 if (source.a > alpha_eps)
                     to_draw.add({x + x_offset, y + y_offset}, RGBA(
@@ -629,6 +644,9 @@ namespace mousetrap
             {
                 for (int y = y_start; y < y_start + image.get_size().y; ++y)
                 {
+                    if (x < 0 or x >= frame.image->get_size().x or y < 0 or y >= frame.image->get_size().y)
+                        continue;
+
                     auto source = image.get_pixel(x - x_start, y - y_start);
                     if (source.a > alpha_eps)
                         to_draw.add({x + x_offset, y + y_offset}, RGBA(
