@@ -96,9 +96,6 @@ namespace mousetrap
         float dy = y2 - y1;
         float slope = dy / dx;
 
-        auto n_steps = std::max(abs(dx), abs(dy));
-        out.reserve(n_steps);
-
         const int eps = 10e7; // project into int range to avoid float precision resulting in non-deterministic results
 
         if (abs(dx) > abs(dy))
@@ -108,6 +105,9 @@ namespace mousetrap
 
             float y = y1;
             float x = x1;
+
+            auto n_steps = std::max(abs(dx), abs(dy));
+            out.reserve(out.size() + n_steps);
 
             for (size_t step = 0; step < n_steps; ++step)
             {
@@ -120,13 +120,16 @@ namespace mousetrap
                 y += y_step;
             }
         }
-        else
+        else if (abs(dx) < abs(dy))
         {
             float y_step = y1 < y2 ? 1 : -1;
             float x_step = (1 / slope) * y_step;
 
             float x = x1;
             float y = y1;
+
+            auto n_steps = std::max(abs(dx), abs(dy));
+            out.reserve(out.size() + n_steps);
 
             for (size_t step = 0; step < n_steps; ++step)
             {
@@ -139,6 +142,25 @@ namespace mousetrap
                 y += y_step;
             }
         }
+        else
+        {
+            int x = a.x;
+            int y = a.y;
+
+            int x_step = a.x < b.x ? 1 : -1;
+            int y_step = a.y < b.y ? 1 : -1;
+
+            size_t n_steps = abs(a.x - b.x); // same as abs(b.y - a.y)
+            out.reserve(out.size() + n_steps);
+
+            for (size_t i = 0; i < n_steps; ++i)
+            {
+                out.emplace_back(x, y);
+                x += x_step;
+                y += y_step;
+            }
+        }
+
 
         return out;
     }
@@ -149,10 +171,6 @@ namespace mousetrap
             image->set_pixel(xy.x, xy.y, color);
     }
 
-    void Layer::Frame::draw_image(Vector2i pos, const Image& image, RGBA multiplication)
-    {
-
-    }
 
     void Layer::Frame::draw_line(Vector2i start, Vector2i end, RGBA color)
     {
