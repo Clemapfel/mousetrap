@@ -261,6 +261,8 @@ namespace mousetrap
     void Canvas::BrushCursorLayer::on_click_pressed(ClickEventController*, size_t n, double x, double y,
                                                     BrushCursorLayer* instance)
     {
+        instance->_owner->undo_safepoint();
+
         instance->_click_active = true;
         auto pos = instance->_owner->widget_to_texture_coord(Vector2f{x, y}, *instance->_canvas_size);
         instance->_owner->set_current_pixel_position(pos.x, pos.y);

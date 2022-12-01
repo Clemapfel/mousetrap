@@ -29,8 +29,18 @@ namespace mousetrap
             void draw_brush(Vector2i position, Brush* brush, RGBA color);
             void draw_brush_line(Vector2i a, Vector2i b, Brush* brush, RGBA color);
 
+            void undo_safepoint();
+
         private:
-            void draw(const SubImage&, bool allow_undo = true);
+            enum class BackupMode
+            {
+                UNDO,
+                REDO,
+                NONE
+            };
+
+            /// \param mode: if undo, inverse action is pushed to undo queue, else pushed to redo queue
+            void draw(const SubImage&, BackupMode = BackupMode::NONE);
 
             Vector2f _transform_offset = {0, 0};
             float _transform_scale = 1;
@@ -215,9 +225,13 @@ namespace mousetrap
 
             // UNDO
             std::deque<SubImage> _undo_queue;
+            std::deque<SubImage> _redo_queue;
 
             Action _undo_draw_step_action = Action("canvas.undo_draw_step");
+            void on_undo_action();
+
             Action _redo_draw_step_action = Action("canvas.redo_draw_step");
+            void on_redo_action();
 
             ShortcutController _shortcut_controller = ShortcutController(state::app);
 
@@ -405,24 +419,42 @@ namespace mousetrap
         _render_area_overlay.set_cursor(GtkCursorType::NONE);
 
         _undo_draw_step_action.set_do_function([](Canvas* instance) -> void {
-
-            if (instance->_undo_queue.empty())
-                return;
-
-            instance->draw(instance->_undo_queue.back(), false);
-            instance->_undo_queue.pop_back();
+            instance->on_undo_action();
         }, this);
         _undo_draw_step_action.add_shortcut(state::keybindings_file->get_value("canvas", "undo_draw_step"));
         state::app->add_action(_undo_draw_step_action);
 
         _redo_draw_step_action.set_do_function([](Canvas* instance) -> void {
-            std::cerr << "[TODO] Canvas Redo TODO" << std::endl;
+            instance->on_redo_action();
         }, this);
         _redo_draw_step_action.add_shortcut(state::keybindings_file->get_value("canvas", "redo_draw_step"));
         state::app->add_action(_redo_draw_step_action);
 
         for (auto* action : {&_undo_draw_step_action, &_redo_draw_step_action})
             _shortcut_controller.add_action(action->get_id());
+
+        _undo_queue.emplace_back();
+        _redo_queue.emplace_back();
+    }
+
+    void Canvas::on_undo_action()
+    {
+        if (_undo_queue.empty() or _undo_queue.back().is_empty())
+            return;
+
+        _redo_queue.emplace_back();
+        draw(_undo_queue.back(), BackupMode::REDO);
+        _undo_queue.pop_back();
+    }
+
+    void Canvas::on_redo_action()
+    {
+        if (_redo_queue.empty() or _redo_queue.back().is_empty())
+            return;
+
+        _undo_queue.emplace_back();
+        draw(_redo_queue.back(), BackupMode::UNDO);
+        _redo_queue.pop_back();
     }
 
     Canvas::operator Widget*()
@@ -517,18 +549,24 @@ namespace mousetrap
         _brush_cursor_layer.update();
     }
 
-    void Canvas::draw(const SubImage& subimage, bool allow_undo)
+    void Canvas::undo_safepoint()
+    {
+        _undo_queue.emplace_back();
+        _redo_queue.clear();
+    }
+
+    void Canvas::draw(const SubImage& subimage, BackupMode backup_mode)
     {
         auto& frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
-
-        auto* batch_maybe = allow_undo ? &_undo_queue.emplace_back() : nullptr;
 
         for (auto& it : subimage)
         {
             auto pos = Vector2i(it.x, it.y);
 
-            if (allow_undo)
-                batch_maybe->add(pos, frame.image->get_pixel(pos.x, pos.y));
+            if (backup_mode == BackupMode::UNDO)
+                _undo_queue.back().add(pos, frame.image->get_pixel(pos.x, pos.y));
+            else if (backup_mode == BackupMode::REDO)
+                _redo_queue.back().add(pos, frame.image->get_pixel(pos.x, pos.y));
 
             frame.draw_pixel(pos, it.color);
         }
@@ -566,7 +604,7 @@ namespace mousetrap
             }
         }
 
-        draw(to_draw, true);
+        draw(to_draw, BackupMode::UNDO);
     }
 
     void Canvas::draw_brush_line(Vector2i a, Vector2i b, Brush* brush, RGBA color)
@@ -603,7 +641,7 @@ namespace mousetrap
             }
         }
 
-        draw(to_draw, true);
+        draw(to_draw, BackupMode::UNDO);
     }
 
     /*

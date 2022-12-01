@@ -39,6 +39,7 @@ namespace mousetrap
             auto end() const;
 
             size_t get_n_pixels() const;
+            bool is_empty() const;
 
         private:
             struct PixelCompare
@@ -111,5 +112,10 @@ namespace mousetrap
     auto SubImage::end() const
     {
         return _data.end();
+    }
+
+    bool SubImage::is_empty() const
+    {
+        return _data.empty();
     }
 }
