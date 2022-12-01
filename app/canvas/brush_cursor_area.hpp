@@ -236,6 +236,12 @@ namespace mousetrap
             instance->_cursor_outline_shape_vlines->set_centroid(centroid - v_offset);
         }
 
+        if (state::active_tool == BRUSH and instance->_click_active)
+        {
+            for (auto px : get_line_points(previous_pixel_pos, current_pixel_pos))
+                instance->_owner->draw_brush(px.x, px.y, state::current_brush, state::primary_color);
+        }
+
         instance->_area.queue_render();
     }
 
@@ -259,47 +265,11 @@ namespace mousetrap
                                                     BrushCursorLayer* instance)
     {
         instance->_click_active = true;
+        auto pos = instance->_owner->widget_to_texture_coord(Vector2f{x, y}, *instance->_canvas_size);
+        instance->_owner->set_current_pixel_position(pos.x, pos.y);
 
-        static Vector2i previous = {0, 0};
-
-        float widget_w = instance->_area.get_size().x;
-        float widget_h = instance->_area.get_size().y;
-
-        Vector2f pos = {x / widget_w, y / widget_h};
-
-        float w = state::layer_resolution.x / instance->_canvas_size->x;
-        float h = state::layer_resolution.y / instance->_canvas_size->y;
-
-        Vector2f layer_top_left = {0.5 - w / 2, 0.5 - h / 2};
-        layer_top_left = to_gl_position(layer_top_left);
-        layer_top_left = instance->_owner->_transform->apply_to(layer_top_left);
-        layer_top_left = from_gl_position(layer_top_left);
-
-        Vector2f layer_size = {
-                state::layer_resolution.x / instance->_canvas_size->x,
-                state::layer_resolution.y / instance->_canvas_size->y
-        };
-
-        layer_size *= instance->_owner->_transform_scale;
-
-        float x_dist = (pos.x - layer_top_left.x);
-        float y_dist = (pos.y - layer_top_left.y);
-
-        Vector2f pixel_size = {layer_size.x / state::layer_resolution.x, layer_size.y / state::layer_resolution.y};
-
-        x_dist /= pixel_size.x;
-        y_dist /= pixel_size.y;
-
-        x_dist = floor(x_dist);
-        y_dist = floor(y_dist);
-
-        auto current = Vector2i(x_dist, y_dist);
-
-        auto points = get_line_points(previous, current);
-        for (auto local : points)
-            instance->_owner->draw_point(local.x, local.y, state::primary_color);
-
-        previous = current;
+        if (state::active_tool == BRUSH)
+            instance->_owner->draw_brush(pos.x, pos.y, state::current_brush, state::primary_color);
     }
 
     void Canvas::BrushCursorLayer::on_click_released(ClickEventController*, size_t n, double x, double y, BrushCursorLayer* instance)

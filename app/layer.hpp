@@ -58,7 +58,7 @@ namespace mousetrap
 {
     std::vector<Vector2i> get_line_points(Vector2i a, Vector2i b)
     {
-        std::vector<Vector2i> out = {};
+        std::vector<Vector2i> out = {a, b};
 
         if (a.x == b.x)
         {
@@ -99,7 +99,7 @@ namespace mousetrap
         auto n_steps = std::max(abs(dx), abs(dy));
         out.reserve(n_steps);
 
-        const int eps = 10e4; // project into int range to avoid float precision resulting in non-deterministic results
+        const int eps = 10e7; // project into int range to avoid float precision resulting in non-deterministic results
 
         if (abs(dx) > abs(dy))
         {

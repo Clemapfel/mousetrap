@@ -26,8 +26,8 @@ namespace mousetrap
 
             void update_brush_cursor();
 
-            void draw_point(size_t x, size_t y, RGBA color);
-            void draw_brush(size_t x, size_t y, Brush*);
+            void draw(const std::vector<Vector2i> pixels, RGBA color);
+            void draw(const std::vector<std::pair<Vector2i, RGBA>>&);
 
         private:
             Vector2f _transform_offset = {0, 0};
@@ -39,6 +39,8 @@ namespace mousetrap
             Vector2ui _selected_pixel = {0, 0};
 
             Vector2f align_with_pixel_grid(const Vector2f& edited);
+            Vector2i widget_to_texture_coord(Vector2f widget_coord, Vector2f widget_size);
+            Vector2f get_pixel_size();
 
             struct CanvasLayer
             {
@@ -208,6 +210,9 @@ namespace mousetrap
                     std::vector<Shape*> _edges;
                     Shape* _circle = nullptr;
             };
+
+            // UNDO
+
 
             // main
             Overlay _render_area_overlay;
@@ -408,6 +413,45 @@ namespace mousetrap
         return pos;
     }
 
+    Vector2i Canvas::widget_to_texture_coord(Vector2f widget_coord, Vector2f widget_size)
+    {
+        float widget_w = widget_size.x;
+        float widget_h = widget_size.y;
+        float x = widget_coord.x;
+        float y = widget_coord.y;
+
+        Vector2f pos = {x / widget_w, y / widget_h};
+
+        // align with texture-space pixel grid
+        float w = state::layer_resolution.x / widget_w;
+        float h = state::layer_resolution.y / widget_h;
+
+        Vector2f layer_top_left = {0.5 - w / 2, 0.5 - h / 2};
+        layer_top_left = to_gl_position(layer_top_left);
+        layer_top_left = _transform->apply_to(layer_top_left);
+        layer_top_left = from_gl_position(layer_top_left);
+
+        Vector2f layer_size = {
+            state::layer_resolution.x / widget_w,
+            state::layer_resolution.y / widget_h
+        };
+
+        layer_size *= _transform_scale;
+
+        float x_dist = (pos.x - layer_top_left.x);
+        float y_dist = (pos.y - layer_top_left.y);
+
+        Vector2f pixel_size = {layer_size.x / state::layer_resolution.x, layer_size.y / state::layer_resolution.y};
+
+        x_dist /= pixel_size.x;
+        y_dist /= pixel_size.y;
+
+        x_dist = floor(x_dist);
+        y_dist = floor(y_dist);
+
+        return {x_dist, y_dist};
+    }
+
     void Canvas::set_transform_scale(float scale)
     {
         _transform_scale = scale;
@@ -446,6 +490,7 @@ namespace mousetrap
         _brush_cursor_layer.update();
     }
 
+    /*
     void Canvas::draw_point(size_t x, size_t y, RGBA color)
     {
         auto frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
@@ -455,14 +500,24 @@ namespace mousetrap
         _layers_layer.refresh();
     }
 
-    void Canvas::draw_brush(size_t x, size_t y, Brush* brush)
+    void Canvas::draw_brush(size_t x, size_t y, Brush* brush, RGBA color)
     {
         auto frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
-        frame.draw_image({x, y}, brush->get_image(), state::primary_color);
+
+        const auto& image = brush->get_image();
+
+        if (image.get_size().x % 2 == 0)
+            x += 1;
+
+        if (image.get_size().y % 2 == 0)
+            y += 1;
+
+        frame.draw_image({x, y}, brush->get_image(), color);
         frame.update_texture();
 
         _layers_layer.refresh();
     }
+     */
 
     void Canvas::update()
     {
