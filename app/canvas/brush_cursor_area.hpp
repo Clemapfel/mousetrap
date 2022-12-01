@@ -237,10 +237,7 @@ namespace mousetrap
         }
 
         if (state::active_tool == BRUSH and instance->_click_active)
-        {
-            for (auto px : get_line_points(previous_pixel_pos, current_pixel_pos))
-                instance->_owner->draw_brush(px.x, px.y, state::current_brush, state::primary_color);
-        }
+            instance->_owner->draw_brush_line(previous_pixel_pos, current_pixel_pos, state::current_brush, state::primary_color);
 
         instance->_area.queue_render();
     }
@@ -269,7 +266,7 @@ namespace mousetrap
         instance->_owner->set_current_pixel_position(pos.x, pos.y);
 
         if (state::active_tool == BRUSH)
-            instance->_owner->draw_brush(pos.x, pos.y, state::current_brush, state::primary_color);
+            instance->_owner->draw_brush({pos.x, pos.y}, state::current_brush, state::primary_color);
     }
 
     void Canvas::BrushCursorLayer::on_click_released(ClickEventController*, size_t n, double x, double y, BrushCursorLayer* instance)

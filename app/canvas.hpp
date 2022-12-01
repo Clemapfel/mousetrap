@@ -26,10 +26,12 @@ namespace mousetrap
 
             void update_brush_cursor();
 
-            void draw(const std::vector<Vector2i> pixels, RGBA color);
-            void draw(const std::vector<std::pair<Vector2i, RGBA>>&);
+            void draw_brush(Vector2i position, Brush* brush, RGBA color);
+            void draw_brush_line(Vector2i a, Vector2i b, Brush* brush, RGBA color);
 
         private:
+            void draw(const SubImage&, bool allow_undo = true);
+
             Vector2f _transform_offset = {0, 0};
             float _transform_scale = 1;
 
@@ -212,7 +214,12 @@ namespace mousetrap
             };
 
             // UNDO
+            std::deque<SubImage> _undo_queue;
 
+            Action _undo_draw_step_action = Action("canvas.undo_draw_step");
+            Action _redo_draw_step_action = Action("canvas.redo_draw_step");
+
+            ShortcutController _shortcut_controller = ShortcutController(state::app);
 
             // main
             Overlay _render_area_overlay;
@@ -396,6 +403,26 @@ namespace mousetrap
 
         set_transform_scale(12);
         _render_area_overlay.set_cursor(GtkCursorType::NONE);
+
+        _undo_draw_step_action.set_do_function([](Canvas* instance) -> void {
+
+            if (instance->_undo_queue.empty())
+                return;
+
+            instance->draw(instance->_undo_queue.back(), false);
+            instance->_undo_queue.pop_back();
+        }, this);
+        _undo_draw_step_action.add_shortcut(state::keybindings_file->get_value("canvas", "undo_draw_step"));
+        state::app->add_action(_undo_draw_step_action);
+
+        _redo_draw_step_action.set_do_function([](Canvas* instance) -> void {
+            std::cerr << "[TODO] Canvas Redo TODO" << std::endl;
+        }, this);
+        _redo_draw_step_action.add_shortcut(state::keybindings_file->get_value("canvas", "redo_draw_step"));
+        state::app->add_action(_redo_draw_step_action);
+
+        for (auto* action : {&_undo_draw_step_action, &_redo_draw_step_action})
+            _shortcut_controller.add_action(action->get_id());
     }
 
     Canvas::operator Widget*()
@@ -488,6 +515,95 @@ namespace mousetrap
     void Canvas::update_brush_cursor()
     {
         _brush_cursor_layer.update();
+    }
+
+    void Canvas::draw(const SubImage& subimage, bool allow_undo)
+    {
+        auto& frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
+
+        auto* batch_maybe = allow_undo ? &_undo_queue.emplace_back() : nullptr;
+
+        for (auto& it : subimage)
+        {
+            auto pos = Vector2i(it.x, it.y);
+
+            if (allow_undo)
+                batch_maybe->add(pos, frame.image->get_pixel(pos.x, pos.y));
+
+            frame.draw_pixel(pos, it.color);
+        }
+
+        frame.update_texture();
+        _layers_layer.refresh();
+    }
+
+    void Canvas::draw_brush(Vector2i position, Brush* brush, RGBA color)
+    {
+        auto to_draw = SubImage();
+        auto& frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
+
+        static float alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
+        auto& image = brush->get_image();
+
+        auto x_start = position.x - image.get_size().x / 2;
+        auto y_start = position.y - image.get_size().y / 2;
+
+        auto x_offset = image.get_size().x % 2 == 0 ? 1 : 0;
+        auto y_offset = image.get_size().y % 2 == 0 ? 1 : 0;
+
+        for (int x = x_start; x < x_start + image.get_size().x; ++x)
+        {
+            for (int y = y_start; y < y_start + image.get_size().y; ++y)
+            {
+                auto source = image.get_pixel(x - x_start, y - y_start);
+                if (source.a > alpha_eps)
+                    to_draw.add({x + x_offset, y + y_offset}, RGBA(
+                        source.r * color.r,
+                        source.g * color.g,
+                        source.b * color.b,
+                        source.a * color.a
+                    ));
+            }
+        }
+
+        draw(to_draw, true);
+    }
+
+    void Canvas::draw_brush_line(Vector2i a, Vector2i b, Brush* brush, RGBA color)
+    {
+        auto to_draw = SubImage();
+
+        auto& frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
+        auto& image = brush->get_image();
+        auto points = get_line_points(a, b);
+
+        auto x_offset = image.get_size().x % 2 == 0 ? 1 : 0;
+        auto y_offset = image.get_size().y % 2 == 0 ? 1 : 0;
+
+        static float alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
+
+        for (auto& position : points)
+        {
+            auto x_start = position.x - image.get_size().x / 2;
+            auto y_start = position.y - image.get_size().y / 2;
+
+            for (int x = x_start; x < x_start + image.get_size().x; ++x)
+            {
+                for (int y = y_start; y < y_start + image.get_size().y; ++y)
+                {
+                    auto source = image.get_pixel(x - x_start, y - y_start);
+                    if (source.a > alpha_eps)
+                        to_draw.add({x + x_offset, y + y_offset}, RGBA(
+                                source.r * color.r,
+                                source.g * color.g,
+                                source.b * color.b,
+                                source.a * color.a
+                        ));
+                }
+            }
+        }
+
+        draw(to_draw, true);
     }
 
     /*

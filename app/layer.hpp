@@ -151,25 +151,7 @@ namespace mousetrap
 
     void Layer::Frame::draw_image(Vector2i pos, const Image& image, RGBA multiplication)
     {
-        static float alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
 
-        auto x_start = pos.x - image.get_size().x / 2;
-        auto y_start = pos.y - image.get_size().y / 2;
-
-        for (int x = x_start; x < x_start + image.get_size().x; ++x)
-        {
-            for (int y = y_start; y < y_start + image.get_size().y; ++y)
-            {
-                auto color = image.get_pixel(x - x_start, y - y_start);
-                if (color.a > alpha_eps)
-                    draw_pixel({x, y}, RGBA(
-                        color.r * multiplication.r,
-                        color.g * multiplication.g,
-                        color.b * multiplication.b,
-                        color.a * multiplication.a
-                    ));
-            }
-        }
     }
 
     void Layer::Frame::draw_line(Vector2i start, Vector2i end, RGBA color)

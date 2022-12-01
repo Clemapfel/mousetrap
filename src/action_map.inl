@@ -121,6 +121,11 @@ namespace mousetrap
         g_action_map_remove_action(self, ("app." + id).c_str());
     }
 
+    bool ActionMap::has_action(const ActionID& id)
+    {
+        return _actions.find(id) != _actions.end();
+    }
+
     const Action& ActionMap::get_action(const ActionID& id)
     {
         return _actions.at(id);

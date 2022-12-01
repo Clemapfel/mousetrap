@@ -25,6 +25,13 @@ namespace mousetrap
             return;
         }
 
+        if (not _action_map->has_action(id))
+        {
+            std::cerr << "[ERROR] In ShortcutController::add_action: No action with ID `" << id << "` registered."
+                      << std::endl;
+            return;
+        }
+
         for (auto& s : _action_map->get_action(id).get_shortcuts())
         {
             auto* trigger = gtk_shortcut_trigger_parse_string(s.c_str());

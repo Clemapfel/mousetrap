@@ -69,6 +69,7 @@ namespace mousetrap
             void add_action(Action& action);
             void remove_action(const ActionID& id);
             const Action& get_action(const ActionID& id);
+            bool has_action(const ActionID& id);
 
         protected:
             virtual operator GtkApplication*() = 0;
