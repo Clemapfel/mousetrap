@@ -177,7 +177,6 @@ namespace mousetrap
 
             LayersLayer _layers_layer = LayersLayer(this);
 
-            /*
             // BRUSH
 
             class BrushCursorLayer : public CanvasLayer
@@ -186,11 +185,10 @@ namespace mousetrap
                     BrushCursorLayer(Canvas* owner);
                     ~BrushCursorLayer();
 
-                    operator Widget*();
-                    void update();
+                    operator Widget*() override;
+                    void update() override;
 
                 private:
-                    float brush_cursor_color_alpha = state::settings_file->get_value_as<float>("canvas", "brush_cursor_color_alpha");
                     GLArea _area;
 
                     float* _timer = new float(0); // seconds
@@ -200,56 +198,11 @@ namespace mousetrap
                     Shape* _cursor_outline_shape_hlines = nullptr;
                     Shape* _cursor_outline_shape_vlines = nullptr;
 
-                    Vector2f* _canvas_size = new Vector2f(1, 1);
-                    Vector2f* _cursor_position = new Vector2f(0, 0);
-
-                    Overlay _overlay;
-
-                    static void on_realize(Widget*, BrushCursorLayer* instance);
-                    static void on_resize(GLArea*, int, int, BrushCursorLayer* instance);
-
-                    MotionEventController _motion_controller;
-                    static void on_motion_enter(MotionEventController*, double x, double y, BrushCursorLayer* instance);
-                    static void on_motion_leave(MotionEventController*, BrushCursorLayer* instance);
-                    static void on_motion(MotionEventController*, double x, double y, BrushCursorLayer* instance);
-
-                    ClickEventController _click_controller;
-                    bool _click_active;
-                    static void on_click_pressed(ClickEventController*, size_t n, double x, double y, BrushCursorLayer* instance);
-                    static void on_click_released(ClickEventController*, size_t n, double x, double y, BrushCursorLayer* instance);
-
-                    Vector2i widget_to_texture_coords(Vector2f);
+                    Vector2f _canvas_size = Vector2f(1, 1);
+                    Vector2f _cursor_position = Vector2f(0, 0);
             };
+
             BrushCursorLayer _brush_cursor_layer = BrushCursorLayer(this);
-
-            // TOOL: SHAPES
-
-            class ShapeToolLayer : public CanvasLayer
-            {
-                public:
-                    ShapeToolLayer(Canvas*);
-                    ~ShapeToolLayer();
-
-                    operator Widget*();
-
-                private:
-                    float _margin = state::margin_unit * 2; // in px
-                    Vector2f _centroid = Vector2f(0.5, 0.5); // in gl coords
-                    Vector2f _size = Vector2f(0.3, 0.7); // in gl coords
-                    bool _initialized = false;
-
-                    void reformat();
-
-                    GLArea _area;
-                    Vector2f* _canvas_size = new Vector2f{1, 1};
-                    static void on_realize(Widget*, ShapeToolLayer* instance);
-                    static void on_resize(GLArea*, int, int, ShapeToolLayer* instance);
-
-                    std::vector<Shape*> _edges;
-                    Shape* _circle = nullptr;
-            };
-
-             */
 
             // UNDO / REDO
 
