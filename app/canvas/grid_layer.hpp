@@ -21,6 +21,14 @@ namespace mousetrap
 
     void Canvas::GridLayer::update()
     {
+        if (_layer_resolution != state::layer_resolution and _area.get_is_realized())
+        {
+            _layer_resolution = state::layer_resolution;
+            _grid_visible = _owner->_grid_visible;
+            _grid_color = _owner->_grid_color;
+            on_realize(&_area, this);
+        }
+
         if (_grid_visible != _owner->_grid_visible and _area.get_is_realized())
         {
             _grid_visible = _owner->_grid_visible;
@@ -80,6 +88,7 @@ namespace mousetrap
                 {x + ((float(i) / state::layer_resolution.x) * w), y + h}
             );
             line->set_color(_grid_color);
+            line->set_visible(_grid_visible);
         }
 
         for (size_t i = 0; i < state::layer_resolution.y + 1; ++i)
@@ -90,6 +99,7 @@ namespace mousetrap
                     {x + w, y + ((float(i) / state::layer_resolution.y) * h)}
             );
             line->set_color(_grid_color);
+            line->set_visible(_grid_visible);
         }
 
         _area.queue_render();
@@ -100,10 +110,12 @@ namespace mousetrap
         auto* area = (GLArea*) widget;
         area->make_current();
 
-        for (size_t i = 0; i < state::layer_resolution.x + 1; ++i)
+        instance->_layer_resolution = state::layer_resolution;
+
+        for (size_t i = 0; i < instance->_layer_resolution.x + 1; ++i)
             instance->_h_lines.emplace_back(new Shape());
 
-        for (size_t i = 0; i < state::layer_resolution.y + 1; ++i)
+        for (size_t i = 0; i < instance->_layer_resolution.y + 1; ++i)
             instance->_v_lines.emplace_back(new Shape());
 
         instance->reformat();

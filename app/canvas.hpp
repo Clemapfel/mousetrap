@@ -138,6 +138,7 @@ namespace mousetrap
                     bool _grid_visible = true;
                     RGBA _grid_color = RGBA(-1, -1, -1, 0);
                     Vector2f _canvas_size = {0, 0};
+                    Vector2ui _layer_resolution;
 
                     void reformat();
 
@@ -166,6 +167,7 @@ namespace mousetrap
 
                     size_t _current_frame = -1;
                     size_t _n_layers = -1;
+                    Vector2ui _layer_resolution;
 
                     Vector2f _canvas_size = {-1, -1};
 

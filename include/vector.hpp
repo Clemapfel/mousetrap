@@ -29,4 +29,40 @@ namespace mousetrap
     using Vector4f = glm::vec<4, float>;
     using Vector4ui = glm::vec<4, size_t>;
     using Vector4i = glm::vec<4, int64_t>;
+
+    template<typename T>
+    bool operator==(const glm::vec<2, T>& a, const glm::vec<2, T>& b)
+    {
+        return a.x == b.x and a.y == b.y;
+    }
+
+    template<typename T>
+    bool operator!=(const glm::vec<2, T>& a, const glm::vec<2, T>& b)
+    {
+        return not (a == b);
+    }
+
+    template<typename T>
+    bool operator==(const glm::vec<3, T>& a, const glm::vec<3, T>& b)
+    {
+        return a.x == b.x and a.y == b.y and a.z == b.z;
+    }
+
+    template<typename T>
+    bool operator!=(const glm::vec<3, T>& a, const glm::vec<3, T>& b)
+    {
+        return not (a == b);
+    }
+
+    template<typename T>
+    bool operator==(const glm::vec<4, T>& a, const glm::vec<4, T>& b)
+    {
+        return a.x == b.x and a.y == b.y and a.z == b.z and a.w == b.w;
+    }
+
+    template<typename T>
+    bool operator!=(const glm::vec<4, T>& a, const glm::vec<4, T>& b)
+    {
+        return not (a == b);
+    }
 }
