@@ -21,7 +21,6 @@ namespace mousetrap
         if (parent != nullptr)
             gtk_widget_unparent(GTK_WIDGET(get_native()));
 
-        std::cout << get_native() << std::endl;
         override_native(gtk_scrollbar_new(orientation, adjustment));
         std::cout << get_native() << std::endl;
 

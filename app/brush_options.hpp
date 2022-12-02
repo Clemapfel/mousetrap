@@ -358,9 +358,7 @@ namespace mousetrap
         instance->_opacity_spin_button.set_signal_value_changed_blocked(false);
 
         state::brush_opacity = instance->_opacity;
-
-        if (state::canvas != nullptr)
-            ((Canvas*) state::canvas)->update_brush_cursor();
+        state::update_canvas();
     }
 
     void BrushOptions::on_opacity_spin_button_value_changed(SpinButton* scale, BrushOptions* instance)
@@ -371,9 +369,7 @@ namespace mousetrap
         instance->_opacity_scale.set_signal_value_changed_blocked(false);
 
         state::brush_opacity = instance->_opacity;
-
-        if (state::canvas != nullptr)
-            ((Canvas*) state::canvas)->update_brush_cursor();
+        state::update_canvas();
     }
 
     void BrushOptions::on_size_scale_value_changed(Scale* scale, BrushOptions* instance)
@@ -387,8 +383,7 @@ namespace mousetrap
 
         state::brush_size = instance->_size;
         state::current_brush->set_size(state::brush_size);
-        if (state::canvas != nullptr)
-            ((Canvas*) state::canvas)->update_brush_cursor();
+        state::update_canvas();
     }
 
     void BrushOptions::on_size_spin_button_value_changed(SpinButton* scale, BrushOptions* instance)
@@ -402,8 +397,7 @@ namespace mousetrap
 
         state::brush_size = instance->_size;
         state::current_brush->set_size(state::brush_size);
-        if (state::canvas != nullptr)
-            ((Canvas*) state::canvas)->update_brush_cursor();
+        state::update_canvas();
     }
 
     void BrushOptions::on_tile_size_spin_button_value_changed(SpinButton* scale, BrushOptions* instance)
@@ -503,8 +497,7 @@ namespace mousetrap
     {
         state::current_brush = instance->_brush_shapes.at(first_item_position)->get_brush();
 
-        if (state::canvas != nullptr)
-            ((Canvas*) state::canvas)->update_brush_cursor();
+        state::update_canvas();
 
         instance->_size_spin_button.set_signal_value_changed_blocked(true);
         instance->_size_scale.set_signal_value_changed_blocked(true);

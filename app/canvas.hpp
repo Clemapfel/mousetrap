@@ -21,38 +21,10 @@ namespace mousetrap
             void set_transform_offset(float x, float y);
             void set_transform_scale(float);
 
-            void set_current_pixel_position(int x, int y);
-            Vector2i get_current_pixel_position();
-
-            void update_brush_cursor();
-
             void draw_brush(Vector2i position, Brush* brush, RGBA color);
             void draw_brush_line(Vector2i a, Vector2i b, Brush* brush, RGBA color);
 
-            void undo_safepoint();
-
         private:
-            enum class BackupMode
-            {
-                UNDO,
-                REDO,
-                NONE
-            };
-
-            /// \param mode: if undo, inverse action is pushed to undo queue, else pushed to redo queue
-            void draw(const SubImage&, BackupMode = BackupMode::NONE);
-
-            Vector2f _transform_offset = {0, 0};
-            float _transform_scale = 1;
-
-            void signal_transform_updated();
-            GLTransform* _transform = new GLTransform();
-
-            Vector2ui _selected_pixel = {0, 0};
-
-            Vector2f align_with_pixel_grid(const Vector2f& edited);
-            Vector2i widget_to_texture_coord(Vector2f widget_coord, Vector2f widget_size);
-            Vector2f get_pixel_size();
 
             struct CanvasLayer
             {
@@ -62,12 +34,60 @@ namespace mousetrap
                     {};
 
                     virtual operator Widget*() = 0;
+                    virtual void update() = 0;
 
                 protected:
                     Canvas* _owner;
             };
 
-            // TRANSPARENCY TILING
+            // is mouse button currently down
+            bool* _click_pressed = new bool(false);
+
+            // position in texture space
+            Vector2i* _current_pixel_position = new Vector2i(0, 0);
+
+            // position in widget space
+            Vector2f* _current_cursor_position = new Vector2f(0, 0);
+
+            // is cursor in canvas widget area
+            bool* _cursor_in_bounds = new bool(false);
+
+            // widget size
+            Vector2f* _canvas_size = new Vector2f(1, 1);
+
+            // global transform
+            Vector2f* _transform_offset = new Vector2f(0, 0);
+            float* _transform_scale = new float(1);
+            GLTransform* _transform = new GLTransform();
+
+            // layer handling user input
+            struct ControlLayer : public CanvasLayer
+            {
+                public:
+                    ControlLayer(Canvas*);
+
+                    operator Widget*() override;
+                    void update() override;
+
+                private:
+                    GLArea _area;
+
+                    void update_pixel_position();
+                    static void on_resize(GLArea*, int, int, ControlLayer* instance);
+
+                    MotionEventController _motion_controller;
+                    static void on_motion_enter(MotionEventController*, double x, double y, ControlLayer* instance);
+                    static void on_motion_leave(MotionEventController*, ControlLayer* instance);
+                    static void on_motion(MotionEventController*, double x, double y, ControlLayer* instance);
+
+                    ClickEventController _click_controller;
+                    static void on_click_pressed(ClickEventController*, size_t n, double x, double y, ControlLayer* instance);
+                    static void on_click_released(ClickEventController*, size_t n, double x, double y, ControlLayer* instance);
+            };
+
+            ControlLayer _control_layer = ControlLayer(this);
+
+            // TRANSPARENCY BACKGROUND
 
             class TransparencyTilingLayer : public CanvasLayer
             {
@@ -75,6 +95,7 @@ namespace mousetrap
                     TransparencyTilingLayer(Canvas*);
                     ~TransparencyTilingLayer();
 
+                    void update() override;
                     operator Widget*() override;
 
                 private:
@@ -87,17 +108,18 @@ namespace mousetrap
                     Shape* _subtract_left = nullptr;
 
                     static inline Shader* _shader = nullptr;
-
-                    Vector2f* _canvas_size = new Vector2f(1, 1);
-
                     void reformat();
 
                     static void on_realize(Widget*, TransparencyTilingLayer* instance);
                     static void on_resize(GLArea*, int, int, TransparencyTilingLayer* instance);
             };
+
             TransparencyTilingLayer _transparency_tiling_layer = TransparencyTilingLayer(this);
 
             // GRID
+
+            RGBA _grid_color = state::settings_file->get_value_as<RGBA>("canvas", "grid_color");
+            bool _grid_visible = state::settings_file->get_value_as<bool>("canvas", "grid_visible");
 
             class GridLayer : public CanvasLayer
             {
@@ -105,27 +127,25 @@ namespace mousetrap
                     GridLayer(Canvas*);
                     ~GridLayer();
 
+                    void update();
                     operator Widget*() override;
 
-                    void set_grid_color(RGBA);
-
                 private:
-                    RGBA grid_color = state::settings_file->get_value_as<RGBA>("canvas", "grid_color");
-
                     GLArea _area;
                     std::vector<Shape*> _h_lines;
                     std::vector<Shape*> _v_lines;
 
-                    Vector2f* _canvas_size = new Vector2f(1, 1);
+                    bool _grid_visible = true;
+                    RGBA _grid_color = RGBA(-1, -1, -1, 0);
+                    Vector2f _canvas_size = {0, 0};
 
                     void reformat();
 
                     static void on_realize(Widget*, GridLayer* instance);
                     static void on_resize(GLArea*, int, int, GridLayer* instance);
             };
-            GridLayer _grid_layer = GridLayer(this);
 
-            bool _grid_visible = state::settings_file->get_value_as<bool>("canvas", "grid_visible");
+            GridLayer _grid_layer = GridLayer(this);
 
             // LAYERS
 
@@ -135,23 +155,27 @@ namespace mousetrap
                     LayersLayer(Canvas* owner);
                     ~LayersLayer();
 
-                    operator Widget*();
-                    void refresh();
+                    void update() override;
+                    operator Widget*() override;
 
                 private:
-                    void initialize();
                     void reformat();
 
                     GLArea _area;
                     std::vector<Shape*> _layer_shapes;
 
-                    Vector2f* _canvas_size = new Vector2f(1, 1);
+                    size_t _current_frame = -1;
+                    size_t _n_layers = -1;
+
+                    Vector2f _canvas_size = {-1, -1};
 
                     static void on_realize(Widget*, LayersLayer* instance);
                     static void on_resize(GLArea*, int, int, LayersLayer* instance);
             };
+
             LayersLayer _layers_layer = LayersLayer(this);
 
+            /*
             // BRUSH
 
             class BrushCursorLayer : public CanvasLayer
@@ -223,7 +247,21 @@ namespace mousetrap
                     Shape* _circle = nullptr;
             };
 
-            // UNDO
+             */
+
+            // UNDO / REDO
+
+            enum class BackupMode
+            {
+                UNDO,
+                REDO,
+                NONE
+            };
+
+            /// \param mode: if undo, inverse action is pushed to undo queue, else pushed to redo queue
+            void draw(const SubImage&, BackupMode = BackupMode::NONE);
+            void undo_safepoint();
+
             size_t _undo_queue_size_byte = 0;
             std::deque<SubImage> _undo_queue;
             std::deque<SubImage> _redo_queue;
@@ -237,187 +275,32 @@ namespace mousetrap
             ShortcutController _shortcut_controller = ShortcutController(state::app);
 
             // main
-            Overlay _render_area_overlay;
+            Overlay _canvas_layer_overlay;
     };
 }
 
+#include <app/canvas/control_layer.hpp>
 #include <app/canvas/transparency_tiling_area.hpp>
 #include <app/canvas/grid_layer.hpp>
 #include <app/canvas/layers_layer.hpp>
-#include <app/canvas/brush_cursor_area.hpp>
+
+//#include <app/canvas/brush_cursor_area.hpp>
 
 namespace mousetrap
 {
-    Canvas::ShapeToolLayer::ShapeToolLayer(Canvas* owner)
-        : CanvasLayer(owner)
-    {
-        _area.connect_signal_realize(on_realize, this);
-        _area.connect_signal_resize(on_resize, this);
-    }
-
-    Canvas::ShapeToolLayer::~ShapeToolLayer()
-    {
-          delete _canvas_size;
-          for (auto* s : _edges)
-              delete s;
-
-          delete _circle;
-    };
-
-    Canvas::ShapeToolLayer::operator Widget*()
-    {
-        return &_area;
-    }
-
-    void Canvas::ShapeToolLayer::on_resize(GLArea* area, int w, int h, ShapeToolLayer* instance)
-    {
-        *instance->_canvas_size = {w, h};
-        instance->reformat();
-        area->queue_render();
-    }
-
-    void Canvas::ShapeToolLayer::on_realize(Widget* widget, ShapeToolLayer* instance)
-    {
-        auto* area = (GLArea*) widget;
-        area->make_current();
-
-        for (auto* s : instance->_edges)
-            delete s;
-        delete instance->_circle;
-
-        instance->_edges.clear();
-
-        instance->_initialized = false;
-        instance->reformat();
-        instance->_initialized = true;
-
-        area->clear_render_tasks();
-
-        for (auto* s : instance->_edges)
-            area->add_render_task(s);
-
-        area->add_render_task(instance->_circle);
-        area->queue_render();
-    }
-
-    void Canvas::ShapeToolLayer::reformat()
-    {
-        auto x = _centroid.x - _size.x;
-        auto y = _centroid.y - _size.y;
-        auto xm = _margin / _canvas_size->x;
-        auto ym = _margin / _canvas_size->y;
-        auto ixm = 1 * xm;
-        auto iym = 1 * ym;
-        auto w = _size.x;
-        auto h = _size.y;
-
-        _area.make_current();
-
-        size_t count = 0;
-        auto add = [&](float a_x, float a_y, float b_x, float b_y) -> void {
-
-            Shape* out;
-            if (not _initialized)
-                out = _edges.emplace_back(new Shape());
-            else
-                out = _edges.at(count);
-
-            count += 1;
-
-            Vector2f a = {a_x, a_y};
-            a *= *_canvas_size;
-            a.x = round(a.x);
-            a.y = round(a.y);
-            a /= *_canvas_size;
-
-            Vector2f b = {b_x, b_y};
-            b *= *_canvas_size;
-            b.x = round(b.x);
-            b.y = round(b.y);
-            b /= *_canvas_size;
-
-            out->as_line(Vector2f(a_x, a_y), Vector2f(b_x, b_y));
-        };
-
-        // center cross
-        auto c = Vector2f(x + 0.5 * w, y + 0.5 * h);
-
-        add(c.x, c.y, c.x + 0, c.y - iym);
-        add(c.x, c.y, c.x + ixm, c.y + 0);
-        add(c.x, c.y, c.x + 0, c.y + iym);
-        add(c.x, c.y, c.x - ixm, c.y + 0);
-
-        // top left square
-        add(x, y, x + xm, y);
-        add(x + xm, y, x + xm, y + ym);
-        add(x + xm, y + ym, x, y + ym);
-        add(x, y + ym, x, y);
-
-        // top right square
-        add(x + w - xm, y, x + w, y);
-        add(x + w, y, x + w, y + ym);
-        add(x + w, y + ym, x + w - xm, y + ym);
-        add(x + w - xm, y + ym, x + w - xm, y);
-
-        // bottom right square
-        add(x + w - xm, y + h - ym, x + w, y + h - ym);
-        add(x + w, y + h - ym, x + w, y + h);
-        add(x + w, y + h, x + w - xm, y + h);
-        add(x + w - xm, y + h, x + w - xm, y + h - ym);
-
-        // bottom left square
-        add(x, y + h - ym, x + xm, y + h - ym);
-        add(x + xm, y + h - ym, x + xm, y + h);
-        add(x + xm, y + h, x, y + h);
-        add(x, y + h, x, y + h - ym);
-
-        // outline
-        add(x + xm, y, x + w - xm, y);
-        add(x + w, y + ym, x + w, y + h - ym);
-        add(x + w - xm, y + h, x + xm, y + h);
-        add(x, y + h - ym, x, y + ym);
-
-        // half margin outline
-        add(x + xm, y + iym, x + w - xm, y + iym);
-        add(x + w - ixm, y + ym, x + w - ixm, y + h - ym);
-        add(x + w - xm, y + h - iym, x + xm, y + h - iym);
-        add(x + ixm, y + h - ym, x + ixm, y + ym);
-
-        for (auto* s : _edges)
-            s->set_color(RGBA(1, 0, 1, 1));
-
-        // circle
-        if (not _initialized)
-            _circle = new Shape();
-
-        std::vector<Vector2f> ellipse_points;
-
-        const float step = 360.f / 64;
-        for (float angle = 0; angle < 360; angle += step)
-        {
-            auto as_radians = angle * M_PI / 180.f;
-            ellipse_points.emplace_back(
-                c.x + cos(as_radians) * _size.x * 0.5,
-                c.y + sin(as_radians) * _size.y * 0.5
-            );
-        }
-
-        _circle->as_wireframe(ellipse_points);
-    }
-
     // CANVAS
 
     Canvas::Canvas()
     {
-        _render_area_overlay.set_child(_transparency_tiling_layer);
-        _render_area_overlay.add_overlay(_layers_layer);
-        _render_area_overlay.add_overlay(_grid_layer);
-        _render_area_overlay.add_overlay(_brush_cursor_layer);
+        _canvas_layer_overlay.set_child(_transparency_tiling_layer);
+        _canvas_layer_overlay.add_overlay(_layers_layer);
+        _canvas_layer_overlay.add_overlay(_grid_layer);
 
-        _grid_layer.operator Widget*()->set_visible(_grid_visible);
+        _canvas_layer_overlay.add_overlay(_control_layer);
 
         set_transform_scale(12);
-        _render_area_overlay.set_cursor(GtkCursorType::NONE);
+
+        // setup undo / redo architecture
 
         _undo_draw_step_action.set_do_function([](Canvas* instance) -> void {
             instance->on_undo_action();
@@ -460,94 +343,15 @@ namespace mousetrap
 
     Canvas::operator Widget*()
     {
-        return &_render_area_overlay;
-    }
-
-    Vector2f Canvas::align_with_pixel_grid(const Vector2f& edited)
-    {
-        auto pos = edited;
-        pos *= _render_area_overlay.get_size();
-        pos.x = round(pos.x);
-        pos.y = round(pos.y);
-        pos /= _render_area_overlay.get_size();
-        return pos;
-    }
-
-    Vector2i Canvas::widget_to_texture_coord(Vector2f widget_coord, Vector2f widget_size)
-    {
-        float widget_w = widget_size.x;
-        float widget_h = widget_size.y;
-        float x = widget_coord.x;
-        float y = widget_coord.y;
-
-        Vector2f pos = {x / widget_w, y / widget_h};
-
-        // align with texture-space pixel grid
-        float w = state::layer_resolution.x / widget_w;
-        float h = state::layer_resolution.y / widget_h;
-
-        Vector2f layer_top_left = {0.5 - w / 2, 0.5 - h / 2};
-        layer_top_left = to_gl_position(layer_top_left);
-        layer_top_left = _transform->apply_to(layer_top_left);
-        layer_top_left = from_gl_position(layer_top_left);
-
-        Vector2f layer_size = {
-            state::layer_resolution.x / widget_w,
-            state::layer_resolution.y / widget_h
-        };
-
-        layer_size *= _transform_scale;
-
-        float x_dist = (pos.x - layer_top_left.x);
-        float y_dist = (pos.y - layer_top_left.y);
-
-        Vector2f pixel_size = {layer_size.x / state::layer_resolution.x, layer_size.y / state::layer_resolution.y};
-
-        x_dist /= pixel_size.x;
-        y_dist /= pixel_size.y;
-
-        x_dist = floor(x_dist);
-        y_dist = floor(y_dist);
-
-        return {x_dist, y_dist};
+        return &_canvas_layer_overlay;
     }
 
     void Canvas::set_transform_scale(float scale)
     {
-        _transform_scale = scale;
+        *_transform_scale = scale;
         _transform->reset();
-        _transform->translate(_transform_offset);
-        _transform->scale(_transform_scale, _transform_scale);
-
-        signal_transform_updated();
-    }
-
-    void Canvas::signal_transform_updated()
-    {
-        _brush_cursor_layer.update();
-
-        for (auto* widget : {
-                _transparency_tiling_layer.operator Widget *(),
-                _layers_layer.operator Widget *(),
-                _grid_layer.operator Widget *(),
-                _brush_cursor_layer.operator Widget*()
-        })
-            ((GLArea*) widget)->queue_render();
-    }
-
-    void Canvas::set_current_pixel_position(int x, int y)
-    {
-        _selected_pixel = {x, y};
-    }
-
-    Vector2i Canvas::get_current_pixel_position()
-    {
-        return _selected_pixel;
-    }
-
-    void Canvas::update_brush_cursor()
-    {
-        _brush_cursor_layer.update();
+        _transform->translate(*_transform_offset);
+        _transform->scale(*_transform_scale, *_transform_scale);
     }
 
     void Canvas::undo_safepoint()
@@ -584,7 +388,7 @@ namespace mousetrap
         }
 
         frame.update_texture();
-        _layers_layer.refresh();
+        _layers_layer.update();
     }
 
     void Canvas::draw_brush(Vector2i position, Brush* brush, RGBA color)
@@ -593,28 +397,29 @@ namespace mousetrap
         auto& frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
 
         static float alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
-        auto& image = brush->get_image();
+        auto& brush_image = brush->get_image();
 
-        auto x_start = position.x - image.get_size().x / 2;
-        auto y_start = position.y - image.get_size().y / 2;
+        const int x_start = int(position.x) - int(brush_image.get_size().x / 2);
+        const int y_start = int(position.y) - int(brush_image.get_size().y / 2);
 
-        auto x_offset = image.get_size().x % 2 == 0 ? 1 : 0;
-        auto y_offset = image.get_size().y % 2 == 0 ? 1 : 0;
+        int x_offset = brush_image.get_size().x % 2 == 0 ? 1 : 0;
+        int y_offset = brush_image.get_size().y % 2 == 0 ? 1 : 0;
 
-        for (int x = x_start; x < x_start + image.get_size().x; ++x)
+        for (int x = x_start; x < x_start + int(brush_image.get_size().x); ++x)
         {
-            for (int y = y_start; y < y_start + image.get_size().y; ++y)
+            for (int y = y_start; y < y_start + int(brush_image.get_size().y); ++y)
             {
-                if (x < 0 or x >= frame.image->get_size().x or y < 0 or y >= frame.image->get_size().y)
+                auto pos = Vector2i(x + x_offset, y + y_offset);
+                if (pos.x < 0 or pos.x > frame.image->get_size().x or pos.y < 0 or pos.y > frame.image->get_size().y)
                     continue;
 
-                auto source = image.get_pixel(x - x_start, y - y_start);
+                auto source = brush_image.get_pixel(x - x_start, y - y_start);
                 if (source.a > alpha_eps)
-                    to_draw.add({x + x_offset, y + y_offset}, RGBA(
-                        source.r * color.r,
-                        source.g * color.g,
-                        source.b * color.b,
-                        source.a * color.a
+                    to_draw.add(pos, RGBA(
+                            source.r * color.r,
+                            source.g * color.g,
+                            source.b * color.b,
+                            source.a * color.a
                     ));
             }
         }
@@ -627,29 +432,30 @@ namespace mousetrap
         auto to_draw = SubImage();
 
         auto& frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
-        auto& image = brush->get_image();
+        auto& brush_image = brush->get_image();
         auto points = get_line_points(a, b);
 
-        auto x_offset = image.get_size().x % 2 == 0 ? 1 : 0;
-        auto y_offset = image.get_size().y % 2 == 0 ? 1 : 0;
+        auto x_offset = brush_image.get_size().x % 2 == 0 ? 1 : 0;
+        auto y_offset = brush_image.get_size().y % 2 == 0 ? 1 : 0;
 
         static float alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
 
         for (auto& position : points)
         {
-            auto x_start = position.x - image.get_size().x / 2;
-            auto y_start = position.y - image.get_size().y / 2;
+            auto x_start = position.x - brush_image.get_size().x / 2;
+            auto y_start = position.y - brush_image.get_size().y / 2;
 
-            for (int x = x_start; x < x_start + image.get_size().x; ++x)
+            for (int x = x_start; x < x_start + int(brush_image.get_size().x); ++x)
             {
-                for (int y = y_start; y < y_start + image.get_size().y; ++y)
+                for (int y = y_start; y < y_start + int(brush_image.get_size().y); ++y)
                 {
-                    if (x < 0 or x >= frame.image->get_size().x or y < 0 or y >= frame.image->get_size().y)
+                    auto pos = Vector2i(x + x_offset, y + y_offset);
+                    if (pos.x < 0 or pos.x > frame.image->get_size().x or pos.y < 0 or pos.y > frame.image->get_size().y)
                         continue;
 
-                    auto source = image.get_pixel(x - x_start, y - y_start);
+                    auto source = brush_image.get_pixel(x - x_start, y - y_start);
                     if (source.a > alpha_eps)
-                        to_draw.add({x + x_offset, y + y_offset}, RGBA(
+                        to_draw.add(pos, RGBA(
                                 source.r * color.r,
                                 source.g * color.g,
                                 source.b * color.b,
@@ -662,37 +468,11 @@ namespace mousetrap
         draw(to_draw, BackupMode::UNDO);
     }
 
-    /*
-    void Canvas::draw_point(size_t x, size_t y, RGBA color)
-    {
-        auto frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
-        frame.draw_pixel({x, y}, color);
-        frame.update_texture();
-
-        _layers_layer.refresh();
-    }
-
-    void Canvas::draw_brush(size_t x, size_t y, Brush* brush, RGBA color)
-    {
-        auto frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
-
-        const auto& image = brush->get_image();
-
-        if (image.get_size().x % 2 == 0)
-            x += 1;
-
-        if (image.get_size().y % 2 == 0)
-            y += 1;
-
-        frame.draw_image({x, y}, brush->get_image(), color);
-        frame.update_texture();
-
-        _layers_layer.refresh();
-    }
-     */
-
     void Canvas::update()
     {
-        return;
+        _control_layer.update();
+        _transparency_tiling_layer.update();
+        _layers_layer.update();
+        _grid_layer.update();
     }
 }

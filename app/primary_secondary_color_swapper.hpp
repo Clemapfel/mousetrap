@@ -247,7 +247,7 @@ namespace mousetrap
         state::update_color_picker();
         state::update_palette_view();
         state::update_color_preview();
-        ((Canvas*) state::canvas)->update_brush_cursor();
+        state::update_canvas();
 
         _render_area.queue_render();
     }

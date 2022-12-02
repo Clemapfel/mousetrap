@@ -330,8 +330,7 @@ namespace mousetrap
         state::active_tool = id;
         _currently_selected = id;
 
-        if (state::canvas != nullptr)
-            ((Canvas*) state::canvas)->update_brush_cursor();
+        state::update_canvas();
     }
 
     void Toolbox::update()

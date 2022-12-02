@@ -12,6 +12,12 @@ namespace mousetrap
         _area.connect_signal_resize(on_resize, this);
     }
 
+    void Canvas::TransparencyTilingLayer::update()
+    {
+        reformat();
+        _area.queue_render();
+    }
+
     Canvas::TransparencyTilingLayer::operator Widget*()
     {
         return &_area;
@@ -24,7 +30,6 @@ namespace mousetrap
         delete _subtract_right;
         delete _subtract_bottom;
         delete _subtract_left;
-        delete _canvas_size;
     }
 
     void Canvas::TransparencyTilingLayer::on_realize(Widget* widget, TransparencyTilingLayer* instance)
@@ -48,7 +53,7 @@ namespace mousetrap
         instance->_area.clear_render_tasks();
 
         auto task = RenderTask(instance->_shape, _shader, nullptr);
-        task.register_vec2("_canvas_size", instance->_canvas_size);
+        task.register_vec2("_canvas_size", instance->_owner->_canvas_size);
         area->add_render_task(task);
 
         for (auto* shape : {
@@ -67,8 +72,8 @@ namespace mousetrap
 
     void Canvas::TransparencyTilingLayer::on_resize(GLArea*, int w, int h, TransparencyTilingLayer* instance)
     {
-        *instance->_canvas_size = {w, h};
         instance->reformat();
+        instance->_area.queue_render();
     }
 
     void Canvas::TransparencyTilingLayer::reformat()
@@ -76,8 +81,8 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
-        float width = state::layer_resolution.x / _canvas_size->x;
-        float height = state::layer_resolution.y / _canvas_size->y;
+        float width = state::layer_resolution.x / _owner->_canvas_size->x;
+        float height = state::layer_resolution.y / _owner->_canvas_size->y;
 
         float eps = 0;
         float x = 0.5 - width / 2 + eps;
@@ -88,11 +93,21 @@ namespace mousetrap
         float a = 10e4;
         float b = 10e4;
 
+        auto align_with_pixel_grid = [&](Vector2f in)
+        {
+            auto pos = in;
+            pos *= *_owner->_canvas_size;
+            pos.x = round(pos.x);
+            pos.y = round(pos.y);
+            pos /= *_owner->_canvas_size;
+            return pos;
+        };
+
         _shape->as_rectangle(
-            _owner->align_with_pixel_grid({0, 0}),
-            _owner->align_with_pixel_grid({1, 0}),
-            _owner->align_with_pixel_grid({1, 1}),
-            _owner->align_with_pixel_grid({0, 1})
+            align_with_pixel_grid({0, 0}),
+            align_with_pixel_grid({1, 0}),
+            align_with_pixel_grid({1, 1}),
+            align_with_pixel_grid({0, 1})
         );
 
         _subtract_top->as_rectangle(

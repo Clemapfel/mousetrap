@@ -107,6 +107,12 @@ namespace mousetrap::state
 
     AppComponent* canvas;
 
+    void update_canvas()
+    {
+        if (canvas != nullptr)
+            canvas->update();
+    }
+
     // ### SYSTEM ######################################
 
     AppComponent* bubble_log;

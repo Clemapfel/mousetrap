@@ -469,7 +469,7 @@ namespace mousetrap
             state::update_color_swapper();
             state::update_verbose_color_picker();
             state::update_palette_view();
-            ((Canvas*) state::canvas)->update_brush_cursor();
+            state::update_canvas();
 
             state::preview_color_current = color;
             state::update_color_preview();
@@ -490,7 +490,7 @@ namespace mousetrap
             state::update_color_swapper();
             state::update_verbose_color_picker();
             state::update_palette_view();
-            ((Canvas*) state::canvas)->update_brush_cursor();
+            state::update_canvas();
 
             state::preview_color_current = color;
             state::update_color_preview();

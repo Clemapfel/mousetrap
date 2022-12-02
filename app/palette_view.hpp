@@ -454,7 +454,7 @@ namespace mousetrap
         state::update_verbose_color_picker();
         state::update_color_swapper();
         state::update_color_preview();
-        ((Canvas*) state::canvas)->update_brush_cursor();
+        state::update_canvas();
     }
 
     void PaletteView::load_as_debug()

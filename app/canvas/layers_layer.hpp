@@ -17,8 +17,52 @@ namespace mousetrap
         return &_area;
     }
 
-    void Canvas::LayersLayer::refresh()
+    void Canvas::LayersLayer::update()
     {
+        if (_n_layers != state::layers.size() and _area.get_is_realized())
+        {
+            _current_frame = state::current_frame;
+            _n_layers = state::layers.size();
+            _canvas_size = *_owner->_canvas_size;
+
+            _area.clear_render_tasks();
+
+            while (_layer_shapes.size() < _n_layers)
+                _layer_shapes.emplace_back(new Shape());
+
+            float width = state::layer_resolution.x / _canvas_size.x;
+            float height = state::layer_resolution.y / _canvas_size.y;
+
+            for (size_t layer_i = 0; layer_i < _n_layers; ++layer_i)
+            {
+                auto* shape = _layer_shapes.at(layer_i);
+
+                shape->as_rectangle(
+                    {0.5 - width / 2, 0.5 - height / 2},
+                    {width, height}
+                );
+                shape->set_texture(state::layers.at(layer_i)->frames.at(state::current_frame).texture);
+
+                auto task = RenderTask(
+                    _layer_shapes.at(layer_i),
+                    nullptr,
+                    _owner->_transform,
+                    state::layers.at(layer_i)->blend_mode
+                );
+
+                _area.add_render_task(task);
+            }
+        }
+
+        if (_current_frame != state::current_frame and _area.get_is_realized())
+        {
+            _current_frame = state::current_frame;
+            for (size_t layer_i = 0; layer_i < _n_layers; ++layer_i)
+                _layer_shapes.at(layer_i)->set_texture(
+                    state::layers.at(layer_i)->frames.at(state::current_frame).texture
+                );
+        }
+
         _area.queue_render();
     }
 
@@ -26,8 +70,6 @@ namespace mousetrap
     {
         for (auto* shape : _layer_shapes)
             delete shape;
-
-        delete _canvas_size;
     }
 
     void Canvas::LayersLayer::on_realize(Widget* widget, LayersLayer* instance)
@@ -35,13 +77,30 @@ namespace mousetrap
         auto* area = (GLArea*) widget;
         area->make_current();
 
-        for (size_t i = 0; i < state::layers.size(); ++i)
+        instance->_current_frame = state::current_frame;
+        instance->_n_layers = state::layers.size();
+        instance->_canvas_size = *instance->_owner->_canvas_size;
+
+        for (size_t i = 0; i < instance->_n_layers; ++i)
             instance->_layer_shapes.emplace_back(new Shape());
 
-        instance->reformat();
-        instance->_area.clear_render_tasks();
+        float width = state::layer_resolution.x / instance->_canvas_size.x;
+        float height = state::layer_resolution.y / instance->_canvas_size.y;
 
-        for (size_t layer_i = 0; layer_i < state::layers.size(); ++layer_i)
+        for (size_t layer_i = 0; layer_i < instance->_n_layers; ++layer_i)
+        {
+            auto& layer = state::layers.at(layer_i);
+            auto& shape = instance->_layer_shapes.at(layer_i);
+
+            shape->as_rectangle(
+                    {0.5 - width / 2, 0.5 - height / 2},
+                    {width, height}
+            );
+            //shape->set_texture(layer->frames.at(instance->_current_frame).texture);
+        }
+
+        instance->_area.clear_render_tasks();
+        for (size_t layer_i = 0; layer_i < instance->_n_layers; ++layer_i)
         {
             auto task = RenderTask(
                 instance->_layer_shapes.at(layer_i),
@@ -56,29 +115,11 @@ namespace mousetrap
         area->queue_render();
     }
 
+    Canvas::LayersLayer::reformat();
+
     void Canvas::LayersLayer::on_resize(GLArea* area, int w, int h, LayersLayer* instance)
     {
-        *instance->_canvas_size = {w, h};
+        instance->_canvas_size = {w, h};
         instance->reformat();
-    }
-
-    void Canvas::LayersLayer::reformat()
-    {
-        float width = state::layer_resolution.x / _canvas_size->x;
-        float height = state::layer_resolution.y / _canvas_size->y;
-
-        for (size_t layer_i = 0; layer_i < state::layers.size(); ++layer_i)
-        {
-            auto& layer = state::layers.at(layer_i);
-            auto& shape = _layer_shapes.at(layer_i);
-
-            shape->as_rectangle(
-                {0.5 - width / 2, 0.5 - height / 2},
-                {width, height}
-            );
-            shape->set_texture(layer->frames.at(state::current_frame).texture);
-        }
-
-        _area.queue_render();
     }
 }
