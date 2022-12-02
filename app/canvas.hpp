@@ -192,14 +192,22 @@ namespace mousetrap
                     GLArea _area;
 
                     float* _timer = new float(0); // seconds
-                    Shader* _brush_outline_shader = nullptr;
                     Shape* _cursor_shape = nullptr;
-
                     Shape* _cursor_outline_shape_hlines = nullptr;
                     Shape* _cursor_outline_shape_vlines = nullptr;
 
                     Vector2f _canvas_size = Vector2f(1, 1);
                     Vector2f _cursor_position = Vector2f(0, 0);
+
+                    float _brush_opacity;
+                    HSVA _brush_color;
+                    Brush* _current_brush;
+                    bool _cursor_in_bounds = false;
+
+                    void reformat();
+
+                    static void on_realize(Widget*, BrushCursorLayer* instance);
+                    static void on_resize(GLArea*, int, int, BrushCursorLayer* instance);
             };
 
             BrushCursorLayer _brush_cursor_layer = BrushCursorLayer(this);
@@ -238,8 +246,7 @@ namespace mousetrap
 #include <app/canvas/transparency_tiling_area.hpp>
 #include <app/canvas/grid_layer.hpp>
 #include <app/canvas/layers_layer.hpp>
-
-//#include <app/canvas/brush_cursor_area.hpp>
+#include <app/canvas/brush_cursor_area.hpp>
 
 namespace mousetrap
 {
@@ -250,6 +257,7 @@ namespace mousetrap
         _canvas_layer_overlay.set_child(_transparency_tiling_layer);
         _canvas_layer_overlay.add_overlay(_layers_layer);
         _canvas_layer_overlay.add_overlay(_grid_layer);
+        _canvas_layer_overlay.add_overlay(_brush_cursor_layer);
 
         _canvas_layer_overlay.add_overlay(_control_layer);
 
@@ -426,8 +434,10 @@ namespace mousetrap
     void Canvas::update()
     {
         _control_layer.update();
+        _brush_cursor_layer.update();
         _transparency_tiling_layer.update();
         _layers_layer.update();
         _grid_layer.update();
+
     }
 }

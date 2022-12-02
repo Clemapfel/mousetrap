@@ -67,6 +67,8 @@ namespace mousetrap
         y_dist = floor(y_dist);
 
         *_owner->_current_pixel_position = {x_dist, y_dist};
+
+        _owner->_brush_cursor_layer.update();
     }
 
     void Canvas::ControlLayer::on_resize(GLArea*, int w, int h, ControlLayer* instance)
@@ -99,6 +101,8 @@ namespace mousetrap
     void Canvas::ControlLayer::on_motion_leave(MotionEventController*, ControlLayer* instance)
     {
         *instance->_owner->_cursor_in_bounds = false;
+
+        instance->_owner->_brush_cursor_layer.update();
     }
 
     void Canvas::ControlLayer::on_motion(MotionEventController*, double x, double y, ControlLayer* instance)
