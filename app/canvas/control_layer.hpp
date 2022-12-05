@@ -8,6 +8,7 @@ namespace mousetrap
     Canvas::ControlLayer::ControlLayer(Canvas* canvas)
         : CanvasLayer(canvas)
     {
+        _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);
 
         _motion_controller.connect_signal_motion_enter(on_motion_enter, this);
@@ -71,6 +72,9 @@ namespace mousetrap
 
         _owner->_brush_cursor_layer.update();
     }
+
+    void Canvas::ControlLayer::on_realize(Widget*, ControlLayer* instance)
+    {}
 
     void Canvas::ControlLayer::on_resize(GLArea*, int w, int h, ControlLayer* instance)
     {

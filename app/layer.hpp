@@ -174,29 +174,16 @@ namespace mousetrap
         auto source = color;
         RGBA final;
 
-
         bool should_clamp = false;
 
         switch (blend_mode)
         {
             case BlendMode::NONE:
-                final = dest;
+                final = source;
                 break;
 
             case BlendMode::NORMAL:
             {
-                /*
-                float alpha = source.a + source.b * (1 - source.a);
-                auto blend = [&](float a, float b) -> float {
-                    return (a * source.a + b * dest.a * (1 - source.a)) / alpha;
-                };
-
-                final.r = blend(source.r, dest.r);
-                final.g = blend(source.g, dest.g);
-                final.b = blend(source.b, dest.b);
-                final.a = glm::mix(source.a, dest.a, 0.5);
-                */
-
                 final.r = source.r + dest.r * (1 - source.a);
                 final.g = source.g + dest.g * (1 - source.a);
                 final.b = source.b + dest.b * (1 - source.a);

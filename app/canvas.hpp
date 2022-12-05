@@ -74,6 +74,7 @@ namespace mousetrap
                     GLArea _area;
 
                     void update_pixel_position();
+                    static void on_realize(Widget*, ControlLayer* instance);
                     static void on_resize(GLArea*, int, int, ControlLayer* instance);
 
                     MotionEventController _motion_controller;
@@ -273,7 +274,7 @@ namespace mousetrap
 #include <app/canvas/transparency_tiling_layer.hpp>
 #include <app/canvas/grid_layer.hpp>
 #include <app/canvas/layers_layer.hpp>
-#include <app/canvas/brush_cursor_area.hpp>
+#include <app/canvas/brush_cursor_layer.hpp>
 #include <app/canvas/tool_behavior.hpp>
 
 namespace mousetrap
@@ -320,7 +321,11 @@ namespace mousetrap
             return;
 
         _redo_queue.emplace_back();
+
+        _nodraw_set.clear();
         draw(_undo_queue.back(), BlendMode::NONE, BackupMode::REDO);
+        _nodraw_set.clear();
+
         _undo_queue.pop_back();
     }
 
@@ -329,8 +334,14 @@ namespace mousetrap
         if (_redo_queue.empty() or _redo_queue.back().is_empty())
             return;
 
+        _nodraw_set.clear();
+
         _undo_queue.emplace_back();
+
+        _nodraw_set.clear();
         draw(_redo_queue.back(), BlendMode::NONE, BackupMode::UNDO);
+        _nodraw_set.clear();
+
         _redo_queue.pop_back();
     }
 
