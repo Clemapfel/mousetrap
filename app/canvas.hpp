@@ -59,6 +59,7 @@ namespace mousetrap
             // global transform
             Vector2f* _transform_offset = new Vector2f(0, 0);
             float* _transform_scale = new float(1);
+            float _transform_scale_step = state::settings_file->get_value_as<float>("canvas", "scale_step");
             GLTransform* _transform = new GLTransform();
 
             // layer handling user input
@@ -89,6 +90,15 @@ namespace mousetrap
                     KeyEventController _key_controller;
                     static bool on_key_pressed(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, ControlLayer* instance);
                     static bool on_key_released(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, ControlLayer* instance);
+
+                    ScrollEventController _scroll_controller;
+                    static void on_scroll_begin(ScrollEventController*, ControlLayer* instance);
+                    static void on_scroll(ScrollEventController*, double x, double y, ControlLayer* instance);
+                    static void on_scroll_end(ScrollEventController*, ControlLayer* instance);
+
+                    ShortcutController _shortcut_controller = ShortcutController(state::app);
+                    Action _scale_step_up_action = Action("canvas.scale_step_up");
+                    Action _scale_step_down_action = Action("canvas.scale_step_down");
             };
 
             ControlLayer _control_layer = ControlLayer(this);

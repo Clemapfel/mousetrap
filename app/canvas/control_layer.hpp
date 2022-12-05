@@ -19,6 +19,30 @@ namespace mousetrap
         _click_controller.connect_signal_click_pressed(on_click_pressed, this);
         _click_controller.connect_signal_click_released(on_click_released, this);
         _area.add_controller(&_click_controller);
+
+        _scroll_controller.connect_signal_scroll_begin(on_scroll_begin, this);
+        _scroll_controller.connect_signal_scroll(on_scroll, this);
+        _scroll_controller.connect_signal_scroll_end(on_scroll_end, this);
+        _area.add_controller(&_scroll_controller);
+
+        _scale_step_up_action.set_do_function([](ControlLayer* instance) {
+            instance->_owner->set_transform_scale(*(instance->_owner->_transform_scale) + instance->_owner->_transform_scale_step);
+            instance->_owner->update();
+        }, this);
+        _scale_step_up_action.add_shortcut(state::keybindings_file->get_value("canvas", "scale_step_up"));
+        state::app->add_action(_scale_step_up_action);
+        _shortcut_controller.add_action(_scale_step_up_action.get_id());
+
+        _scale_step_down_action.set_do_function([](ControlLayer* instance) {
+            float scale = *(instance->_owner->_transform_scale) - instance->_owner->_transform_scale_step;
+            instance->_owner->set_transform_scale(std::max<float>(scale, 0));
+            instance->_owner->update();
+        }, this);
+        _scale_step_down_action.add_shortcut(state::keybindings_file->get_value("canvas", "scale_step_down"));
+        state::app->add_action(_scale_step_down_action);
+        _shortcut_controller.add_action(_scale_step_down_action.get_id());
+
+        _area.add_controller(&_shortcut_controller);
     }
 
     Canvas::ControlLayer::operator Widget*()
@@ -134,4 +158,13 @@ namespace mousetrap
         else if (state::active_tool == ERASER)
             instance->_owner->resolve_eraser_motion();
     }
+
+    void Canvas::ControlLayer::on_scroll_begin(ScrollEventController*, ControlLayer* instance)
+    {}
+
+    void Canvas::ControlLayer::on_scroll_end(ScrollEventController*, ControlLayer* instance)
+    {}
+
+    void Canvas::ControlLayer::on_scroll(ScrollEventController*, double x, double y, ControlLayer* instance)
+    {}
 }
