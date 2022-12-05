@@ -13,6 +13,7 @@ namespace mousetrap
     {
         if (*_click_pressed)
         {
+            _nodraw_set.clear();
             undo_safepoint();
 
             auto color = state::primary_color;
@@ -22,7 +23,9 @@ namespace mousetrap
     }
 
     void Canvas::resolve_brush_click_released()
-    {}
+    {
+        _nodraw_set.clear();
+    }
 
     void Canvas::resolve_brush_motion()
     {
@@ -41,12 +44,15 @@ namespace mousetrap
         if (*_click_pressed)
         {
             undo_safepoint();
+            _nodraw_set.clear();
             draw_brush(*_current_pixel_position, state::current_brush, HSVA(0, 0, 0, 0));
         }
     }
 
     void Canvas::resolve_eraser_click_released()
-    {}
+    {
+        _nodraw_set.clear();
+    }
 
     void Canvas::resolve_eraser_motion()
     {

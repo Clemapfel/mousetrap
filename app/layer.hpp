@@ -174,6 +174,9 @@ namespace mousetrap
         auto source = color;
         RGBA final;
 
+
+        bool should_clamp = false;
+
         switch (blend_mode)
         {
             case BlendMode::NONE:
@@ -182,15 +185,32 @@ namespace mousetrap
 
             case BlendMode::NORMAL:
             {
-                auto alpha = source.a + dest.a * (1 - source.a);
+                /*
+                float alpha = source.a + source.b * (1 - source.a);
                 auto blend = [&](float a, float b) -> float {
-                    return a + b * (1 - source.a);
+                    return (a * source.a + b * dest.a * (1 - source.a)) / alpha;
                 };
 
                 final.r = blend(source.r, dest.r);
                 final.g = blend(source.g, dest.g);
                 final.b = blend(source.b, dest.b);
-                final.a = alpha;
+                final.a = glm::mix(source.a, dest.a, 0.5);
+                */
+
+                final.r = source.r + dest.r * (1 - source.a);
+                final.g = source.g + dest.g * (1 - source.a);
+                final.b = source.b + dest.b * (1 - source.a);
+                final.a = source.a + dest.a * (1 - source.a);
+
+                if (final.r > source.r)
+                    final.r = source.r;
+
+                if (final.g > source.g)
+                    final.g = source.g;
+
+                if (final.b > source.b)
+                    final.b = source.b;
+
                 break;
             }
 
@@ -199,6 +219,8 @@ namespace mousetrap
                 final.g = source.g - dest.g;
                 final.b = source.b - dest.b;
                 final.a = source.a - dest.a;
+
+                should_clamp = true;
                 break;
 
             case BlendMode::MULTIPLY:
@@ -206,6 +228,8 @@ namespace mousetrap
                 final.g = source.g * dest.g;
                 final.b = source.b * dest.b;
                 final.a = source.a * dest.a;
+
+                should_clamp = true;
                 break;
 
             case BlendMode::REVERSE_SUBTRACT:
@@ -213,6 +237,8 @@ namespace mousetrap
                 final.g = dest.g - source.g;
                 final.b = dest.b - source.b;
                 final.a = dest.a - source.a;
+
+                should_clamp = true;
                 break;
 
             case BlendMode::ADD:
@@ -220,6 +246,8 @@ namespace mousetrap
                 final.g = source.g + dest.g;
                 final.b = source.b + dest.b;
                 final.a = source.a + dest.a;
+
+                should_clamp = true;
                 break;
 
             case BlendMode::MAX:
@@ -237,10 +265,14 @@ namespace mousetrap
                 break;
         }
 
-        final.r = glm::clamp<float>(final.r, 0, 1);
-        final.g = glm::clamp<float>(final.g, 0, 1);
-        final.b = glm::clamp<float>(final.b, 0, 1);
-        final.a = glm::clamp<float>(final.a, 0, 1);
+        if (should_clamp)
+        {
+            final.r = glm::clamp<float>(final.r, 0, 1);
+            final.g = glm::clamp<float>(final.g, 0, 1);
+            final.b = glm::clamp<float>(final.b, 0, 1);
+            final.a = glm::clamp<float>(final.a, 0, 1);
+        }
+
         image->set_pixel(xy.x, xy.y, final);
     }
 

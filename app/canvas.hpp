@@ -226,6 +226,18 @@ namespace mousetrap
                 NONE
             };
 
+            struct VectorCompare
+            {
+                bool operator()(const Vector2i& a, const Vector2i& b) const
+                {
+                    if (a.x == b.x)
+                        return a.y < b.y;
+                    else
+                        return a.x < b.x;
+                }
+            };
+            std::set<Vector2i, VectorCompare> _nodraw_set; // pixels already drawn this stroke
+
             /// \param mode: if undo, inverse action is pushed to undo queue, else pushed to redo queue
             void draw(const SubImage&, BlendMode mode, BackupMode = BackupMode::NONE);
             void add_brush_to_subimage(Vector2i brush_position, Brush*, RGBA, SubImage& image);
@@ -390,12 +402,16 @@ namespace mousetrap
             if (pos.x < 0 or pos.x >= frame.image->get_size().x or pos.y < 0 or pos.y >= frame.image->get_size().y)
                 continue;
 
+            if (_nodraw_set.find(pos) != _nodraw_set.end())
+                continue;
+
             if (backup_mode == BackupMode::UNDO)
                 _undo_queue.back().add(pos, frame.image->get_pixel(pos.x, pos.y));
             else if (backup_mode == BackupMode::REDO)
                 _redo_queue.back().add(pos, frame.image->get_pixel(pos.x, pos.y));
 
             frame.draw_pixel(pos, it.color, blend_mode);
+            _nodraw_set.insert(pos);
         }
 
         frame.update_texture();
