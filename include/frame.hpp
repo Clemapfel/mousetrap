@@ -19,7 +19,6 @@ namespace mousetrap
 
             void set_label_widget(Widget*);
             void set_label_align(float x_align);
-
     };
 }
 

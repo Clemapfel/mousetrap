@@ -25,20 +25,20 @@ namespace mousetrap
             Texture* texture;
             bool is_tween_repeat = false;
 
-            void draw_pixel(Vector2i, RGBA);
-            void draw_image(Vector2i centroid, const Image&, RGBA multiplication = RGBA(1, 1, 1, 1));
-            void draw_line(Vector2i start, Vector2i end, RGBA);
+            void draw_pixel(Vector2i, RGBA, BlendMode = BlendMode::NORMAL);
+            void draw_image(Vector2i centroid, const Image&, RGBA multiplication = RGBA(1, 1, 1, 1), BlendMode = BlendMode::NORMAL);
+            void draw_line(Vector2i start, Vector2i end, RGBA, BlendMode = BlendMode::NORMAL);
 
-            void draw_rectangle_filled(Vector2i top_left, Vector2i bottom_right, RGBA);
-            void draw_rectangle(Vector2i top_left, Vector2i bottom_right, RGBA, size_t px = 1);
+            void draw_rectangle_filled(Vector2i top_left, Vector2i bottom_right, RGBA, BlendMode = BlendMode::NORMAL);
+            void draw_rectangle(Vector2i top_left, Vector2i bottom_right, RGBA, size_t px = 1, BlendMode = BlendMode::NORMAL);
 
-            void draw_polygon(const std::vector<Vector2i>& points, RGBA);
-            void draw_polygon_filled(const std::vector<Vector2i>& points, RGBA);
+            void draw_polygon(const std::vector<Vector2i>& points, RGBA, BlendMode = BlendMode::NORMAL);
+            void draw_polygon_filled(const std::vector<Vector2i>& points, RGBA, BlendMode = BlendMode::NORMAL);
 
             /// \param aabb_top_left: bounding box top left pixel coordinate
             /// \param aabb_bottom_right: bounding box bottom right pixel coordinate
-            void draw_ellipse(Vector2i aabb_top_left, Vector2i aabb_bottom_right, RGBA);
-            void draw_ellipse_filled(Vector2i aabb_top_left, Vector2i aabb_bottom_right, RGBA);
+            void draw_ellipse(Vector2i aabb_top_left, Vector2i aabb_bottom_right, RGBA, BlendMode = BlendMode::NORMAL);
+            void draw_ellipse_filled(Vector2i aabb_top_left, Vector2i aabb_bottom_right, RGBA, BlendMode = BlendMode::NORMAL);
 
             void update_texture();
         };
@@ -165,30 +165,104 @@ namespace mousetrap
         return out;
     }
 
-    void Layer::Frame::draw_pixel(Vector2i xy, RGBA color)
+    void Layer::Frame::draw_pixel(Vector2i xy, RGBA color, BlendMode blend_mode)
     {
-        if (xy.x >= 0 and xy.x < image->get_size().x and xy.y >= 0 and xy.y < image->get_size().y)
-            image->set_pixel(xy.x, xy.y, color);
+        if (not (xy.x >= 0 and xy.x < image->get_size().x and xy.y >= 0 and xy.y < image->get_size().y))
+            return;
+
+        auto source = image->get_pixel(xy.x, xy.y);
+        auto dest = color;
+        RGBA final;
+
+        switch (blend_mode)
+        {
+            case BlendMode::NONE:
+                final = dest;
+                break;
+
+            case BlendMode::NORMAL:
+            {
+                auto alpha_a = source.a;
+                auto alpha_b = 1 - dest.b;
+
+                auto blend = [&](float c_a, float c_b) -> float {
+                    return c_a * (alpha_a / (alpha_a + alpha_b)) + c_b * (alpha_b / (alpha_a + alpha_b));
+                };
+
+                final.r = blend(source.r, dest.r);
+                final.g = blend(source.g, dest.g);
+                final.b = blend(source.b, dest.b);
+                final.a = alpha_a + alpha_b;
+                break;
+            }
+
+            case BlendMode::SUBTRACT:
+                final.r = source.r - dest.r;
+                final.g = source.g - dest.g;
+                final.b = source.b - dest.b;
+                final.a = source.a - dest.a;
+                break;
+
+            case BlendMode::MULTIPLY:
+                final.r = source.r * dest.r;
+                final.g = source.g * dest.g;
+                final.b = source.b * dest.b;
+                final.a = source.a * dest.a;
+                break;
+
+            case BlendMode::REVERSE_SUBTRACT:
+                final.r = dest.r - source.r;
+                final.g = dest.g - source.g;
+                final.b = dest.b - source.b;
+                final.a = dest.a - source.a;
+                break;
+
+            case BlendMode::ADD:
+                final.r = source.r + dest.r;
+                final.g = source.g + dest.g;
+                final.b = source.b + dest.b;
+                final.a = source.a + dest.a;
+                break;
+
+            case BlendMode::MAX:
+                final.r = std::max<float>(source.r, dest.r);
+                final.g = std::max<float>(source.g, dest.g);
+                final.b = std::max<float>(source.b, dest.b);
+                final.a = std::max<float>(source.a, dest.a);
+                break;
+
+            case BlendMode::MIN:
+                final.r = std::min<float>(source.r, dest.r);
+                final.g = std::min<float>(source.g, dest.g);
+                final.b = std::min<float>(source.b, dest.b);
+                final.a = std::min<float>(source.a, dest.a);
+                break;
+        }
+
+        final.r = glm::clamp<float>(final.r, 0, 1);
+        final.r = glm::clamp<float>(final.g, 0, 1);
+        final.r = glm::clamp<float>(final.b, 0, 1);
+        final.r = glm::clamp<float>(final.a, 0, 1);
+        image->set_pixel(xy.x, xy.y, final);
     }
 
-
-    void Layer::Frame::draw_line(Vector2i start, Vector2i end, RGBA color)
+    void Layer::Frame::draw_line(Vector2i start, Vector2i end, RGBA color, BlendMode blend_mode)
     {
         for (auto& pos : get_line_points(start, end))
-            draw_pixel(pos, color);
+            draw_pixel(pos, color, blend_mode);
     }
 
-    void Layer::Frame::draw_polygon(const std::vector<Vector2i>& points, RGBA color)
+    void Layer::Frame::draw_polygon(const std::vector<Vector2i>& points, RGBA color, BlendMode blend_mode)
     {
         for (size_t i = 0; i < points.size(); ++i)
             for (auto& pos : get_line_points(points.at(i), points.at(i+1)))
-                draw_pixel(pos, color);
+                draw_pixel(pos, color, blend_mode);
 
         for (auto& pos : get_line_points(points.back(), points.front()))
-            draw_pixel(pos, color);
+            draw_pixel(pos, color, blend_mode);
     }
 
-    void Layer::Frame::draw_polygon_filled(const std::vector<Vector2i>& points, RGBA color)
+    void Layer::Frame::draw_polygon_filled(const std::vector<Vector2i>& points, RGBA color, BlendMode blend_mode)
     {
         // degenerate area into horizontal bands
 
@@ -221,10 +295,10 @@ namespace mousetrap
 
         for (auto& pair : coords)
             for (size_t x = pair.second.min; x < pair.second.max; ++x)
-                draw_pixel({x, pair.first}, color);
+                draw_pixel({x, pair.first}, color, blend_mode);
     }
 
-    void Layer::Frame::draw_rectangle(Vector2i top_left, Vector2i bottom_right, RGBA color, size_t px)
+    void Layer::Frame::draw_rectangle(Vector2i top_left, Vector2i bottom_right, RGBA color, size_t px, BlendMode blend_mode)
     {
         // guaranteed to only call draw_pixel the minimum number of times, no matter the input
 
@@ -254,22 +328,22 @@ namespace mousetrap
 
         for (auto i = x; i < x + w; ++i)
             for (auto j = y; j < y + y_m; ++j)
-                draw_pixel({i, j}, color);
+                draw_pixel({i, j}, color, blend_mode);
 
         for (auto i = x; i < x + w; ++i)
             for (auto j = y + h - y_m; j < y + h; ++j)
-                draw_pixel({i, j}, color);
+                draw_pixel({i, j}, color, blend_mode);
 
         for (auto i = x; y_m != h / 2 and i < x + x_m; ++i)
             for (auto j = y + y_m; j < y + h - y_m; ++j)
-                draw_pixel({i, j}, color);
+                draw_pixel({i, j}, color, blend_mode);
 
         for (auto i = x + w - x_m; y_m != h / 2 and i < x + w; ++i)
             for (auto j = y + y_m; j < y + h - y_m; ++j)
-                draw_pixel({i, j}, color);
+                draw_pixel({i, j}, color, blend_mode);
     }
 
-    void Layer::Frame::draw_rectangle_filled(Vector2i top_left, Vector2i bottom_right, RGBA color)
+    void Layer::Frame::draw_rectangle_filled(Vector2i top_left, Vector2i bottom_right, RGBA color, BlendMode blend_mode)
     {
         auto min_x = std::min(top_left.x, bottom_right.x);
         auto min_y = std::min(top_left.y, bottom_right.y);
@@ -290,7 +364,7 @@ namespace mousetrap
 
         for (size_t x = min_x; x < max_x; ++x)
             for (size_t y = min_y; y < max_y; ++y)
-                draw_pixel({x, y}, color);
+                draw_pixel({x, y}, color, blend_mode);
     }
 
     void Layer::Frame::update_texture()

@@ -25,7 +25,6 @@ namespace mousetrap
             void draw_brush_line(Vector2i a, Vector2i b, Brush* brush, RGBA color);
 
         private:
-
             struct CanvasLayer
             {
                 public:
@@ -44,9 +43,11 @@ namespace mousetrap
             bool* _click_pressed = new bool(false);
 
             // position in texture space
+            Vector2i* _previous_pixel_position = new Vector2i(0, 0);
             Vector2i* _current_pixel_position = new Vector2i(0, 0);
 
             // position in widget space
+            Vector2f* _previous_cursor_position = new Vector2f(0, 0);
             Vector2f* _current_cursor_position = new Vector2f(0, 0);
 
             // is cursor in canvas widget area
@@ -83,6 +84,10 @@ namespace mousetrap
                     ClickEventController _click_controller;
                     static void on_click_pressed(ClickEventController*, size_t n, double x, double y, ControlLayer* instance);
                     static void on_click_released(ClickEventController*, size_t n, double x, double y, ControlLayer* instance);
+
+                    KeyEventController _key_controller;
+                    static bool on_key_pressed(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, ControlLayer* instance);
+                    static bool on_key_released(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, ControlLayer* instance);
             };
 
             ControlLayer _control_layer = ControlLayer(this);
@@ -222,7 +227,8 @@ namespace mousetrap
             };
 
             /// \param mode: if undo, inverse action is pushed to undo queue, else pushed to redo queue
-            void draw(const SubImage&, BackupMode = BackupMode::NONE);
+            void draw(const SubImage&, BlendMode mode, BackupMode = BackupMode::NONE);
+            void add_brush_to_subimage(Vector2i brush_position, Brush*, RGBA, SubImage& image);
             void undo_safepoint();
 
             size_t _undo_queue_size_byte = 0;
@@ -239,14 +245,24 @@ namespace mousetrap
 
             // main
             Overlay _canvas_layer_overlay;
+
+            // tool behavior
+            void resolve_brush_click_pressed();
+            void resolve_brush_click_released();
+            void resolve_brush_motion();
+
+            void resolve_eraser_click_pressed();
+            void resolve_eraser_click_released();
+            void resolve_eraser_motion();
     };
 }
 
 #include <app/canvas/control_layer.hpp>
-#include <app/canvas/transparency_tiling_area.hpp>
+#include <app/canvas/transparency_tiling_layer.hpp>
 #include <app/canvas/grid_layer.hpp>
 #include <app/canvas/layers_layer.hpp>
 #include <app/canvas/brush_cursor_area.hpp>
+#include <app/canvas/tool_behavior.hpp>
 
 namespace mousetrap
 {
@@ -281,6 +297,8 @@ namespace mousetrap
             _shortcut_controller.add_action(action->get_id());
 
         _undo_queue.emplace_back();
+        _undo_queue.emplace_back();
+        _redo_queue.emplace_back();
         _redo_queue.emplace_back();
     }
 
@@ -290,7 +308,7 @@ namespace mousetrap
             return;
 
         _redo_queue.emplace_back();
-        draw(_undo_queue.back(), BackupMode::REDO);
+        draw(_undo_queue.back(), BlendMode::NONE, BackupMode::REDO);
         _undo_queue.pop_back();
     }
 
@@ -300,7 +318,7 @@ namespace mousetrap
             return;
 
         _undo_queue.emplace_back();
-        draw(_redo_queue.back(), BackupMode::UNDO);
+        draw(_redo_queue.back(), BlendMode::NONE, BackupMode::UNDO);
         _redo_queue.pop_back();
     }
 
@@ -331,9 +349,39 @@ namespace mousetrap
             _undo_queue.pop_front();
     }
 
-    void Canvas::draw(const SubImage& subimage, BackupMode backup_mode)
+    void Canvas::add_brush_to_subimage(Vector2i position, Brush* brush, RGBA color, SubImage& out)
+    {
+        auto& brush_image = brush->get_image();
+        static float alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
+
+        const int x_start = int(position.x) - int(brush_image.get_size().x / 2);
+        const int y_start = int(position.y) - int(brush_image.get_size().y / 2);
+
+        int x_offset = brush_image.get_size().x % 2 == 0 ? 1 : 0;
+        int y_offset = brush_image.get_size().y % 2 == 0 ? 1 : 0;
+
+        for (int x = x_start; x < x_start + int(brush_image.get_size().x); ++x)
+        {
+            for (int y = y_start; y < y_start + int(brush_image.get_size().y); ++y)
+            {
+                auto pos = Vector2i(x + x_offset, y + y_offset);
+
+                auto source = brush_image.get_pixel(x - x_start, y - y_start);
+                if (source.a > alpha_eps)
+                    out.add(pos, RGBA(
+                        color.r,
+                        color.g,
+                        color.b,
+                        color.a
+                    ));
+            }
+        }
+    }
+
+    void Canvas::draw(const SubImage& subimage, BlendMode blend_mode, BackupMode backup_mode)
     {
         auto& frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
+        auto& image = *frame.image;
 
         for (auto& it : subimage)
         {
@@ -347,7 +395,7 @@ namespace mousetrap
             else if (backup_mode == BackupMode::REDO)
                 _redo_queue.back().add(pos, frame.image->get_pixel(pos.x, pos.y));
 
-            frame.draw_pixel(pos, it.color);
+            frame.draw_pixel(pos, it.color, blend_mode);
         }
 
         frame.update_texture();
@@ -357,37 +405,8 @@ namespace mousetrap
     void Canvas::draw_brush(Vector2i position, Brush* brush, RGBA color)
     {
         auto to_draw = SubImage();
-        auto& frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
-
-        static float alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
-        auto& brush_image = brush->get_image();
-
-        const int x_start = int(position.x) - int(brush_image.get_size().x / 2);
-        const int y_start = int(position.y) - int(brush_image.get_size().y / 2);
-
-        int x_offset = brush_image.get_size().x % 2 == 0 ? 1 : 0;
-        int y_offset = brush_image.get_size().y % 2 == 0 ? 1 : 0;
-
-        for (int x = x_start; x < x_start + int(brush_image.get_size().x); ++x)
-        {
-            for (int y = y_start; y < y_start + int(brush_image.get_size().y); ++y)
-            {
-                auto pos = Vector2i(x + x_offset, y + y_offset);
-                if (pos.x < 0 or pos.x > frame.image->get_size().x or pos.y < 0 or pos.y > frame.image->get_size().y)
-                    continue;
-
-                auto source = brush_image.get_pixel(x - x_start, y - y_start);
-                if (source.a > alpha_eps)
-                    to_draw.add(pos, RGBA(
-                            source.r * color.r,
-                            source.g * color.g,
-                            source.b * color.b,
-                            source.a * color.a
-                    ));
-            }
-        }
-
-        draw(to_draw, BackupMode::UNDO);
+        add_brush_to_subimage(position, brush, color, to_draw);
+        draw(to_draw, BlendMode::NONE, BackupMode::UNDO);
     }
 
     void Canvas::draw_brush_line(Vector2i a, Vector2i b, Brush* brush, RGBA color)
@@ -398,37 +417,10 @@ namespace mousetrap
         auto& brush_image = brush->get_image();
         auto points = get_line_points(a, b);
 
-        auto x_offset = brush_image.get_size().x % 2 == 0 ? 1 : 0;
-        auto y_offset = brush_image.get_size().y % 2 == 0 ? 1 : 0;
-
-        static float alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
-
         for (auto& position : points)
-        {
-            auto x_start = position.x - brush_image.get_size().x / 2;
-            auto y_start = position.y - brush_image.get_size().y / 2;
+            add_brush_to_subimage(position, brush, color, to_draw);
 
-            for (int x = x_start; x < x_start + int(brush_image.get_size().x); ++x)
-            {
-                for (int y = y_start; y < y_start + int(brush_image.get_size().y); ++y)
-                {
-                    auto pos = Vector2i(x + x_offset, y + y_offset);
-                    if (pos.x < 0 or pos.x > frame.image->get_size().x or pos.y < 0 or pos.y > frame.image->get_size().y)
-                        continue;
-
-                    auto source = brush_image.get_pixel(x - x_start, y - y_start);
-                    if (source.a > alpha_eps)
-                        to_draw.add(pos, RGBA(
-                                source.r * color.r,
-                                source.g * color.g,
-                                source.b * color.b,
-                                source.a * color.a
-                        ));
-                }
-            }
-        }
-
-        draw(to_draw, BackupMode::UNDO);
+        draw(to_draw, BlendMode::NONE, BackupMode::UNDO);
     }
 
     void Canvas::update()
@@ -438,6 +430,5 @@ namespace mousetrap
         _transparency_tiling_layer.update();
         _layers_layer.update();
         _grid_layer.update();
-
     }
 }

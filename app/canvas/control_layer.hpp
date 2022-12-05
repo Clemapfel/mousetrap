@@ -66,6 +66,7 @@ namespace mousetrap
         x_dist = floor(x_dist);
         y_dist = floor(y_dist);
 
+        *_owner->_previous_pixel_position =  *_owner->_current_pixel_position;
         *_owner->_current_pixel_position = {x_dist, y_dist};
 
         _owner->_brush_cursor_layer.update();
@@ -80,20 +81,33 @@ namespace mousetrap
     void Canvas::ControlLayer::on_click_pressed(ClickEventController*, size_t n, double x, double y, ControlLayer* instance)
     {
         *instance->_owner->_click_pressed = true;
+        *instance->_owner->_previous_cursor_position = *instance->_owner->_current_cursor_position;
         *instance->_owner->_current_cursor_position = {x, y};
         instance->update_pixel_position();
+
+        if (state::active_tool == BRUSH)
+            instance->_owner->resolve_brush_click_pressed();
+        else if (state::active_tool == ERASER)
+            instance->_owner->resolve_eraser_click_pressed();
     }
 
     void Canvas::ControlLayer::on_click_released(ClickEventController*, size_t n, double x, double y, ControlLayer* instance)
     {
         *instance->_owner->_click_pressed = false;
+        *instance->_owner->_previous_cursor_position = *instance->_owner->_current_cursor_position;
         *instance->_owner->_current_cursor_position = {x, y};
         instance->update_pixel_position();
+
+        if (state::active_tool == BRUSH)
+            instance->_owner->resolve_brush_click_released();
+        else if (state::active_tool == ERASER)
+            instance->_owner->resolve_eraser_click_released();
     }
 
     void Canvas::ControlLayer::on_motion_enter(MotionEventController*, double x, double y, ControlLayer* instance)
     {
         *instance->_owner->_cursor_in_bounds = true;
+        *instance->_owner->_previous_cursor_position = *instance->_owner->_current_cursor_position;
         *instance->_owner->_current_cursor_position = {x, y};
         instance->update_pixel_position();
     }
@@ -101,13 +115,19 @@ namespace mousetrap
     void Canvas::ControlLayer::on_motion_leave(MotionEventController*, ControlLayer* instance)
     {
         *instance->_owner->_cursor_in_bounds = false;
-
+        *instance->_owner->_previous_cursor_position = *instance->_owner->_current_cursor_position;
         instance->_owner->_brush_cursor_layer.update();
     }
 
     void Canvas::ControlLayer::on_motion(MotionEventController*, double x, double y, ControlLayer* instance)
     {
+        *instance->_owner->_previous_cursor_position = *instance->_owner->_current_cursor_position;
         *instance->_owner->_current_cursor_position = {x, y};
         instance->update_pixel_position();
+
+        if (state::active_tool == BRUSH)
+            instance->_owner->resolve_brush_motion();
+        else if (state::active_tool == ERASER)
+            instance->_owner->resolve_eraser_motion();
     }
 }

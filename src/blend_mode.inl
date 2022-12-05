@@ -8,6 +8,12 @@ namespace mousetrap
 {
     void set_current_blend_mode(BlendMode mode)
     {
+        if (mode == NONE)
+        {
+            glDisable(GL_BLEND);
+            return;
+        }
+
         glEnable(GL_BLEND);
 
         if (mode == NORMAL)

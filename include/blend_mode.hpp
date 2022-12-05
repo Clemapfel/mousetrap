@@ -9,6 +9,7 @@ namespace mousetrap
 {
     enum BlendMode
     {
+        NONE,       // no blending
         NORMAL,     // alpha blending
         ADD,        // src + dest
         SUBTRACT,   // src - dest
