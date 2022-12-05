@@ -184,6 +184,9 @@ namespace mousetrap
         return false;
 
         trigger:
+            instance->_scroll_scale_trigger_keyval = keyval;
+            instance->_scroll_scale_trigger_modifier_state = state;
+
             instance->_scroll_scale_active = true;
             std::cout << "active" << std::endl;
             return false;
@@ -208,7 +211,10 @@ namespace mousetrap
         if (hash == alt_hash and state & GDK_ALT_MASK)
             goto trigger;
 
-        if (gtk_shortcut_trigger_trigger(instance->_scroll_scale_trigger, event, true) == GDK_KEY_MATCH_EXACT)
+        if (gdk_keyval_from_name(state::keybindings_file->get_value("canvas", "scroll_scale_trigger").c_str()) == keyval)
+            goto trigger;
+
+        if (gtk_shortcut_trigger_trigger(instance->_scroll_scale_trigger, event, true) == GDK_KEY_MATCH_PARTIAL)
             goto trigger;
 
         return false;
@@ -241,6 +247,9 @@ namespace mousetrap
         return false;
 
         trigger:
+            instance->_scroll_scale_trigger_keyval = 0;
+            instance->_scroll_scale_trigger_modifier_state = keyval;
+
             instance->_scroll_scale_active = true;
             std::cout << "active" << std::endl;
             return false;

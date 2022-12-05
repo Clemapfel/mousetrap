@@ -94,6 +94,8 @@ namespace mousetrap
                     static bool on_modifiers_changed(KeyEventController*, GdkModifierType keyval, ControlLayer* instance);
 
                     GtkShortcutTrigger* _scroll_scale_trigger;
+                    guint _scroll_scale_trigger_keyval;
+                    guint _scroll_scale_trigger_modifier_state;
                     bool _scroll_scale_active = false;
 
                     ScrollEventController _scroll_controller;
