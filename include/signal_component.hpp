@@ -409,7 +409,7 @@ namespace mousetrap
         private:
             Owner_t* _instance;
 
-            static bool on_modifiers_changed_wrapper(void*, GdkModifierType, HasKeyPressedSignal<Owner_t>* instance);
+            static bool on_modifiers_changed_wrapper(void*, GdkModifierType, HasModifiersChangedSignal<Owner_t>* instance);
 
             bool _blocked = false;
             std::function<on_modifiers_changed_function_t<void*>> _on_modifiers_changed_f;
@@ -1285,7 +1285,7 @@ namespace mousetrap
     }
 
     template<typename Owner_t>
-    bool HasModifiersChangedSignal<Owner_t>::on_modifiers_changed_wrapper(void*, GdkModifierType state, HasKeyPressedSignal<Owner_t>* self)
+    bool HasModifiersChangedSignal<Owner_t>::on_modifiers_changed_wrapper(void*, GdkModifierType state, HasModifiersChangedSignal<Owner_t>* self)
     {
         if (self->_on_modifiers_changed_f != nullptr and not self->_blocked)
             return self->_on_modifiers_changed_f(self->_instance, state, self->_on_modifiers_changed_data);

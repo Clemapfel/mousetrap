@@ -67,6 +67,7 @@ namespace mousetrap
             {
                 public:
                     ControlLayer(Canvas*);
+                    ~ControlLayer();
 
                     operator Widget*() override;
                     void update() override;
@@ -90,6 +91,10 @@ namespace mousetrap
                     KeyEventController _key_controller;
                     static bool on_key_pressed(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, ControlLayer* instance);
                     static bool on_key_released(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, ControlLayer* instance);
+                    static bool on_modifiers_changed(KeyEventController*, GdkModifierType keyval, ControlLayer* instance);
+
+                    GtkShortcutTrigger* _scroll_scale_trigger;
+                    bool _scroll_scale_active = false;
 
                     ScrollEventController _scroll_controller;
                     static void on_scroll_begin(ScrollEventController*, ControlLayer* instance);

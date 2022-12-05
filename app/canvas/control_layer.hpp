@@ -41,8 +41,20 @@ namespace mousetrap
         _scale_step_down_action.add_shortcut(state::keybindings_file->get_value("canvas", "scale_step_down"));
         state::app->add_action(_scale_step_down_action);
         _shortcut_controller.add_action(_scale_step_down_action.get_id());
-
         _area.add_controller(&_shortcut_controller);
+
+        _key_controller.connect_signal_key_pressed(on_key_pressed, this);
+        _key_controller.connect_signal_key_released(on_key_released, this);
+        _key_controller.connect_signal_modifiers_changed(on_modifiers_changed, this);
+
+        auto trigger = state::keybindings_file->get_value("canvas", "scroll_scale_trigger");
+        _scroll_scale_trigger = gtk_shortcut_trigger_parse_string(trigger.c_str());
+        state::main_window->add_controller(&_key_controller);
+    }
+
+    Canvas::ControlLayer::~ControlLayer() noexcept
+    {
+        g_object_unref(_scroll_scale_trigger);
     }
 
     Canvas::ControlLayer::operator Widget*()
@@ -157,6 +169,81 @@ namespace mousetrap
             instance->_owner->resolve_brush_motion();
         else if (state::active_tool == ERASER)
             instance->_owner->resolve_eraser_motion();
+    }
+
+    bool Canvas::ControlLayer::on_key_pressed(KeyEventController* controller, guint keyval, guint keycode, GdkModifierType state, ControlLayer* instance)
+    {
+        auto* event = controller->get_current_event();
+        auto hash = gtk_shortcut_trigger_hash(instance->_scroll_scale_trigger);
+
+        if (gtk_shortcut_trigger_trigger(instance->_scroll_scale_trigger, event, true) == GDK_KEY_MATCH_EXACT)
+            goto trigger;
+
+        // non modifier trigger presses handled in on_modifier_changed
+
+        return false;
+
+        trigger:
+            instance->_scroll_scale_active = true;
+            std::cout << "active" << std::endl;
+            return false;
+    }
+
+    bool Canvas::ControlLayer::on_key_released(KeyEventController* controller, guint keyval, guint keycode, GdkModifierType state,
+                                               ControlLayer* instance)
+    {
+        static auto shift_hash = gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Shift>"));
+        static auto control_hash = gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Control>"));
+        static auto alt_hash = gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Alt>"));
+
+        auto* event = controller->get_current_event();
+        auto hash = gtk_shortcut_trigger_hash(instance->_scroll_scale_trigger);
+
+        if (hash == shift_hash and state & GDK_SHIFT_MASK)
+            goto trigger;
+
+        if (hash == control_hash and state & GDK_CONTROL_MASK)
+            goto trigger;
+
+        if (hash == alt_hash and state & GDK_ALT_MASK)
+            goto trigger;
+
+        if (gtk_shortcut_trigger_trigger(instance->_scroll_scale_trigger, event, true) == GDK_KEY_MATCH_EXACT)
+            goto trigger;
+
+        return false;
+
+        trigger:
+            instance->_scroll_scale_active = false;
+            std::cout << "inactive" << std::endl;
+            return false;
+    }
+
+    bool Canvas::ControlLayer::on_modifiers_changed(KeyEventController*, GdkModifierType keyval, ControlLayer* instance)
+    {
+        static auto shift_hash = gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Shift>"));
+        static auto control_hash = gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Control>"));
+        static auto alt_hash = gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Alt>"));
+
+        auto hash = gtk_shortcut_trigger_hash(instance->_scroll_scale_trigger);
+
+        if (hash == shift_hash and keyval == GDK_SHIFT_MASK)
+            goto trigger;
+
+        if (hash == control_hash and keyval == GDK_CONTROL_MASK)
+            goto trigger;
+
+        if (hash == alt_hash and keyval == GDK_ALT_MASK)
+            goto trigger;
+
+        // non modifier trigger presses handled in on_key_pressed
+
+        return false;
+
+        trigger:
+            instance->_scroll_scale_active = true;
+            std::cout << "active" << std::endl;
+            return false;
     }
 
     void Canvas::ControlLayer::on_scroll_begin(ScrollEventController*, ControlLayer* instance)
