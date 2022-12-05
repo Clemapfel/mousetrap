@@ -406,7 +406,7 @@ namespace mousetrap
     {
         auto to_draw = SubImage();
         add_brush_to_subimage(position, brush, color, to_draw);
-        draw(to_draw, BlendMode::NONE, BackupMode::UNDO);
+        draw(to_draw, BlendMode::NORMAL, BackupMode::UNDO);
     }
 
     void Canvas::draw_brush_line(Vector2i a, Vector2i b, Brush* brush, RGBA color)
@@ -420,7 +420,7 @@ namespace mousetrap
         for (auto& position : points)
             add_brush_to_subimage(position, brush, color, to_draw);
 
-        draw(to_draw, BlendMode::NONE, BackupMode::UNDO);
+        draw(to_draw, BlendMode::NORMAL, BackupMode::UNDO);
     }
 
     void Canvas::update()

@@ -14,7 +14,10 @@ namespace mousetrap
         if (*_click_pressed)
         {
             undo_safepoint();
-            draw_brush(*_current_pixel_position, state::current_brush, state::primary_color);
+
+            auto color = state::primary_color;
+            color.a = state::brush_opacity;
+            draw_brush(*_current_pixel_position, state::current_brush, color);
         }
     }
 
@@ -25,7 +28,9 @@ namespace mousetrap
     {
         if (*_click_pressed)
         {
-            draw_brush_line(*_previous_pixel_position, *_current_pixel_position, state::current_brush, state::primary_color);
+            auto color = state::primary_color;
+            color.a = state::brush_opacity;
+            draw_brush_line(*_previous_pixel_position, *_current_pixel_position, state::current_brush, color);
         }
     }
 

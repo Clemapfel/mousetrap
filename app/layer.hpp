@@ -170,8 +170,8 @@ namespace mousetrap
         if (not (xy.x >= 0 and xy.x < image->get_size().x and xy.y >= 0 and xy.y < image->get_size().y))
             return;
 
-        auto source = image->get_pixel(xy.x, xy.y);
-        auto dest = color;
+        auto dest = image->get_pixel(xy.x, xy.y);
+        auto source = color;
         RGBA final;
 
         switch (blend_mode)
@@ -182,17 +182,15 @@ namespace mousetrap
 
             case BlendMode::NORMAL:
             {
-                auto alpha_a = source.a;
-                auto alpha_b = 1 - dest.b;
-
-                auto blend = [&](float c_a, float c_b) -> float {
-                    return c_a * (alpha_a / (alpha_a + alpha_b)) + c_b * (alpha_b / (alpha_a + alpha_b));
+                auto alpha = source.a + dest.a * (1 - source.a);
+                auto blend = [&](float a, float b) -> float {
+                    return a + b * (1 - source.a);
                 };
 
                 final.r = blend(source.r, dest.r);
                 final.g = blend(source.g, dest.g);
                 final.b = blend(source.b, dest.b);
-                final.a = alpha_a + alpha_b;
+                final.a = alpha;
                 break;
             }
 
@@ -240,9 +238,9 @@ namespace mousetrap
         }
 
         final.r = glm::clamp<float>(final.r, 0, 1);
-        final.r = glm::clamp<float>(final.g, 0, 1);
-        final.r = glm::clamp<float>(final.b, 0, 1);
-        final.r = glm::clamp<float>(final.a, 0, 1);
+        final.g = glm::clamp<float>(final.g, 0, 1);
+        final.b = glm::clamp<float>(final.b, 0, 1);
+        final.a = glm::clamp<float>(final.a, 0, 1);
         image->set_pixel(xy.x, xy.y, final);
     }
 
