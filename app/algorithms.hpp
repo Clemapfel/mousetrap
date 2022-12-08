@@ -10,7 +10,7 @@
 namespace mousetrap
 {
     /// \brief generate 1-pixel rasterized line between two texels
-    std::vector<Vector2i> get_line_points(Vector2i a, Vector2i b)
+    std::vector<Vector2i> generate_line_points(Vector2i a, Vector2i b)
     {
         std::vector<Vector2i> out = {a, b};
 
@@ -124,8 +124,8 @@ namespace mousetrap
         std::vector<std::pair<Vector2i, Vector2i>> top, right, bottom, left;
     };
 
-    /// \brief generate lines that will outline the non-0 area of an image
-    OutlineVertices get_outline_vertices(const Image& image)
+    /// \brief generate lines that will outline the non-0 area of an image, ordered by clockwise orientation
+    OutlineVertices generate_outline_vertices(const Image& image)
     {
         OutlineVertices out;
 
@@ -156,7 +156,7 @@ namespace mousetrap
 
         for (size_t x = 0; x < w; ++x)
             if (image.get_pixel(x, 0).a > alpha_eps)
-                out.left.push_back({{x,     0}, {x + 1, 0}});
+                out.left.push_back({{x, 0}, {x + 1, 0}});
 
         for (size_t x = 0; x < w; ++x)
             if (image.get_pixel(x, h-1).a > alpha_eps)

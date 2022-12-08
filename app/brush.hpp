@@ -8,6 +8,7 @@
 #include <mousetrap.hpp>
 
 #include <app/settings_files.hpp>
+#include <app/algorithms.hpp>
 
 namespace mousetrap
 {
@@ -25,13 +26,14 @@ namespace mousetrap
             const Image& get_image();
 
             const std::string& get_name();
-            const std::deque<std::pair<Vector2i, Vector2i>>& get_outline_vertices();
 
             size_t get_base_size() const;
 
             /// \brief update texture as scaled version of base image
             void set_size(size_t px);
             size_t get_size();
+
+            const OutlineVertices& get_outline_vertices() const;
 
         private:
             float alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
@@ -42,8 +44,8 @@ namespace mousetrap
             Texture* _texture = nullptr;
             std::string _name;
 
-            void generate_outline_vertices(Image&);
-            std::deque<std::pair<Vector2i, Vector2i>> _outline_vertices;
+            void regenerate_outline_vertices(Image&);
+            OutlineVertices _outline_vertices;
             // vertex position is top left of pixel coord, where top left of texture is (0, 0)
     };
 
@@ -108,7 +110,7 @@ namespace mousetrap
             }
         }
 
-        generate_outline_vertices(image);
+        regenerate_outline_vertices(image);
 
         _texture = new Texture();
         _texture->create_from_image(image);
@@ -138,11 +140,6 @@ namespace mousetrap
     const std::string& Brush::get_name()
     {
         return _name;
-    }
-
-    const std::deque<std::pair<Vector2i, Vector2i>>& Brush::get_outline_vertices()
-    {
-        return _outline_vertices;
     }
 
     void Brush::set_size(size_t px)
@@ -187,7 +184,7 @@ namespace mousetrap
         skip_artifact_fix:
 
         _texture->create_from_image(_image_scaled);
-        generate_outline_vertices(_image_scaled);
+        regenerate_outline_vertices(_image_scaled);
     }
 
     size_t Brush::get_base_size() const
@@ -195,39 +192,13 @@ namespace mousetrap
         return std::min(_image.get_size().x, _image.get_size().y);
     }
 
-    void Brush::generate_outline_vertices(Image& image)
+    void Brush::regenerate_outline_vertices(Image& image)
     {
-        auto w = image.get_size().x;
-        auto h = image.get_size().y;
+        _outline_vertices = generate_outline_vertices(image);
+    }
 
-        _outline_vertices.clear();
-
-        // hlines
-        for (size_t x = 0; x < w; ++x)
-            for (size_t y = 0; y < h-1; ++y)
-                if ((image.get_pixel(x, y).a > alpha_eps) != (image.get_pixel(x, y+1).a > alpha_eps))
-                    _outline_vertices.push_back({{x, y+1}, {x+1, y+1}});
-
-        for (size_t x = 0; x < w; ++x)
-            if (image.get_pixel(x, 0).a > alpha_eps)
-                _outline_vertices.push_back({{x, 0}, {x+1, 0}});
-
-        for (size_t x = 0; x < w; ++x)
-            if (image.get_pixel(x, h-1).a > alpha_eps)
-                _outline_vertices.push_back({{x, h}, {x+1, h}});
-
-        // vlines
-        for (size_t y = 0; y < h; ++y)
-            for (size_t x = 0; x < w-1; ++x)
-                if (image.get_pixel(x, y).a > alpha_eps != image.get_pixel(x+1, y).a > alpha_eps)
-                    _outline_vertices.push_back({{x+1, y}, {x+1, y+1}});
-
-        for (size_t y = 0; y < h; ++y)
-            if (image.get_pixel(0, y).a > alpha_eps)
-                _outline_vertices.push_back({{0, y}, {0, y+1}});
-
-        for (size_t y = 0; y < h; ++y)
-            if (image.get_pixel(w-1, y).a > alpha_eps)
-                _outline_vertices.push_back({{w, y}, {w, y+1}});
+    const OutlineVertices& Brush::get_outline_vertices() const
+    {
+        return _outline_vertices;
     }
 }

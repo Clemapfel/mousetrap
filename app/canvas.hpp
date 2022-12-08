@@ -225,9 +225,20 @@ namespace mousetrap
                     GLArea _area;
 
                     float* _timer = new float(0); // seconds
+
+                    static inline int* _cursor_outline_shader_top_flag = new int(1);
+                    static inline int* _cursor_outline_shader_right_flag = new int(2);
+                    static inline int* _cursor_outline_shader_bottom_flag = new int(3);
+                    static inline int* _cursor_outline_shader_left_flag = new int(4);
+                    static inline float* _cursor_outline_time_s = new float(0);
+
+                    Shader* _cursor_outline_shader;
+
                     Shape* _cursor_shape = nullptr;
-                    Shape* _cursor_outline_shape_hlines = nullptr;
-                    Shape* _cursor_outline_shape_vlines = nullptr;
+                    Shape* _cursor_outline_shape_top = nullptr;
+                    Shape* _cursor_outline_shape_right = nullptr;
+                    Shape* _cursor_outline_shape_bottom = nullptr;
+                    Shape* _cursor_outline_shape_left = nullptr;
 
                     Vector2f _canvas_size = Vector2f(1, 1);
                     Vector2f _cursor_position = Vector2f(0, 0);
@@ -238,6 +249,7 @@ namespace mousetrap
                     bool _cursor_in_bounds = false;
 
                     void reformat();
+                    void reschedule_render_tasks();
 
                     static void on_realize(Widget*, BrushCursorLayer* instance);
                     static void on_resize(GLArea*, int, int, BrushCursorLayer* instance);
@@ -487,7 +499,7 @@ namespace mousetrap
 
         auto& frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
         auto& brush_image = brush->get_image();
-        auto points = get_line_points(a, b);
+        auto points = generate_line_points(a, b);
 
         for (auto& position : points)
             add_brush_to_subimage(position, brush, color, to_draw);

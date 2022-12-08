@@ -6,10 +6,8 @@ in vec3 _vertex_position;
 
 out vec4 _fragment_color;
 
-uniform int _texture_set;
-uniform sampler2D _texture;
 uniform float _time_s;
-uniform int _horizontal;
+uniform int _direction;
 
 vec3 hsv_to_rgb(vec3 c)
 {
@@ -37,10 +35,40 @@ float sine_wave(float x)
 
 void main()
 {
-    float x = _horizontal == 1 ? _vertex_position.x : _vertex_position.y;
+    float coord;
+    float offset_factor;
 
-    float mod = mod(_time_s, 1);
-    float offset = mod > 0.5 ? 1 - mod : mod;
-    float value = sine_wave(2 * offset);
-    _fragment_color = vec4(hsv_to_rgb(vec3(0, 0, offset)), 1.0);
+    if (_direction == 1) // left to right
+    {
+        coord = _vertex_position.y;
+        offset_factor = +1;
+    }
+    else if (_direction == 2) // top to bottom
+    {
+        coord = _vertex_position.x;
+        offset_factor = +1;
+    }
+    else if (_direction == 3) // right to left
+    {
+        coord = _vertex_position.y;
+        offset_factor = -1;
+    }
+    else if (_direction == 4) // bottom to top
+    {
+        coord = _vertex_position.x;
+        offset_factor = -1;
+    }
+
+    // TODO
+    //coord = _vertex_position.x;
+    //offset_factor = +1;
+    // TODO
+
+    float frequency = 21;
+    float speed = 1;
+
+    if (fract(coord * frequency + offset_factor * _time_s * speed) > 0.5)
+        _fragment_color = vec4(1, 1, 1, 1);
+    else
+        _fragment_color = vec4(0, 0, 0, 1);
 }

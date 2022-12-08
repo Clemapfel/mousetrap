@@ -155,17 +155,17 @@ namespace mousetrap
 
     void Layer::Frame::draw_line(Vector2i start, Vector2i end, RGBA color, BlendMode blend_mode)
     {
-        for (auto& pos : get_line_points(start, end))
+        for (auto& pos : generate_line_points(start, end))
             draw_pixel(pos, color, blend_mode);
     }
 
     void Layer::Frame::draw_polygon(const std::vector<Vector2i>& points, RGBA color, BlendMode blend_mode)
     {
         for (size_t i = 0; i < points.size(); ++i)
-            for (auto& pos : get_line_points(points.at(i), points.at(i+1)))
+            for (auto& pos : generate_line_points(points.at(i), points.at(i + 1)))
                 draw_pixel(pos, color, blend_mode);
 
-        for (auto& pos : get_line_points(points.back(), points.front()))
+        for (auto& pos : generate_line_points(points.back(), points.front()))
             draw_pixel(pos, color, blend_mode);
     }
 
@@ -194,10 +194,10 @@ namespace mousetrap
         };
 
         for (size_t i = 0; i < points.size(); ++i)
-            for (auto& pos : get_line_points(points.at(i), points.at(i+1)))
+            for (auto& pos : generate_line_points(points.at(i), points.at(i + 1)))
                 add_point(pos);
 
-        for (auto& pos : get_line_points(points.back(), points.front()))
+        for (auto& pos : generate_line_points(points.back(), points.front()))
             add_point(pos);
 
         for (auto& pair : coords)
