@@ -18,8 +18,11 @@ namespace mousetrap
             operator Widget*();
             void update();
 
-            void set_transform_offset(float x, float y);
+            void set_transform_offset(Vector2f);
+            Vector2f get_transform_offset() const;
+
             void set_transform_scale(float);
+            float get_transform_scale() const;
 
             void draw_brush(Vector2i position, Brush* brush, RGBA color);
             void draw_brush_line(Vector2i a, Vector2i b, Brush* brush, RGBA color);
@@ -67,7 +70,7 @@ namespace mousetrap
             {
                 public:
                     ControlLayer(Canvas*);
-                    ~ControlLayer();
+                    ~ControlLayer() = default;
 
                     operator Widget*() override;
                     void update() override;
@@ -93,15 +96,22 @@ namespace mousetrap
                     static bool on_key_released(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, ControlLayer* instance);
                     static bool on_modifiers_changed(KeyEventController*, GdkModifierType keyval, ControlLayer* instance);
 
-                    GtkShortcutTrigger* _scroll_scale_trigger;
-                    guint _scroll_scale_trigger_keyval;
-                    guint _scroll_scale_trigger_modifier_state;
+                    size_t _scroll_scale_trigger;
+                    std::map<guint, std::vector<guint>> _scroll_scale_trigger_hash_to_allowed_keys;
+
                     bool _scroll_scale_active = false;
 
                     ScrollEventController _scroll_controller;
                     static void on_scroll_begin(ScrollEventController*, ControlLayer* instance);
                     static void on_scroll(ScrollEventController*, double x, double y, ControlLayer* instance);
                     static void on_scroll_end(ScrollEventController*, ControlLayer* instance);
+
+                    bool _translation_scroll_x_inverted = state::settings_file->get_value_as<bool>("canvas", "translation_scroll_x_inverted");
+                    bool _translation_scroll_y_inverted = state::settings_file->get_value_as<bool>("canvas", "translation_scroll_y_inverted");
+                    float _translation_scroll_sensitivity = state::settings_file->get_value_as<float>("canvas", "translation_scroll_sensitivity");
+
+                    bool _scale_scroll_inverted = state::settings_file->get_value_as<bool>("canvas", "scale_scroll_inverted");
+                    float _scale_scroll_sensitivity = state::settings_file->get_value_as<float>("canvas", "scale_scroll_sensitivity");
 
                     ShortcutController _shortcut_controller = ShortcutController(state::app);
                     Action _scale_step_up_action = Action("canvas.scale_step_up");
@@ -367,12 +377,30 @@ namespace mousetrap
         return &_canvas_layer_overlay;
     }
 
+    float Canvas::get_transform_scale() const
+    {
+        return *_transform_scale;
+    }
+
     void Canvas::set_transform_scale(float scale)
     {
-        *_transform_scale = scale;
+        *_transform_scale = scale <= 0 ? 0.001 : scale;
         _transform->reset();
         _transform->translate(*_transform_offset);
         _transform->scale(*_transform_scale, *_transform_scale);
+    }
+
+    void Canvas::set_transform_offset(Vector2f xy)
+    {
+        *_transform_offset = xy;
+        _transform->reset();
+        _transform->translate(*_transform_offset);
+        _transform->scale(*_transform_scale, *_transform_scale);
+    }
+
+    Vector2f Canvas::get_transform_offset() const
+    {
+        return *_transform_offset;
     }
 
     void Canvas::undo_safepoint()

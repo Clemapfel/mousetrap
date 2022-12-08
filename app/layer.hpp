@@ -10,11 +10,10 @@
 #include <app/global_state.hpp>
 #include <app/brush.hpp>
 #include <app/settings_files.hpp>
+#include <app/algorithms.hpp>
 
 namespace mousetrap
 {
-    std::vector<Vector2i> get_line_points(Vector2i start, Vector2i end);
-
     struct Layer
     {
         std::string name;
@@ -56,115 +55,6 @@ namespace mousetrap
 
 namespace mousetrap
 {
-    std::vector<Vector2i> get_line_points(Vector2i a, Vector2i b)
-    {
-        std::vector<Vector2i> out = {a, b};
-
-        if (a.x == b.x)
-        {
-            auto y_min = std::min(a.y, b.y);
-            auto y_max = std::max(a.y, b.y);
-            out.reserve(y_max - y_min);
-
-            for (int y = y_min; y < y_max; ++y)
-                out.push_back({a.x, y});
-
-            return out;
-        }
-        else if (a.y == b.x)
-        {
-            auto x_min = std::min(a.x, b.x);
-            auto x_max = std::max(a.x, b.x);
-            out.reserve(x_max - x_min);
-
-            for (int x = x_min; x < x_max; ++x)
-                out.push_back({x, a.y});
-
-            return out;
-        }
-
-        // source:
-        //  [1] https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)
-        //  [2] https://www.cs.virginia.edu/luther/blog/posts/492.html
-
-        float x1 = a.x;
-        float x2 = b.x;
-        float y1 = a.y;
-        float y2 = b.y;
-
-        float dx = x2 - x1;
-        float dy = y2 - y1;
-        float slope = dy / dx;
-
-        const int eps = 10e7; // project into int range to avoid float precision resulting in non-deterministic results
-
-        if (abs(dx) > abs(dy))
-        {
-            float x_step = x1 < x2 ? 1 : -1;
-            float y_step = slope * x_step;
-
-            float y = y1;
-            float x = x1;
-
-            auto n_steps = std::max(abs(dx), abs(dy));
-            out.reserve(out.size() + n_steps);
-
-            for (size_t step = 0; step < n_steps; ++step)
-            {
-                if (int(glm::fract(y) * eps) >= eps / 2)
-                    out.emplace_back(x, int(y+1));
-                else
-                    out.emplace_back(x, int(y));
-
-                x += x_step;
-                y += y_step;
-            }
-        }
-        else if (abs(dx) < abs(dy))
-        {
-            float y_step = y1 < y2 ? 1 : -1;
-            float x_step = (1 / slope) * y_step;
-
-            float x = x1;
-            float y = y1;
-
-            auto n_steps = std::max(abs(dx), abs(dy));
-            out.reserve(out.size() + n_steps);
-
-            for (size_t step = 0; step < n_steps; ++step)
-            {
-                if (int(glm::fract(x) * eps) >= eps / 2)
-                    out.emplace_back(int(x+1), y);
-                else
-                    out.emplace_back(int(x), y);
-
-                x += x_step;
-                y += y_step;
-            }
-        }
-        else
-        {
-            int x = a.x;
-            int y = a.y;
-
-            int x_step = a.x < b.x ? 1 : -1;
-            int y_step = a.y < b.y ? 1 : -1;
-
-            size_t n_steps = abs(a.x - b.x); // same as abs(b.y - a.y)
-            out.reserve(out.size() + n_steps);
-
-            for (size_t i = 0; i < n_steps; ++i)
-            {
-                out.emplace_back(x, y);
-                x += x_step;
-                y += y_step;
-            }
-        }
-
-
-        return out;
-    }
-
     void Layer::Frame::draw_pixel(Vector2i xy, RGBA color, BlendMode blend_mode)
     {
         if (not (xy.x >= 0 and xy.x < image->get_size().x and xy.y >= 0 and xy.y < image->get_size().y))

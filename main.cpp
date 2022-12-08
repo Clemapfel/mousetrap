@@ -350,6 +350,12 @@ static void activate(GtkApplication* app, void*)
 
     left_center_paned->set_position(left_column->get_preferred_size().natural_size.x);
 
+    // TODO
+    std::cout << "shortcut: " << gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Control><Shift>")) << std::endl;
+    std::cout << "key     : " << gdk_keyval_from_name("<Control><Shift>") << std::endl;
+
+    // TODO
+
     state::main_window->set_child(main);
     state::main_window->show();
     state::main_window->present();
