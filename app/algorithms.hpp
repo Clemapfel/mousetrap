@@ -148,21 +148,12 @@ namespace mousetrap
                 };
 
                 if (top and not bottom)
-                    out.left.push_back(to_push);
+                    out.top.push_back(to_push);
                 else if (not top and bottom)
-                    out.right.push_back(to_push);
+                    out.bottom.push_back(to_push);
             }
         }
 
-        for (size_t x = 0; x < w; ++x)
-            if (image.get_pixel(x, 0).a > alpha_eps)
-                out.left.push_back({{x, 0}, {x + 1, 0}});
-
-        for (size_t x = 0; x < w; ++x)
-            if (image.get_pixel(x, h-1).a > alpha_eps)
-                out.right.push_back({{x, h}, {x+1, h}});
-
-        // vlines
         for (size_t y = 0; y < h; ++y)
         {
             for (size_t x = 0; x < w - 1; ++x)
@@ -176,19 +167,27 @@ namespace mousetrap
                 };
 
                 if (left and not right)
-                    out.top.push_back(to_push);
+                    out.left.push_back(to_push);
                 else if (not left and right)
-                    out.bottom.push_back(to_push);
+                    out.right.push_back(to_push);
             }
         }
 
         for (size_t y = 0; y < h; ++y)
             if (image.get_pixel(0, y).a > alpha_eps)
-                out.top.push_back({{0, y}, {0, y+1}});
+                out.right.push_back({{0, y}, {0, y+1}});
 
         for (size_t y = 0; y < h; ++y)
             if (image.get_pixel(w-1, y).a > alpha_eps)
-                out.bottom.push_back({{w, y}, {w, y+1}});
+                out.left.push_back({{w, y}, {w, y+1}});
+
+        for (size_t x = 0; x < w; ++x)
+            if (image.get_pixel(x, 0).a > alpha_eps)
+                out.bottom.push_back({{x, 0}, {x + 1, 0}});
+
+        for (size_t x = 0; x < w; ++x)
+            if (image.get_pixel(x, h-1).a > alpha_eps)
+                out.top.push_back({{x, h}, {x + 1, h}});
 
         return out;
     }
