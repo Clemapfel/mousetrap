@@ -48,12 +48,14 @@ namespace mousetrap
         delete _cursor_outline_shape_right;
         delete _cursor_outline_shape_bottom;
         delete _cursor_outline_shape_left;
+        delete _cursor_outline_outline_shape;
     }
 
     void Canvas::BrushCursorLayer::reschedule_render_tasks()
     {
         _area.clear_render_tasks();
         _area.add_render_task(_cursor_shape);
+        _area.add_render_task(_cursor_outline_outline_shape);
 
         {
             auto task = RenderTask(_cursor_outline_shape_top, _cursor_outline_shader);
@@ -82,6 +84,8 @@ namespace mousetrap
             task.register_float("_time_s", _cursor_outline_time_s);
             _area.add_render_task(task);
         }
+
+        _area.queue_render();
     }
 
     void Canvas::BrushCursorLayer::on_realize(Widget* widget, BrushCursorLayer* instance)
@@ -98,10 +102,10 @@ namespace mousetrap
         instance->_cursor_outline_shape_bottom = new Shape();
         instance->_cursor_outline_shape_left = new Shape();
 
+        instance->_cursor_outline_outline_shape = new Shape();
+
         instance->reformat();
         instance->reschedule_render_tasks();
-
-        area->queue_render();
     }
 
     void Canvas::BrushCursorLayer::on_resize(GLArea* area, int w, int h, BrushCursorLayer* instance)
@@ -139,6 +143,10 @@ namespace mousetrap
         auto texture_size = state::current_brush->get_texture()->get_size();
         auto adjusted_pixel_size = Vector2f(pixel_w / texture_size.x, pixel_h / texture_size.y);
 
+        std::vector<std::pair<Vector2f, Vector2f>> outline_outline;
+        float pixel_offset_x = 1.f / _area.get_size().x;
+        float pixel_offset_y = 1.f / _area.get_size().y;
+
         auto convert_vertex_coordinates = [&](const std::vector<std::pair<Vector2i, Vector2i>>& in) {
 
             std::vector<std::pair<Vector2f, Vector2f>> out;
@@ -158,6 +166,34 @@ namespace mousetrap
                 };
 
                 out.push_back(to_push);
+
+                auto a = to_push.first;
+                auto b = to_push.second;
+
+                if (a.x == b.x)
+                {
+                    outline_outline.push_back({
+                         {a.x - pixel_offset_x, a.y - pixel_offset_y},
+                         {b.x - pixel_offset_x, b.y + pixel_offset_y}
+                    });
+
+                    outline_outline.push_back({
+                          {a.x + pixel_offset_x, a.y - pixel_offset_y},
+                          {b.x + pixel_offset_x, b.y + pixel_offset_y}
+                    });
+                }
+                else if (a.y == b.y)
+                {
+                    outline_outline.push_back({
+                          {a.x - pixel_offset_y, a.y - pixel_offset_y},
+                          {b.x + pixel_offset_y, b.y - pixel_offset_y}
+                     });
+
+                    outline_outline.push_back({
+                          {a.x - pixel_offset_y, a.y + pixel_offset_y},
+                          {b.x + pixel_offset_y, b.y + pixel_offset_y}
+                     });
+                }
             }
 
             return out;
@@ -169,6 +205,9 @@ namespace mousetrap
         _cursor_outline_shape_right->as_lines(convert_vertex_coordinates(vertices.right));
         _cursor_outline_shape_bottom->as_lines(convert_vertex_coordinates(vertices.bottom));
         _cursor_outline_shape_left->as_lines(convert_vertex_coordinates(vertices.left));
+
+        _cursor_outline_outline_shape->as_lines(outline_outline);
+        _cursor_outline_outline_shape->set_color(RGBA(1, 1, 1, 0.5));
 
         _brush_color = state::primary_color;
         _brush_opacity = state::brush_opacity;
@@ -273,7 +312,10 @@ namespace mousetrap
             auto bottom_offset = _cursor_shape->get_centroid() - _cursor_outline_shape_bottom->get_centroid();
             auto left_offset = _cursor_shape->get_centroid() - _cursor_outline_shape_left->get_centroid();
 
+            auto outline_offset = _cursor_shape->get_centroid() - _cursor_outline_outline_shape->get_centroid();
+
             _cursor_shape->set_centroid(centroid);
+            _cursor_outline_outline_shape->set_centroid(centroid - outline_offset);
             _cursor_outline_shape_top->set_centroid(centroid - top_offset);
             _cursor_outline_shape_right->set_centroid(centroid - right_offset);
             _cursor_outline_shape_bottom->set_centroid(centroid - bottom_offset);
