@@ -258,6 +258,42 @@ namespace mousetrap
 
             BrushCursorLayer _brush_cursor_layer = BrushCursorLayer(this);
 
+            // SELECTION
+
+            class SelectionLayer : public CanvasLayer
+            {
+                public:
+                    SelectionLayer(Canvas*);
+
+                    operator Widget*() override;
+                    void update() override;
+
+                private:
+                    GLArea _area;
+
+                    static inline int* _outline_shader_right_flag = new int(1);
+                    static inline int* _outline_shader_top_flag = new int(2);
+                    static inline int* _outline_shader_left_flag = new int(3);
+                    static inline int* _outline_shader_bottom_flag = new int(4);
+                    static inline float* _outline_time_s = new float(0);
+
+                    Shader* _outline_shader;
+
+                    Shape* _outline_shape_top = nullptr;
+                    Shape* _outline_shape_right = nullptr;
+                    Shape* _outline_shape_bottom = nullptr;
+                    Shape* _outline_shape_left = nullptr;
+                    Shape* _outline_outline_shape = nullptr;
+
+                    Vector2f _canvas_size;
+
+                    void reschedule_render_tasks();
+                    void reformat();
+
+                    static void on_realize(Widget*, SelectionLayer* instance);
+                    static void on_resize(GLArea*, int, int, SelectionLayer* instance);
+            };
+
             // UNDO / REDO
 
             enum class BackupMode
@@ -316,6 +352,7 @@ namespace mousetrap
 #include <app/canvas/layers_layer.hpp>
 #include <app/canvas/brush_cursor_layer.hpp>
 #include <app/canvas/tool_behavior.hpp>
+#include <app/canvas/selection_layer.hpp>
 
 namespace mousetrap
 {

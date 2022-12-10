@@ -1,111 +1,93 @@
 // 
 // Copyright 2022 Clemens Cords
-// Created on 11/4/22 by clem (mail@clemens-cords.com)
+// Created on 12/10/22 by clem (mail@clemens-cords.com)
 //
-
-#include <app/bubble_log_area.hpp>
 
 namespace mousetrap
 {
-    Canvas::BrushCursorLayer::BrushCursorLayer(Canvas* owner)
-            : CanvasLayer(owner)
+    Canvas::SelectionLayer::SelectionLayer(Canvas* owner)
+        : CanvasLayer(owner)
     {
         _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);
 
-        _area.add_tick_callback([](FrameClock clock, BrushCursorLayer* instance) -> bool {
-            *instance->_cursor_outline_time_s += clock.get_time_since_last_frame().as_seconds();
+        _area.add_tick_callback([](FrameClock clock, SelectionLayer* instance) -> bool {
+            *instance->_outline_time_s += clock.get_time_since_last_frame().as_seconds();
             instance->_area.queue_render();
             return true;
         }, this);
-
-        _brush_opacity = state::brush_opacity;
-        _brush_color = state::primary_color;
-        _current_brush = state::current_brush;
     }
-
-    Canvas::BrushCursorLayer::operator Widget*()
+    
+    Canvas::SelectionLayer::operator Widget*()
     {
         return &_area;
     }
-
-    Canvas::BrushCursorLayer::~BrushCursorLayer()
-    {
-        delete _cursor_shape;
-        delete _cursor_outline_shape_top;
-        delete _cursor_outline_shape_right;
-        delete _cursor_outline_shape_bottom;
-        delete _cursor_outline_shape_left;
-        delete _cursor_outline_outline_shape;
-    }
-
-    void Canvas::BrushCursorLayer::reschedule_render_tasks()
+    
+    void Canvas::SelectionLayer::reschedule_render_tasks()
     {
         _area.clear_render_tasks();
-        _area.add_render_task(_cursor_shape);
 
-        auto outline_task = RenderTask(_cursor_outline_outline_shape, nullptr, nullptr, nullptr);
+        auto outline_task = RenderTask(_outline_outline_shape, nullptr, nullptr, BlendMode::REVERSE_SUBTRACT);
         _area.add_render_task(outline_task);
 
         {
-            auto task = RenderTask(_cursor_outline_shape_top, _cursor_outline_shader);
-            task.register_int("_direction", _cursor_outline_shader_top_flag);
-            task.register_float("_time_s", _cursor_outline_time_s);
+            auto task = RenderTask(_outline_shape_top, _outline_shader);
+            task.register_int("_direction", _outline_shader_top_flag);
+            task.register_float("_time_s", _outline_time_s);
             _area.add_render_task(task);
         }
 
         {
-            auto task = RenderTask(_cursor_outline_shape_right, _cursor_outline_shader);
-            task.register_int("_direction", _cursor_outline_shader_right_flag);
-            task.register_float("_time_s", _cursor_outline_time_s);
+            auto task = RenderTask(_outline_shape_right, _outline_shader);
+            task.register_int("_direction", _outline_shader_right_flag);
+            task.register_float("_time_s", _outline_time_s);
             _area.add_render_task(task);
         }
 
         {
-            auto task = RenderTask(_cursor_outline_shape_bottom, _cursor_outline_shader);
-            task.register_int("_direction", _cursor_outline_shader_bottom_flag);
-            task.register_float("_time_s", _cursor_outline_time_s);
+            auto task = RenderTask(_outline_shape_bottom, _outline_shader);
+            task.register_int("_direction", _outline_shader_bottom_flag);
+            task.register_float("_time_s", _outline_time_s);
             _area.add_render_task(task);
         }
 
         {
-            auto task = RenderTask(_cursor_outline_shape_left, _cursor_outline_shader);
-            task.register_int("_direction", _cursor_outline_shader_left_flag);
-            task.register_float("_time_s", _cursor_outline_time_s);
+            auto task = RenderTask(_outline_shape_left, _outline_shader);
+            task.register_int("_direction", _outline_shader_left_flag);
+            task.register_float("_time_s", _outline_time_s);
             _area.add_render_task(task);
         }
 
         _area.queue_render();
     }
 
-    void Canvas::BrushCursorLayer::on_realize(Widget* widget, BrushCursorLayer* instance)
+    void Canvas::SelectionLayer::on_realize(Widget* widget, SelectionLayer* instance)
     {
         auto* area = (GLArea*) widget;
         area->make_current();
 
-        instance->_cursor_outline_shader = new Shader();
-        instance->_cursor_outline_shader->create_from_file(get_resource_path() + "shaders/brush_outline.frag", ShaderType::FRAGMENT);
+        instance->_outline_shader = new Shader();
+        instance->_outline_shader->create_from_file(get_resource_path() + "shaders/brush_outline.frag", ShaderType::FRAGMENT);
 
-        instance->_cursor_shape = new Shape();
-        instance->_cursor_outline_shape_top = new Shape();
-        instance->_cursor_outline_shape_right = new Shape();
-        instance->_cursor_outline_shape_bottom = new Shape();
-        instance->_cursor_outline_shape_left = new Shape();
+        instance->_outline_shape_top = new Shape();
+        instance->_outline_shape_right = new Shape();
+        instance->_outline_shape_bottom = new Shape();
+        instance->_outline_shape_left = new Shape();
 
-        instance->_cursor_outline_outline_shape = new Shape();
+        instance->_outline_outline_shape = new Shape();
 
         instance->reformat();
         instance->reschedule_render_tasks();
     }
 
-    void Canvas::BrushCursorLayer::on_resize(GLArea* area, int w, int h, BrushCursorLayer* instance)
+    void Canvas::SelectionLayer::on_resize(GLArea* area, int w, int h, SelectionLayer* instance)
     {
         instance->_canvas_size = {w, h};
         instance->reformat();
         area->queue_render();
     }
 
-    void Canvas::BrushCursorLayer::reformat()
+    void Canvas::SelectionLayer::reformat()
     {
         float width = state::layer_resolution.x / _canvas_size.x;
         float height = state::layer_resolution.y / _canvas_size.y;
@@ -113,22 +95,8 @@ namespace mousetrap
         float pixel_w = width / state::layer_resolution.x * *_owner->_transform_scale;
         float pixel_h = height / state::layer_resolution.y * *_owner->_transform_scale;
 
-        if (_cursor_shape == nullptr)
+        if (not _area.get_is_realized())
             return;
-
-        if (_current_brush != nullptr)
-        {
-            pixel_w *= _current_brush->get_texture()->get_size().x;
-            pixel_h *= _current_brush->get_texture()->get_size().y;
-        }
-
-        _cursor_shape->as_rectangle(
-            {0, 0},
-            {pixel_w, 0},
-            {pixel_w, pixel_h},
-            {0, pixel_h}
-        );
-        _cursor_shape->set_texture(state::current_brush->get_texture());
 
         auto texture_size = state::current_brush->get_texture()->get_size();
         auto adjusted_pixel_size = Vector2f(pixel_w / texture_size.x, pixel_h / texture_size.y);
@@ -145,14 +113,14 @@ namespace mousetrap
             {
                 auto v = in.at(i);
                 auto to_push = std::pair<Vector2f, Vector2f>{
-                    {
-                        v.first.x * adjusted_pixel_size.x,
-                        v.first.y * adjusted_pixel_size.y
-                    },
-                    {
-                        v.second.x * adjusted_pixel_size.x,
-                        v.second.y * adjusted_pixel_size.y
-                    }
+                        {
+                                v.first.x * adjusted_pixel_size.x,
+                                v.first.y * adjusted_pixel_size.y
+                        },
+                        {
+                                v.second.x * adjusted_pixel_size.x,
+                                v.second.y * adjusted_pixel_size.y
+                        }
                 };
 
                 out.push_back(to_push);
@@ -163,26 +131,26 @@ namespace mousetrap
                 if (a.x == b.x)
                 {
                     outline_outline.push_back({
-                         {a.x - pixel_offset_x, a.y - pixel_offset_y},
-                         {b.x - pixel_offset_x, b.y + pixel_offset_y}
-                    });
+                                                      {a.x - pixel_offset_x, a.y - pixel_offset_y},
+                                                      {b.x - pixel_offset_x, b.y + pixel_offset_y}
+                                              });
 
                     outline_outline.push_back({
-                          {a.x + pixel_offset_x, a.y - pixel_offset_y},
-                          {b.x + pixel_offset_x, b.y + pixel_offset_y}
-                    });
+                                                      {a.x + pixel_offset_x, a.y - pixel_offset_y},
+                                                      {b.x + pixel_offset_x, b.y + pixel_offset_y}
+                                              });
                 }
                 else if (a.y == b.y)
                 {
                     outline_outline.push_back({
-                          {a.x - pixel_offset_y, a.y - pixel_offset_y},
-                          {b.x + pixel_offset_y, b.y - pixel_offset_y}
-                     });
+                                                      {a.x - pixel_offset_y, a.y - pixel_offset_y},
+                                                      {b.x + pixel_offset_y, b.y - pixel_offset_y}
+                                              });
 
                     outline_outline.push_back({
-                          {a.x - pixel_offset_y, a.y + pixel_offset_y},
-                          {b.x + pixel_offset_y, b.y + pixel_offset_y}
-                     });
+                                                      {a.x - pixel_offset_y, a.y + pixel_offset_y},
+                                                      {b.x + pixel_offset_y, b.y + pixel_offset_y}
+                                              });
                 }
             }
 
@@ -191,40 +159,21 @@ namespace mousetrap
 
         auto vertices = state::current_brush->get_outline_vertices();
 
-        _cursor_outline_shape_top->as_lines(convert_vertex_coordinates(vertices.top));
-        _cursor_outline_shape_right->as_lines(convert_vertex_coordinates(vertices.right));
-        _cursor_outline_shape_bottom->as_lines(convert_vertex_coordinates(vertices.bottom));
-        _cursor_outline_shape_left->as_lines(convert_vertex_coordinates(vertices.left));
+        _outline_shape_top->as_lines(convert_vertex_coordinates(vertices.top));
+        _outline_shape_right->as_lines(convert_vertex_coordinates(vertices.right));
+        _outline_shape_bottom->as_lines(convert_vertex_coordinates(vertices.bottom));
+        _outline_shape_left->as_lines(convert_vertex_coordinates(vertices.left));
 
-        _cursor_outline_outline_shape->as_lines(outline_outline);
-        _cursor_outline_outline_shape->set_color(RGBA(1, 1, 1, 0.5));
-
-        _brush_color = state::primary_color;
-        _brush_opacity = state::brush_opacity;
-
-        auto cursor_color = HSVA(
-            _brush_color.h,
-            _brush_color.s,
-            _brush_color.v,
-            _brush_opacity
-        );
-        auto outline_color = HSVA(0, 0, cursor_color.v > 0.5 ? 0 : 1, _brush_opacity);
-
-        if (state::active_tool == ERASER)
-        {
-            cursor_color = HSVA(0, 0, 1, 0.25);
-            outline_color = HSVA(0, 0, 0, 1);
-        }
-
-        _cursor_shape->set_color(cursor_color);
-        _cursor_shape->set_visible(_cursor_in_bounds);
+        _outline_outline_shape->as_lines(outline_outline);
+        _outline_outline_shape->set_color(RGBA(1, 1, 1, 0.5));
 
         reschedule_render_tasks();
     }
 
-    void Canvas::BrushCursorLayer::update()
+    void Canvas::SelectionLayer::update()
     {
-        if (_current_brush != state::current_brush)
+        /*
+         * if (_current_brush != state::current_brush)
         {
             _current_brush = state::current_brush;
             _cursor_in_bounds = *_owner->_cursor_in_bounds;
@@ -344,5 +293,6 @@ namespace mousetrap
         }
 
         _area.queue_render();
+         */
     }
 }

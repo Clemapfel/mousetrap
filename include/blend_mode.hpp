@@ -20,6 +20,7 @@ namespace mousetrap
     };
 
     static void set_current_blend_mode(BlendMode);
+    static void set_current_blend_mode_separate(BlendMode rgb_blend, BlendMode alpha_blend);
 }
 
 #include <src/blend_mode.inl>
