@@ -44,35 +44,17 @@ namespace mousetrap
         _area.clear_render_tasks();
         _area.add_render_task(_cursor_shape);
 
-        auto outline_task = RenderTask(_cursor_outline_outline_shape, nullptr, nullptr, nullptr);
-        _area.add_render_task(outline_task);
+        auto render_outline = state::settings_file->get_value_as<bool>("canvas", "brush_cursor_outline_visible");
 
+        if (render_outline)
         {
-            auto task = RenderTask(_cursor_outline_shape_top, _cursor_outline_shader);
-            task.register_int("_direction", _cursor_outline_shader_top_flag);
-            task.register_float("_time_s", _cursor_outline_time_s);
-            _area.add_render_task(task);
-        }
+            auto outline_task = RenderTask(_cursor_outline_outline_shape, nullptr, nullptr, BlendMode::NORMAL);
+            _area.add_render_task(outline_task);
 
-        {
-            auto task = RenderTask(_cursor_outline_shape_right, _cursor_outline_shader);
-            task.register_int("_direction", _cursor_outline_shader_right_flag);
-            task.register_float("_time_s", _cursor_outline_time_s);
-            _area.add_render_task(task);
-        }
-
-        {
-            auto task = RenderTask(_cursor_outline_shape_bottom, _cursor_outline_shader);
-            task.register_int("_direction", _cursor_outline_shader_bottom_flag);
-            task.register_float("_time_s", _cursor_outline_time_s);
-            _area.add_render_task(task);
-        }
-
-        {
-            auto task = RenderTask(_cursor_outline_shape_left, _cursor_outline_shader);
-            task.register_int("_direction", _cursor_outline_shader_left_flag);
-            task.register_float("_time_s", _cursor_outline_time_s);
-            _area.add_render_task(task);
+            _area.add_render_task(_cursor_outline_shape_top);
+            _area.add_render_task(_cursor_outline_shape_right);
+            _area.add_render_task(_cursor_outline_shape_bottom);
+            _area.add_render_task(_cursor_outline_shape_left);
         }
 
         _area.queue_render();
@@ -82,9 +64,6 @@ namespace mousetrap
     {
         auto* area = (GLArea*) widget;
         area->make_current();
-
-        instance->_cursor_outline_shader = new Shader();
-        instance->_cursor_outline_shader->create_from_file(get_resource_path() + "shaders/brush_outline.frag", ShaderType::FRAGMENT);
 
         instance->_cursor_shape = new Shape();
         instance->_cursor_outline_shape_top = new Shape();
@@ -197,7 +176,11 @@ namespace mousetrap
         _cursor_outline_shape_left->as_lines(convert_vertex_coordinates(vertices.left));
 
         _cursor_outline_outline_shape->as_lines(outline_outline);
-        _cursor_outline_outline_shape->set_color(RGBA(1, 1, 1, 0.5));
+
+        for (auto* shape : {_cursor_outline_shape_top, _cursor_outline_shape_right, _cursor_outline_shape_bottom, _cursor_outline_shape_left})
+            shape->set_color(RGBA(1, 1, 1, 1));
+
+        _cursor_outline_outline_shape->set_color(RGBA(0, 0, 0, 1));
 
         _brush_color = state::primary_color;
         _brush_opacity = state::brush_opacity;
@@ -340,7 +323,13 @@ namespace mousetrap
         if (_cursor_in_bounds != *_owner->_cursor_in_bounds and _area.get_is_realized())
         {
             _cursor_in_bounds = *_owner->_cursor_in_bounds;
+
             _cursor_shape->set_visible(_cursor_in_bounds);
+            _cursor_outline_shape_top->set_visible(_cursor_in_bounds);
+            _cursor_outline_shape_right->set_visible(_cursor_in_bounds);
+            _cursor_outline_shape_bottom->set_visible(_cursor_in_bounds);
+            _cursor_outline_shape_left->set_visible(_cursor_in_bounds);
+            _cursor_outline_outline_shape->set_visible(_cursor_in_bounds);
         }
 
         _area.queue_render();

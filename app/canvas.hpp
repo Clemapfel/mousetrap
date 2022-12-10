@@ -224,15 +224,11 @@ namespace mousetrap
                 private:
                     GLArea _area;
 
-                    float* _timer = new float(0); // seconds
-
                     static inline int* _cursor_outline_shader_right_flag = new int(1);
                     static inline int* _cursor_outline_shader_top_flag = new int(2);
                     static inline int* _cursor_outline_shader_left_flag = new int(3);
                     static inline int* _cursor_outline_shader_bottom_flag = new int(4);
                     static inline float* _cursor_outline_time_s = new float(0);
-
-                    Shader* _cursor_outline_shader;
 
                     Shape* _cursor_shape = nullptr;
                     Shape* _cursor_outline_shape_top = nullptr;
@@ -390,6 +386,11 @@ namespace mousetrap
         _undo_queue.emplace_back();
         _redo_queue.emplace_back();
         _redo_queue.emplace_back();
+
+        operator Widget*()->add_tick_callback([](FrameClock, Canvas* instance) -> bool {
+            instance->update();
+            return false;
+        }, this);
     }
 
     void Canvas::on_undo_action()
