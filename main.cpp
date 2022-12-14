@@ -161,6 +161,10 @@ static void activate(GtkApplication* app, void*)
     state::reload_brushes();
     initialize_debug_layers();
 
+    for (size_t x = 0; x < state::layer_resolution.x; ++x)
+        for (size_t y = 0; y < state::layer_resolution.y; ++y)
+            state::selection.insert({x, y});
+
     state::color_swapper = new ColorSwapper();
     state::palette_view = new PaletteView();
     state::brush_options = new BrushOptions();
@@ -349,12 +353,6 @@ static void activate(GtkApplication* app, void*)
     tt->create_from_group("palette_view", state::keybindings_file);
 
     left_center_paned->set_position(left_column->get_preferred_size().natural_size.x);
-
-    // TODO
-    std::cout << "shortcut: " << gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Control><Shift>")) << std::endl;
-    std::cout << "key     : " << gdk_keyval_from_name("<Control><Shift>") << std::endl;
-
-    // TODO
 
     state::main_window->set_child(main);
     state::main_window->show();

@@ -12,7 +12,10 @@ namespace mousetrap
         _area.connect_signal_resize(on_resize, this);
 
         _area.add_tick_callback([](FrameClock clock, SelectionLayer* instance) -> bool {
-            *instance->_outline_time_s += clock.get_time_since_last_frame().as_seconds();
+
+            if (state::settings_file->get_value_as<bool>("canvas", "selection_outline_animated"))
+                *instance->_outline_time_s += clock.get_time_since_last_frame().as_seconds();
+
             instance->_area.queue_render();
             return true;
         }, this);
@@ -30,31 +33,32 @@ namespace mousetrap
         auto outline_task = RenderTask(_outline_outline_shape, nullptr, nullptr, BlendMode::REVERSE_SUBTRACT);
         _area.add_render_task(outline_task);
 
+        auto tasks = std::vector<RenderTask>();
+
         {
-            auto task = RenderTask(_outline_shape_top, _outline_shader);
+            auto& task = tasks.emplace_back(_outline_shape_top, _outline_shader);
             task.register_int("_direction", _outline_shader_top_flag);
-            task.register_float("_time_s", _outline_time_s);
-            _area.add_render_task(task);
         }
 
         {
-            auto task = RenderTask(_outline_shape_right, _outline_shader);
+            auto& task = tasks.emplace_back(_outline_shape_right, _outline_shader);
             task.register_int("_direction", _outline_shader_right_flag);
-            task.register_float("_time_s", _outline_time_s);
-            _area.add_render_task(task);
         }
 
         {
-            auto task = RenderTask(_outline_shape_bottom, _outline_shader);
+            auto& task = tasks.emplace_back(_outline_shape_bottom, _outline_shader);
             task.register_int("_direction", _outline_shader_bottom_flag);
-            task.register_float("_time_s", _outline_time_s);
-            _area.add_render_task(task);
         }
 
         {
-            auto task = RenderTask(_outline_shape_left, _outline_shader);
+            auto& task = tasks.emplace_back(_outline_shape_left, _outline_shader);
             task.register_int("_direction", _outline_shader_left_flag);
+        }
+
+        for (auto& task : tasks)
+        {
             task.register_float("_time_s", _outline_time_s);
+            task.register_vec2("_canvas_size", _canvas_size);
             _area.add_render_task(task);
         }
 
@@ -67,7 +71,7 @@ namespace mousetrap
         area->make_current();
 
         instance->_outline_shader = new Shader();
-        instance->_outline_shader->create_from_file(get_resource_path() + "shaders/brush_outline.frag", ShaderType::FRAGMENT);
+        instance->_outline_shader->create_from_file(get_resource_path() + "shaders/dotted_outline.frag", ShaderType::FRAGMENT);
 
         instance->_outline_shape_top = new Shape();
         instance->_outline_shape_right = new Shape();
@@ -82,15 +86,15 @@ namespace mousetrap
 
     void Canvas::SelectionLayer::on_resize(GLArea* area, int w, int h, SelectionLayer* instance)
     {
-        instance->_canvas_size = {w, h};
+        *(instance->_canvas_size) = {w, h};
         instance->reformat();
         area->queue_render();
     }
 
     void Canvas::SelectionLayer::reformat()
     {
-        float width = state::layer_resolution.x / _canvas_size.x;
-        float height = state::layer_resolution.y / _canvas_size.y;
+        float width = state::layer_resolution.x / _canvas_size->x;
+        float height = state::layer_resolution.y / _canvas_size->y;
 
         float pixel_w = width / state::layer_resolution.x * *_owner->_transform_scale;
         float pixel_h = height / state::layer_resolution.y * *_owner->_transform_scale;
@@ -130,34 +134,40 @@ namespace mousetrap
 
                 if (a.x == b.x)
                 {
-                    outline_outline.push_back({
-                                                      {a.x - pixel_offset_x, a.y - pixel_offset_y},
-                                                      {b.x - pixel_offset_x, b.y + pixel_offset_y}
-                                              });
+                    Vector2f top = a.y < b.y ? a : b;
+                    Vector2f bottom = a.y < b.y ? b : a;
 
                     outline_outline.push_back({
-                                                      {a.x + pixel_offset_x, a.y - pixel_offset_y},
-                                                      {b.x + pixel_offset_x, b.y + pixel_offset_y}
-                                              });
+                          {top.x - pixel_offset_x, top.y},
+                          {bottom.x - pixel_offset_x, bottom.y}
+                    });
+
+                    outline_outline.push_back({
+                          {top.x + pixel_offset_x, top.y},
+                          {bottom.x + pixel_offset_x, bottom.y}
+                  });
                 }
                 else if (a.y == b.y)
                 {
-                    outline_outline.push_back({
-                                                      {a.x - pixel_offset_y, a.y - pixel_offset_y},
-                                                      {b.x + pixel_offset_y, b.y - pixel_offset_y}
-                                              });
+                    Vector2f left = a.x < b.x ? a : b;
+                    Vector2f right = a.x < b.x ? b : a;
 
                     outline_outline.push_back({
-                                                      {a.x - pixel_offset_y, a.y + pixel_offset_y},
-                                                      {b.x + pixel_offset_y, b.y + pixel_offset_y}
-                                              });
+                          {left.x, left.y - pixel_offset_y},
+                          {right.x, right.y - pixel_offset_y}
+                    });
+
+                    outline_outline.push_back({
+                          {left.x, left.y + pixel_offset_y},
+                          {right.x, right.y + pixel_offset_y}
+                      });
                 }
             }
 
             return out;
         };
 
-        auto vertices = state::current_brush->get_outline_vertices();
+        auto vertices = generate_outline_vertices(state::selection);
 
         _outline_shape_top->as_lines(convert_vertex_coordinates(vertices.top));
         _outline_shape_right->as_lines(convert_vertex_coordinates(vertices.right));
@@ -165,13 +175,55 @@ namespace mousetrap
         _outline_shape_left->as_lines(convert_vertex_coordinates(vertices.left));
 
         _outline_outline_shape->as_lines(outline_outline);
-        _outline_outline_shape->set_color(RGBA(1, 1, 1, 0.5));
+        _outline_outline_shape->set_color(RGBA(0, 0, 0, 1));
 
         reschedule_render_tasks();
+        _area.queue_render();
     }
 
     void Canvas::SelectionLayer::update()
     {
+        if (not _area.get_is_realized())
+            return;
+
+        auto _cursor_position = *(state::selection.begin());
+
+        float widget_w = _canvas_size->x;
+        float widget_h = _canvas_size->y;
+
+        Vector2f pos = {_cursor_position.x / widget_w, _cursor_position.y / widget_h};
+
+        float w = state::layer_resolution.x / _canvas_size->x;
+        float h = state::layer_resolution.y / _canvas_size->y;
+
+        Vector2f layer_top_left = {0.5 - w / 2, 0.5 - h / 2};
+        layer_top_left = to_gl_position(layer_top_left);
+        layer_top_left = _owner->_transform->apply_to(layer_top_left);
+        layer_top_left = from_gl_position(layer_top_left);
+
+        Vector2f layer_size = {
+            state::layer_resolution.x / _canvas_size->x,
+            state::layer_resolution.y / _canvas_size->y
+        };
+
+        layer_size *= *_owner->_transform_scale;
+
+        float x_dist = (pos.x - layer_top_left.x);
+        float y_dist = (pos.y - layer_top_left.y);
+
+        Vector2f pixel_size = {layer_size.x / state::layer_resolution.x, layer_size.y / state::layer_resolution.y};
+
+        x_dist /= pixel_size.x;
+        y_dist /= pixel_size.y;
+
+        x_dist = floor(x_dist);
+        y_dist = floor(y_dist);
+
+        pos.x = layer_top_left.x + x_dist * pixel_size.x;
+        pos.y = layer_top_left.y + y_dist * pixel_size.y;
+
+        std::cout << pos.x << " " << pos.y << std::endl;
+
         /*
          * if (_current_brush != state::current_brush)
         {

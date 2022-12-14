@@ -92,6 +92,8 @@ namespace mousetrap::state
 
     std::vector<Brush*> brushes;
 
+    Vector2Set<int> selection;
+
     // ### LAYERS #####################################
 
     std::deque<Layer*> layers;

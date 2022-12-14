@@ -134,7 +134,6 @@ namespace mousetrap
 
         static auto alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
 
-        // hlines
         for (size_t x = 0; x < w; ++x)
         {
             for (size_t y = 0; y < h - 1; ++y)
@@ -187,6 +186,90 @@ namespace mousetrap
 
         for (size_t x = 0; x < w; ++x)
             if (image.get_pixel(x, h-1).a > alpha_eps)
+                out.top.push_back({{x, h}, {x + 1, h}});
+
+        return out;
+    }
+
+    /// \brief generate lines that will outline the area described by the set of coordinates, ordered by clockwise orientation
+    OutlineVertices generate_outline_vertices(const Vector2Set<int>& set)
+    {
+        OutlineVertices out;
+
+        int min_x = std::numeric_limits<int>::max();
+        int min_y = std::numeric_limits<int>::max();
+        int max_x = std::numeric_limits<int>::min();
+        int max_y = std::numeric_limits<int>::min();
+
+        for (auto& v : set)
+        {
+            min_x = std::min(v.x, min_x);
+            min_y = std::min(v.y, min_y);
+            max_x = std::max(v.x, max_x);
+            max_y = std::max(v.y, max_y);
+        }
+
+        auto w = max_x - min_x;
+        auto h = max_y - min_y;
+
+        static auto alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
+
+        auto is_in_set = [&](int x, int y) {
+            return set.find(Vector2i(x, y)) != set.end();
+        };
+
+        for (size_t x = min_x; x < min_x + w; ++x)
+        {
+            for (size_t y = min_y; y < min_y + h - 1; ++y)
+            {
+                auto top = is_in_set(x, y);
+                auto bottom = is_in_set(x, y + 1);
+
+                std::pair<Vector2i, Vector2i> to_push = {
+                    {x,     y + 1},
+                    {x + 1, y + 1}
+                };
+
+                if (top and not bottom)
+                    out.top.push_back(to_push);
+                else if (not top and bottom)
+                    out.bottom.push_back(to_push);
+            }
+        }
+
+        for (size_t y = min_y; y < min_y + h; ++y)
+        {
+            for (size_t x = min_x; x < min_x + w - 1; ++x)
+            {
+                auto left = is_in_set(x, y);
+                auto right = is_in_set(x + 1, y);
+
+                std::pair<Vector2i, Vector2i> to_push = {
+                        {x + 1, y},
+                        {x + 1, y + 1}
+                };
+
+                if (left and not right)
+                    out.left.push_back(to_push);
+                else if (not left and right)
+                    out.right.push_back(to_push);
+            }
+        }
+
+        for (size_t y = min_y; y < min_y + h; ++y)
+            if (is_in_set(0, y))
+                out.right.push_back({{0, y}, {0, y+1}});
+
+        for (size_t y = min_y; y < min_y + h; ++y)
+            if (is_in_set(w-1, y))
+                out.left.push_back({{w, y}, {w, y+1}});
+
+        for (size_t x = min_x; x < min_x + w; ++x)
+            if (is_in_set(x, 0))
+                out.bottom.push_back({{x, 0}, {x + 1, 0}});
+
+        for (size_t x = min_x; x < min_x + w; ++x)
+            if (is_in_set(x, h-1))
                 out.top.push_back({{x, h}, {x + 1, h}});
 
         return out;

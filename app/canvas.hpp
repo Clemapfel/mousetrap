@@ -273,6 +273,7 @@ namespace mousetrap
                     static inline int* _outline_shader_bottom_flag = new int(4);
                     static inline float* _outline_time_s = new float(0);
 
+                    Vector2f* _canvas_size = new Vector2f(1, 1);
                     Shader* _outline_shader;
 
                     Shape* _outline_shape_top = nullptr;
@@ -281,14 +282,14 @@ namespace mousetrap
                     Shape* _outline_shape_left = nullptr;
                     Shape* _outline_outline_shape = nullptr;
 
-                    Vector2f _canvas_size;
-
                     void reschedule_render_tasks();
                     void reformat();
 
                     static void on_realize(Widget*, SelectionLayer* instance);
                     static void on_resize(GLArea*, int, int, SelectionLayer* instance);
             };
+
+            SelectionLayer _selection_layer = SelectionLayer(this);
 
             // UNDO / REDO
 
@@ -360,6 +361,7 @@ namespace mousetrap
         _canvas_layer_overlay.add_overlay(_layers_layer);
         _canvas_layer_overlay.add_overlay(_grid_layer);
         _canvas_layer_overlay.add_overlay(_brush_cursor_layer);
+        _canvas_layer_overlay.add_overlay(_selection_layer);
 
         _canvas_layer_overlay.add_overlay(_control_layer);
 
@@ -553,5 +555,6 @@ namespace mousetrap
         _transparency_tiling_layer.update();
         _layers_layer.update();
         _grid_layer.update();
+        _selection_layer.update();
     }
 }
