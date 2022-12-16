@@ -222,7 +222,7 @@ namespace mousetrap
         pos.x = layer_top_left.x + x_dist * pixel_size.x;
         pos.y = layer_top_left.y + y_dist * pixel_size.y;
 
-        std::cout << pos.x << " " << pos.y << std::endl;
+        //std::cout << pos.x << " " << pos.y << std::endl;
 
         /*
          * if (_current_brush != state::current_brush)

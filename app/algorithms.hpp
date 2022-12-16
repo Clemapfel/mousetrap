@@ -274,4 +274,87 @@ namespace mousetrap
 
         return out;
     }
+
+    Image generate_rectangle_outline(size_t width, size_t height, HSVA color = HSVA(0, 1, 0, 1))
+    {
+        auto out = Image();
+        out.create(width, height, RGBA(0, 0, 0, 0));
+
+        for (size_t x = 0; x < width; ++x)
+        {
+            out.set_pixel(x, 0, color);
+            out.set_pixel(x, height - 1, color);
+        }
+
+        for (size_t y = 1; y < height - 1; ++y)
+        {
+            out.set_pixel(0, y, color);
+            out.set_pixel(width - 1, y, color);
+        }
+
+        return out;
+    }
+
+    Image generate_rectangle_filled(size_t width, size_t height, HSVA color = HSVA(0, 1, 0, 1))
+    {
+        auto out = Image();
+        out.create(width, height, color);
+        return out;
+    }
+
+    std::vector<Vector2i> generate_circle_outline(size_t width, size_t height)
+    {
+        std::vector<Vector2i> out;
+
+        // source: [1] https://www.geeksforgeeks.org/mid-point-circle-drawing-algorithm/
+
+        auto center = Vector2i(
+            width / 2 - (width % 2 == 0 ? 1 : 0),
+            height / 2 - (height % 2 == 0 ? 1 : 0)
+        );
+
+        int x_radius = width / 2.f - (width % 2 == 0 ? 1 : 0);
+        int y_radius = height / 2.f - (height % 2 == 0 ? 1 : 0);
+
+        int r = x_radius;
+        int x = r;
+        int y = 0;
+        int p = 1 - r;
+
+        while (x > y)
+        {
+            y += 1;
+
+            if (p <= 0)
+                p = p + 2 * y + 1;
+            else
+            {
+                x -= 1;
+                p = p + 2 * y - 2 * x + 1;
+            }
+
+            if (x < y)
+                break;
+
+            out.emplace_back(x + center.x, y + center.y);
+            out.emplace_back(-x + center.x, y + center.y);
+            out.emplace_back(x + center.x, -y + center.y);
+            out.emplace_back(-x + center.x, -y + center.y);
+
+            if (x != y)
+            {
+                out.emplace_back(y + center.x, x + center.y);
+                out.emplace_back(-y + center.x, x + center.y);
+                out.emplace_back(y + center.x, -x + center.y);
+                out.emplace_back(-y + center.x, -x + center.y);
+            }
+        }
+
+        out.emplace_back(x + center.x, y + center.y);
+        out.emplace_back(-x + center.x, y + center.y);
+        out.emplace_back(x + center.x, -y + center.y);
+        out.emplace_back(-x + center.x, -y + center.y);
+
+        return out;
+    }
 }
