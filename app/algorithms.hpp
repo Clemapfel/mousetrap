@@ -119,6 +119,88 @@ namespace mousetrap
         return out;
     }
 
+    /// \brief generate 1-pixel rasterized circle outline
+    std::vector<Vector2i> generate_circle_points(size_t width, size_t height)
+    {
+        std::vector<Vector2i> out;
+
+        // source: [1] https://www.geeksforgeeks.org/midpoint-ellipse-drawing-algorithm/
+
+        auto center = Vector2i(
+            width / 2,
+            height / 2
+        );
+
+        float x_radius = width / 2.f;
+        float y_radius = height / 2.f;
+
+        int x = 0;
+        int y = y_radius;
+
+        auto rx = x_radius;
+        auto ry = y_radius;
+
+        float d1 = (ry * ry) - (rx * rx * ry) + (0.25f * rx * rx);
+        float dx = 2.f * ry * ry * x;
+        float dy = 2.f * rx * rx * y;
+
+        while (dx < dy)
+        {
+            out.emplace_back(x + center.x, y + center.y);
+            out.emplace_back(-x + center.x, y + center.y);
+            out.emplace_back(x + center.x, -y + center.y);
+            out.emplace_back(-x + center.x, -y + center.y);
+
+            if (d1 < 0)
+            {
+                x += 1;
+
+                dx = dx + (2 * ry * ry);
+                d1 = d1 + dx + (ry * ry);
+            }
+            else
+            {
+                x += 1;
+                y -= 1;
+
+                dx = dx + (2 * ry * ry);
+                dy = dy - (2 * rx * rx);
+                d1 = d1 + dx - dy + (ry * ry);
+            }
+        }
+
+        float d2 = ((ry * ry) * ((x + 0.5f) * (x + 0.5f))) +
+                   ((rx * rx) * ((y - 1) * (y - 1))) -
+                   (rx * rx * ry * ry);
+
+        while (y > 0)
+        {
+            out.emplace_back(x + center.x, y + center.y);
+            out.emplace_back(-x + center.x, y + center.y);
+            out.emplace_back(x + center.x, -y + center.y);
+            out.emplace_back(-x + center.x, -y + center.y);
+
+            if (d2 > 0)
+            {
+                y -= 1;
+
+                dy = dy - (2 * rx * rx);
+                d2 = d2 + (rx * rx) - dy;
+            }
+            else
+            {
+                y -= 1;
+                x += 1;
+
+                dx = dx + (2 * ry * ry);
+                dy = dy - (2 * rx * rx);
+                d2 = d2 + dx - dy + (rx * rx);
+            }
+        }
+
+        return out;
+    }
+
     struct OutlineVertices
     {
         std::vector<std::pair<Vector2i, Vector2i>> top, right, bottom, left;
@@ -302,84 +384,45 @@ namespace mousetrap
         return out;
     }
 
-    std::vector<Vector2i> generate_circle_outline(size_t width, size_t height)
+    Image generate_circle_outline(size_t width, size_t height, HSVA color = HSVA(0, 1, 0, 1))
     {
-        std::vector<Vector2i> out;
+        const auto points = generate_circle_points(width, height);
+        auto out = Image();
+        out.create(width, height, RGBA(0, 0, 0, 0));
 
-        // source: [1] https://www.geeksforgeeks.org/mid-point-circle-drawing-algorithm/
-
-        auto center = Vector2i(
-            width / 2 - (width % 2 == 0 ? 1 : 0),
-            height / 2 - (height % 2 == 0 ? 1 : 0)
-        );
-
-        int x_radius = width / 2.f - (width % 2 == 0 ? 1 : 0);
-        int y_radius = height / 2.f - (height % 2 == 0 ? 1 : 0);
-
-        int x = 0;
-        int y = y_radius;
-
-        auto rx = x_radius;
-        auto ry = y_radius;
-
-        float d1 = (ry * ry) - (rx * rx * ry) + (0.25 * rx * rx);
-        float dx = 2 * ry * ry * x;
-        float dy = 2 * rx * rx * y;
-
-        while (dx < dy)
-        {
-            out.emplace_back(x + center.x, y + center.y);
-            out.emplace_back(-x + center.x, y + center.y);
-            out.emplace_back(x + center.x, -y + center.y);
-            out.emplace_back(-x + center.x, -y + center.y);
-
-            if (d1 < 0)
-            {
-                x += 1;
-
-                dx = dx + (2 * ry * ry);
-                d1 = d1 + dx + (ry * ry);
-            }
-            else
-            {
-                x += 1;
-                y -= 1;
-
-                dx = dx + (2 * ry * ry);
-                dy = dy - (2 * rx * rx);
-                d1 = d1 + dx - dy + (ry * ry);
-            }
-        }
-
-        float d2 = ((ry * ry) * ((x + 0.5) * (x + 0.5))) +
-             ((rx * rx) * ((y - 1) * (y - 1))) -
-             (rx * rx * ry * ry);
-
-        while (y >= 0)
-        {
-            out.emplace_back(x + center.x, y + center.y);
-            out.emplace_back(-x + center.x, y + center.y);
-            out.emplace_back(x + center.x, -y + center.y);
-            out.emplace_back(-x + center.x, -y + center.y);
-
-            if (d2 > 0)
-            {
-                y -= 1;
-
-                dy = dy - (2 * rx * rx);
-                d2 = d2 + (rx * rx) - dy;
-            }
-            else
-            {
-                y -= 1;
-                x += 1;
-
-                dx = dx + (2 * ry * ry);
-                dy = dy - (2 * rx * rx);
-                d2 = d2 + dx - dy + (rx * rx);
-            }
-        }
+        for (auto& point : points)
+            out.set_pixel(point.x, point.y, color);
 
         return out;
     }
+
+    Image generate_circle_filled(size_t width, size_t height, HSVA color = HSVA(0, 1, 0, 1))
+    {
+        const auto points = generate_circle_points(width, height);
+
+        // horizontal stripe decomposition: y -> x_left, x_right
+        std::map<int, std::pair<int, int>> ranges;
+
+        for (auto& point : points)
+        {
+            auto it = ranges.find(point.y);
+            if (it != ranges.end())
+            {
+                (*it).second.first = std::min<int>((*it).second.first, point.x);
+                (*it).second.second = std::max<int>((*it).second.second, point.x);
+            }
+            else
+                ranges.insert({point.y, {point.x, point.x}});
+        }
+
+        auto out = Image();
+        out.create(width, height, RGBA(0, 0, 0, 0));
+
+        for (auto& pair : ranges)
+            for (size_t x = pair.second.first; x < pair.second.second; ++x)
+                out.set_pixel(x, pair.first, color);
+
+        return out;
+    }
+
 }

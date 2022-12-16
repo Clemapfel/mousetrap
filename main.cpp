@@ -53,11 +53,7 @@ void initialize_debug_layers()
             if (layer->name == "number")
             {
                 //frame.image->create_from_file(get_resource_path() + "example_animation/0" + std::to_string(frame_i) + ".png");
-
-                auto outline = generate_circle_outline(state::layer_resolution.x, state::layer_resolution.y / 2);
-                frame.image->create(state::layer_resolution.x, state::layer_resolution.y, RGBA(0, 0, 0, 0));
-                for (auto& px : outline)
-                    frame.image->set_pixel(px.x, px.y, RGBA(0, 0, 0, 1));
+                *(frame.image) = generate_circle_outline(state::layer_resolution.x, state::layer_resolution.y, RGBA(0, 0, 0, 1).operator HSVA());
             }
             else
             {
