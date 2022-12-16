@@ -60,7 +60,7 @@ namespace mousetrap
             return hash;
         };
 
-        _scroll_scale_trigger_hash_to_allowed_keys = {
+        _trigger_hash_to_allowed_keys = {
             {hash("<Shift>"),           {GDK_KEY_Shift_L, GDK_KEY_Shift_R}},
             {hash("<Alt>"),             {GDK_KEY_Alt_L, GDK_KEY_Alt_R}},
             {hash("<Control>"),         {GDK_KEY_Control_L, GDK_KEY_Control_R}},
@@ -73,16 +73,43 @@ namespace mousetrap
         auto scroll_scale_trigger_str = state::keybindings_file->get_value("canvas", "scroll_scale_trigger");
         _scroll_scale_trigger = hash(scroll_scale_trigger_str);
 
-        if (_scroll_scale_trigger_hash_to_allowed_keys.find(_scroll_scale_trigger) == _scroll_scale_trigger_hash_to_allowed_keys.end())
+        if (_trigger_hash_to_allowed_keys.find(_scroll_scale_trigger) == _trigger_hash_to_allowed_keys.end())
         {
             std::cerr << "[ERROR] In Canvas::ControlLayer: Disallowed trigger `" << scroll_scale_trigger_str << "` for action `scroll_scale_trigger`. Defaulting to `<Shift>`" << std::endl;
             _scroll_scale_trigger = hash("<Shift>");
+        }
+
+        auto lock_axis_trigger_str = state::keybindings_file->get_value("canvas", "lock_axis_movement");
+        _lock_axis_trigger = hash(lock_axis_trigger_str);
+
+        if (_trigger_hash_to_allowed_keys.find(_lock_axis_trigger) == _trigger_hash_to_allowed_keys.end())
+        {
+            std::cerr << "[ERROR] In Canvas::ControlLayer: Disallowed trigger `" << lock_axis_trigger_str << "` for action `lock_axis_movement`. Defaulting to `<Control>`" << std::endl;
+            _scroll_scale_trigger = hash("<Control>");
         }
     }
 
     Canvas::ControlLayer::operator Widget*()
     {
         return &_area;
+    }
+
+    bool Canvas::ControlLayer::should_trigger_scroll_scale(guint keyval)
+    {
+        for (auto key : _trigger_hash_to_allowed_keys.at(_scroll_scale_trigger))
+            if (key == keyval)
+                return true;
+
+        return false;
+    }
+
+    bool Canvas::ControlLayer::should_trigger_lock_axis(guint keyval)
+    {
+        for (auto key : _trigger_hash_to_allowed_keys.at(_lock_axis_trigger))
+            if (key == keyval)
+                return true;
+
+        return false;
     }
 
     void Canvas::ControlLayer::update()
@@ -173,6 +200,8 @@ namespace mousetrap
         *instance->_owner->_previous_cursor_position = *instance->_owner->_current_cursor_position;
         *instance->_owner->_current_cursor_position = {x, y};
         instance->update_pixel_position();
+
+        state::update_canvas();
     }
 
     void Canvas::ControlLayer::on_motion_leave(MotionEventController*, ControlLayer* instance)
@@ -184,6 +213,37 @@ namespace mousetrap
 
     void Canvas::ControlLayer::on_motion(MotionEventController*, double x, double y, ControlLayer* instance)
     {
+        instance->_actual_cursor_position = {x, y};
+        if (instance->_lock_axis_active)
+        {
+            auto previous_x = instance->_owner->_current_cursor_position->x;
+            auto previous_y = instance->_owner->_current_cursor_position->y;
+
+            // within the same texture-space pixel row / column
+            auto eps = Vector2f(
+                instance->_owner->_canvas_size->x / state::layer_resolution.x,
+                instance->_owner->_canvas_size->y / state::layer_resolution.y
+            );
+
+            if (not instance->_lock_axis_x_locked and not instance->_lock_axis_y_locked)
+            {
+                if (abs(x - previous_x) > eps.x)
+                {
+                    instance->_lock_axis_y_locked = true;
+                }
+                else if (abs(y - previous_y) > eps.y)
+                {
+                    instance->_lock_axis_x_locked = true;
+                }
+            }
+
+            if (instance->_lock_axis_x_locked)
+                x = previous_x;
+
+            if (instance->_lock_axis_y_locked)
+                y = previous_y;
+        }
+
         *instance->_owner->_previous_cursor_position = *instance->_owner->_current_cursor_position;
         *instance->_owner->_current_cursor_position = {x, y};
         instance->update_pixel_position();
@@ -196,102 +256,41 @@ namespace mousetrap
 
     bool Canvas::ControlLayer::on_key_pressed(KeyEventController* controller, guint keyval, guint keycode, GdkModifierType state, ControlLayer* instance)
     {
-        if (keyval == GDK_KEY_y)
+        if (instance->should_trigger_scroll_scale(keyval))
         {
             instance->_scroll_scale_active = true;
-            std::cout << instance->_scroll_scale_active << std::endl;
         }
-        /*
-        if (keyval == GDK_KEY_y and instayynce->_scroll_scale_active == false)
+
+        if (instance->should_trigger_lock_axis(keyval))
         {
-            instance->_scroll_scale_active = true;
-            std::cout << instance->_scroll_scale_active << std::endl;
+            instance->_lock_axis_active = true;
+            instance->_lock_axis_anchor_point = *instance->_owner->_current_cursor_position;
         }
-         */
-
-        /*
-        if (keyval == instance->_scroll_scale_trigger_keyval)
-            instance->_scroll_scale_active = true;
-
-        return true;
-         */
     }
 
     bool Canvas::ControlLayer::on_key_released(KeyEventController* controller, guint keyval, guint keycode, GdkModifierType state,
                                                ControlLayer* instance)
     {
-        if (keyval == GDK_KEY_y)
+        if (instance->should_trigger_scroll_scale(keyval))
         {
             instance->_scroll_scale_active = false;
-            std::cout << instance->_scroll_scale_active << std::endl;
         }
 
-        /*
-        if (keyval == GDK_KEY_y and instance->_scroll_scale_active == true)
+        if (instance->should_trigger_lock_axis(keyval))
         {
-            instance->_scroll_scale_active = false;
-            std::cout << instance->_scroll_scale_active << std::endl;
+            instance->_lock_axis_active = false;
+            instance->_lock_axis_x_locked = false;
+            instance->_lock_axis_y_locked = false;
+
+            // synch brush with actual cursor position
+            *instance->_owner->_previous_cursor_position = instance->_actual_cursor_position;
+            *instance->_owner->_current_cursor_position = instance->_actual_cursor_position;
+            instance->update_pixel_position();
         }
-         */
-
-        /*
-        // gtk handles modifier keystrokes and normal keystrokes separately, if scroll_scale_trigger is a modifier,
-        // its key pressed event will be handled in on_modifier_changed, otherwise in on_key_pressed
-        // however in either case, its release has to be handled in on_key_released
-
-        static auto shift_hash = gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Shift>"));
-        static auto control_hash = gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Control>"));
-        static auto alt_hash = gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Alt>"));
-
-        auto hash = instance->_scroll_scale_trigger_modifier_state;
-
-        if (keyval == instance->_scroll_scale_trigger_keyval)
-            goto trigger;
-
-        if (hash == shift_hash and state == GDK_SHIFT_MASK)
-            goto trigger;
-
-        if (hash == control_hash and state == GDK_CONTROL_MASK)
-            goto trigger;
-
-        if (hash == alt_hash and state == GDK_ALT_MASK)
-            goto trigger;
-
-        return true;
-
-        trigger:
-            instance->_scroll_scale_active = false;
-            return true;
-            */
     }
 
     bool Canvas::ControlLayer::on_modifiers_changed(KeyEventController*, GdkModifierType keyval, ControlLayer* instance)
-    {
-        /*
-        static auto shift_hash = gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Shift>"));
-        static auto control_hash = gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Control>"));
-        static auto alt_hash = gtk_shortcut_trigger_hash(gtk_shortcut_trigger_parse_string("<Alt>"));
-
-        auto hash = instance->_scroll_scale_trigger_modifier_state;
-
-        if (hash == shift_hash and keyval == GDK_SHIFT_MASK)
-            goto trigger;
-
-        if (hash == control_hash and keyval == GDK_CONTROL_MASK)
-            goto trigger;
-
-        if (hash == alt_hash and keyval == GDK_ALT_MASK)
-            goto trigger;
-
-        return true;
-
-        trigger:
-            instance->_scroll_scale_active = not instance->_scroll_scale_active;
-            return true;
-            */
-
-
-    }
+    {}
 
     void Canvas::ControlLayer::on_scroll_begin(ScrollEventController*, ControlLayer* instance)
     {}
@@ -308,15 +307,5 @@ namespace mousetrap
             instance->_owner->set_transform_scale(scale);
             instance->_owner->update();
         }
-        /*
-        else
-        {
-            auto offset = instance->_owner->get_transform_offset();
-            offset.x += (instance->_translation_scroll_x_inverted ? -1 : 1) * x * instance->_translation_scroll_sensitivity;
-            offset.y += (instance->_translation_scroll_y_inverted ? -1 : 1) * y * instance->_translation_scroll_sensitivity;
-            //instance->_owner->set_transform_offset(offset);
-            //instance->_owner->update();
-        }
-         */
     }
 }

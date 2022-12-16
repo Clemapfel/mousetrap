@@ -117,14 +117,14 @@ namespace mousetrap
             {
                 auto v = in.at(i);
                 auto to_push = std::pair<Vector2f, Vector2f>{
-                        {
-                                v.first.x * adjusted_pixel_size.x,
-                                v.first.y * adjusted_pixel_size.y
-                        },
-                        {
-                                v.second.x * adjusted_pixel_size.x,
-                                v.second.y * adjusted_pixel_size.y
-                        }
+                    {
+                        v.first.x * adjusted_pixel_size.x,
+                        v.first.y * adjusted_pixel_size.y
+                    },
+                    {
+                        v.second.x * adjusted_pixel_size.x,
+                        v.second.y * adjusted_pixel_size.y
+                    }
                 };
 
                 out.push_back(to_push);
@@ -177,6 +177,12 @@ namespace mousetrap
         _outline_outline_shape->as_lines(outline_outline);
         _outline_outline_shape->set_color(RGBA(0, 0, 0, 1));
 
+        _outline_shape_top_initial_position = _outline_shape_top->get_top_left();
+        _outline_shape_right_initial_position = _outline_shape_right->get_top_left();
+        _outline_shape_bottom_initial_position = _outline_shape_bottom->get_top_left();
+        _outline_shape_left_initial_position = _outline_shape_left->get_top_left();
+        _outline_outline_shape_initial_position = _outline_outline_shape->get_top_left();
+
         reschedule_render_tasks();
         _area.queue_render();
     }
@@ -186,165 +192,33 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
-        auto _cursor_position = *(state::selection.begin());
+        auto selection_top_left = *(state::selection.begin());
 
-        float widget_w = _canvas_size->x;
-        float widget_h = _canvas_size->y;
+        float layer_w = state::layer_resolution.x / _canvas_size->x;
+        float layer_h = state::layer_resolution.y / _canvas_size->y;
 
-        Vector2f pos = {_cursor_position.x / widget_w, _cursor_position.y / widget_h};
-
-        float w = state::layer_resolution.x / _canvas_size->x;
-        float h = state::layer_resolution.y / _canvas_size->y;
-
-        Vector2f layer_top_left = {0.5 - w / 2, 0.5 - h / 2};
+        Vector2f layer_top_left = {0.5 - layer_w / 2, 0.5 - layer_h / 2};
         layer_top_left = to_gl_position(layer_top_left);
         layer_top_left = _owner->_transform->apply_to(layer_top_left);
         layer_top_left = from_gl_position(layer_top_left);
 
-        Vector2f layer_size = {
-            state::layer_resolution.x / _canvas_size->x,
-            state::layer_resolution.y / _canvas_size->y
+        Vector2f pixel_size = {
+            layer_w / state::layer_resolution.x,
+            layer_h / state::layer_resolution.y
         };
 
-        layer_size *= *_owner->_transform_scale;
-
-        float x_dist = (pos.x - layer_top_left.x);
-        float y_dist = (pos.y - layer_top_left.y);
-
-        Vector2f pixel_size = {layer_size.x / state::layer_resolution.x, layer_size.y / state::layer_resolution.y};
-
-        x_dist /= pixel_size.x;
-        y_dist /= pixel_size.y;
-
-        x_dist = floor(x_dist);
-        y_dist = floor(y_dist);
-
-        pos.x = layer_top_left.x + x_dist * pixel_size.x;
-        pos.y = layer_top_left.y + y_dist * pixel_size.y;
-
-        //std::cout << pos.x << " " << pos.y << std::endl;
+        auto top_left = layer_top_left;
+        top_left.x += selection_top_left.x * pixel_size.x;
+        top_left.y += selection_top_left.y * pixel_size.y;
 
         /*
-         * if (_current_brush != state::current_brush)
-        {
-            _current_brush = state::current_brush;
-            _cursor_in_bounds = *_owner->_cursor_in_bounds;
-            _cursor_position = *_owner->_current_cursor_position;
-            _brush_color = state::primary_color;
-            _brush_opacity = state::brush_opacity;
-
-            reformat();
-        }
-
-        if (_cursor_position != *_owner->_current_cursor_position and _area.get_is_realized())
-        {
-            _cursor_position = *_owner->_current_cursor_position;
-
-            float widget_w = _area.get_size().x;
-            float widget_h = _area.get_size().y;
-
-            Vector2f pos = {_cursor_position.x / widget_w, _cursor_position.y / widget_h};
-
-            // align with texture-space pixel grid
-            float w = state::layer_resolution.x / _canvas_size.x;
-            float h = state::layer_resolution.y / _canvas_size.y;
-
-            Vector2f layer_top_left = {0.5 - w / 2, 0.5 - h / 2};
-            layer_top_left = to_gl_position(layer_top_left);
-            layer_top_left = _owner->_transform->apply_to(layer_top_left);
-            layer_top_left = from_gl_position(layer_top_left);
-
-            Vector2f layer_size = {
-                state::layer_resolution.x / _canvas_size.x,
-                state::layer_resolution.y / _canvas_size.y
-            };
-
-            layer_size *= *_owner->_transform_scale;
-
-            float x_dist = (pos.x - layer_top_left.x);
-            float y_dist = (pos.y - layer_top_left.y);
-
-            Vector2f pixel_size = {layer_size.x / state::layer_resolution.x, layer_size.y / state::layer_resolution.y};
-
-            x_dist /= pixel_size.x;
-            y_dist /= pixel_size.y;
-
-            x_dist = floor(x_dist);
-            y_dist = floor(y_dist);
-
-            pos.x = layer_top_left.x + x_dist * pixel_size.x;
-            pos.y = layer_top_left.y + y_dist * pixel_size.y;
-
-            // align with widget-space pixel grid
-
-            pos *= _area.get_size();
-            pos.x = round(pos.x);
-            pos.y = round(pos.y);
-            pos /= _area.get_size();
-
-            float x_offset = 0.5;
-            float y_offset = 0.5;
-
-            auto* brush_texture = state::current_brush->get_texture();
-
-            if (brush_texture and brush_texture->get_size().x % 2 == 0)
-                x_offset = 1;
-
-            if (brush_texture and brush_texture->get_size().y % 2 == 0)
-                y_offset = 1;
-
-            Vector2f centroid = {
-                pos.x + pixel_size.x * x_offset,
-                pos.y + pixel_size.y * y_offset
-            };
-
-            auto top_offset = _cursor_shape->get_centroid() - _cursor_outline_shape_top->get_centroid();
-            auto right_offset = _cursor_shape->get_centroid() - _cursor_outline_shape_right->get_centroid();
-            auto bottom_offset = _cursor_shape->get_centroid() - _cursor_outline_shape_bottom->get_centroid();
-            auto left_offset = _cursor_shape->get_centroid() - _cursor_outline_shape_left->get_centroid();
-
-            auto outline_offset = _cursor_shape->get_centroid() - _cursor_outline_outline_shape->get_centroid();
-
-            _cursor_shape->set_centroid(centroid);
-            _cursor_outline_outline_shape->set_centroid(centroid - outline_offset);
-            _cursor_outline_shape_top->set_centroid(centroid - top_offset);
-            _cursor_outline_shape_right->set_centroid(centroid - right_offset);
-            _cursor_outline_shape_bottom->set_centroid(centroid - bottom_offset);
-            _cursor_outline_shape_left->set_centroid(centroid - left_offset);
-        }
-
-        auto should_update_opacity = _brush_opacity != state::brush_opacity;
-        auto should_update_color = _brush_color != state::primary_color;
-
-        if ((should_update_opacity or should_update_color) and _area.get_is_realized())
-        {
-            _brush_color = state::primary_color;
-            _brush_opacity = state::brush_opacity;
-
-            auto cursor_color = HSVA(
-                _brush_color.h,
-                _brush_color.s,
-                _brush_color.v,
-                _brush_opacity
-            );
-            auto outline_color = HSVA(0, 0, cursor_color.v > 0.5 ? 0 : 1, _brush_opacity);
-
-            if (state::active_tool == ERASER)
-            {
-                cursor_color = HSVA(0, 0, 1, 0.25);
-                outline_color = HSVA(0, 0, 0, 1);
-            }
-
-            _cursor_shape->set_color(cursor_color);
-        }
-
-        if (_cursor_in_bounds != *_owner->_cursor_in_bounds and _area.get_is_realized())
-        {
-            _cursor_in_bounds = *_owner->_cursor_in_bounds;
-            _cursor_shape->set_visible(_cursor_in_bounds);
-        }
+        _outline_shape_top->set_top_left(top_left + _outline_shape_top_initial_position);
+        _outline_shape_right->set_top_left(top_left + _outline_shape_right_initial_position);
+        _outline_shape_bottom->set_top_left(top_left + _outline_shape_bottom_initial_position);
+        _outline_shape_left->set_top_left(top_left + _outline_shape_left_initial_position);
+        _outline_outline_shape->set_top_left(top_left + _outline_outline_shape_initial_position);
+        */
 
         _area.queue_render();
-         */
     }
 }

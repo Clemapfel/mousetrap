@@ -161,9 +161,11 @@ static void activate(GtkApplication* app, void*)
     state::reload_brushes();
     initialize_debug_layers();
 
+    //state::selection.insert({0, 0});
+
     for (size_t x = 0; x < state::layer_resolution.x; ++x)
         for (size_t y = 0; y < state::layer_resolution.y; ++y)
-            state::selection.insert({x, y});
+            state::selection.insert({20, y});
 
     state::color_swapper = new ColorSwapper();
     state::palette_view = new PaletteView();

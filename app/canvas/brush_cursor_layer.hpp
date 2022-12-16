@@ -89,8 +89,8 @@ namespace mousetrap
         float width = state::layer_resolution.x / _canvas_size.x;
         float height = state::layer_resolution.y / _canvas_size.y;
 
-        float pixel_w = width / state::layer_resolution.x * *_owner->_transform_scale;
-        float pixel_h = height / state::layer_resolution.y * *_owner->_transform_scale;
+        float pixel_w = width / state::layer_resolution.x * _transform_scale;
+        float pixel_h = height / state::layer_resolution.y * _transform_scale;
 
         if (_cursor_shape == nullptr)
             return;
@@ -207,11 +207,12 @@ namespace mousetrap
 
     void Canvas::BrushCursorLayer::update()
     {
-        if (_current_brush != state::current_brush)
+        if (_current_brush != state::current_brush or ((_transform_scale != *_owner->_transform_scale) and _area.get_is_realized()))
         {
             _current_brush = state::current_brush;
             _cursor_in_bounds = *_owner->_cursor_in_bounds;
             _cursor_position = *_owner->_current_cursor_position;
+            _transform_scale = *_owner->_transform_scale;
             _brush_color = state::primary_color;
             _brush_opacity = state::brush_opacity;
 
@@ -241,7 +242,7 @@ namespace mousetrap
                 state::layer_resolution.y / _canvas_size.y
             };
 
-            layer_size *= *_owner->_transform_scale;
+            layer_size *= _transform_scale;
 
             float x_dist = (pos.x - layer_top_left.x);
             float y_dist = (pos.y - layer_top_left.y);

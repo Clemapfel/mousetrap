@@ -300,9 +300,9 @@ namespace mousetrap
             return set.find(Vector2i(x, y)) != set.end();
         };
 
-        for (size_t x = min_x; x < min_x + w; ++x)
+        for (size_t x = min_x; x <= min_x + w; ++x)
         {
-            for (size_t y = min_y; y < min_y + h - 1; ++y)
+            for (size_t y = min_y; y <= min_y + h - 1; ++y)
             {
                 auto top = is_in_set(x, y);
                 auto bottom = is_in_set(x, y + 1);
@@ -319,9 +319,9 @@ namespace mousetrap
             }
         }
 
-        for (size_t y = min_y; y < min_y + h; ++y)
+        for (size_t y = min_y; y <= min_y + h; ++y)
         {
-            for (size_t x = min_x; x < min_x + w - 1; ++x)
+            for (size_t x = min_x; x <= min_x + w - 1; ++x)
             {
                 auto left = is_in_set(x, y);
                 auto right = is_in_set(x + 1, y);
@@ -338,19 +338,19 @@ namespace mousetrap
             }
         }
 
-        for (size_t y = min_y; y < min_y + h; ++y)
+        for (size_t y = min_y; y <= min_y + h; ++y)
             if (is_in_set(0, y))
                 out.right.push_back({{0, y}, {0, y+1}});
 
-        for (size_t y = min_y; y < min_y + h; ++y)
+        for (size_t y = min_y; y <= min_y + h; ++y)
             if (is_in_set(w-1, y))
                 out.left.push_back({{w, y}, {w, y+1}});
 
-        for (size_t x = min_x; x < min_x + w; ++x)
+        for (size_t x = min_x; x <= min_x + w; ++x)
             if (is_in_set(x, 0))
                 out.bottom.push_back({{x, 0}, {x + 1, 0}});
 
-        for (size_t x = min_x; x < min_x + w; ++x)
+        for (size_t x = min_x; x <= min_x + w; ++x)
             if (is_in_set(x, h-1))
                 out.top.push_back({{x, h}, {x + 1, h}});
 

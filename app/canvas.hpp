@@ -97,9 +97,19 @@ namespace mousetrap
                     static bool on_modifiers_changed(KeyEventController*, GdkModifierType keyval, ControlLayer* instance);
 
                     size_t _scroll_scale_trigger;
-                    std::map<guint, std::vector<guint>> _scroll_scale_trigger_hash_to_allowed_keys;
+                    size_t _lock_axis_trigger;
+                    std::map<guint, std::vector<guint>> _trigger_hash_to_allowed_keys;
+
+                    bool should_trigger_scroll_scale(guint keyval);
+                    bool should_trigger_lock_axis(guint keyval);
 
                     bool _scroll_scale_active = false;
+                    bool _lock_axis_active = false;
+
+                    Vector2f _lock_axis_anchor_point;
+                    bool _lock_axis_y_locked = false;
+                    bool _lock_axis_x_locked = false;
+                    Vector2f _actual_cursor_position;
 
                     ScrollEventController _scroll_controller;
                     static void on_scroll_begin(ScrollEventController*, ControlLayer* instance);
@@ -239,6 +249,7 @@ namespace mousetrap
 
                     Vector2f _canvas_size = Vector2f(1, 1);
                     Vector2f _cursor_position = Vector2f(0, 0);
+                    float _transform_scale = 1;
 
                     float _brush_opacity;
                     HSVA _brush_color;
@@ -281,6 +292,12 @@ namespace mousetrap
                     Shape* _outline_shape_bottom = nullptr;
                     Shape* _outline_shape_left = nullptr;
                     Shape* _outline_outline_shape = nullptr;
+
+                    Vector2f _outline_shape_top_initial_position;
+                    Vector2f _outline_shape_right_initial_position;
+                    Vector2f _outline_shape_bottom_initial_position;
+                    Vector2f _outline_shape_left_initial_position;
+                    Vector2f _outline_outline_shape_initial_position;
 
                     void reschedule_render_tasks();
                     void reformat();
