@@ -157,6 +157,7 @@ namespace mousetrap
         *_owner->_current_pixel_position = {x_dist, y_dist};
 
         _owner->_brush_cursor_layer.update();
+        _owner->_line_tool_layer.update();
     }
 
     void Canvas::ControlLayer::on_realize(Widget*, ControlLayer* instance)
@@ -213,37 +214,6 @@ namespace mousetrap
 
     void Canvas::ControlLayer::on_motion(MotionEventController*, double x, double y, ControlLayer* instance)
     {
-        instance->_actual_cursor_position = {x, y};
-        if (instance->_lock_axis_active)
-        {
-            auto previous_x = instance->_owner->_current_cursor_position->x;
-            auto previous_y = instance->_owner->_current_cursor_position->y;
-
-            // within the same texture-space pixel row / column
-            auto eps = Vector2f(
-                instance->_owner->_canvas_size->x / state::layer_resolution.x,
-                instance->_owner->_canvas_size->y / state::layer_resolution.y
-            );
-
-            if (not instance->_lock_axis_x_locked and not instance->_lock_axis_y_locked)
-            {
-                if (abs(x - previous_x) > eps.x)
-                {
-                    instance->_lock_axis_y_locked = true;
-                }
-                else if (abs(y - previous_y) > eps.y)
-                {
-                    instance->_lock_axis_x_locked = true;
-                }
-            }
-
-            if (instance->_lock_axis_x_locked)
-                x = previous_x;
-
-            if (instance->_lock_axis_y_locked)
-                y = previous_y;
-        }
-
         *instance->_owner->_previous_cursor_position = *instance->_owner->_current_cursor_position;
         *instance->_owner->_current_cursor_position = {x, y};
         instance->update_pixel_position();
@@ -279,13 +249,6 @@ namespace mousetrap
         if (instance->should_trigger_lock_axis(keyval))
         {
             instance->_lock_axis_active = false;
-            instance->_lock_axis_x_locked = false;
-            instance->_lock_axis_y_locked = false;
-
-            // synch brush with actual cursor position
-            *instance->_owner->_previous_cursor_position = instance->_actual_cursor_position;
-            *instance->_owner->_current_cursor_position = instance->_actual_cursor_position;
-            instance->update_pixel_position();
         }
     }
 

@@ -105,11 +105,7 @@ namespace mousetrap
 
                     bool _scroll_scale_active = false;
                     bool _lock_axis_active = false;
-
                     Vector2f _lock_axis_anchor_point;
-                    bool _lock_axis_y_locked = false;
-                    bool _lock_axis_x_locked = false;
-                    Vector2f _actual_cursor_position;
 
                     ScrollEventController _scroll_controller;
                     static void on_scroll_begin(ScrollEventController*, ControlLayer* instance);
@@ -265,6 +261,39 @@ namespace mousetrap
 
             BrushCursorLayer _brush_cursor_layer = BrushCursorLayer(this);
 
+            // LINES
+
+            class LineToolLayer : public CanvasLayer
+            {
+                public:
+                    LineToolLayer(Canvas*);
+
+                    operator Widget*() override;
+                    void update() override;
+
+                    void signal_click();
+
+                private:
+                    GLArea _area;
+
+                    bool _anchored = false;
+                    Vector2i _start_point;
+                    Vector2i _end_point;
+
+                    Shape* _start_shape;
+                    Shape* _end_shape;
+
+                    Shape* _line_shape;
+                    Shape* _line_outline_shape;
+
+                    static void on_realize(Widget*, LineToolLayer* instance);
+                    static void on_resize(GLArea*, int, int, LineToolLayer* instance);
+
+                    Vector2f _canvas_size = Vector2f(1, 1);
+            };
+
+            LineToolLayer _line_tool_layer = LineToolLayer(this);
+
             // SELECTION
 
             class SelectionLayer : public CanvasLayer
@@ -367,6 +396,7 @@ namespace mousetrap
 #include <app/canvas/brush_cursor_layer.hpp>
 #include <app/canvas/tool_behavior.hpp>
 #include <app/canvas/selection_layer.hpp>
+#include <app/canvas/line_tool_layer.hpp>
 
 namespace mousetrap
 {
@@ -378,6 +408,7 @@ namespace mousetrap
         _canvas_layer_overlay.add_overlay(_layers_layer);
         _canvas_layer_overlay.add_overlay(_grid_layer);
         _canvas_layer_overlay.add_overlay(_brush_cursor_layer);
+        _canvas_layer_overlay.add_overlay(_line_tool_layer);
         _canvas_layer_overlay.add_overlay(_selection_layer);
 
         _canvas_layer_overlay.add_overlay(_control_layer);
@@ -569,6 +600,7 @@ namespace mousetrap
     {
         _control_layer.update();
         _brush_cursor_layer.update();
+        _line_tool_layer.update();
         _transparency_tiling_layer.update();
         _layers_layer.update();
         _grid_layer.update();
