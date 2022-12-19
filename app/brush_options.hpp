@@ -262,7 +262,7 @@ namespace mousetrap
 
         auto tile_size_menu = MenuModel();
         tile_size_menu.add_widget(&_tile_size_box);
-        settings_section.add_submenu("Preview Tile Size...", &tile_size_menu);
+        settings_section.add_submenu("Preview Size...", &tile_size_menu);
 
         auto brush_section = MenuModel();
         brush_section.add_action("Add...", "brush_options.add_brush");

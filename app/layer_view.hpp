@@ -31,6 +31,7 @@ namespace mousetrap
 
                     void set_layer(Layer*);
                     void set_frame(size_t);
+                    void set_preview_size(size_t);
 
                 private:
                     Layer* _layer;
@@ -51,7 +52,7 @@ namespace mousetrap
             class LayerRow
             {
                 public:
-                    LayerRow(Layer*, size_t frame_i);
+                    LayerRow(LayerView*, Layer*, size_t frame_i);
 
                     void update();
                     operator Widget*();
@@ -60,6 +61,7 @@ namespace mousetrap
                     void set_frame(size_t);
 
                 private:
+                    LayerView* _owner;
                     Layer* _layer;
                     size_t _frame_i;
 
@@ -100,6 +102,63 @@ namespace mousetrap
 
                     Box _visible_locked_buttons_box = Box(GTK_ORIENTATION_HORIZONTAL);
             };
+            
+            // control bar
+
+            ImageDisplay _layer_move_up_icon = ImageDisplay(get_resource_path() + "icons/layer_move_up.png");
+            Button _layer_move_up_button;
+            static void on_layer_move_up_button_clicked(Button*, LayerView* instance);
+            Action _layer_move_up_action = Action("layer_view.layer_move_up");
+
+            ImageDisplay _layer_move_down_icon = ImageDisplay(get_resource_path() + "icons/layer_move_down.png");
+            Button _layer_move_down_button;
+            static void on_layer_move_down_button_clicked(Button*, LayerView* instance);
+            Action _layer_move_down_action = Action("layer_view.layer_move_down");
+
+            ImageDisplay _layer_create_icon = ImageDisplay(get_resource_path() + "icons/layer_create.png");
+            Button _layer_create_button;
+            static void on_layer_create_button_clicked(Button*, LayerView* instance);
+            Action _layer_create_action = Action("layer_view.layer_create");
+
+            ImageDisplay _layer_duplicate_icon = ImageDisplay(get_resource_path() + "icons/layer_duplicate.png");
+            Button _layer_duplicate_button;
+            static void on_layer_duplicate_button_clicked(Button*, LayerView* instance);
+            Action _layer_duplicate_action = Action("layer_view.layer_duplicate");
+
+            ImageDisplay _layer_delete_icon = ImageDisplay(get_resource_path() + "icons/layer_delete.png");
+            Button _layer_delete_button;
+            static void on_layer_delete_button_clicked(Button*, LayerView* instance);
+            Action _layer_delete_action = Action("layer_view.layer_delete");
+
+            ImageDisplay _layer_merge_down_icon = ImageDisplay(get_resource_path() + "icons/layer_merge_down.png");
+            Button _layer_merge_down_button;
+            static void on_layer_merge_down_button_clicked(Button*, LayerView* instance);
+            Action _layer_merge_down_action = Action("layer_view.layer_merge_down");
+
+            ImageDisplay _layer_flatten_all_icon = ImageDisplay(get_resource_path() + "icons/layer_flatten_all.png");
+            Button _layer_flatten_all_button;
+            static void on_layer_flatten_all_button_clicked(Button*, LayerView* instance);
+            Action _layer_flatten_all_action = Action("layer_view.layer_flatten_all");
+
+            Box _control_bar_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
+            // menu & actions
+
+            MenuButton _header_menu_button;
+            Label _header_menu_button_label = Label("Layers");
+
+            MenuModel _menu;
+            PopoverMenu _header_menu_button_popover = PopoverMenu(&_menu);
+
+            size_t _preview_size = state::settings_file->get_value_as<int>("layer_view", "layer_preview_thumbnail_size");
+            MenuModel _preview_size_submenu;
+
+            Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Label _preview_size_label = Label("Preview Size (px): ");
+            SpinButton _preview_size_spin_button = SpinButton(2, 256, 1);
+            static void on_preview_size_spin_button_value_changed(SpinButton*, LayerView* instance);
+            
+            // layout
 
             std::deque<LayerRow> _layer_rows;
             ListView _layer_rows_list_view = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_MULTIPLE);
@@ -108,8 +167,7 @@ namespace mousetrap
             Box _layer_rows_scrolled_window_box = Box(GTK_ORIENTATION_VERTICAL);
             SeparatorLine _layer_rows_scrolled_window_spacer;
 
-            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
-
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
 }
 
@@ -189,17 +247,23 @@ namespace mousetrap
         _layer_shape->set_texture(_layer->frames.at(_frame_i).texture);
         _layer_shape->set_color(RGBA(1, 1, 1, _layer->opacity));
 
-        auto height = state::settings_file->get_value_as<int>("layer_view", "layer_preview_thumbnail_size");
+        _area.queue_render();
+    }
+
+    void LayerView::LayerPreview::set_preview_size(size_t px)
+    {
+        auto height = px;
         auto width = state::layer_resolution.x / state::layer_resolution.y * height;
         _area.set_size_request({width, height});
-        _area.queue_render();
     }
 
     // ###
 
-    LayerView::LayerRow::LayerRow(Layer* layer, size_t frame_i)
-        : _layer(layer), _frame_i(frame_i), _layer_preview(layer, frame_i)
+    LayerView::LayerRow::LayerRow(LayerView* owner, Layer* layer, size_t frame_i)
+        : _owner(owner), _layer(layer), _frame_i(frame_i), _layer_preview(layer, frame_i)
     {
+        _layer_preview.set_preview_size(_owner->_preview_size);
+
         _layer_preview_frame.set_child(_layer_preview);
         _layer_preview_frame.set_label_widget(nullptr);
         _layer_preview_list_view.push_back(&_layer_preview_frame);
@@ -299,20 +363,26 @@ namespace mousetrap
     }
 
     void LayerView::LayerRow::on_is_visible_toggle_button_toggled(ToggleButton*, LayerRow* instance)
-    {}
+    {
+        // TODO
+    }
 
     void LayerView::LayerRow::on_is_locked_toggle_button_toggled(ToggleButton*, LayerRow* instance)
-    {}
+    {
+        // TODO
+    }
 
     void LayerView::LayerRow::on_layer_name_entry_activated(Entry*, LayerRow* instance)
-    {}
+    {
+        // TODO
+    }
 
     // ###
 
     LayerView::LayerView()
     {
         for (auto* layer : state::layers)
-            _layer_rows.emplace_back(layer, state::current_frame);
+            _layer_rows.emplace_back(this, layer, state::current_frame);
 
         for (auto& row : _layer_rows)
             _layer_rows_list_view.push_back(row);
@@ -328,8 +398,107 @@ namespace mousetrap
         _layer_rows_scrolled_window.set_propagate_natural_height(true);
         _layer_rows_scrolled_window.set_expand(true);
 
+        // control bar
+
+        for (auto* display : {&_layer_move_up_icon, &_layer_create_icon, &_layer_duplicate_icon, &_layer_delete_icon, &_layer_move_down_icon, &_layer_merge_down_icon, &_layer_flatten_all_icon})
+            display->set_size_request(display->get_size());
+
+        _layer_move_up_button.set_child(&_layer_move_up_icon);
+        _layer_move_up_button.connect_signal_clicked(on_layer_move_up_button_clicked, this);
+
+        _layer_create_button.set_child(&_layer_create_icon);
+        _layer_create_button.connect_signal_clicked(on_layer_create_button_clicked, this);
+
+        _layer_duplicate_button.set_child(&_layer_duplicate_icon);
+        _layer_duplicate_button.connect_signal_clicked(on_layer_duplicate_button_clicked, this);
+
+        _layer_delete_button.set_child(&_layer_delete_icon);
+        _layer_delete_button.connect_signal_clicked(on_layer_delete_button_clicked, this);
+
+        _layer_move_down_button.set_child(&_layer_move_down_icon);
+        _layer_move_down_button.connect_signal_clicked(on_layer_move_down_button_clicked, this);
+
+        _layer_merge_down_button.set_child(&_layer_merge_down_icon);
+        _layer_merge_down_button.connect_signal_clicked(on_layer_merge_down_button_clicked, this);
+
+        _layer_flatten_all_button.set_child(&_layer_flatten_all_icon);
+        _layer_flatten_all_button.connect_signal_clicked(on_layer_flatten_all_button_clicked, this);
+
+        for (auto* button : {&_layer_move_up_button, &_layer_create_button, &_layer_duplicate_button, &_layer_delete_button, &_layer_move_down_button, &_layer_merge_down_button, &_layer_flatten_all_button})
+        {
+            button->set_vexpand(false);
+            button->set_hexpand(true);
+            _control_bar_box.push_back(button);
+        }
+
+        _control_bar_box.set_hexpand(true);
+
+        // menu
+
+        _preview_size_spin_button.set_margin_start(state::margin_unit);
+        _preview_size_spin_button.set_value(_preview_size);
+        _preview_size_spin_button.connect_signal_value_changed(on_preview_size_spin_button_value_changed, this);
+        _preview_size_box.push_back(&_preview_size_label);
+        _preview_size_box.push_back(&_preview_size_spin_button);
+        _preview_size_box.set_margin(state::margin_unit);
+
+        auto settings_section = MenuModel();
+        auto preview_size_submenu = MenuModel();
+        preview_size_submenu.add_widget(&_preview_size_box);
+        settings_section.add_submenu("Preview Size...", &preview_size_submenu);
+
+        _menu.add_section("Settings", &settings_section);
+
+        _header_menu_button_label.set_size_request({32, 32});
+        _header_menu_button.set_child(&_header_menu_button_label);
+
+        _header_menu_button_popover = PopoverMenu(&_menu);
+        _header_menu_button.set_popover(&_header_menu_button_popover);
+
         _main.set_homogeneous(false);
+        _main.push_back(&_header_menu_button);
         _main.push_back(&_layer_rows_scrolled_window);
+        _main.push_back(&_control_bar_box);
+    }
+
+    void LayerView::on_layer_move_up_button_clicked(Button*, LayerView* instance)
+    {
+        // TODO
+    }
+
+    void LayerView::on_layer_move_down_button_clicked(Button*, LayerView* instance)
+    {
+        // TODO
+    }
+
+    void LayerView::on_layer_create_button_clicked(Button*, LayerView* instance)
+    {
+        // TODO
+    }
+
+    void LayerView::on_layer_duplicate_button_clicked(Button*, LayerView* instance)
+    {
+        // TODO
+    }
+
+    void LayerView::on_layer_delete_button_clicked(Button*, LayerView* instance)
+    {
+        // TODO
+    }
+
+    void LayerView::on_layer_merge_down_button_clicked(Button*, LayerView* instance)
+    {
+        // TODO
+    }
+
+    void LayerView::on_layer_flatten_all_button_clicked(Button*, LayerView* instance)
+    {
+        // TODO
+    }
+
+    void LayerView::on_preview_size_spin_button_value_changed(SpinButton*, LayerView* instance)
+    {
+        // TODO
     }
 
     LayerView::operator Widget*()
