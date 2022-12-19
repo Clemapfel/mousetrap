@@ -6,7 +6,7 @@
 namespace mousetrap
 {
     Scale::Scale(float min, float max, float step, GtkOrientation orientation)
-        : WidgetImplementation<GtkScale>(GTK_SCALE(gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, min, max, step))),
+        : WidgetImplementation<GtkScale>(GTK_SCALE(gtk_scale_new_with_range(orientation, min, max, step))),
           HasValueChangedSignal<Scale>(this)
     {
         gtk_scale_set_draw_value(get_native(), false);

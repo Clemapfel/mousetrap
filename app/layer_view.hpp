@@ -65,10 +65,12 @@ namespace mousetrap
                     Layer* _layer;
                     size_t _frame_i;
 
-                    Box _outer_box = Box(GTK_ORIENTATION_HORIZONTAL, state::margin_unit);
+                    Box _inner_box = Box(GTK_ORIENTATION_HORIZONTAL, state::margin_unit);
+                    Box _outer_box = Box(GTK_ORIENTATION_VERTICAL);
 
                     LayerPreview _layer_preview;
                     Frame _layer_preview_frame;
+                    AspectFrame _layer_preview_aspect_frame = AspectFrame(state::layer_resolution.x / float(state::layer_resolution.y));
                     ListView _layer_preview_list_view = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
                     ToggleButton _is_visible_toggle_button;
@@ -83,6 +85,15 @@ namespace mousetrap
 
                     Entry _layer_name_entry;
                     static void on_layer_name_entry_activated(Entry*, LayerRow* instance);
+
+                    LevelBar _opacity_level_bar = LevelBar(0, 1);
+                    Overlay _opacity_level_bar_name_entry_overlay;
+
+                    Scale _layer_opacity_scale = Scale(0, 1, 0.01);
+                    SpinButton _layer_opacity_spin_button = SpinButton(0, 1, 0.001);
+                    Box _layer_opacity_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                    Popover _layer_opacity_popover;
+                    MenuButton _layer_opacity_menu_button;
 
                     DropDown _blend_mode_drop_down;
                     std::vector<Label*> _blend_mode_drop_down_label_items;
@@ -157,7 +168,7 @@ namespace mousetrap
             Label _preview_size_label = Label("Preview Size (px): ");
             SpinButton _preview_size_spin_button = SpinButton(2, 256, 1);
             static void on_preview_size_spin_button_value_changed(SpinButton*, LayerView* instance);
-            
+
             // layout
 
             std::deque<LayerRow> _layer_rows;
@@ -266,7 +277,8 @@ namespace mousetrap
 
         _layer_preview_frame.set_child(_layer_preview);
         _layer_preview_frame.set_label_widget(nullptr);
-        _layer_preview_list_view.push_back(&_layer_preview_frame);
+        _layer_preview_aspect_frame.set_child(&_layer_preview_frame);
+        _layer_preview_list_view.push_back(&_layer_preview_aspect_frame);
 
         _visible_locked_buttons_box.push_back(&_is_visible_toggle_button);
         _visible_locked_buttons_box.push_back(&_is_locked_toggle_button);
@@ -311,6 +323,17 @@ namespace mousetrap
         _layer_name_entry.set_has_frame(false);
         _layer_name_entry.connect_signal_activate(on_layer_name_entry_activated, this);
 
+        _opacity_level_bar.set_value(float(rand()) / RAND_MAX);
+        _opacity_level_bar.set_opacity(0.25);
+        _opacity_level_bar.set_inverted(true);
+        _opacity_level_bar.set_margin_vertical(state::margin_unit * 0.5);
+        _layer_opacity_menu_button.set_margin_vertical(state::margin_unit * 0.5);
+
+        _opacity_level_bar.set_expand(true);
+        _layer_name_entry.set_expand(true);
+        _opacity_level_bar_name_entry_overlay.set_child(&_opacity_level_bar);
+        _opacity_level_bar_name_entry_overlay.add_overlay(&_layer_name_entry);
+
         using blend_mode_drop_down_data = struct {BlendMode mode; LayerRow* instance;};
 
         for (auto& pair: blend_mode_to_label)
@@ -333,11 +356,23 @@ namespace mousetrap
         _blend_mode_drop_down.set_valign(GTK_ALIGN_CENTER);
         _blend_mode_drop_down.set_halign(GTK_ALIGN_END);
 
-        _outer_box.push_back(&_visible_locked_buttons_box);
-        _outer_box.push_back(&_layer_preview_list_view);
-        _outer_box.push_back(&_layer_name_entry);
-        _outer_box.push_back(&_blend_mode_drop_down);
-        _outer_box.set_margin_horizontal(state::margin_unit);
+        _layer_opacity_scale.set_hexpand(true);
+        _layer_opacity_scale.set_size_request({state::margin_unit * 20, 0});
+        _layer_opacity_spin_button.set_hexpand(false);
+        _layer_opacity_box.push_back(&_layer_opacity_scale);
+        _layer_opacity_box.push_back(&_layer_opacity_spin_button);
+        _layer_opacity_popover.set_child(&_layer_opacity_box);
+        _layer_opacity_menu_button.set_popover(&_layer_opacity_popover);
+        _layer_opacity_popover.set_relative_position(GTK_POS_TOP);
+
+        _inner_box.push_back(&_visible_locked_buttons_box);
+        _inner_box.push_back(&_layer_preview_list_view);
+        _inner_box.push_back(&_opacity_level_bar_name_entry_overlay);
+        _inner_box.push_back(&_layer_opacity_menu_button);
+        _inner_box.push_back(&_blend_mode_drop_down);
+        _inner_box.set_margin_horizontal(state::margin_unit);
+
+        _outer_box.push_back(&_inner_box);
     }
 
     LayerView::LayerRow::operator Widget*()
@@ -372,9 +407,9 @@ namespace mousetrap
         // TODO
     }
 
-    void LayerView::LayerRow::on_layer_name_entry_activated(Entry*, LayerRow* instance)
+    void LayerView::LayerRow::on_layer_name_entry_activated(Entry* entry, LayerRow* instance)
     {
-        // TODO
+        std::cout << entry->get_text() << std::endl;
     }
 
     // ###
