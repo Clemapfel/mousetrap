@@ -63,7 +63,7 @@ namespace mousetrap
                     Layer* _layer;
                     size_t _frame_i;
 
-                    Box _outer_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                    Box _outer_box = Box(GTK_ORIENTATION_HORIZONTAL, state::margin_unit);
 
                     LayerPreview _layer_preview;
                     Frame _layer_preview_frame;
@@ -83,21 +83,18 @@ namespace mousetrap
                     static void on_layer_name_entry_activated(Entry*, LayerRow* instance);
 
                     DropDown _blend_mode_drop_down;
-                    std::vector<Label> _blend_mode_drop_down_label_items;
-                    std::vector<Label> _blend_mode_drop_down_list_items;
-
-                    using on_blend_mode_drop_down_item_selected_data = struct {LayerRow* instance; BlendMode mode;};
-                    static void on_blend_mode_drop_down_item_selected(on_blend_mode_drop_down_item_selected_data* instance);
+                    std::vector<Label*> _blend_mode_drop_down_label_items;
+                    std::vector<Label*> _blend_mode_drop_down_list_items;
 
                     // blendmode -> {label item, list item}
-                    static inline const std::unordered_map<BlendMode, std::pair<std::string, std::string>> blend_mode_to_label = {
+                    static inline const std::vector<std::pair<BlendMode, std::pair<std::string, std::string>>> blend_mode_to_label = {
                         {BlendMode::NORMAL,           {"&#945;", "Alpha Blending"}},
                         {BlendMode::ADD,              {"&#43;", "Add"}},
                         {BlendMode::SUBTRACT,         {"&#8722;", "Subtract"}},
                         {BlendMode::REVERSE_SUBTRACT, {"&#8760;", "Reverse Subtract"}},
                         {BlendMode::MULTIPLY,         {"&#215;", "Multiply"}},
-                        {BlendMode::MIN,              {"min", "Minimum"}},
-                        {BlendMode::MAX,              {"max", "Maximum"}},
+                        {BlendMode::MIN,              {"&#60;", "Minimum"}},
+                        {BlendMode::MAX,              {"&#62;", "Maximum"}},
                     };
 
 
@@ -106,6 +103,13 @@ namespace mousetrap
 
             std::deque<LayerRow> _layer_rows;
             ListView _layer_rows_list_view = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_MULTIPLE);
+
+            ScrolledWindow _layer_rows_scrolled_window;
+            Box _layer_rows_scrolled_window_box = Box(GTK_ORIENTATION_VERTICAL);
+            SeparatorLine _layer_rows_scrolled_window_spacer;
+
+            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+
     };
 }
 
@@ -243,32 +247,33 @@ namespace mousetrap
         _layer_name_entry.set_has_frame(false);
         _layer_name_entry.connect_signal_activate(on_layer_name_entry_activated, this);
 
-        for (auto& pair : blend_mode_to_label)
+        using blend_mode_drop_down_data = struct {BlendMode mode; LayerRow* instance;};
+
+        for (auto& pair: blend_mode_to_label)
         {
-            _blend_mode_drop_down_label_items.emplace_back(pair.second.first);
-            _blend_mode_drop_down_label_items.emplace_back(pair.second.second);
+            auto* label_item = _blend_mode_drop_down_label_items.emplace_back(new Label("<tt>" + pair.second.first + "</tt>"));
+            auto* list_item = _blend_mode_drop_down_list_items.emplace_back(new Label(pair.second.second));
+
+            list_item->set_halign(GTK_ALIGN_START);
+
+            _blend_mode_drop_down.push_back(
+                list_item,
+                label_item,
+                [](blend_mode_drop_down_data data) {
+                    // TODO
+                }, blend_mode_drop_down_data{pair.first, this}
+            );
         }
 
-        {
-            size_t i = 0;
-            for (auto& pair: blend_mode_to_label)
-            {
-                _blend_mode_drop_down.push_back(
-                    &_blend_mode_drop_down_label_items.at(i),
-                    &_blend_mode_drop_down_list_items.at(i),
-                    on_blend_mode_drop_down_item_selected,
-                    new on_blend_mode_drop_down_item_selected_data{this, pair.first}
-                );
-
-                i += 1;
-            }
-        }
+        _blend_mode_drop_down.set_expand(false);
+        _blend_mode_drop_down.set_valign(GTK_ALIGN_CENTER);
+        _blend_mode_drop_down.set_halign(GTK_ALIGN_END);
 
         _outer_box.push_back(&_visible_locked_buttons_box);
         _outer_box.push_back(&_layer_preview_list_view);
         _outer_box.push_back(&_layer_name_entry);
         _outer_box.push_back(&_blend_mode_drop_down);
-        _outer_box.set_margin(state::margin_unit);
+        _outer_box.set_margin_horizontal(state::margin_unit);
     }
 
     LayerView::LayerRow::operator Widget*()
@@ -302,9 +307,6 @@ namespace mousetrap
     void LayerView::LayerRow::on_layer_name_entry_activated(Entry*, LayerRow* instance)
     {}
 
-    void LayerView::LayerRow::on_blend_mode_drop_down_item_selected(on_blend_mode_drop_down_item_selected_data* instance)
-    {}
-
     // ###
 
     LayerView::LayerView()
@@ -314,11 +316,25 @@ namespace mousetrap
 
         for (auto& row : _layer_rows)
             _layer_rows_list_view.push_back(row);
+
+        _layer_rows_list_view.set_show_separators(true);
+
+        _layer_rows_scrolled_window_box.push_back(&_layer_rows_list_view);
+        _layer_rows_scrolled_window_box.push_back(&_layer_rows_scrolled_window_spacer);
+        _layer_rows_scrolled_window_spacer.set_expand(true);
+
+        _layer_rows_scrolled_window.set_child(&_layer_rows_scrolled_window_box);
+        _layer_rows_scrolled_window.set_policy(GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+        _layer_rows_scrolled_window.set_propagate_natural_height(true);
+        _layer_rows_scrolled_window.set_expand(true);
+
+        _main.set_homogeneous(false);
+        _main.push_back(&_layer_rows_scrolled_window);
     }
 
     LayerView::operator Widget*()
     {
-        return &_layer_rows_list_view;
+        return &_main;
     }
 
     void LayerView::update()
