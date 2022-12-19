@@ -79,6 +79,28 @@ namespace mousetrap
                     ImageDisplay _is_not_locked_icon = ImageDisplay(get_resource_path() + "icons/layer_not_locked.png");
                     static void on_is_locked_toggle_button_toggled(ToggleButton*, LayerRow* instance);
 
+                    Entry _layer_name_entry;
+                    static void on_layer_name_entry_activated(Entry*, LayerRow* instance);
+
+                    DropDown _blend_mode_drop_down;
+                    std::vector<Label> _blend_mode_drop_down_label_items;
+                    std::vector<Label> _blend_mode_drop_down_list_items;
+
+                    using on_blend_mode_drop_down_item_selected_data = struct {LayerRow* instance; BlendMode mode;};
+                    static void on_blend_mode_drop_down_item_selected(on_blend_mode_drop_down_item_selected_data* instance);
+
+                    // blendmode -> {label item, list item}
+                    static inline const std::unordered_map<BlendMode, std::pair<std::string, std::string>> blend_mode_to_label = {
+                        {BlendMode::NORMAL,           {"&#945;", "Alpha Blending"}},
+                        {BlendMode::ADD,              {"&#43;", "Add"}},
+                        {BlendMode::SUBTRACT,         {"&#8722;", "Subtract"}},
+                        {BlendMode::REVERSE_SUBTRACT, {"&#8760;", "Reverse Subtract"}},
+                        {BlendMode::MULTIPLY,         {"&#215;", "Multiply"}},
+                        {BlendMode::MIN,              {"min", "Minimum"}},
+                        {BlendMode::MAX,              {"max", "Maximum"}},
+                    };
+
+
                     Box _visible_locked_buttons_box = Box(GTK_ORIENTATION_HORIZONTAL);
             };
 
@@ -215,8 +237,37 @@ namespace mousetrap
         for (auto* icon : {&_is_visible_icon, &_is_not_visible_icon, &_is_locked_icon, &_is_not_locked_icon})
             icon->set_size_request(icon->get_size());
 
+        _layer_name_entry.set_text(_layer->name);
+        _layer_name_entry.set_hexpand(true);
+        _layer_name_entry.set_vexpand(false);
+        _layer_name_entry.set_has_frame(false);
+        _layer_name_entry.connect_signal_activate(on_layer_name_entry_activated, this);
+
+        for (auto& pair : blend_mode_to_label)
+        {
+            _blend_mode_drop_down_label_items.emplace_back(pair.second.first);
+            _blend_mode_drop_down_label_items.emplace_back(pair.second.second);
+        }
+
+        {
+            size_t i = 0;
+            for (auto& pair: blend_mode_to_label)
+            {
+                _blend_mode_drop_down.push_back(
+                    &_blend_mode_drop_down_label_items.at(i),
+                    &_blend_mode_drop_down_list_items.at(i),
+                    on_blend_mode_drop_down_item_selected,
+                    new on_blend_mode_drop_down_item_selected_data{this, pair.first}
+                );
+
+                i += 1;
+            }
+        }
+
         _outer_box.push_back(&_visible_locked_buttons_box);
         _outer_box.push_back(&_layer_preview_list_view);
+        _outer_box.push_back(&_layer_name_entry);
+        _outer_box.push_back(&_blend_mode_drop_down);
         _outer_box.set_margin(state::margin_unit);
     }
 
@@ -246,6 +297,12 @@ namespace mousetrap
     {}
 
     void LayerView::LayerRow::on_is_locked_toggle_button_toggled(ToggleButton*, LayerRow* instance)
+    {}
+
+    void LayerView::LayerRow::on_layer_name_entry_activated(Entry*, LayerRow* instance)
+    {}
+
+    void LayerView::LayerRow::on_blend_mode_drop_down_item_selected(on_blend_mode_drop_down_item_selected_data* instance)
     {}
 
     // ###
