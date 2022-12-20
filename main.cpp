@@ -24,6 +24,7 @@
 #include <app/bubble_log_area.hpp>
 #include <app/file_chooser_dialog.hpp>
 #include <app/shortcut_information.hpp>
+#include <app/frame_view.hpp>
 
 using namespace mousetrap;
 
@@ -171,6 +172,7 @@ static void activate(GtkApplication* app, void*)
     state::toolbox = new Toolbox();
     state::color_picker = new ColorPicker();
     state::layer_view = new LayerView();
+    state::frame_view = new FrameView();
     state::verbose_color_picker = new VerboseColorPicker();
     state::canvas = new Canvas();
     state::color_preview = new ColorPreview();
@@ -186,6 +188,7 @@ static void activate(GtkApplication* app, void*)
     auto* brush_options = state::brush_options->operator Widget*();
     auto* color_preview = state::color_preview->operator Widget*();
     auto* bubble_log = state::bubble_log->operator Widget*();
+    auto* frame_view = state::frame_view->operator Widget*();
 
     layer_view->set_valign(GTK_ALIGN_END);
     verbose_color_picker->set_margin(state::margin_unit);
@@ -223,10 +226,6 @@ static void activate(GtkApplication* app, void*)
 
     for (auto* column : {left_column, right_column})
         column->set_size_request({state::margin_unit * 2, 0});
-
-    //left_column->set_hexpand(false);
-    //right_column->set_hexpand(false);
-    //center_column->set_hexpand(true);
 
     auto* left_center_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
     auto* center_right_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
@@ -338,9 +337,17 @@ static void activate(GtkApplication* app, void*)
     center_column->push_back(canvas);
     center_column->set_homogeneous(false);
 
-    auto* all_columns = new Box(GTK_ORIENTATION_VERTICAL);
-    add_spacer(all_columns);
-    all_columns->push_back(left_center_paned);
+    auto* left_and_center_column = new Box(GTK_ORIENTATION_HORIZONTAL);
+    left_and_center_column->push_back(left_column);
+    left_and_center_column->push_back(center_column);
+
+    auto* left_and_center_and_frame_view = new Paned(GTK_ORIENTATION_VERTICAL);
+    left_and_center_and_frame_view->set_start_child(left_and_center_column);
+    left_and_center_and_frame_view->set_end_child(frame_view);
+
+    auto* all_columns = new Box(GTK_ORIENTATION_HORIZONTAL);
+    all_columns->push_back(left_and_center_and_frame_view);
+    all_columns->push_back(right_column);
 
     bubble_log->set_margin(2 * state::margin_unit);
     bubble_log->set_align(GTK_ALIGN_END);
