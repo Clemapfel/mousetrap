@@ -660,9 +660,12 @@ namespace mousetrap
         for (auto& row : _layer_rows)
             _layer_rows_list_view.push_back(row);
 
+
         _layer_rows_list_view.set_show_separators(true);
         _layer_rows_list_view.get_selection_model()->connect_signal_selection_changed(on_layer_rows_list_view_selection_changed, this);
         _layer_rows_list_view.get_selection_model()->select(state::current_layer);
+
+        _layer_rows_scrolled_window_spacer.set_size_request({0, state::margin_unit * 10});
 
         _layer_rows_scrolled_window_box.push_back(&_layer_rows_list_view);
         _layer_rows_scrolled_window_box.push_back(&_layer_rows_scrolled_window_spacer);
@@ -815,8 +818,7 @@ namespace mousetrap
         _main.set_homogeneous(false);
         _main.push_back(&_header_menu_button);
         _main.push_back(&_layer_rows_scrolled_window);
-        _main.push_back(&_control_bar_box);
-
+        //_main.push_back(&_control_bar_box);
     }
 
     void LayerView::on_layer_move_up_button_clicked(Button*, LayerView* instance)

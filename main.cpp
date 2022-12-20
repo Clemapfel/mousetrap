@@ -34,7 +34,7 @@ void initialize_debug_layers()
 
     for (size_t i = 0; i < 15; ++i)
     {
-        state::layers.emplace_back(new Layer{"overlay"});
+        state::layers.emplace_back(new Layer{"overlay #" + std::to_string(i)});
         state::layers.back()->blend_mode = BlendMode::NORMAL;
     }
 
@@ -345,6 +345,7 @@ static void activate(GtkApplication* app, void*)
     bubble_log->set_margin(2 * state::margin_unit);
     bubble_log->set_align(GTK_ALIGN_END);
     bubble_log->set_size_request({100, 100});
+    bubble_log->set_can_respond_to_input(false); // TODO ?
 
     auto* main = new Overlay();
     main->set_child(all_columns);
