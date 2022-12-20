@@ -105,6 +105,20 @@ namespace mousetrap::state
 
     AppComponent* layer_view = nullptr;
 
+    void update_layer_view()
+    {
+        if (layer_view != nullptr)
+            layer_view->update();
+    }
+
+    AppComponent* frame_view = nullptr;
+
+    void update_frame_view()
+    {
+        if (frame_view != nullptr)
+            frame_view->update();
+    }
+
     // ### RENDER DRAW #################################
 
     AppComponent* canvas;

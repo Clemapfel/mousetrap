@@ -26,12 +26,16 @@ namespace mousetrap
                     LayerPreview(Layer*, size_t frame_i);
                     ~LayerPreview();
 
-                    void update();
                     operator Widget*();
 
                     void set_layer(Layer*);
                     void set_frame(size_t);
                     void set_preview_size(size_t);
+                    void set_opacity(float);
+                    void set_visible(bool);
+                    void set_locked(bool);
+
+                    void queue_render();
 
                 private:
                     Layer* _layer;
@@ -42,8 +46,8 @@ namespace mousetrap
                     static inline Shader* _transparency_tiling_shader = nullptr;
                     Vector2f _canvas_size = Vector2f(1, 1);
                     
-                    Shape* _transparency_tiling_shape;
-                    Shape* _layer_shape;
+                    Shape* _transparency_tiling_shape = nullptr;
+                    Shape* _layer_shape = nullptr;
 
                     static void on_realize(Widget*, LayerPreview*);
                     static void on_resize(GLArea*, int w, int h, LayerPreview*);
@@ -60,10 +64,19 @@ namespace mousetrap
                     void set_layer(Layer*);
                     void set_frame(size_t);
 
+                    void set_opacity(float);
+                    void set_visible(bool);
+                    void set_locked(bool);
+                    void set_blend_mode(BlendMode);
+                    void set_name(const std::string&);
+                    void set_preview_size(size_t);
+
                 private:
                     LayerView* _owner;
                     Layer* _layer;
                     size_t _frame_i;
+
+                    void signal_layer_updated();
 
                     Box _inner_box = Box(GTK_ORIENTATION_HORIZONTAL, state::margin_unit);
                     Box _outer_box = Box(GTK_ORIENTATION_VERTICAL);
@@ -89,11 +102,18 @@ namespace mousetrap
                     LevelBar _opacity_level_bar = LevelBar(0, 1);
                     Overlay _opacity_level_bar_name_entry_overlay;
 
-                    Scale _layer_opacity_scale = Scale(0, 1, 0.01);
-                    SpinButton _layer_opacity_spin_button = SpinButton(0, 1, 0.001);
-                    Box _layer_opacity_box = Box(GTK_ORIENTATION_HORIZONTAL);
-                    Popover _layer_opacity_popover;
-                    MenuButton _layer_opacity_menu_button;
+                    Scale _opacity_scale = Scale(0, 1, 0.01);
+                    SpinButton _opacity_spin_button = SpinButton(0, 1, 0.001);
+                    Label _opacity_header = Label("Layer Opacity");
+
+                    Box _opacity_scale_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                    Box _opacity_box = Box(GTK_ORIENTATION_VERTICAL);
+
+                    Popover _opacity_popover;
+                    MenuButton _opacity_menu_button;
+
+                    static void on_opacity_scale_value_changed(Scale*, LayerRow* instance);
+                    static void on_opacity_spin_button_value_changed(SpinButton*, LayerRow* instance);
 
                     DropDown _blend_mode_drop_down;
                     std::vector<Label*> _blend_mode_drop_down_label_items;
@@ -109,7 +129,6 @@ namespace mousetrap
                         {BlendMode::MIN,              {"&#60;", "Minimum"}},
                         {BlendMode::MAX,              {"&#62;", "Maximum"}},
                     };
-
 
                     Box _visible_locked_buttons_box = Box(GTK_ORIENTATION_HORIZONTAL);
             };
@@ -153,7 +172,18 @@ namespace mousetrap
 
             Box _control_bar_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
+            void on_layer_create();
+            void on_layer_delete();
+            void on_layer_duplicate();
+            void on_layer_merge_down();
+            void on_layer_flatten_all();
+            void on_layer_move_up();
+            void on_layer_move_down();
+
             // menu & actions
+            
+            Action _set_layer_visible_action = Action("layer_view.set_layer_visible");
+            Action _set_layer_locked_action = Action("layer_view.set_layer_locked");
 
             MenuButton _header_menu_button;
             Label _header_menu_button_label = Label("Layers");
@@ -173,6 +203,7 @@ namespace mousetrap
 
             std::deque<LayerRow> _layer_rows;
             ListView _layer_rows_list_view = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_MULTIPLE);
+            static void on_layer_rows_list_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed, LayerView* instance);
 
             ScrolledWindow _layer_rows_scrolled_window;
             Box _layer_rows_scrolled_window_box = Box(GTK_ORIENTATION_VERTICAL);
@@ -205,13 +236,41 @@ namespace mousetrap
     void LayerView::LayerPreview::set_layer(Layer* layer)
     {
         _layer = layer;
-        update();
+        
+        if (_layer_shape != nullptr)
+            _layer_shape->set_texture(_layer->frames.at(_frame_i).texture);
     }
 
     void LayerView::LayerPreview::set_frame(size_t i)
     {
         _frame_i = i;
-        update();
+        
+        if (_layer_shape != nullptr)
+            _layer_shape->set_texture(_layer->frames.at(i).texture);
+    }
+
+    void LayerView::LayerPreview::set_opacity(float v)
+    {
+        if (_layer_shape != nullptr)
+            _layer_shape->set_color(RGBA(1, 1, 1, v));
+
+        _area.queue_render();
+    }
+
+    void LayerView::LayerPreview::set_visible(bool b)
+    {
+        if (_layer_shape != nullptr)
+            _layer_shape->set_visible(b);
+
+        if (_transparency_tiling_shape != nullptr)
+            _transparency_tiling_shape->set_visible(b);
+
+        _area.queue_render();
+    }
+
+    void LayerView::LayerPreview::set_locked(bool b)
+    {
+        // noop
     }
 
     void LayerView::LayerPreview::on_realize(Widget* widget, LayerPreview* instance)
@@ -238,9 +297,11 @@ namespace mousetrap
         
         area->add_render_task(transparency_task);
         area->add_render_task(instance->_layer_shape);
-        
-        instance->update();
-        
+
+        instance->set_frame(instance->_frame_i);
+        instance->set_layer(instance->_layer);
+        instance->set_opacity(instance->_layer->opacity);
+
         area->queue_render();
     }
 
@@ -250,22 +311,16 @@ namespace mousetrap
         instance->_area.queue_render();
     }
 
-    void LayerView::LayerPreview::update()
-    {
-        if (not _area.get_is_realized())
-            return;
-
-        _layer_shape->set_texture(_layer->frames.at(_frame_i).texture);
-        _layer_shape->set_color(RGBA(1, 1, 1, _layer->opacity));
-
-        _area.queue_render();
-    }
-
     void LayerView::LayerPreview::set_preview_size(size_t px)
     {
         auto height = px;
         auto width = state::layer_resolution.x / state::layer_resolution.y * height;
         _area.set_size_request({width, height});
+    }
+
+    void LayerView::LayerPreview::queue_render()
+    {
+        _area.queue_render();
     }
 
     // ###
@@ -282,28 +337,8 @@ namespace mousetrap
 
         _visible_locked_buttons_box.push_back(&_is_visible_toggle_button);
         _visible_locked_buttons_box.push_back(&_is_locked_toggle_button);
-
-        if (layer->is_visible)
-        {
-            _is_visible_toggle_button.set_active(true);
-            _is_visible_toggle_button.set_child(&_is_visible_icon);
-        }
-        else
-        {
-            _is_visible_toggle_button.set_active(false);
-            _is_visible_toggle_button.set_child(&_is_not_visible_icon);
-        }
-
-        if (layer->is_locked)
-        {
-            _is_locked_toggle_button.set_active(true);
-            _is_locked_toggle_button.set_child(&_is_locked_icon);
-        }
-        else
-        {
-            _is_locked_toggle_button.set_active(false);
-            _is_locked_toggle_button.set_child(&_is_not_locked_icon);
-        }
+        set_visible(layer->is_visible);
+        set_locked(layer->is_locked);
 
         for (auto* button : {&_is_visible_toggle_button, &_is_locked_toggle_button})
         {
@@ -317,17 +352,19 @@ namespace mousetrap
         for (auto* icon : {&_is_visible_icon, &_is_not_visible_icon, &_is_locked_icon, &_is_not_locked_icon})
             icon->set_size_request(icon->get_size());
 
-        _layer_name_entry.set_text(_layer->name);
+        set_name(_layer->name);
         _layer_name_entry.set_hexpand(true);
         _layer_name_entry.set_vexpand(false);
         _layer_name_entry.set_has_frame(false);
         _layer_name_entry.connect_signal_activate(on_layer_name_entry_activated, this);
 
         _opacity_level_bar.set_value(float(rand()) / RAND_MAX);
-        _opacity_level_bar.set_opacity(0.25);
+        _opacity_level_bar.set_opacity(0.5);
         _opacity_level_bar.set_inverted(true);
         _opacity_level_bar.set_margin_vertical(state::margin_unit * 0.5);
-        _layer_opacity_menu_button.set_margin_vertical(state::margin_unit * 0.5);
+        _opacity_menu_button.set_margin_vertical(state::margin_unit * 0.5);
+
+        _opacity_menu_button.set_always_show_arrow(false);
 
         _opacity_level_bar.set_expand(true);
         _layer_name_entry.set_expand(true);
@@ -347,7 +384,31 @@ namespace mousetrap
                 list_item,
                 label_item,
                 [](blend_mode_drop_down_data data) {
-                    // TODO
+                    auto i = data.instance->_blend_mode_drop_down.get_selected();
+
+                    std::string key;
+                    auto mode = blend_mode_to_label.at(i).first;
+
+                    if (mode == BlendMode::NORMAL)
+                        key = "normal";
+                    else if (mode == BlendMode::ADD)
+                        key = "add";
+                    else if (mode == BlendMode::SUBTRACT)
+                        key = "subtract";
+                    else if (mode == BlendMode::REVERSE_SUBTRACT)
+                        key = "reverse_subtract";
+                    else if (mode == BlendMode::MULTIPLY)
+                        key = "multiply";
+                    else if (mode == BlendMode::MIN)
+                        key = "min";
+                    else if (mode == BlendMode::MAX)
+                        key = "max";
+
+                    data.instance->_blend_mode_drop_down.set_tooltip_text(state::tooltips_file->get_value("layer_view", "blend_mode_" + key + "_label"));
+
+                    data.instance->_layer->blend_mode = mode;
+                    data.instance->signal_layer_updated();
+
                 }, blend_mode_drop_down_data{pair.first, this}
             );
         }
@@ -356,23 +417,70 @@ namespace mousetrap
         _blend_mode_drop_down.set_valign(GTK_ALIGN_CENTER);
         _blend_mode_drop_down.set_halign(GTK_ALIGN_END);
 
-        _layer_opacity_scale.set_hexpand(true);
-        _layer_opacity_scale.set_size_request({state::margin_unit * 20, 0});
-        _layer_opacity_spin_button.set_hexpand(false);
-        _layer_opacity_box.push_back(&_layer_opacity_scale);
-        _layer_opacity_box.push_back(&_layer_opacity_spin_button);
-        _layer_opacity_popover.set_child(&_layer_opacity_box);
-        _layer_opacity_menu_button.set_popover(&_layer_opacity_popover);
-        _layer_opacity_popover.set_relative_position(GTK_POS_TOP);
+        _opacity_scale.connect_signal_value_changed(on_opacity_scale_value_changed, this);
+        _opacity_spin_button.connect_signal_value_changed(on_opacity_spin_button_value_changed, this);
+        set_opacity(_layer->opacity);
+
+        _opacity_scale.set_hexpand(true);
+        _opacity_scale.set_size_request({state::margin_unit * 20, 0});
+        _opacity_spin_button.set_hexpand(false);
+        _opacity_scale_box.push_back(&_opacity_scale);
+        _opacity_scale_box.push_back(&_opacity_spin_button);
+
+        _opacity_header.set_halign(GTK_ALIGN_CENTER);
+        _opacity_header.set_valign(GTK_ALIGN_START);
+        _opacity_header.set_margin_bottom(state::margin_unit);
+
+        _opacity_box.push_back(&_opacity_header);
+        _opacity_box.push_back(&_opacity_scale_box);
+
+        _opacity_popover.set_child(&_opacity_box);
+        _opacity_menu_button.set_popover(&_opacity_popover);
+        _opacity_popover.set_relative_position(GTK_POS_TOP);
 
         _inner_box.push_back(&_visible_locked_buttons_box);
         _inner_box.push_back(&_layer_preview_list_view);
         _inner_box.push_back(&_opacity_level_bar_name_entry_overlay);
-        _inner_box.push_back(&_layer_opacity_menu_button);
+        _inner_box.push_back(&_opacity_menu_button);
         _inner_box.push_back(&_blend_mode_drop_down);
         _inner_box.set_margin_horizontal(state::margin_unit);
 
         _outer_box.push_back(&_inner_box);
+
+        // tooltips
+        auto get_tooltip = [](const std::string key) -> std::string {
+            return state::tooltips_file->get_value("layer_view", key);
+        };
+
+        _is_visible_toggle_button.set_tooltip_text(get_tooltip("is_visible_button"));
+        _is_locked_toggle_button.set_tooltip_text(get_tooltip("is_locked_button"));
+        _opacity_menu_button.set_tooltip_text(get_tooltip("opacity_button"));
+
+        for (size_t i = 0; i < blend_mode_to_label.size(); ++i)
+        {
+            std::string key;
+            auto mode = blend_mode_to_label.at(i).first;
+
+            if (mode == BlendMode::NORMAL)
+                key = "normal";
+            else if (mode == BlendMode::ADD)
+                key = "add";
+            else if (mode == BlendMode::SUBTRACT)
+                key = "subtract";
+            else if (mode == BlendMode::REVERSE_SUBTRACT)
+                key = "reverse_subtract";
+            else if (mode == BlendMode::MULTIPLY)
+                key = "multiply";
+            else if (mode == BlendMode::MIN)
+                key = "min";
+            else if (mode == BlendMode::MAX)
+                key = "max";
+
+            _blend_mode_drop_down_label_items.at(i)->set_tooltip_text(get_tooltip("blend_mode_" + key + "_label"));
+            _blend_mode_drop_down_list_items.at(i)->set_tooltip_text(get_tooltip("blend_mode_" + key + "_explanation"));
+        }
+
+        update();
     }
 
     LayerView::LayerRow::operator Widget*()
@@ -382,13 +490,45 @@ namespace mousetrap
 
     void LayerView::LayerRow::update()
     {
-        _layer_preview.update();
+        size_t layer_i = 0;
+        for (auto* layer : state::layers)
+        {
+            if (layer == _layer)
+                break;
+
+            layer_i += 1;
+        }
+
+        std::stringstream tooltip;
+        tooltip << "Layer #" << std::to_string(layer_i) << ": \"" << _layer_name_entry.get_text() << "\"";
+        _layer_name_entry.set_tooltip_text(tooltip.str());
+        _layer_preview.operator Widget*()->set_tooltip_text(tooltip.str());
     }
 
     void LayerView::LayerRow::set_layer(Layer* layer)
     {
         _layer = layer;
         _layer_preview.set_layer(layer);
+
+        set_locked(_layer->is_locked);
+        set_visible(_layer->is_visible);
+        set_blend_mode(_layer->blend_mode);
+        set_name(_layer->name);
+
+        update();
+    }
+
+    void LayerView::LayerRow::set_blend_mode(BlendMode mode)
+    {
+        size_t blend_mode_i = 0;
+        for (auto& pair : blend_mode_to_label)
+        {
+            if (pair.first == _layer->blend_mode)
+                break;
+
+            blend_mode_i += 1;
+        }
+        _blend_mode_drop_down.set_selected(blend_mode_i);
     }
 
     void LayerView::LayerRow::set_frame(size_t i)
@@ -397,19 +537,117 @@ namespace mousetrap
         _layer_preview.set_frame(i);
     }
 
-    void LayerView::LayerRow::on_is_visible_toggle_button_toggled(ToggleButton*, LayerRow* instance)
+    void LayerView::LayerRow::set_opacity(float v)
     {
-        // TODO
+        _opacity_level_bar.set_value(1 - v);
+        _layer_preview.set_opacity(v);
+
+        _opacity_scale.set_signal_value_changed_blocked(true);
+        _opacity_scale.set_value(v);
+        _opacity_scale.set_signal_value_changed_blocked(false);
+
+        _opacity_spin_button.set_signal_value_changed_blocked(true);
+        _opacity_spin_button.set_value(v);
+        _opacity_spin_button.set_signal_value_changed_blocked(false);
     }
 
-    void LayerView::LayerRow::on_is_locked_toggle_button_toggled(ToggleButton*, LayerRow* instance)
+    void LayerView::LayerRow::set_visible(bool b)
     {
-        // TODO
+        _is_visible_toggle_button.set_signal_toggled_blocked(true);
+
+        if (b)
+        {
+            _is_visible_toggle_button.set_active(true);
+            _is_visible_toggle_button.set_child(&_is_visible_icon);
+        }
+        else
+        {
+            _is_visible_toggle_button.set_active(false);
+            _is_visible_toggle_button.set_child(&_is_not_visible_icon);
+        }
+        
+        _is_visible_toggle_button.set_signal_toggled_blocked(false);
+        _layer_preview.set_visible(b);
+    }
+
+    void LayerView::LayerRow::set_locked(bool b)
+    {
+        _is_locked_toggle_button.set_signal_toggled_blocked(true);
+
+        if (b)
+        {
+            _is_locked_toggle_button.set_active(true);
+            _is_locked_toggle_button.set_child(&_is_locked_icon);
+        }
+        else
+        {
+            _is_locked_toggle_button.set_active(false);
+            _is_locked_toggle_button.set_child(&_is_not_locked_icon);
+        }
+
+        _is_locked_toggle_button.set_signal_toggled_blocked(false);
+        _layer_preview.set_locked(b);
+
+        float opacity = b ? 0.5 : 1;
+        _layer_name_entry.set_opacity(opacity);
+    }
+
+    void LayerView::LayerRow::set_name(const std::string& name)
+    {
+        _layer_name_entry.set_signal_activate_blocked(true);
+        _layer_name_entry.set_text(name);
+        _layer_name_entry.set_signal_activate_blocked(false);
+    }
+
+    void LayerView::LayerRow::set_preview_size(size_t px)
+    {
+        _layer_preview.set_preview_size(px);
+    }
+
+    void LayerView::LayerRow::signal_layer_updated()
+    {
+        state::update_canvas();
+        state::update_frame_view();
+    }
+
+    void LayerView::LayerRow::on_is_visible_toggle_button_toggled(ToggleButton* button, LayerRow* instance)
+    {
+        auto b = button->get_active();
+        instance->set_visible(b);
+
+        instance->_layer->is_visible = b;
+        instance->signal_layer_updated();
+    }
+
+    void LayerView::LayerRow::on_is_locked_toggle_button_toggled(ToggleButton* button, LayerRow* instance)
+    {
+        auto b = button->get_active();
+        instance->set_locked(b);
+
+        instance->_layer->is_locked = b;
+        instance->signal_layer_updated();
     }
 
     void LayerView::LayerRow::on_layer_name_entry_activated(Entry* entry, LayerRow* instance)
     {
-        std::cout << entry->get_text() << std::endl;
+        instance->_layer->name = instance->_layer_name_entry.get_text();
+        instance->signal_layer_updated();
+    }
+
+    void LayerView::LayerRow::on_opacity_scale_value_changed(Scale* scale, LayerRow* instance)
+    {
+        auto v = scale->get_value();
+        instance->set_opacity(v);
+        instance->_layer->opacity = v;
+        instance->signal_layer_updated();
+    }
+
+    void LayerView::LayerRow::on_opacity_spin_button_value_changed(SpinButton* scale, LayerRow* instance)
+    {
+        auto v = scale->get_value();
+        instance->set_opacity(v);
+        instance->_layer->opacity = v;
+        instance->signal_layer_updated();
     }
 
     // ###
@@ -423,6 +661,8 @@ namespace mousetrap
             _layer_rows_list_view.push_back(row);
 
         _layer_rows_list_view.set_show_separators(true);
+        _layer_rows_list_view.get_selection_model()->connect_signal_selection_changed(on_layer_rows_list_view_selection_changed, this);
+        _layer_rows_list_view.get_selection_model()->select(state::current_layer);
 
         _layer_rows_scrolled_window_box.push_back(&_layer_rows_list_view);
         _layer_rows_scrolled_window_box.push_back(&_layer_rows_scrolled_window_spacer);
@@ -468,6 +708,69 @@ namespace mousetrap
 
         _control_bar_box.set_hexpand(true);
 
+        // actions
+        auto get_shortcut = [](const std::string key) {
+            return state::keybindings_file->get_value("layer_view", key);
+        };
+
+        _layer_create_action.set_do_function([](LayerView* instance){
+            instance->on_layer_create();
+        }, this);
+        _layer_create_action.add_shortcut(get_shortcut("layer_create"));
+        state::app->add_action(_layer_create_action);
+
+        _layer_delete_action.set_do_function([](LayerView* instance){
+            instance->on_layer_delete();
+        }, this);
+        _layer_delete_action.add_shortcut(get_shortcut("layer_delete"));
+        state::app->add_action(_layer_delete_action);
+
+        _layer_duplicate_action.set_do_function([](LayerView* instance){
+            instance->on_layer_duplicate();
+        }, this);
+        _layer_duplicate_action.add_shortcut(get_shortcut("layer_duplicate"));
+        state::app->add_action(_layer_duplicate_action);
+
+        _layer_merge_down_action.set_do_function([](LayerView* instance){
+            instance->on_layer_merge_down();
+        }, this);
+        _layer_merge_down_action.add_shortcut(get_shortcut("layer_merge_down"));
+        state::app->add_action(_layer_merge_down_action);
+
+        _layer_flatten_all_action.set_do_function([](LayerView* instance){
+            instance->on_layer_flatten_all();
+        }, this);
+        _layer_flatten_all_action.add_shortcut(get_shortcut("layer_flatten_all"));
+        state::app->add_action(_layer_flatten_all_action);
+
+        _layer_move_up_action.set_do_function([](LayerView* instance){
+            instance->on_layer_move_up();
+        }, this);
+        _layer_move_up_action.add_shortcut(get_shortcut("layer_move_up"));
+        state::app->add_action(_layer_move_up_action);
+
+        _layer_move_down_action.set_do_function([](LayerView* instance){
+            instance->on_layer_move_down();
+        }, this);
+        _layer_move_down_action.add_shortcut(get_shortcut("layer_move_down"));
+        state::app->add_action(_layer_move_down_action);
+
+        _set_layer_visible_action.set_do_function([](LayerView* instance) {
+            auto current = state::layers.at(state::current_layer)->is_visible;
+            instance->_layer_rows.at(state::current_layer).set_visible(not current);
+            state::layers.at(state::current_layer)->is_visible = not current;
+        }, this);
+        _set_layer_visible_action.add_shortcut(get_shortcut("set_layer_visible"));
+        state::app->add_action(_set_layer_visible_action);
+
+        _set_layer_locked_action.set_do_function([](LayerView* instance) {
+            auto current = state::layers.at(state::current_layer)->is_locked;
+            instance->_layer_rows.at(state::current_layer).set_locked(not current);
+            state::layers.at(state::current_layer)->is_locked = not current;
+        }, this);
+        _set_layer_locked_action.add_shortcut(get_shortcut("set_layer_locked"));
+        state::app->add_action(_set_layer_locked_action);
+
         // menu
 
         _preview_size_spin_button.set_margin_start(state::margin_unit);
@@ -484,6 +787,25 @@ namespace mousetrap
 
         _menu.add_section("Settings", &settings_section);
 
+        auto create_section = MenuModel();
+        create_section.add_action("New Layer", "layer_view.layer_create");
+        create_section.add_action("Delete Layer", "layer_view.layer_delete");
+        create_section.add_action("Duplicate Layer", "layer_view.layer_duplicate");
+        _menu.add_section("Create / Delete", &create_section);
+
+        auto merge_section = MenuModel();
+        merge_section.add_action("Merge Down", "layer_view.layer_merge_down");
+        merge_section.add_action("Flatten All", "layer_view.layer_flatten_all");
+        _menu.add_section("Merge", &merge_section);
+
+        auto other_section = MenuModel();
+        other_section.add_action("Move Layer Up", "layer_view.layer_move_up");
+        other_section.add_action("Move Layer Down", "layer_view.layer_move_down");
+        other_section.add_action("Show / Hide Layer", "layer_view.set_layer_visible");
+        other_section.add_action("Lock / Unlock Layer", "layer_view.set_layer_locked");
+
+        _menu.add_section("Other", &other_section);
+
         _header_menu_button_label.set_size_request({32, 32});
         _header_menu_button.set_child(&_header_menu_button_label);
 
@@ -494,46 +816,51 @@ namespace mousetrap
         _main.push_back(&_header_menu_button);
         _main.push_back(&_layer_rows_scrolled_window);
         _main.push_back(&_control_bar_box);
+
     }
 
     void LayerView::on_layer_move_up_button_clicked(Button*, LayerView* instance)
     {
-        // TODO
+        instance->on_layer_move_up();
     }
 
     void LayerView::on_layer_move_down_button_clicked(Button*, LayerView* instance)
     {
-        // TODO
+        instance->on_layer_move_down();
     }
 
     void LayerView::on_layer_create_button_clicked(Button*, LayerView* instance)
     {
-        // TODO
+        instance->on_layer_create();
     }
 
     void LayerView::on_layer_duplicate_button_clicked(Button*, LayerView* instance)
     {
-        // TODO
+        instance->on_layer_duplicate();
     }
 
     void LayerView::on_layer_delete_button_clicked(Button*, LayerView* instance)
     {
-        // TODO
+        instance->on_layer_delete();
     }
 
     void LayerView::on_layer_merge_down_button_clicked(Button*, LayerView* instance)
     {
-        // TODO
+        instance->on_layer_merge_down();
     }
 
     void LayerView::on_layer_flatten_all_button_clicked(Button*, LayerView* instance)
     {
-        // TODO
+        instance->on_layer_flatten_all();
     }
 
-    void LayerView::on_preview_size_spin_button_value_changed(SpinButton*, LayerView* instance)
+    void LayerView::on_preview_size_spin_button_value_changed(SpinButton* scale, LayerView* instance)
     {
-        // TODO
+        auto v = scale->get_value();
+        instance->_preview_size = v;
+
+        for (auto& row : instance->_layer_rows)
+            row.set_preview_size(instance->_preview_size);
     }
 
     LayerView::operator Widget*()
@@ -545,5 +872,48 @@ namespace mousetrap
     {
         for (auto& row : _layer_rows)
             row.update();
+    }
+
+    void LayerView::on_layer_rows_list_view_selection_changed(SelectionModel*, size_t first_item_position,
+                                                              size_t n_items_changed, LayerView* instance)
+    {
+        state::current_layer = first_item_position;
+        state::update_canvas();
+        state::update_frame_view();
+    }
+
+    void LayerView::on_layer_create()
+    {
+        // TODO
+    }
+
+    void LayerView::on_layer_delete()
+    {
+        // TODO
+    }
+
+    void LayerView::on_layer_duplicate()
+    {
+        // TODO
+    }
+
+    void LayerView::on_layer_merge_down()
+    {
+        // TODO
+    }
+
+    void LayerView::on_layer_flatten_all()
+    {
+        // TODO
+    }
+
+    void LayerView::on_layer_move_up()
+    {
+        // TODO
+    }
+
+    void LayerView::on_layer_move_down()
+    {
+        // TODO
     }
 }

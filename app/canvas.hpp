@@ -598,6 +598,10 @@ namespace mousetrap
 
     void Canvas::update()
     {
+        // TODO
+        return;
+        // TODO
+
         _control_layer.update();
         _brush_cursor_layer.update();
         _line_tool_layer.update();
