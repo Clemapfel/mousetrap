@@ -10,6 +10,7 @@ namespace mousetrap
     {
         set_start_child_resizable(true);
         set_end_child_resizable(true);
+        set_has_wide_handle(true);
     }
 
     void Paned::set_position(int v)

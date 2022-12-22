@@ -69,6 +69,11 @@ namespace mousetrap
         gtk_box_set_homogeneous(get_native(), b);
     }
 
+    GtkOrientation Box::get_orientation() const
+    {
+        return gtk_orientable_get_orientation(GTK_ORIENTABLE(get_native()));
+    }
+
     size_t Box::get_n_items()
     {
         size_t i = 0;

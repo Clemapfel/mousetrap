@@ -160,8 +160,6 @@ static void activate(GtkApplication* app, void*)
     state::reload_brushes();
     initialize_debug_layers();
 
-    //state::selection.insert({0, 0});
-
     for (size_t x = 0; x < state::layer_resolution.x; ++x)
         for (size_t y = 0; y < state::layer_resolution.y; ++y)
             state::selection.insert({20, y});
@@ -190,22 +188,12 @@ static void activate(GtkApplication* app, void*)
     auto* bubble_log = state::bubble_log->operator Widget*();
     auto* frame_view = state::frame_view->operator Widget*();
 
-    layer_view->set_valign(GTK_ALIGN_END);
-    verbose_color_picker->set_margin(state::margin_unit);
-    color_preview->set_margin(state::margin_unit);
-    color_preview->set_vexpand(false);
-
     auto* color_picker_window = new Window();
     color_picker_window->set_child(color_picker);
     color_picker_window->set_titlebar_layout("title:close");
     color_picker_window->set_modal(false);
     color_picker_window->set_title("HSV Color Picker");
     color_picker_window->set_transient_for(state::main_window);
-
-    color_picker->set_expand(true);
-    color_picker->set_margin_horizontal(state::margin_unit);
-
-    //state::app->add_window(color_picker_window);
 
     auto* show_color_picker_click_ec = new ClickEventController();
     static auto show_color_picker = [](ClickEventController*, size_t n, double, double, Window* window)
@@ -220,34 +208,6 @@ static void activate(GtkApplication* app, void*)
     show_color_picker_click_ec->connect_signal_click_pressed(show_color_picker, color_picker_window);
     color_preview->add_controller(show_color_picker_click_ec);
 
-    auto* left_column = new Box(GTK_ORIENTATION_VERTICAL);
-    auto* center_column = new Box(GTK_ORIENTATION_VERTICAL);
-    auto* right_column = new Box(GTK_ORIENTATION_VERTICAL);
-
-    for (auto* column : {left_column, right_column})
-        column->set_size_request({state::margin_unit * 2, 0});
-
-    auto* left_center_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
-    auto* center_right_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
-
-    left_center_paned->set_start_child(left_column);
-    left_center_paned->set_end_child(center_right_paned);
-    center_right_paned->set_start_child(center_column);
-    center_right_paned->set_end_child(right_column);
-    center_right_paned->set_has_wide_handle(true);
-
-    left_center_paned->set_hexpand(false);
-    center_right_paned->set_hexpand(false);
-
-    auto add_spacer = [](Box* column)
-    {
-        auto* spacer = new SeparatorLine();
-        spacer->set_size_request({3, 3});
-        column->push_back(spacer);
-    };
-
-    // LEFT COLUMN
-
     float color_picker_width = 25 * state::margin_unit;
     float color_swapper_height = 8 * state::margin_unit;
 
@@ -256,114 +216,79 @@ static void activate(GtkApplication* app, void*)
     color_preview->set_size_request({color_picker_width + 2 * state::margin_unit, color_swapper_height * 0.5});
     color_preview->set_cursor(GtkCursorType::POINTER);
 
-    auto* palette_view_spacer_paned = new Paned(GTK_ORIENTATION_HORIZONTAL);
-    auto* palette_view_spacer = new SeparatorLine();
-    palette_view_spacer->set_hexpand(true);
-    palette_view->set_vexpand(true);
-
-    palette_view_spacer_paned->set_start_child(palette_view);
-    palette_view_spacer_paned->set_end_child(palette_view_spacer);
-    palette_view_spacer_paned->set_start_child_shrinkable(false);
-    palette_view_spacer_paned->set_end_child_shrinkable(false);
-
-    auto* left_column_paned_top = new Box(GTK_ORIENTATION_VERTICAL);
-    auto* spacer = new SeparatorLine();
-    spacer->set_vexpand(true);
-
-    palette_view_spacer_paned->set_vexpand(true);
-    left_column_paned_top->push_back(palette_view_spacer_paned);
-    add_spacer(left_column_paned_top);
-    left_column_paned_top->push_back(color_swapper);
-    add_spacer(left_column_paned_top);
-    left_column_paned_top->push_back(color_preview);
-
-    left_column_paned_top->set_vexpand(false);
-    verbose_color_picker->set_vexpand(true);
-    verbose_color_picker->set_valign(GTK_ALIGN_CENTER);
-
-    auto* left_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
-    left_column_paned->set_start_child(left_column_paned_top);
-    left_column_paned->set_end_child(verbose_color_picker);
-    left_column_paned->set_position(9999);
-
-    verbose_color_picker->set_size_request({0, 2000});
-
-    left_column_paned->set_start_child_shrinkable(false);
-    left_column_paned->set_end_child_shrinkable(false);
-    left_column_paned->set_start_child_resizable(true);
-    left_column_paned->set_end_child_resizable(true);
-
-    left_column_paned->set_has_wide_handle(true);
-
-    verbose_color_picker->set_size_request({0, 100});
-    left_column->clear();
-    left_column->set_vexpand(true);
-    left_column->push_back(left_column_paned);
-
-    // RIGHT COLUMN
-
-    brush_options->set_vexpand(false);
-    toolbox->set_vexpand(true);
-    layer_view->set_vexpand(true);
-
-    auto* right_column_paned = new Paned(GTK_ORIENTATION_VERTICAL);
-
-    auto* right_column_paned_top = new Box(GTK_ORIENTATION_VERTICAL);
-    right_column_paned_top->push_back(brush_options);
-
-    right_column_paned->set_start_child(right_column_paned_top);
-    right_column_paned->set_end_child(layer_view);
-    right_column_paned->set_start_child_shrinkable(true);
-    right_column_paned->set_end_child_shrinkable(true);
-    right_column_paned->set_has_wide_handle(true);
-    right_column_paned->set_vexpand(false);
-    right_column_paned->set_valign(GTK_ALIGN_END);
-    toolbox->set_valign(GTK_ALIGN_START);
-    right_column->push_back(right_column_paned);
-
-    for (auto* w : {toolbox, brush_options})
-    {
-        w->set_valign(GTK_ALIGN_START);
-        w->set_vexpand(false);
-    }
-
-    // CENTER COLUMN
-
-    toolbox->set_vexpand(false);
-    canvas->set_vexpand(true);
-
-    center_column->push_back(toolbox);
-    add_spacer(center_column);
-    center_column->push_back(canvas);
-    center_column->set_homogeneous(false);
-
-    auto* left_and_center_column = new Box(GTK_ORIENTATION_HORIZONTAL);
-    left_and_center_column->push_back(left_column);
-    left_and_center_column->push_back(center_column);
-
-    auto* left_and_center_and_frame_view = new Paned(GTK_ORIENTATION_VERTICAL);
-    left_and_center_and_frame_view->set_start_child(left_and_center_column);
-    left_and_center_and_frame_view->set_end_child(frame_view);
-
-    auto* all_columns = new Box(GTK_ORIENTATION_HORIZONTAL);
-    all_columns->push_back(left_and_center_and_frame_view);
-    all_columns->push_back(right_column);
-
     bubble_log->set_margin(2 * state::margin_unit);
     bubble_log->set_align(GTK_ALIGN_END);
     bubble_log->set_size_request({100, 100});
     bubble_log->set_can_respond_to_input(false); // TODO ?
 
-    auto* main = new Overlay();
-    main->set_child(all_columns);
-    main->add_overlay(bubble_log);
+    // LAYOUT
 
-    auto* tt = new ShortcutInformation();
-    tt->create_from_group("palette_view", state::keybindings_file);
+    auto left_column_paned_top = Box(GTK_ORIENTATION_VERTICAL);
+    left_column_paned_top.push_back(palette_view);
 
-    left_center_paned->set_position(left_column->get_preferred_size().natural_size.x);
+    auto left_column_paned_bottom = Box(GTK_ORIENTATION_VERTICAL);
 
-    state::main_window->set_child(main);
+    auto color_preview_frame = Paned(GTK_ORIENTATION_VERTICAL); // for handlebar below color_preview
+    color_preview_frame.set_start_child_shrinkable(false);
+    color_preview_frame.set_end_child_shrinkable(false);
+    color_preview_frame.set_start_child_resizable(false);
+    color_preview_frame.set_end_child_resizable(false);
+    color_preview_frame.set_start_child(color_preview);
+
+    auto color_preview_frame_buffer = SeparatorLine();
+    color_preview_frame_buffer.set_expand(false);
+    color_preview_frame_buffer.set_size_request({1, 1});
+    color_preview_frame_buffer.set_opacity(0);
+    color_preview_frame.set_end_child(&color_preview_frame_buffer);
+
+    left_column_paned_bottom.push_back(&color_preview_frame);
+    left_column_paned_bottom.push_back(verbose_color_picker);
+
+    auto left_column_paned = Paned(GTK_ORIENTATION_VERTICAL);
+    left_column_paned.set_start_child(&left_column_paned_top);
+    left_column_paned.set_end_child(&left_column_paned_bottom);
+
+    palette_view->set_vexpand(true);
+    color_preview->set_vexpand(false);
+    verbose_color_picker->set_vexpand(true);
+    color_preview->set_margin(state::margin_unit);
+    verbose_color_picker->set_margin(state::margin_unit);
+
+    auto center_column = Box(GTK_ORIENTATION_VERTICAL);
+    center_column.push_back(toolbox);
+    center_column.push_back(canvas);
+
+    toolbox->set_expand(false);
+    canvas->set_expand(true);
+
+    auto left_and_center_column_paned = Paned(GTK_ORIENTATION_HORIZONTAL);
+    left_and_center_column_paned.set_start_child(&left_column_paned);
+    left_and_center_column_paned.set_end_child(&center_column);
+
+    auto left_and_center_and_frame_view_paned = Paned(GTK_ORIENTATION_VERTICAL);
+    left_and_center_and_frame_view_paned.set_start_child(&left_and_center_column_paned);
+    left_and_center_and_frame_view_paned.set_end_child(frame_view);
+
+    auto right_column_paned = Paned(GTK_ORIENTATION_VERTICAL);
+    right_column_paned.set_start_child(brush_options);
+    right_column_paned.set_end_child(layer_view);
+
+    auto main_paned = Paned(GTK_ORIENTATION_HORIZONTAL);
+    main_paned.set_start_child(&left_and_center_and_frame_view_paned);
+    main_paned.set_end_child(&right_column_paned);
+
+    left_column_paned.set_end_child_shrinkable(false);
+    left_column_paned.set_position(10e6); // as low as possible
+    left_and_center_column_paned.set_end_child_shrinkable(false);
+    main_paned.set_start_child_shrinkable(false);
+
+    auto bubble_log_overlay = Overlay();
+    bubble_log_overlay.set_child(&main_paned);
+    bubble_log_overlay.add_overlay(bubble_log);
+
+    // MAIN
+
+    state::main_window->set_child(&bubble_log_overlay);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

@@ -25,6 +25,8 @@ namespace mousetrap
 
             void set_homogeneous(bool);
 
+            GtkOrientation get_orientation() const;
+
             size_t get_n_items();
     };
 }
