@@ -33,7 +33,7 @@ void initialize_debug_layers()
     state::layer_resolution = {50, 50};
     state::layers.emplace_back(new Layer{"number"});
 
-    for (size_t i = 0; i < 15; ++i)
+    for (size_t i = 0; i < 2; ++i)
     {
         state::layers.emplace_back(new Layer{"overlay #" + std::to_string(i)});
         state::layers.back()->blend_mode = BlendMode::NORMAL;
@@ -274,6 +274,7 @@ static void activate(GtkApplication* app, void*)
     right_column_paned.set_end_child(layer_view);
 
     auto main_paned = Paned(GTK_ORIENTATION_HORIZONTAL);
+    main_paned.set_start_child_shrinkable(false);
     main_paned.set_start_child(&left_and_center_and_frame_view_paned);
     main_paned.set_end_child(&right_column_paned);
 

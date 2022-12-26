@@ -108,7 +108,7 @@ namespace mousetrap
         _area.queue_render();
 
         // TODO
-        std::cout << _end_point.x << " " << _end_point.y << std::endl;
+        // std::cout << _end_point.x << " " << _end_point.y << std::endl;
         // TODO
     }
 }
