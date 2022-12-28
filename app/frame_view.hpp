@@ -84,6 +84,63 @@ namespace mousetrap
                     std::vector<PreviewElement*> _preview_elements;
             };
 
+            class ControlBar
+            {
+                public:
+                    ControlBar(FrameView* owner);
+
+                private:
+                    Box _box;
+
+                    Button _jump_to_start_button;
+                    ImageDisplay _jump_to_start_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
+                    Action _jump_to_start_action = Action("frame_view.jump_to_start");
+
+                    Button _jump_to_end_button;
+                    ImageDisplay _jump_to_end_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
+                    Action _jump_to_end_action = Action("frame_view.jump_to_end");
+
+                    Button _go_to_previous_frame_button;
+                    ImageDisplay _go_to_previous_frame_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_go_to_previous_frame.png");
+                    Action _go_to_previous_frame_action = Action("frame_view.go_to_previous_frame");
+
+                    Button _go_to_next_frame_button;
+                    ImageDisplay _go_to_next_frame_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_go_to_previous_frame.png");
+                    Action _go_to_next_frame_action = Action("frame_view.go_to_next_frame");
+
+                    Button _play_pause_button;
+                    ImageDisplay _play_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_play.png");
+                    ImageDisplay _pause_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_pause.png");
+                    Action _play_action = Action("frame_view.play");
+                    Action _pause_action = Action("frame_view.pause");
+
+                    Button _frame_move_right_button;
+                    ImageDisplay _frame_move_right_icon = ImageDisplay(get_resource_path() + "icons/frame_move_right.png");
+                    Action _frame_move_right_action = Action("frame_view.frame_move_right");
+
+                    Button _frame_move_left_button;
+                    ImageDisplay _frame_move_left_icon = ImageDisplay(get_resource_path() + "icons/frame_move_left.png");
+                    Action _frame_move_left_action = Action("frame_view.frame_move_left");
+
+                    Button _frame_new_left_of_current_button;
+                    ImageDisplay _frame_new_left_of_current_icon = ImageDisplay(get_resource_path() + "icons/frame_new_left_of_current.png");
+                    Action _frame_new_left_of_current_action = Action("frame_view.frame_new_left_of_current");
+
+                    Button _frame_new_right_of_current_button;
+                    ImageDisplay _frame_new_right_of_current_icon = ImageDisplay(get_resource_path() + "icons/frame_new_right_of_current.png");
+                    Action _frame_new_right_of_current_action = Action("frame_view.frame_new_right_of_current");
+
+                    Button _frame_delete_button;
+                    ImageDisplay _frame_delete_icon = ImageDisplay(get_resource_path() + "icons/frame_delete.png");
+                    Action _frame_delete_action = Action("frame_view.frame_delete");
+
+                    Button _make_keyframe_button;
+                    ImageDisplay _frame_is_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_keyframe.png");
+                    ImageDisplay _frame_is_not_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_keyframe.png");
+                    Action _frame_make_keyframe_action = Action("frame_view.frame_make_keyframe");
+                    Action _frame_make_inbetween_action = Action("frame_view.frame_make_inbetween");
+            };
+
             size_t _selected_layer_i = 0;
             size_t _selected_frame_i = 0;
             void set_selection(size_t layer_i, size_t frame_i);
