@@ -21,7 +21,7 @@ endif()
 include(CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX("glm/glm.hpp" GLM_FOUND)
 if(NOT GLM_FOUND)
-    message(FATAL_ERROR "Missing Dependency: glm headers were not detected")
+    message(WARNING "Missing Dependency: glm headers were not detected")
 endif()
 
 ### CONFIGURE ###

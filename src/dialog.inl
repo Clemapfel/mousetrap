@@ -4,7 +4,6 @@
 //
 
 #include <gtk/gtkdialog.h>
-#include <gtk-3.0/gtk/gtkdialog.h>
 
 namespace mousetrap
 {
