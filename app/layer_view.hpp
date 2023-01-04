@@ -701,7 +701,15 @@ namespace mousetrap
         _layer_flatten_all_button.set_child(&_layer_flatten_all_icon);
         _layer_flatten_all_button.connect_signal_clicked(on_layer_flatten_all_button_clicked, this);
 
-        for (auto* button : {&_layer_move_up_button, &_layer_create_button, &_layer_duplicate_button, &_layer_delete_button, &_layer_move_down_button, &_layer_merge_down_button, &_layer_flatten_all_button})
+        for (auto* button : {
+            &_layer_move_up_button,
+            &_layer_move_down_button,
+            &_layer_create_button,
+            &_layer_duplicate_button,
+            &_layer_delete_button,
+            &_layer_merge_down_button,
+            &_layer_flatten_all_button}
+        )
         {
             button->set_vexpand(false);
             button->set_hexpand(true);
@@ -817,7 +825,7 @@ namespace mousetrap
         _main.set_homogeneous(false);
         _main.push_back(&_header_menu_button);
         _main.push_back(&_layer_rows_scrolled_window);
-        //_main.push_back(&_control_bar_box);
+        _main.push_back(&_control_bar_box);
     }
 
     void LayerView::on_layer_move_up_button_clicked(Button*, LayerView* instance)

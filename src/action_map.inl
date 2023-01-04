@@ -97,7 +97,6 @@ namespace mousetrap
     void ActionMap::add_action(Action& action)
     {
         auto inserted = _actions.insert({action.get_id(), action}).first->second;
-
         auto* self = operator GActionMap*();
         g_action_map_add_action(self, inserted.operator GAction *());
 
@@ -109,8 +108,9 @@ namespace mousetrap
             if (s != "never")
                 accels.push_back(s.c_str());
         }
+        accels.push_back(NULL);
 
-        if (accels.size() != 0)
+        if (not accels.empty())
             gtk_application_set_accels_for_action(app, ("app." + inserted.get_id()).c_str(), accels.data());
     }
 

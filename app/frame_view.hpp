@@ -91,59 +91,71 @@ namespace mousetrap
             {
                 public:
                     ControlBar(FrameView* owner);
-
                     operator Widget*();
 
                 private:
+                    ShortcutController _shortcut_controller = ShortcutController(state::app);
+
                     FrameView* _owner;
 
                     Button _jump_to_start_button;
                     ImageDisplay _jump_to_start_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
                     Action _jump_to_start_action = Action("frame_view.jump_to_start");
+                    void on_jump_to_start();
 
                     Button _jump_to_end_button;
                     ImageDisplay _jump_to_end_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
                     Action _jump_to_end_action = Action("frame_view.jump_to_end");
+                    void on_jump_to_end();
 
                     Button _go_to_previous_frame_button;
                     ImageDisplay _go_to_previous_frame_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_go_to_previous_frame.png");
                     Action _go_to_previous_frame_action = Action("frame_view.go_to_previous_frame");
+                    void on_go_to_previous_frame();
 
                     Button _go_to_next_frame_button;
                     ImageDisplay _go_to_next_frame_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_go_to_next_frame.png");
                     Action _go_to_next_frame_action = Action("frame_view.go_to_next_frame");
+                    void on_go_to_next_frame();
 
                     Button _play_pause_button;
                     ImageDisplay _play_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_play.png");
                     ImageDisplay _pause_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_pause.png");
                     Action _play_action = Action("frame_view.play");
                     Action _pause_action = Action("frame_view.pause");
+                    void on_play_pause();
 
                     Button _frame_move_right_button;
                     ImageDisplay _frame_move_right_icon = ImageDisplay(get_resource_path() + "icons/frame_move_right.png");
                     Action _frame_move_right_action = Action("frame_view.frame_move_right");
+                    void on_frame_move_right();
 
                     Button _frame_move_left_button;
                     ImageDisplay _frame_move_left_icon = ImageDisplay(get_resource_path() + "icons/frame_move_left.png");
                     Action _frame_move_left_action = Action("frame_view.frame_move_left");
+                    void on_frame_move_left();
 
                     Button _frame_new_left_of_current_button;
                     ImageDisplay _frame_new_left_of_current_icon = ImageDisplay(get_resource_path() + "icons/frame_new_left_of_current.png");
                     Action _frame_new_left_of_current_action = Action("frame_view.frame_new_left_of_current");
+                    void on_frame_new_left_of_current();
 
                     Button _frame_new_right_of_current_button;
                     ImageDisplay _frame_new_right_of_current_icon = ImageDisplay(get_resource_path() + "icons/frame_new_right_of_current.png");
                     Action _frame_new_right_of_current_action = Action("frame_view.frame_new_right_of_current");
+                    void on_frame_new_right_of_current();
 
                     Button _frame_delete_button;
                     ImageDisplay _frame_delete_icon = ImageDisplay(get_resource_path() + "icons/frame_delete.png");
                     Action _frame_delete_action = Action("frame_view.frame_delete");
+                    void on_frame_delete();
 
                     Button _frame_make_keyframe_button;
                     ImageDisplay _frame_is_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_keyframe.png");
                     ImageDisplay _frame_is_not_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_keyframe.png");
                     Action _frame_make_keyframe_action = Action("frame_view.frame_make_keyframe");
                     Action _frame_make_inbetween_action = Action("frame_view.frame_make_inbetween");
+                    void on_frame_make_keyframe_inbetween();
 
                     Box _box = Box(GTK_ORIENTATION_HORIZONTAL);
             };
@@ -356,6 +368,101 @@ namespace mousetrap
     FrameView::ControlBar::ControlBar(FrameView* owner)
         : _owner(owner)
     {
+        // ACTIONS
+
+        _jump_to_start_action.set_do_function([](ControlBar* instance) {
+            instance->on_jump_to_start();
+        }, this);
+        _jump_to_start_action.add_shortcut(state::keybindings_file->get_value("frame_view", "jump_to_start"));
+        state::app->add_action(_jump_to_start_action);
+        _shortcut_controller.add_action(_jump_to_start_action.get_id());
+
+        _jump_to_end_action.set_do_function([](ControlBar* instance) {
+            instance->on_jump_to_end();
+        }, this);
+        _jump_to_end_action.add_shortcut(state::keybindings_file->get_value("frame_view", "jump_to_end"));
+        state::app->add_action(_jump_to_end_action);
+        _shortcut_controller.add_action(_jump_to_end_action.get_id());
+
+        _go_to_previous_frame_action.set_do_function([](ControlBar* instance) {
+            instance->on_go_to_previous_frame();
+        }, this);
+        _go_to_previous_frame_action.add_shortcut(state::keybindings_file->get_value("frame_view", "go_to_previous_frame"));
+        state::app->add_action(_go_to_previous_frame_action);
+        _shortcut_controller.add_action(_go_to_previous_frame_action.get_id());
+
+        _go_to_next_frame_action.set_do_function([](ControlBar* instance) {
+            instance->on_go_to_next_frame();
+        }, this);
+        _go_to_next_frame_action.add_shortcut(state::keybindings_file->get_value("frame_view", "go_to_next_frame"));
+        state::app->add_action(_go_to_next_frame_action);
+        _shortcut_controller.add_action(_go_to_next_frame_action.get_id());
+
+        _play_action.set_do_function([](ControlBar* instance) {
+            instance->on_play_pause();
+        }, this);
+        _play_action.add_shortcut(state::keybindings_file->get_value("frame_view", "play_pause"));
+        state::app->add_action(_play_action);
+        _shortcut_controller.add_action(_play_action.get_id());
+
+        _pause_action.set_do_function([](ControlBar* instance) {
+            instance->on_play_pause();
+        }, this);
+        _pause_action.add_shortcut(state::keybindings_file->get_value("frame_view", "play_pause"));
+        state::app->add_action(_pause_action);
+        _shortcut_controller.add_action(_pause_action.get_id());
+
+        _frame_move_right_action.set_do_function([](ControlBar* instance) {
+            instance->on_frame_move_right();
+        }, this);
+        _frame_move_right_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_move_right"));
+        state::app->add_action(_frame_move_right_action);
+        _shortcut_controller.add_action(_frame_move_right_action.get_id());
+
+        _frame_move_left_action.set_do_function([](ControlBar* instance) {
+            instance->on_frame_move_left();
+        }, this);
+        _frame_move_left_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_move_left"));
+        state::app->add_action(_frame_move_left_action);
+        _shortcut_controller.add_action(_frame_move_left_action.get_id());
+
+        _frame_new_left_of_current_action.set_do_function([](ControlBar* instance) {
+            instance->on_frame_new_left_of_current();
+        }, this);
+        _frame_new_left_of_current_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_new_left_of_current"));
+        state::app->add_action(_frame_new_left_of_current_action);
+        _shortcut_controller.add_action(_frame_new_left_of_current_action.get_id());
+
+        _frame_new_right_of_current_action.set_do_function([](ControlBar* instance) {
+            instance->on_frame_new_right_of_current();
+        }, this);
+        _frame_new_right_of_current_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_new_right_of_current"));
+        state::app->add_action(_frame_new_right_of_current_action);
+        _shortcut_controller.add_action(_frame_new_right_of_current_action.get_id());
+
+        _frame_delete_action.set_do_function([](ControlBar* instance) {
+            instance->on_frame_delete();
+        }, this);
+        _frame_delete_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_delete"));
+        state::app->add_action(_frame_delete_action);
+        _shortcut_controller.add_action(_frame_delete_action.get_id());
+
+        _frame_make_keyframe_action.set_do_function([](ControlBar* instance) {
+            instance->on_frame_make_keyframe_inbetween();
+        }, this);
+        _frame_make_keyframe_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_make_keyframe_inbetween"));
+        state::app->add_action(_frame_make_keyframe_action);
+        _shortcut_controller.add_action(_frame_make_keyframe_action.get_id());
+
+        _frame_make_inbetween_action.set_do_function([](ControlBar* instance) {
+            instance->on_frame_make_keyframe_inbetween();
+        }, this);
+        _frame_make_inbetween_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_make_keyframe_inbetween"));
+        state::app->add_action(_frame_make_inbetween_action);
+        _shortcut_controller.add_action(_frame_make_inbetween_action.get_id());
+
+        // GUI
+
         _jump_to_start_button.set_child(&_jump_to_start_icon);
         _jump_to_start_button.connect_signal_clicked([](Button*, ControlBar* instance){
             instance->_jump_to_start_action.activate();
@@ -449,10 +556,67 @@ namespace mousetrap
         separator_right.set_size_request({button_width, 0});
         separator_right.set_hexpand(true);
         _box.push_back(&separator_right);
+
+        _box.add_controller(&_shortcut_controller);
     }
 
     FrameView::ControlBar::operator Widget*() {
         return &_box;
+    }
+
+    void FrameView::ControlBar::on_jump_to_start()
+    {
+        // TODO
+    }
+
+    void FrameView::ControlBar::on_jump_to_end()
+    {
+        // TODO
+    }
+
+    void FrameView::ControlBar::on_go_to_previous_frame()
+    {
+        // TODO
+    }
+
+    void FrameView::ControlBar::on_go_to_next_frame()
+    {
+        // TODO
+    }
+
+    void FrameView::ControlBar::on_play_pause()
+    {
+        // TODO
+    }
+
+    void FrameView::ControlBar::on_frame_move_left()
+    {
+        // TODO
+    }
+
+    void FrameView::ControlBar::on_frame_move_right()
+    {
+        // TODO
+    }
+
+    void FrameView::ControlBar::on_frame_new_left_of_current()
+    {
+        // TODO
+    }
+
+    void FrameView::ControlBar::on_frame_new_right_of_current()
+    {
+        // TODO
+    }
+
+    void FrameView::ControlBar::on_frame_delete()
+    {
+        // TODO
+    }
+
+    void FrameView::ControlBar::on_frame_make_keyframe_inbetween()
+    {
+        // TODO
     }
 
     // ###

@@ -219,7 +219,6 @@ static void activate(GtkApplication* app, void*)
     bubble_log->set_margin(2 * state::margin_unit);
     bubble_log->set_align(GTK_ALIGN_END);
     bubble_log->set_size_request({100, 100});
-    bubble_log->set_can_respond_to_input(false); // TODO ?
 
     // LAYOUT
 
