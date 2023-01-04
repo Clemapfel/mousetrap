@@ -17,7 +17,7 @@ namespace mousetrap
             operator Widget*() override;
             void update() override {};
 
-            void send_message(const std::string&, InfoMessageType type = InfoMessageType::INFO, bool sticky = false);
+            void send_message(const std::string&, InfoMessageType type = InfoMessageType::INFO);
             void set_has_close_button(bool);
             void set_bubble_reveal_transition_type(TransitionType);
 
@@ -45,7 +45,7 @@ namespace mousetrap
 
             Adjustment _scrolled_window_vadjustment;
             ScrolledWindow _scrolled_window;
-            Box _box = Box(GTK_ORIENTATION_VERTICAL);
+            Box _box = Box(GTK_ORIENTATION_VERTICAL, state::margin_unit);
             SeparatorLine _spacer;
 
             static inline size_t _current_id = 0;
@@ -73,10 +73,11 @@ namespace mousetrap
 
     BubbleLogArea::BubbleLogArea()
     {
-        _scrolled_window.set_policy(GTK_POLICY_NEVER, GTK_POLICY_EXTERNAL);
+        _scrolled_window.set_policy(GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
         _scrolled_window.set_child(&_box);
         _scrolled_window.set_expand(true);
         _scrolled_window.set_vadjustment(_scrolled_window_vadjustment);
+        _scrolled_window.set_propagate_natural_height(true);
 
         _spacer.set_expand(true);
         _spacer.set_opacity(0);
@@ -138,9 +139,12 @@ namespace mousetrap
 
         delete message;
         data.instance->_messages.erase(data.id);
+
+        if (data.instance->_messages.empty())
+            data.instance->operator Widget*()->set_can_respond_to_input(false);
     }
 
-    void BubbleLogArea::send_message(const std::string& text, InfoMessageType type, bool sticky)
+    void BubbleLogArea::send_message(const std::string& text, InfoMessageType type)
     {
         std::string prefix = "";
 
@@ -183,7 +187,7 @@ namespace mousetrap
         message->message.set_hexpand(false);
         message->message.connect_signal_hide(on_message_hide, on_message_hide_data{this, id});
         message->message.set_hide_interruptable(false);
-        message->message.set_autohide(not sticky);
+        message->message.set_autohide(type != InfoMessageType::ERROR);
 
         auto* w = message->revealer.operator GtkWidget*();
         gtk_widget_add_tick_callback(w, (GtkTickCallback) G_CALLBACK(delayed_reveal), message, (GDestroyNotify) nullptr);
@@ -198,5 +202,6 @@ namespace mousetrap
         _box.push_back(box);
 
         _scrolled_window_vadjustment.set_value(_scrolled_window_vadjustment.get_upper());
+        operator Widget*()->set_can_respond_to_input(true);
     }
 }

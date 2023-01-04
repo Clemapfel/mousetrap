@@ -612,6 +612,7 @@ namespace mousetrap
     void FrameView::ControlBar::on_frame_delete()
     {
         // TODO
+        ((BubbleLogArea*) state::bubble_log)->send_message("ESTAL ALIUE BALISUB LAWUEB LAW EBLAIWUE BLAWIU BIAWUB EIABE WLA", InfoMessageType::ERROR);
     }
 
     void FrameView::ControlBar::on_frame_make_keyframe_inbetween()

@@ -78,7 +78,7 @@ void validate_keybindings_file(ConfigFile* file)
     {
         std::stringstream str;
         str << "<b>Invalid Shortcut</b>\n" << "Shortcut `" << shortcut << "` for action `" << action << "` is invalid. Ignoring assignment.";
-        ((BubbleLogArea*) state::bubble_log)->send_message(str.str(), InfoMessageType::ERROR, true);
+        ((BubbleLogArea*) state::bubble_log)->send_message(str.str(), InfoMessageType::ERROR);
     };
 
     bool conflict = false;
@@ -143,7 +143,7 @@ void validate_keybindings_file(ConfigFile* file)
     }
 
     message << "\nPlease resolve these conflicts via the settings menu or by editing keybindings.ini";
-    ((BubbleLogArea*) state::bubble_log)->send_message(message.str(), InfoMessageType::ERROR, true);
+    ((BubbleLogArea*) state::bubble_log)->send_message(message.str(), InfoMessageType::ERROR);
 }
 
 static void activate(GtkApplication* app, void*)
@@ -295,6 +295,10 @@ static void activate(GtkApplication* app, void*)
     state::main_window->grab_focus();
 
     validate_keybindings_file(state::keybindings_file);
+
+    // TODO
+    for (size_t i = 0; i < 9; ++i)
+        ((BubbleLogArea*) state::bubble_log)->send_message("test message asdlubalsudbalsiub al bsla blais ubadli b");
 }
 
 static void startup(GApplication*)
