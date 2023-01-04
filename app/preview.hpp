@@ -286,7 +286,7 @@ namespace mousetrap
         _show_frame_i_box.push_back(&_show_frame_i_label);
         //_show_frame_i_box.push_back(&_show_frame_i_separator);
         _show_frame_i_box.push_back(&_show_frame_i_check_button);
-        _show_frame_i_box.set_tooltip_text("Show Frame Index in AnimationPreview");
+        _show_frame_i_box.set_tooltip_text("Show Frame Index in Preview");
 
         _menu_popover_box.push_back(&_fps_box);
         _menu_popover_box.push_back(&_scale_box);

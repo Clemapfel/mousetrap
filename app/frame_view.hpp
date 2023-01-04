@@ -30,6 +30,7 @@ namespace mousetrap
                     void set_layer(Layer*);
                     void set_frame(size_t);
                     void set_is_inbetween(bool);
+                    void set_thumbnail_size(size_t);
 
                 private:
                     FrameView* _owner;
@@ -67,6 +68,7 @@ namespace mousetrap
                     void select_layer(size_t i);
 
                     void set_is_first_frame(bool);
+                    void set_thumbnail_size(size_t);
 
                 private:
                     FrameView* _owner;
@@ -126,8 +128,7 @@ namespace mousetrap
                     Button _play_pause_button;
                     ImageDisplay _play_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_play.png");
                     ImageDisplay _pause_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_pause.png");
-                    Action _play_action = Action("frame_view.play");
-                    Action _pause_action = Action("frame_view.pause");
+                    Action _play_pause_action = Action("frame_view.play_pause");
                     void on_play_pause();
 
                     Button _frame_move_right_button;
@@ -158,9 +159,23 @@ namespace mousetrap
                     Button _frame_make_keyframe_button;
                     ImageDisplay _frame_is_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_keyframe.png");
                     ImageDisplay _frame_is_not_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_keyframe.png");
-                    Action _frame_make_keyframe_action = Action("frame_view.frame_make_keyframe");
-                    Action _frame_make_inbetween_action = Action("frame_view.frame_make_inbetween");
+                    Action _frame_make_keyframe_inbetween_action = Action("frame_view.frame_make_keyframe_inbetween");
                     void on_frame_make_keyframe_inbetween();
+
+                    size_t _preview_size = state::settings_file->get_value_as<int>("layer_view", "layer_preview_thumbnail_size");
+                    MenuModel _preview_size_submenu;
+
+                    Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                    Label _preview_size_label = Label("Preview Size (px): ");
+                    SpinButton _preview_size_spin_button = SpinButton(2, 256, 1);
+                    static void on_preview_size_spin_button_value_changed(SpinButton*, ControlBar* instance);
+                    
+                    MenuButton _menu_button;
+                    Label _menu_button_label = Label("Frames");
+                    MenuModel _menu;
+                    PopoverMenu _popover_menu = PopoverMenu(&_menu);
+
+                    Tooltip _tooltip;
 
                     Box _box = Box(GTK_ORIENTATION_HORIZONTAL);
             };
@@ -195,13 +210,17 @@ namespace mousetrap
         _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);
 
-        float width = (state::layer_resolution.y / state::layer_resolution.x) * owner->_thumbnail_size;
-        _area.set_size_request({width, owner->_thumbnail_size});
-
+        set_thumbnail_size(owner->_thumbnail_size);
         _inbetween_label_overlay.set_child(&_area);
         _inbetween_label_overlay.add_overlay(&_inbetween_label);
 
         set_is_inbetween(false);
+    }
+
+    void FrameView::FramePreview::set_thumbnail_size(size_t x)
+    {
+        float width = (state::layer_resolution.y / state::layer_resolution.x) * x;
+        _area.set_size_request({width, x});
     }
 
     void FrameView::FramePreview::set_is_inbetween(bool b)
@@ -239,6 +258,7 @@ namespace mousetrap
 
         _layer_shape->set_texture(_layer->frames.at(_frame_i).texture);
         _layer_shape->set_color(RGBA(1, 1, 1, _layer->opacity));
+        set_thumbnail_size(_owner->_thumbnail_size);
         _area.queue_render();
     }
 
@@ -299,8 +319,8 @@ namespace mousetrap
                 FramePreview(owner, layer, _frame_i),
                 ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE),
                 Frame(),
-                Label((_frame_i < 10 ? "00" : (_frame_i < 100 ? "0" : "")) + std::to_string(_frame_i)),
-                Label(std::string("<span size=\"120%\">") + (_frame_i < 10 ? "0" : "") + std::to_string(layer_i) + "</span>")
+                Label(std::string("<tt>") + (_frame_i < 10 ? "00" : (_frame_i < 100 ? "0" : "")) + std::to_string(_frame_i) + "</tt>"),
+                Label(std::string("<tt><span size=\"120%\">") + (_frame_i < 10 ? "0" : "") + std::to_string(layer_i) + "</span></tt>")
             });
 
             element->frame_label.set_visible(false);
@@ -349,6 +369,12 @@ namespace mousetrap
     {
         for (auto& preview : _preview_elements)
             preview->layer_label.set_visible(b);
+    }
+
+    void FrameView::FrameColumn::set_thumbnail_size(size_t x)
+    {
+        for (auto* preview : _preview_elements)
+            preview->preview.set_thumbnail_size(x);
     }
 
     void FrameView::FrameColumn::on_selection_changed(SelectionModel*, size_t i, size_t n_items,
@@ -410,19 +436,12 @@ namespace mousetrap
         state::app->add_action(_go_to_next_frame_action);
         _shortcut_controller.add_action(_go_to_next_frame_action.get_id());
 
-        _play_action.set_do_function([](ControlBar* instance) {
+        _play_pause_action.set_do_function([](ControlBar* instance) {
             instance->on_play_pause();
         }, this);
-        _play_action.add_shortcut(state::keybindings_file->get_value("frame_view", "play_pause"));
-        state::app->add_action(_play_action);
-        _shortcut_controller.add_action(_play_action.get_id());
-
-        _pause_action.set_do_function([](ControlBar* instance) {
-            instance->on_play_pause();
-        }, this);
-        _pause_action.add_shortcut(state::keybindings_file->get_value("frame_view", "play_pause"));
-        state::app->add_action(_pause_action);
-        _shortcut_controller.add_action(_pause_action.get_id());
+        _play_pause_action.add_shortcut(state::keybindings_file->get_value("frame_view", "play_pause"));
+        state::app->add_action(_play_pause_action);
+        _shortcut_controller.add_action(_play_pause_action.get_id());
 
         _frame_move_right_action.set_do_function([](ControlBar* instance) {
             instance->on_frame_move_right();
@@ -459,19 +478,12 @@ namespace mousetrap
         state::app->add_action(_frame_delete_action);
         _shortcut_controller.add_action(_frame_delete_action.get_id());
 
-        _frame_make_keyframe_action.set_do_function([](ControlBar* instance) {
+        _frame_make_keyframe_inbetween_action.set_do_function([](ControlBar* instance) {
             instance->on_frame_make_keyframe_inbetween();
         }, this);
-        _frame_make_keyframe_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_make_keyframe_inbetween"));
-        state::app->add_action(_frame_make_keyframe_action);
-        _shortcut_controller.add_action(_frame_make_keyframe_action.get_id());
-
-        _frame_make_inbetween_action.set_do_function([](ControlBar* instance) {
-            instance->on_frame_make_keyframe_inbetween();
-        }, this);
-        _frame_make_inbetween_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_make_keyframe_inbetween"));
-        state::app->add_action(_frame_make_inbetween_action);
-        _shortcut_controller.add_action(_frame_make_inbetween_action.get_id());
+        _frame_make_keyframe_inbetween_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_make_keyframe_inbetween"));
+        state::app->add_action(_frame_make_keyframe_inbetween_action);
+        _shortcut_controller.add_action(_frame_make_keyframe_inbetween_action.get_id());
 
         // GUI
         _show_animation_preview_button.set_child(&_show_animation_preview_icon);
@@ -501,7 +513,7 @@ namespace mousetrap
 
         _play_pause_button.set_child(state::playback_active ? &_pause_icon : &_play_icon);
         _play_pause_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            state::playback_active ? instance->_pause_action.activate() : instance->_play_action.activate();
+            instance->_play_pause_action.activate();
         }, this);
 
         _frame_move_right_button.set_child(&_frame_move_right_icon);
@@ -532,21 +544,107 @@ namespace mousetrap
         bool is_keyframe = state::layers.at(state::current_layer)->frames.at(state::current_frame).is_keyframe;
         _frame_make_keyframe_button.set_child(is_keyframe ? &_frame_is_not_keyframe_icon : &_frame_is_keyframe_icon);
         _frame_make_keyframe_button.connect_signal_clicked([](Button*, ControlBar* instance){
-
-            bool is_keyframe = state::layers.at(state::current_layer)->frames.at(state::current_frame).is_keyframe;
-            if (is_keyframe)
-                instance->_frame_make_inbetween_action.activate();
-            else
-                instance->_frame_make_keyframe_action.activate();
-
+            instance->_frame_make_keyframe_inbetween_action.activate();
         }, this);
+        
+        // Tooltips
+        
+        auto show_animation_preview_tooltip = state::tooltips_file->get_value("frame_view", "show_animation_preview");
+        _show_animation_preview_button.set_tooltip_text(show_animation_preview_tooltip);
 
-        for (auto& image : {&_jump_to_start_icon, &_jump_to_end_icon, &_go_to_previous_frame_icon, &_go_to_next_frame_icon, &_play_icon, &_pause_icon, &_frame_move_left_icon, &_frame_move_right_icon, &_frame_new_left_of_current_icon, &_frame_new_right_of_current_icon, &_frame_delete_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
+        auto jump_to_start_tooltip = state::tooltips_file->get_value("frame_view", "jump_to_start");
+        _jump_to_start_button.set_tooltip_text(jump_to_start_tooltip);
+
+        auto jump_to_end_tooltip = state::tooltips_file->get_value("frame_view", "jump_to_end");
+        _jump_to_end_button.set_tooltip_text(jump_to_end_tooltip);
+
+        auto go_to_previous_frame_tooltip = state::tooltips_file->get_value("frame_view", "go_to_previous_frame");
+        _go_to_previous_frame_button.set_tooltip_text(go_to_previous_frame_tooltip);
+
+        auto go_to_next_frame_tooltip = state::tooltips_file->get_value("frame_view", "go_to_next_frame");
+        _go_to_next_frame_button.set_tooltip_text(go_to_next_frame_tooltip);
+
+        auto play_pause_tooltip = state::tooltips_file->get_value("frame_view", "play_pause");
+        _play_pause_button.set_tooltip_text(play_pause_tooltip);
+
+        auto frame_move_left_tooltip = state::tooltips_file->get_value("frame_view", "frame_move_left");
+        _frame_move_left_button.set_tooltip_text(frame_move_left_tooltip);
+
+        auto frame_move_right_tooltip = state::tooltips_file->get_value("frame_view", "frame_move_right");
+        _frame_move_right_button.set_tooltip_text(frame_move_right_tooltip);
+
+        auto frame_new_left_of_current_tooltip = state::tooltips_file->get_value("frame_view", "frame_new_left_of_current");
+        _frame_new_left_of_current_button.set_tooltip_text(frame_new_left_of_current_tooltip);
+
+        auto frame_new_right_of_current_tooltip = state::tooltips_file->get_value("frame_view", "frame_new_right_of_current");
+        _frame_new_right_of_current_button.set_tooltip_text(frame_new_right_of_current_tooltip);
+
+        auto frame_delete_tooltip = state::tooltips_file->get_value("frame_view", "frame_delete");
+        _frame_delete_button.set_tooltip_text(frame_delete_tooltip);
+
+        auto frame_make_keyframe_inbetween_tooltip = state::tooltips_file->get_value("frame_view", "frame_make_keyframe_inbetween");
+        _frame_make_keyframe_button.set_tooltip_text(frame_make_keyframe_inbetween_tooltip);
+
+        _tooltip.create_from("frame_view", state::tooltips_file, state::keybindings_file);
+
+        // Menu
+
+        _preview_size_spin_button.set_margin_start(state::margin_unit);
+        _preview_size_spin_button.set_halign(GTK_ALIGN_END);
+        _preview_size_spin_button.set_value(_preview_size);
+        _preview_size_spin_button.connect_signal_value_changed(on_preview_size_spin_button_value_changed, this);
+        _preview_size_box.push_back(&_preview_size_label);
+
+        auto spacer = SeparatorLine();
+        spacer.set_opacity(0);
+        spacer.set_hexpand(true);
+        _preview_size_box.push_back(&spacer);
+
+        _preview_size_box.push_back(&_preview_size_spin_button);
+        _preview_size_box.set_margin(state::margin_unit);
+
+        auto settings_section = MenuModel();
+        auto preview_size_submenu = MenuModel();
+        preview_size_submenu.add_widget(&_preview_size_box);
+        settings_section.add_submenu("Preview Size...", &preview_size_submenu);
+        _menu.add_section("Settings", &settings_section);
+
+        auto playback_section = MenuModel();
+        playback_section.add_action(jump_to_start_tooltip, _jump_to_start_action.get_id());
+        playback_section.add_action(jump_to_end_tooltip, _jump_to_end_action.get_id());
+        playback_section.add_action(go_to_previous_frame_tooltip, _go_to_previous_frame_action.get_id());
+        playback_section.add_action(go_to_next_frame_tooltip, _go_to_next_frame_action.get_id());
+        playback_section.add_action(play_pause_tooltip, _play_pause_action.get_id());
+        playback_section.add_action(show_animation_preview_tooltip, _show_animation_preview_action.get_id());
+        _menu.add_section("Playback", &playback_section);
+
+        auto create_section = MenuModel();
+        create_section.add_action(frame_new_left_of_current_tooltip, _frame_new_left_of_current_action.get_id());
+        create_section.add_action(frame_new_right_of_current_tooltip, _frame_new_right_of_current_action.get_id());
+        create_section.add_action(frame_delete_tooltip, _frame_delete_action.get_id());
+        _menu.add_section("Create / Delete", &create_section);
+
+        auto other_section = MenuModel();
+        other_section.add_action(frame_move_left_tooltip, _frame_move_left_action.get_id());
+        other_section.add_action(frame_move_right_tooltip, _frame_move_right_action.get_id());
+        other_section.add_action(frame_make_keyframe_inbetween_tooltip, _frame_make_keyframe_inbetween_action.get_id());
+        _menu.add_section("Other", &other_section);
+
+        _popover_menu = PopoverMenu(&_menu);
+        _menu_button.set_child(&_menu_button_label);
+        _menu_button.set_tooltip_widget(_tooltip);
+        _menu_button.set_popover(&_popover_menu);
+
+        // Layout
+        for (auto& image : {&_show_animation_preview_icon, &_jump_to_start_icon, &_jump_to_end_icon, &_go_to_previous_frame_icon, &_go_to_next_frame_icon, &_play_icon, &_pause_icon, &_frame_move_left_icon, &_frame_move_right_icon, &_frame_new_left_of_current_icon, &_frame_new_right_of_current_icon, &_frame_delete_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
             image->set_size_request(image->get_size());
 
+        auto button_width = _play_pause_button.get_preferred_size().natural_size.x;
+        _menu_button.set_size_request({4 * button_width, 0});
+
+        _box.push_back(&_menu_button);
         _box.push_back(&_show_animation_preview_button);
 
-        auto button_width = _play_pause_button.get_preferred_size().natural_size.x;
         auto separator_start = SeparatorLine();
         separator_start.set_size_request({button_width, 0});
         separator_start.set_hexpand(false);
@@ -580,6 +678,14 @@ namespace mousetrap
 
     FrameView::ControlBar::operator Widget*() {
         return &_box;
+    }
+
+    void FrameView::ControlBar::on_preview_size_spin_button_value_changed(SpinButton* scale, ControlBar* instance)
+    {
+        instance->_owner->_thumbnail_size = scale->get_value();
+
+        for (auto* column : instance->_owner->_frame_columns)
+            column->set_thumbnail_size(instance->_owner->_thumbnail_size);
     }
 
     void FrameView::ControlBar::on_jump_to_start()

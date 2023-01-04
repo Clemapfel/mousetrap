@@ -194,7 +194,7 @@ namespace mousetrap
             MenuModel _preview_size_submenu;
 
             Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
-            Label _preview_size_label = Label("AnimationPreview Size (px): ");
+            Label _preview_size_label = Label("Preview Size (px): ");
             SpinButton _preview_size_spin_button = SpinButton(2, 256, 1);
             static void on_preview_size_spin_button_value_changed(SpinButton*, LayerView* instance);
 
@@ -816,13 +816,19 @@ namespace mousetrap
         _preview_size_spin_button.set_value(_preview_size);
         _preview_size_spin_button.connect_signal_value_changed(on_preview_size_spin_button_value_changed, this);
         _preview_size_box.push_back(&_preview_size_label);
+
+        auto spacer = SeparatorLine();
+        spacer.set_opacity(0);
+        spacer.set_hexpand(true);
+        _preview_size_box.push_back(&spacer);
+
         _preview_size_box.push_back(&_preview_size_spin_button);
         _preview_size_box.set_margin(state::margin_unit);
 
         auto settings_section = MenuModel();
         auto preview_size_submenu = MenuModel();
         preview_size_submenu.add_widget(&_preview_size_box);
-        settings_section.add_submenu("AnimationPreview Size...", &preview_size_submenu);
+        settings_section.add_submenu("Preview Size...", &preview_size_submenu);
 
         _menu.add_section("Settings", &settings_section);
 
