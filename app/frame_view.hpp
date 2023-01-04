@@ -71,7 +71,7 @@ namespace mousetrap
 
                     size_t _frame_i;
                     ListView _list_view = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_SINGLE);
-                    static void on_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items, FrameColumn* instance);
+                    static void on_selection_changed(SelectionModel*, size_t i, size_t n_items, FrameColumn* instance);
 
                     struct PreviewElement
                     {
@@ -403,18 +403,11 @@ namespace mousetrap
         for (auto& image : {&_jump_to_start_icon, &_jump_to_end_icon, &_go_to_previous_frame_icon, &_go_to_next_frame_icon, &_play_icon, &_pause_icon, &_frame_move_left_icon, &_frame_move_right_icon, &_frame_new_left_of_current_icon, &_frame_new_right_of_current_icon, &_frame_delete_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
             image->set_size_request(image->get_size());
 
-        _box.push_back(&_jump_to_start_button);
-        _box.push_back(&_go_to_previous_frame_button);
-        _box.push_back(&_play_pause_button);
-        _box.push_back(&_go_to_next_frame_button);
-        _box.push_back(&_jump_to_end_button);
-
         auto button_width = _play_pause_button.get_preferred_size().natural_size.x;
-
-        auto separator_left = SeparatorLine();
-        separator_left.set_size_request({button_width, 0});
-        separator_left.set_hexpand(false);
-        _box.push_back(&separator_left);
+        auto separator_start = SeparatorLine();
+        separator_start.set_size_request({button_width, 0});
+        separator_start.set_hexpand(false);
+        _box.push_back(&separator_start);
 
         _box.push_back(&_frame_move_left_button);
         _box.push_back(&_frame_new_left_of_current_button);
@@ -422,6 +415,17 @@ namespace mousetrap
         _box.push_back(&_frame_make_keyframe_button);
         _box.push_back(&_frame_new_right_of_current_button);
         _box.push_back(&_frame_move_right_button);
+
+        auto separator_left = SeparatorLine();
+        separator_left.set_size_request({button_width, 0});
+        separator_left.set_hexpand(false);
+        _box.push_back(&separator_left);
+
+        _box.push_back(&_jump_to_start_button);
+        _box.push_back(&_go_to_previous_frame_button);
+        _box.push_back(&_play_pause_button);
+        _box.push_back(&_go_to_next_frame_button);
+        _box.push_back(&_jump_to_end_button);
 
         auto separator_right = SeparatorLine();
         separator_right.set_size_request({button_width, 0});
