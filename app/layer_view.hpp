@@ -118,7 +118,7 @@ namespace mousetrap
                     std::vector<Label*> _blend_mode_drop_down_label_items;
                     std::vector<Label*> _blend_mode_drop_down_list_items;
 
-                    // blendmode -> {label item, list item}
+                    // blendmode -> {frame_label item, list item}
                     static inline const std::vector<std::pair<BlendMode, std::pair<std::string, std::string>>> blend_mode_to_label = {
                         {BlendMode::NORMAL,           {"&#945;", "Alpha Blending"}},
                         {BlendMode::ADD,              {"&#43;", "Add"}},

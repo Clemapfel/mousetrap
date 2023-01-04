@@ -66,6 +66,8 @@ namespace mousetrap
                     void set_frame(size_t i);
                     void select_layer(size_t i);
 
+                    void set_is_first_frame(bool);
+
                 private:
                     FrameView* _owner;
 
@@ -78,7 +80,8 @@ namespace mousetrap
                         FramePreview preview;
                         ListView wrapper;
                         Frame frame;
-                        Label label;
+                        Label frame_label;
+                        Label layer_label;
                     };
 
                     std::vector<PreviewElement*> _preview_elements;
@@ -271,25 +274,34 @@ namespace mousetrap
     {
         _list_view.set_show_separators(true);
 
-        for (auto* layer : state::layers)
+        for (size_t layer_i = 0; layer_i <state::layers.size() ; ++layer_i)
         {
+            auto* layer = state::layers.at(layer_i);
+
             auto* element = _preview_elements.emplace_back(new PreviewElement{
                 FramePreview(owner, layer, _frame_i),
-                ListView(),
+                ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE),
                 Frame(),
-                Label((_frame_i < 10 ? "00" : (_frame_i < 100 ? "0" : "")) + std::to_string(_frame_i))
+                Label((_frame_i < 10 ? "00" : (_frame_i < 100 ? "0" : "")) + std::to_string(_frame_i)),
+                Label(std::string("<span size=\"120%\">") + (_frame_i < 10 ? "0" : "") + std::to_string(layer_i) + "</span>")
             });
 
-            element->label.set_visible(false);
+            element->frame_label.set_visible(false);
+            element->layer_label.set_visible(false);
+            element->layer_label.set_margin_horizontal(state::margin_unit);
 
             element->frame.set_label_align(0.5);
             element->frame.set_child(element->preview);
-            element->frame.set_label_widget(&element->label);
+            element->frame.set_label_widget(&element->frame_label);
+
+            element->wrapper.push_back(&element->layer_label);
             element->wrapper.push_back(&element->frame);
             _list_view.push_back(&element->wrapper);
         }
 
         _list_view.get_selection_model()->connect_signal_selection_changed(on_selection_changed, this);
+        if (_frame_i == 0)
+            set_is_first_frame(true);
     }
 
     FrameView::FrameColumn::~FrameColumn()
@@ -313,7 +325,13 @@ namespace mousetrap
         _list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
 
         for (size_t i = 0; i < _preview_elements.size(); ++i)
-            _preview_elements.at(i)->label.set_visible(i == layer_i);
+            _preview_elements.at(i)->frame_label.set_visible(i == layer_i);
+    }
+
+    void FrameView::FrameColumn::set_is_first_frame(bool b)
+    {
+        for (auto& preview : _preview_elements)
+            preview->layer_label.set_visible(b);
     }
 
     void FrameView::FrameColumn::on_selection_changed(SelectionModel*, size_t i, size_t n_items,
@@ -405,7 +423,7 @@ namespace mousetrap
 
         auto button_width = _play_pause_button.get_preferred_size().natural_size.x;
         auto separator_start = SeparatorLine();
-        separator_start.set_size_request({button_width, 0});
+        //separator_start.set_size_request({button_width, 0});
         separator_start.set_hexpand(false);
         _box.push_back(&separator_start);
 

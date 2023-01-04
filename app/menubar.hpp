@@ -330,9 +330,9 @@ Other >
         using namespace MenuBar;
 
         /*
-        auto add_action = [&](MenuModel* model, const std::string label, const std::string& action_id, auto f){
+        auto add_action = [&](MenuModel* model, const std::string frame_label, const std::string& action_id, auto f){
             app->add_action(action_id, f, (void*) nullptr);
-            model->add_action(label, "app." + action_id);
+            model->add_action(frame_label, "app." + action_id);
         };
 
         // FILE
