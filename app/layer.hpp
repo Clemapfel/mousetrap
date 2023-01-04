@@ -22,7 +22,7 @@ namespace mousetrap
         {
             Image* image;
             Texture* texture;
-            bool is_tween_repeat = false;
+            bool is_keyframe = true;
 
             void draw_pixel(Vector2i, RGBA, BlendMode = BlendMode::NORMAL);
             void draw_image(Vector2i centroid, const Image&, RGBA multiplication = RGBA(1, 1, 1, 1), BlendMode = BlendMode::NORMAL);

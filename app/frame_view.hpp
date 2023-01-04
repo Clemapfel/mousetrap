@@ -89,8 +89,10 @@ namespace mousetrap
                 public:
                     ControlBar(FrameView* owner);
 
+                    operator Widget*();
+
                 private:
-                    Box _box;
+                    FrameView* _owner;
 
                     Button _jump_to_start_button;
                     ImageDisplay _jump_to_start_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
@@ -105,7 +107,7 @@ namespace mousetrap
                     Action _go_to_previous_frame_action = Action("frame_view.go_to_previous_frame");
 
                     Button _go_to_next_frame_button;
-                    ImageDisplay _go_to_next_frame_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_go_to_previous_frame.png");
+                    ImageDisplay _go_to_next_frame_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_go_to_next_frame.png");
                     Action _go_to_next_frame_action = Action("frame_view.go_to_next_frame");
 
                     Button _play_pause_button;
@@ -134,12 +136,16 @@ namespace mousetrap
                     ImageDisplay _frame_delete_icon = ImageDisplay(get_resource_path() + "icons/frame_delete.png");
                     Action _frame_delete_action = Action("frame_view.frame_delete");
 
-                    Button _make_keyframe_button;
+                    Button _frame_make_keyframe_button;
                     ImageDisplay _frame_is_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_keyframe.png");
                     ImageDisplay _frame_is_not_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_keyframe.png");
                     Action _frame_make_keyframe_action = Action("frame_view.frame_make_keyframe");
                     Action _frame_make_inbetween_action = Action("frame_view.frame_make_inbetween");
+
+                    Box _box = Box(GTK_ORIENTATION_HORIZONTAL);
             };
+
+            ControlBar _control_bar = ControlBar(this);
 
             size_t _selected_layer_i = 0;
             size_t _selected_frame_i = 0;
@@ -155,7 +161,7 @@ namespace mousetrap
 
             ScrolledWindow _frame_column_list_view_window;
 
-            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
     };
 }
 
@@ -329,6 +335,106 @@ namespace mousetrap
 
     // ###
 
+    FrameView::ControlBar::ControlBar(FrameView* owner)
+        : _owner(owner)
+    {
+        _jump_to_start_button.set_child(&_jump_to_start_icon);
+        _jump_to_start_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            instance->_jump_to_start_action.activate();
+        }, this);
+
+        _jump_to_end_button.set_child(&_jump_to_end_icon);
+        _jump_to_end_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            instance->_jump_to_end_action.activate();
+        }, this);
+
+        _go_to_previous_frame_button.set_child(&_go_to_previous_frame_icon);
+        _go_to_previous_frame_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            instance->_go_to_previous_frame_action.activate();
+        }, this);
+
+        _go_to_next_frame_button.set_child(&_go_to_next_frame_icon);
+        _go_to_next_frame_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            instance->_go_to_next_frame_action.activate();
+        }, this);
+
+        _play_pause_button.set_child(state::playback_active ? &_pause_icon : &_play_icon);
+        _play_pause_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            state::playback_active ? instance->_pause_action.activate() : instance->_play_action.activate();
+        }, this);
+
+        _frame_move_right_button.set_child(&_frame_move_right_icon);
+        _frame_move_right_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            instance->_frame_move_right_action.activate();
+        }, this);
+
+        _frame_move_left_button.set_child(&_frame_move_left_icon);
+        _frame_move_left_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            instance->_frame_move_left_action.activate();
+        }, this);
+
+        _frame_new_left_of_current_button.set_child(&_frame_new_left_of_current_icon);
+        _frame_new_left_of_current_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            instance->_frame_new_left_of_current_action.activate();
+        }, this);
+
+        _frame_new_right_of_current_button.set_child(&_frame_new_right_of_current_icon);
+        _frame_new_right_of_current_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            instance->_frame_new_right_of_current_action.activate();
+        }, this);
+
+        _frame_delete_button.set_child(&_frame_delete_icon);
+        _frame_delete_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            instance->_frame_delete_action.activate();
+        }, this);
+
+        bool is_keyframe = state::layers.at(state::current_layer)->frames.at(state::current_frame).is_keyframe;
+        _frame_make_keyframe_button.set_child(is_keyframe ? &_frame_is_not_keyframe_icon : &_frame_is_keyframe_icon);
+        _frame_make_keyframe_button.connect_signal_clicked([](Button*, ControlBar* instance){
+
+            bool is_keyframe = state::layers.at(state::current_layer)->frames.at(state::current_frame).is_keyframe;
+            if (is_keyframe)
+                instance->_frame_make_inbetween_action.activate();
+            else
+                instance->_frame_make_keyframe_action.activate();
+
+        }, this);
+
+        for (auto& image : {&_jump_to_start_icon, &_jump_to_end_icon, &_go_to_previous_frame_icon, &_go_to_next_frame_icon, &_play_icon, &_pause_icon, &_frame_move_left_icon, &_frame_move_right_icon, &_frame_new_left_of_current_icon, &_frame_new_right_of_current_icon, &_frame_delete_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
+            image->set_size_request(image->get_size());
+
+        _box.push_back(&_jump_to_start_button);
+        _box.push_back(&_go_to_previous_frame_button);
+        _box.push_back(&_play_pause_button);
+        _box.push_back(&_go_to_next_frame_button);
+        _box.push_back(&_jump_to_end_button);
+
+        auto button_width = _play_pause_button.get_preferred_size().natural_size.x;
+
+        auto separator_left = SeparatorLine();
+        separator_left.set_size_request({button_width, 0});
+        separator_left.set_hexpand(false);
+        _box.push_back(&separator_left);
+
+        _box.push_back(&_frame_move_left_button);
+        _box.push_back(&_frame_new_left_of_current_button);
+        _box.push_back(&_frame_delete_button);
+        _box.push_back(&_frame_make_keyframe_button);
+        _box.push_back(&_frame_new_right_of_current_button);
+        _box.push_back(&_frame_move_right_button);
+
+        auto separator_right = SeparatorLine();
+        separator_right.set_size_request({button_width, 0});
+        separator_right.set_hexpand(true);
+        _box.push_back(&separator_right);
+    }
+
+    FrameView::ControlBar::operator Widget*() {
+        return &_box;
+    }
+
+    // ###
+
     FrameView::FrameView()
     {
         for (size_t i = 0; i < state::n_frames; ++i)
@@ -347,6 +453,7 @@ namespace mousetrap
         _frame_colum_list_view_window_box.push_back(&_frame_colum_list_view_window_spacer);
 
         _frame_column_list_view_window.set_child(&_frame_colum_list_view_window_box);
+        _main.push_back(_control_bar);
         _main.push_back(&_frame_column_list_view_window);
     }
 
@@ -373,8 +480,7 @@ namespace mousetrap
         _frame_column_list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
     }
 
-    void
-    FrameView::on_selection_changed(SelectionModel*, size_t i, size_t n_items, FrameView* instance)
+    void FrameView::on_selection_changed(SelectionModel*, size_t i, size_t n_items, FrameView* instance)
     {
         // override ui changing if user clicks 1px border between columns
         instance->set_selection(instance->_selected_layer_i, i);

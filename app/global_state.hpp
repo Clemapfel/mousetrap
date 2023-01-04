@@ -98,20 +98,26 @@ namespace mousetrap::state
 
     std::deque<Layer*> layers;
     Vector2ui layer_resolution;
-    size_t n_frames = 0;
 
-    size_t current_frame = 2;
     size_t current_layer = 0;
 
     AppComponent* layer_view = nullptr;
-
     void update_layer_view()
     {
         if (layer_view != nullptr)
             layer_view->update();
     }
 
+
+
+    // ### ANIMATION ###################################
+
+    size_t current_frame = 0;
+    size_t n_frames = 0;
+
     AppComponent* frame_view = nullptr;
+
+    bool playback_active = false;
 
     void update_frame_view()
     {
