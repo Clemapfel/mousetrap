@@ -98,6 +98,11 @@ namespace mousetrap
 
                     FrameView* _owner;
 
+                    Button _show_animation_preview_button;
+                    ImageDisplay _show_animation_preview_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
+                    Action _show_animation_preview_action = Action("frame_view.show_animation_preview");
+                    void on_show_animation_preview();
+
                     Button _jump_to_start_button;
                     ImageDisplay _jump_to_start_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
                     Action _jump_to_start_action = Action("frame_view.jump_to_start");
@@ -370,6 +375,13 @@ namespace mousetrap
     {
         // ACTIONS
 
+        _show_animation_preview_action.set_do_function([](ControlBar* instance) {
+            instance->on_show_animation_preview();
+        }, this);
+        _show_animation_preview_action.add_shortcut(state::keybindings_file->get_value("frame_view", "show_animation_preview"));
+        state::app->add_action(_show_animation_preview_action);
+        _shortcut_controller.add_action(_show_animation_preview_action.get_id());
+
         _jump_to_start_action.set_do_function([](ControlBar* instance) {
             instance->on_jump_to_start();
         }, this);
@@ -462,6 +474,10 @@ namespace mousetrap
         _shortcut_controller.add_action(_frame_make_inbetween_action.get_id());
 
         // GUI
+        _show_animation_preview_button.set_child(&_show_animation_preview_icon);
+        _show_animation_preview_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            instance->_show_animation_preview_action.activate();
+        }, this);
 
         _jump_to_start_button.set_child(&_jump_to_start_icon);
         _jump_to_start_button.connect_signal_clicked([](Button*, ControlBar* instance){
@@ -528,9 +544,11 @@ namespace mousetrap
         for (auto& image : {&_jump_to_start_icon, &_jump_to_end_icon, &_go_to_previous_frame_icon, &_go_to_next_frame_icon, &_play_icon, &_pause_icon, &_frame_move_left_icon, &_frame_move_right_icon, &_frame_new_left_of_current_icon, &_frame_new_right_of_current_icon, &_frame_delete_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
             image->set_size_request(image->get_size());
 
+        _box.push_back(&_show_animation_preview_button);
+
         auto button_width = _play_pause_button.get_preferred_size().natural_size.x;
         auto separator_start = SeparatorLine();
-        //separator_start.set_size_request({button_width, 0});
+        separator_start.set_size_request({button_width, 0});
         separator_start.set_hexpand(false);
         _box.push_back(&separator_start);
 
@@ -612,10 +630,14 @@ namespace mousetrap
     void FrameView::ControlBar::on_frame_delete()
     {
         // TODO
-        ((BubbleLogArea*) state::bubble_log)->send_message("ESTAL ALIUE BALISUB LAWUEB LAW EBLAIWUE BLAWIU BIAWUB EIABE WLA", InfoMessageType::ERROR);
     }
 
     void FrameView::ControlBar::on_frame_make_keyframe_inbetween()
+    {
+        // TODO
+    }
+
+    void FrameView::ControlBar::on_show_animation_preview()
     {
         // TODO
     }

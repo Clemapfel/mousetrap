@@ -194,7 +194,7 @@ namespace mousetrap
             MenuModel _preview_size_submenu;
 
             Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
-            Label _preview_size_label = Label("Preview Size (px): ");
+            Label _preview_size_label = Label("AnimationPreview Size (px): ");
             SpinButton _preview_size_spin_button = SpinButton(2, 256, 1);
             static void on_preview_size_spin_button_value_changed(SpinButton*, LayerView* instance);
 
@@ -209,6 +209,8 @@ namespace mousetrap
             SeparatorLine _layer_rows_scrolled_window_spacer;
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
+
+            Tooltip _tooltip;
     };
 }
 
@@ -781,7 +783,34 @@ namespace mousetrap
         _set_layer_locked_action.add_shortcut(get_shortcut("set_layer_locked"));
         state::app->add_action(_set_layer_locked_action);
 
-        // menu
+        // tooltips
+
+        _tooltip.create_from("layer_view", state::tooltips_file, state::keybindings_file);
+        _header_menu_button.set_tooltip_widget(_tooltip);
+
+        auto layer_create_tooltip = state::tooltips_file->get_value("layer_view", "layer_create");
+        _layer_create_button.set_tooltip_text(layer_create_tooltip);
+
+        auto layer_delete_tooltip = state::tooltips_file->get_value("layer_view", "layer_delete");
+        _layer_delete_button.set_tooltip_text(layer_delete_tooltip);
+
+        auto layer_duplicate_tooltip = state::tooltips_file->get_value("layer_view", "layer_duplicate");
+        _layer_duplicate_button.set_tooltip_text(layer_duplicate_tooltip);
+
+        auto layer_merge_down_tooltip = state::tooltips_file->get_value("layer_view", "layer_merge_down");
+        _layer_merge_down_button.set_tooltip_text(layer_merge_down_tooltip);
+
+        auto layer_flatten_all_tooltip = state::tooltips_file->get_value("layer_view", "layer_flatten_all");
+        _layer_flatten_all_button.set_tooltip_text(layer_flatten_all_tooltip);
+
+        auto layer_move_up_tooltip = state::tooltips_file->get_value("layer_view", "layer_move_up");
+        _layer_move_up_button.set_tooltip_text(layer_move_up_tooltip);
+
+        auto layer_move_down_tooltip = state::tooltips_file->get_value("layer_view", "layer_move_down");
+        _layer_move_down_button.set_tooltip_text(layer_move_down_tooltip);
+
+        auto set_layer_visible_tooltip = state::tooltips_file->get_value("layer_view", "set_layer_visible");
+        auto set_layer_locked_tooltip = state::tooltips_file->get_value("layer_view", "set_layer_locked");
 
         _preview_size_spin_button.set_margin_start(state::margin_unit);
         _preview_size_spin_button.set_value(_preview_size);
@@ -793,26 +822,26 @@ namespace mousetrap
         auto settings_section = MenuModel();
         auto preview_size_submenu = MenuModel();
         preview_size_submenu.add_widget(&_preview_size_box);
-        settings_section.add_submenu("Preview Size...", &preview_size_submenu);
+        settings_section.add_submenu("AnimationPreview Size...", &preview_size_submenu);
 
         _menu.add_section("Settings", &settings_section);
 
         auto create_section = MenuModel();
-        create_section.add_action("New Layer", "layer_view.layer_create");
-        create_section.add_action("Delete Layer", "layer_view.layer_delete");
-        create_section.add_action("Duplicate Layer", "layer_view.layer_duplicate");
+        create_section.add_action(layer_create_tooltip, "layer_view.layer_create");
+        create_section.add_action(layer_delete_tooltip, "layer_view.layer_delete");
+        create_section.add_action(layer_duplicate_tooltip, "layer_view.layer_duplicate");
         _menu.add_section("Create / Delete", &create_section);
 
         auto merge_section = MenuModel();
-        merge_section.add_action("Merge Down", "layer_view.layer_merge_down");
-        merge_section.add_action("Flatten All", "layer_view.layer_flatten_all");
+        merge_section.add_action(layer_merge_down_tooltip, "layer_view.layer_merge_down");
+        merge_section.add_action(layer_flatten_all_tooltip, "layer_view.layer_flatten_all");
         _menu.add_section("Merge", &merge_section);
 
         auto other_section = MenuModel();
-        other_section.add_action("Move Layer Up", "layer_view.layer_move_up");
-        other_section.add_action("Move Layer Down", "layer_view.layer_move_down");
-        other_section.add_action("Show / Hide Layer", "layer_view.set_layer_visible");
-        other_section.add_action("Lock / Unlock Layer", "layer_view.set_layer_locked");
+        other_section.add_action(layer_move_up_tooltip, "layer_view.layer_move_up");
+        other_section.add_action(layer_move_down_tooltip, "layer_view.layer_move_down");
+        other_section.add_action(set_layer_visible_tooltip, "layer_view.set_layer_visible");
+        other_section.add_action(set_layer_locked_tooltip, "layer_view.set_layer_locked");
 
         _menu.add_section("Other", &other_section);
 

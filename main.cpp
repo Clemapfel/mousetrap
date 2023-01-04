@@ -39,7 +39,7 @@ void initialize_debug_layers()
         state::layers.back()->blend_mode = BlendMode::NORMAL;
     }
 
-    auto* preview = new Preview();
+    auto* preview = new AnimationPreview();
     for (auto* layer : state::layers)
     {
         layer->frames.clear();
@@ -175,6 +175,7 @@ static void activate(GtkApplication* app, void*)
     state::canvas = new Canvas();
     state::color_preview = new ColorPreview();
     state::bubble_log = new BubbleLogArea();
+    state::animation_preview = new AnimationPreview();
 
     auto* layer_view = state::layer_view->operator Widget*();
     auto* palette_view = state::palette_view->operator Widget*();
@@ -187,6 +188,7 @@ static void activate(GtkApplication* app, void*)
     auto* color_preview = state::color_preview->operator Widget*();
     auto* bubble_log = state::bubble_log->operator Widget*();
     auto* frame_view = state::frame_view->operator Widget*();
+    auto* preview = state::animation_preview->operator Widget*();
 
     auto* color_picker_window = new Window();
     color_picker_window->set_child(color_picker);
@@ -295,10 +297,6 @@ static void activate(GtkApplication* app, void*)
     state::main_window->grab_focus();
 
     validate_keybindings_file(state::keybindings_file);
-
-    // TODO
-    for (size_t i = 0; i < 9; ++i)
-        ((BubbleLogArea*) state::bubble_log)->send_message("test message asdlubalsudbalsiub al bsla blais ubadli b");
 }
 
 static void startup(GApplication*)

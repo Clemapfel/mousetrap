@@ -115,6 +115,7 @@ namespace mousetrap::state
     size_t current_frame = 0;
     size_t n_frames = 0;
 
+    AppComponent* animation_preview = nullptr;
     AppComponent* frame_view = nullptr;
 
     bool playback_active = false;

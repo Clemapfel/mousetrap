@@ -16,11 +16,11 @@
 
 namespace mousetrap
 {
-    class Preview : public AppComponent
+    class AnimationPreview : public AppComponent
     {
         public:
-            Preview();
-            ~Preview();
+            AnimationPreview();
+            ~AnimationPreview();
 
             operator Widget*() override;
             void update() override;
@@ -33,10 +33,10 @@ namespace mousetrap
             GLArea _transparency_tiling_area;
             GLArea _layer_area;
 
-            static void on_layer_area_realize(Widget*, Preview*);
-            static void on_transparency_area_realize(Widget*, Preview*);
+            static void on_layer_area_realize(Widget*, AnimationPreview*);
+            static void on_transparency_area_realize(Widget*, AnimationPreview*);
 
-            static void on_gl_area_resize(GLArea*, int, int, Preview*);
+            static void on_gl_area_resize(GLArea*, int, int, AnimationPreview*);
 
             Shape* _transparency_tiling_shape;
             Shader _transparency_tiling_shader;
@@ -49,7 +49,7 @@ namespace mousetrap
 
             ToggleButton _play_pause_button;
             Label _play_pause_label = Label("<tt>&#9654;</tt>");
-            static void on_play_pause_button_toggled(ToggleButton*, Preview*);
+            static void on_play_pause_button_toggled(ToggleButton*, AnimationPreview*);
 
             MenuButton _menu_button;
             Label _menu_button_label = Label("&#9881;");
@@ -72,46 +72,46 @@ namespace mousetrap
             SpinButton _fps_spin_button = SpinButton(1, 240, 1);
             Box _fps_box = Box(GTK_ORIENTATION_HORIZONTAL);
             SeparatorLine _fps_separator;
-            static void on_fps_spin_button_value_changed(SpinButton*, Preview*);
+            static void on_fps_spin_button_value_changed(SpinButton*, AnimationPreview*);
 
             Label _scale_label = Label("Scale: ");
             SpinButton _scale_spin_button = SpinButton(1, 16, 1);
             Box _scale_box = Box(GTK_ORIENTATION_HORIZONTAL);
             SeparatorLine _scale_separator;
-            static void on_scale_spin_button_value_changed(SpinButton*, Preview*);
+            static void on_scale_spin_button_value_changed(SpinButton*, AnimationPreview*);
 
             Label _show_frame_i_label = Label("Show Frame: ");
             CheckButton _show_frame_i_check_button;
             Box _show_frame_i_box = Box(GTK_ORIENTATION_HORIZONTAL);
             SeparatorLine _show_frame_i_separator;
-            static void on_show_frame_i_label_button_toggled(CheckButton*, Preview*);
+            static void on_show_frame_i_label_button_toggled(CheckButton*, AnimationPreview*);
 
             Box _toolbox_box = Box(GTK_ORIENTATION_HORIZONTAL);
             SeparatorLine _toolbox_separator;
             Revealer _toolbox_revealer;
 
             MotionEventController _motion_event_controller;
-            static void on_motion_enter(MotionEventController*, double x, double y, Preview* instance);
-            static void on_motion_leave(MotionEventController*, Preview* instance);
+            static void on_motion_enter(MotionEventController*, double x, double y, AnimationPreview* instance);
+            static void on_motion_leave(MotionEventController*, AnimationPreview* instance);
 
             KeyEventController _key_event_controller;
             bool _key_bindings_active = false; // cursor in bounds
-            static bool on_key_pressed(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, Preview* instance);
+            static bool on_key_pressed(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, AnimationPreview* instance);
 
             Overlay _main;
 
-            static gboolean on_tick_callback(GtkWidget* widget, GdkFrameClock* frame_clock, Preview* instance);
+            static gboolean on_tick_callback(GtkWidget* widget, GdkFrameClock* frame_clock, AnimationPreview* instance);
     };
 }
 
 namespace mousetrap
 {
-    Preview::~Preview()
+    AnimationPreview::~AnimationPreview()
     {
         delete _transparency_tiling_shape;
     }
 
-    void Preview::on_transparency_area_realize(Widget* widget, Preview* instance)
+    void AnimationPreview::on_transparency_area_realize(Widget* widget, AnimationPreview* instance)
     {
         auto* area = (GLArea*) widget;
         area->make_current();
@@ -132,7 +132,7 @@ namespace mousetrap
         instance->_transparency_tiling_area.queue_render();
     }
 
-    void Preview::on_layer_area_realize(Widget* widget, Preview* instance)
+    void AnimationPreview::on_layer_area_realize(Widget* widget, AnimationPreview* instance)
     {
         auto* area = (GLArea*) widget;
         area->make_current();
@@ -140,26 +140,26 @@ namespace mousetrap
         area->queue_render();
     }
 
-    void Preview::on_gl_area_resize(GLArea* area, int w, int h, Preview* instance)
+    void AnimationPreview::on_gl_area_resize(GLArea* area, int w, int h, AnimationPreview* instance)
     {
         instance->_canvas_size = {w, h};
         area->queue_render();
     }
 
-    void Preview::on_play_pause_button_toggled(ToggleButton* button, Preview* instance)
+    void AnimationPreview::on_play_pause_button_toggled(ToggleButton* button, AnimationPreview* instance)
     {
         instance->_is_unpaused = button->get_active();
 
         // TODO: reset frame to one being edited
     }
 
-    void Preview::on_fps_spin_button_value_changed(SpinButton* scale, Preview* instance)
+    void AnimationPreview::on_fps_spin_button_value_changed(SpinButton* scale, AnimationPreview* instance)
     {
         float value = scale->get_value();
         instance->_fps = value;
     }
 
-    void Preview::on_scale_spin_button_value_changed(SpinButton* scale, Preview* instance)
+    void AnimationPreview::on_scale_spin_button_value_changed(SpinButton* scale, AnimationPreview* instance)
     {
         float value = scale->get_value();
         instance->_layer_area.set_size_request(state::layer_resolution * Vector2ui(value));
@@ -168,32 +168,32 @@ namespace mousetrap
         instance->_scale = value;
     }
 
-    void Preview::on_show_frame_i_label_button_toggled(CheckButton* button, Preview* instance)
+    void AnimationPreview::on_show_frame_i_label_button_toggled(CheckButton* button, AnimationPreview* instance)
     {
         instance->_frame_i_visible = button->get_active();
         instance->_frame_label.set_visible(instance->_frame_i_visible);
     }
 
-    void Preview::on_motion_enter(MotionEventController*, double x, double y, Preview* instance)
+    void AnimationPreview::on_motion_enter(MotionEventController*, double x, double y, AnimationPreview* instance)
     {
         instance->_main.grab_focus();
         instance->_toolbox_revealer.set_revealed(true);
     }
 
-    void Preview::on_motion_leave(MotionEventController*, Preview* instance)
+    void AnimationPreview::on_motion_leave(MotionEventController*, AnimationPreview* instance)
     {
         if (not instance->_menu_popover.get_visible())
             instance->_toolbox_revealer.set_revealed(false);
     }
 
-    bool Preview::on_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, Preview* instance)
+    bool AnimationPreview::on_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, AnimationPreview* instance)
     {
         GdkEvent* event = self->get_current_event();
         throw std::invalid_argument("TODO");
         return FALSE;
     }
 
-    gboolean Preview::on_tick_callback(GtkWidget* widget, GdkFrameClock* frame_clock, Preview* instance)
+    gboolean AnimationPreview::on_tick_callback(GtkWidget* widget, GdkFrameClock* frame_clock, AnimationPreview* instance)
     {
         static auto previous = gdk_frame_clock_get_frame_time(frame_clock);
         auto current = gdk_frame_clock_get_frame_time(frame_clock);
@@ -222,7 +222,7 @@ namespace mousetrap
         return true;
     }
 
-    void Preview::set_frame(size_t i)
+    void AnimationPreview::set_frame(size_t i)
     {
         assert(i < state::n_frames);
 
@@ -243,7 +243,7 @@ namespace mousetrap
         _frame_label.set_text(label_text.str());
     }
 
-    Preview::Preview()
+    AnimationPreview::AnimationPreview()
     {
         _play_pause_button.set_tooltip_text("Play / Pause");
         _play_pause_button.connect_signal_toggled(on_play_pause_button_toggled, this);
@@ -286,7 +286,7 @@ namespace mousetrap
         _show_frame_i_box.push_back(&_show_frame_i_label);
         //_show_frame_i_box.push_back(&_show_frame_i_separator);
         _show_frame_i_box.push_back(&_show_frame_i_check_button);
-        _show_frame_i_box.set_tooltip_text("Show Frame Index in Preview");
+        _show_frame_i_box.set_tooltip_text("Show Frame Index in AnimationPreview");
 
         _menu_popover_box.push_back(&_fps_box);
         _menu_popover_box.push_back(&_scale_box);
@@ -351,12 +351,12 @@ namespace mousetrap
         _toolbox_revealer.set_revealed(false);
     }
 
-    Preview::operator Widget*()
+    AnimationPreview::operator Widget*()
     {
         return &_main;
     }
 
-    void Preview::update()
+    void AnimationPreview::update()
     {
         for (auto* shape : _layer_shapes)
             delete shape;

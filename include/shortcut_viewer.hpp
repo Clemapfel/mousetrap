@@ -23,7 +23,7 @@ namespace mousetrap
     namespace detail
     {
         std::string gesture_name_to_xml_code(ShortcutGestureName);
-        std::string accelerator_to_xml_code(const std::string& accelerator);
+        std::string sanitize_string(const std::string& accelerator);
     }
 
     class AcceleratorDisplay : public WidgetImplementation<GtkShortcutsShortcut>
@@ -75,7 +75,7 @@ namespace mousetrap
         return shortcut_type;
     }
 
-    std::string detail::accelerator_to_xml_code(const std::string& accelerator)
+    std::string detail::sanitize_string(const std::string& accelerator)
     {
         std::stringstream out;
         for (auto& c : accelerator)
@@ -104,7 +104,7 @@ namespace mousetrap
             std::stringstream str;
             str << "<interface>\n"
                 << "  <object class=\"GtkShortcutsShortcut\" id=\"object\">\n"
-                << "    <property name=\"accelerator\">" << detail::accelerator_to_xml_code(accelerator) << "</property>\n"
+                << "    <property name=\"accelerator\">" << detail::sanitize_string(accelerator) << "</property>\n"
                 << "    <property name=\"title\">" << description_parsed << "</property>\n"
                 << "  </object>\n"
                 << "</interface>" << std::endl;
@@ -165,8 +165,10 @@ namespace mousetrap
         str << "<interface>\n"
             << "<object class=\"GtkShortcutsSection\" id=\"object\">\n"
             << "<child>"
-            << "<object class=\"GtkShortcutsGroup\">\n"
-            << "<property name=\"title\">" << title << "</property>\n";
+            << "<object class=\"GtkShortcutsGroup\">\n";
+
+        if (not title.empty())
+            str << "<property name=\"title\">" << title << "</property>\n";
 
         for (auto& pair : pairs)
         {
@@ -180,8 +182,8 @@ namespace mousetrap
 
             str << "<child>\n"
                 << "  <object class=\"GtkShortcutsShortcut\">\n"
-                << "    <property name=\"title\" translatable=\"yes\">" << description_parsed << "</property>\n"
-                << "    <property name=\"accelerator\">" << detail::accelerator_to_xml_code(pair.first) << "</property>\n"
+                << "    <property name=\"title\" translatable=\"yes\">" << detail::sanitize_string(description_parsed) << "</property>\n"
+                << "    <property name=\"accelerator\">" << detail::sanitize_string(pair.first) << "</property>\n"
                 << "  </object>\n"
                 << "</child>\n";
         }
@@ -198,7 +200,10 @@ namespace mousetrap
         gtk_builder_add_from_string(builder, str.str().c_str(), str.str().size(), &error);
 
         if (error != nullptr)
+        {
             std::cerr << "[ERROR] In ShortcutGroupDisplay::ShortcutGroupDisplay: " << error->message << std::endl;
+            std::cerr << str.str() << std::endl;
+        }
 
         return GTK_SHORTCUTS_SECTION(gtk_builder_get_object(builder, "object"));
     }())
