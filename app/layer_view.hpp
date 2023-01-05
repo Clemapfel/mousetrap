@@ -210,6 +210,7 @@ namespace mousetrap
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
 
+            ShortcutController _shortcut_controller = ShortcutController(state::app);
             Tooltip _tooltip;
     };
 }
@@ -782,7 +783,10 @@ namespace mousetrap
         }, this);
         _set_layer_locked_action.add_shortcut(get_shortcut("set_layer_locked"));
         state::app->add_action(_set_layer_locked_action);
-
+        
+        for (auto* action : {&_layer_create_action, &_layer_delete_action, &_layer_duplicate_action, &_layer_merge_down_action, &_layer_flatten_all_action, &_layer_move_up_action, &_layer_move_down_action, &_set_layer_visible_action, &_set_layer_locked_action})
+            _shortcut_controller.add_action(action->get_id());
+        
         // tooltips
 
         _tooltip.create_from("layer_view", state::tooltips_file, state::keybindings_file);
@@ -861,6 +865,8 @@ namespace mousetrap
         _main.push_back(&_header_menu_button);
         _main.push_back(&_layer_rows_scrolled_window);
         _main.push_back(&_control_bar_box);
+
+        _main.add_controller(&_shortcut_controller);
     }
 
     void LayerView::on_layer_move_up_button_clicked(Button*, LayerView* instance)
@@ -928,36 +934,36 @@ namespace mousetrap
 
     void LayerView::on_layer_create()
     {
-        // TODO
+        std::cout << "[TODO] layer create" << std::endl;
     }
 
     void LayerView::on_layer_delete()
     {
-        // TODO
+        std::cout << "[TODO] layer delete" << std::endl;
     }
 
     void LayerView::on_layer_duplicate()
     {
-        // TODO
+        std::cout << "[TODO] layer duplicate" << std::endl;
     }
 
     void LayerView::on_layer_merge_down()
     {
-        // TODO
+        std::cout << "[TODO] layer merge down" << std::endl;
     }
 
     void LayerView::on_layer_flatten_all()
     {
-        // TODO
+        std::cout << "[TODO] flatten all" << std::endl;
     }
 
     void LayerView::on_layer_move_up()
     {
-        // TODO
+        std::cout << "[TODO] move up" << std::endl;
     }
 
     void LayerView::on_layer_move_down()
     {
-        // TODO
+        std::cout << "[TODO] move down" << std::endl;
     }
 }

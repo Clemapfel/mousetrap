@@ -84,6 +84,7 @@ namespace mousetrap
                         Frame frame;
                         Label frame_label;
                         Label layer_label;
+                        SeparatorLine layer_label_spacer;
                     };
 
                     std::vector<PreviewElement*> _preview_elements;
@@ -100,10 +101,10 @@ namespace mousetrap
 
                     FrameView* _owner;
 
-                    Button _show_animation_preview_button;
-                    ImageDisplay _show_animation_preview_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
-                    Action _show_animation_preview_action = Action("frame_view.show_animation_preview");
-                    void on_show_animation_preview();
+                    Button _toggle_onionskin_visible_button;
+                    ImageDisplay _toggle_onionskin_visible_icon = ImageDisplay(get_resource_path() + "icons/toggle_onionskin_visible.png");
+                    Action _toggle_onionskin_visible_action = Action("frame_view.toggle_onionskin_visible");
+                    void on_toggle_onionskin_visible();
 
                     Button _jump_to_start_button;
                     ImageDisplay _jump_to_start_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
@@ -320,7 +321,8 @@ namespace mousetrap
                 ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE),
                 Frame(),
                 Label(std::string("<tt>") + (_frame_i < 10 ? "00" : (_frame_i < 100 ? "0" : "")) + std::to_string(_frame_i) + "</tt>"),
-                Label(std::string("<tt><span size=\"120%\">") + (_frame_i < 10 ? "0" : "") + std::to_string(layer_i) + "</span></tt>")
+                Label(std::string("<tt><span size=\"120%\">") + (_frame_i < 10 ? "0" : "") + std::to_string(layer_i) + "</span></tt>"),
+                SeparatorLine()
             });
 
             element->frame_label.set_visible(false);
@@ -331,7 +333,9 @@ namespace mousetrap
             element->frame.set_child(element->preview);
             element->frame.set_label_widget(&element->frame_label);
 
-            element->wrapper.push_back(&element->layer_label);
+            element->layer_label_spacer.set_size_request({state::margin_unit / 10 * 4, 0});
+            element->wrapper.push_back(&element->layer_label_spacer);
+
             element->wrapper.push_back(&element->frame);
             _list_view.push_back(&element->wrapper);
         }
@@ -368,7 +372,10 @@ namespace mousetrap
     void FrameView::FrameColumn::set_is_first_frame(bool b)
     {
         for (auto& preview : _preview_elements)
+        {
+            preview->layer_label_spacer.set_visible(b);
             preview->layer_label.set_visible(b);
+        }
     }
 
     void FrameView::FrameColumn::set_thumbnail_size(size_t x)
@@ -401,12 +408,12 @@ namespace mousetrap
     {
         // ACTIONS
 
-        _show_animation_preview_action.set_do_function([](ControlBar* instance) {
-            instance->on_show_animation_preview();
+        _toggle_onionskin_visible_action.set_do_function([](ControlBar* instance) {
+            instance->on_toggle_onionskin_visible();
         }, this);
-        _show_animation_preview_action.add_shortcut(state::keybindings_file->get_value("frame_view", "show_animation_preview"));
-        state::app->add_action(_show_animation_preview_action);
-        _shortcut_controller.add_action(_show_animation_preview_action.get_id());
+        _toggle_onionskin_visible_action.add_shortcut(state::keybindings_file->get_value("frame_view", "toggle_onionskin_visible"));
+        state::app->add_action(_toggle_onionskin_visible_action);
+        _shortcut_controller.add_action(_toggle_onionskin_visible_action.get_id());
 
         _jump_to_start_action.set_do_function([](ControlBar* instance) {
             instance->on_jump_to_start();
@@ -486,9 +493,9 @@ namespace mousetrap
         _shortcut_controller.add_action(_frame_make_keyframe_inbetween_action.get_id());
 
         // GUI
-        _show_animation_preview_button.set_child(&_show_animation_preview_icon);
-        _show_animation_preview_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            instance->_show_animation_preview_action.activate();
+        _toggle_onionskin_visible_button.set_child(&_toggle_onionskin_visible_icon);
+        _toggle_onionskin_visible_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            instance->_toggle_onionskin_visible_action.activate();
         }, this);
 
         _jump_to_start_button.set_child(&_jump_to_start_icon);
@@ -548,9 +555,9 @@ namespace mousetrap
         }, this);
         
         // Tooltips
-        
-        auto show_animation_preview_tooltip = state::tooltips_file->get_value("frame_view", "show_animation_preview");
-        _show_animation_preview_button.set_tooltip_text(show_animation_preview_tooltip);
+
+        auto toggle_onionskin_visible_tooltip = state::tooltips_file->get_value("frame_view", "toggle_onionskin_visible");
+        _toggle_onionskin_visible_button.set_tooltip_text(toggle_onionskin_visible_tooltip);
 
         auto jump_to_start_tooltip = state::tooltips_file->get_value("frame_view", "jump_to_start");
         _jump_to_start_button.set_tooltip_text(jump_to_start_tooltip);
@@ -615,7 +622,7 @@ namespace mousetrap
         playback_section.add_action(go_to_previous_frame_tooltip, _go_to_previous_frame_action.get_id());
         playback_section.add_action(go_to_next_frame_tooltip, _go_to_next_frame_action.get_id());
         playback_section.add_action(play_pause_tooltip, _play_pause_action.get_id());
-        playback_section.add_action(show_animation_preview_tooltip, _show_animation_preview_action.get_id());
+        playback_section.add_action(toggle_onionskin_visible_tooltip, _toggle_onionskin_visible_action.get_id());
         _menu.add_section("Playback", &playback_section);
 
         auto create_section = MenuModel();
@@ -636,14 +643,14 @@ namespace mousetrap
         _menu_button.set_popover(&_popover_menu);
 
         // Layout
-        for (auto& image : {&_show_animation_preview_icon, &_jump_to_start_icon, &_jump_to_end_icon, &_go_to_previous_frame_icon, &_go_to_next_frame_icon, &_play_icon, &_pause_icon, &_frame_move_left_icon, &_frame_move_right_icon, &_frame_new_left_of_current_icon, &_frame_new_right_of_current_icon, &_frame_delete_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
+        for (auto& image : {&_toggle_onionskin_visible_icon, &_jump_to_start_icon, &_jump_to_end_icon, &_go_to_previous_frame_icon, &_go_to_next_frame_icon, &_play_icon, &_pause_icon, &_frame_move_left_icon, &_frame_move_right_icon, &_frame_new_left_of_current_icon, &_frame_new_right_of_current_icon, &_frame_delete_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
             image->set_size_request(image->get_size());
 
         auto button_width = _play_pause_button.get_preferred_size().natural_size.x;
         _menu_button.set_size_request({4 * button_width, 0});
 
         _box.push_back(&_menu_button);
-        _box.push_back(&_show_animation_preview_button);
+        _box.push_back(&_toggle_onionskin_visible_button);
 
         auto separator_start = SeparatorLine();
         separator_start.set_size_request({button_width, 0});
@@ -690,62 +697,62 @@ namespace mousetrap
 
     void FrameView::ControlBar::on_jump_to_start()
     {
-        // TODO
+        std::cout << "[TODO] animation jump to start" << std::endl;
     }
 
     void FrameView::ControlBar::on_jump_to_end()
     {
-        // TODO
+        std::cout << "[TODO] animation jump to end" << std::endl;
     }
 
     void FrameView::ControlBar::on_go_to_previous_frame()
     {
-        // TODO
+        std::cout << "[TODO] animation go to previous frame" << std::endl;
     }
 
     void FrameView::ControlBar::on_go_to_next_frame()
     {
-        // TODO
+        std::cout << "[TODO] animation go to next frame" << std::endl;
     }
 
     void FrameView::ControlBar::on_play_pause()
     {
-        // TODO
+        std::cout << "[TODO] animation play pause" << std::endl;
     }
 
     void FrameView::ControlBar::on_frame_move_left()
     {
-        // TODO
+        std::cout << "[TODO] animation frame move left" << std::endl;
     }
 
     void FrameView::ControlBar::on_frame_move_right()
     {
-        // TODO
+        std::cout << "[TODO] animation frame move right" << std::endl;
     }
 
     void FrameView::ControlBar::on_frame_new_left_of_current()
     {
-        // TODO
+        std::cout << "[TODO] frame new left" << std::endl;
     }
 
     void FrameView::ControlBar::on_frame_new_right_of_current()
     {
-        // TODO
+        std::cout << "[TODO] frame new right" << std::endl;
     }
 
     void FrameView::ControlBar::on_frame_delete()
     {
-        // TODO
+        std::cout << "[TODO] frame delete" << std::endl;
     }
 
     void FrameView::ControlBar::on_frame_make_keyframe_inbetween()
     {
-        // TODO
+        std::cout << "[TODO] frame keyframe inbetween" << std::endl;
     }
 
-    void FrameView::ControlBar::on_show_animation_preview()
+    void FrameView::ControlBar::on_toggle_onionskin_visible()
     {
-        // TODO
+        std::cout << "[TODO] show animation preview" << std::endl;
     }
 
     // ###
