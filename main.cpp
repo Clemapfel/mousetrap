@@ -14,7 +14,7 @@
 #include <app/color_picker.hpp>
 #include <app/widget_container.hpp>
 #include <app/global_state.hpp>
-#include <app/preview.hpp>
+#include <app/animation_preview.hpp>
 #include <app/layer_view.hpp>
 #include <app/verbose_color_picker.hpp>
 #include <app/menubar.hpp>
@@ -188,7 +188,11 @@ static void activate(GtkApplication* app, void*)
     auto* color_preview = state::color_preview->operator Widget*();
     auto* bubble_log = state::bubble_log->operator Widget*();
     auto* frame_view = state::frame_view->operator Widget*();
-    auto* preview = state::animation_preview->operator Widget*();
+    auto* animation_preview = state::animation_preview->operator Widget*();
+
+    // TODO
+    canvas->set_opacity(0);
+    // TODO
 
     auto* color_picker_window = new Window();
     color_picker_window->set_child(color_picker);
@@ -270,9 +274,13 @@ static void activate(GtkApplication* app, void*)
     left_and_center_and_frame_view_paned.set_start_child(&left_and_center_column_paned);
     left_and_center_and_frame_view_paned.set_end_child(frame_view);
 
+    auto right_column_paned_top = Paned(GTK_ORIENTATION_VERTICAL);
+    right_column_paned_top.set_start_child(animation_preview);
+    right_column_paned_top.set_end_child(brush_options);
+
     auto right_column_paned = Paned(GTK_ORIENTATION_VERTICAL);
-    right_column_paned.set_start_child(brush_options);
-    right_column_paned.set_end_child(layer_view);
+    right_column_paned.set_start_child(&right_column_paned_top);
+    //right_column_paned.set_end_child(layer_view);
 
     auto main_paned = Paned(GTK_ORIENTATION_HORIZONTAL);
     main_paned.set_start_child_shrinkable(false);

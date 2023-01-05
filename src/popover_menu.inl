@@ -11,7 +11,13 @@ namespace mousetrap
                                                                     gtk_popover_menu_new_from_model_full(model->operator GMenuModel*(), GTK_POPOVER_MENU_NESTED)
     ))
     {
-        for (auto& pair : model->get_widgets())
+        _model = model;
+        refresh_widgets();
+    }
+
+    void PopoverMenu::refresh_widgets()
+    {
+        for (auto& pair : _model->get_widgets())
         {
             if (not gtk_popover_menu_add_child(get_native(), pair.second->operator GtkWidget*(), pair.first.c_str()))
                 std::cerr << "[WARNING] In PopoverMenu::PopoverMenu: Failed to add Widget "

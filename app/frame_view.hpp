@@ -327,6 +327,7 @@ namespace mousetrap
 
             element->frame_label.set_visible(false);
             element->layer_label.set_visible(false);
+            element->layer_label_spacer.set_visible(false);
             element->layer_label.set_margin_horizontal(state::margin_unit);
 
             element->frame.set_label_align(0.5);
@@ -637,7 +638,7 @@ namespace mousetrap
         other_section.add_action(frame_make_keyframe_inbetween_tooltip, _frame_make_keyframe_inbetween_action.get_id());
         _menu.add_section("Other", &other_section);
 
-        _popover_menu = PopoverMenu(&_menu);
+        _popover_menu.refresh_widgets();
         _menu_button.set_child(&_menu_button_label);
         _menu_button.set_tooltip_widget(_tooltip);
         _menu_button.set_popover(&_popover_menu);

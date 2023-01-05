@@ -858,7 +858,7 @@ namespace mousetrap
         _header_menu_button_label.set_size_request({32, 32});
         _header_menu_button.set_child(&_header_menu_button_label);
 
-        _header_menu_button_popover = PopoverMenu(&_menu);
+        _header_menu_button_popover.refresh_widgets();
         _header_menu_button.set_popover(&_header_menu_button_popover);
 
         _main.set_homogeneous(false);

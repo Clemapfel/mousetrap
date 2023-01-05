@@ -20,6 +20,10 @@ namespace mousetrap
             };
 
             PopoverMenu(MenuModel*, SubmenuLayout = SLIDING);
+            void refresh_widgets();
+
+        private:
+            MenuModel* _model;
     };
 }
 
