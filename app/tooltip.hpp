@@ -18,11 +18,11 @@ namespace mousetrap
             operator Widget*();
 
             /// \brief reads tooltips.ini for `title` and `descriptions`, as well as keybindings.ini
-            void create_from(const std::string& group_name, ConfigFile* tooltip_file, ConfigFile* keybindings_file);
+            void create_from(const std::string& group_name, KeyFile* tooltip_file, KeyFile* keybindings_file);
 
             void set_title(const std::string&);
             void set_description(const std::string&);
-            void create_shortcut_information_from(const std::string& group, ConfigFile* file);
+            void create_shortcut_information_from(const std::string& group, KeyFile* file);
             void add_shortcut(const std::string& shortcut, const std::string& description);
 
         private:
@@ -73,7 +73,7 @@ namespace mousetrap
         return &_window;
     }
 
-    void Tooltip::create_from(const std::string& group_name, ConfigFile* tooltip_file, ConfigFile* keybindings_file)
+    void Tooltip::create_from(const std::string& group_name, KeyFile* tooltip_file, KeyFile* keybindings_file)
     {
         if (tooltip_file != nullptr and tooltip_file->has_group(group_name))
         {
@@ -102,7 +102,7 @@ namespace mousetrap
         reformat();
     }
 
-    void Tooltip::create_shortcut_information_from(const std::string& group, ConfigFile* file)
+    void Tooltip::create_shortcut_information_from(const std::string& group, KeyFile* file)
     {
         _shortcut_information.create_from_group(group, file);
         reformat();

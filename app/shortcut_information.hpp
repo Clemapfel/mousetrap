@@ -22,7 +22,7 @@ namespace mousetrap
             void set_title(const std::string&);
             void add_shortcut(const std::string& accelerator, const std::string& description);
 
-            void create_from_group(const std::string& group, ConfigFile* file);
+            void create_from_group(const std::string& group, KeyFile* file);
             size_t get_n_shortcuts();
 
         private:
@@ -74,7 +74,7 @@ namespace mousetrap
         update();
     }
 
-    void ShortcutInformation::create_from_group(const std::string& group, ConfigFile* file)
+    void ShortcutInformation::create_from_group(const std::string& group, KeyFile* file)
     {
         auto keys = file->get_keys(group);
         _accelerators_and_descriptions.clear();

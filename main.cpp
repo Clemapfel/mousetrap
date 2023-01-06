@@ -70,7 +70,7 @@ void initialize_debug_layers()
     }
 }
 
-void validate_keybindings_file(ConfigFile* file)
+void validate_keybindings_file(KeyFile* file)
 {
     std::map<std::string, std::vector<std::string>> map;
 
@@ -148,9 +148,9 @@ void validate_keybindings_file(ConfigFile* file)
 
 static void activate(GtkApplication* app, void*)
 {
-    state::settings_file = new ConfigFile(get_resource_path() + "settings.ini");
-    state::keybindings_file = new ConfigFile(get_resource_path() + "keybindings.ini");
-    state::tooltips_file = new ConfigFile(get_resource_path() + "tooltips.ini");
+    state::settings_file = new KeyFile(get_resource_path() + "settings.ini");
+    state::keybindings_file = new KeyFile(get_resource_path() + "keybindings.ini");
+    state::tooltips_file = new KeyFile(get_resource_path() + "tooltips.ini");
 
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));

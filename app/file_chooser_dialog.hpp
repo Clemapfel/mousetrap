@@ -373,7 +373,7 @@ namespace mousetrap
         }, this);
 
         // use tempfile instead of keybindings.ini because these cannot be changed, they are hardcoded into GtkFileChooserWidget
-        auto temp_file = ConfigFile();
+        auto temp_file = KeyFile();
         temp_file.load_from_memory(R"(
 [file_chooser_dialog]
 

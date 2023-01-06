@@ -9,5 +9,10 @@
 
 namespace mousetrap
 {
+    KeyFile export_state_to_file()
+    {
+        KeyFile out;
 
+        out.set
+    }
 }

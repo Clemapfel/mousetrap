@@ -70,7 +70,7 @@ namespace mousetrap
 
     bool Palette::load_from(const std::string& path)
     {
-        auto file = ConfigFile();
+        auto file = KeyFile();
         _colors.clear();
 
         std::string error_reason;
@@ -139,7 +139,7 @@ namespace mousetrap
 
     bool Palette::save_to(const std::string& path)
     {
-        auto file = ConfigFile();
+        auto file = KeyFile();
         for (auto& pair : _colors)
         {
             auto& color = pair.second;

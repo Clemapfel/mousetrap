@@ -9,7 +9,7 @@
 
 namespace mousetrap::state
 {
-    ConfigFile* settings_file = nullptr;
-    ConfigFile* keybindings_file = nullptr;
-    ConfigFile* tooltips_file = nullptr;
+    KeyFile* settings_file = nullptr;
+    KeyFile* keybindings_file = nullptr;
+    KeyFile* tooltips_file = nullptr;
 }

@@ -11,15 +11,15 @@
 
 namespace mousetrap
 {
-    class ConfigFile
+    class KeyFile
     {
         public:
             using KeyID = std::string;
             using GroupKey = std::string;
 
-            ConfigFile();
-            ConfigFile(const std::string& path);
-            ~ConfigFile();
+            KeyFile();
+            KeyFile(const std::string& path);
+            ~KeyFile();
 
             bool load_from_file(const std::string& path);
             bool load_from_memory(const std::string& file);
