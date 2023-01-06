@@ -24,6 +24,32 @@ namespace mousetrap
         g_key_file_free(_native);
     }
 
+    KeyFile::operator std::string()
+    {
+        GError* error_maybe = nullptr;
+        size_t length;
+
+        auto* data = g_key_file_to_data(_native, &length, &error_maybe);
+        if (error_maybe != nullptr)
+        {
+            std::cerr << "[ERROR] In KeyFile::operator std::string(): " << error_maybe->message << std::endl;
+            return std::string();
+        }
+
+        std::string out;
+        out.reserve(length);
+
+        for (size_t i = 0; i < length; ++i)
+            out.push_back(data[i]);
+
+        return out;
+    }
+
+    std::string KeyFile::as_string()
+    {
+        return this->operator std::string();
+    }
+
     bool KeyFile::load_from_file(const std::string& path)
     {
         GError* error = nullptr;
@@ -43,21 +69,21 @@ namespace mousetrap
         return true;
     }
 
-    bool KeyFile::load_from_memory(const std::string& file)
+    bool KeyFile::load_from_string(const std::string& file)
     {
         GError* error = nullptr;
 
         g_key_file_load_from_data(
-                _native,
-                file.c_str(),
-                file.size(),
-                static_cast<GKeyFileFlags>(G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS),
-                &error
+            _native,
+            file.c_str(),
+            file.size(),
+            static_cast<GKeyFileFlags>(G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS),
+            &error
         );
 
         if (error != nullptr)
         {
-            std::cerr << "[ERROR] In KeyFile::load_from_memory: Unable to load from string\n" << file << "\n\n" << error->message << std::endl;
+            std::cerr << "[ERROR] In KeyFile::load_from_string: Unable to load from string\n" << file << "\n\n" << error->message << std::endl;
             return false;
         }
 
@@ -438,6 +464,38 @@ namespace mousetrap
         );
     }
 
+    template<>
+    Image KeyFile::get_value_as(GroupKey group, KeyID key)
+    {
+        Image out;
+
+        auto serialized = get_value_as<std::vector<float>>(group, key);
+        if (not serialized.size() > (4 + 2) and (serialized.size() - 2) % 4 == 0)
+        {
+            std::cerr << "[ERROR] In KeyFile::get_value_as<Image>: Unable to retrieve value for key `" << key << "` in group `" << group << ": Expected float vector of 4-mers but number of elements is not divisible by four";
+            return out;
+        }
+
+        auto width = serialized.at(0);
+        auto height = serialized.at(1);
+        out.create(width, height);
+
+        std::vector<RGBA> colors;
+
+        for (size_t i = 2; i < serialized.size(); i += 4)
+        {
+            RGBA color;
+            color.r = serialized.at(i + 0);
+            color.g = serialized.at(i + 1);
+            color.b = serialized.at(i + 2);
+            color.a = serialized.at(i + 3);
+
+            out.set_pixel((i - 2) / 4, color);
+        }
+
+        return out;
+    }
+
     void KeyFile::set_value(GroupKey group, KeyID key, const std::string& value)
     {
         g_key_file_set_value(_native, group.c_str(), key.c_str(), value.c_str());
@@ -513,5 +571,29 @@ namespace mousetrap
     void KeyFile::set_value_as(GroupKey group, KeyID key, RGBA rgba)
     {
         set_value_as<std::vector<float>>(group, key, {rgba.r, rgba.g, rgba.b, rgba.a});
+    }
+
+    template<>
+    void KeyFile::set_value_as(GroupKey group, KeyID key, Image image)
+    {
+        std::vector<float> serialized;
+        auto n_pixels = image.get_size().x * image.get_size().y;
+        serialized.reserve(2 + n_pixels);
+
+        serialized.push_back((float) image.get_size().x);
+        serialized.push_back((float) image.get_size().y);
+
+        for (size_t i = 0; i < n_pixels; ++i)
+        {
+            auto color = image.get_pixel(i);
+            serialized.push_back(color.r);
+            serialized.push_back(color.g);
+            serialized.push_back(color.b);
+            serialized.push_back(color.a);
+
+            std::cout << color.r << "\t" << color.g << "\t" << color.b << "\t" << color.a << "\t" << std::endl;
+        }
+
+        set_value_as<std::vector<float>>(group, key, serialized);
     }
 }

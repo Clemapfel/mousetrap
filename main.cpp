@@ -68,6 +68,19 @@ void initialize_debug_layers()
 
         state::n_frames = layer->frames.size();
     }
+
+    auto& frame = state::layers.at(0)->frames.at(0);
+    auto* image = frame.image;
+    auto key_file = KeyFile();
+    key_file.set_value_as<Image>("image", "test", *image);
+    std::cout << key_file.as_string() << std::endl;
+
+    auto image_out = key_file.get_value_as<Image>("image", "test");
+    for (size_t x = 0; x < image_out.get_size().x; x++)
+        for (size_t y = 0; y < image_out.get_size().y; y++)
+            image->set_pixel(x, y, image_out.get_pixel(x, y));
+
+    frame.update_texture();
 }
 
 void validate_keybindings_file(KeyFile* file)

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <include/config_file.hpp>
+#include <include/key_file.hpp>
 
 namespace mousetrap::state
 {

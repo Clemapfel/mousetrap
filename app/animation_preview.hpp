@@ -73,7 +73,7 @@ namespace mousetrap
 
             // playback
 
-            bool _playback_active = true;
+            bool _playback_active = state::settings_file->get_value_as<bool>("animation_preview", "playback_active");
             size_t _current_frame = 0;
             Time _elapsed = seconds(0);
 

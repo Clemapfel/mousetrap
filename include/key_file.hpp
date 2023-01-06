@@ -21,10 +21,13 @@ namespace mousetrap
             KeyFile(const std::string& path);
             ~KeyFile();
 
+            operator std::string();
+
             bool load_from_file(const std::string& path);
-            bool load_from_memory(const std::string& file);
+            bool load_from_string(const std::string& file);
 
             bool save_to_file(const std::string& path);
+            std::string as_string();
 
             std::vector<GroupKey> get_groups() const;
             std::vector<KeyID> get_keys(GroupKey) const;
@@ -58,4 +61,4 @@ namespace mousetrap
     };
 }
 
-#include <src/config_file.inl>
+#include <src/key_file.inl>

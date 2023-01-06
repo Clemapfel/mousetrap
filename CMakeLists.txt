@@ -225,8 +225,8 @@ add_library(mousetrap SHARED
 
     include/file.hpp
 
-    include/config_file.hpp
-    src/config_file.inl
+        include/key_file.hpp
+        src/key_file.inl
 
     include/switch.hpp
         include/info_message.hpp

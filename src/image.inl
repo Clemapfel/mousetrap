@@ -139,6 +139,12 @@ namespace mousetrap
     {
         i *= 4;
 
+        if (i >= _data.size())
+        {
+            std::cerr << "[ERROR] In Image::set_pixel: index " << i / 4 << " out of bounds for an image of with " << _size.x * _size.y << " pixels" << std::endl;
+            return;
+        }
+
         _data.at(i) = color.r;
         _data.at(i+1) = color.g;
         _data.at(i+2) = color.b;
@@ -151,6 +157,12 @@ namespace mousetrap
 
         i *= 4;
 
+        if (i >= _data.size())
+        {
+            std::cerr << "[ERROR] In Image::set_pixel: index " << i / 4 << " out of bounds for an image of with " << _size.x * _size.y << " pixels" << std::endl;
+            RGBA(0, 0, 0, 0);
+        }
+
         _data.at(i) = color.r;
         _data.at(i+1) = color.g;
         _data.at(i+2) = color.b;
@@ -159,6 +171,8 @@ namespace mousetrap
 
     RGBA Image::get_pixel(size_t i) const
     {
+        i *= 4;
+
         return RGBA
         (
             _data.at(i),

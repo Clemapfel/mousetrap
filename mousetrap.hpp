@@ -70,7 +70,7 @@
 #include <include/shortcut_controller.hpp>
 #include <include/file_chooser.hpp>
 #include <include/file.hpp>
-#include <include/config_file.hpp>
+#include <include/key_file.hpp>
 #include <include/switch.hpp>
 #include <include/info_message.hpp>
 #include <include/fixed.hpp>

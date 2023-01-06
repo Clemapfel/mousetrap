@@ -37,13 +37,14 @@ namespace mousetrap::state
 
     HSVA primary_color = RGBA(1, 0, 1, 1).operator HSVA();
     HSVA secondary_color = RGBA(1, 1, 0, 1).operator HSVA();
-    
-    size_t color_quantization = 1000;
 
     AppComponent* color_picker = nullptr;
     AppComponent* color_swapper = nullptr;
     AppComponent* verbose_color_picker = nullptr;
     AppComponent* palette_view = nullptr;
+
+    Palette palette;
+    PaletteSortMode palette_sort_mode = PaletteSortMode::NONE;
 
     HSVA preview_color_current = primary_color;
     HSVA preview_color_previous = primary_color;
@@ -107,8 +108,6 @@ namespace mousetrap::state
         if (layer_view != nullptr)
             layer_view->update();
     }
-
-
 
     // ### ANIMATION ###################################
 

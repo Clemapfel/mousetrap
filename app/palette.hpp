@@ -14,6 +14,17 @@
 
 namespace mousetrap
 {
+    enum class PaletteSortMode
+    {
+        NONE,
+        BY_HUE,
+        BY_VALUE,
+        BY_SATURATION
+    };
+
+    std::string palette_sort_mode_to_string(PaletteSortMode mode);
+    PaletteSortMode palette_sort_mdoe_from_string(const std::string);
+
     class Palette
     {
         static inline const float truncate_float_after = 10e4;
@@ -35,6 +46,8 @@ namespace mousetrap
             std::vector<HSVA> get_colors_by_value();
             std::vector<HSVA> get_colors_by_saturation();
 
+            const std::map<size_t, HSVA>& data();
+
         private:
             std::string _name = "palette";
             std::map<size_t, HSVA> _colors;
@@ -43,10 +56,34 @@ namespace mousetrap
 
 // ###
 
-#include <include/config_file.hpp>
+#include <include/key_file.hpp>
 
 namespace mousetrap
 {
+    std::string palette_sort_mode_to_string(PaletteSortMode mode)
+    {
+        if (mode == PaletteSortMode::NONE)
+            return "NONE";
+        else if (mode == PaletteSortMode::BY_HUE)
+            return "BY_HUE";
+        else if (mode == PaletteSortMode::BY_SATURATION)
+            return "BY_SATURATION";
+        else if (mode == PaletteSortMode::BY_VALUE)
+            return "BY_VALUE";
+    }
+
+    PaletteSortMode palette_sort_mode_from_string(const std::string& in)
+    {
+        if (in == "BY_HUE" or in == "by_hue")
+            return PaletteSortMode::BY_HUE;
+        else if (in == "BY_SATURATION" or in == "by_saturation")
+            return PaletteSortMode::BY_SATURATION;
+        else if (in == "BY_VALUE" or in == "by_value")
+            return PaletteSortMode::BY_VALUE;
+        else
+            return PaletteSortMode::NONE;
+    }
+
     Palette::Palette(const std::vector<HSVA>& vec)
     {
         for (size_t i = 0; i < vec.size(); ++i)

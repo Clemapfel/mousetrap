@@ -39,17 +39,4 @@ namespace mousetrap
    
     static inline const ToolID GRADIENT_DITHERED = "gradient_dithered";
     static inline const ToolID GRADIENT_SMOOTH = "gradient_smooth";
-    
-    enum class BrushType
-    {
-        SQUARE,
-        CIRCLE,
-        ELLIPSE_VERTICAL,
-        ELLIPSE_HORIZONTAL,
-        RECTANGLE_VERTICAL,
-        RECTANGLE_HORIZONTAL,
-        LINE_VERTICAL,
-        LINE_HORIZONTAL,
-        OTHER
-    };
 }

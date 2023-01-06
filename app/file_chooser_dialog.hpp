@@ -374,7 +374,7 @@ namespace mousetrap
 
         // use tempfile instead of keybindings.ini because these cannot be changed, they are hardcoded into GtkFileChooserWidget
         auto temp_file = KeyFile();
-        temp_file.load_from_memory(R"(
+        temp_file.load_from_string(R"(
 [file_chooser_dialog]
 
 # Toggle show location popup

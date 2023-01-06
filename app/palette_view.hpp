@@ -16,14 +16,6 @@
 
 namespace mousetrap
 {
-    enum class PaletteSortMode
-    {
-        NONE,
-        BY_HUE,
-        BY_VALUE,
-        BY_SATURATION
-    };
-
     class PaletteView : public AppComponent
     {
         public:
@@ -43,8 +35,6 @@ namespace mousetrap
             bool palette_locked = state::settings_file->get_value_as<bool>("palette_view", "palette_locked");
             float tile_size = state::settings_file->get_value_as<float>("palette_view", "tile_size");
 
-            Palette palette;
-            PaletteSortMode sort_mode = PaletteSortMode::NONE;
             void update_from_palette();
 
             class ColorTile
@@ -474,12 +464,13 @@ namespace mousetrap
         for (size_t i = 0; i < n_steps; ++i)
             colors.push_back(HSVA(0, 0, i / float(n_steps), 1));
 
-        palette = Palette(colors);
+        state::palette = Palette(colors);
         update_from_palette();
     }
 
     void PaletteView::load_from_file(const std::string& path)
     {
+        auto& palette = state::palette;
         auto palette_backup = palette;
         if (not palette.load_from(path))
         {
@@ -492,6 +483,7 @@ namespace mousetrap
 
     void PaletteView::save_to_file(const std::string& path)
     {
+        auto& palette = state::palette;
         if (palette.save_to(path))
             ((BubbleLogArea*) state::bubble_log)->send_message("Saved current palette as \"" + path + "\"");
         else
@@ -518,6 +510,9 @@ namespace mousetrap
 
         for (auto* tile : _color_tiles)
             tile->set_color(HSVA(0, 0, 0, 1));
+
+        auto& palette = state::palette;
+        auto sort_mode = state::palette_sort_mode;
 
         for (size_t i = 0; palette.get_n_colors() > _color_tiles.size() and i < palette.get_n_colors() - _color_tiles.size(); ++i)
             _color_tiles.emplace_back(new ColorTile(this, HSVA(0, 0, 0, 1)));
@@ -651,7 +646,7 @@ namespace mousetrap
 
         _on_save_as_default_action.set_do_function([](PaletteView* instance)
         {
-            if (instance->palette.save_to(get_resource_path() + "default.palette"))
+            if (state::palette.save_to(get_resource_path() + "default.palette"))
                 ((BubbleLogArea*) state::bubble_log)->send_message("Current palette saved as default");
             else
                 ((BubbleLogArea*) state::bubble_log)->send_message("Unable to save current palette as default");
@@ -662,22 +657,22 @@ namespace mousetrap
         // Action:: Sort
 
         _on_sort_by_default_action.set_do_function([](PaletteView* instance){
-            instance->sort_mode = PaletteSortMode::NONE;
+            state::palette_sort_mode = PaletteSortMode::NONE;
             instance->update_from_palette();
         }, this);
 
         _on_sort_by_hue_action.set_do_function([](PaletteView* instance){
-            instance->sort_mode = PaletteSortMode::BY_HUE;
+            state::palette_sort_mode = PaletteSortMode::BY_HUE;
             instance->update_from_palette();
         }, this);
 
         _on_sort_by_value_action.set_do_function([](PaletteView* instance){
-            instance->sort_mode = PaletteSortMode::BY_VALUE;
+            state::palette_sort_mode = PaletteSortMode::BY_VALUE;
             instance->update_from_palette();
         }, this);
 
         _on_sort_by_saturation_action.set_do_function([](PaletteView* instance){
-            instance->sort_mode = PaletteSortMode::BY_SATURATION;
+            state::palette_sort_mode = PaletteSortMode::BY_SATURATION;
             instance->update_from_palette();
         }, this);
 
