@@ -162,6 +162,7 @@ namespace mousetrap
         _fps_spacer.set_opacity(0);
         _fps_box.push_back(&_fps_spacer);
         _fps_box.push_back(&_fps_spin_button);
+        _fps_box.set_tooltip_text(state::tooltips_file->get_value("animation_preview", "fps_setting"));
 
         auto fps_submenu = MenuModel();
         fps_submenu.add_widget(&_fps_box);
@@ -173,6 +174,7 @@ namespace mousetrap
         _scale_factor_spacer.set_opacity(0);
         _scale_factor_box.push_back(&_scale_factor_spacer);
         _scale_factor_box.push_back(&_scale_factor_spin_button);
+        _scale_factor_box.set_tooltip_text(state::tooltips_file->get_value("animation_preview", "scale_factor_setting"));
 
         auto scale_factor_submenu = MenuModel();
         scale_factor_submenu.add_widget(&_scale_factor_box);
@@ -184,6 +186,7 @@ namespace mousetrap
         _background_visible_spacer.set_opacity(0);
         _background_visible_box.push_back(&_background_visible_spacer);
         _background_visible_box.push_back(&_background_visible_switch);
+        _background_visible_box.set_tooltip_text(state::tooltips_file->get_value("animation_preview", "show_background_setting"));
 
         auto background_submenu = MenuModel();
         background_submenu.add_widget(&_background_visible_box);

@@ -262,7 +262,7 @@ add_library(app STATIC
     app/widget_container.hpp
     app/canvas.hpp
     app/app_component.hpp
-    app/verbose_color_picker.hpp app/menubar.hpp app/canvas.hpp app/app_layout.hpp app/textured_spacer.hpp app/palette_view.hpp app/color_preview.hpp app/palette_view.hpp app/bubble_log_area.hpp app/canvas.hpp app/canvas/transparency_tiling_layer.hpp app/canvas/grid_layer.hpp app/canvas/layers_layer.hpp app/canvas/brush_cursor_layer.hpp app/file_chooser_dialog.hpp app/shortcut_information.hpp app/tooltip.hpp app/brush.hpp app/settings_files.hpp app/canvas/control_layer.hpp app/canvas/shape_tool_layer.hpp app/canvas/tool_behavior.hpp app/algorithms.hpp app/canvas/selection_layer.hpp app/canvas/line_tool_layer.hpp app/layer_view.hpp app/frame_view.hpp)
+    app/verbose_color_picker.hpp app/menubar.hpp app/canvas.hpp app/app_layout.hpp app/textured_spacer.hpp app/palette_view.hpp app/color_preview.hpp app/palette_view.hpp app/bubble_log_area.hpp app/canvas.hpp app/canvas/transparency_tiling_layer.hpp app/canvas/grid_layer.hpp app/canvas/layers_layer.hpp app/canvas/brush_cursor_layer.hpp app/file_chooser_dialog.hpp app/shortcut_information.hpp app/tooltip.hpp app/brush.hpp app/settings_files.hpp app/canvas/control_layer.hpp app/canvas/shape_tool_layer.hpp app/canvas/tool_behavior.hpp app/algorithms.hpp app/canvas/selection_layer.hpp app/canvas/line_tool_layer.hpp app/layer_view.hpp app/frame_view.hpp app/save_file.hpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES
