@@ -6,6 +6,11 @@
 
 #include <mousetrap.hpp>
 #include <app/global_state.hpp>
+#include <app/animation_preview.hpp>
+#include <app/brush_options.hpp>
+#include <app/frame_view.hpp>
+#include <app/layer_view.hpp>
+#include <app/palette_view.hpp>
 
 namespace mousetrap
 {
@@ -32,13 +37,65 @@ namespace mousetrap
         current_section = "tools";
 
         set("active_tool", state::active_tool);
+
+        current_section = "brushes";
+
         set("current_brush", state::current_brush->get_name());
         set("brush_size", state::brush_size);
         set("brush_opacity", state::brush_opacity);
 
         for (auto* brush : state::brushes)
-        {
+            set(brush->get_name(), brush->get_base_image());
 
+        current_section = "animation_preview";
+
+        auto* animation_preview = (AnimationPreview*) state::animation_preview;
+        set("scale_factor", animation_preview->get_scale_factor());
+        set("fps", animation_preview->get_fps());
+        set("background_visible", animation_preview->get_background_visible());
+
+        current_section = "brush_options";
+
+        set("preview_size", ((BrushOptions*) state::brush_options)->get_preview_size());
+
+        current_section = "frame_view";
+
+        set("preview_size", ((FrameView*) state::frame_view)->get_preview_size());
+
+        current_section = "layer_view";
+
+        set("preview_size", ((LayerView*) state::layer_view)->get_preview_size());
+
+        current_section = "palette_view";
+
+        set("preview_size", ((PaletteView*) state::palette_view)->get_preview_size());
+        set("palette_locked", ((PaletteView*) state::palette_view)->get_palette_locked());
+
+        current_section = "layers";
+
+        set("current_layer", state::current_layer);
+        set("current_frame", state::current_frame);
+
+        set("n_layers", state::layers.size());
+        set("n_frames", state::n_frames);
+
+        for (size_t layer_i = 0; layer_i < state::layers.size(); ++layer_i)
+        {
+            auto* layer = state::layers.at(layer_i);
+            auto prefix = std::to_string(layer_i);
+
+            set(prefix + "_name", layer->name);
+            set(prefix + "_is_locked", layer->is_locked);
+            set(prefix + "_is_visible", layer->is_visible);
+            set(prefix + "_blend_mode", blend_mode_to_string(layer->blend_mode));
+            set(prefix + "_opacity", layer->opacity);
+
+            prefix += "_frame_";
+            for (size_t frame_i = 0; frame_i < state::n_frames; ++frame_i)
+            {
+                set(prefix + std::to_string(frame_i) + "_is_keyframe", layer->frames.at(frame_i).is_keyframe);
+                set(prefix + std::to_string(frame_i) + "_data", layer->frames.at(frame_i).image);
+            }
         }
     }
 }

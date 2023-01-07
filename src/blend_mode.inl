@@ -52,4 +52,44 @@ namespace mousetrap
             glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
         }
     }
+
+    std::string blend_mode_to_string(BlendMode mode)
+    {
+        if (mode == NONE)
+            return "NONE";
+        else if (mode == NORMAL)
+            return "NORMAL";
+        else if (mode == ADD)
+            return "ADD";
+        else if (mode == SUBTRACT)
+            return "SUBTRACT";
+        else if (mode == REVERSE_SUBTRACT)
+            return "REVERSE_SUBTRACT";
+        else if (mode == MULTIPLY)
+            return "MULTIPLY";
+        else if (mode == MIN)
+            return "MIN";
+        else if (mode == MAX)
+            return "MAX";
+    }
+
+    BlendMode blend_mode_from_string(const std::string& str)
+    {
+        if (str == "NORMAL" or str == "normal")
+            return NORMAL;
+        else if (str == "ADD" or str == "add")
+            return ADD;
+        else if (str == "SUBTRACT" or str == "subtract")
+            return SUBTRACT;
+        else if (str == "REVERSE_SUBTRACT" or str == "reverse_subtract")
+            return REVERSE_SUBTRACT;
+        else if (str == "MULTIPLY" or str == "multiply")
+            return MULTIPLY;
+        else if (str == "MIN" or str == "min")
+            return MIN;
+        else if (str == "MAX" or str == "max")
+            return MAX;
+        else
+            return NONE;
+    }
 }

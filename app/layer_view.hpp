@@ -17,6 +17,9 @@ namespace mousetrap
             
             void update() override;
             operator Widget*() override;
+
+            size_t get_preview_size() const;
+            void set_preview_size(size_t);
             
         private:
             class LayerPreview
@@ -190,7 +193,7 @@ namespace mousetrap
             MenuModel _menu;
             PopoverMenu _header_menu_button_popover = PopoverMenu(&_menu);
 
-            size_t _preview_size = state::settings_file->get_value_as<int>("layer_view", "layer_preview_thumbnail_size");
+            size_t _preview_size = state::settings_file->get_value_as<int>("layer_view", "layer_preview_size");
             MenuModel _preview_size_submenu;
 
             Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
@@ -904,13 +907,22 @@ namespace mousetrap
         instance->on_layer_flatten_all();
     }
 
+    void LayerView::set_preview_size(size_t v)
+    {
+        _preview_size = v;
+
+        for (auto& row : _layer_rows)
+            row.set_preview_size(_preview_size);
+    }
+
+    size_t LayerView::get_preview_size() const
+    {
+        return _preview_size;
+    }
+
     void LayerView::on_preview_size_spin_button_value_changed(SpinButton* scale, LayerView* instance)
     {
-        auto v = scale->get_value();
-        instance->_preview_size = v;
-
-        for (auto& row : instance->_layer_rows)
-            row.set_preview_size(instance->_preview_size);
+        instance->set_preview_size(scale->get_value());
     }
 
     LayerView::operator Widget*()

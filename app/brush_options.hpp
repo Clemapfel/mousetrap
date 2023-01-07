@@ -27,6 +27,9 @@ namespace mousetrap
             void reload_default_brushes();
             void select_brush(size_t);
 
+            void set_preview_size(size_t);
+            size_t get_preview_size() const;
+
         private:
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
             Box _content_box = Box(GTK_ORIENTATION_VERTICAL);
@@ -35,15 +38,15 @@ namespace mousetrap
 
             // settings
             MenuModel _menu;
-            MenuModel _tile_size_submenu;
+            MenuModel _preview_size_submenu;
             PopoverMenu _popover_menu = PopoverMenu(&_menu);
 
-            size_t _tile_size = state::settings_file->get_value_as<size_t>("brush_options", "brush_icon_tile_size");
+            size_t _preview_size = state::settings_file->get_value_as<size_t>("brush_options", "brush_icon_preview_size");
 
-            Box _tile_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
-            Label _tile_size_label = Label("Tile Size (px): ");
-            SpinButton _tile_size_spin_button = SpinButton(2, 256, 1);
-            static void on_tile_size_spin_button_value_changed(SpinButton*, BrushOptions* instance);
+            Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Label _preview_size_label = Label("Preview Size (px): ");
+            SpinButton _preview_size_spin_button = SpinButton(2, 256, 1);
+            static void on_preview_size_spin_button_value_changed(SpinButton*, BrushOptions* instance);
 
             MenuButton _menu_button;
             Label _menu_button_label = Label("Brush Options");
@@ -83,7 +86,7 @@ namespace mousetrap
                     Brush* get_brush();
                     operator Widget*();
 
-                    void update_tile_size();
+                    void update_preview_size();
                     Vector2ui get_texture_size();
 
                 private:
@@ -196,12 +199,12 @@ namespace mousetrap
         _brush_shape_window_frame.set_margin_horizontal(state::margin_unit);
         _brush_shape_window_frame.set_margin_vertical(state::margin_unit);
 
-        _tile_size_spin_button.set_margin_start(state::margin_unit);
-        _tile_size_spin_button.set_value(_tile_size);
-        _tile_size_spin_button.connect_signal_value_changed(on_tile_size_spin_button_value_changed, this);
-        _tile_size_box.push_back(&_tile_size_label);
-        _tile_size_box.push_back(&_tile_size_spin_button);
-        _tile_size_box.set_margin(state::margin_unit);
+        _preview_size_spin_button.set_margin_start(state::margin_unit);
+        _preview_size_spin_button.connect_signal_value_changed(on_preview_size_spin_button_value_changed, this);
+        _preview_size_spin_button.set_value(_preview_size);
+        _preview_size_box.push_back(&_preview_size_label);
+        _preview_size_box.push_back(&_preview_size_spin_button);
+        _preview_size_box.set_margin(state::margin_unit);
 
         _reload_default_brushes_action.set_do_function([](BrushOptions* instance) {
             state::reload_brushes();
@@ -260,9 +263,9 @@ namespace mousetrap
 
         auto settings_section = MenuModel();
 
-        auto tile_size_menu = MenuModel();
-        tile_size_menu.add_widget(&_tile_size_box);
-        settings_section.add_submenu("Preview Size...", &tile_size_menu);
+        auto preview_size_menu = MenuModel();
+        preview_size_menu.add_widget(&_preview_size_box);
+        settings_section.add_submenu("Preview Size...", &preview_size_menu);
 
         auto brush_section = MenuModel();
         brush_section.add_action("Add...", "brush_options.add_brush");
@@ -400,12 +403,22 @@ namespace mousetrap
         state::update_canvas();
     }
 
-    void BrushOptions::on_tile_size_spin_button_value_changed(SpinButton* scale, BrushOptions* instance)
+    void BrushOptions::on_preview_size_spin_button_value_changed(SpinButton* scale, BrushOptions* instance)
     {
-        instance->_tile_size = scale->get_value();
-        for (auto* tile : instance->_brush_shapes)
-            tile->update_tile_size();
+        instance->set_preview_size(scale->get_value());
     };
+
+    void BrushOptions::set_preview_size(size_t v)
+    {
+        _preview_size = v;
+        for (auto* tile : _brush_shapes)
+            tile->update_preview_size();
+    }
+
+    size_t BrushOptions::get_preview_size() const
+    {
+        return _preview_size;
+    }
 
     BrushOptions::BrushShapeIcon::BrushShapeIcon(BrushOptions* owner)
         : _owner(owner)
@@ -422,7 +435,7 @@ namespace mousetrap
         _size_label.set_align(GTK_ALIGN_END);
         _overlay.add_overlay(&_size_label);
 
-        update_tile_size();
+        update_preview_size();
     }
 
     BrushOptions::BrushShapeIcon::~BrushShapeIcon()
@@ -482,9 +495,9 @@ namespace mousetrap
         return _brush->get_texture()->get_size();
     }
 
-    void BrushOptions::BrushShapeIcon::update_tile_size()
+    void BrushOptions::BrushShapeIcon::update_preview_size()
     {
-        _frame.set_size_request(Vector2f(_owner->_tile_size));
+        _frame.set_size_request(Vector2f(_owner->_preview_size));
     }
 
     Brush* BrushOptions::BrushShapeIcon::get_brush()

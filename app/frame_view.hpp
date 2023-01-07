@@ -18,6 +18,9 @@ namespace mousetrap
             void update() override;
             operator Widget*() override;
 
+            size_t get_preview_size() const;
+            void set_preview_size(size_t);
+
         private:
             class FramePreview
             {
@@ -30,7 +33,7 @@ namespace mousetrap
                     void set_layer(Layer*);
                     void set_frame(size_t);
                     void set_is_inbetween(bool);
-                    void set_thumbnail_size(size_t);
+                    void set_preview_size(size_t);
 
                 private:
                     FrameView* _owner;
@@ -53,7 +56,7 @@ namespace mousetrap
                     Overlay _inbetween_label_overlay;
             };
 
-            size_t _thumbnail_size = state::settings_file->get_value_as<int>("frame_view", "frame_preview_thumbnail_size");
+            size_t _preview_size = state::settings_file->get_value_as<int>("frame_view", "frame_preview_size");
 
             class FrameColumn
             {
@@ -68,7 +71,7 @@ namespace mousetrap
                     void select_layer(size_t i);
 
                     void set_is_first_frame(bool);
-                    void set_thumbnail_size(size_t);
+                    void set_preview_size(size_t);
 
                 private:
                     FrameView* _owner;
@@ -112,7 +115,7 @@ namespace mousetrap
                     void on_jump_to_start();
 
                     Button _jump_to_end_button;
-                    ImageDisplay _jump_to_end_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
+                    ImageDisplay _jump_to_end_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_end.png");
                     Action _jump_to_end_action = Action("frame_view.jump_to_end");
                     void on_jump_to_end();
 
@@ -163,7 +166,7 @@ namespace mousetrap
                     Action _frame_make_keyframe_inbetween_action = Action("frame_view.frame_make_keyframe_inbetween");
                     void on_frame_make_keyframe_inbetween();
 
-                    size_t _preview_size = state::settings_file->get_value_as<int>("layer_view", "layer_preview_thumbnail_size");
+                    size_t _preview_size = state::settings_file->get_value_as<int>("layer_view", "layer_preview_preview_size");
                     MenuModel _preview_size_submenu;
 
                     Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
@@ -211,14 +214,14 @@ namespace mousetrap
         _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);
 
-        set_thumbnail_size(owner->_thumbnail_size);
+        set_preview_size(owner->_preview_size);
         _inbetween_label_overlay.set_child(&_area);
         _inbetween_label_overlay.add_overlay(&_inbetween_label);
 
         set_is_inbetween(false);
     }
 
-    void FrameView::FramePreview::set_thumbnail_size(size_t x)
+    void FrameView::FramePreview::set_preview_size(size_t x)
     {
         float width = (state::layer_resolution.y / state::layer_resolution.x) * x;
         _area.set_size_request({width, x});
@@ -259,7 +262,7 @@ namespace mousetrap
 
         _layer_shape->set_texture(_layer->frames.at(_frame_i).texture);
         _layer_shape->set_color(RGBA(1, 1, 1, _layer->opacity));
-        set_thumbnail_size(_owner->_thumbnail_size);
+        set_preview_size(_owner->_preview_size);
         _area.queue_render();
     }
 
@@ -379,10 +382,10 @@ namespace mousetrap
         }
     }
 
-    void FrameView::FrameColumn::set_thumbnail_size(size_t x)
+    void FrameView::FrameColumn::set_preview_size(size_t x)
     {
         for (auto* preview : _preview_elements)
-            preview->preview.set_thumbnail_size(x);
+            preview->preview.set_preview_size(x);
     }
 
     void FrameView::FrameColumn::on_selection_changed(SelectionModel*, size_t i, size_t n_items,
@@ -690,10 +693,7 @@ namespace mousetrap
 
     void FrameView::ControlBar::on_preview_size_spin_button_value_changed(SpinButton* scale, ControlBar* instance)
     {
-        instance->_owner->_thumbnail_size = scale->get_value();
-
-        for (auto* column : instance->_owner->_frame_columns)
-            column->set_thumbnail_size(instance->_owner->_thumbnail_size);
+        instance->_owner->set_preview_size(scale->get_value());
     }
 
     void FrameView::ControlBar::on_jump_to_start()
@@ -807,5 +807,18 @@ namespace mousetrap
     {
         // override ui changing if user clicks 1px border between columns
         instance->set_selection(instance->_selected_layer_i, i);
+    }
+
+    void FrameView::set_preview_size(size_t x)
+    {
+        _preview_size = x;
+
+        for (auto* column : _frame_columns)
+            column->set_preview_size(_preview_size);
+    }
+
+    size_t FrameView::get_preview_size() const
+    {
+        return _preview_size;
     }
 }

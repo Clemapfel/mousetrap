@@ -18,6 +18,15 @@ namespace mousetrap
             operator Widget*() override;
             void update() override;
 
+            size_t get_scale_factor() const;
+            void set_scale_factor(size_t);
+
+            float get_fps() const;
+            void set_fps(float);
+
+            bool get_background_visible() const;
+            void set_background_visible(bool);
+
         private:
             // render
             GLArea _area;
@@ -42,7 +51,6 @@ namespace mousetrap
             Label _scale_factor_label = Label("Scale Factor: ");
             Box _scale_factor_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
-            void set_scale_factor(size_t);
             static void on_scale_factor_spin_button_value_changed(SpinButton* spin_button, AnimationPreview*);
 
             // fps
@@ -55,20 +63,18 @@ namespace mousetrap
             Label _fps_label = Label("Scale Factor: ");
             Box _fps_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
-            void set_fps(float);
             static void on_fps_spin_button_value_changed(SpinButton* spin_button, AnimationPreview*);
             void on_tick_callback(FrameClock&);
 
             // background
 
-            size_t _background_visible = state::settings_file->get_value_as<bool>("animation_preview", "background_visible");
+            bool _background_visible = state::settings_file->get_value_as<bool>("animation_preview", "background_visible");
 
             Switch _background_visible_switch;
             Label _background_visible_label = Label("Show Background: ");
             SeparatorLine _background_visible_spacer;
             Box _background_visible_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
-            void set_background_visible(bool);
             static void on_background_visible_switch_state_set(Switch*, bool, AnimationPreview*);
 
             // playback
@@ -322,6 +328,11 @@ namespace mousetrap
         _area.queue_render();
     }
 
+    size_t AnimationPreview::get_scale_factor() const
+    {
+        return _scale_factor;
+    }
+
     void AnimationPreview::on_fps_spin_button_value_changed(SpinButton* spin_button, AnimationPreview* instance)
     {
         instance->set_fps(spin_button->get_value());
@@ -330,6 +341,11 @@ namespace mousetrap
     void AnimationPreview::set_fps(float value)
     {
         _fps = value;
+    }
+
+    float AnimationPreview::get_fps() const
+    {
+        return _fps;
     }
 
     void AnimationPreview::on_background_visible_switch_state_set(Switch* s, bool state, AnimationPreview* instance)
@@ -346,6 +362,11 @@ namespace mousetrap
             _transparency_tiling_shape->set_visible(b);
 
         _area.queue_render();
+    }
+
+    bool AnimationPreview::get_background_visible() const
+    {
+        return _background_visible;
     }
 
     void AnimationPreview::on_tick_callback(FrameClock& clock)

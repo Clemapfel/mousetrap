@@ -25,6 +25,12 @@ namespace mousetrap
 
             void select(size_t i);
 
+            void set_preview_size(size_t);
+            size_t get_preview_size() const;
+
+            void set_palette_locked(bool);
+            bool get_palette_locked() const;
+
         protected:
             void load_from_file(const std::string& path);
             void load_as_debug();
@@ -32,8 +38,8 @@ namespace mousetrap
             void save_to_file(const std::string& path);
 
         private:
-            bool palette_locked = state::settings_file->get_value_as<bool>("palette_view", "palette_locked");
-            float tile_size = state::settings_file->get_value_as<float>("palette_view", "tile_size");
+            bool _palette_locked = state::settings_file->get_value_as<bool>("palette_view", "palette_locked");
+            size_t _preview_size = state::settings_file->get_value_as<size_t>("palette_view", "color_preview_size");
 
             void update_from_palette();
 
@@ -91,14 +97,14 @@ namespace mousetrap
                     Switch _palette_locked_switch;
                     static void on_palette_locked_switch_state_set(Switch*, bool, PaletteControlBar* instance);
 
-                    Box _tile_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
-                    Label _tile_size_label = Label("Tile Size (px): ");
-                    SeparatorLine _tile_size_spacer;
-                    SpinButton _tile_size_scale = SpinButton(2, 512, 1);
-                    static void on_tile_size_scale_value_changed(SpinButton*, PaletteControlBar* instance);
+                    Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                    Label _preview_size_label = Label("Preview Size (px): ");
+                    SeparatorLine _preview_size_spacer;
+                    SpinButton _preview_size_scale = SpinButton(2, 512, 1);
+                    static void on_preview_size_scale_value_changed(SpinButton*, PaletteControlBar* instance);
 
                     void update_palette_locked();
-                    void update_tile_size_changed();
+                    void update_preview_size_changed();
 
                     Label _menu_button_label = Label("Palette");
                     MenuButton _menu_button;
@@ -167,8 +173,8 @@ namespace mousetrap
         _color_area.connect_signal_realize(on_color_area_realize, this);
         _selection_frame_area.connect_signal_realize(on_selection_frame_realize, this);
 
-        _color_area.set_size_request(Vector2f(owner->tile_size));
-        _selection_frame_area.set_size_request(Vector2f(owner->tile_size));
+        _color_area.set_size_request(Vector2f(owner->_preview_size));
+        _selection_frame_area.set_size_request(Vector2f(owner->_preview_size));
 
         _overlay.set_child(&_color_area);
         _overlay.add_overlay(&_selection_frame_area);
@@ -178,7 +184,7 @@ namespace mousetrap
         operator Widget*()->set_cursor(GtkCursorType::POINTER);
 
         set_color(color);
-        set_size(_owner->tile_size);
+        set_size(_owner->_preview_size);
     }
 
     void PaletteView::ColorTile::set_color(HSVA color)
@@ -275,7 +281,7 @@ namespace mousetrap
 
     void PaletteView::PaletteControlBar::update_palette_locked()
     {
-        if (_owner->palette_locked)
+        if (_owner->_palette_locked)
         {
             _palette_not_locked_button.set_child(&_palette_locked_icon);
             _palette_not_locked_button.set_tooltip_text(state::tooltips_file->get_value("palette_view.control_bar", "palette_editing_not_active"));
@@ -287,39 +293,35 @@ namespace mousetrap
         }
 
         _palette_not_locked_button.set_signal_toggled_blocked(true);
-        _palette_not_locked_button.set_active(not _owner->palette_locked);
+        _palette_not_locked_button.set_active(not _owner->_palette_locked);
         _palette_not_locked_button.set_signal_toggled_blocked(false);
 
         _palette_locked_switch.set_signal_state_set_blocked(true);
-        _palette_locked_switch.set_active(_owner->palette_locked);
-        _palette_locked_switch.set_state(_owner->palette_locked ? Switch::State::ON : Switch::State::OFF);
+        _palette_locked_switch.set_active(_owner->_palette_locked);
+        _palette_locked_switch.set_state(_owner->_palette_locked ? Switch::State::ON : Switch::State::OFF);
         _palette_locked_switch.set_signal_state_set_blocked(false);
     }
 
-    void PaletteView::PaletteControlBar::update_tile_size_changed()
+    void PaletteView::PaletteControlBar::update_preview_size_changed()
     {
-        _tile_size_scale.set_signal_value_changed_blocked(true);
-        _tile_size_scale.set_value(_owner->tile_size);
-        _tile_size_scale.set_signal_value_changed_blocked(false);
+        _preview_size_scale.set_signal_value_changed_blocked(true);
+        _preview_size_scale.set_value(_owner->_preview_size);
+        _preview_size_scale.set_signal_value_changed_blocked(false);
     }
 
     void PaletteView::PaletteControlBar::on_palette_not_locked_button_toggled(ToggleButton* button, PaletteControlBar* instance)
     {
-        instance->_owner->palette_locked = not button->get_active();
-        instance->update_palette_locked();
+        instance->_owner->set_palette_locked(not button->get_active());
     }
 
     void PaletteView::PaletteControlBar::on_palette_locked_switch_state_set(Switch* button, bool value, PaletteControlBar* instance)
     {
-        instance->_owner->palette_locked = button->get_active();
-        instance->update_palette_locked();
+        instance->_owner->set_palette_locked(button->get_active());
     }
 
-    void PaletteView::PaletteControlBar::on_tile_size_scale_value_changed(SpinButton* scale, PaletteControlBar* instance)
+    void PaletteView::PaletteControlBar::on_preview_size_scale_value_changed(SpinButton* scale, PaletteControlBar* instance)
     {
-        int value = scale->get_value();
-        for (auto* tile : instance->_owner->_color_tiles)
-            tile->set_size(value);
+        instance->_owner->set_preview_size( scale->get_value());
     }
 
     PaletteView::PaletteControlBar::operator Widget*()
@@ -330,21 +332,21 @@ namespace mousetrap
     PaletteView::PaletteControlBar::PaletteControlBar(PaletteView* owner)
             : _owner(owner)
     {
-        _palette_not_locked_button.set_active(not owner->palette_locked);
-        _palette_not_locked_button.set_child(owner->palette_locked ? &_palette_locked_icon : &_palette_not_locked_icon);
+        _palette_not_locked_button.set_active(not owner->_palette_locked);
+        _palette_not_locked_button.set_child(owner->_palette_locked ? &_palette_locked_icon : &_palette_not_locked_icon);
         _palette_not_locked_button.connect_signal_toggled(on_palette_not_locked_button_toggled, this);
 
         _palette_locked_icon.set_size_request(_palette_locked_icon.get_size());
         _palette_not_locked_icon.set_size_request(_palette_not_locked_icon.get_size());
 
-        _tile_size_label.set_hexpand(false);
-        _tile_size_label.set_halign(GTK_ALIGN_START);
-        _tile_size_scale.set_hexpand(true);
-        _tile_size_scale.connect_signal_value_changed(on_tile_size_scale_value_changed, this);
+        _preview_size_label.set_hexpand(false);
+        _preview_size_label.set_halign(GTK_ALIGN_START);
+        _preview_size_scale.set_hexpand(true);
+        _preview_size_scale.connect_signal_value_changed(on_preview_size_scale_value_changed, this);
 
-        _tile_size_box.push_back(&_tile_size_label);
-        _tile_size_box.push_back(&_tile_size_spacer);
-        _tile_size_box.push_back(&_tile_size_scale);
+        _preview_size_box.push_back(&_preview_size_label);
+        _preview_size_box.push_back(&_preview_size_spacer);
+        _preview_size_box.push_back(&_preview_size_scale);
 
         _palette_locked_label.set_hexpand(false);
         _palette_locked_label.set_halign(GTK_ALIGN_START);
@@ -358,15 +360,15 @@ namespace mousetrap
         _palette_locked_box.push_back(&_palette_locked_switch);
 
         _palette_locked_box.set_tooltip_text(state::tooltips_file->get_value_as<std::string>("palette_view.control_bar", "palette_editing_menu_item"));
-        _tile_size_box.set_tooltip_text(state::tooltips_file->get_value_as<std::string>("palette_view.control_bar", "tile_size_menu_item"));
+        _preview_size_box.set_tooltip_text(state::tooltips_file->get_value_as<std::string>("palette_view.control_bar", "preview_size_menu_item"));
 
         update_palette_locked();
-        update_tile_size_changed();
+        update_preview_size_changed();
 
-        for (auto* box : {&_palette_locked_box, &_tile_size_box})
+        for (auto* box : {&_palette_locked_box, &_preview_size_box})
             box->set_margin(state::margin_unit);
 
-        for (auto* spacer : {&_palette_locked_spacer, &_tile_size_spacer})
+        for (auto* spacer : {&_palette_locked_spacer, &_preview_size_spacer})
         {
             spacer->set_opacity(0);
             spacer->set_size_request({state::margin_unit, 0});
@@ -374,13 +376,13 @@ namespace mousetrap
 
         auto settings_section = MenuModel();
 
-        auto tile_size_submenu = MenuModel();
-        tile_size_submenu.add_widget(&_tile_size_box);
+        auto preview_size_submenu = MenuModel();
+        preview_size_submenu.add_widget(&_preview_size_box);
 
         auto palette_locked_submenu = MenuModel();
         palette_locked_submenu.add_widget(&_palette_locked_box);
 
-        settings_section.add_submenu("Tile Size...", &tile_size_submenu);
+        settings_section.add_submenu("Preview Size...", &preview_size_submenu);
         settings_section.add_submenu("Editing...", &palette_locked_submenu);
         _menu.add_section("Settings", &settings_section);
 
@@ -420,7 +422,7 @@ namespace mousetrap
     void PaletteView::PaletteControlBar::update()
     {
         update_palette_locked();
-        update_tile_size_changed();
+        update_preview_size_changed();
     }
 
     // PALETTE VIEW
@@ -729,7 +731,7 @@ namespace mousetrap
 
         _palette_control_bar.update();
 
-        if (palette_locked)
+        if (_palette_locked)
         {
             _color_tile_view.get_selection_model()->unselect_all();
 
@@ -757,5 +759,28 @@ namespace mousetrap
 
         _color_tile_view.get_selection_model()->select(i);
         on_color_tile_view_selection_model_selection_changed(_color_tile_view.get_selection_model(), i, 1, this);
+    }
+
+    void PaletteView::set_preview_size(size_t x)
+    {
+        _preview_size = x;
+        for (auto* tile : _color_tiles)
+            tile->set_size(x);
+    }
+
+    size_t PaletteView::get_preview_size() const
+    {
+        return _preview_size;
+    }
+
+    void PaletteView::set_palette_locked(bool b)
+    {
+        _palette_locked = b;
+        _palette_control_bar.update();
+    }
+
+    bool PaletteView::get_palette_locked() const
+    {
+        return _palette_locked;
     }
 }

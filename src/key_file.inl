@@ -590,8 +590,6 @@ namespace mousetrap
             serialized.push_back(color.g);
             serialized.push_back(color.b);
             serialized.push_back(color.a);
-
-            std::cout << color.r << "\t" << color.g << "\t" << color.b << "\t" << color.a << "\t" << std::endl;
         }
 
         set_value_as<std::vector<float>>(group, key, serialized);
