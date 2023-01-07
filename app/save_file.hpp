@@ -43,6 +43,7 @@ namespace mousetrap
         set("current_brush", state::current_brush->get_name());
         set("brush_size", state::brush_size);
         set("brush_opacity", state::brush_opacity);
+        set("n_brushes", state::brushes.size());
 
         for (size_t i = 0; i < state::brushes.size(); ++i)
         {
@@ -57,6 +58,8 @@ namespace mousetrap
         set("scale_factor", animation_preview->get_scale_factor());
         set("fps", animation_preview->get_fps());
         set("background_visible", animation_preview->get_background_visible());
+        set("onionskin_visible", state::onionskin_visible);
+        set("onionskin_n_layers", state::onionskin_n_layers);
 
         current_section = "brush_options";
 
@@ -98,12 +101,13 @@ namespace mousetrap
             for (size_t frame_i = 0; frame_i < state::n_frames; ++frame_i)
             {
                 set(prefix + std::to_string(frame_i) + "_is_keyframe", layer->frames.at(frame_i).is_keyframe);
-                //set(prefix + std::to_string(frame_i) + "_data", *layer->frames.at(frame_i).image);
+                set(prefix + std::to_string(frame_i) + "_data", *layer->frames.at(frame_i).image);
             }
         }
 
         return out;
     }
 
-
+    void import_state_from_file(KeyFile& file)
+    {}
 }

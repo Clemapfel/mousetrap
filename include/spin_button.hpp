@@ -17,6 +17,12 @@ namespace mousetrap
             void set_value(float);
             float get_value();
 
+            void set_lower_limit(float);
+            float get_lower_limit();
+
+            void set_upper_limit(float);
+            float get_upper_limit();
+
             void set_digits(size_t);
             void set_wrap(bool);
     };

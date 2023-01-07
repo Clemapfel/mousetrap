@@ -104,10 +104,17 @@ namespace mousetrap
 
                     FrameView* _owner;
 
-                    Button _toggle_onionskin_visible_button;
+                    ToggleButton _toggle_onionskin_visible_button;
                     ImageDisplay _toggle_onionskin_visible_icon = ImageDisplay(get_resource_path() + "icons/toggle_onionskin_visible.png");
+                    SpinButton _onionskin_n_layers_spin_button = SpinButton(0, 99, 1);
+                    static void on_onionskin_spin_button_value_changed(SpinButton*, ControlBar* instance);
+
                     Action _toggle_onionskin_visible_action = Action("frame_view.toggle_onionskin_visible");
                     void on_toggle_onionskin_visible();
+                    void set_n_onionskin_layers(size_t);
+                    
+                    Action _increase_n_onionskin_layers_action = Action("frame_view.increase_n_onionskin_layers");
+                    Action _decrease_n_onionskin_layers_action = Action("frame_view.decrease_n_onionskin_layers");
 
                     Button _jump_to_start_button;
                     ImageDisplay _jump_to_start_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");
@@ -418,7 +425,21 @@ namespace mousetrap
         _toggle_onionskin_visible_action.add_shortcut(state::keybindings_file->get_value("frame_view", "toggle_onionskin_visible"));
         state::app->add_action(_toggle_onionskin_visible_action);
         _shortcut_controller.add_action(_toggle_onionskin_visible_action.get_id());
+        
+        _increase_n_onionskin_layers_action.set_do_function([](ControlBar* instance) -> void {
+            auto current = state::onionskin_n_layers;
+            instance->set_n_onionskin_layers(current + 1);
+        }, this);
+        state::app->add_action(_increase_n_onionskin_layers_action);
+        _shortcut_controller.add_action(_increase_n_onionskin_layers_action.get_id());
 
+        _decrease_n_onionskin_layers_action.set_do_function([](ControlBar* instance) -> void {
+            auto current = state::onionskin_n_layers;
+            instance->set_n_onionskin_layers(current - 1);
+        }, this);
+        state::app->add_action(_decrease_n_onionskin_layers_action);
+        _shortcut_controller.add_action(_decrease_n_onionskin_layers_action.get_id());
+        
         _jump_to_start_action.set_do_function([](ControlBar* instance) {
             instance->on_jump_to_start();
         }, this);
@@ -497,10 +518,14 @@ namespace mousetrap
         _shortcut_controller.add_action(_frame_make_keyframe_inbetween_action.get_id());
 
         // GUI
+        _toggle_onionskin_visible_button.set_active(state::onionskin_visible);
         _toggle_onionskin_visible_button.set_child(&_toggle_onionskin_visible_icon);
-        _toggle_onionskin_visible_button.connect_signal_clicked([](Button*, ControlBar* instance){
+        _toggle_onionskin_visible_button.connect_signal_toggled([](ToggleButton*, ControlBar* instance){
             instance->_toggle_onionskin_visible_action.activate();
         }, this);
+
+        _onionskin_n_layers_spin_button.set_value(state::onionskin_n_layers);
+        _onionskin_n_layers_spin_button.connect_signal_value_changed(on_onionskin_spin_button_value_changed, this);
 
         _jump_to_start_button.set_child(&_jump_to_start_icon);
         _jump_to_start_button.connect_signal_clicked([](Button*, ControlBar* instance){
@@ -562,6 +587,9 @@ namespace mousetrap
 
         auto toggle_onionskin_visible_tooltip = state::tooltips_file->get_value("frame_view", "toggle_onionskin_visible");
         _toggle_onionskin_visible_button.set_tooltip_text(toggle_onionskin_visible_tooltip);
+
+        auto set_onionskin_n_layers_tooltip = state::tooltips_file->get_value("frame_view", "set_onionskin_n_layers");
+        _onionskin_n_layers_spin_button.set_tooltip_text(set_onionskin_n_layers_tooltip);
 
         auto jump_to_start_tooltip = state::tooltips_file->get_value("frame_view", "jump_to_start");
         _jump_to_start_button.set_tooltip_text(jump_to_start_tooltip);
@@ -654,7 +682,14 @@ namespace mousetrap
         _menu_button.set_size_request({4 * button_width, 0});
 
         _box.push_back(&_menu_button);
+
+        auto onion_separator = SeparatorLine();
+        onion_separator.set_size_request({button_width, 0});
+        onion_separator.set_hexpand(false);
+
+        _box.push_back(&onion_separator);
         _box.push_back(&_toggle_onionskin_visible_button);
+        _box.push_back(&_onionskin_n_layers_spin_button);
 
         auto separator_start = SeparatorLine();
         separator_start.set_size_request({button_width, 0});
@@ -753,7 +788,25 @@ namespace mousetrap
 
     void FrameView::ControlBar::on_toggle_onionskin_visible()
     {
-        std::cout << "[TODO] show animation preview" << std::endl;
+        state::onionskin_visible = not state::onionskin_visible;
+        
+        _toggle_onionskin_visible_button.set_signal_toggled_blocked(true);
+        _toggle_onionskin_visible_button.set_active(state::onionskin_visible);
+        _toggle_onionskin_visible_button.set_signal_toggled_blocked(false);
+    }
+
+    void FrameView::ControlBar::set_n_onionskin_layers(size_t n)
+    {
+        state::onionskin_n_layers = std::min(state::current_frame, n);
+        _onionskin_n_layers_spin_button.set_signal_value_changed_blocked(true);
+        _onionskin_n_layers_spin_button.set_value(n);
+        _onionskin_n_layers_spin_button.set_signal_value_changed_blocked(false);
+    }
+
+    void FrameView::ControlBar::on_onionskin_spin_button_value_changed(SpinButton* scale, ControlBar* instance)
+    {
+        auto v = scale->get_value();
+        state::onionskin_n_layers = v;
     }
 
     // ###

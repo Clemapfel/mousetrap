@@ -192,6 +192,8 @@ static void activate(GtkApplication* app, void*)
     auto* animation_preview = state::animation_preview->operator Widget*();
 
     // TODO
+    canvas->set_opacity(0);
+
     {
         auto before = export_state_to_file().as_string();
         auto compressed = zlib_compress(before);

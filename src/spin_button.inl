@@ -29,4 +29,32 @@ namespace mousetrap
     {
         gtk_spin_button_set_wrap(get_native(), b);
     }
+
+    void SpinButton::set_lower_limit(float v)
+    {
+        double min, max;
+        gtk_spin_button_get_range(get_native(), &min, &max);
+        gtk_spin_button_set_range(get_native(), v, max);
+    }
+
+    float SpinButton::get_lower_limit()
+    {
+        double min, max;
+        gtk_spin_button_get_range(get_native(), &min, &max);
+        return min;
+    }
+
+    void SpinButton::set_upper_limit(float v)
+    {
+        double min, max;
+        gtk_spin_button_get_range(get_native(), &min, &max);
+        gtk_spin_button_set_range(get_native(), min, v);
+    }
+
+    float SpinButton::get_upper_limit()
+    {
+        double min, max;
+        gtk_spin_button_get_range(get_native(), &min, &max);
+        return max;
+    }
 }

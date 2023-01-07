@@ -119,6 +119,9 @@ namespace mousetrap::state
 
     bool playback_active = false;
 
+    bool onionskin_visible = false;
+    size_t onionskin_n_layers = 0;
+
     void update_frame_view()
     {
         if (frame_view != nullptr)
