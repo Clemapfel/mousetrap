@@ -24,6 +24,9 @@ if(NOT GLM_FOUND)
     message(WARNING "Missing Dependency: glm headers were not detected")
 endif()
 
+# Boost
+find_package(Boost REQUIRED COMPONENTS system iostreams)
+
 ### CONFIGURE ###
 
 set(RESOURCE_PATH "${CMAKE_SOURCE_DIR}/resources/")
@@ -230,7 +233,7 @@ add_library(mousetrap SHARED
 
     include/switch.hpp
         include/info_message.hpp
-        include/fixed.hpp src/frame_clock.inl include/frame_clock.hpp include/shortcut_viewer.hpp include/log_stream.hpp include/subimage.hpp include/level_bar.hpp include/editable_label.hpp)
+        include/fixed.hpp src/frame_clock.inl include/frame_clock.hpp include/shortcut_viewer.hpp include/log_stream.hpp include/subimage.hpp include/level_bar.hpp include/editable_label.hpp include/string_compression.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -246,6 +249,7 @@ target_link_libraries(mousetrap PUBLIC
     ${OpenGL}
     ${GLEW}
     ${GTK_LIBRARIES}
+    ${Boost_LIBRARIES}
 )
 
 ### EXECUTABLE ###

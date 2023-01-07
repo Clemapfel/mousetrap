@@ -546,6 +546,36 @@ namespace mousetrap
     }
 
     template<>
+    void KeyFile::set_value_as(GroupKey group, KeyID key, size_t value)
+    {
+        if (value > std::numeric_limits<int>::max())
+            std::cerr << "[WARNING] In KeyFile::set_value_as<size_t>: Value " << value << " is too large to be stored as int" << std::endl;
+
+        g_key_file_set_integer(_native, group.c_str(), key.c_str(), value);
+    }
+
+    template<>
+    void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<size_t> value)
+    {
+        std::vector<int> converted;
+        converted.reserve(value.size());
+
+        bool once = true;
+        for (auto i : value)
+        {
+            if (i > std::numeric_limits<int>::max() and once)
+            {
+                std::cerr << "[WARNING] In KeyFile::set_value_as<std::vector<size_t>>: Value " << i << " is too large to be stored as int" << std::endl;
+                once = false;
+            }
+
+            converted.push_back(static_cast<int>(i));
+        }
+
+        g_key_file_set_integer_list(_native, group.c_str(), key.c_str(), converted.data(), converted.size());
+    }
+
+    template<>
     void KeyFile::set_value_as(GroupKey group, KeyID key, float value)
     {
         g_key_file_set_double(_native, group.c_str(), key.c_str(), value);

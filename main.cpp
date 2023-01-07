@@ -25,6 +25,7 @@
 #include <app/file_chooser_dialog.hpp>
 #include <app/shortcut_information.hpp>
 #include <app/frame_view.hpp>
+#include <app/save_file.hpp>
 
 using namespace mousetrap;
 
@@ -68,19 +69,6 @@ void initialize_debug_layers()
 
         state::n_frames = layer->frames.size();
     }
-
-    auto& frame = state::layers.at(0)->frames.at(0);
-    auto* image = frame.image;
-    auto key_file = KeyFile();
-    key_file.set_value_as<Image>("image", "test", *image);
-    std::cout << key_file.as_string() << std::endl;
-
-    auto image_out = key_file.get_value_as<Image>("image", "test");
-    for (size_t x = 0; x < image_out.get_size().x; x++)
-        for (size_t y = 0; y < image_out.get_size().y; y++)
-            image->set_pixel(x, y, image_out.get_pixel(x, y));
-
-    frame.update_texture();
 }
 
 void validate_keybindings_file(KeyFile* file)
@@ -204,7 +192,12 @@ static void activate(GtkApplication* app, void*)
     auto* animation_preview = state::animation_preview->operator Widget*();
 
     // TODO
-    canvas->set_opacity(0);
+    {
+        auto before = export_state_to_file().as_string();
+        auto compressed = zlib_compress(before);
+        auto decompressed = zlib_decompress(compressed);
+        std::cout << decompressed << std::endl;
+    }
     // TODO
 
     auto* color_picker_window = new Window();

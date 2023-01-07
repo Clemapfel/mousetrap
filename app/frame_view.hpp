@@ -166,7 +166,7 @@ namespace mousetrap
                     Action _frame_make_keyframe_inbetween_action = Action("frame_view.frame_make_keyframe_inbetween");
                     void on_frame_make_keyframe_inbetween();
 
-                    size_t _preview_size = state::settings_file->get_value_as<int>("layer_view", "layer_preview_preview_size");
+                    size_t _preview_size = state::settings_file->get_value_as<int>("frame_view", "layer_preview_size");
                     MenuModel _preview_size_submenu;
 
                     Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);

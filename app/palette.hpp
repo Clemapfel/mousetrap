@@ -273,5 +273,10 @@ namespace mousetrap
 
         return out;
     }
+
+    const std::map<size_t, HSVA>& Palette::data()
+    {
+        return _colors;
+    }
 }
 

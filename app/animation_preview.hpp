@@ -158,7 +158,10 @@ namespace mousetrap
         state::app->add_action(_toggle_background_visible_action);
         _shortcut_controller.add_action(_toggle_background_visible_action.get_id());
 
-        _menu.add_action("Start / Stop Playback", "animation_preview.toggle_playback_active");
+        auto playback_section = MenuModel();
+        playback_section.add_action("Start / Stop Playback", "animation_preview.toggle_playback_active");
+        _menu.add_section("Playback", &playback_section);
+
 
         auto settings_section = MenuModel();
 

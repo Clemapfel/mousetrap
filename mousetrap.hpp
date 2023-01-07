@@ -77,3 +77,4 @@
 #include <include/shortcut_viewer.hpp>
 #include <include/level_bar.hpp>
 #include <include/editable_label.hpp>
+#include <include/string_compression.hpp>

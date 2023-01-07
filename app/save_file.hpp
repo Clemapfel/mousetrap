@@ -32,7 +32,7 @@ namespace mousetrap
         set("sort_mode", palette_sort_mode_to_string(state::palette_sort_mode));
 
         for (const auto& pair : state::palette.data())
-            set(std::to_string(pair.first), pair.second);
+            set("color_" + std::to_string(pair.first), pair.second);
 
         current_section = "tools";
 
@@ -44,8 +44,12 @@ namespace mousetrap
         set("brush_size", state::brush_size);
         set("brush_opacity", state::brush_opacity);
 
-        for (auto* brush : state::brushes)
-            set(brush->get_name(), brush->get_base_image());
+        for (size_t i = 0; i < state::brushes.size(); ++i)
+        {
+            auto* brush = state::brushes.at(i);
+            set("brush_" + std::to_string(i) + "_name", brush->get_name());
+            set("brush_" + std::to_string(i) + "_data", brush->get_base_image());
+        }
 
         current_section = "animation_preview";
 
@@ -82,7 +86,7 @@ namespace mousetrap
         for (size_t layer_i = 0; layer_i < state::layers.size(); ++layer_i)
         {
             auto* layer = state::layers.at(layer_i);
-            auto prefix = std::to_string(layer_i);
+            auto prefix = "layer_" + std::to_string(layer_i);
 
             set(prefix + "_name", layer->name);
             set(prefix + "_is_locked", layer->is_locked);
@@ -94,8 +98,12 @@ namespace mousetrap
             for (size_t frame_i = 0; frame_i < state::n_frames; ++frame_i)
             {
                 set(prefix + std::to_string(frame_i) + "_is_keyframe", layer->frames.at(frame_i).is_keyframe);
-                set(prefix + std::to_string(frame_i) + "_data", layer->frames.at(frame_i).image);
+                //set(prefix + std::to_string(frame_i) + "_data", *layer->frames.at(frame_i).image);
             }
         }
+
+        return out;
     }
+
+
 }
