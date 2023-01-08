@@ -311,6 +311,9 @@ static void activate(GtkApplication* app, void*)
     state::main_window->present();
     state::main_window->set_focusable(true);
     state::main_window->grab_focus();
+    state::main_window->connect_signal_close([](Window* window, nullptr_t) -> bool {
+        return false;
+    }, nullptr);
 
     validate_keybindings_file(state::keybindings_file);
 }

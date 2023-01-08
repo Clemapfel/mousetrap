@@ -974,7 +974,7 @@ namespace mousetrap
     {
         public:
             template<typename T>
-            using on_close_function_t = void(Owner_t*, T);
+            using on_close_function_t = bool(Owner_t*, T);
 
             template<typename Function_t, typename T>
             void connect_signal_close(Function_t, T);
@@ -1695,7 +1695,7 @@ namespace mousetrap
     gboolean HasCloseSignal<Owner_t>::on_close_wrapper(Widget*, HasCloseSignal<Owner_t>* self)
     {
         if (self->_on_close_f != nullptr and not self->_blocked)
-            self->_on_close_f(self->_instance, self->_on_close_data);
+            return self->_on_close_f(self->_instance, self->_on_close_data);
 
         return true;
     }
