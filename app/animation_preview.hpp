@@ -90,10 +90,18 @@ namespace mousetrap
             MenuModel _menu;
             PopoverMenu _popover_menu = PopoverMenu(&_menu);
 
+            void setup_menu();
+
             // layout
 
             Frame _frame;
+            Box _box = Box(GTK_ORIENTATION_VERTICAL);
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
+
+            Window _detach_window;
+            bool _is_detached = false;
+            void detach();
+            void attach();
 
             // actions
 
@@ -109,7 +117,6 @@ namespace mousetrap
             ClickEventController _click_controller;
             static void on_click_pressed(ClickEventController*, gint n_press, double x, double y, AnimationPreview*);
 
-            Window _detach_window;
             Action _toggle_detach_action = Action("animation_preview.toggle_detach");
     };
 }
@@ -118,6 +125,54 @@ namespace mousetrap
 
 namespace mousetrap
 {
+    AnimationPreview::setup_menu()
+    {
+        auto layout_section = MenuModel();
+        layout_section.add_action("Detach / Attach from Window", "animation_preview.toggle_detach");
+        _menu.add_section("Layout", &layout_section);
+
+        auto playback_section = MenuModel();
+        playback_section.add_action("Start / Stop Playback", "animation_preview.toggle_playback_active");
+        _menu.add_section("Playback", &playback_section);
+
+        auto settings_section = MenuModel();
+
+        auto fps_submenu = MenuModel();
+        fps_submenu.add_widget(&_fps_box);
+        settings_section.add_submenu("Fps...", &fps_submenu);
+
+        _scale_factor_spin_button.set_value(_scale_factor);
+        _scale_factor_spin_button.connect_signal_value_changed(on_scale_factor_spin_button_value_changed, this);
+        _scale_factor_box.push_back(&_scale_factor_label);
+        _scale_factor_spacer.set_opacity(0);
+        _scale_factor_box.push_back(&_scale_factor_spacer);
+        _scale_factor_box.push_back(&_scale_factor_spin_button);
+        _scale_factor_box.set_tooltip_text(state::tooltips_file->get_value("animation_preview", "scale_factor_setting"));
+
+        auto scale_factor_submenu = MenuModel();
+        scale_factor_submenu.add_widget(&_scale_factor_box);
+        settings_section.add_submenu("Scale Factor...", &scale_factor_submenu);
+
+        _background_visible_switch.set_active(_background_visible);
+        _background_visible_switch.connect_signal_state_set(on_background_visible_switch_state_set, this);
+        _background_visible_box.push_back(&_background_visible_label);
+        _background_visible_spacer.set_opacity(0);
+        _background_visible_box.push_back(&_background_visible_spacer);
+        _background_visible_box.push_back(&_background_visible_switch);
+        _background_visible_box.set_tooltip_text(state::tooltips_file->get_value("animation_preview", "show_background_setting"));
+
+        auto background_submenu = MenuModel();
+        background_submenu.add_widget(&_background_visible_box);
+        settings_section.add_submenu("Show / Hide Background...", &background_submenu);
+
+        _menu.add_section("Settings", &settings_section);
+
+        _popover_menu.refresh_widgets();
+        _menu_button.set_popover(&_popover_menu);
+        _menu_button.set_popover_position(GTK_POS_LEFT);
+
+    }
+
     AnimationPreview::AnimationPreview()
     {
         _area.connect_signal_realize(on_realize, this);
@@ -162,7 +217,14 @@ namespace mousetrap
         _shortcut_controller.add_action(_toggle_background_visible_action.get_id());
 
         _toggle_detach_action.set_do_function([](AnimationPreview* instnce){
-            std::cout << "detached" << std::endl;
+            auto* instance = ((AnimationPreview*) state::animation_preview);
+            if (instance->_is_detached)
+            {
+                instance->attach();
+                instance->_detach_window.hide();
+            }
+            else
+                instance->detach();
         }, this);
         _toggle_detach_action.add_shortcut(state::keybindings_file->get_value("animation_preview", "toggle_detach"));
         state::app->add_action(_toggle_detach_action);
@@ -227,21 +289,27 @@ namespace mousetrap
         _frame.set_expand(true);
         _frame.set_label_widget(nullptr);
 
-        _main.push_back(&_menu_button);
-        _main.push_back(&_frame);
+        _box.push_back(&_menu_button);
+        _box.push_back(&_frame);
 
         _tooltip.create_from("animation_preview", state::tooltips_file, state::keybindings_file);
 
-        _main.set_tooltip_widget(_tooltip);
-        _main.add_controller(&_shortcut_controller);
+        _box.set_tooltip_widget(_tooltip);
+        _box.add_controller(&_shortcut_controller);
 
         _click_controller.connect_signal_click_pressed(on_click_pressed, this);
         _frame.add_controller(&_click_controller);
 
-        _main.add_tick_callback([](FrameClock clock, AnimationPreview* instance) -> bool {
+        _box.add_tick_callback([](FrameClock clock, AnimationPreview* instance) -> bool {
             instance->on_tick_callback(clock);
             return true;
         }, this);
+
+        _main.push_back(&_box);
+
+        _detach_window.set_modal(false);
+        _detach_window.set_title("");
+        _detach_window.set_decorated(false);
     }
 
     AnimationPreview::operator Widget*()
@@ -428,5 +496,26 @@ namespace mousetrap
     {
         for (size_t i = 0; i < n_press; ++i)
             instance->_toggle_playback_active_action.activate();
+    }
+
+    void AnimationPreview::detach()
+    {
+        if (_is_detached)
+            return;
+
+        _is_detached = true;
+        _box.unparent();
+        _detach_window.set_child(&_box);
+        _detach_window.present();
+    }
+
+    void AnimationPreview::attach()
+    {
+        if (not _is_detached)
+            return;
+
+        _is_detached = false;
+        _detach_window.set_child(nullptr);
+        _box.push_back(&_box);
     }
 }
