@@ -108,6 +108,9 @@ namespace mousetrap
             ShortcutController _shortcut_controller = ShortcutController(state::app);
             ClickEventController _click_controller;
             static void on_click_pressed(ClickEventController*, gint n_press, double x, double y, AnimationPreview*);
+
+            Window _detach_window;
+            Action _toggle_detach_action = Action("animation_preview.toggle_detach");
     };
 }
 
@@ -157,6 +160,17 @@ namespace mousetrap
         _toggle_background_visible_action.add_shortcut(state::keybindings_file->get_value("animation_preview", "toggle_background_visible"));
         state::app->add_action(_toggle_background_visible_action);
         _shortcut_controller.add_action(_toggle_background_visible_action.get_id());
+
+        _toggle_detach_action.set_do_function([](AnimationPreview* instnce){
+            std::cout << "detached" << std::endl;
+        }, this);
+        _toggle_detach_action.add_shortcut(state::keybindings_file->get_value("animation_preview", "toggle_detach"));
+        state::app->add_action(_toggle_detach_action);
+        _shortcut_controller.add_action(_toggle_detach_action.get_id());
+
+        auto layout_section = MenuModel();
+        layout_section.add_action("Detach / Attach from Window", "animation_preview.toggle_detach");
+        _menu.add_section("Layout", &layout_section);
 
         auto playback_section = MenuModel();
         playback_section.add_action("Start / Stop Playback", "animation_preview.toggle_playback_active");

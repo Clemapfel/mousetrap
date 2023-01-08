@@ -95,6 +95,8 @@ namespace mousetrap
         _message_reveal_delay = seconds(state::settings_file->get_value_as<float>("bubble_log_area", "message_reveal_delay"));
         _message_hold_duration = seconds(state::settings_file->get_value_as<float>("bubble_log_area", "message_hold_duration"));
         _message_decay_duration = seconds(state::settings_file->get_value_as<float>("bubble_log_area", "message_decay_duration"));
+
+        operator Widget*()->set_can_respond_to_input(false);
     }
 
     BubbleLogArea::operator Widget*()

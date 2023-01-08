@@ -192,13 +192,14 @@ static void activate(GtkApplication* app, void*)
 
     // TODO
     canvas->set_opacity(0);
-
+    /*
     {
         auto before = export_state_to_file().as_string();
         auto compressed = zlib_compress(before);
         auto decompressed = zlib_decompress(compressed);
         std::cout << decompressed << std::endl;
     }
+     */
     // TODO
 
     auto* color_picker_window = new Window();
