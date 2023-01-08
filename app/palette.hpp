@@ -23,7 +23,7 @@ namespace mousetrap
     };
 
     std::string palette_sort_mode_to_string(PaletteSortMode mode);
-    PaletteSortMode palette_sort_mdoe_from_string(const std::string);
+    PaletteSortMode palette_sort_mode_from_string(const std::string&);
 
     class Palette
     {

@@ -12,7 +12,6 @@
 #include <app/palette_view.hpp>
 #include <app/toolbox.hpp>
 #include <app/color_picker.hpp>
-#include <app/widget_container.hpp>
 #include <app/global_state.hpp>
 #include <app/animation_preview.hpp>
 #include <app/layer_view.hpp>

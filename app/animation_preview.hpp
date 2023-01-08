@@ -162,7 +162,6 @@ namespace mousetrap
         playback_section.add_action("Start / Stop Playback", "animation_preview.toggle_playback_active");
         _menu.add_section("Playback", &playback_section);
 
-
         auto settings_section = MenuModel();
 
         _fps_spin_button.set_value(_fps);

@@ -31,6 +31,8 @@ namespace mousetrap
             void set_palette_locked(bool);
             bool get_palette_locked() const;
 
+            void reload();
+
         protected:
             void load_from_file(const std::string& path);
             void load_as_debug();
@@ -750,6 +752,11 @@ namespace mousetrap
 
         color.a = 1;
         _color_tiles.at(_selected_i)->set_color(color);
+    }
+
+    void PaletteView::reload()
+    {
+        update_from_palette();
     }
 
     void PaletteView::select(size_t i)

@@ -30,6 +30,7 @@ namespace mousetrap
         current_section = "palette";
 
         set("sort_mode", palette_sort_mode_to_string(state::palette_sort_mode));
+        set("n_colors", state::palette.get_colors().size());
 
         for (const auto& pair : state::palette.data())
             set("color_" + std::to_string(pair.first), pair.second);
@@ -97,7 +98,7 @@ namespace mousetrap
             set(prefix + "_blend_mode", blend_mode_to_string(layer->blend_mode));
             set(prefix + "_opacity", layer->opacity);
 
-            prefix += "_frame_";
+            prefix += "_frame";
             for (size_t frame_i = 0; frame_i < state::n_frames; ++frame_i)
             {
                 set(prefix + std::to_string(frame_i) + "_is_keyframe", layer->frames.at(frame_i).is_keyframe);
@@ -108,6 +109,131 @@ namespace mousetrap
         return out;
     }
 
-    void import_state_from_file(KeyFile& file)
-    {}
+    void import_state_from_file(KeyFile& in)
+    {
+        // TODO backup before load
+
+        std::string current_section = "colors";
+
+        state::primary_color = in.get_value_as<HSVA>(current_section, "primary_color");
+        state::secondary_color = in.get_value_as<HSVA>(current_section, "secondary_color");
+        state::preview_color_current = state::primary_color;
+        state::preview_color_previous = state::primary_color;
+
+        state::update_color_picker();
+        state::update_color_swapper();
+        state::update_verbose_color_picker();
+
+        current_section = "palette";
+
+        state::palette_sort_mode = palette_sort_mode_from_string(in.get_value(current_section, "sort_mode"));
+
+        {
+            size_t n = in.get_value_as<size_t>(current_section, "n_colors");
+            std::vector<HSVA> colors;
+            colors.reserve(n);
+
+            for (size_t i = 0; i < n; ++i)
+                colors.push_back(in.get_value_as<HSVA>(current_section, "color_" + std::to_string(i)));
+
+            state::palette = Palette(colors);
+        }
+
+        current_section = "palette_view";
+
+        auto* palette_view = ((PaletteView*) state::palette_view);
+        palette_view->reload();
+        palette_view->set_preview_size(in.get_value_as<size_t>(current_section, "preview_size"));
+        palette_view->set_palette_locked(in.get_value_as<size_t>(current_section, "palette_locked"));
+
+        current_section = "tools";
+
+        state::active_tool = in.get_value_as<std::string>(current_section, "active_tool");
+        ((Toolbox*) state::toolbox)->select(state::active_tool);
+
+        current_section = "brushes";
+
+        state::brush_size = in.get_value_as<size_t>(current_section, "brush_size");
+        state::brush_opacity = in.get_value_as<float>(current_section, "brush_opacity");
+
+        for (auto* brush : state::brushes)
+            delete brush;
+
+        state::brushes.clear();
+        auto current_brush_name = in.get_value_as<std::string>(current_section, "current_brush");
+
+        {
+            size_t n = in.get_value_as<size_t>(current_section, "n_brushes");
+            state::brushes.reserve(n);
+
+            for (size_t i = 0; i < n; ++i)
+            {
+                auto prefix = "brush_" + std::to_string(i);
+                auto name = in.get_value_as<std::string>(current_section, prefix + "_name");
+                auto image = in.get_value_as<Image>(current_section, prefix + "_data");
+
+                auto* brush = state::brushes.emplace_back(new Brush());
+                brush->create_from_image(image, name);
+
+                if (name == current_brush_name)
+                    state::current_brush = brush;
+            }
+        }
+
+        current_section = "animation_preview";
+
+        auto* animation_preview = (AnimationPreview*) state::animation_preview;
+        animation_preview->set_scale_factor(in.get_value_as<size_t>(current_section, "scale_factor"));
+        animation_preview->set_fps(in.get_value_as<float>(current_section, "fps"));
+        animation_preview->set_background_visible(in.get_value_as<bool>(current_section, "background_visible"));
+
+        state::onionskin_visible = in.get_value_as<bool>(current_section, "onionskin_visible");
+        state::onionskin_n_layers = in.get_value_as<size_t>(current_section, "onionskin_n_layers");
+
+        current_section = "brush_options";
+        ((BrushOptions*) state::brush_options)->set_preview_size(in.get_value_as<size_t>(current_section, "preview_size"));
+
+        current_section = "layer_view";
+        ((LayerView*) state::layer_view)->set_preview_size(in.get_value_as<size_t>(current_section, "preview_size"));
+
+        current_section = "frame_view";
+        ((FrameView*) state::frame_view)->set_preview_size(in.get_value_as<size_t>(current_section, "preview_size"));
+
+        current_section = "layers";
+        state::current_layer = in.get_value_as<size_t>(current_section, "current_layer");
+        state::current_frame = in.get_value_as<size_t>(current_section, "current_frame");
+
+        size_t n_layers = in.get_value_as<size_t>(current_section, "n_layers");
+        size_t n_frames = in.get_value_as<size_t>(current_section, "n_frames");
+        state::n_frames = n_frames;
+
+        for (auto* layer : state::layers)
+            delete layer;
+
+        state::layers.clear();
+
+        for (size_t layer_i = 0; layer_i < n_layers; ++layer_i)
+        {
+            auto prefix = "layer_" + std::to_string(layer_i);
+            auto* layer = state::layers.emplace_back(new Layer());
+
+            layer->name = in.get_value_as<std::string>(current_section, prefix + "_name");
+            layer->is_locked = in.get_value_as<bool>(current_section, prefix + "_is_locked");
+            layer->is_visible = in.get_value_as<bool>(current_section, prefix + "_is_visible");
+            layer->blend_mode = blend_mode_from_string(in.get_value_as<std::string>(current_section, prefix + "_blend_mode"));
+            layer->opacity = in.get_value_as<float>(current_section, prefix + "_opacity");
+
+            prefix += "_frame";
+            for (size_t frame_i = 0; frame_i < n_frames; ++frame_i)
+            {
+                auto& frame = layer->frames.emplace_back();
+                frame.is_keyframe = in.get_value_as<bool>(current_section, prefix + "_is_keyframe");
+                frame.image = new Image(in.get_value_as<Image>(current_section, prefix + "_data"));
+                frame.texture = new Texture();
+                frame.texture->create_from_image(*frame.image);
+            }
+        }
+
+        state::update_palette_view();
+    }
 }
