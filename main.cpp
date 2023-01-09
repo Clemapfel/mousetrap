@@ -288,7 +288,7 @@ static void activate(GtkApplication* app, void*)
 
     auto right_column_paned = Paned(GTK_ORIENTATION_VERTICAL);
     right_column_paned.set_start_child(&right_column_paned_top);
-    //right_column_paned.set_end_child(layer_view);
+    right_column_paned.set_end_child(layer_view);
 
     auto main_paned = Paned(GTK_ORIENTATION_HORIZONTAL);
     main_paned.set_start_child_shrinkable(false);
@@ -299,6 +299,12 @@ static void activate(GtkApplication* app, void*)
     left_column_paned.set_position(10e6); // as low as possible
     left_and_center_column_paned.set_end_child_shrinkable(false);
     main_paned.set_start_child_shrinkable(false);
+
+    right_column_paned_top.set_start_child_shrinkable(false);
+    right_column_paned_top.set_end_child_shrinkable(false);
+    right_column_paned.set_start_child_shrinkable(false);
+    right_column_paned.set_end_child_shrinkable(false);
+    right_column_paned.set_position(10e6);
 
     auto bubble_log_overlay = Overlay();
     bubble_log_overlay.set_child(&main_paned);

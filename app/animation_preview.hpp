@@ -122,6 +122,7 @@ namespace mousetrap
     {
         _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);
+        _area.set_size_request({0, 0});
 
         _menu_button.set_child(&_menu_button_label);
 

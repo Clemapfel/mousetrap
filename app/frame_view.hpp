@@ -336,8 +336,6 @@ namespace mousetrap
             });
 
             element->frame_label.set_visible(false);
-            element->layer_label.set_visible(false);
-            element->layer_label_spacer.set_visible(false);
             element->layer_label.set_margin_horizontal(state::margin_unit);
 
             element->frame.set_label_align(0.5);
@@ -345,15 +343,14 @@ namespace mousetrap
             element->frame.set_label_widget(&element->frame_label);
 
             element->layer_label_spacer.set_size_request({state::margin_unit / 10 * 4, 0});
+            element->wrapper.push_back(&element->layer_label);
             element->wrapper.push_back(&element->layer_label_spacer);
-
             element->wrapper.push_back(&element->frame);
             _list_view.push_back(&element->wrapper);
         }
 
         _list_view.get_selection_model()->connect_signal_selection_changed(on_selection_changed, this);
-        if (_frame_i == 0)
-            set_is_first_frame(true);
+        set_is_first_frame(_frame_i == 0);
     }
 
     FrameView::FrameColumn::~FrameColumn()
