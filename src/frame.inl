@@ -9,7 +9,9 @@ namespace mousetrap
 {
     Frame::Frame()
         : WidgetImplementation<GtkFrame>(GTK_FRAME(gtk_frame_new("")))
-    {}
+    {
+        set_label_widget(nullptr);
+    }
 
     void Frame::set_child(Widget* in)
     {
