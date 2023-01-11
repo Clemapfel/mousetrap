@@ -858,7 +858,6 @@ namespace mousetrap
 
         _menu.add_section("Other", &other_section);
 
-        _header_menu_button_label.set_size_request({32, 32});
         _header_menu_button.set_child(&_header_menu_button_label);
 
         _header_menu_button_popover.refresh_widgets();

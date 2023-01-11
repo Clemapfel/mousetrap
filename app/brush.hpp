@@ -10,6 +10,28 @@
 #include <app/settings_files.hpp>
 #include <app/algorithms.hpp>
 
+enum class BrushShape
+{
+    CIRCLE,
+    SQUARE,
+    ELLIPSE_HORIZONTAL,
+    ELLIPSE_VERTICAL,
+    RECTANGLE_HORIZONTAL,
+    RECTANGLE_VERTICAL,
+    CUSTOM
+};
+
+std::string brush_shape_to_string(BrushShape);
+BrushShape brush_shape_from_string(const std::string&);
+
+/*
+static inline constexpr const char* BRUSH_CIRCLE = "brush_circle";
+static inline constexpr const char* BRUSH_SQUARE = "brush_square";
+static inline constexpr const char* BRUSH_ELLIPSE_HORIZONTAL = "brush_ellipse_horizontal";
+static inline constexpr const char* BRUSH_ELLIPSE_VERTICAL = "brush_ellipse_vertical";
+static inline constexpr const char* BRUSH_RECTANGLE_HORIZONTAL = "brush_rectangle_horizontal";
+static inline constexpr const char* BRUSH_RECTANGLE_VERTICAL = "brush_rectangle_vertical";
+*/
 namespace mousetrap
 {
     class Brush
@@ -201,4 +223,5 @@ namespace mousetrap
     {
         return _outline_vertices;
     }
+
 }

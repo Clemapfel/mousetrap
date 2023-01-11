@@ -6,8 +6,7 @@ in vec3 _vertex_position;
 
 out vec4 _fragment_color;
 
-uniform float _background_value;
-uniform float _margin;
+uniform float _half_margin;
 
 void main()
 {
@@ -15,11 +14,11 @@ void main()
 
     vec2 pos = _vertex_position.xy;
 
-    float w = 1 - _margin;
-    float h = 1/3.f * w;
+    float h = 1 - 2 * _half_margin;
+    float w = 1/3.f * h;
 
     if (pos.x > -w && pos.x < +w && pos.y < +h && pos.y > -h)
         _fragment_color = vec4(vec3(1), 1);
     else
-        _fragment_color = vec4(vec3(_background_value), 1);
+        _fragment_color = vec4(vec3(1), 0);
 }
