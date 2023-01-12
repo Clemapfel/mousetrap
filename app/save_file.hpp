@@ -41,6 +41,10 @@ namespace mousetrap
 
         current_section = "brushes";
 
+        std::cerr << "In export_state_to_file: TODO" << std::endl;
+
+        /*
+
         set("current_brush", state::current_brush->get_name());
         set("brush_size", state::brush_size);
         set("brush_opacity", state::brush_opacity);
@@ -52,6 +56,8 @@ namespace mousetrap
             set("brush_" + std::to_string(i) + "_name", brush->get_name());
             set("brush_" + std::to_string(i) + "_data", brush->get_base_image());
         }
+
+         */
 
         current_section = "animation_preview";
 
@@ -153,6 +159,10 @@ namespace mousetrap
 
         current_section = "brushes";
 
+        std::cerr << "In import_state_from_file: TODO" << std::endl;
+
+        /*
+
         state::brush_size = in.get_value_as<size_t>(current_section, "brush_size");
         state::brush_opacity = in.get_value_as<float>(current_section, "brush_opacity");
 
@@ -173,12 +183,14 @@ namespace mousetrap
                 auto image = in.get_value_as<Image>(current_section, prefix + "_data");
 
                 auto* brush = state::brushes.emplace_back(new Brush());
-                brush->create_from_image(image, name);
+                brush->as_custom(image);
 
                 if (name == current_brush_name)
                     state::current_brush = brush;
             }
         }
+
+         */
 
         current_section = "animation_preview";
 

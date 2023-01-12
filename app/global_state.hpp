@@ -128,6 +128,12 @@ namespace mousetrap::state
             frame_view->update();
     }
 
+    void update_animation_preview()
+    {
+        if (animation_preview != nullptr)
+            animation_preview->update();
+    }
+
     // ### RENDER DRAW #################################
 
     AppComponent* canvas;

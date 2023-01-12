@@ -39,7 +39,7 @@ namespace mousetrap
             SpinButton _brush_size_spin_button = SpinButton(1, max_brush_size, 1);
             Box _brush_size_scale_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
-            Label _brush_opacity_label = Label("Brush Opacity (px)");
+            Label _brush_opacity_label = Label("Brush Opacity");
             SeparatorLine _brush_opacity_label_spacer;
             Box _brush_opacity_label_box = Box(GTK_ORIENTATION_HORIZONTAL);
             Scale _brush_opacity_scale = Scale(0, 1, 0.0001);
@@ -63,7 +63,7 @@ namespace mousetrap
                     BrushPreview(const std::string& name, const std::string& shader_id);
 
                     /// \brief texture-based custom brushes
-                    BrushPreview(const std::string& name, Texture*);
+                    BrushPreview(const std::string& name, Image&);
                     ~BrushPreview();
 
                     void set_preview_size(size_t);
@@ -85,7 +85,8 @@ namespace mousetrap
 
                     Shader* _shader;
                     std::string _shader_path = "";
-                    
+
+                    Image* _image;
                     Texture* _texture;
 
                     Shape* _shape;
@@ -146,20 +147,23 @@ namespace mousetrap
         _brush_preview_list.clear();
         _brush_previews.clear();
 
-        // TODO: use proper id instead of number
-
-        for (auto id : {
-                "brush_circle",
-                "brush_square",
-                "brush_ellipse_horizontal",
-                "brush_ellipse_vertical",
-                "brush_rectangle_horizontal",
-                "brush_rectangle_vertical"
-        })
-            _brush_previews.emplace_back(new BrushPreview(std::to_string(_brush_previews.size()), id));
-
         for (auto* brush : state::brushes)
-            _brush_previews.emplace_back(new BrushPreview(std::to_string(_brush_previews.size()), brush->get_texture()));
+        {
+            auto shape = brush->get_shape();
+            if (shape == BrushShape::CUSTOM)
+            {
+                _brush_previews.emplace_back(new BrushPreview(brush->get_name(), brush->get_image()));
+                continue;
+            }
+
+            // user shader instead of texture if algorithmic
+            std::stringstream name;
+            name << "brush_";
+            for (auto c : brush_shape_to_string(shape))
+                name << (char) std::tolower(c);
+
+            _brush_previews.emplace_back(new BrushPreview(brush->get_name(), name.str()));
+        }
 
         for (auto* preview : _brush_previews)
         {
@@ -386,7 +390,7 @@ namespace mousetrap
     }
 
     BrushOptions::BrushPreview::BrushPreview(const std::string& name, const std::string& shader_id)
-        : _name(name), _size(-1), _label(BrushOptions::make_index_label("&#8734;")), _shader_path(get_resource_path() + "shaders/" + shader_id + ".frag")
+        : _name(name), _image(nullptr), _size(-1), _label(BrushOptions::make_index_label("&#8734;")), _shader_path(get_resource_path() + "shaders/" + shader_id + ".frag")
     {
         _area.connect_signal_realize(on_realize, this);
         _frame.set_child(&_area);
@@ -404,8 +408,11 @@ namespace mousetrap
         operator Widget*()->set_tooltip_text(tooltip_text.str());
     }
 
-    BrushOptions::BrushPreview::BrushPreview(const std::string& name, Texture* texture)
-        : _name(name), _size(std::max(texture->get_size().x, texture->get_size().y)), _label(BrushOptions::make_index_label(std::to_string(_size))), _texture(texture)
+    BrushOptions::BrushPreview::BrushPreview(const std::string& name, Image& image)
+        : _name(name),
+          _image(&image),
+          _size(std::max(image.get_size().x, image.get_size().y)),
+          _label(BrushOptions::make_index_label(std::to_string(_size)))
     {
         _area.connect_signal_realize(on_realize, this);
         _frame.set_child(&_area);
@@ -449,6 +456,12 @@ namespace mousetrap
         auto* area = (GLArea*) widget;
         area->make_current();
 
+        if (instance->_image != nullptr)
+        {
+            instance->_texture = new Texture();
+            instance->_texture->create_from_image(*instance->_image);
+        }
+
         instance->_shape = new Shape();
         instance->_shape->as_rectangle(Vector2f(BrushOptions::brush_margin), Vector2f(1 - 2 * BrushOptions::brush_margin));
         instance->_background = new Shape();
@@ -490,6 +503,13 @@ namespace mousetrap::state
     {
         state::brushes.clear();
 
+        state::brushes.emplace_back(new Brush())->as_circle();
+        state::brushes.emplace_back(new Brush())->as_square();
+        state::brushes.emplace_back(new Brush())->as_ellipse_horizontal();
+        state::brushes.emplace_back(new Brush())->as_ellipse_vertical();
+        state::brushes.emplace_back(new Brush())->as_rectangle_horizontal();
+        state::brushes.emplace_back(new Brush())->as_rectangle_vertical();
+
         auto files = get_all_files_in_directory(get_resource_path() + "brushes", false, false);
         std::sort(files.begin(), files.end(), [](FileDescriptor& a, FileDescriptor& b) -> bool {
             return a.get_name() < b.get_name();
@@ -498,21 +518,15 @@ namespace mousetrap::state
         for (auto& file : files)
         {
             auto* brush = new Brush();
-            if (brush->create_from_file(file.get_path()))
+            auto image = Image();
+            if (image.create_from_file(file.get_path()))
+            {
+                brush->as_custom(image);
                 state::brushes.emplace_back(brush);
-        }
-
-        if (state::brushes.empty())
-        {
-            auto default_brush_image = Image();
-            default_brush_image.create(1, 1, RGBA(1, 1, 1, 1));
-            state::brushes.emplace_back(new Brush())->create_from_image(default_brush_image, "default");
+            }
         }
 
         state::current_brush = state::brushes.at(0);
-
-        //if (state::brush_options != nullptr)
-          //  ((BrushOptions*) state::brush_options)->reload_default_brushes();
     }
 
 }

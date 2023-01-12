@@ -40,6 +40,7 @@ namespace mousetrap
                     Layer* _layer;
                     size_t _frame_i;
 
+                    AspectFrame _aspect_frame;
                     GLArea _area;
 
                     static inline Shader* _transparency_tiling_shader = nullptr;
@@ -88,6 +89,7 @@ namespace mousetrap
                         Label frame_label;
                         Label layer_label;
                         SeparatorLine layer_label_spacer;
+                        Box wrapper_box;
                     };
 
                     std::vector<PreviewElement*> _preview_elements;
@@ -216,13 +218,14 @@ namespace mousetrap
 namespace mousetrap
 {
     FrameView::FramePreview::FramePreview(FrameView* owner, Layer* layer, size_t frame_i)
-        : _owner(owner), _layer(layer), _frame_i(frame_i)
+        : _owner(owner), _layer(layer), _frame_i(frame_i), _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y))
     {
         _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);
+        _aspect_frame.set_child(&_area);
 
         set_preview_size(owner->_preview_size);
-        _inbetween_label_overlay.set_child(&_area);
+        _inbetween_label_overlay.set_child(&_aspect_frame);
         _inbetween_label_overlay.add_overlay(&_inbetween_label);
 
         set_is_inbetween(false);
@@ -230,8 +233,15 @@ namespace mousetrap
 
     void FrameView::FramePreview::set_preview_size(size_t x)
     {
-        float width = (state::layer_resolution.y / state::layer_resolution.x) * x;
+        float width = (state::layer_resolution.x / state::layer_resolution.y) * x;
         _area.set_size_request({width, x});
+
+        _area.set_expand(true);
+        _area.set_align(GTK_ALIGN_CENTER);
+        if (state::layer_resolution.x > state::layer_resolution.y)
+            _area.set_hexpand(false);
+        else if (state::layer_resolution.y > state::layer_resolution.x)
+            _area.set_vexpand(false);
     }
 
     void FrameView::FramePreview::set_is_inbetween(bool b)
@@ -332,7 +342,8 @@ namespace mousetrap
                 Frame(),
                 Label(std::string("<tt>") + (_frame_i < 10 ? "00" : (_frame_i < 100 ? "0" : "")) + std::to_string(_frame_i) + "</tt>"),
                 Label(std::string("<tt><span size=\"120%\">") + (_frame_i < 10 ? "0" : "") + std::to_string(layer_i) + "</span></tt>"),
-                SeparatorLine()
+                SeparatorLine(),
+                Box(GTK_ORIENTATION_HORIZONTAL)
             });
 
             element->frame_label.set_visible(false);
@@ -343,9 +354,11 @@ namespace mousetrap
             element->frame.set_label_widget(&element->frame_label);
 
             element->layer_label_spacer.set_size_request({state::margin_unit / 10 * 4, 0});
-            element->wrapper.push_back(&element->layer_label);
-            element->wrapper.push_back(&element->layer_label_spacer);
-            element->wrapper.push_back(&element->frame);
+            element->layer_label_spacer.set_margin_horizontal((state::margin_unit / 10 * 4) / 2);
+            element->wrapper_box.push_back(&element->layer_label);
+            element->wrapper_box.push_back(&element->layer_label_spacer);
+            element->wrapper_box.push_back(&element->frame);
+            element->wrapper.push_back(&element->wrapper_box);
             _list_view.push_back(&element->wrapper);
         }
 
@@ -396,6 +409,8 @@ namespace mousetrap
                                                       FrameColumn* instance)
     {
         instance->_owner->set_selection(i, instance->_frame_i);
+        state::update_layer_view();
+        state::update_animation_preview();
     }
 
     FrameView::FrameColumn::operator Widget*()
@@ -851,6 +866,12 @@ namespace mousetrap
         _frame_column_list_view.get_selection_model()->set_signal_selection_changed_blocked(true);
         _frame_column_list_view.get_selection_model()->select(frame_i);
         _frame_column_list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
+
+        state::current_frame = _selected_frame_i;
+        state::current_layer = _selected_layer_i;
+
+        state::update_layer_view();
+        state::update_animation_preview();
     }
 
     void FrameView::on_selection_changed(SelectionModel*, size_t i, size_t n_items, FrameView* instance)

@@ -124,78 +124,72 @@ namespace mousetrap
     {
         std::vector<Vector2i> out;
 
-        // source: [1] https://www.geeksforgeeks.org/midpoint-ellipse-drawing-algorithm/
+        // source: [1] https://stackoverflow.com/questions/15474122/is-there-a-midpoint-ellipse-algorithm
 
         auto center = Vector2i(
             width / 2,
             height / 2
         );
 
-        float x_radius = width / 2.f;
-        float y_radius = height / 2.f;
+        int a = width / 2.f;
+        int b = height / 2.f;
+
+        int a2 = a * a;
+        int b2 = b * b;
 
         int x = 0;
-        int y = y_radius;
+        int y = b;
+        int px = 0;
+        int py = 2 * a2 * y;
 
-        auto rx = x_radius;
-        auto ry = y_radius;
+        float p = (b2 - (a2 * b) + (0.25 * a2));
 
-        float d1 = (ry * ry) - (rx * rx * ry) + (0.25f * rx * rx);
-        float dx = 2.f * ry * ry * x;
-        float dy = 2.f * rx * rx * y;
-
-        while (dx < dy)
+        auto add_points = [&](auto x, auto y)
         {
-            out.emplace_back(x + center.x, y + center.y);
-            out.emplace_back(-x + center.x, y + center.y);
-            out.emplace_back(x + center.x, -y + center.y);
-            out.emplace_back(-x + center.x, -y + center.y);
+            auto x_offset = int(width % 2 == 0);
+            auto y_offset = int(height % 2 == 0);
 
-            if (d1 < 0)
-            {
-                x += 1;
+            out.emplace_back(center.x + x - x_offset, center.y + y - y_offset);
+            out.emplace_back(center.x - x, center.y + y - y_offset);
+            out.emplace_back(center.x + x - x_offset, center.y - y);
+            out.emplace_back(center.x - x, center.y - y);
+        };
 
-                dx = dx + (2 * ry * ry);
-                d1 = d1 + dx + (ry * ry);
-            }
+        add_points(x, y);
+
+        while (px < py)
+        {
+            x++;
+            px += 2 * b2;
+
+            if (p < 0)
+                p += b2 + px;
             else
             {
-                x += 1;
-                y -= 1;
-
-                dx = dx + (2 * ry * ry);
-                dy = dy - (2 * rx * rx);
-                d1 = d1 + dx - dy + (ry * ry);
+                y--;
+                py -= 2 * a2;
+                p += b2 + px - py;
             }
+
+            add_points(x, y);
         }
 
-        float d2 = ((ry * ry) * ((x + 0.5f) * (x + 0.5f))) +
-                   ((rx * rx) * ((y - 1) * (y - 1))) -
-                   (rx * rx * ry * ry);
+        p = (b2 * (x + 0.5) * (x + 0.5) + a2 * (y-1) * (y-1) - a2 * b2);
 
         while (y > 0)
         {
-            out.emplace_back(x + center.x, y + center.y);
-            out.emplace_back(-x + center.x, y + center.y);
-            out.emplace_back(x + center.x, -y + center.y);
-            out.emplace_back(-x + center.x, -y + center.y);
-
-            if (d2 > 0)
-            {
-                y -= 1;
-
-                dy = dy - (2 * rx * rx);
-                d2 = d2 + (rx * rx) - dy;
-            }
+            y--;
+            py -= 2 * a2;
+            if (p > 0)
+                p += a2 - py;
             else
             {
-                y -= 1;
-                x += 1;
-
-                dx = dx + (2 * ry * ry);
-                dy = dy - (2 * rx * rx);
-                d2 = d2 + dx - dy + (rx * rx);
+                x++;
+                px += 2 * b2;
+                p += a2 - py + px;
             }
+
+            add_points(x, y);
         }
 
         return out;

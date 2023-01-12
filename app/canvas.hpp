@@ -11,6 +11,16 @@
 
 namespace mousetrap
 {
+    struct Canvas : public AppComponent
+    {
+        SeparatorLine _instance;
+        Canvas() = default;
+        operator Widget*() override {return &_instance;}
+        void update() override {}
+    };
+
+}
+    /*
     class Canvas : public AppComponent
     {
         public:
@@ -611,3 +621,4 @@ namespace mousetrap
         _selection_layer.update();
     }
 }
+     */

@@ -242,7 +242,9 @@ namespace mousetrap
     }
 
     void AnimationPreview::update()
-    {}
+    {
+        // frame set in on_tick_callback
+    }
 
     void AnimationPreview::on_realize(Widget* widget, AnimationPreview* instance)
     {
@@ -380,15 +382,22 @@ namespace mousetrap
     void AnimationPreview::on_tick_callback(FrameClock& clock)
     {
         if (not _playback_active or _fps == 0)
-            return;
-
-        auto frame_duration = seconds(1.f / _fps);
-        _elapsed += clock.get_time_since_last_frame();
-
-        while (_elapsed > frame_duration)
         {
-            _elapsed -= frame_duration;
-            _current_frame = _current_frame + 1 == state::n_frames ? 0 : _current_frame + 1;
+            if (_current_frame == state::current_frame)
+                return;
+
+            _current_frame = state::current_frame;
+        }
+        else
+        {
+            auto frame_duration = seconds(1.f / _fps);
+            _elapsed += clock.get_time_since_last_frame();
+
+            while (_elapsed > frame_duration)
+            {
+                _elapsed -= frame_duration;
+                _current_frame = _current_frame + 1 == state::n_frames ? 0 : _current_frame + 1;
+            }
         }
 
         for (size_t layer_i = 0; _layer_shapes.size() == state::layers.size() and layer_i < state::layers.size(); ++layer_i)
