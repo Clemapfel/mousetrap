@@ -35,14 +35,7 @@ namespace mousetrap
             template<typename DoFunction_t>
             void set_do_function(DoFunction_t);
 
-            template<typename UndoFunction_t, typename UndoData_t>
-            void set_undo_function(UndoFunction_t, UndoData_t);
-
-            template<typename UndoFunction_t>
-            void set_undo_function(UndoFunction_t);
-
             void activate() const;
-            void undo() const;
 
             void add_shortcut(const ShortcutTriggerID&);
             const std::vector<ShortcutTriggerID>& get_shortcuts() const;
@@ -53,8 +46,6 @@ namespace mousetrap
             ActionID _id;
 
             std::function<void()> _do;
-            std::function<void()> _undo;
-
             std::vector<ShortcutTriggerID> _shortcuts;
 
             static void on_action_activate(GSimpleAction*, GVariant*, Action* instance);

@@ -10,6 +10,17 @@
 
 namespace mousetrap
 {
+    namespace state
+    {
+        void layer_move_up(size_t layer_i);
+        void layer_move_down(size_t layer_i);
+        void layer_create(size_t layer_i);
+        void layer_duplicate(size_t layer_i);
+        void layer_delete(size_t layer_i);
+        void layer_merge(size_t upper, size_t lower);
+        void layer_flatten_all();
+    }
+
     class LayerView : public AppComponent
     {
         public:
@@ -730,7 +741,6 @@ namespace mousetrap
         };
 
         _layer_create_action.set_do_function([](LayerView* instance){
-            instance->on_layer_create();
         }, this);
         _layer_create_action.add_shortcut(get_shortcut("layer_create"));
         state::app->add_action(_layer_create_action);
@@ -760,7 +770,6 @@ namespace mousetrap
         state::app->add_action(_layer_flatten_all_action);
 
         _layer_move_up_action.set_do_function([](LayerView* instance){
-            instance->on_layer_move_up();
         }, this);
         _layer_move_up_action.add_shortcut(get_shortcut("layer_move_up"));
         state::app->add_action(_layer_move_up_action);

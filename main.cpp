@@ -176,6 +176,65 @@ void validate_keybindings_file(KeyFile* file)
     ((BubbleLogArea*) state::bubble_log)->send_message(message.str(), InfoMessageType::ERROR);
 }
 
+// TODO
+struct RedoableAction
+{
+    static inline std::deque<std::function<void()>> undo_queue = {};
+    static inline std::deque<std::function<void()>> redo_queue = {};
+    static inline std::function<void()>* do_f = new std::function<void()>([](){});
+    static inline std::function<void()>* undo_f = new std::function<void()>([](){});
+    static inline std::function<void()>* redo_f = new std::function<void()>([](){});
+
+    template<typename DoFunction_t, typename UndoFunction_t, typename RedoFunction_t>
+    void set_f(DoFunction_t do_action, UndoFunction_t undo_action, RedoFunction_t redo_action)
+    {
+        (*do_f) = [&](){
+            do_action();
+            undo_queue.emplace_back([&](){
+                (*undo_f)();
+            });
+        };
+
+        (*undo_f) = [&](){
+            undo_action();
+            redo_queue.emplace_back([&](){
+                (*redo_f)();
+            });
+        };
+
+        (*redo_f) = [&](){
+            redo_action();
+            undo_queue.emplace_back([&](){
+                (*undo_f)();
+            });
+        };
+    }
+
+    void trigger_do()
+    {
+        (*do_f)();
+    }
+    
+    void trigger_undo()
+    {
+        if (undo_queue.empty())
+            return;
+
+        undo_queue.back()();
+        undo_queue.pop_back();
+    }
+    
+    void trigger_redo()
+    {
+        if (redo_queue.empty())
+            return;
+
+        redo_queue.back()();
+        redo_queue.pop_back();
+    }
+};
+// TODO
+
 static void activate(GtkApplication* app, void*)
 {
     state::settings_file = new KeyFile(get_resource_path() + "settings.ini");
@@ -222,14 +281,47 @@ static void activate(GtkApplication* app, void*)
 
     // TODO
     canvas->set_opacity(0);
-    /*
     {
-        auto before = export_state_to_file().as_string();
-        auto compressed = zlib_compress(before);
-        auto decompressed = zlib_decompress(compressed);
-        std::cout << decompressed << std::endl;
+        static size_t modified = -1;
+        static size_t current_undo_i;
+        static size_t current_redo_i;
+        
+        auto do_f = [](){
+            current_undo_i = modified;
+            modified = state::current_layer;
+        };
+        
+        auto undo_f = [](){
+            current_redo_i = modified;
+            modified = current_undo_i;
+        };
+
+        auto redo_f = [](){
+            current_undo_i = modified;
+            modified = current_redo_i;
+        };
+
+        auto action = RedoableAction();
+        action.set_f(do_f, undo_f, redo_f);
+
+        std::cout << "00: " << modified << std::endl;
+        state::current_layer = 42;
+        action.trigger_do();
+        std::cout << "a1: " << modified << std::endl;
+        action.trigger_undo();
+        std::cout << "u1: "  << modified << std::endl;
+        action.trigger_redo();
+        std::cout << "r1: " << modified << std::endl;
+        state::current_layer = 3;
+        action.trigger_undo();
+        std::cout << "u2: " << modified << std::endl;
+        action.trigger_redo();
+        std::cout << "r2: " << modified << std::endl;
+        action.trigger_do();
+        std::cout << "a2: " << modified << std::endl;
+
+        exit(0);
     }
-     */
     // TODO
 
     auto* color_picker_window = new Window();

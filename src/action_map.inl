@@ -34,6 +34,7 @@ namespace mousetrap
         g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
     }
 
+    /*
     template<typename UndoFunction_t, typename UndoData_t>
     void Action::set_undo_function(UndoFunction_t f_in, UndoData_t data_in)
     {
@@ -50,6 +51,13 @@ namespace mousetrap
         };
     }
 
+    void Action::undo() const
+    {
+        if (_undo != nullptr)
+            _undo();
+    }
+     */
+
     void Action::on_action_activate(GSimpleAction*, GVariant*, Action* instance)
     {
         instance->activate();
@@ -59,12 +67,6 @@ namespace mousetrap
     {
         if (_do != nullptr)
             _do();
-    }
-
-    void Action::undo() const
-    {
-        if (_undo != nullptr)
-            _undo();
     }
 
     void Action::add_shortcut(const ShortcutTriggerID& shortcut)
