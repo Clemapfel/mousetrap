@@ -31,8 +31,14 @@ namespace mousetrap::state
                 key << c;
         }
 
-        action.add_shortcut(state::keybindings_file->get_value(group.str(), key.str()));
+        bool has_shortcut = state::keybindings_file->has_group(group.str()) && state::keybindings_file->has_key(group.str(), key.str());
+
+        if (has_shortcut)
+            action.add_shortcut(state::keybindings_file->get_value(group.str(), key.str()));
+
         state::app->add_action(action);
-        state::shortcut_controller->add_action(id);
+
+        if (has_shortcut)
+            state::shortcut_controller->add_action(id);
     }
 }

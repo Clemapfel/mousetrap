@@ -12,13 +12,6 @@ namespace mousetrap
 {
     namespace state
     {
-        void layer_move_up(size_t layer_i);
-        void layer_move_down(size_t layer_i);
-        void layer_create(size_t layer_i);
-        void layer_duplicate(size_t layer_i);
-        void layer_delete(size_t layer_i);
-        void layer_merge(size_t upper, size_t lower);
-        void layer_flatten_all();
     }
 
     class LayerView : public AppComponent

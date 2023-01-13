@@ -23,8 +23,7 @@ namespace mousetrap
     static inline const ToolID MARQUEE_POLYGON_ADD = "marquee_polygon_add";
     static inline const ToolID MARQUEE_POLYGON_SUBTRACT = "marquee_polygon_subtract";
     
-    static inline const ToolID PENCIL = "pencil";
-    static inline const ToolID BRUSH = PENCIL;
+    static inline const ToolID BRUSH = "pencil";
     static inline const ToolID ERASER = "eraser";
     static inline const ToolID EYEDROPPER = "eyedropper";
     static inline const ToolID BUCKET_FILL = "bucket_fill";

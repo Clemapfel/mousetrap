@@ -16,6 +16,31 @@
 
 namespace mousetrap
 {
+    namespace state::actions
+    {
+        Action palette_view_on_load_default_action = Action("palette_view.load_default");
+        Action palette_view_on_save_action = Action("palette_view.save");
+        Action palette_view_on_save_as_default_action = Action("palette_view.save_as_default");
+        Action palette_view_on_load_action = Action("palette_view.load");
+        Action palette_view_on_save_as_action = Action("palette_view.save_as");
+
+        Action palette_view_on_sort_by_default_action = Action("palette_view.sort_by_default");
+        Action palette_view_on_sort_by_hue_action = Action("palette_view.sort_by_hue");
+        Action palette_view_on_sort_by_saturation_action = Action("palette_view.sort_by_saturation");
+        Action palette_view_on_sort_by_value_action = Action("palette_view.sort_by_value");
+
+        Action palette_view_select_color_0 = Action("palette_view.select_color_0");
+        Action palette_view_select_color_1 = Action("palette_view.select_color_1");
+        Action palette_view_select_color_2 = Action("palette_view.select_color_2");
+        Action palette_view_select_color_3 = Action("palette_view.select_color_3");
+        Action palette_view_select_color_4 = Action("palette_view.select_color_4");
+        Action palette_view_select_color_5 = Action("palette_view.select_color_5");
+        Action palette_view_select_color_6 = Action("palette_view.select_color_6");
+        Action palette_view_select_color_7 = Action("palette_view.select_color_7");
+        Action palette_view_select_color_8 = Action("palette_view.select_color_8");
+        Action palette_view_select_color_9 = Action("palette_view.select_color_9");
+    }
+
     class PaletteView : public AppComponent
     {
         public:
@@ -127,38 +152,13 @@ namespace mousetrap
 
             // actions
 
-            Action _on_load_action = Action("palette_view.load");
             OpenFileDialog _on_load_dialog = OpenFileDialog("Load Palette");
             void on_load_ok_pressed();
 
-            Action _on_save_as_action = Action("palette_view.save_as");
             SaveAsFileDialog _on_save_as_dialog = SaveAsFileDialog("Save Palette As");
             void on_save_as_ok_pressed();
 
             std::string _save_to_path = "";
-
-            Action _on_load_default_action = Action("palette_view.load_default");
-            Action _on_save_action = Action("palette_view.save");
-            Action _on_save_as_default_action = Action("palette_view.save_as_default");
-
-            Action _on_sort_by_default_action = Action("palette_view.sort_by_default");
-            Action _on_sort_by_hue_action = Action("palette_view.sort_by_hue");
-            Action _on_sort_by_saturation_action = Action("palette_view.sort_by_saturation");
-            Action _on_sort_by_value_action = Action("palette_view.sort_by_value");
-
-            Action _select_color_0 = Action("palette_view.select_color_0");
-            Action _select_color_1 = Action("palette_view.select_color_1");
-            Action _select_color_2 = Action("palette_view.select_color_2");
-            Action _select_color_3 = Action("palette_view.select_color_3");
-            Action _select_color_4 = Action("palette_view.select_color_4");
-            Action _select_color_5 = Action("palette_view.select_color_5");
-            Action _select_color_6 = Action("palette_view.select_color_6");
-            Action _select_color_7 = Action("palette_view.select_color_7");
-            Action _select_color_8 = Action("palette_view.select_color_8");
-            Action _select_color_9 = Action("palette_view.select_color_9");
-
-            ShortcutController _shortcut_controller = ShortcutController(state::app);
-
             Tooltip _tooltip;
     };
 }
@@ -587,7 +587,10 @@ namespace mousetrap
         FileFilter palette_filer = FileFilter("Mousetrap Palette File");
         palette_filer.add_allowed_suffix("palette");
 
+        using namespace state::actions;
+
         // ACTION: load
+
         _on_load_dialog.get_file_chooser().add_filter(palette_filer, true);
 
         _on_load_dialog.set_on_accept_pressed([](OpenFileDialog*, PaletteView* instance){
@@ -599,11 +602,9 @@ namespace mousetrap
             instance->_on_load_dialog.close();
         }, this);
 
-        _on_load_action.set_function([instance = this](){
+        palette_view_on_load_action.set_function([instance = this](){
             instance->_on_load_dialog.show();
         });
-
-        state::app->add_action(_on_load_action);
 
         // ACTION: save as
         _on_save_as_dialog.get_file_chooser().add_filter(palette_filer, true);
@@ -617,16 +618,14 @@ namespace mousetrap
             instance->_on_save_as_dialog.close();
         }, this);
 
-        _on_save_as_action.set_function([instance = this](){
+        palette_view_on_save_as_action.set_function([instance = this](){
             instance->_on_save_as_dialog.get_name_entry().set_text("Untitled.palette");
             instance->_on_save_as_dialog.show();
         });
 
-        state::app->add_action(_on_save_as_action);
-
         // Action:: Save
 
-        _on_save_action.set_function([instance = this](){
+        palette_view_on_save_action.set_function([instance = this](){
             if (instance->_save_to_path == "")
             {
                 instance->_on_save_as_dialog.get_name_entry().set_text("Untitled.palette");
@@ -636,19 +635,15 @@ namespace mousetrap
                 instance->save_to_file(instance->_save_to_path);
         });
 
-        state::app->add_action(_on_save_action);
-
         // Action: Load Default
-        _on_load_default_action.set_function([instance = this]()
+        palette_view_on_load_default_action.set_function([instance = this]()
         {
             instance->load_from_file(get_resource_path() + "default.palette");
         });
 
-        state::app->add_action(_on_load_default_action);
-
         // Action: Save As Default
 
-        _on_save_as_default_action.set_function([instance = this]()
+        palette_view_on_save_as_default_action.set_function([instance = this]()
         {
             if (state::palette.save_to(get_resource_path() + "default.palette"))
                 ((BubbleLogArea*) state::bubble_log)->send_message("Current palette saved as default");
@@ -656,32 +651,27 @@ namespace mousetrap
                 ((BubbleLogArea*) state::bubble_log)->send_message("Unable to save current palette as default");
         });
 
-        state::app->add_action(_on_save_as_default_action);
-
         // Action:: Sort
 
-        _on_sort_by_default_action.set_function([instance = this](){
+        palette_view_on_sort_by_default_action.set_function([instance = this](){
             state::palette_sort_mode = PaletteSortMode::NONE;
             instance->update_from_palette();
         });
 
-        _on_sort_by_hue_action.set_function([instance = this](){
+        palette_view_on_sort_by_hue_action.set_function([instance = this](){
             state::palette_sort_mode = PaletteSortMode::BY_HUE;
             instance->update_from_palette();
         });
 
-        _on_sort_by_value_action.set_function([instance = this](){
+        palette_view_on_sort_by_value_action.set_function([instance = this](){
             state::palette_sort_mode = PaletteSortMode::BY_VALUE;
             instance->update_from_palette();
         });
 
-        _on_sort_by_saturation_action.set_function([instance = this](){
+        palette_view_on_sort_by_saturation_action.set_function([instance = this](){
             state::palette_sort_mode = PaletteSortMode::BY_SATURATION;
             instance->update_from_palette();
         });
-
-        for (auto* action : {&_on_sort_by_default_action, &_on_sort_by_hue_action, &_on_sort_by_value_action, &_on_sort_by_saturation_action})
-            state::app->add_action(*action);
 
         // on startup: make first color current color
         operator Widget*()->add_tick_callback([](FrameClock, PaletteView* instance) -> bool
@@ -690,19 +680,17 @@ namespace mousetrap
             return false;
         }, this);
 
-        // keybinding
-
         std::vector<Action*> select_color_actions = {
-            &_select_color_0,
-            &_select_color_1,
-            &_select_color_2,
-            &_select_color_3,
-            &_select_color_4,
-            &_select_color_5,
-            &_select_color_6,
-            &_select_color_7,
-            &_select_color_8,
-            &_select_color_9
+            &palette_view_select_color_0,
+            &palette_view_select_color_1,
+            &palette_view_select_color_2,
+            &palette_view_select_color_3,
+            &palette_view_select_color_4,
+            &palette_view_select_color_5,
+            &palette_view_select_color_6,
+            &palette_view_select_color_7,
+            &palette_view_select_color_8,
+            &palette_view_select_color_9
         };
 
         for (size_t i = 0; i < select_color_actions.size(); ++i)
@@ -711,17 +699,30 @@ namespace mousetrap
             action->set_function([index = i, instance = this](){
                 instance->select(index);
             });
-
-            auto shortcut = state::keybindings_file->get_value_as<std::string>("palette_view", "select_color_" + std::to_string(i));
-            action->add_shortcut(shortcut);
-            state::app->add_action(*action);
-            _shortcut_controller.add_action(action->get_id());
         }
 
-        _shortcut_controller.set_scope(ShortcutScope::GLOBAL);
-        _shortcut_controller.set_propagation_phase(GTK_PHASE_BUBBLE);
-
-        operator Widget*()->add_controller(&_shortcut_controller);
+        for (auto* action : {
+            &palette_view_on_load_default_action,
+            &palette_view_on_save_action,
+            &palette_view_on_save_as_default_action,
+            &palette_view_on_load_action,
+            &palette_view_on_save_as_action,
+            &palette_view_on_sort_by_default_action,
+            &palette_view_on_sort_by_hue_action,
+            &palette_view_on_sort_by_saturation_action,
+            &palette_view_on_sort_by_value_action,
+            &palette_view_select_color_0,
+            &palette_view_select_color_1,
+            &palette_view_select_color_2,
+            &palette_view_select_color_3,
+            &palette_view_select_color_4,
+            &palette_view_select_color_5,
+            &palette_view_select_color_6,
+            &palette_view_select_color_7,
+            &palette_view_select_color_8,
+            &palette_view_select_color_9
+        })
+            state::add_shortcut_action(*action);
 
         _tooltip.create_from("palette_view", state::tooltips_file, state::keybindings_file);
         operator Widget*()->set_tooltip_widget(_tooltip.operator Widget*());
