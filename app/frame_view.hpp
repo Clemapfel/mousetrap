@@ -431,100 +431,100 @@ namespace mousetrap
     {
         // ACTIONS
 
-        _toggle_onionskin_visible_action.set_do_function([](ControlBar* instance) {
+        _toggle_onionskin_visible_action.set_function([instance = this]() {
             instance->on_toggle_onionskin_visible();
-        }, this);
+        });
         _toggle_onionskin_visible_action.add_shortcut(state::keybindings_file->get_value("frame_view", "toggle_onionskin_visible"));
         state::app->add_action(_toggle_onionskin_visible_action);
         _shortcut_controller.add_action(_toggle_onionskin_visible_action.get_id());
         
-        _increase_n_onionskin_layers_action.set_do_function([](ControlBar* instance) -> void {
+        _increase_n_onionskin_layers_action.set_function([instance = this]() -> void {
             auto current = state::onionskin_n_layers;
             instance->set_n_onionskin_layers(current + 1);
-        }, this);
+        });
         state::app->add_action(_increase_n_onionskin_layers_action);
         _shortcut_controller.add_action(_increase_n_onionskin_layers_action.get_id());
 
-        _decrease_n_onionskin_layers_action.set_do_function([](ControlBar* instance) -> void {
+        _decrease_n_onionskin_layers_action.set_function([instance = this]() -> void {
             auto current = state::onionskin_n_layers;
             instance->set_n_onionskin_layers(current - 1);
-        }, this);
+        });
         state::app->add_action(_decrease_n_onionskin_layers_action);
         _shortcut_controller.add_action(_decrease_n_onionskin_layers_action.get_id());
         
-        _jump_to_start_action.set_do_function([](ControlBar* instance) {
+        _jump_to_start_action.set_function([instance = this]() {
             instance->on_jump_to_start();
-        }, this);
+        });
         _jump_to_start_action.add_shortcut(state::keybindings_file->get_value("frame_view", "jump_to_start"));
         state::app->add_action(_jump_to_start_action);
         _shortcut_controller.add_action(_jump_to_start_action.get_id());
 
-        _jump_to_end_action.set_do_function([](ControlBar* instance) {
+        _jump_to_end_action.set_function([instance = this]() {
             instance->on_jump_to_end();
-        }, this);
+        });
         _jump_to_end_action.add_shortcut(state::keybindings_file->get_value("frame_view", "jump_to_end"));
         state::app->add_action(_jump_to_end_action);
         _shortcut_controller.add_action(_jump_to_end_action.get_id());
 
-        _go_to_previous_frame_action.set_do_function([](ControlBar* instance) {
+        _go_to_previous_frame_action.set_function([instance = this]() {
             instance->on_go_to_previous_frame();
-        }, this);
+        });
         _go_to_previous_frame_action.add_shortcut(state::keybindings_file->get_value("frame_view", "go_to_previous_frame"));
         state::app->add_action(_go_to_previous_frame_action);
         _shortcut_controller.add_action(_go_to_previous_frame_action.get_id());
 
-        _go_to_next_frame_action.set_do_function([](ControlBar* instance) {
+        _go_to_next_frame_action.set_function([instance = this]() {
             instance->on_go_to_next_frame();
-        }, this);
+        });
         _go_to_next_frame_action.add_shortcut(state::keybindings_file->get_value("frame_view", "go_to_next_frame"));
         state::app->add_action(_go_to_next_frame_action);
         _shortcut_controller.add_action(_go_to_next_frame_action.get_id());
 
-        _play_pause_action.set_do_function([](ControlBar* instance) {
+        _play_pause_action.set_function([instance = this]() {
             instance->on_play_pause();
-        }, this);
+        });
         _play_pause_action.add_shortcut(state::keybindings_file->get_value("frame_view", "play_pause"));
         state::app->add_action(_play_pause_action);
         _shortcut_controller.add_action(_play_pause_action.get_id());
 
-        _frame_move_right_action.set_do_function([](ControlBar* instance) {
+        _frame_move_right_action.set_function([instance = this]() {
             instance->on_frame_move_right();
-        }, this);
+        });
         _frame_move_right_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_move_right"));
         state::app->add_action(_frame_move_right_action);
         _shortcut_controller.add_action(_frame_move_right_action.get_id());
 
-        _frame_move_left_action.set_do_function([](ControlBar* instance) {
+        _frame_move_left_action.set_function([instance = this]() {
             instance->on_frame_move_left();
-        }, this);
+        });
         _frame_move_left_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_move_left"));
         state::app->add_action(_frame_move_left_action);
         _shortcut_controller.add_action(_frame_move_left_action.get_id());
 
-        _frame_new_left_of_current_action.set_do_function([](ControlBar* instance) {
+        _frame_new_left_of_current_action.set_function([instance = this]() {
             instance->on_frame_new_left_of_current();
-        }, this);
+        });
         _frame_new_left_of_current_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_new_left_of_current"));
         state::app->add_action(_frame_new_left_of_current_action);
         _shortcut_controller.add_action(_frame_new_left_of_current_action.get_id());
 
-        _frame_new_right_of_current_action.set_do_function([](ControlBar* instance) {
+        _frame_new_right_of_current_action.set_function([instance = this]() {
             instance->on_frame_new_right_of_current();
-        }, this);
+        });
         _frame_new_right_of_current_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_new_right_of_current"));
         state::app->add_action(_frame_new_right_of_current_action);
         _shortcut_controller.add_action(_frame_new_right_of_current_action.get_id());
 
-        _frame_delete_action.set_do_function([](ControlBar* instance) {
+        _frame_delete_action.set_function([instance = this]() {
             instance->on_frame_delete();
-        }, this);
+        });
         _frame_delete_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_delete"));
         state::app->add_action(_frame_delete_action);
         _shortcut_controller.add_action(_frame_delete_action.get_id());
 
-        _frame_make_keyframe_inbetween_action.set_do_function([](ControlBar* instance) {
+        _frame_make_keyframe_inbetween_action.set_function([instance = this]() {
             instance->on_frame_make_keyframe_inbetween();
-        }, this);
+        });
         _frame_make_keyframe_inbetween_action.add_shortcut(state::keybindings_file->get_value("frame_view", "frame_make_keyframe_inbetween"));
         state::app->add_action(_frame_make_keyframe_inbetween_action);
         _shortcut_controller.add_action(_frame_make_keyframe_inbetween_action.get_id());

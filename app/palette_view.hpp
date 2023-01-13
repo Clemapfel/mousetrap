@@ -599,9 +599,9 @@ namespace mousetrap
             instance->_on_load_dialog.close();
         }, this);
 
-        _on_load_action.set_do_function([](PaletteView* instance){
+        _on_load_action.set_function([instance = this](){
             instance->_on_load_dialog.show();
-        }, this);
+        });
 
         state::app->add_action(_on_load_action);
 
@@ -617,16 +617,16 @@ namespace mousetrap
             instance->_on_save_as_dialog.close();
         }, this);
 
-        _on_save_as_action.set_do_function([](PaletteView* instance){
+        _on_save_as_action.set_function([instance = this](){
             instance->_on_save_as_dialog.get_name_entry().set_text("Untitled.palette");
             instance->_on_save_as_dialog.show();
-        }, this);
+        });
 
         state::app->add_action(_on_save_as_action);
 
         // Action:: Save
 
-        _on_save_action.set_do_function([](PaletteView* instance){
+        _on_save_action.set_function([instance = this](){
             if (instance->_save_to_path == "")
             {
                 instance->_on_save_as_dialog.get_name_entry().set_text("Untitled.palette");
@@ -634,51 +634,51 @@ namespace mousetrap
             }
             else
                 instance->save_to_file(instance->_save_to_path);
-        }, this);
+        });
 
         state::app->add_action(_on_save_action);
 
         // Action: Load Default
-        _on_load_default_action.set_do_function([](PaletteView* instance)
+        _on_load_default_action.set_function([instance = this]()
         {
             instance->load_from_file(get_resource_path() + "default.palette");
-        }, this);
+        });
 
         state::app->add_action(_on_load_default_action);
 
         // Action: Save As Default
 
-        _on_save_as_default_action.set_do_function([](PaletteView* instance)
+        _on_save_as_default_action.set_function([instance = this]()
         {
             if (state::palette.save_to(get_resource_path() + "default.palette"))
                 ((BubbleLogArea*) state::bubble_log)->send_message("Current palette saved as default");
             else
                 ((BubbleLogArea*) state::bubble_log)->send_message("Unable to save current palette as default");
-        }, this);
+        });
 
         state::app->add_action(_on_save_as_default_action);
 
         // Action:: Sort
 
-        _on_sort_by_default_action.set_do_function([](PaletteView* instance){
+        _on_sort_by_default_action.set_function([instance = this](){
             state::palette_sort_mode = PaletteSortMode::NONE;
             instance->update_from_palette();
-        }, this);
+        });
 
-        _on_sort_by_hue_action.set_do_function([](PaletteView* instance){
+        _on_sort_by_hue_action.set_function([instance = this](){
             state::palette_sort_mode = PaletteSortMode::BY_HUE;
             instance->update_from_palette();
-        }, this);
+        });
 
-        _on_sort_by_value_action.set_do_function([](PaletteView* instance){
+        _on_sort_by_value_action.set_function([instance = this](){
             state::palette_sort_mode = PaletteSortMode::BY_VALUE;
             instance->update_from_palette();
-        }, this);
+        });
 
-        _on_sort_by_saturation_action.set_do_function([](PaletteView* instance){
+        _on_sort_by_saturation_action.set_function([instance = this](){
             state::palette_sort_mode = PaletteSortMode::BY_SATURATION;
             instance->update_from_palette();
-        }, this);
+        });
 
         for (auto* action : {&_on_sort_by_default_action, &_on_sort_by_hue_action, &_on_sort_by_value_action, &_on_sort_by_saturation_action})
             state::app->add_action(*action);
@@ -708,9 +708,9 @@ namespace mousetrap
         for (size_t i = 0; i < select_color_actions.size(); ++i)
         {
             auto* action = select_color_actions.at(i);
-            action->set_do_function([index = i](PaletteView* instance){
+            action->set_function([index = i, instance = this](){
                 instance->select(index);
-            }, this);
+            });
 
             auto shortcut = state::keybindings_file->get_value_as<std::string>("palette_view", "select_color_" + std::to_string(i));
             action->add_shortcut(shortcut);

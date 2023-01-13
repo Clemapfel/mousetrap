@@ -25,7 +25,7 @@ namespace mousetrap
         _scroll_controller.connect_signal_scroll_end(on_scroll_end, this);
         _area.add_controller(&_scroll_controller);
 
-        _scale_step_up_action.set_do_function([](ControlLayer* instance) {
+        _scale_step_up_action.set_function([](ControlLayer* instance) {
             instance->_owner->set_transform_scale(*(instance->_owner->_transform_scale) + instance->_owner->_transform_scale_step);
             instance->_owner->update();
         }, this);
@@ -33,7 +33,7 @@ namespace mousetrap
         state::app->add_action(_scale_step_up_action);
         _shortcut_controller.add_action(_scale_step_up_action.get_id());
 
-        _scale_step_down_action.set_do_function([](ControlLayer* instance) {
+        _scale_step_down_action.set_function([](ControlLayer* instance) {
             float scale = *(instance->_owner->_transform_scale) - instance->_owner->_transform_scale_step;
             instance->_owner->set_transform_scale(std::max<float>(scale, 0));
             instance->_owner->update();

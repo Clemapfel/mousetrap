@@ -221,30 +221,30 @@ namespace mousetrap
 
         // Actions
 
-        _increase_brush_opacity_action.set_do_function([](BrushOptions* instance){
+        _increase_brush_opacity_action.set_function([instance = this](){
             instance->set_brush_opacity(instance->get_brush_opacity() + 0.1f);
-        }, this);
+        });
         _increase_brush_opacity_action.add_shortcut(state::keybindings_file->get_value("brush_options", "increase_brush_opacity"));
         state::app->add_action(_increase_brush_opacity_action);
         _shortcut_controller.add_action(_increase_brush_opacity_action.get_id());
 
-        _decrease_brush_opacity_action.set_do_function([](BrushOptions* instance){
+        _decrease_brush_opacity_action.set_function([instance = this](){
             instance->set_brush_opacity(instance->get_brush_opacity() - 0.1f);
-        }, this);
+        });
         _decrease_brush_opacity_action.add_shortcut(state::keybindings_file->get_value("brush_options", "decrease_brush_opacity"));
         state::app->add_action(_decrease_brush_opacity_action);
         _shortcut_controller.add_action(_decrease_brush_opacity_action.get_id());
 
-        _increase_brush_size_action.set_do_function([](BrushOptions* instance){
+        _increase_brush_size_action.set_function([instance = this](){
             instance->set_brush_opacity(instance->get_brush_opacity() + 1);
-        }, this);
+        });
         _increase_brush_size_action.add_shortcut(state::keybindings_file->get_value("brush_options", "increase_brush_size"));
         state::app->add_action(_increase_brush_size_action);
         _shortcut_controller.add_action(_increase_brush_size_action.get_id());
 
-        _decrease_brush_size_action.set_do_function([](BrushOptions* instance){
+        _decrease_brush_size_action.set_function([instance = this](){
             instance->set_brush_opacity(instance->get_brush_opacity() - 1);
-        }, this);
+        });
         _decrease_brush_size_action.add_shortcut(state::keybindings_file->get_value("brush_options", "decrease_brush_size"));
         state::app->add_action(_decrease_brush_size_action);
         _shortcut_controller.add_action(_decrease_brush_size_action.get_id());

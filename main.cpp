@@ -281,7 +281,7 @@ static void activate(GtkApplication* app, void*)
 
     // TODO
     canvas->set_opacity(0);
-    {
+    if (false) {
         static size_t modified = -1;
         static size_t current_undo_i;
         static size_t current_redo_i;
@@ -368,7 +368,12 @@ static void activate(GtkApplication* app, void*)
     color_preview_frame.set_end_child_shrinkable(false);
     color_preview_frame.set_start_child_resizable(false);
     color_preview_frame.set_end_child_resizable(false);
-    color_preview_frame.set_start_child(color_preview);
+
+    auto preview_swapper_box = Box(GTK_ORIENTATION_VERTICAL);
+    preview_swapper_box.push_back(color_swapper);
+    preview_swapper_box.push_back(color_preview);
+
+    color_preview_frame.set_start_child(&preview_swapper_box);
 
     auto color_preview_frame_buffer = SeparatorLine();
     color_preview_frame_buffer.set_expand(false);

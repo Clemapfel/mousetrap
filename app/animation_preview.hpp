@@ -128,36 +128,36 @@ namespace mousetrap
 
         // TODO why does *this* change locations in actions only
 
-        _toggle_playback_active_action.set_do_function([](AnimationPreview*){
+        _toggle_playback_active_action.set_function([](){
             auto* instance = ((AnimationPreview*) state::animation_preview);
             instance->on_playback_toggled();
-        }, this);
+        });
         _toggle_playback_active_action.add_shortcut(state::keybindings_file->get_value("animation_preview", "toggle_playback_active"));
         state::app->add_action(_toggle_playback_active_action);
         _shortcut_controller.add_action(_toggle_playback_active_action.get_id());
 
-        _increase_scale_factor_action.set_do_function([](AnimationPreview*){
+        _increase_scale_factor_action.set_function([](){
             auto* instance = ((AnimationPreview*) state::animation_preview);
             if (instance->_scale_factor < instance->_max_scale_factor)
                 instance->set_scale_factor(instance->_scale_factor + 1);
-        }, this);
+        });
         _increase_scale_factor_action.add_shortcut(state::keybindings_file->get_value("animation_preview", "increase_scale_factor"));
         state::app->add_action(_increase_scale_factor_action);
         _shortcut_controller.add_action(_increase_scale_factor_action.get_id());
 
-        _decrease_scale_factor_action.set_do_function([](AnimationPreview*){
+        _decrease_scale_factor_action.set_function([](){
             auto* instance = ((AnimationPreview*) state::animation_preview);
             if (instance->_scale_factor > 1)
                 instance->set_scale_factor(instance->_scale_factor - 1);
-        }, this);
+        });
         _decrease_scale_factor_action.add_shortcut(state::keybindings_file->get_value("animation_preview", "decrease_scale_factor"));
         state::app->add_action(_decrease_scale_factor_action);
         _shortcut_controller.add_action(_decrease_scale_factor_action.get_id());
 
-        _toggle_background_visible_action.set_do_function([](AnimationPreview*){
+        _toggle_background_visible_action.set_function([](){
             auto* instance = ((AnimationPreview*) state::animation_preview);
             instance->set_background_visible(not instance->_background_visible);
-        }, this);
+        });
         _toggle_background_visible_action.add_shortcut(state::keybindings_file->get_value("animation_preview", "toggle_background_visible"));
         state::app->add_action(_toggle_background_visible_action);
         _shortcut_controller.add_action(_toggle_background_visible_action.get_id());

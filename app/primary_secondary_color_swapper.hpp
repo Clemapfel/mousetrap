@@ -93,9 +93,10 @@ namespace mousetrap
         _main.add_controller(&_click_event_controller);
         _main.add_controller(&_motion_event_controller);
 
-        _swap_action.set_do_function([](ColorSwapper* instance) {
+        _swap_action.set_function([]() {
+            auto* instance = (ColorSwapper*) state::color_swapper;
             instance->swap_colors();
-        }, this);
+        });
         _swap_action.add_shortcut(state::keybindings_file->get_value("color_swapper", "swap"));
         state::app->add_action(_swap_action);
         _shortcut_controller.add_action(_swap_action.get_id());

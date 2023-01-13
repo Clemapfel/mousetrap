@@ -740,59 +740,59 @@ namespace mousetrap
             return state::keybindings_file->get_value("layer_view", key);
         };
 
-        _layer_create_action.set_do_function([](LayerView* instance){
-        }, this);
+        _layer_create_action.set_function([instance = this](){
+        });
         _layer_create_action.add_shortcut(get_shortcut("layer_create"));
         state::app->add_action(_layer_create_action);
 
-        _layer_delete_action.set_do_function([](LayerView* instance){
+        _layer_delete_action.set_function([instance = this](){
             instance->on_layer_delete();
-        }, this);
+        });
         _layer_delete_action.add_shortcut(get_shortcut("layer_delete"));
         state::app->add_action(_layer_delete_action);
 
-        _layer_duplicate_action.set_do_function([](LayerView* instance){
+        _layer_duplicate_action.set_function([instance = this](){
             instance->on_layer_duplicate();
-        }, this);
+        });
         _layer_duplicate_action.add_shortcut(get_shortcut("layer_duplicate"));
         state::app->add_action(_layer_duplicate_action);
 
-        _layer_merge_down_action.set_do_function([](LayerView* instance){
+        _layer_merge_down_action.set_function([instance = this](){
             instance->on_layer_merge_down();
-        }, this);
+        });
         _layer_merge_down_action.add_shortcut(get_shortcut("layer_merge_down"));
         state::app->add_action(_layer_merge_down_action);
 
-        _layer_flatten_all_action.set_do_function([](LayerView* instance){
+        _layer_flatten_all_action.set_function([instance = this](){
             instance->on_layer_flatten_all();
-        }, this);
+        });
         _layer_flatten_all_action.add_shortcut(get_shortcut("layer_flatten_all"));
         state::app->add_action(_layer_flatten_all_action);
 
-        _layer_move_up_action.set_do_function([](LayerView* instance){
-        }, this);
+        _layer_move_up_action.set_function([instance = this](){
+        });
         _layer_move_up_action.add_shortcut(get_shortcut("layer_move_up"));
         state::app->add_action(_layer_move_up_action);
 
-        _layer_move_down_action.set_do_function([](LayerView* instance){
+        _layer_move_down_action.set_function([instance = this](){
             instance->on_layer_move_down();
-        }, this);
+        });
         _layer_move_down_action.add_shortcut(get_shortcut("layer_move_down"));
         state::app->add_action(_layer_move_down_action);
 
-        _set_layer_visible_action.set_do_function([](LayerView* instance) {
+        _set_layer_visible_action.set_function([instance = this]() {
             auto current = state::layers.at(state::current_layer)->is_visible;
             instance->_layer_rows.at(state::current_layer).set_visible(not current);
             state::layers.at(state::current_layer)->is_visible = not current;
-        }, this);
+        });
         _set_layer_visible_action.add_shortcut(get_shortcut("set_layer_visible"));
         state::app->add_action(_set_layer_visible_action);
 
-        _set_layer_locked_action.set_do_function([](LayerView* instance) {
+        _set_layer_locked_action.set_function([instance = this]() {
             auto current = state::layers.at(state::current_layer)->is_locked;
             instance->_layer_rows.at(state::current_layer).set_locked(not current);
             state::layers.at(state::current_layer)->is_locked = not current;
-        }, this);
+        });
         _set_layer_locked_action.add_shortcut(get_shortcut("set_layer_locked"));
         state::app->add_action(_set_layer_locked_action);
         

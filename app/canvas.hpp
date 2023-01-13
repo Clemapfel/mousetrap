@@ -427,13 +427,13 @@ namespace mousetrap
 
         // setup undo / redo architecture
 
-        _undo_draw_step_action.set_do_function([](Canvas* instance) -> void {
+        _undo_draw_step_action.set_function([](Canvas* instance) -> void {
             instance->on_undo_action();
         }, this);
         _undo_draw_step_action.add_shortcut(state::keybindings_file->get_value("canvas", "undo_draw_step"));
         state::app->add_action(_undo_draw_step_action);
 
-        _redo_draw_step_action.set_do_function([](Canvas* instance) -> void {
+        _redo_draw_step_action.set_function([](Canvas* instance) -> void {
             instance->on_redo_action();
         }, this);
         _redo_draw_step_action.add_shortcut(state::keybindings_file->get_value("canvas", "redo_draw_step"));

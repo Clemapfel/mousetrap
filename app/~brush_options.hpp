@@ -206,7 +206,7 @@ namespace mousetrap
         _preview_size_box.push_back(&_preview_size_spin_button);
         _preview_size_box.set_margin(state::margin_unit);
 
-        _reload_default_brushes_action.set_do_function([](BrushOptions* instance) {
+        _reload_default_brushes_action.set_function([](BrushOptions* instance) {
             state::reload_brushes();
             instance->reload_default_brushes();
             ((BubbleLogArea*) state::bubble_log)->send_message("Loaded brushes from `" + get_resource_path() + "brushes`");
@@ -256,7 +256,7 @@ namespace mousetrap
 
         }, this);
 
-        _add_brush_action.set_do_function([](BrushOptions* instance){
+        _add_brush_action.set_function([](BrushOptions* instance){
             instance->_add_brush_dialog.show();
         }, this);
         state::app->add_action(_add_brush_action);
@@ -295,14 +295,14 @@ namespace mousetrap
 
         select_brush(0);
 
-        _increase_brushsize_action.set_do_function([](BrushOptions* instance){
+        _increase_brushsize_action.set_function([](BrushOptions* instance){
             instance->_size_spin_button.set_value(instance->_size_spin_button.get_value() + 1);
         }, this);
         _increase_brushsize_action.add_shortcut(state::keybindings_file->get_value("brush_options", "increase_brush_size"));
         state::app->add_action(_increase_brushsize_action);
         _shortcut_controller.add_action("brush_options.increase_brush_size");
 
-        _decrease_brushsize_action.set_do_function([](BrushOptions* instance){
+        _decrease_brushsize_action.set_function([](BrushOptions* instance){
             instance->_size_spin_button.set_value(instance->_size_spin_button.get_value() - 1);
         }, this);
         _decrease_brushsize_action.add_shortcut(state::keybindings_file->get_value("brush_options", "decrease_brush_size"));
