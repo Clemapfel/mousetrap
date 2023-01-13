@@ -5,53 +5,10 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
-
-#include <string>
-#include <functional>
+#include <include/action.hpp>
 
 namespace mousetrap
 {
-    // SHORTCUTS
-    // Add a shortcut via Action::get_shortcut. Then, any menu item that uses that same action will automatically
-    // display first shortcut for that action.
-    // For the shortcut to be activatable by the user, a widget has to add a ShortcutController to it's event
-    // controllers. Then, it will react to the user pressing the correct shortcut by triggering the action.
-
-    using ActionID = std::string;
-    using ShortcutTriggerID = std::string;
-
-    class Action
-    {
-        public:
-            Action(const std::string& id);
-            ~Action();
-
-            ActionID get_id() const;
-
-            template<typename DoFunction_t, typename DoData_t>
-            void set_do_function(DoFunction_t, DoData_t);
-
-            template<typename DoFunction_t>
-            void set_do_function(DoFunction_t);
-
-            void activate() const;
-
-            void add_shortcut(const ShortcutTriggerID&);
-            const std::vector<ShortcutTriggerID>& get_shortcuts() const;
-
-            operator GAction*() const;
-
-        private:
-            ActionID _id;
-
-            std::function<void()> _do;
-            std::vector<ShortcutTriggerID> _shortcuts;
-
-            static void on_action_activate(GSimpleAction*, GVariant*, Action* instance);
-            GSimpleAction* _g_action = nullptr;
-    };
-
     class ActionMap
     {
         public:
