@@ -8,9 +8,23 @@
 #include <app/app_component.hpp>
 #include <app/global_state.hpp>
 #include <app/tooltip.hpp>
+#include <app/add_shortcut_action.hpp>
 
 namespace mousetrap
 {
+    namespace state::actions
+    {
+        Action brush_options_increase_brush_size_action = Action("brush_options.increase_brush_size");
+        Action brush_options_decrease_brush_size_action = Action("brush_options.decrease_brush_size");
+
+        Action brush_options_increase_brush_opacity_action = Action("brush_options.increase_brush_opacity");
+        Action brush_options_decrease_brush_opacity_action = Action("brush_options.decrease_brush_opacity");
+
+        Action brush_options_add_brush_action = Action("brush_options.add_brush");
+        Action brush_options_remove_brush_action = Action("brush_options.remove_brush");
+        Action brush_options_load_default_brushes = Action("brush_options.load_default_brushes");
+    }
+
     class BrushOptions : public AppComponent
     {
         public:
@@ -98,12 +112,6 @@ namespace mousetrap
             // Actions
 
             ShortcutController _shortcut_controller = ShortcutController(state::app);
-
-            Action _increase_brush_size_action = Action("brush_options.increase_brush_size");
-            Action _decrease_brush_size_action = Action("brush_options.decrease_brush_size");
-
-            Action _increase_brush_opacity_action = Action("brush_options.increase_brush_opacity");
-            Action _decrease_brush_opacity_action = Action("brush_options.decrease_brush_opacity");
 
             // Menu
 
@@ -221,33 +229,42 @@ namespace mousetrap
 
         // Actions
 
-        _increase_brush_opacity_action.set_function([instance = this](){
+        using namespace state::actions;
+
+        brush_options_increase_brush_opacity_action.set_function([instance = this](){
             instance->set_brush_opacity(instance->get_brush_opacity() + 0.1f);
         });
-        _increase_brush_opacity_action.add_shortcut(state::keybindings_file->get_value("brush_options", "increase_brush_opacity"));
-        state::app->add_action(_increase_brush_opacity_action);
-        _shortcut_controller.add_action(_increase_brush_opacity_action.get_id());
+        state::add_shortcut_action(brush_options_increase_brush_opacity_action);
 
-        _decrease_brush_opacity_action.set_function([instance = this](){
+        brush_options_decrease_brush_opacity_action.set_function([instance = this](){
             instance->set_brush_opacity(instance->get_brush_opacity() - 0.1f);
         });
-        _decrease_brush_opacity_action.add_shortcut(state::keybindings_file->get_value("brush_options", "decrease_brush_opacity"));
-        state::app->add_action(_decrease_brush_opacity_action);
-        _shortcut_controller.add_action(_decrease_brush_opacity_action.get_id());
+        state::add_shortcut_action(brush_options_decrease_brush_opacity_action);
 
-        _increase_brush_size_action.set_function([instance = this](){
+        brush_options_increase_brush_size_action.set_function([instance = this](){
             instance->set_brush_opacity(instance->get_brush_opacity() + 1);
         });
-        _increase_brush_size_action.add_shortcut(state::keybindings_file->get_value("brush_options", "increase_brush_size"));
-        state::app->add_action(_increase_brush_size_action);
-        _shortcut_controller.add_action(_increase_brush_size_action.get_id());
+        state::add_shortcut_action(brush_options_increase_brush_size_action);
 
-        _decrease_brush_size_action.set_function([instance = this](){
+        brush_options_decrease_brush_size_action.set_function([instance = this](){
             instance->set_brush_opacity(instance->get_brush_opacity() - 1);
         });
-        _decrease_brush_size_action.add_shortcut(state::keybindings_file->get_value("brush_options", "decrease_brush_size"));
-        state::app->add_action(_decrease_brush_size_action);
-        _shortcut_controller.add_action(_decrease_brush_size_action.get_id());
+        state::add_shortcut_action(brush_options_decrease_brush_size_action);
+
+        brush_options_add_brush_action.set_function([](){
+            std::cout << "[TODO] " << brush_options_add_brush_action.get_id() << std::endl;
+        });
+        state::add_shortcut_action(brush_options_add_brush_action);
+
+        brush_options_remove_brush_action.set_function([](){
+            std::cout << "[TODO] " << brush_options_remove_brush_action.get_id() << std::endl;
+        });
+        state::add_shortcut_action(brush_options_remove_brush_action);
+
+        brush_options_load_default_brushes.set_function([](){
+            std::cout << "[TODO] " << brush_options_load_default_brushes.get_id() << std::endl;
+        });
+        state::add_shortcut_action(brush_options_load_default_brushes);
 
         // menu
 
@@ -269,6 +286,12 @@ namespace mousetrap
         preview_size_submenu.add_widget(&_preview_size_box);
         settings_section.add_submenu("Preview Size...", &preview_size_submenu);
         _menu.add_section("Settings", &settings_section);
+
+        auto brush_section = MenuModel();
+        brush_section.add_action("Add Brush...", brush_options_add_brush_action.get_id());
+        brush_section.add_action("Remove Brush", brush_options_remove_brush_action.get_id());
+        brush_section.add_action("Load Default Brushes...", brush_options_load_default_brushes.get_id());
+        _menu.add_section("Manage Brushes", &brush_section);
 
         _menu_button.set_child(&_menu_button_label);
         _menu_button_popover.refresh_widgets();
