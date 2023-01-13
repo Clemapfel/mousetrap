@@ -233,7 +233,7 @@ add_library(mousetrap SHARED
 
     include/switch.hpp
         include/info_message.hpp
-        include/fixed.hpp src/frame_clock.inl include/frame_clock.hpp include/shortcut_viewer.hpp include/log_stream.hpp include/subimage.hpp include/level_bar.hpp include/editable_label.hpp include/string_compression.hpp include/action.hpp src/action.inl)
+        include/fixed.hpp src/frame_clock.inl include/frame_clock.hpp include/shortcut_viewer.hpp include/log_stream.hpp include/subimage.hpp include/level_bar.hpp include/editable_label.hpp include/string_compression.hpp include/action.hpp src/action.inl app/add_shortcut_action.hpp)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX

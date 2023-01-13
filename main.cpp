@@ -246,6 +246,9 @@ static void activate(GtkApplication* app, void*)
     state::app->add_window(state::main_window);
     state::main_window->set_show_menubar(true);
 
+    state::shortcut_controller = new ShortcutController(state::app);
+    state::main_window->add_controller(state::shortcut_controller);
+
     state::reload_brushes();
     initialize_debug_layers();
 

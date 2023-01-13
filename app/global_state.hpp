@@ -33,6 +33,8 @@ namespace mousetrap::state
     Application* app = nullptr;
     MenuModel* global_menu_bar_model = nullptr;
 
+    ShortcutController* shortcut_controller = nullptr;
+
     // ### COLORS #####################################
 
     HSVA primary_color = RGBA(1, 0, 1, 1).operator HSVA();

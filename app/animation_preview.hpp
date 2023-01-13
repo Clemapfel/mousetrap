@@ -7,9 +7,18 @@
 #include <mousetrap.hpp>
 #include <app/app_component.hpp>
 #include <app/global_state.hpp>
+#include <app/add_shortcut_action.hpp>
 
 namespace mousetrap
 {
+    namespace state::actions
+    {
+        Action animation_preview_toggle_playback_active_action = Action("animation_preview.toggle_playback_active");
+        Action animation_preview_increase_scale_factor_action = Action("animation_preview.increase_scale_factor");
+        Action animation_preview_decrease_scale_factor_action = Action("animation_preview.decrease_scale_factor");
+        Action animation_preview_toggle_background_visible_action = Action("animation_preview.toggle_background_visible");
+    }
+
     class AnimationPreview : public AppComponent
     {
         public:
@@ -90,8 +99,6 @@ namespace mousetrap
             MenuModel _menu;
             PopoverMenu _popover_menu = PopoverMenu(&_menu);
 
-            void setup_menu();
-
             // layout
 
             Frame _frame;
@@ -100,15 +107,9 @@ namespace mousetrap
 
             // actions
 
-            Action _toggle_playback_active_action = Action("animation_preview.toggle_playback_active");
-            Action _increase_scale_factor_action = Action("animation_preview.increase_scale_factor");
-            Action _decrease_scale_factor_action = Action("animation_preview.decrease_scale_factor");
-            Action _toggle_background_visible_action = Action("animation_preview.toggle_background_visible");
-
             void on_playback_toggled();
 
             Tooltip _tooltip;
-            ShortcutController _shortcut_controller = ShortcutController(state::app);
             ClickEventController _click_controller;
             static void on_click_pressed(ClickEventController*, gint n_press, double x, double y, AnimationPreview*);
     };
@@ -126,41 +127,32 @@ namespace mousetrap
 
         _menu_button.set_child(&_menu_button_label);
 
-        // TODO why does *this* change locations in actions only
+        using namespace state::actions;
 
-        _toggle_playback_active_action.set_function([](){
+        animation_preview_toggle_playback_active_action.set_function([](){
             auto* instance = ((AnimationPreview*) state::animation_preview);
             instance->on_playback_toggled();
         });
-        _toggle_playback_active_action.add_shortcut(state::keybindings_file->get_value("animation_preview", "toggle_playback_active"));
-        state::app->add_action(_toggle_playback_active_action);
-        _shortcut_controller.add_action(_toggle_playback_active_action.get_id());
 
-        _increase_scale_factor_action.set_function([](){
+        animation_preview_increase_scale_factor_action.set_function([](){
             auto* instance = ((AnimationPreview*) state::animation_preview);
             if (instance->_scale_factor < instance->_max_scale_factor)
                 instance->set_scale_factor(instance->_scale_factor + 1);
         });
-        _increase_scale_factor_action.add_shortcut(state::keybindings_file->get_value("animation_preview", "increase_scale_factor"));
-        state::app->add_action(_increase_scale_factor_action);
-        _shortcut_controller.add_action(_increase_scale_factor_action.get_id());
 
-        _decrease_scale_factor_action.set_function([](){
+        animation_preview_decrease_scale_factor_action.set_function([](){
             auto* instance = ((AnimationPreview*) state::animation_preview);
             if (instance->_scale_factor > 1)
                 instance->set_scale_factor(instance->_scale_factor - 1);
         });
-        _decrease_scale_factor_action.add_shortcut(state::keybindings_file->get_value("animation_preview", "decrease_scale_factor"));
-        state::app->add_action(_decrease_scale_factor_action);
-        _shortcut_controller.add_action(_decrease_scale_factor_action.get_id());
 
-        _toggle_background_visible_action.set_function([](){
+        animation_preview_toggle_background_visible_action.set_function([](){
             auto* instance = ((AnimationPreview*) state::animation_preview);
             instance->set_background_visible(not instance->_background_visible);
         });
-        _toggle_background_visible_action.add_shortcut(state::keybindings_file->get_value("animation_preview", "toggle_background_visible"));
-        state::app->add_action(_toggle_background_visible_action);
-        _shortcut_controller.add_action(_toggle_background_visible_action.get_id());
+
+        for (auto* action : {&animation_preview_toggle_playback_active_action, &animation_preview_decrease_scale_factor_action, &animation_preview_increase_scale_factor_action, &animation_preview_toggle_background_visible_action})
+            state::add_shortcut_action(*action);
 
         auto playback_section = MenuModel();
         playback_section.add_action("Start / Stop Playback", "animation_preview.toggle_playback_active");
@@ -223,7 +215,6 @@ namespace mousetrap
         _tooltip.create_from("animation_preview", state::tooltips_file, state::keybindings_file);
 
         _box.set_tooltip_widget(_tooltip);
-        _box.add_controller(&_shortcut_controller);
 
         _click_controller.connect_signal_click_pressed(on_click_pressed, this);
         _frame.add_controller(&_click_controller);
@@ -423,11 +414,13 @@ namespace mousetrap
             }
             _area.queue_render();
         }
+
+        std::cout << _playback_active << std::endl;
     }
 
     void AnimationPreview::on_click_pressed(ClickEventController*, gint n_press, double x, double y, AnimationPreview* instance)
     {
         for (size_t i = 0; i < n_press; ++i)
-            instance->_toggle_playback_active_action.activate();
+            state::actions::animation_preview_toggle_playback_active_action.activate();
     }
 }
