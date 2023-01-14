@@ -10,6 +10,7 @@
 #include <app/selection.hpp>
 #include <app/image_transform.hpp>
 #include <app/palette_view.hpp>
+#include <app/layer_view.hpp>
 
 #include <include/menu_model.hpp>
 #include <include/application.hpp>
@@ -194,6 +195,10 @@ namespace mousetrap
         colors_submenu.add_section("Transform", &color_submenu_transform_section);
 
         main.add_submenu("Color", &colors_submenu);
+
+        // LAYERS
+
+
 
         // OTHER
 
