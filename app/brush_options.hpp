@@ -109,10 +109,6 @@ namespace mousetrap
 
             std::vector<BrushPreview*> _brush_previews;
 
-            // Actions
-
-            ShortcutController _shortcut_controller = ShortcutController(state::app);
-
             // Menu
 
             MenuModel _menu;

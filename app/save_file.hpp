@@ -14,6 +14,18 @@
 
 namespace mousetrap
 {
+    namespace state::actions
+    {
+        Action save_file_save_state_to_file_action = Action("save_file.export_state_to_file");
+        Action save_file_load_state_from_file_action = Action("save_file.load_state_from_file");
+
+        Action save_file_export_as_image = Action("save_file.export_as_image");
+        Action save_file_export_as_spritesheet = Action("save_file.export_as_spritesheet");
+        Action save_file_export_metadata = Action("save_file.export_as_metadata");
+
+        Action save_file_import_from_image = Action("save_file.import_from_image");
+    }
+
     KeyFile export_state_to_file()
     {
         KeyFile out;

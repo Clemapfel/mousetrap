@@ -399,7 +399,7 @@ static void activate(GtkApplication* app, void*)
 
     auto center_column = Box(GTK_ORIENTATION_VERTICAL);
     center_column.push_back(toolbox);
-    center_column.push_back(animation_preview);//canvas);
+    center_column.push_back(canvas);
 
     toolbox->set_expand(false);
     canvas->set_expand(true);
@@ -413,7 +413,7 @@ static void activate(GtkApplication* app, void*)
     left_and_center_and_frame_view_paned.set_end_child(frame_view);
 
     auto right_column_paned_top = Paned(GTK_ORIENTATION_VERTICAL);
-    right_column_paned_top.set_start_child(canvas);//animation_preview);
+    right_column_paned_top.set_start_child(animation_preview);
     right_column_paned_top.set_end_child(brush_options);
 
     auto right_column_paned = Paned(GTK_ORIENTATION_VERTICAL);

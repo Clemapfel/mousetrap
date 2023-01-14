@@ -129,7 +129,6 @@ namespace mousetrap
                     bool _scale_scroll_inverted = state::settings_file->get_value_as<bool>("canvas", "scale_scroll_inverted");
                     float _scale_scroll_sensitivity = state::settings_file->get_value_as<float>("canvas", "scale_scroll_sensitivity");
 
-                    ShortcutController _shortcut_controller = ShortcutController(state::app);
                     Action _scale_step_up_action = Action("canvas.scale_step_up");
                     Action _scale_step_down_action = Action("canvas.scale_step_down");
             };
@@ -382,8 +381,6 @@ namespace mousetrap
 
             Action _redo_draw_step_action = Action("canvas.redo_draw_step");
             void on_redo_action();
-
-            ShortcutController _shortcut_controller = ShortcutController(state::app);
 
             // main
             Overlay _canvas_layer_overlay;

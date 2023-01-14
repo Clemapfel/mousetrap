@@ -414,8 +414,6 @@ namespace mousetrap
             }
             _area.queue_render();
         }
-
-        std::cout << _playback_active << std::endl;
     }
 
     void AnimationPreview::on_click_pressed(ClickEventController*, gint n_press, double x, double y, AnimationPreview* instance)

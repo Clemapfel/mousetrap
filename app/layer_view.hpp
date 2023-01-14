@@ -7,11 +7,22 @@
 
 #include <mousetrap.hpp>
 #include <app/global_state.hpp>
+#include <app/add_shortcut_action.hpp>
 
 namespace mousetrap
 {
-    namespace state
+    namespace state::actions
     {
+        Action layer_view_layer_move_up_action = Action("layer_view.layer_move_up");
+        Action layer_view_layer_move_down_action = Action("layer_view.layer_move_down");
+        Action layer_view_layer_create_action = Action("layer_view.layer_create");
+        Action layer_view_layer_duplicate_action = Action("layer_view.layer_duplicate");
+        Action layer_view_layer_delete_action = Action("layer_view.layer_delete");
+        Action layer_view_layer_merge_down_action = Action("layer_view.layer_merge_down");
+        Action layer_view_layer_flatten_all_action = Action("layer_view.layer_flatten_all");
+       
+        Action layer_view_set_layer_visible_action = Action("layer_view.set_layer_visible");
+        Action layer_view_set_layer_locked_action = Action("layer_view.set_layer_locked");
     }
 
     class LayerView : public AppComponent
@@ -144,38 +155,31 @@ namespace mousetrap
             ImageDisplay _layer_move_up_icon = ImageDisplay(get_resource_path() + "icons/layer_move_up.png");
             Button _layer_move_up_button;
             static void on_layer_move_up_button_clicked(Button*, LayerView* instance);
-            Action _layer_move_up_action = Action("layer_view.layer_move_up");
 
             ImageDisplay _layer_move_down_icon = ImageDisplay(get_resource_path() + "icons/layer_move_down.png");
             Button _layer_move_down_button;
             static void on_layer_move_down_button_clicked(Button*, LayerView* instance);
-            Action _layer_move_down_action = Action("layer_view.layer_move_down");
-
+           
             ImageDisplay _layer_create_icon = ImageDisplay(get_resource_path() + "icons/layer_create.png");
             Button _layer_create_button;
             static void on_layer_create_button_clicked(Button*, LayerView* instance);
-            Action _layer_create_action = Action("layer_view.layer_create");
-
+            
             ImageDisplay _layer_duplicate_icon = ImageDisplay(get_resource_path() + "icons/layer_duplicate.png");
             Button _layer_duplicate_button;
             static void on_layer_duplicate_button_clicked(Button*, LayerView* instance);
-            Action _layer_duplicate_action = Action("layer_view.layer_duplicate");
-
+            
             ImageDisplay _layer_delete_icon = ImageDisplay(get_resource_path() + "icons/layer_delete.png");
             Button _layer_delete_button;
             static void on_layer_delete_button_clicked(Button*, LayerView* instance);
-            Action _layer_delete_action = Action("layer_view.layer_delete");
-
+           
             ImageDisplay _layer_merge_down_icon = ImageDisplay(get_resource_path() + "icons/layer_merge_down.png");
             Button _layer_merge_down_button;
             static void on_layer_merge_down_button_clicked(Button*, LayerView* instance);
-            Action _layer_merge_down_action = Action("layer_view.layer_merge_down");
-
+            
             ImageDisplay _layer_flatten_all_icon = ImageDisplay(get_resource_path() + "icons/layer_flatten_all.png");
             Button _layer_flatten_all_button;
             static void on_layer_flatten_all_button_clicked(Button*, LayerView* instance);
-            Action _layer_flatten_all_action = Action("layer_view.layer_flatten_all");
-
+            
             Box _control_bar_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
             void on_layer_create();
@@ -187,10 +191,8 @@ namespace mousetrap
             void on_layer_move_down();
 
             // menu & actions
-            
-            Action _set_layer_visible_action = Action("layer_view.set_layer_visible");
-            Action _set_layer_locked_action = Action("layer_view.set_layer_locked");
 
+           
             MenuButton _header_menu_button;
             Label _header_menu_button_label = Label("Layers");
 
@@ -217,7 +219,6 @@ namespace mousetrap
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
 
-            ShortcutController _shortcut_controller = ShortcutController(state::app);
             Tooltip _tooltip;
     };
 }
@@ -729,68 +730,62 @@ namespace mousetrap
         _control_bar_box.set_hexpand(true);
 
         // actions
-        auto get_shortcut = [](const std::string key) {
-            return state::keybindings_file->get_value("layer_view", key);
-        };
+        using namespace state::actions;
 
-        _layer_create_action.set_function([instance = this](){
+        layer_view_layer_create_action.set_function([](){
+            auto* instance = (LayerView*) state::layer_view;
         });
-        _layer_create_action.add_shortcut(get_shortcut("layer_create"));
-        state::app->add_action(_layer_create_action);
 
-        _layer_delete_action.set_function([instance = this](){
-            instance->on_layer_delete();
+        layer_view_layer_delete_action.set_function([](){
+            auto* instance = (LayerView*) state::layer_view;
         });
-        _layer_delete_action.add_shortcut(get_shortcut("layer_delete"));
-        state::app->add_action(_layer_delete_action);
 
-        _layer_duplicate_action.set_function([instance = this](){
-            instance->on_layer_duplicate();
+        layer_view_layer_duplicate_action.set_function([](){
+            auto* instance = (LayerView*) state::layer_view;
         });
-        _layer_duplicate_action.add_shortcut(get_shortcut("layer_duplicate"));
-        state::app->add_action(_layer_duplicate_action);
 
-        _layer_merge_down_action.set_function([instance = this](){
-            instance->on_layer_merge_down();
+        layer_view_layer_merge_down_action.set_function([](){
+            auto* instance = (LayerView*) state::layer_view;
         });
-        _layer_merge_down_action.add_shortcut(get_shortcut("layer_merge_down"));
-        state::app->add_action(_layer_merge_down_action);
 
-        _layer_flatten_all_action.set_function([instance = this](){
-            instance->on_layer_flatten_all();
+        layer_view_layer_flatten_all_action.set_function([](){
+            auto* instance = (LayerView*) state::layer_view;
         });
-        _layer_flatten_all_action.add_shortcut(get_shortcut("layer_flatten_all"));
-        state::app->add_action(_layer_flatten_all_action);
 
-        _layer_move_up_action.set_function([instance = this](){
+        layer_view_layer_move_up_action.set_function([](){
+            auto* instance = (LayerView*) state::layer_view;
         });
-        _layer_move_up_action.add_shortcut(get_shortcut("layer_move_up"));
-        state::app->add_action(_layer_move_up_action);
 
-        _layer_move_down_action.set_function([instance = this](){
-            instance->on_layer_move_down();
+        layer_view_layer_move_down_action.set_function([](){
+            auto* instance = (LayerView*) state::layer_view;
         });
-        _layer_move_down_action.add_shortcut(get_shortcut("layer_move_down"));
-        state::app->add_action(_layer_move_down_action);
 
-        _set_layer_visible_action.set_function([instance = this]() {
+        layer_view_set_layer_visible_action.set_function([]() {
+            auto* instance = (LayerView*) state::layer_view;
             auto current = state::layers.at(state::current_layer)->is_visible;
             instance->_layer_rows.at(state::current_layer).set_visible(not current);
             state::layers.at(state::current_layer)->is_visible = not current;
         });
-        _set_layer_visible_action.add_shortcut(get_shortcut("set_layer_visible"));
-        state::app->add_action(_set_layer_visible_action);
 
-        _set_layer_locked_action.set_function([instance = this]() {
+        layer_view_set_layer_locked_action.set_function([]() {
+            auto* instance = (LayerView*) state::layer_view;
             auto current = state::layers.at(state::current_layer)->is_locked;
             instance->_layer_rows.at(state::current_layer).set_locked(not current);
             state::layers.at(state::current_layer)->is_locked = not current;
         });
-        _set_layer_locked_action.add_shortcut(get_shortcut("set_layer_locked"));
-        state::app->add_action(_set_layer_locked_action);
-        
-        for (auto* action : {&_layer_create_action, &_layer_delete_action, &_layer_duplicate_action, &_layer_merge_down_action, &_layer_flatten_all_action, &_layer_move_up_action, &_layer_move_down_action, &_set_layer_visible_action, &_set_layer_locked_action})
-            _shortcut_controller.add_action(action->get_id());
+       
+        for (auto* action : {
+            &layer_view_layer_move_up_action,
+            &layer_view_layer_move_down_action,
+            &layer_view_layer_create_action,
+            &layer_view_layer_duplicate_action,
+            &layer_view_layer_delete_action,
+            &layer_view_layer_merge_down_action,
+            &layer_view_layer_flatten_all_action,
+            &layer_view_set_layer_visible_action,
+            &layer_view_set_layer_locked_action
+        })
+            state::add_shortcut_action(*action);
         
         // tooltips
 
@@ -869,8 +864,6 @@ namespace mousetrap
         _main.push_back(&_header_menu_button);
         _main.push_back(&_layer_rows_scrolled_window);
         _main.push_back(&_control_bar_box);
-
-        _main.add_controller(&_shortcut_controller);
     }
 
     void LayerView::on_layer_move_up_button_clicked(Button*, LayerView* instance)
