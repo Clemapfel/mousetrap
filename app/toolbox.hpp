@@ -372,10 +372,8 @@ namespace mousetrap
             for (size_t i = std::string("toolbox.select_").size(); i < action->get_id().size(); ++i)
                 which << (char) action->get_id().at(i);
 
-            std::cout << which.str() << std::endl;
             action->set_function([id = std::string(which.str())](){
-                std::cout << id << std::endl;
-                //((Toolbox*) state::toolbox)->select(id);
+                ((Toolbox*) state::toolbox)->select(id);
             });
             state::add_shortcut_action(*action);
         }

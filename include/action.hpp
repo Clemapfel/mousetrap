@@ -56,7 +56,7 @@ namespace mousetrap
                 std::function<void()>* undo_f = new std::function<void()>([](){});
                 std::function<void()>* redo_f = new std::function<void()>([](){});
             };
-            static inline std::unordered_map<ActionID, InstanceState> _instance_states = {};
+            static inline std::unordered_map<ActionID, InstanceState*> _instance_states = {};
 
             std::vector<ShortcutTriggerID> _shortcuts;
 
