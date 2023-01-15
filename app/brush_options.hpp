@@ -23,6 +23,8 @@ namespace mousetrap
         Action brush_options_add_brush_action = Action("brush_options.add_brush");
         Action brush_options_remove_brush_action = Action("brush_options.remove_brush");
         Action brush_options_load_default_brushes = Action("brush_options.load_default_brushes");
+
+        Action brush_options_open_default_brush_directory_action = Action("brush_options.open_default_brush_directory");
     }
 
     class BrushOptions : public AppComponent

@@ -15,14 +15,19 @@ namespace mousetrap
     {
         Action layer_view_layer_move_up_action = Action("layer_view.layer_move_up");
         Action layer_view_layer_move_down_action = Action("layer_view.layer_move_down");
-        Action layer_view_layer_create_action = Action("layer_view.layer_create");
+        Action layer_view_layer_new_above_current_action = Action("layer_view.layer_new_above_current");
+        Action layer_view_layer_new_below_current_action = Action("layer_view.layer_new_below_current");
+
         Action layer_view_layer_duplicate_action = Action("layer_view.layer_duplicate");
         Action layer_view_layer_delete_action = Action("layer_view.layer_delete");
         Action layer_view_layer_merge_down_action = Action("layer_view.layer_merge_down");
         Action layer_view_layer_flatten_all_action = Action("layer_view.layer_flatten_all");
-       
+        Action layer_view_layer_create_from_visible = Action("layer_view.layer_create_from_visible");
         Action layer_view_set_layer_visible_action = Action("layer_view.set_layer_visible");
         Action layer_view_set_layer_locked_action = Action("layer_view.set_layer_locked");
+
+        Action layer_view_show_all_other_layers = Action("layer_view.show_all_other_layers");
+        Action layer_view_hide_all_other_layers = Action("layer_view.hide_all_other_layers");
     }
 
     class LayerView : public AppComponent
@@ -191,7 +196,6 @@ namespace mousetrap
             void on_layer_move_down();
 
             // menu & actions
-
            
             MenuButton _header_menu_button;
             Label _header_menu_button_label = Label("Layers");
@@ -732,7 +736,11 @@ namespace mousetrap
         // actions
         using namespace state::actions;
 
-        layer_view_layer_create_action.set_function([](){
+        layer_view_layer_new_above_current_action.set_function([](){
+            auto* instance = (LayerView*) state::layer_view;
+        });
+
+        layer_view_layer_new_below_current_action.set_function([](){
             auto* instance = (LayerView*) state::layer_view;
         });
 
@@ -777,7 +785,8 @@ namespace mousetrap
         for (auto* action : {
             &layer_view_layer_move_up_action,
             &layer_view_layer_move_down_action,
-            &layer_view_layer_create_action,
+            &layer_view_layer_new_above_current_action,
+            &layer_view_layer_new_below_current_action,
             &layer_view_layer_duplicate_action,
             &layer_view_layer_delete_action,
             &layer_view_layer_merge_down_action,

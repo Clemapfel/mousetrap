@@ -11,6 +11,18 @@
 
 namespace mousetrap
 {
+    namespace state::actions
+    {
+        Action canvas_toggle_grid_visible_action = Action("canvas.toggle_grid_visible");
+        Action canvas_open_grid_color_settings_action = Action("canvas.open_grid_color_settings");
+
+        Action canvas_toggle_brush_outline_visible_action = Action("canvas.toggle_brush_outline_visible");
+        Action canvas_toggle_horizontal_mirror_visible_action = Action("canvas.toggle_horizontal_mirror_visible");
+        Action canvas_toggle_vertical_mirror_visible_action = Action("canvas.toggle_vertical_mirror_visible");
+
+        Action canvas_reset_transform_action = Action("canvas.reset_transform");
+    }
+
     struct Canvas : public AppComponent
     {
         SeparatorLine _instance;
