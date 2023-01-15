@@ -447,6 +447,16 @@ static void activate(GtkApplication* app, void*)
     bubble_log_overlay.set_child(&main);
     bubble_log_overlay.add_overlay(bubble_log);
 
+    // ACTIONS
+
+    using namespace state::actions;
+
+    menu_open_settings_ini_file_action.set_function([](){
+        // TODO
+        //(state::main_window->operator GtkWindow*(), (get_resource_path() + "settings.ini").c_str(), 0);
+    });
+    state::add_shortcut_action(menu_open_settings_ini_file_action);
+
     // MAIN
 
     state::main_window->set_child(&bubble_log_overlay);
