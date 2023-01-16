@@ -62,14 +62,14 @@ namespace mousetrap
 {
     std::string palette_sort_mode_to_string(PaletteSortMode mode)
     {
-        if (mode == PaletteSortMode::NONE)
-            return "NONE";
-        else if (mode == PaletteSortMode::BY_HUE)
+        if (mode == PaletteSortMode::BY_HUE)
             return "BY_HUE";
         else if (mode == PaletteSortMode::BY_SATURATION)
             return "BY_SATURATION";
         else if (mode == PaletteSortMode::BY_VALUE)
             return "BY_VALUE";
+        else
+            return "NONE";
     }
 
     PaletteSortMode palette_sort_mode_from_string(const std::string& in)

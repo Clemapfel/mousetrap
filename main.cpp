@@ -282,51 +282,6 @@ static void activate(GtkApplication* app, void*)
     auto* frame_view = state::frame_view->operator Widget*();
     auto* animation_preview = state::animation_preview->operator Widget*();
 
-    // TODO
-    canvas->set_opacity(0);
-    if (false) {
-        static size_t modified = -1;
-        static size_t current_undo_i;
-        static size_t current_redo_i;
-        
-        auto do_f = [](){
-            current_undo_i = modified;
-            modified = state::current_layer;
-        };
-        
-        auto undo_f = [](){
-            current_redo_i = modified;
-            modified = current_undo_i;
-        };
-
-        auto redo_f = [](){
-            current_undo_i = modified;
-            modified = current_redo_i;
-        };
-
-        auto action = RedoableAction();
-        action.set_f(do_f, undo_f, redo_f);
-
-        std::cout << "00: " << modified << std::endl;
-        state::current_layer = 42;
-        action.trigger_do();
-        std::cout << "a1: " << modified << std::endl;
-        action.trigger_undo();
-        std::cout << "u1: "  << modified << std::endl;
-        action.trigger_redo();
-        std::cout << "r1: " << modified << std::endl;
-        state::current_layer = 3;
-        action.trigger_undo();
-        std::cout << "u2: " << modified << std::endl;
-        action.trigger_redo();
-        std::cout << "r2: " << modified << std::endl;
-        action.trigger_do();
-        std::cout << "a2: " << modified << std::endl;
-
-        exit(0);
-    }
-    // TODO
-
     auto* color_picker_window = new Window();
     color_picker_window->set_child(color_picker);
     color_picker_window->set_titlebar_layout("title:close");
@@ -446,16 +401,6 @@ static void activate(GtkApplication* app, void*)
     auto bubble_log_overlay = Overlay();
     bubble_log_overlay.set_child(&main);
     bubble_log_overlay.add_overlay(bubble_log);
-
-    // ACTIONS
-
-    using namespace state::actions;
-
-    menu_open_settings_ini_file_action.set_function([](){
-        // TODO
-        //(state::main_window->operator GtkWindow*(), (get_resource_path() + "settings.ini").c_str(), 0);
-    });
-    state::add_shortcut_action(menu_open_settings_ini_file_action);
 
     // MAIN
 

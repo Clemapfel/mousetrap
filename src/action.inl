@@ -10,7 +10,7 @@ namespace mousetrap
 
     Action::~Action()
     {
-        g_object_unref(_g_action);
+        //g_object_unref(_g_action);
     }
 
     template<typename DoFunction_t>

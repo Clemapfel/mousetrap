@@ -9,6 +9,7 @@
 #include <app/save_file.hpp>
 #include <app/selection.hpp>
 #include <app/image_transform.hpp>
+#include <app/color_transform.hpp>
 #include <app/palette_view.hpp>
 #include <app/layer_view.hpp>
 #include <app/frame_view.hpp>
@@ -121,6 +122,21 @@ namespace mousetrap
         Action menu_open_log_folder_action = Action("menu.open_log_folder");
         Action state_undo_action = Action("state.undo");
         Action state_redo_action = Action("state.redo");
+    }
+
+    void initialize_menubar_actions()
+    {
+        static auto open_uri = [](const std::string& uri)
+        {
+            GError* error = nullptr;
+            g_app_info_launch_default_for_uri(uri.c_str(), nullptr, &error);
+            if (error != nullptr)
+            {
+                auto error_message = "Unable to open uri at `" + uri + ": " + error->message;
+                ((BubbleLogArea*) state::bubble_log)->send_message(error_message);
+                std::cerr << error_message << std::endl;
+            }
+        };
     }
 
     void setup_global_menu_bar_model()

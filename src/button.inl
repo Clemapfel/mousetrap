@@ -21,4 +21,9 @@ namespace mousetrap
     {
         gtk_button_set_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
+
+    void Button::set_action(Action& action)
+    {
+        gtk_actionable_set_action_name(GTK_ACTIONABLE(get_native()), ("app."+ action.get_id()).c_str());
+    }
 }

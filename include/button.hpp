@@ -7,6 +7,7 @@
 
 #include <include/widget.hpp>
 #include <include/signal_component.hpp>
+#include <include/action.hpp>
 
 namespace mousetrap
 {
@@ -17,6 +18,7 @@ namespace mousetrap
 
             void set_has_frame(bool b);
             void set_child(Widget*);
+            void set_action(Action&);
     };
 }
 
