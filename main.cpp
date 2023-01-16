@@ -5,26 +5,35 @@
 #include <gtk/gtk.h>
 
 #include <mousetrap.hpp>
-
-#include <app/global_state.hpp>
-#include <app/primary_secondary_color_swapper.hpp>
-#include <app/brush_options.hpp>
-#include <app/palette_view.hpp>
-#include <app/toolbox.hpp>
-#include <app/color_picker.hpp>
-#include <app/global_state.hpp>
+#include <app/add_shortcut_action.hpp>
+#include <app/algorithms.hpp>
 #include <app/animation_preview.hpp>
-#include <app/layer_view.hpp>
-#include <app/verbose_color_picker.hpp>
-#include <app/menubar.hpp>
-#include <app/canvas.hpp>
-#include <app/app_layout.hpp>
-#include <app/color_preview.hpp>
+#include <app/app_component.hpp>
+#include <app/brush.hpp>
+#include <app/brush_options.hpp>
 #include <app/bubble_log_area.hpp>
+#include <app/canvas.hpp>
+#include <app/color_picker.hpp>
+#include <app/color_preview.hpp>
+#include <app/color_swapper.hpp>
+#include <app/color_transform.hpp>
 #include <app/file_chooser_dialog.hpp>
-#include <app/shortcut_information.hpp>
 #include <app/frame_view.hpp>
+#include <app/global_state.hpp>
+#include <app/image_transform.hpp>
+#include <app/layer.hpp>
+#include <app/layer_view.hpp>
+#include <app/menubar.hpp>
+#include <app/palette.hpp>
+#include <app/palette_view.hpp>
 #include <app/save_file.hpp>
+#include <app/selection.hpp>
+#include <app/settings_files.hpp>
+#include <app/shortcut_information.hpp>
+#include <app/toolbox.hpp>
+#include <app/tools.hpp>
+#include <app/tooltip.hpp>
+#include <app/verbose_color_picker.hpp>
 
 using namespace mousetrap;
 
@@ -69,7 +78,6 @@ void initialize_debug_layers()
         state::layers.back()->blend_mode = BlendMode::NORMAL;
     }
 
-    auto* preview = new AnimationPreview();
     for (auto* layer : state::layers)
     {
         layer->frames.clear();

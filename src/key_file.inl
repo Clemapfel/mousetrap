@@ -470,7 +470,7 @@ namespace mousetrap
         Image out;
 
         auto serialized = get_value_as<std::vector<float>>(group, key);
-        if (not serialized.size() > (4 + 2) and (serialized.size() - 2) % 4 == 0)
+        if (not (serialized.size() > (4 + 2)) and (serialized.size() - 2) % 4 == 0)
         {
             std::cerr << "[ERROR] In KeyFile::get_value_as<Image>: Unable to retrieve value for key `" << key << "` in group `" << group << ": Expected float vector of 4-mers but number of elements is not divisible by four";
             return out;

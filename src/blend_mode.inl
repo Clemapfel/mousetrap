@@ -72,6 +72,8 @@ namespace mousetrap
             return "MIN";
         else if (mode == MAX)
             return "MAX";
+        else
+            return "NONE";
     }
 
     BlendMode blend_mode_from_string(const std::string& str)

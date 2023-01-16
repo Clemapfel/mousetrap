@@ -202,7 +202,7 @@ namespace mousetrap
         *instance->_owner->_current_cursor_position = {x, y};
         instance->update_pixel_position();
 
-        state::update_canvas();
+        state::canvas->update();
     }
 
     void Canvas::ControlLayer::on_motion_leave(MotionEventController*, ControlLayer* instance)

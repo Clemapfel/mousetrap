@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include <include/image.hpp>
+
 namespace mousetrap
 {
     class KeyFile

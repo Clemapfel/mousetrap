@@ -14,7 +14,7 @@ namespace mousetrap
             LinkButton(const std::string& uri, const std::string& label = "");
 
             void set_uri(const std::string&);
-            const std::string& get_uri() const;
+            std::string get_uri() const;
 
             void set_visited(bool);
             bool get_visited() const;

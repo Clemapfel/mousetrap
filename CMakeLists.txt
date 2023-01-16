@@ -3,6 +3,10 @@ project(mousetrap VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_STANDARD 20)
 
+# TODO
+add_definitions(-w)
+# TODO
+
 ### DEPENDENCIES ###
 
 # OpenGL
@@ -228,12 +232,32 @@ add_library(mousetrap SHARED
 
     include/file.hpp
 
-        include/key_file.hpp
-        src/key_file.inl
+    include/key_file.hpp
+    src/key_file.inl
 
     include/switch.hpp
-        include/info_message.hpp
-        include/fixed.hpp src/frame_clock.inl include/frame_clock.hpp include/shortcut_viewer.hpp include/log_stream.hpp include/subimage.hpp include/level_bar.hpp include/editable_label.hpp include/string_compression.hpp include/action.hpp src/action.inl app/add_shortcut_action.hpp app/selection.hpp include/link_button.hpp src/link_button.inl)
+    include/info_message.hpp
+    include/fixed.hpp
+
+    include/frame_clock.hpp
+    src/frame_clock.inl
+
+    include/shortcut_viewer.hpp
+    src/shortcut_viewer.inl
+
+    include/subimage.hpp
+
+    include/level_bar.hpp
+    src/level_bar.inl
+
+    include/string_compression.hpp
+
+    include/action.hpp
+    src/action.inl
+
+    include/link_button.hpp
+    src/link_button.inl
+)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -254,18 +278,91 @@ target_link_libraries(mousetrap PUBLIC
 
 ### EXECUTABLE ###
 
-add_library(app STATIC
-    app/global_state.hpp
-    app/color_picker.hpp
-    app/palette.hpp
-    app/primary_secondary_color_swapper.hpp
-    app/verbose_color_picker.hpp
-    app/tools.hpp
-    app/toolbox.hpp
-    app/brush_options.hpp
-        app/canvas.hpp
+add_library(app SHARED
+
+    app/add_shortcut_action.hpp
+    app/src/add_shortcut_action.cpp
+
+    app/algorithms.hpp
+    app/src/algorithms.cpp
+
+    app/animation_preview.hpp
+    app/src/animation_preview.cpp
+
     app/app_component.hpp
-    app/verbose_color_picker.hpp app/menubar.hpp app/canvas.hpp app/app_layout.hpp app/palette_view.hpp app/color_preview.hpp app/palette_view.hpp app/bubble_log_area.hpp app/canvas.hpp app/canvas/transparency_tiling_layer.hpp app/canvas/grid_layer.hpp app/canvas/layers_layer.hpp app/canvas/brush_cursor_layer.hpp app/file_chooser_dialog.hpp app/shortcut_information.hpp app/tooltip.hpp app/brush.hpp app/settings_files.hpp app/canvas/control_layer.hpp app/canvas/shape_tool_layer.hpp app/canvas/tool_behavior.hpp app/algorithms.hpp app/canvas/selection_layer.hpp app/canvas/line_tool_layer.hpp app/layer_view.hpp app/frame_view.hpp app/save_file.hpp app/image_transform.hpp app/color_transform.hpp)
+
+    app/brush.hpp
+    app/src/brush.cpp
+
+    app/brush_options.hpp
+    app/src/brush_options.cpp
+
+    app/bubble_log_area.hpp
+    app/src/bubble_log_area.cpp
+
+    app/canvas.hpp
+    app/src/canvas.cpp
+
+    app/color_picker.hpp
+    app/src/color_picker.cpp
+
+    app/color_preview.hpp
+    app/src/color_preview.cpp
+
+    app/color_swapper.hpp
+    app/src/color_swapper.cpp
+
+    app/color_transform.hpp
+    app/src/color_transform.cpp
+
+    app/file_chooser_dialog.hpp
+        app/src/file_chooser_dialog.inl
+
+    app/frame_view.hpp
+    app/src/frame_view.cpp
+
+    app/global_state.hpp
+
+    app/image_transform.hpp
+    app/src/image_transform.cpp
+
+    app/layer.hpp
+    app/src/layer.cpp
+
+    app/layer_view.hpp
+    app/src/layer_view.cpp
+
+    app/menubar.hpp
+    app/src/menubar.cpp
+
+    app/palette.hpp
+    app/src/palette.cpp
+
+    app/palette_view.hpp
+    app/src/palette_view.cpp
+
+    app/save_file.hpp
+    app/src/save_file.cpp
+
+    app/selection.hpp
+    app/src/selection.cpp
+
+    app/settings_files.hpp
+
+    app/shortcut_information.hpp
+    app/src/shortcut_information.cpp
+
+    app/toolbox.hpp
+    app/src/toolbox.cpp
+
+    app/tools.hpp
+
+    app/tooltip.hpp
+    app/src/tooltip.cpp
+
+    app/verbose_color_picker.hpp
+    app/src/verbose_color_picker.cpp
+)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

@@ -20,8 +20,6 @@ namespace mousetrap
     };
 
     static void set_current_blend_mode(BlendMode);
-    static void set_current_blend_mode_separate(BlendMode rgb_blend, BlendMode alpha_blend);
-
     static std::string blend_mode_to_string(BlendMode);
     static BlendMode blend_mode_from_string(const std::string&);
 }

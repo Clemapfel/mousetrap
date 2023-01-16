@@ -4,6 +4,8 @@
 
 // includes all relevant mousetrap files
 
+#pragma once
+
 #include <include/get_resource_path.hpp>
 #include <include/gl_common.hpp>
 #include <include/shape.hpp>
@@ -76,6 +78,5 @@
 #include <include/fixed.hpp>
 #include <include/shortcut_viewer.hpp>
 #include <include/level_bar.hpp>
-#include <include/editable_label.hpp>
 #include <include/string_compression.hpp>
 #include <include/link_button.hpp>

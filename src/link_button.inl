@@ -13,9 +13,9 @@ namespace mousetrap
         gtk_link_button_set_uri(get_native(), uri.c_str());
     }
 
-    const std::string& LinkButton::get_uri() const
+    std::string LinkButton::get_uri() const
     {
-        return gtk_link_button_get_uri(get_native());
+        return std::string(gtk_link_button_get_uri(get_native()));
     }
 
     bool LinkButton::get_visited() const

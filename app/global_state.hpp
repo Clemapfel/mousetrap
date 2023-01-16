@@ -22,6 +22,7 @@
 #include <app/brush.hpp>
 #include <app/tools.hpp>
 #include <app/settings_files.hpp>
+#include <app/layer.hpp>
 
 namespace mousetrap::state
 {
@@ -40,115 +41,43 @@ namespace mousetrap::state
     HSVA primary_color = RGBA(1, 0, 1, 1).operator HSVA();
     HSVA secondary_color = RGBA(1, 1, 0, 1).operator HSVA();
 
-    AppComponent* color_picker = nullptr;
-    AppComponent* color_swapper = nullptr;
-    AppComponent* verbose_color_picker = nullptr;
-    AppComponent* palette_view = nullptr;
-
     Palette palette;
     PaletteSortMode palette_sort_mode = PaletteSortMode::NONE;
 
     HSVA preview_color_current = primary_color;
     HSVA preview_color_previous = primary_color;
-    AppComponent* color_preview = nullptr;
-
-    void update_color_picker()
-    {
-        if (color_picker != nullptr)
-            color_picker->update();
-    }
-
-    void update_color_swapper()
-    {
-        if (color_swapper != nullptr)
-            color_swapper->update();
-    }
-
-    void update_verbose_color_picker()
-    {
-        if (verbose_color_picker != nullptr)
-            verbose_color_picker->update();
-    }
-
-    void update_palette_view()
-    {
-        if (palette_view != nullptr)
-            palette_view->update();
-    }
-
-    void update_color_preview()
-    {
-        if (color_preview != nullptr)
-            color_preview->update();
-    }
 
     // ### TOOLS ######################################
 
     AppComponent* toolbox = nullptr;
     ToolID active_tool = BRUSH;
 
-    AppComponent* brush_options = nullptr;
-
     Brush* current_brush = nullptr;
     size_t brush_size = 1;
     float brush_opacity = 1;
 
     std::vector<Brush*> brushes;
-
     Vector2Set<int> selection;
 
     // ### LAYERS #####################################
 
-    std::deque<Layer*> layers;
+    std::deque<mousetrap::Layer*> layers;
     Vector2ui layer_resolution;
 
     size_t current_layer = 0;
-
-    AppComponent* layer_view = nullptr;
-    void update_layer_view()
-    {
-        if (layer_view != nullptr)
-            layer_view->update();
-    }
 
     // ### ANIMATION ###################################
 
     size_t current_frame = 0;
     size_t n_frames = 0;
 
-    AppComponent* animation_preview = nullptr;
-    AppComponent* frame_view = nullptr;
-
     bool playback_active = false;
 
     bool onionskin_visible = false;
     size_t onionskin_n_layers = 0;
 
-    void update_frame_view()
-    {
-        if (frame_view != nullptr)
-            frame_view->update();
-    }
-
-    void update_animation_preview()
-    {
-        if (animation_preview != nullptr)
-            animation_preview->update();
-    }
-
-    // ### RENDER DRAW #################################
-
-    AppComponent* canvas;
-
-    void update_canvas()
-    {
-        if (canvas != nullptr)
-            canvas->update();
-    }
-
     // ### SYSTEM ######################################
 
-    AppComponent* bubble_log;
     void validate_keybindings_file();
 
     // ### FORMATING ###################################
