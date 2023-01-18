@@ -3,6 +3,8 @@
 // Created on 9/22/22 by clem (mail@clemens-cords.com)
 //
 
+#include <include/grid_view.hpp>
+
 namespace mousetrap::detail
 {
     #define G_TYPE_GRID_VIEW_ITEM (grid_view_item_get_type())

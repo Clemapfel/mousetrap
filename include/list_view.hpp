@@ -64,5 +64,3 @@ namespace mousetrap
 
     using ListView = TreeListView;
 }
-
-#include <src/list_view.inl>

@@ -165,10 +165,10 @@ add_library(mousetrap SHARED
     src/menu_model.inl
 
     include/list_view.hpp
-    src/list_view.inl
+        src/list_view.cpp
 
     include/column_view.hpp
-    src/column_view.inl
+        src/column_view.cpp
 
     include/popover.hpp
     src/popover.inl
@@ -189,6 +189,7 @@ add_library(mousetrap SHARED
 
     include/dropdown.hpp
     src/dropdown.inl
+    src/dropdown.cpp
 
     include/check_button.hpp
     src/check_button.inl
@@ -196,10 +197,10 @@ add_library(mousetrap SHARED
     include/signal_component.hpp
 
     include/grid_view.hpp
-    src/grid_view.inl
+        src/grid_view.cpp
 
     include/reorderable_list.hpp
-    src/reorderable_list.inl
+        src/reorderable_list.cpp
 
     include/blend_mode.hpp
     src/blend_mode.inl

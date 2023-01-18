@@ -1,4 +1,4 @@
-// 
+//
 // Copyright 2022 Clemens Cords
 // Created on 9/2/22 by clem (mail@clemens-cords.com)
 //
@@ -82,5 +82,3 @@ namespace mousetrap
 
     using ColumnView = TreeColumnView;
 }
-
-#include <src/column_view.inl>

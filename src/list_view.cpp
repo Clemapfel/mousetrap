@@ -3,6 +3,8 @@
 // Created on 9/2/22 by clem (mail@clemens-cords.com)
 //
 
+#include <include/list_view.hpp>
+
 namespace mousetrap::detail
 {
     #define G_TYPE_LIST_VIEW_ITEM (tree_list_view_item_get_type())

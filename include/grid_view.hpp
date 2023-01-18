@@ -1,4 +1,4 @@
-// 
+//
 // Copyright 2022 Clemens Cords
 // Created on 9/22/22 by clem (mail@clemens-cords.com)
 //
@@ -6,6 +6,7 @@
 #pragma once
 
 #include <include/widget.hpp>
+#include <include/selection_model.hpp>
 
 namespace mousetrap
 {
@@ -45,5 +46,3 @@ namespace mousetrap
             GtkOrientation _orientation;
     };
 }
-
-#include <src/grid_view.inl>

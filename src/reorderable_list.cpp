@@ -1,6 +1,8 @@
 //
 // Copyright (c) Clemens Cords (mail@clemens-cords.com), created 1/18/23
-//
+
+#include <include/reorderable_list.hpp>
+
 namespace mousetrap::detail
 {
     #define G_TYPE_REORDERABLE_LIST_ITEM (reorderable_list_item_get_type())
