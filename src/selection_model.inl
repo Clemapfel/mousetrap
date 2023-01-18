@@ -5,21 +5,21 @@
 
 namespace mousetrap
 {
-    SelectionModel::operator GObject*()
+    inline SelectionModel::operator GObject*()
     {
         return G_OBJECT(operator GtkSelectionModel*());
     }
 
-    SelectionModel::operator GtkSelectionModel*()
+    inline SelectionModel::operator GtkSelectionModel*()
     {
         return _native;
     }
 
-    SelectionModel::SelectionModel(GtkSelectionModel* model)
+    inline SelectionModel::SelectionModel(GtkSelectionModel* model)
             : HasSelectionChangedSignal<SelectionModel>(this), _native(model)
     {}
 
-    std::vector<size_t> SelectionModel::get_selection()
+    inline std::vector<size_t> SelectionModel::get_selection()
     {
         auto* bitset = gtk_selection_model_get_selection(operator GtkSelectionModel*());
         std::vector<size_t> out;
@@ -29,35 +29,35 @@ namespace mousetrap
         return out;
     }
 
-    void SelectionModel::select_all()
+    inline void SelectionModel::select_all()
     {
         gtk_selection_model_select_all(operator GtkSelectionModel*());
     }
 
-    void SelectionModel::unselect_all()
+    inline void SelectionModel::unselect_all()
     {
         gtk_selection_model_unselect_all(operator GtkSelectionModel*());
     }
 
-    void SelectionModel::select(size_t i, bool unselect_others)
+    inline void SelectionModel::select(size_t i, bool unselect_others)
     {
         gtk_selection_model_select_item(operator GtkSelectionModel*(), i, unselect_others);
     }
 
-    void SelectionModel::unselect(size_t i)
+    inline void SelectionModel::unselect(size_t i)
     {
         gtk_selection_model_unselect_item(operator GtkSelectionModel*(), i);
     }
 
-    MultiSelectionModel::MultiSelectionModel(GListModel* model)
+    inline MultiSelectionModel::MultiSelectionModel(GListModel* model)
             : SelectionModel(GTK_SELECTION_MODEL(gtk_multi_selection_new(model)))
     {}
 
-    SingleSelectionModel::SingleSelectionModel(GListModel* model)
+    inline SingleSelectionModel::SingleSelectionModel(GListModel* model)
             : SelectionModel(GTK_SELECTION_MODEL(gtk_single_selection_new(model)))
     {}
 
-    NoSelectionModel::NoSelectionModel(GListModel* model)
+    inline NoSelectionModel::NoSelectionModel(GListModel* model)
             : SelectionModel(GTK_SELECTION_MODEL(gtk_no_selection_new(model)))
     {}
 }

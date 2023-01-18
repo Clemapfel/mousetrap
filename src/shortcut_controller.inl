@@ -5,18 +5,18 @@
 
 namespace mousetrap
 {
-    ShortcutController::ShortcutController(ActionMap* map)
+    inline ShortcutController::ShortcutController(ActionMap* map)
             : EventController(gtk_shortcut_controller_new()), _action_map(map)
     {}
 
-    ShortcutController::~ShortcutController()
+    inline ShortcutController::~ShortcutController()
     {
         for (auto& pair : _shortcuts)
             for (auto* shortcut : pair.second)
                 g_object_unref(shortcut);
     }
 
-    void ShortcutController::add_action(ActionID id)
+    inline void ShortcutController::add_action(ActionID id)
     {
         auto* action = gtk_shortcut_action_parse_string(("action(" + ("app." + id) + ")").c_str());
         if (action == nullptr)
@@ -50,7 +50,7 @@ namespace mousetrap
         }
     }
 
-    void ShortcutController::remove_action(ActionID id)
+    inline void ShortcutController::remove_action(ActionID id)
     {
         auto it = _shortcuts.find(id);
         if (it == _shortcuts.end())
@@ -68,12 +68,12 @@ namespace mousetrap
         _shortcuts.erase(it);
     }
 
-    void ShortcutController::set_scope(ShortcutScope scope)
+    inline void ShortcutController::set_scope(ShortcutScope scope)
     {
         gtk_shortcut_controller_set_scope(GTK_SHORTCUT_CONTROLLER(_native), (GtkShortcutScope) scope);
     }
 
-    ShortcutScope ShortcutController::get_scope()
+    inline ShortcutScope ShortcutController::get_scope()
     {
         return (ShortcutScope) gtk_shortcut_controller_get_scope(GTK_SHORTCUT_CONTROLLER(_native));
     }

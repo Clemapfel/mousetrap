@@ -7,7 +7,7 @@
 
 namespace mousetrap
 {
-    Dialog::Dialog(Window* host_window, const std::string& title, bool is_modal)
+    inline Dialog::Dialog(Window* host_window, const std::string& title, bool is_modal)
             : WidgetImplementation<GtkDialog>(GTK_DIALOG(gtk_dialog_new_with_buttons(
                     title.c_str(),
                     host_window->operator GtkWindow*(),
@@ -21,16 +21,16 @@ namespace mousetrap
         gtk_window_set_hide_on_close(GTK_WINDOW(get_native()), true);
     }
 
-    Dialog::~Dialog() noexcept
+    inline Dialog::~Dialog() noexcept
     {}
 
-    void Dialog::close()
+    inline void Dialog::close()
     {
         gtk_window_close(GTK_WINDOW(get_native()));
         emit_signal_close();
     }
 
-    void Dialog::present()
+    inline void Dialog::present()
     {
         gtk_window_present(GTK_WINDOW(get_native()));
     }
@@ -59,17 +59,17 @@ namespace mousetrap
         }});
     }
 
-    Box& Dialog::get_content_area()
+    inline Box& Dialog::get_content_area()
     {
         return _content_area;
     }
 
-    Dialog::operator Window()
+    inline Dialog::operator Window()
     {
         return Window(GTK_WINDOW(get_native()));
     }
 
-    void Dialog::on_response_wrapper(GtkDialog*, int response_id, Dialog* instance)
+    inline void Dialog::on_response_wrapper(GtkDialog*, int response_id, Dialog* instance)
     {
         if (response_id == GTK_RESPONSE_CLOSE)
             instance->emit_signal_close();

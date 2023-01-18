@@ -10,7 +10,7 @@
 
 namespace mousetrap
 {
-    Shader::Shader()
+    inline Shader::Shader()
     {
         if (GL_INITIALIZED and _noop_program_id == 0)
         {
@@ -28,7 +28,7 @@ namespace mousetrap
         _vertex_shader_id = _noop_vertex_shader_id;
     }
 
-    Shader::~Shader()
+    inline Shader::~Shader()
     {
         if (_fragment_shader_id != 0 and _fragment_shader_id != _noop_fragment_shader_id)
             glDeleteShader(_fragment_shader_id);
@@ -40,7 +40,7 @@ namespace mousetrap
             glDeleteProgram(_program_id);
     }
 
-    void Shader::create_from_string(const std::string& code, ShaderType type)
+    inline void Shader::create_from_string(const std::string& code, ShaderType type)
     {
         if (type == ShaderType::FRAGMENT)
             _fragment_shader_id = compile_shader(code, type);
@@ -50,7 +50,7 @@ namespace mousetrap
         _program_id = link_program(_fragment_shader_id, _vertex_shader_id);
     }
 
-    void Shader::create_from_file(const std::string& path, ShaderType type)
+    inline void Shader::create_from_file(const std::string& path, ShaderType type)
     {
         auto file = std::ifstream();
 
@@ -67,22 +67,22 @@ namespace mousetrap
         file.close();
     }
 
-    GLNativeHandle Shader::get_program_id() const
+    inline GLNativeHandle Shader::get_program_id() const
     {
         return _program_id;
     }
 
-    GLNativeHandle Shader::get_vertex_shader_id() const
+    inline GLNativeHandle Shader::get_vertex_shader_id() const
     {
         return _vertex_shader_id;
     }
 
-    GLNativeHandle Shader::get_fragment_shader_id() const
+    inline GLNativeHandle Shader::get_fragment_shader_id() const
     {
         return _fragment_shader_id;
     }
 
-    GLNativeHandle Shader::compile_shader(const std::string& source, ShaderType shader_type)
+    inline GLNativeHandle Shader::compile_shader(const std::string& source, ShaderType shader_type)
     {
         GLNativeHandle id = glCreateShader(static_cast<GLenum>(shader_type));
 
@@ -118,7 +118,7 @@ namespace mousetrap
         return id;
     }
 
-    GLNativeHandle Shader::link_program(GLNativeHandle fragment_id, GLNativeHandle vertex_id)
+    inline GLNativeHandle Shader::link_program(GLNativeHandle fragment_id, GLNativeHandle vertex_id)
     {
         GLNativeHandle id = glCreateProgram();
         glAttachShader(id, fragment_id);
@@ -152,52 +152,52 @@ namespace mousetrap
         return id;
     }
 
-    void Shader::set_uniform_float(const std::string& uniform_name, float value)
+    inline void Shader::set_uniform_float(const std::string& uniform_name, float value)
     {
         glUniform1f(get_uniform_location(uniform_name), value);
     }
 
-    void Shader::set_uniform_int(const std::string& uniform_name, int value)
+    inline void Shader::set_uniform_int(const std::string& uniform_name, int value)
     {
         glUniform1i(get_uniform_location(uniform_name), value);
     }
 
-    void Shader::set_uniform_vec2(const std::string& uniform_name, Vector2f value)
+    inline void Shader::set_uniform_vec2(const std::string& uniform_name, Vector2f value)
     {
         glUniform2f(get_uniform_location(uniform_name), value.x, value.y);
     }
 
-    void Shader::set_uniform_vec3(const std::string& uniform_name, Vector3f value)
+    inline void Shader::set_uniform_vec3(const std::string& uniform_name, Vector3f value)
     {
         glUniform3f(get_uniform_location(uniform_name), value.x, value.y, value.z);
     }
 
-    void Shader::set_uniform_vec4(const std::string& uniform_name, Vector4f value)
+    inline void Shader::set_uniform_vec4(const std::string& uniform_name, Vector4f value)
     {
         glUniform4f(get_uniform_location(uniform_name), value.x, value.y, value.z, value.w);
     }
 
-    void Shader::set_uniform_transform(const std::string& uniform_name, GLTransform value)
+    inline void Shader::set_uniform_transform(const std::string& uniform_name, GLTransform value)
     {
         glUniformMatrix4fv(get_uniform_location(uniform_name), 1, false, &value.transform[0][0]);
     }
 
-    int Shader::get_uniform_location(const std::string& str) const
+    inline int Shader::get_uniform_location(const std::string& str) const
     {
         return glGetUniformLocation(_program_id, str.c_str());
     }
 
-    int Shader::get_vertex_position_location()
+    inline int Shader::get_vertex_position_location()
     {
         return 0;
     }
 
-    int Shader::get_vertex_color_location()
+    inline int Shader::get_vertex_color_location()
     {
         return 1;
     }
 
-    int Shader::get_vertex_texture_coordinate_location()
+    inline int Shader::get_vertex_texture_coordinate_location()
     {
         return 2;
     }

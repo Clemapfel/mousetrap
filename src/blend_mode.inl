@@ -6,7 +6,7 @@
 
 namespace mousetrap
 {
-    void set_current_blend_mode(BlendMode mode)
+    inline void set_current_blend_mode(BlendMode mode)
     {
         if (mode == NONE)
         {
@@ -52,9 +52,11 @@ namespace mousetrap
             glBlendEquationSeparate(GL_MAX, GL_MAX);
             glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
         }
+        else
+            glDisable(GL_BLEND);
     }
 
-    std::string blend_mode_to_string(BlendMode mode)
+    inline std::string blend_mode_to_string(BlendMode mode)
     {
         if (mode == NONE)
             return "NONE";
@@ -76,7 +78,7 @@ namespace mousetrap
             return "NONE";
     }
 
-    BlendMode blend_mode_from_string(const std::string& str)
+    inline BlendMode blend_mode_from_string(const std::string& str)
     {
         if (str == "NORMAL" or str == "normal")
             return NORMAL;

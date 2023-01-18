@@ -8,19 +8,19 @@
 
 namespace mousetrap
 {
-    Shape::Shape()
+    inline Shape::Shape()
     {
         glGenVertexArrays(1, &_vertex_array_id);
         glGenBuffers(1, &_vertex_buffer_id);
     }
 
-    Shape::~Shape()
+    inline Shape::~Shape()
     {
         glDeleteVertexArrays(1, &_vertex_array_id);
         glDeleteBuffers(1, &_vertex_buffer_id);
     }
 
-    void Shape::initialize()
+    inline void Shape::initialize()
     {
         _vertex_data.clear();
         _vertex_data.reserve(_vertices.size());
@@ -48,7 +48,7 @@ namespace mousetrap
         update_data(true, true, true);
     }
 
-    void Shape::update_data(bool update_position, bool update_color, bool update_tex_coords)
+    inline void Shape::update_data(bool update_position, bool update_color, bool update_tex_coords)
     {
         glBindVertexArray(_vertex_array_id);
         glBindBuffer(GL_ARRAY_BUFFER, _vertex_buffer_id);
@@ -97,7 +97,7 @@ namespace mousetrap
         glBindVertexArray(0);
     }
 
-    void Shape::update_position()
+    inline void Shape::update_position()
     {
         for (size_t i = 0; i < _vertices.size(); ++i)
         {
@@ -114,7 +114,7 @@ namespace mousetrap
         update_data(true, false, false);
     }
 
-    void Shape::update_color()
+    inline void Shape::update_color()
     {
         for (size_t i = 0; i < _vertices.size(); ++i)
         {
@@ -130,7 +130,7 @@ namespace mousetrap
         update_data(false, true, false);
     }
 
-    void Shape::update_texture_coordinate()
+    inline void Shape::update_texture_coordinate()
     {
         for (size_t i = 0; i < _vertices.size(); ++i)
         {
@@ -144,7 +144,7 @@ namespace mousetrap
         update_data(false, false, true);
     }
 
-    void Shape::render(Shader& shader, GLTransform transform)
+    inline void Shape::render(Shader& shader, GLTransform transform)
     {
         if (not _visible)
             return;
@@ -169,7 +169,7 @@ namespace mousetrap
         glUseProgram(0);
     }
 
-    std::vector<Vector2f> Shape::sort_by_angle(const std::vector<Vector2f>& in)
+    inline std::vector<Vector2f> Shape::sort_by_angle(const std::vector<Vector2f>& in)
     {
         auto center = Vector2f(0, 0);
         for (const auto& pos : in)
@@ -196,7 +196,7 @@ namespace mousetrap
         return out;
     }
 
-    void Shape::as_point(Vector2f a)
+    inline void Shape::as_point(Vector2f a)
     {
         _vertices = {};
         _indices = {0};
@@ -204,7 +204,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_points(const std::vector<Vector2f>& points)
+    inline void Shape::as_points(const std::vector<Vector2f>& points)
     {
         _vertices.clear();
         _indices.clear();
@@ -220,7 +220,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_triangle(Vector2f a, Vector2f b, Vector2f c)
+    inline void Shape::as_triangle(Vector2f a, Vector2f b, Vector2f c)
     {
         _vertices =
         {
@@ -234,7 +234,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_rectangle(Vector2f top_left, Vector2f size)
+    inline void Shape::as_rectangle(Vector2f top_left, Vector2f size)
     {
         _vertices =
         {
@@ -254,7 +254,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d)
+    inline void Shape::as_rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d)
     {
         _vertices = {
             Vertex(a.x, a.y, _color),
@@ -273,7 +273,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_line(Vector2f a, Vector2f b)
+    inline void Shape::as_line(Vector2f a, Vector2f b)
     {
         _vertices =
         {
@@ -286,7 +286,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_lines(const std::vector<std::pair<Vector2f, Vector2f>>& in)
+    inline void Shape::as_lines(const std::vector<std::pair<Vector2f, Vector2f>>& in)
     {
         _vertices.clear();
         for (const auto& pair : in)
@@ -303,7 +303,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_circle(Vector2f center, float radius, size_t n_outer_vertices)
+    inline void Shape::as_circle(Vector2f center, float radius, size_t n_outer_vertices)
     {
         const float step = 360.f / n_outer_vertices;
 
@@ -330,7 +330,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices)
+    inline void Shape::as_ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices)
     {
         const float step = 360.f / n_outer_vertices;
 
@@ -357,7 +357,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_line_strip(const std::vector<Vector2f>& positions)
+    inline void Shape::as_line_strip(const std::vector<Vector2f>& positions)
     {
         _vertices.clear();
         _indices.clear();
@@ -373,7 +373,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_wireframe(const std::vector<Vector2f>& positions_in)
+    inline void Shape::as_wireframe(const std::vector<Vector2f>& positions_in)
     {
         _vertices.clear();
         _indices.clear();
@@ -391,7 +391,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_wireframe(const Shape& shape)
+    inline void Shape::as_wireframe(const Shape& shape)
     {
         _vertices.clear();
         _indices.clear();
@@ -411,7 +411,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_polygon(const std::vector<Vector2f>& positions_in)
+    inline void Shape::as_polygon(const std::vector<Vector2f>& positions_in)
     {
         _vertices.clear();
         _indices.clear();
@@ -429,7 +429,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_frame(Vector2f top_left, Vector2f size, float x_width, float y_width)
+    inline void Shape::as_frame(Vector2f top_left, Vector2f size, float x_width, float y_width)
     {
         _vertices.clear();
         _indices.clear();
@@ -476,49 +476,49 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::set_vertex_color(size_t i, RGBA color)
+    inline void Shape::set_vertex_color(size_t i, RGBA color)
     {
         _vertices.at(i).color = color;
         update_color();
         update_data(false, true, false);
     }
 
-    RGBA Shape::get_vertex_color(size_t index) const
+    inline RGBA Shape::get_vertex_color(size_t index) const
     {
         return RGBA(_vertices.at(index).color);
     }
 
-    void Shape::set_vertex_position(size_t i, Vector3f position)
+    inline void Shape::set_vertex_position(size_t i, Vector3f position)
     {
         _vertices.at(i).position = position;
         update_position();
         update_data(true, false, false);
     }
 
-    Vector3f Shape::get_vertex_position(size_t i) const
+    inline Vector3f Shape::get_vertex_position(size_t i) const
     {
         return _vertices.at(i).position;
     }
 
 
-    void Shape::set_vertex_texture_coordinate(size_t i, Vector2f coordinates)
+    inline void Shape::set_vertex_texture_coordinate(size_t i, Vector2f coordinates)
     {
         _vertices.at(i).texture_coordinates = coordinates;
         update_texture_coordinate();
         update_data(false, false, true);
     }
 
-    Vector2f Shape::get_vertex_texture_coordinate(size_t i) const
+    inline Vector2f Shape::get_vertex_texture_coordinate(size_t i) const
     {
         return _vertices.at(i).texture_coordinates;
     }
 
-    size_t Shape::get_n_vertices() const
+    inline size_t Shape::get_n_vertices() const
     {
         return _vertices.size();
     }
 
-    void Shape::set_color(RGBA color)
+    inline void Shape::set_color(RGBA color)
     {
         _color = color;
 
@@ -528,17 +528,17 @@ namespace mousetrap
         update_color();
     }
 
-    void Shape::set_visible(bool b)
+    inline void Shape::set_visible(bool b)
     {
         _visible = b;
     }
 
-    bool Shape::get_visible() const
+    inline bool Shape::get_visible() const
     {
         return _visible;
     }
 
-    Vector2f Shape::get_centroid() const
+    inline Vector2f Shape::get_centroid() const
     {
         static const auto negative_infinity = std::numeric_limits<float>::min();
         static const auto positive_infinity = std::numeric_limits<float>::max();
@@ -563,7 +563,7 @@ namespace mousetrap
         );
     }
 
-    void Shape::set_centroid(Vector2f position)
+    inline void Shape::set_centroid(Vector2f position)
     {
         auto delta = position - get_centroid();
         for (auto& v : _vertices)
@@ -576,7 +576,7 @@ namespace mousetrap
         update_data(true, false, false);
     }
 
-    Rectangle Shape::get_bounding_box() const
+    inline Rectangle Shape::get_bounding_box() const
     {
         float min_x = std::numeric_limits<float>::max();
         float min_y = std::numeric_limits<float>::max();
@@ -603,17 +603,17 @@ namespace mousetrap
         };
     }
 
-    Vector2f Shape::get_top_left() const
+    inline Vector2f Shape::get_top_left() const
     {
         return get_bounding_box().top_left;
     }
 
-    Vector2f Shape::get_size() const
+    inline Vector2f Shape::get_size() const
     {
         return get_bounding_box().size;
     }
 
-    void Shape::set_top_left(Vector2f position)
+    inline void Shape::set_top_left(Vector2f position)
     {
         auto delta = position - get_bounding_box().top_left;
         for (auto& v : _vertices)
@@ -626,7 +626,7 @@ namespace mousetrap
         update_data(true, false, false);
     }
 
-    void Shape::rotate(Angle angle)
+    inline void Shape::rotate(Angle angle)
     {
         auto transform = GLTransform();
         transform.rotate(angle, to_gl_position(get_centroid()));
@@ -644,12 +644,12 @@ namespace mousetrap
         update_data(true, false, false);
     }
 
-    TextureObject* Shape::get_texture()
+    inline TextureObject* Shape::get_texture()
     {
         return _texture;
     }
 
-    void Shape::set_texture(TextureObject* texture)
+    inline void Shape::set_texture(TextureObject* texture)
     {
         _texture = texture;
     }

@@ -73,7 +73,7 @@ namespace mousetrap
         }
     }
 
-    DropDown::DropDown()
+    inline DropDown::DropDown()
         : WidgetImplementation<GtkDropDown>([&](){
 
             _model = g_list_store_new(G_TYPE_OBJECT);
@@ -96,14 +96,14 @@ namespace mousetrap
         add_reference(_model);
     }
 
-    void DropDown::on_list_factory_bind(GtkSignalListItemFactory* self, void* object, void* data)
+    inline void DropDown::on_list_factory_bind(GtkSignalListItemFactory* self, void* object, void* data)
     {
         auto* item = GTK_LIST_ITEM(object);
         auto* dropdown_item = detail::G_DROP_DOWN_ITEM(gtk_list_item_get_item(item));
         gtk_list_item_set_child(item, dropdown_item->widget->operator GtkWidget*());
     }
 
-    void DropDown::on_label_factory_bind(GtkSignalListItemFactory* self, void* object, void* data)
+    inline void DropDown::on_label_factory_bind(GtkSignalListItemFactory* self, void* object, void* data)
     {
         auto* item = GTK_LIST_ITEM(object);
         auto* dropdown_item = detail::G_DROP_DOWN_ITEM(gtk_list_item_get_item(item));
@@ -155,12 +155,12 @@ namespace mousetrap
         g_list_store_append(_model, item);
     }
 
-    size_t DropDown::get_selected()
+    inline size_t DropDown::get_selected()
     {
         return gtk_drop_down_get_selected(get_native());
     }
 
-    void DropDown::set_selected(size_t i)
+    inline void DropDown::set_selected(size_t i)
     {
         gtk_drop_down_set_selected(get_native(), i);
     }

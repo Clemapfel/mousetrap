@@ -7,20 +7,20 @@
 
 namespace mousetrap
 {
-    ImageDisplay::ImageDisplay()
+    inline ImageDisplay::ImageDisplay()
         : WidgetImplementation<GtkImage>(GTK_IMAGE(gtk_image_new()))
     {
         _size = {0, 0};
     }
 
-    ImageDisplay::ImageDisplay(GdkPixbuf* pixbuf)
+    inline ImageDisplay::ImageDisplay(GdkPixbuf* pixbuf)
         : WidgetImplementation<GtkImage>(GTK_IMAGE(gtk_image_new_from_pixbuf(pixbuf)))
     {
         _size.x = gdk_pixbuf_get_width(pixbuf);
         _size.y = gdk_pixbuf_get_height(pixbuf);
     }
 
-    ImageDisplay::ImageDisplay(const std::string& file, size_t scale)
+    inline ImageDisplay::ImageDisplay(const std::string& file, size_t scale)
         : WidgetImplementation<GtkImage>([&]() -> GtkImage*{
 
             GError* error = nullptr;
@@ -52,7 +52,7 @@ namespace mousetrap
         }())
     {}
 
-    ImageDisplay::ImageDisplay(const Image& image)
+    inline ImageDisplay::ImageDisplay(const Image& image)
         : WidgetImplementation<GtkImage>([&]() -> GtkImage* {
 
             _size = image.get_size();

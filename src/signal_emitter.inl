@@ -7,7 +7,7 @@
 
 namespace mousetrap
 {
-    void SignalEmitter::set_signal_blocked(const std::string& signal_id, bool b)
+    inline void SignalEmitter::set_signal_blocked(const std::string& signal_id, bool b)
     {
         auto it = _signal_handlers.find(signal_id);
 
@@ -36,7 +36,7 @@ namespace mousetrap
         }
     }
 
-    void SignalEmitter::set_all_signals_blocked(bool b)
+    inline void SignalEmitter::set_all_signals_blocked(bool b)
     {
         for (auto& pair: _signal_handlers)
             set_signal_blocked(pair.first, b);
@@ -49,7 +49,7 @@ namespace mousetrap
         _signal_handlers.insert_or_assign(signal_id, SignalHandler{handler_id});
     }
 
-    std::vector<std::string>SignalEmitter::get_all_signal_names()
+    inline std::vector<std::string>SignalEmitter::get_all_signal_names()
     {
         std::vector<std::string> out;
         guint n;

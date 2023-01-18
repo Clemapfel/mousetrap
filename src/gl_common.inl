@@ -5,7 +5,7 @@
 
 namespace mousetrap
 {
-    Vector2f get_viewport_size()
+    inline Vector2f get_viewport_size()
     {
         std::array<GLint, 4> viewport = {0, 0, 0, 0};
         glGetIntegerv(GL_VIEWPORT, viewport.data());
@@ -14,7 +14,7 @@ namespace mousetrap
         return Vector2f(width, height);
     }
 
-    Vector2f to_gl_position(Vector2f in)
+    inline Vector2f to_gl_position(Vector2f in)
     {
         auto out = in;
         out.y = 1 - out.y;
@@ -23,13 +23,13 @@ namespace mousetrap
         return out;
     }
 
-    Vector3f to_gl_position(Vector3f in)
+    inline Vector3f to_gl_position(Vector3f in)
     {
         auto xy = to_gl_position({in.x, in.y});
         return {xy.x, xy.y, in.z};
     }
 
-    Vector2f from_gl_position(Vector2f in)
+    inline Vector2f from_gl_position(Vector2f in)
     {
         auto out = in;
         out /= 2;
@@ -38,19 +38,19 @@ namespace mousetrap
         return out;
     }
 
-    Vector3f from_gl_position(Vector3f in)
+    inline Vector3f from_gl_position(Vector3f in)
     {
         auto xy = from_gl_position({in.x, in.y});
         return {xy.x, xy.y, in.z};
     }
 
-    Vector2f to_gl_distance(Vector2f distance)
+    inline Vector2f to_gl_distance(Vector2f distance)
     {
         auto size = get_viewport_size();
         return Vector2f(distance.x / (size.x * 0.5) , -1 * distance.y / (size.y * 0.5));
     }
 
-    Vector2f from_gl_distance(Vector2f distance)
+    inline Vector2f from_gl_distance(Vector2f distance)
     {
         auto size = get_viewport_size();
         return Vector2f(distance.x * (size.x * 0.5), -1 * distance.y * (size.y * 0.5));

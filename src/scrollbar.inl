@@ -7,11 +7,11 @@
 
 namespace mousetrap
 {
-    Scrollbar::Scrollbar(Adjustment adjustment, GtkOrientation orientation)
+    inline Scrollbar::Scrollbar(Adjustment adjustment, GtkOrientation orientation)
         : WidgetImplementation<GtkScrollbar>((GTK_SCROLLBAR(gtk_scrollbar_new(orientation, adjustment.operator GtkAdjustment*()))))
     {}
 
-    void Scrollbar::reformat()
+    inline void Scrollbar::reformat()
     {
         auto* adjustment = gtk_scrollbar_get_adjustment(get_native());
         auto orientation = gtk_orientable_get_orientation(GTK_ORIENTABLE(get_native()));
@@ -31,12 +31,12 @@ namespace mousetrap
             gtk_widget_set_parent(GTK_WIDGET(get_native()), parent);
     }
 
-    void Scrollbar::set_adjustment(Adjustment& adjustment)
+    inline void Scrollbar::set_adjustment(Adjustment& adjustment)
     {
         gtk_scrollbar_set_adjustment(get_native(), adjustment.operator GtkAdjustment*());
     }
 
-    Adjustment Scrollbar::get_adjustment()
+    inline Adjustment Scrollbar::get_adjustment()
     {
         return Adjustment(gtk_scrollbar_get_adjustment(get_native()));
     }

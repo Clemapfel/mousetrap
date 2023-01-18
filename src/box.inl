@@ -9,25 +9,25 @@
 
 namespace mousetrap
 {
-    Box::Box(GtkOrientation orientation, float spacing)
+    inline Box::Box(GtkOrientation orientation, float spacing)
         : WidgetImplementation<GtkBox>(GTK_BOX(gtk_box_new(orientation, spacing)))
     {}
 
-    Box::Box(GtkBox* instance)
+    inline Box::Box(GtkBox* instance)
         : WidgetImplementation<GtkBox>(instance)
     {}
 
-    void Box::push_back(Widget* widget)
+    inline void Box::push_back(Widget* widget)
     {
         gtk_box_append(get_native(), widget->operator GtkWidget*());
     }
 
-    void Box::push_front(Widget* widget)
+    inline void Box::push_front(Widget* widget)
     {
         gtk_box_prepend(get_native(), widget->operator GtkWidget*());
     }
 
-    void Box::insert_after(Widget* to_append, Widget* after)
+    inline void Box::insert_after(Widget* to_append, Widget* after)
     {
         gtk_box_insert_child_after(
             get_native(),
@@ -36,7 +36,7 @@ namespace mousetrap
         );
     }
 
-    void Box::reorder_after(Widget* to_reorder, Widget* after)
+    inline void Box::reorder_after(Widget* to_reorder, Widget* after)
     {
         gtk_box_reorder_child_after(
                 get_native(),
@@ -45,12 +45,12 @@ namespace mousetrap
         );
     }
 
-    void Box::remove(Widget* widget)
+    inline void Box::remove(Widget* widget)
     {
         gtk_box_remove(get_native(), widget->operator GtkWidget *());
     }
 
-    void Box::clear()
+    inline void Box::clear()
     {
         std::vector<GtkWidget*> to_remove;
         GtkWidget* current = gtk_widget_get_first_child(GTK_WIDGET(get_native()));
@@ -64,17 +64,17 @@ namespace mousetrap
             gtk_box_remove(get_native(), w);
     }
 
-    void Box::set_homogeneous(bool b)
+    inline void Box::set_homogeneous(bool b)
     {
         gtk_box_set_homogeneous(get_native(), b);
     }
 
-    GtkOrientation Box::get_orientation() const
+    inline GtkOrientation Box::get_orientation() const
     {
         return gtk_orientable_get_orientation(GTK_ORIENTABLE(get_native()));
     }
 
-    size_t Box::get_n_items()
+    inline size_t Box::get_n_items()
     {
         size_t i = 0;
         auto* child = gtk_widget_get_first_child(GTK_WIDGET(get_native()));

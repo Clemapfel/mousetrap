@@ -5,7 +5,7 @@
 
 namespace mousetrap
 {
-    SeparatorLine::SeparatorLine(GtkOrientation orientation)
+    inline SeparatorLine::SeparatorLine(GtkOrientation orientation)
         : WidgetImplementation<GtkSeparator>(GTK_SEPARATOR(gtk_separator_new(orientation)))
     {
         if (orientation == GTK_ORIENTATION_HORIZONTAL)

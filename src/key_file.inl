@@ -7,24 +7,24 @@
 
 namespace mousetrap
 {
-    KeyFile::KeyFile()
+    inline KeyFile::KeyFile()
             : _native(g_key_file_new())
     {
         g_key_file_ref(_native);
     }
 
-    KeyFile::KeyFile(const std::string& path)
+    inline KeyFile::KeyFile(const std::string& path)
             : KeyFile()
     {
         load_from_file(path);
     }
 
-    KeyFile::~KeyFile()
+    inline KeyFile::~KeyFile()
     {
         g_key_file_free(_native);
     }
 
-    KeyFile::operator std::string()
+    inline KeyFile::operator std::string()
     {
         GError* error_maybe = nullptr;
         size_t length;
@@ -45,12 +45,12 @@ namespace mousetrap
         return out;
     }
 
-    std::string KeyFile::as_string()
+    inline std::string KeyFile::as_string()
     {
         return this->operator std::string();
     }
 
-    bool KeyFile::load_from_file(const std::string& path)
+    inline bool KeyFile::load_from_file(const std::string& path)
     {
         GError* error = nullptr;
         g_key_file_load_from_file(
@@ -69,7 +69,7 @@ namespace mousetrap
         return true;
     }
 
-    bool KeyFile::load_from_string(const std::string& file)
+    inline bool KeyFile::load_from_string(const std::string& file)
     {
         GError* error = nullptr;
 
@@ -90,7 +90,7 @@ namespace mousetrap
         return true;
     }
 
-    bool KeyFile::save_to_file(const std::string& path)
+    inline bool KeyFile::save_to_file(const std::string& path)
     {
         GError* error = nullptr;
         g_key_file_save_to_file(_native, path.c_str(), &error);
@@ -103,7 +103,7 @@ namespace mousetrap
         return true;
     }
 
-    std::vector<KeyFile::KeyID> KeyFile::get_keys(GroupKey group) const
+    inline std::vector<KeyFile::KeyID> KeyFile::get_keys(GroupKey group) const
     {
         gsize length;
         GError* error = nullptr;
@@ -122,7 +122,7 @@ namespace mousetrap
         return out;
     }
 
-    bool KeyFile::has_key(GroupKey group, KeyID key)
+    inline bool KeyFile::has_key(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         auto out = g_key_file_has_key(_native, group.c_str(), key.c_str(), &error);
@@ -136,7 +136,7 @@ namespace mousetrap
         return out;
     }
 
-    std::vector<KeyFile::GroupKey> KeyFile::get_groups() const
+    inline std::vector<KeyFile::GroupKey> KeyFile::get_groups() const
     {
         gsize length;
         auto* groups = g_key_file_get_groups(_native, &length);
@@ -148,12 +148,12 @@ namespace mousetrap
         return out;
     }
 
-    bool KeyFile::has_group(GroupKey group)
+    inline bool KeyFile::has_group(GroupKey group)
     {
         return g_key_file_has_group(_native, group.c_str());
     }
 
-    void KeyFile::add_comment_above(GroupKey group, KeyID key, const std::string& comment)
+    inline void KeyFile::add_comment_above(GroupKey group, KeyID key, const std::string& comment)
     {
         GError* error = nullptr;
         g_key_file_set_comment(_native, group.c_str(), key.c_str(), (" " + comment).c_str(), &error);
@@ -162,7 +162,7 @@ namespace mousetrap
             std::cerr << "[ERROR] In KeyFile::add_comment_above: Unable to add comment for `" << group << "." << key << "`: " << error->message << std::endl;
     }
 
-    void KeyFile::add_comment_above(GroupKey group, const std::string& comment)
+    inline void KeyFile::add_comment_above(GroupKey group, const std::string& comment)
     {
         GError* error = nullptr;
         g_key_file_set_comment(_native, group.c_str(), nullptr, (" " + comment).c_str(), &error);
@@ -171,7 +171,7 @@ namespace mousetrap
             std::cerr << "[ERROR] In KeyFile::add_comment_above: Unable to add comment for `" << group << "`: " << error->message << std::endl;
     }
 
-    std::string KeyFile::get_comment_above(GroupKey group, KeyID key)
+    inline std::string KeyFile::get_comment_above(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         auto* out = g_key_file_get_comment(_native, group.c_str(), key.c_str(), &error);
@@ -182,7 +182,7 @@ namespace mousetrap
         return std::string(out == nullptr ? "" : out);
     }
 
-    std::string KeyFile::get_comment_above(GroupKey group)
+    inline std::string KeyFile::get_comment_above(GroupKey group)
     {
         GError* error = nullptr;
         auto* out = g_key_file_get_comment(_native, group.c_str(), nullptr, &error);
@@ -193,7 +193,7 @@ namespace mousetrap
         return std::string(out == nullptr ? "" : out);
     }
 
-    std::string KeyFile::get_value(GroupKey group, KeyID key)
+    inline std::string KeyFile::get_value(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         auto* value = g_key_file_get_value(_native, group.c_str(), key.c_str(), &error);
@@ -496,7 +496,7 @@ namespace mousetrap
         return out;
     }
 
-    void KeyFile::set_value(GroupKey group, KeyID key, const std::string& value)
+    inline void KeyFile::set_value(GroupKey group, KeyID key, const std::string& value)
     {
         g_key_file_set_value(_native, group.c_str(), key.c_str(), value.c_str());
     }

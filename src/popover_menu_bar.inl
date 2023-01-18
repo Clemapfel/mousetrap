@@ -5,7 +5,7 @@
 
 namespace mousetrap
 {
-    PopoverMenuBar::PopoverMenuBar(MenuModel* model)
+    inline PopoverMenuBar::PopoverMenuBar(MenuModel* model)
             : WidgetImplementation<GtkPopoverMenuBar>(GTK_POPOVER_MENU_BAR(gtk_popover_menu_bar_new_from_model(model->operator GMenuModel*())))
     {
         for (auto& pair : model->get_widgets())

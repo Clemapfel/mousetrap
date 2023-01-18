@@ -7,17 +7,17 @@
 
 namespace mousetrap
 {
-    MenuModel::MenuModel()
+    inline MenuModel::MenuModel()
     {
         _native = g_object_ref(g_menu_new());
     }
 
-    MenuModel::~MenuModel()
+    inline MenuModel::~MenuModel()
     {
         g_object_unref(_native);
     }
 
-    void MenuModel::add_action(const std::string& label, const std::string& action_id, bool use_markup)
+    inline void MenuModel::add_action(const std::string& label, const std::string& action_id, bool use_markup)
     {
         auto* item = g_menu_item_new(label.c_str(), ("app." + action_id).c_str());
         g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string(use_markup ? "yes" : "no"));
@@ -25,7 +25,7 @@ namespace mousetrap
         g_object_unref(item);
     }
 
-    void MenuModel::add_widget(Widget* widget)
+    inline void MenuModel::add_widget(Widget* widget)
     {
         auto id = std::to_string(current_id).c_str();
         auto* item = g_menu_item_new(id, id);
@@ -37,7 +37,7 @@ namespace mousetrap
         current_id += 1;
     }
 
-    void MenuModel::add_section(const std::string& label, MenuModel* model, MenuSectionFormat format)
+    inline void MenuModel::add_section(const std::string& label, MenuModel* model, MenuSectionFormat format)
     {
         auto* item = g_menu_item_new_section(label.c_str(), G_MENU_MODEL(model->_native));
 
@@ -73,7 +73,7 @@ namespace mousetrap
         g_menu_append_item(_native, item);
     }
 
-    void MenuModel::add_submenu(const std::string& label, MenuModel* model)
+    inline void MenuModel::add_submenu(const std::string& label, MenuModel* model)
     {
         if (model->_submenus.find(this) != model->_submenus.end())
             std::cerr << "[ERROR] In MenuModel::add_submenu: Trying to add menu " << model << " to " << this << ", even though " << this << " is already a submenu of " << model << ". This will create an infinite loop on initialization." << std::endl;
@@ -84,12 +84,12 @@ namespace mousetrap
         g_menu_append_item(_native, item);
     }
 
-    MenuModel::operator GMenuModel*()
+    inline MenuModel::operator GMenuModel*()
     {
         return G_MENU_MODEL(_native);
     }
 
-    std::unordered_map<std::string, Widget*> MenuModel::get_widgets()
+    inline std::unordered_map<std::string, Widget*> MenuModel::get_widgets()
     {
         auto out = std::unordered_map<std::string, Widget*>(_id_to_widget);
 

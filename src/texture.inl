@@ -7,17 +7,17 @@
 
 namespace mousetrap
 {
-    Texture::Texture()
+    inline Texture::Texture()
     {
         glGenTextures(1, &_native_handle);
     }
 
-    Texture::~Texture()
+    inline Texture::~Texture()
     {
         glDeleteTextures(1, &_native_handle);
     }
 
-    void Texture::create_from_file(const std::string& path)
+    inline void Texture::create_from_file(const std::string& path)
     {
         auto image = Image();
         image.create_from_file(path);
@@ -25,7 +25,7 @@ namespace mousetrap
         create_from_image(image);
     }
 
-    void Texture::create_from_image(const Image& image)
+    inline void Texture::create_from_image(const Image& image)
     {
         glActiveTexture(GL_TEXTURE0 + 0);
         glBindTexture(GL_TEXTURE_2D, _native_handle);
@@ -45,7 +45,7 @@ namespace mousetrap
         _size = image.get_size();
     }
 
-    void Texture::bind(size_t texture_unit) const
+    inline void Texture::bind(size_t texture_unit) const
     {
         glActiveTexture(GL_TEXTURE0 + texture_unit);
         glBindTexture(GL_TEXTURE_2D, _native_handle);
@@ -74,32 +74,32 @@ namespace mousetrap
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
-    void Texture::bind() const
+    inline void Texture::bind() const
     {
         bind(0);
     }
 
-    void Texture::unbind() const
+    inline void Texture::unbind() const
     {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    void Texture::set_wrap_mode(TextureWrapMode wrap_mode)
+    inline void Texture::set_wrap_mode(TextureWrapMode wrap_mode)
     {
         _wrap_mode = wrap_mode;
     }
 
-    TextureWrapMode Texture::get_wrap_mode()
+    inline TextureWrapMode Texture::get_wrap_mode()
     {
         return _wrap_mode;
     }
 
-    Vector2i Texture::get_size() const
+    inline Vector2i Texture::get_size() const
     {
         return _size;
     }
 
-    GLNativeHandle Texture::get_native_handle() const
+    inline GLNativeHandle Texture::get_native_handle() const
     {
         return _native_handle;
     }

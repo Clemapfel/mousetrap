@@ -5,7 +5,7 @@
 
 namespace mousetrap
 {
-    RenderTask::RenderTask(Shape* shape, Shader* shader, GLTransform* transform, BlendMode blend_mode)
+    inline RenderTask::RenderTask(Shape* shape, Shader* shader, GLTransform* transform, BlendMode blend_mode)
     {
         if (shape == nullptr)
             throw std::invalid_argument("In RenderTask::RenderTask: shape == nullptr");
@@ -22,7 +22,7 @@ namespace mousetrap
         _blend_mode = blend_mode;
     }
 
-    void RenderTask::render()
+    inline void RenderTask::render()
     {
         if (_shape == nullptr)
         {
@@ -73,57 +73,57 @@ namespace mousetrap
         set_current_blend_mode(BlendMode::NORMAL);
     }
 
-    void RenderTask::register_float(const std::string& uniform_name, float* value)
+    inline void RenderTask::register_float(const std::string& uniform_name, float* value)
     {
         _floats.insert({uniform_name, value});
     }
 
-    void RenderTask::register_int(const std::string& uniform_name, int* value)
+    inline void RenderTask::register_int(const std::string& uniform_name, int* value)
     {
         _ints.insert({uniform_name, value});
     }
 
-    void RenderTask::register_vec2(const std::string& uniform_name, Vector2f* value)
+    inline void RenderTask::register_vec2(const std::string& uniform_name, Vector2f* value)
     {
         _vec2s.insert({uniform_name, value});
     }
 
-    void RenderTask::register_vec3(const std::string& uniform_name, Vector3f* value)
+    inline void RenderTask::register_vec3(const std::string& uniform_name, Vector3f* value)
     {
         _vec3s.insert({uniform_name, value});
     }
 
-    void RenderTask::register_vec4(const std::string& uniform_name, Vector4f* value)
+    inline void RenderTask::register_vec4(const std::string& uniform_name, Vector4f* value)
     {
         _vec4s.insert({uniform_name, value});
     }
 
-    void RenderTask::register_transform(const std::string& uniform_name, GLTransform* value)
+    inline void RenderTask::register_transform(const std::string& uniform_name, GLTransform* value)
     {
         _transforms.insert({uniform_name, value});
     }
 
-    void RenderTask::register_color(const std::string& uniform_name, RGBA* value)
+    inline void RenderTask::register_color(const std::string& uniform_name, RGBA* value)
     {
         _colors_rgba.insert({uniform_name, value});
     }
 
-    void RenderTask::register_color(const std::string& uniform_name, HSVA* value)
+    inline void RenderTask::register_color(const std::string& uniform_name, HSVA* value)
     {
         _colors_hsva.insert({uniform_name, value});
     }
 
-    Shape* RenderTask::get_shape()
+    inline Shape* RenderTask::get_shape()
     {
         return _shape;
     }
 
-    Shader* RenderTask::get_shader()
+    inline Shader* RenderTask::get_shader()
     {
         return _shader == nullptr ? noop_shader : _shader;
     }
 
-    GLTransform* RenderTask::get_transform()
+    inline GLTransform* RenderTask::get_transform()
     {
         return _transform == nullptr ? noop_transform : _transform;
     }

@@ -15,7 +15,7 @@ namespace mousetrap
     }
 
     ///
-    std::string get_resource_path()
+    static inline std::string get_resource_path()
     {
         return detail::DEFAULT_RESOURCE_PATH;
     }

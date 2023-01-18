@@ -5,7 +5,7 @@
 
 namespace mousetrap
 {
-    void ActionMap::add_action(Action& action)
+    inline void ActionMap::add_action(Action& action)
     {
         auto inserted = _actions.insert({action.get_id(), action}).first->second;
         auto* self = operator GActionMap*();
@@ -25,19 +25,19 @@ namespace mousetrap
             gtk_application_set_accels_for_action(app, ("app." + inserted.get_id()).c_str(), accels.data());
     }
 
-    void ActionMap::remove_action(const ActionID& id)
+    inline void ActionMap::remove_action(const ActionID& id)
     {
         auto* self = operator GActionMap*();
         _actions.erase(id);
         g_action_map_remove_action(self, ("app." + id).c_str());
     }
 
-    bool ActionMap::has_action(const ActionID& id)
+    inline bool ActionMap::has_action(const ActionID& id)
     {
         return _actions.find(id) != _actions.end();
     }
 
-    const Action& ActionMap::get_action(const ActionID& id)
+    inline const Action& ActionMap::get_action(const ActionID& id)
     {
         return _actions.at(id);
     }

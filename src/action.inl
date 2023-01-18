@@ -4,11 +4,11 @@
 
 namespace mousetrap
 {
-    Action::Action(const std::string& id)
+    inline  Action::Action(const std::string& id)
         : _id(id)
     {}
 
-    Action::~Action()
+    inline Action::~Action()
     {
         //g_object_unref(_g_action);
     }
@@ -61,19 +61,19 @@ namespace mousetrap
         g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
     }
 
-    void Action::on_action_activate(GSimpleAction*, GVariant*, Action* instance)
+    inline void Action::on_action_activate(GSimpleAction*, GVariant*, Action* instance)
     {
         instance->activate();
     }
 
-    void Action::activate() const
+    inline void Action::activate() const
     {
         auto& state = _instance_states.at(_id);
         if (state->do_f)
             (*state->do_f)();
     }
 
-    void Action::undo() const
+    inline void Action::undo() const
     {
         auto& state = _instance_states.at(_id);
         if (not state->undo_queue->empty())
@@ -83,7 +83,7 @@ namespace mousetrap
         }
     }
 
-    void Action::redo() const
+    inline void Action::redo() const
     {
         auto& state = _instance_states.at(_id);
         if (not state->redo_queue->empty())
@@ -93,7 +93,7 @@ namespace mousetrap
         }
     }
 
-    void Action::add_shortcut(const ShortcutTriggerID& shortcut)
+    inline void Action::add_shortcut(const ShortcutTriggerID& shortcut)
     {
         if (gtk_shortcut_trigger_parse_string(shortcut.c_str()) == nullptr)
         {
@@ -105,17 +105,17 @@ namespace mousetrap
         _shortcuts.push_back(shortcut.c_str());
     }
 
-    const std::vector<ShortcutTriggerID>& Action::get_shortcuts() const
+    inline const std::vector<ShortcutTriggerID>& Action::get_shortcuts() const
     {
         return _shortcuts;
     }
 
-    Action::operator GAction*() const
+    inline Action::operator GAction*() const
     {
         return G_ACTION(_g_action);
     }
 
-    ActionID Action::get_id() const
+    inline ActionID Action::get_id() const
     {
         return _id;
     }

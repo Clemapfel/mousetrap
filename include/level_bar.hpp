@@ -38,3 +38,5 @@ namespace mousetrap
             float get_value() const;
     };
 }
+
+#include <src/level_bar.inl>

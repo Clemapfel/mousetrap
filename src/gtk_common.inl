@@ -6,7 +6,7 @@
 #include <include/gl_common.hpp>
 #include <iostream>
 
-bool gtk_initialize_opengl(GtkWindow* window)
+inline bool gtk_initialize_opengl(GtkWindow* window)
 {
     bool failed = false;
     auto *gdk_window = gtk_widget_get_display(GTK_WIDGET(window));

@@ -5,53 +5,53 @@
 
 namespace mousetrap
 {
-    MenuButton::MenuButton()
+    inline MenuButton::MenuButton()
         : WidgetImplementation<GtkMenuButton>(GTK_MENU_BUTTON(gtk_menu_button_new()))
     {
         gtk_menu_button_set_always_show_arrow(get_native(), true);
     }
 
-    void MenuButton::set_child(Widget* widget)
+    inline void MenuButton::set_child(Widget* widget)
     {
         gtk_menu_button_set_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 
-    void MenuButton::set_model(MenuModel* model)
+    inline void MenuButton::set_model(MenuModel* model)
     {
         gtk_menu_button_set_menu_model(get_native(), model->operator GMenuModel*());
     }
 
-    void MenuButton::set_popover_position(GtkPositionType type)
+    inline void MenuButton::set_popover_position(GtkPositionType type)
     {
         gtk_popover_set_position(gtk_menu_button_get_popover(get_native()), type);
     }
 
-    void MenuButton::set_popover(Popover* popover)
+    inline void MenuButton::set_popover(Popover* popover)
     {
         gtk_menu_button_set_popover(get_native(), popover->operator GtkWidget*());
     }
 
-    void MenuButton::set_popover(PopoverMenu* popover_menu)
+    inline void MenuButton::set_popover(PopoverMenu* popover_menu)
     {
         gtk_menu_button_set_popover(get_native(), popover_menu->operator GtkWidget*());
     }
 
-    void MenuButton::popup()
+    inline void MenuButton::popup()
     {
         gtk_menu_button_popup(get_native());
     }
 
-    void MenuButton::popdown()
+    inline void MenuButton::popdown()
     {
         gtk_menu_button_popdown(get_native());
     }
 
-    void MenuButton::set_always_show_arrow(bool b)
+    inline void MenuButton::set_always_show_arrow(bool b)
     {
         gtk_menu_button_set_always_show_arrow(get_native(), b);
     }
 
-    void MenuButton::set_has_frame(bool b)
+    inline void MenuButton::set_has_frame(bool b)
     {
         gtk_menu_button_set_has_frame(get_native(), b);
     }

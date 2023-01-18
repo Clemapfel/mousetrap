@@ -5,45 +5,42 @@
 
 namespace mousetrap
 {
-    FileFilter::FileFilter(const std::string& name)
+    inline FileFilter::FileFilter(const std::string& name)
             : _native(gtk_file_filter_new())
     {
         gtk_file_filter_set_name(_native, name.c_str());
     }
 
-    FileFilter::operator GtkFileFilter*()
+    inline FileFilter::operator GtkFileFilter*()
     {
         return _native;
     }
 
-    void FileFilter::add_allow_all_supported_image_formats()
+    inline void FileFilter::add_allow_all_supported_image_formats()
     {
         gtk_file_filter_add_pixbuf_formats(_native);
     }
 
-    void FileFilter::add_allowed_suffix(const std::string& suffix)
+    inline void FileFilter::add_allowed_suffix(const std::string& suffix)
     {
         gtk_file_filter_add_suffix(_native, suffix.c_str());
     }
 
-    void FileFilter::add_allowed_pattern(const std::string& glob)
+    inline void FileFilter::add_allowed_pattern(const std::string& glob)
     {
         gtk_file_filter_add_pattern(_native, glob.c_str());
     }
 
-    void FileFilter::add_allowed_mime_type(const std::string& mime_type_id)
+    inline void FileFilter::add_allowed_mime_type(const std::string& mime_type_id)
     {
         gtk_file_filter_add_mime_type(_native, mime_type_id.c_str());
     }
 
-    FileChooser::FileChooser(FileChooserAction action)
-            : WidgetImplementation<GtkFileChooserWidget>(GTK_FILE_CHOOSER_WIDGET(gtk_file_chooser_widget_new((GtkFileChooserAction) action)))//,
-              //HasActivateSignal<FileChooser>(this)
-              //HasFileActivatedSignal<FileChooser>(this),
-              //HasFileSelectionChangedSignal<FileChooser>(this)
+    inline FileChooser::FileChooser(FileChooserAction action)
+            : WidgetImplementation<GtkFileChooserWidget>(GTK_FILE_CHOOSER_WIDGET(gtk_file_chooser_widget_new((GtkFileChooserAction) action)))
     {}
 
-    void FileChooser::add_filter(FileFilter filter, bool make_active)
+    inline void FileChooser::add_filter(FileFilter filter, bool make_active)
     {
         if (not _non_filter_added)
         {
@@ -60,32 +57,32 @@ namespace mousetrap
             gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(get_native()), filter.operator GtkFileFilter*());
     }
 
-    void FileChooser::set_can_select_multiple(bool b)
+    inline void FileChooser::set_can_select_multiple(bool b)
     {
         gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(get_native()), b);
     }
 
-    bool FileChooser::get_can_select_multiple()
+    inline bool FileChooser::get_can_select_multiple()
     {
         return gtk_file_chooser_get_select_multiple(GTK_FILE_CHOOSER(get_native()));
     }
 
-    void FileChooser::set_can_create_folders(bool b)
+    inline void FileChooser::set_can_create_folders(bool b)
     {
         gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(get_native()), b);
     }
 
-    bool FileChooser::get_can_create_fodlers()
+    inline bool FileChooser::get_can_create_fodlers()
     {
         return gtk_file_chooser_get_create_folders(GTK_FILE_CHOOSER(get_native()));
     }
 
-    FileDescriptor FileChooser::get_current_folder()
+    inline FileDescriptor FileChooser::get_current_folder()
     {
         return FileDescriptor(gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(get_native())));
     }
 
-    void FileChooser::set_current_folder(FileDescriptor* folder)
+    inline void FileChooser::set_current_folder(FileDescriptor* folder)
     {
         GError* error_maybe = nullptr;
         gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(get_native()), folder->operator GFile*(), &error_maybe);
@@ -94,7 +91,7 @@ namespace mousetrap
             std::cerr << "[WARNING] In FileChooser::set_current_folder: Unable to to set location to " << folder->get_path() << ": " << error_maybe->message << std::endl;
     }
 
-    std::vector<FileDescriptor> FileChooser::get_selected()
+    inline std::vector<FileDescriptor> FileChooser::get_selected()
     {
         auto* list = gtk_file_chooser_get_files(GTK_FILE_CHOOSER(get_native()));
         std::vector<FileDescriptor> out;
@@ -106,7 +103,7 @@ namespace mousetrap
         return out;
     }
 
-    FileChooser::OptionID FileChooser::get_choice(ChoiceID id)
+    inline FileChooser::OptionID FileChooser::get_choice(ChoiceID id)
     {
         auto* res = gtk_file_chooser_get_choice(GTK_FILE_CHOOSER(get_native()), id.c_str());
         if (res == nullptr)
@@ -117,7 +114,7 @@ namespace mousetrap
         return res;
     }
 
-    bool FileChooser::get_boolean_choice(ChoiceID id)
+    inline bool FileChooser::get_boolean_choice(ChoiceID id)
     {
         auto* res_ptr = gtk_file_chooser_get_choice(GTK_FILE_CHOOSER(get_native()), id.c_str());
         if (res_ptr == nullptr)
@@ -137,7 +134,7 @@ namespace mousetrap
         return false;
     }
 
-    void FileChooser::add_choice(ChoiceID id, const std::string& label, std::vector<OptionID> options,
+    inline void FileChooser::add_choice(ChoiceID id, const std::string& label, std::vector<OptionID> options,
                                  std::vector<std::string> option_labels, OptionID default_choice)
     {
         auto inserted = _choice_options.insert({id, choice_option{}}).first->second;
@@ -165,7 +162,7 @@ namespace mousetrap
         }
     }
 
-    void FileChooser::add_boolean_choice(ChoiceID id, const std::string& label, bool default_choice)
+    inline void FileChooser::add_boolean_choice(ChoiceID id, const std::string& label, bool default_choice)
     {
         gtk_file_chooser_add_choice(GTK_FILE_CHOOSER(get_native()), id.c_str(), label.c_str(), nullptr, nullptr);
 

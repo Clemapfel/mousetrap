@@ -5,7 +5,7 @@
 
 namespace mousetrap
 {
-    GLArea::GLArea()
+    inline GLArea::GLArea()
         : WidgetImplementation<GtkGLArea>(GTK_GL_AREA(gtk_gl_area_new())),
           HasRenderSignal<GLArea>(this),
           HasResizeSignal<GLArea>(this)
@@ -17,7 +17,7 @@ namespace mousetrap
         connect_signal_resize(on_resize, this);
     }
 
-    void GLArea::add_render_task(Shape* shape, Shader* shader, GLTransform* transform)
+    inline void GLArea::add_render_task(Shape* shape, Shader* shader, GLTransform* transform)
     {
         if (shape == nullptr)
             return;
@@ -25,22 +25,22 @@ namespace mousetrap
         _render_tasks.emplace_back(shape, shader, transform);
     }
 
-    void GLArea::add_render_task(RenderTask task)
+    inline void GLArea::add_render_task(RenderTask task)
     {
         _render_tasks.push_back(task);
     }
 
-    void GLArea::clear_render_tasks()
+    inline void GLArea::clear_render_tasks()
     {
         _render_tasks.clear();
     }
 
-    void GLArea::on_resize(GLArea* area, gint width, gint height, void*)
+    inline void GLArea::on_resize(GLArea* area, gint width, gint height, void*)
     {
         area->make_current();
     }
 
-    gboolean GLArea::on_render(GLArea* area, GdkGLContext* context, void*)
+    inline gboolean GLArea::on_render(GLArea* area, GdkGLContext* context, void*)
     {
         area->make_current();
 
@@ -57,13 +57,13 @@ namespace mousetrap
         return FALSE;
     }
 
-    void GLArea::queue_render()
+    inline void GLArea::queue_render()
     {
         gtk_gl_area_queue_render(get_native());
         gtk_widget_queue_draw(GTK_WIDGET(get_native()));
     }
 
-    void GLArea::make_current()
+    inline void GLArea::make_current()
     {
         gtk_gl_area_make_current(get_native());
     }

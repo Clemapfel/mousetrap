@@ -5,26 +5,26 @@
 
 namespace mousetrap
 {
-    Overlay::Overlay()
+    inline Overlay::Overlay()
         : WidgetImplementation<GtkOverlay>(GTK_OVERLAY(gtk_overlay_new()))
     {}
 
-    void Overlay::set_child(Widget* in)
+    inline void Overlay::set_child(Widget* in)
     {
         gtk_overlay_set_child(get_native(), in == nullptr ? nullptr : in->operator GtkWidget*());
     }
 
-    void Overlay::add_overlay(Widget* in)
+    inline void Overlay::add_overlay(Widget* in)
     {
         gtk_overlay_add_overlay(get_native(), in->operator GtkWidget*());
     }
 
-    void Overlay::remove_overlay(Widget* in)
+    inline void Overlay::remove_overlay(Widget* in)
     {
         gtk_overlay_remove_overlay(get_native(), in->operator GtkWidget*());
     }
 
-    void Overlay::remove_child()
+    inline void Overlay::remove_child()
     {
         gtk_overlay_set_child(get_native(), nullptr);
     }
