@@ -60,7 +60,7 @@ namespace mousetrap
         }())
     {}
 
-    Vector2ui ImageDisplay::get_size() const
+    inline Vector2ui ImageDisplay::get_size() const
     {
         return _size;
     }

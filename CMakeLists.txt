@@ -199,6 +199,7 @@ add_library(mousetrap SHARED
     src/grid_view.inl
 
     include/reorderable_list.hpp
+    src/reorderable_list.inl
 
     include/blend_mode.hpp
     src/blend_mode.inl
@@ -231,13 +232,19 @@ add_library(mousetrap SHARED
     src/file_chooser.inl
 
     include/file.hpp
+    src/file.inl
 
     include/key_file.hpp
     src/key_file.inl
 
     include/switch.hpp
+    src/switch.inl
+
     include/info_message.hpp
+    src/info_message.inl
+
     include/fixed.hpp
+    src/fixed.inl
 
     include/frame_clock.hpp
     src/frame_clock.inl

@@ -1,6 +1,6 @@
 namespace mousetrap
 {
-    FilePreview::FilePreview()
+    inline FilePreview::FilePreview()
     {
         _icon_image_box.set_halign(GTK_ALIGN_CENTER);
 
@@ -32,17 +32,17 @@ namespace mousetrap
         _window.set_child(&_main);
     }
 
-    FilePreview::operator Widget*()
+    inline FilePreview::operator Widget*()
     {
         return &_window;
     }
 
-    void FilePreview::update()
+    inline void FilePreview::update()
     {
         update_from(_file);
     }
 
-    void FilePreview::update_from(FileDescriptor* file)
+    inline void FilePreview::update_from(FileDescriptor* file)
     {
         _file = file;
 

@@ -14,7 +14,6 @@
 #include <include/window.hpp>
 #include <include/pixel_buffer.hpp>
 #include <include/undo_stack.hpp>
-#include <include/ring_layout.hpp>
 
 #include <app/layer.hpp>
 #include <app/app_component.hpp>

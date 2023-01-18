@@ -99,7 +99,7 @@ namespace mousetrap {
         return out;
     }
 
-    std::string zlib_compress(const std::string &data)
+    static std::string zlib_compress(const std::string &data)
     {
         // source: https://stackoverflow.com/questions/27529570/simple-zlib-c-string-compression-and-decompression
 
@@ -115,7 +115,7 @@ namespace mousetrap {
         return compressed_encoded;
     }
 
-    std::string zlib_decompress(const std::string &data)
+    static std::string zlib_decompress(const std::string &data)
     {
         // source: https://stackoverflow.com/questions/27529570/simple-zlib-c-string-compression-and-decompression
 

@@ -291,7 +291,7 @@ namespace mousetrap
             throw std::invalid_argument(str.str());
         };
 
-        inline static auto hex_component_to_int = [](char left, char right) -> uint8_t
+        static auto hex_component_to_int = [](char left, char right) -> uint8_t
         {
             return hex_char_to_int(left) * 16 + hex_char_to_int(right);
         };
@@ -333,5 +333,37 @@ namespace mousetrap
     inline void quantize(RGBA&, size_t n_values_per_component)
     {
         std::cerr << "[ERROR] In Color::quantize: TODO" << std::endl;
+    }
+
+    inline RGBA quantize(RGBA in, size_t n_values_per_component)
+    {
+        RGBA out;
+        out.r = (int(in.r * n_values_per_component) / float(n_values_per_component));
+        out.g = (int(in.g * n_values_per_component) / float(n_values_per_component));
+        out.b = (int(in.b * n_values_per_component) / float(n_values_per_component));
+        out.a = (int(in.a * n_values_per_component) / float(n_values_per_component));
+
+        return out;
+    }
+
+    inline HSVA quantize(HSVA in, size_t n_values_per_component)
+    {
+        HSVA out;
+        out.h = (int(in.h * n_values_per_component) / float(n_values_per_component));
+        out.s = (int(in.s * n_values_per_component) / float(n_values_per_component));
+        out.v = (int(in.v * n_values_per_component) / float(n_values_per_component));
+        out.a = (int(in.a * n_values_per_component) / float(n_values_per_component));
+
+        return out;
+    }
+
+    inline RGBA invert(RGBA in)
+    {
+        return RGBA(1 - in.r, 1 - in.g, 1 - in.b, in.a);
+    }
+
+    inline HSVA invert(HSVA in)
+    {
+        return HSVA(1 - in.h, in.s, 1 - in.v, in.a);
     }
 }

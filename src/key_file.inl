@@ -208,7 +208,7 @@ namespace mousetrap
     }
 
     template<>
-    bool KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline bool KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         bool value = g_key_file_get_boolean(_native, group.c_str(), key.c_str(), &error);
@@ -223,7 +223,7 @@ namespace mousetrap
     }
 
     template<>
-    std::vector<bool> KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline std::vector<bool> KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -243,7 +243,7 @@ namespace mousetrap
     }
 
     template<>
-    int KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline int KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         int value = g_key_file_get_integer(_native, group.c_str(), key.c_str(), &error);
@@ -258,7 +258,7 @@ namespace mousetrap
     }
 
     template<>
-    std::vector<int> KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline std::vector<int> KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -278,7 +278,7 @@ namespace mousetrap
     }
 
     template<>
-    size_t KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline size_t KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         int value = g_key_file_get_uint64(_native, group.c_str(), key.c_str(), &error);
@@ -293,7 +293,7 @@ namespace mousetrap
     }
 
     template<>
-    std::vector<size_t> KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline std::vector<size_t> KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -313,7 +313,7 @@ namespace mousetrap
     }
 
     template<>
-    double KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline double KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         double value = g_key_file_get_double(_native, group.c_str(), key.c_str(), &error);
@@ -328,7 +328,7 @@ namespace mousetrap
     }
 
     template<>
-    std::vector<double> KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline std::vector<double> KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -348,13 +348,13 @@ namespace mousetrap
     }
 
     template<>
-    float KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline float KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         return get_value_as<double>(group, key);
     }
 
     template<>
-    std::vector<float> KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline std::vector<float> KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -374,7 +374,7 @@ namespace mousetrap
     }
 
     template<>
-    std::string KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline std::string KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         const char* value = g_key_file_get_string(_native, group.c_str(), key.c_str(), &error);
@@ -395,7 +395,7 @@ namespace mousetrap
     }
 
     template<>
-    std::vector<std::string> KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline std::vector<std::string> KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -423,7 +423,7 @@ namespace mousetrap
     }
 
     template<>
-    HSVA KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline HSVA KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         auto list = get_value_as<std::vector<float>>(group, key);
         if (not (list.size() != 3 or list.size() != 4))
@@ -444,7 +444,7 @@ namespace mousetrap
     }
 
     template<>
-    RGBA KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline RGBA KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         auto list = get_value_as<std::vector<float>>(group, key);
         if (not (list.size() != 3 or list.size() != 4))
@@ -465,7 +465,7 @@ namespace mousetrap
     }
 
     template<>
-    Image KeyFile::get_value_as(GroupKey group, KeyID key)
+    inline Image KeyFile::get_value_as(GroupKey group, KeyID key)
     {
         Image out;
 
@@ -502,13 +502,13 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, std::string value)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, std::string value)
     {
         g_key_file_set_string(_native, group.c_str(), key.c_str(), value.c_str());
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<std::string> value)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<std::string> value)
     {
         std::vector<const char*> to_add;
         for (auto& s : value)
@@ -518,13 +518,13 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, bool value)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, bool value)
     {
         g_key_file_set_boolean(_native, group.c_str(), key.c_str(), value);
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<bool> value)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<bool> value)
     {
         std::vector<gboolean> to_add; // convert because std::vector<bool> is bit compressed
         for (bool b : value)
@@ -534,19 +534,19 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, int value)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, int value)
     {
         g_key_file_set_integer(_native, group.c_str(), key.c_str(), value);
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<int> value)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<int> value)
     {
         g_key_file_set_integer_list(_native, group.c_str(), key.c_str(), value.data(), value.size());
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, size_t value)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, size_t value)
     {
         if (value > std::numeric_limits<int>::max())
             std::cerr << "[WARNING] In KeyFile::set_value_as<size_t>: Value " << value << " is too large to be stored as int" << std::endl;
@@ -555,7 +555,7 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<size_t> value)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<size_t> value)
     {
         std::vector<int> converted;
         converted.reserve(value.size());
@@ -576,13 +576,13 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, float value)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, float value)
     {
         g_key_file_set_double(_native, group.c_str(), key.c_str(), value);
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<float> value)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<float> value)
     {
         std::vector<gdouble> to_add;
         for (auto& f : value)
@@ -592,19 +592,19 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, HSVA hsva)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, HSVA hsva)
     {
         set_value_as<std::vector<float>>(group, key, {hsva.h, hsva.s, hsva.v, hsva.a});
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, RGBA rgba)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, RGBA rgba)
     {
         set_value_as<std::vector<float>>(group, key, {rgba.r, rgba.g, rgba.b, rgba.a});
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, Image image)
+    inline void KeyFile::set_value_as(GroupKey group, KeyID key, Image image)
     {
         std::vector<float> serialized;
         auto n_pixels = image.get_size().x * image.get_size().y;

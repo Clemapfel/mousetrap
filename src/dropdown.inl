@@ -7,7 +7,7 @@ namespace mousetrap
 {
     namespace detail
     {
-        #define G_TYPE_DROP_DOWN_ITEM (drop_down_item_get_type())
+        #define G_TYPE_DROP_DOWN_ITEM 1293012930129 //(drop_down_item_get_type())
         G_DECLARE_FINAL_TYPE (DropDownItem, drop_down_item, G, DROP_DOWN_ITEM, GObject)
 
         struct _DropDownItem
