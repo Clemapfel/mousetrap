@@ -14,21 +14,21 @@ namespace mousetrap
 {
     namespace state::actions
     {
-        inline Action layer_view_layer_move_up_action = Action("layer_view.layer_move_up");
-        inline Action layer_view_layer_move_down_action = Action("layer_view.layer_move_down");
-        inline Action layer_view_layer_new_above_current_action = Action("layer_view.layer_new_above_current");
-        inline Action layer_view_layer_new_below_current_action = Action("layer_view.layer_new_below_current");
+        DECLARE_GLOBAL_ACTION(layer_view, layer_move_up);
+        DECLARE_GLOBAL_ACTION(layer_view, layer_move_down);
+        DECLARE_GLOBAL_ACTION(layer_view, layer_new_above_current);
+        DECLARE_GLOBAL_ACTION(layer_view, layer_new_below_current);
 
-        inline Action layer_view_layer_duplicate_action = Action("layer_view.layer_duplicate");
-        inline Action layer_view_layer_delete_action = Action("layer_view.layer_delete");
-        inline Action layer_view_layer_merge_down_action = Action("layer_view.layer_merge_down");
-        inline Action layer_view_layer_flatten_all_action = Action("layer_view.layer_flatten_all");
-        inline Action layer_view_layer_create_from_visible = Action("layer_view.layer_create_from_visible");
-        inline Action layer_view_set_layer_visible_action = Action("layer_view.set_layer_visible");
-        inline Action layer_view_set_layer_locked_action = Action("layer_view.set_layer_locked");
+        DECLARE_GLOBAL_ACTION(layer_view, layer_duplicate);
+        DECLARE_GLOBAL_ACTION(layer_view, layer_delete);
+        DECLARE_GLOBAL_ACTION(layer_view, layer_merge_down);
+        DECLARE_GLOBAL_ACTION(layer_view, layer_flatten_all);
+        DECLARE_GLOBAL_ACTION(layer_view, layer_create_from_visible);
+        DECLARE_GLOBAL_ACTION(layer_view, set_layer_visible);
+        DECLARE_GLOBAL_ACTION(layer_view, set_layer_locked);
 
-        inline Action layer_view_show_all_other_layers = Action("layer_view.show_all_other_layers");
-        inline Action layer_view_hide_all_other_layers = Action("layer_view.hide_all_other_layers");
+        DECLARE_GLOBAL_ACTION(layer_view, show_all_other_layers);
+        DECLARE_GLOBAL_ACTION(layer_view, hide_all_other_layers);
     }
 
     namespace state

@@ -16,21 +16,21 @@ namespace mousetrap
 {
     namespace state::actions
     {
-        inline Action save_file_new_state_action = Action("save_file.new_state");
-        inline Action save_file_safe_exit_action = Action("save_file.safe_exit_action");
+        DECLARE_GLOBAL_ACTION(save_file, new_state);
+        DECLARE_GLOBAL_ACTION(save_file, safe_exit);
 
-        inline Action save_file_save_state_to_file_action = Action("save_file.export_state_to_file");
-        inline Action save_file_load_state_from_file_action = Action("save_file.load_state_from_file");
+        DECLARE_GLOBAL_ACTION(save_file, save_state_to_file);
+        DECLARE_GLOBAL_ACTION(save_file, load_state_from_file);
 
-        inline Action save_file_open_save_dialog_action = Action("save_file.open_save_dialog");
-        inline Action save_file_open_load_dialog_action = Action("save_file.open_load_dialog");
-        inline Action save_file_open_restore_from_backup_dialog_action = Action("save_file.open_restore_from_backup_dialog_action");
+        DECLARE_GLOBAL_ACTION(save_file, open_save_dialog);
+        DECLARE_GLOBAL_ACTION(save_file, open_load_dialog);
+        DECLARE_GLOBAL_ACTION(save_file, open_restore_from_backup_dialog);
 
-        inline Action save_file_export_as_image_action = Action("save_file.export_as_image");
-        inline Action save_file_export_as_spritesheet_action = Action("save_file.export_as_spritesheet");
-        inline Action save_file_export_metadata_action = Action("save_file.export_metadata");
+        DECLARE_GLOBAL_ACTION(save_file, export_as_image);
+        DECLARE_GLOBAL_ACTION(save_file, export_as_spritesheet);
+        DECLARE_GLOBAL_ACTION(save_file, export_metadata);
 
-        inline Action save_file_import_from_image_action = Action("save_file.import_from_image");
+        DECLARE_GLOBAL_ACTION(save_file, import_from_image);
     }
 
     KeyFile export_state_to_file();

@@ -13,14 +13,14 @@ namespace mousetrap
 {
     namespace state::actions
     {
-        inline Action canvas_toggle_grid_visible_action = Action("canvas.toggle_grid_visible");
-        inline Action canvas_open_grid_color_settings_action = Action("canvas.open_grid_color_settings");
+        DECLARE_GLOBAL_ACTION(canvas, toggle_grid_visible)
+        DECLARE_GLOBAL_ACTION(canvas, open_grid_color_settings)
 
-        inline Action canvas_toggle_brush_outline_visible_action = Action("canvas.toggle_brush_outline_visible");
-        inline Action canvas_toggle_horizontal_mirror_visible_action = Action("canvas.toggle_horizontal_mirror_visible");
-        inline Action canvas_toggle_vertical_mirror_visible_action = Action("canvas.toggle_vertical_mirror_visible");
+        DECLARE_GLOBAL_ACTION(canvas, toggle_brush_outline_visible)
+        DECLARE_GLOBAL_ACTION(canvas, toggle_horizontal_mirror_visible)
+        DECLARE_GLOBAL_ACTION(canvas, toggle_vertical_mirror_visible)
 
-        inline Action canvas_reset_transform_action = Action("canvas.reset_transform");
+        DECLARE_GLOBAL_ACTION(canvas, reset_transform)
     }
 
     struct Canvas : public AppComponent
@@ -146,8 +146,8 @@ namespace mousetrap
                     bool _scale_scroll_inverted = state::settings_file->get_value_as<bool>("canvas", "scale_scroll_inverted");
                     float _scale_scroll_sensitivity = state::settings_file->get_value_as<float>("canvas", "scale_scroll_sensitivity");
 
-                    inline Action _scale_step_up_action = Action("canvas.scale_step_up");
-                    inline Action _scale_step_down_action = Action("canvas.scale_step_down");
+                    inline Action _scale_step_up_action);
+                    inline Action _scale_step_down_action);
             };
 
             ControlLayer _control_layer = ControlLayer(this);
@@ -393,10 +393,10 @@ namespace mousetrap
             std::deque<SubImage> _undo_queue;
             std::deque<SubImage> _redo_queue;
 
-            inline Action _undo_draw_step_action = Action("canvas.undo_draw_step");
+            inline Action _undo_draw_step_action);
             void on_undo_action();
 
-            Action _redo_draw_step_action = Action("canvas.redo_draw_step");
+            Action _redo_draw_step_action);
             void on_redo_action();
 
             // main

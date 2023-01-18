@@ -10,8 +10,8 @@ namespace mousetrap
 {
     namespace state::actions
     {
-        inline Action selection_select_all_action = Action("selection.select_all");
-        inline Action selection_invert_action = Action("selection.invert");
-        inline Action selection_open_select_color_dialog_action = Action("selection.open_select_color_dialog");
+        DECLARE_GLOBAL_ACTION(selection, select_all);
+        DECLARE_GLOBAL_ACTION(selection, invert);
+        DECLARE_GLOBAL_ACTION(selection, open_select_color_dialog);
     }
 }

@@ -11,11 +11,11 @@ namespace mousetrap
 {
     namespace state::actions
     {
-        inline Action color_transform_invert_action = Action("color_transform.invert");
-        inline Action color_transform_to_grayscale_action = Action("color_transform.to_grayscale");
-        inline Action color_transform_open_hsv_shift_dialog_action = Action("color_transform.open_hsv_shift_dialog");
-        inline Action color_transform_open_color_replace_dialog_action = Action("color_tranform.open_color_replace_dialog");
-        inline Action color_transform_open_palette_shift_dialog_action = Action("color_transform.open_palette_shift_dialog");
+        DECLARE_GLOBAL_ACTION(color_transform, invert);
+        DECLARE_GLOBAL_ACTION(color_transform, to_grayscale);
+        DECLARE_GLOBAL_ACTION(color_transform, open_hsv_shift_dialog);
+        DECLARE_GLOBAL_ACTION(color_transform, open_color_replace_dialog);
+        DECLARE_GLOBAL_ACTION(color_transform, open_palette_shift_dialog);
     }
 
     class ColorTransform

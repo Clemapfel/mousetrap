@@ -16,34 +16,34 @@ namespace mousetrap
 {
     namespace state::actions
     {
-        Action toolbox_select_shapes_fill_action = Action("toolbox.select_shapes_fill");
-        Action toolbox_select_shapes_outline_action = Action("toolbox.select_shapes_outline");
+        DECLARE_GLOBAL_ACTION(toolbox, select_shapes_fill);
+        DECLARE_GLOBAL_ACTION(toolbox, select_shapes_outline);
 
-        Action toolbox_select_marquee_neighborhood_select_action = Action("toolbox.select_marquee_neighborhood_select");
-        Action toolbox_select_marquee_rectangle_action = Action("toolbox.select_marquee_rectangle");
-        Action toolbox_select_marquee_rectangle_add_action = Action("toolbox.select_marquee_rectangle_add");
-        Action toolbox_select_marquee_rectangle_subtract_action = Action("toolbox.select_marquee_rectangle_subtract");
-        Action toolbox_select_marquee_circle_action = Action("toolbox.select_marquee_circle");
-        Action toolbox_select_marquee_circle_add_action = Action("toolbox.select_marquee_circle_add");
-        Action toolbox_select_marquee_circle_subtract_action = Action("toolbox.select_marquee_circle_subtract");
-        Action toolbox_select_marquee_polygon_action = Action("toolbox.select_marquee_polygon");
-        Action toolbox_select_marquee_polygon_add_action = Action("toolbox.select_marquee_polygon_add");
-        Action toolbox_select_marquee_polygon_subtract_action = Action("toolbox.select_marquee_polygon_subtract");
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_neighborhood_select);
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_rectangle);
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_rectangle_add);
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_rectangle_subtract);
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_circle);
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_circle_add);
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_circle_subtract);
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_polygon);
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_polygon_add);
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_polygon_subtract);
 
-        Action toolbox_select_brush_action = Action("toolbox.select_brush");
-        Action toolbox_select_eraser_action = Action("toolbox.select_eraser");
-        Action toolbox_select_eyedropper_action = Action("toolbox.select_eyedropper");
-        Action toolbox_select_bucket_fill_action = Action("toolbox.select_bucket_fill");
-        Action toolbox_select_line_action = Action("toolbox.select_line");
+        DECLARE_GLOBAL_ACTION(toolbox, select_brush);
+        DECLARE_GLOBAL_ACTION(toolbox, select_eraser);
+        DECLARE_GLOBAL_ACTION(toolbox, select_eyedropper);
+        DECLARE_GLOBAL_ACTION(toolbox, select_bucket_fill);
+        DECLARE_GLOBAL_ACTION(toolbox, select_line);
 
-        Action toolbox_select_rectangle_outline_action = Action("toolbox.select_rectangle_outline");
-        Action toolbox_select_rectangle_fill_action = Action("toolbox.select_rectangle_fill");
-        Action toolbox_select_circle_outline_action = Action("toolbox.select_circle_outline");
-        Action toolbox_select_circle_fill_action = Action("toolbox.select_circle_fill");
-        Action toolbox_select_polygon_outline_action = Action("toolbox.select_polygon_outline");
-        Action toolbox_select_polygon_fill_action = Action("toolbox.select_polygon_fill");
-        Action toolbox_select_gradient_dithered_action = Action("toolbox.select_gradient_dithered");
-        Action toolbox_select_gradient_smooth_action = Action("toolbox.select_gradient_smooth");
+        DECLARE_GLOBAL_ACTION(toolbox, select_rectangle_outline);
+        DECLARE_GLOBAL_ACTION(toolbox, select_rectangle_fill);
+        DECLARE_GLOBAL_ACTION(toolbox, select_circle_outline);
+        DECLARE_GLOBAL_ACTION(toolbox, select_circle_fill);
+        DECLARE_GLOBAL_ACTION(toolbox, select_polygon_outline);
+        DECLARE_GLOBAL_ACTION(toolbox, select_polygon_fill);
+        DECLARE_GLOBAL_ACTION(toolbox, select_gradient_dithered);
+        DECLARE_GLOBAL_ACTION(toolbox, select_gradient_smooth);
     }
 
     class Toolbox : public AppComponent

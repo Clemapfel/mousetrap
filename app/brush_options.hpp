@@ -14,17 +14,17 @@ namespace mousetrap
 {
     namespace state::actions
     {
-        inline Action brush_options_increase_brush_size_action = Action("brush_options.increase_brush_size");
-        inline Action brush_options_decrease_brush_size_action = Action("brush_options.decrease_brush_size");
+        DECLARE_GLOBAL_ACTION(brush_options, increase_brush_size);
+        DECLARE_GLOBAL_ACTION(brush_options, decrease_brush_size);
 
-        inline Action brush_options_increase_brush_opacity_action = Action("brush_options.increase_brush_opacity");
-        inline Action brush_options_decrease_brush_opacity_action = Action("brush_options.decrease_brush_opacity");
+        DECLARE_GLOBAL_ACTION(brush_options, increase_brush_opacity);
+        DECLARE_GLOBAL_ACTION(brush_options, decrease_brush_opacity);
 
-        inline Action brush_options_add_brush_action = Action("brush_options.add_brush");
-        inline Action brush_options_remove_brush_action = Action("brush_options.remove_brush");
-        inline Action brush_options_load_default_brushes = Action("brush_options.load_default_brushes");
+        DECLARE_GLOBAL_ACTION(brush_options, add_brush);
+        DECLARE_GLOBAL_ACTION(brush_options, remove_brush);
+        DECLARE_GLOBAL_ACTION(brush_options, load_default_brushes);
 
-        inline Action brush_options_open_default_brush_directory_action = Action("brush_options.open_default_brush_directory");
+        DECLARE_GLOBAL_ACTION(brush_options, open_default_brush_directory);
     }
 
     class BrushOptions : public AppComponent

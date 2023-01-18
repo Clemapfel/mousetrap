@@ -9,9 +9,7 @@ namespace mousetrap
     {}
 
     inline Action::~Action()
-    {
-        //g_object_unref(_g_action);
-    }
+    {}
 
     template<typename DoFunction_t>
     void Action::set_function(DoFunction_t do_function)

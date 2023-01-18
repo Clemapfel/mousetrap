@@ -14,20 +14,20 @@ namespace mousetrap
 {
     namespace state::actions
     {
-        inline Action frame_view_toggle_onionskin_visible_action = Action("frame_view.toggle_onionskin_visible");
-        inline Action frame_view_increase_n_onionskin_layers_action = Action("frame_view.increase_n_onionskin_layers");
-        inline Action frame_view_decrease_n_onionskin_layers_action = Action("frame_view.decrease_n_onionskin_layers");
-        inline Action frame_view_jump_to_start_action = Action("frame_view.jump_to_start");
-        inline Action frame_view_jump_to_end_action = Action("frame_view.jump_to_end");
-        inline Action frame_view_go_to_previous_frame_action = Action("frame_view.go_to_previous_frame");
-        inline Action frame_view_go_to_next_frame_action = Action("frame_view.go_to_next_frame");
-        inline Action frame_view_play_pause_action = Action("frame_view.play_pause");
-        inline Action frame_view_frame_move_right_action = Action("frame_view.frame_move_right");
-        inline Action frame_view_frame_move_left_action = Action("frame_view.frame_move_left");
-        inline Action frame_view_frame_new_left_of_current_action = Action("frame_view.frame_new_left_of_current");
-        inline Action frame_view_frame_new_right_of_current_action = Action("frame_view.frame_new_right_of_current");
-        inline Action frame_view_frame_delete_action = Action("frame_view.frame_delete");
-        inline Action frame_view_frame_make_keyframe_inbetween_action = Action("frame_view.frame_make_keyframe_inbetween");
+        DECLARE_GLOBAL_ACTION(frame_view, toggle_onionskin_visible);
+        DECLARE_GLOBAL_ACTION(frame_view, increase_n_onionskin_layers);
+        DECLARE_GLOBAL_ACTION(frame_view, decrease_n_onionskin_layers);
+        DECLARE_GLOBAL_ACTION(frame_view, jump_to_start);
+        DECLARE_GLOBAL_ACTION(frame_view, jump_to_end);
+        DECLARE_GLOBAL_ACTION(frame_view, go_to_previous_frame);
+        DECLARE_GLOBAL_ACTION(frame_view, go_to_next_frame);
+        DECLARE_GLOBAL_ACTION(frame_view, play_pause);
+        DECLARE_GLOBAL_ACTION(frame_view, frame_move_right);
+        DECLARE_GLOBAL_ACTION(frame_view, frame_move_left);
+        DECLARE_GLOBAL_ACTION(frame_view, frame_new_left_of_current);
+        DECLARE_GLOBAL_ACTION(frame_view, frame_new_right_of_current);
+        DECLARE_GLOBAL_ACTION(frame_view, frame_delete);
+        DECLARE_GLOBAL_ACTION(frame_view, frame_make_keyframe_inbetween);
     }
     
     class FrameView : public AppComponent

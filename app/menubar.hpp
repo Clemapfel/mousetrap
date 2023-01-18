@@ -23,20 +23,21 @@ namespace mousetrap
 {
     namespace state::actions
     {
-        inline Action menu_open_manual_link_action = Action("menu.open_manual_link");
-        inline Action menu_open_about_dialog_action = Action("menu.open_about_dialog");
-        inline Action menu_open_github_link_action = Action("menu.open_github_link");
-        inline Action menu_open_donate_link_action = Action("menu.open_donate_link");
+        DECLARE_GLOBAL_ACTION(menu, open_manual_link);
+        DECLARE_GLOBAL_ACTION(menu, open_about_dialog);
+        DECLARE_GLOBAL_ACTION(menu, open_github_link);
+        DECLARE_GLOBAL_ACTION(menu, open_donate_link);
 
-        inline Action menu_open_cursor_settings_action = Action("menu.open_cursor_settings");
-        inline Action menu_open_keybinding_settings_action = Action("menu.open_keybinding_settings");
-        Action menu_open_animation_settings_action = Action("menu.open_animation_settings");
-        Action menu_open_color_settings_action = Action("menu.open_color_settings");
-        Action menu_open_backup_settings_action = Action("menu.open_backup_settings");
-        Action menu_open_settings_ini_file_action = Action("menu.open_settings_ini_file");
-        Action menu_open_log_folder_action = Action("menu.open_log_folder");
-        Action state_undo_action = Action("state.undo");
-        Action state_redo_action = Action("state.redo");
+        DECLARE_GLOBAL_ACTION(menu, open_cursor_settings);
+        DECLARE_GLOBAL_ACTION(menu, open_keybinding_settings);
+        DECLARE_GLOBAL_ACTION(menu, open_animation_settings);
+        DECLARE_GLOBAL_ACTION(menu, open_color_settings);
+        DECLARE_GLOBAL_ACTION(menu, open_backup_settings);
+        DECLARE_GLOBAL_ACTION(menu, open_settings_ini_file);
+        DECLARE_GLOBAL_ACTION(menu, open_log_folder);
+
+        DECLARE_GLOBAL_ACTION(state, undo);
+        DECLARE_GLOBAL_ACTION(state, redo);
     }
 
     void initialize_menubar_actions();

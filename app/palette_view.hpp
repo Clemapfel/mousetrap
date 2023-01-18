@@ -18,27 +18,27 @@ namespace mousetrap
 {
     namespace state::actions
     {
-        inline Action palette_view_on_load_default_action = Action("palette_view.load_default");
-        inline Action palette_view_on_save_action = Action("palette_view.save");
-        inline Action palette_view_on_save_as_default_action = Action("palette_view.save_as_default");
-        inline Action palette_view_on_load_action = Action("palette_view.load");
-        inline Action palette_view_on_save_as_action = Action("palette_view.save_as");
+        DECLARE_GLOBAL_ACTION(palette_view, load_default);
+        DECLARE_GLOBAL_ACTION(palette_view, save);
+        DECLARE_GLOBAL_ACTION(palette_view, save_as_default);
+        DECLARE_GLOBAL_ACTION(palette_view, load);
+        DECLARE_GLOBAL_ACTION(palette_view, save_as);
 
-        inline Action palette_view_on_sort_by_default_action = Action("palette_view.sort_by_default");
-        inline Action palette_view_on_sort_by_hue_action = Action("palette_view.sort_by_hue");
-        inline Action palette_view_on_sort_by_saturation_action = Action("palette_view.sort_by_saturation");
-        inline Action palette_view_on_sort_by_value_action = Action("palette_view.sort_by_value");
+        DECLARE_GLOBAL_ACTION(palette_view, sort_by_default);
+        DECLARE_GLOBAL_ACTION(palette_view, sort_by_hue);
+        DECLARE_GLOBAL_ACTION(palette_view, sort_by_saturation);
+        DECLARE_GLOBAL_ACTION(palette_view, sort_by_value);
 
-        inline Action palette_view_select_color_0 = Action("palette_view.select_color_0");
-        inline Action palette_view_select_color_1 = Action("palette_view.select_color_1");
-        inline Action palette_view_select_color_2 = Action("palette_view.select_color_2");
-        inline Action palette_view_select_color_3 = Action("palette_view.select_color_3");
-        inline Action palette_view_select_color_4 = Action("palette_view.select_color_4");
-        inline Action palette_view_select_color_5 = Action("palette_view.select_color_5");
-        inline Action palette_view_select_color_6 = Action("palette_view.select_color_6");
-        inline Action palette_view_select_color_7 = Action("palette_view.select_color_7");
-        inline Action palette_view_select_color_8 = Action("palette_view.select_color_8");
-        inline Action palette_view_select_color_9 = Action("palette_view.select_color_9");
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_0);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_1);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_2);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_3);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_4);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_5);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_6);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_7);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_8);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_9);
     }
 
     class PaletteView : public AppComponent

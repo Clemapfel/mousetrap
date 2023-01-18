@@ -17,7 +17,7 @@ namespace mousetrap
 {
     namespace state::actions
     {
-        inline Action color_swapper_swap_action = Action("color_swapper.swap");
+        DECLARE_GLOBAL_ACTION(color_swapper, swap);
     }
 
     class ColorSwapper : public AppComponent

@@ -14,10 +14,10 @@ namespace mousetrap
 {
     namespace state::actions
     {
-        inline Action animation_preview_toggle_playback_active_action = Action("animation_preview.toggle_playback_active");
-        inline Action animation_preview_increase_scale_factor_action = Action("animation_preview.increase_scale_factor");
-        inline Action animation_preview_decrease_scale_factor_action = Action("animation_preview.decrease_scale_factor");
-        inline Action animation_preview_toggle_background_visible_action = Action("animation_preview.toggle_background_visible");
+        DECLARE_GLOBAL_ACTION(animation_preview, toggle_playback_active);
+        DECLARE_GLOBAL_ACTION(animation_preview, increase_scale_factor);
+        DECLARE_GLOBAL_ACTION(animation_preview, decrease_scale_factor);
+        DECLARE_GLOBAL_ACTION(animation_preview, toggle_background_visible);
     }
 
     class AnimationPreview : public AppComponent
