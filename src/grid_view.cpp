@@ -56,7 +56,7 @@ namespace mousetrap::detail
 
 namespace mousetrap
 {
-    inline GridView::GridView(GtkOrientation orientation, GtkSelectionMode mode)
+    GridView::GridView(GtkOrientation orientation, GtkSelectionMode mode)
             : WidgetImplementation<GtkGridView>([&]() -> GtkGridView* {
 
         _orientation = orientation;
@@ -84,11 +84,11 @@ namespace mousetrap
     }())
     {}
 
-    inline GridView::GridView(GtkSelectionMode mode)
+    GridView::GridView(GtkSelectionMode mode)
             : GridView(GTK_ORIENTATION_VERTICAL, mode)
     {}
 
-    inline void GridView::on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, GridView* instance)
+    void GridView::on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, GridView* instance)
     {
         auto* list_item = GTK_LIST_ITEM(object);
         auto* object_in = detail::G_GRID_VIEW_ITEM(gtk_list_item_get_item(list_item));
@@ -96,60 +96,60 @@ namespace mousetrap
         gtk_list_item_set_child(list_item, object_in->widget->operator GtkWidget*());
     }
 
-    inline void GridView::on_list_item_factory_unbind(GtkSignalListItemFactory* self, void* object, GridView* instance)
+    void GridView::on_list_item_factory_unbind(GtkSignalListItemFactory* self, void* object, GridView* instance)
     {}
 
-    inline void GridView::on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, GridView* instance)
+    void GridView::on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, GridView* instance)
     {}
 
-    inline void GridView::on_list_item_factory_teardown(GtkSignalListItemFactory* self, void* object, GridView* instance)
+    void GridView::on_list_item_factory_teardown(GtkSignalListItemFactory* self, void* object, GridView* instance)
     {}
 
-    inline void GridView::push_back(Widget* widget)
+    void GridView::push_back(Widget* widget)
     {
         auto* item = detail::grid_view_item_new(widget);
         g_list_store_append(G_LIST_STORE(_list_store), item);
     }
 
-    inline void GridView::push_front(Widget* widget)
+    void GridView::push_front(Widget* widget)
     {
         auto* item = detail::grid_view_item_new(widget);
         g_list_store_insert(G_LIST_STORE(_list_store), 0, item);
     }
 
-    inline void GridView::insert(Widget* widget, size_t i)
+    void GridView::insert(Widget* widget, size_t i)
     {
         auto* item = detail::grid_view_item_new(widget);
         g_list_store_insert(G_LIST_STORE(_list_store), i, item);
     }
 
-    inline void GridView::clear()
+    void GridView::clear()
     {
         g_list_store_remove_all(_list_store);
     }
 
-    inline void GridView::remove(Widget* widget)
+    void GridView::remove(Widget* widget)
     {
         size_t i = 0;
         g_list_store_remove(G_LIST_STORE(_list_store), i);
     }
 
-    inline void GridView::set_enable_rubberband_selection(bool b)
+    void GridView::set_enable_rubberband_selection(bool b)
     {
         gtk_grid_view_set_enable_rubberband(_native, b);
     }
 
-    inline void GridView::set_max_columns(size_t i)
+    void GridView::set_max_columns(size_t i)
     {
         gtk_grid_view_set_max_columns(_native, i);
     }
 
-    inline void GridView::set_min_columns(size_t i)
+    void GridView::set_min_columns(size_t i)
     {
         gtk_grid_view_set_min_columns(_native, i);
     }
 
-    inline SelectionModel* GridView::get_selection_model()
+    SelectionModel* GridView::get_selection_model()
     {
         return _selection_model;
     }

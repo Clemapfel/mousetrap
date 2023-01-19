@@ -62,10 +62,10 @@ namespace mousetrap
     void ColorSwapper::update()
     {
         if (_primary_color_shape != nullptr)
-            _primary_color_shape->set_color(state::primary_color);
+            _primary_color_shape->set_color(active_state->primary_color);
 
         if (_secondary_color_shape != nullptr)
-            _secondary_color_shape->set_color(state::secondary_color);
+            _secondary_color_shape->set_color(active_state->secondary_color);
 
         _render_area.queue_render();
     }
@@ -144,8 +144,8 @@ namespace mousetrap
             _secondary_color_shape_frame->set_color(RGBA(0, 0, 0, 1));
         }
 
-        _primary_color_shape->set_color(state::primary_color);
-        _secondary_color_shape->set_color(state::secondary_color);
+        _primary_color_shape->set_color(active_state->primary_color);
+        _secondary_color_shape->set_color(active_state->secondary_color);
 
         _render_area.clear_render_tasks();
 
@@ -167,16 +167,16 @@ namespace mousetrap
 
     void ColorSwapper::swap_colors()
     {
-        auto current_primary = state::primary_color;
-        auto current_secondary = state::secondary_color;
+        auto current_primary = active_state->primary_color;
+        auto current_secondary = active_state->secondary_color;
 
         _primary_color_shape->set_color(current_secondary);
         _secondary_color_shape->set_color(current_primary);
 
-        state::primary_color = current_secondary;
-        state::secondary_color = current_primary;
-        state::preview_color_current = state::primary_color;
-        state::preview_color_previous = state::primary_color;
+        active_state->primary_color = current_secondary;
+        active_state->secondary_color = current_primary;
+        active_state->preview_color_current = active_state->primary_color;
+        active_state->preview_color_previous = active_state->primary_color;
 
         state::verbose_color_picker->update();
         state::color_picker->update();

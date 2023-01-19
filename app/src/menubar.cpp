@@ -11,7 +11,7 @@ namespace mousetrap
             if (error != nullptr)
             {
                 auto error_message = "Unable to open uri at `" + uri + ": " + error->message;
-                ((BubbleLogArea*) state::bubble_log)->send_message(error_message);
+                state::bubble_log->send_message(error_message);
                 std::cerr << error_message << std::endl;
             }
         };

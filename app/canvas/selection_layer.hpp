@@ -93,16 +93,16 @@ namespace mousetrap
 
     void Canvas::SelectionLayer::reformat()
     {
-        float width = state::layer_resolution.x / _canvas_size->x;
-        float height = state::layer_resolution.y / _canvas_size->y;
+        float width = active_state->layer_resolution.x / _canvas_size->x;
+        float height = active_state->layer_resolution.y / _canvas_size->y;
 
-        float pixel_w = width / state::layer_resolution.x * *_owner->_transform_scale;
-        float pixel_h = height / state::layer_resolution.y * *_owner->_transform_scale;
+        float pixel_w = width / active_state->layer_resolution.x * *_owner->_transform_scale;
+        float pixel_h = height / active_state->layer_resolution.y * *_owner->_transform_scale;
 
         if (not _area.get_is_realized())
             return;
 
-        auto texture_size = state::current_brush->get_texture()->get_size();
+        auto texture_size = active_state->current_brush->get_texture()->get_size();
         auto adjusted_pixel_size = Vector2f(pixel_w / texture_size.x, pixel_h / texture_size.y);
 
         std::vector<std::pair<Vector2f, Vector2f>> outline_outline;
@@ -167,7 +167,7 @@ namespace mousetrap
             return out;
         };
 
-        auto vertices = generate_outline_vertices(state::selection);
+        auto vertices = generate_outline_vertices(active_state->selection);
 
         _outline_shape_top->as_lines(convert_vertex_coordinates(vertices.top));
         _outline_shape_right->as_lines(convert_vertex_coordinates(vertices.right));
@@ -192,10 +192,10 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
-        auto selection_top_left = *(state::selection.begin());
+        auto selection_top_left = *(active_state->selection.begin());
 
-        float layer_w = state::layer_resolution.x / _canvas_size->x;
-        float layer_h = state::layer_resolution.y / _canvas_size->y;
+        float layer_w = active_state->layer_resolution.x / _canvas_size->x;
+        float layer_h = active_state->layer_resolution.y / _canvas_size->y;
 
         Vector2f layer_top_left = {0.5 - layer_w / 2, 0.5 - layer_h / 2};
         layer_top_left = to_gl_position(layer_top_left);
@@ -203,8 +203,8 @@ namespace mousetrap
         layer_top_left = from_gl_position(layer_top_left);
 
         Vector2f pixel_size = {
-            layer_w / state::layer_resolution.x,
-            layer_h / state::layer_resolution.y
+            layer_w / active_state->layer_resolution.x,
+            layer_h / active_state->layer_resolution.y
         };
 
         auto top_left = layer_top_left;

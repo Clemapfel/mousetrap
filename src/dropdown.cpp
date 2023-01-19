@@ -60,7 +60,8 @@ namespace mousetrap
             gobject_class->finalize = drop_down_item_finalize;
         }
 
-        static DropDownItem* drop_down_item_new(Widget* in, Widget* label, DropDown* owner, size_t function_id)
+        // sic, not static because forward declared in dropdown.inl
+        DropDownItem* drop_down_item_new(Widget* in, Widget* label, DropDown* owner, size_t function_id)
         {
             auto* item = (DropDownItem*) g_object_new(G_TYPE_DROP_DOWN_ITEM, nullptr);
             drop_down_item_init(item);
@@ -75,7 +76,7 @@ namespace mousetrap
         }
     }
 
-    inline DropDown::DropDown()
+    DropDown::DropDown()
             : WidgetImplementation<GtkDropDown>([&](){
 
         _model = g_list_store_new(G_TYPE_OBJECT);
@@ -98,14 +99,14 @@ namespace mousetrap
         add_reference(_model);
     }
 
-    inline void DropDown::on_list_factory_bind(GtkSignalListItemFactory* self, void* object, void* data)
+    void DropDown::on_list_factory_bind(GtkSignalListItemFactory* self, void* object, void* data)
     {
         auto* item = GTK_LIST_ITEM(object);
         auto* dropdown_item = detail::G_DROP_DOWN_ITEM(gtk_list_item_get_item(item));
         gtk_list_item_set_child(item, dropdown_item->widget->operator GtkWidget*());
     }
 
-    inline void DropDown::on_label_factory_bind(GtkSignalListItemFactory* self, void* object, void* data)
+    void DropDown::on_label_factory_bind(GtkSignalListItemFactory* self, void* object, void* data)
     {
         auto* item = GTK_LIST_ITEM(object);
         auto* dropdown_item = detail::G_DROP_DOWN_ITEM(gtk_list_item_get_item(item));
@@ -116,12 +117,12 @@ namespace mousetrap
             f();
     }
 
-    inline size_t DropDown::get_selected()
+    size_t DropDown::get_selected()
     {
         return gtk_drop_down_get_selected(get_native());
     }
 
-    inline void DropDown::set_selected(size_t i)
+    void DropDown::set_selected(size_t i)
     {
         gtk_drop_down_set_selected(get_native(), i);
     }

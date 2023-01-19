@@ -7,11 +7,14 @@
 
 #include <include/key_file.hpp>
 
-namespace mousetrap::state
+namespace mousetrap
 {
-    static inline KeyFile* settings_file = nullptr;
-    static inline KeyFile* keybindings_file = nullptr;
-    static inline KeyFile* tooltips_file = nullptr;
+    namespace state
+    {
+        static inline KeyFile* settings_file = nullptr;
+        static inline KeyFile* keybindings_file = nullptr;
+        static inline KeyFile* tooltips_file = nullptr;
+    }
 
-    void validate_keybindings_file();
+    void validate_keybindings_file(KeyFile*);
 }

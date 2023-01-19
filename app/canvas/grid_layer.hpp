@@ -21,9 +21,9 @@ namespace mousetrap
 
     void Canvas::GridLayer::update()
     {
-        if (_layer_resolution != state::layer_resolution and _area.get_is_realized())
+        if (_layer_resolution != active_state->layer_resolution and _area.get_is_realized())
         {
-            _layer_resolution = state::layer_resolution;
+            _layer_resolution = active_state->layer_resolution;
             _grid_visible = _owner->_grid_visible;
             _grid_color = _owner->_grid_color;
             on_realize(&_area, this);
@@ -74,29 +74,29 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
-        float w = state::layer_resolution.x / _canvas_size.x;
-        float h = state::layer_resolution.y / _canvas_size.y;
+        float w = active_state->layer_resolution.x / _canvas_size.x;
+        float h = active_state->layer_resolution.y / _canvas_size.y;
 
         float x = 0.5 - w / 2;
         float y = 0.5 - h / 2;
 
-        for (size_t i = 0; i < state::layer_resolution.x + 1; ++i)
+        for (size_t i = 0; i < active_state->layer_resolution.x + 1; ++i)
         {
             auto* line = _h_lines.at(i);
             line->as_line(
-                {x + ((float(i) / state::layer_resolution.x) * w), y},
-                {x + ((float(i) / state::layer_resolution.x) * w), y + h}
+                {x + ((float(i) / active_state->layer_resolution.x) * w), y},
+                {x + ((float(i) / active_state->layer_resolution.x) * w), y + h}
             );
             line->set_color(_grid_color);
             line->set_visible(_grid_visible);
         }
 
-        for (size_t i = 0; i < state::layer_resolution.y + 1; ++i)
+        for (size_t i = 0; i < active_state->layer_resolution.y + 1; ++i)
         {
             auto* line = _v_lines.at(i);
             line->as_line(
-                    {x, y + ((float(i) / state::layer_resolution.y) * h)},
-                    {x + w, y + ((float(i) / state::layer_resolution.y) * h)}
+                    {x, y + ((float(i) / active_state->layer_resolution.y) * h)},
+                    {x + w, y + ((float(i) / active_state->layer_resolution.y) * h)}
             );
             line->set_color(_grid_color);
             line->set_visible(_grid_visible);
@@ -110,7 +110,7 @@ namespace mousetrap
         auto* area = (GLArea*) widget;
         area->make_current();
 
-        instance->_layer_resolution = state::layer_resolution;
+        instance->_layer_resolution = active_state->layer_resolution;
 
         for (size_t i = 0; i < instance->_layer_resolution.x + 1; ++i)
             instance->_h_lines.emplace_back(new Shape());

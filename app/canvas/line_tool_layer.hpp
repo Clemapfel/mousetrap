@@ -68,12 +68,12 @@ namespace mousetrap
             _end_point = *_owner->_current_pixel_position;
 
         Vector2f layer_size = {
-                state::layer_resolution.x / _canvas_size.x,
-                state::layer_resolution.y / _canvas_size.y
+                active_state->layer_resolution.x / _canvas_size.x,
+                active_state->layer_resolution.y / _canvas_size.y
         };
 
         layer_size *= *_owner->_transform_scale;
-        Vector2f pixel_size = {layer_size.x / state::layer_resolution.x, layer_size.y / state::layer_resolution.y};
+        Vector2f pixel_size = {layer_size.x / active_state->layer_resolution.x, layer_size.y / active_state->layer_resolution.y};
 
         for (auto* shape : {_start_shape, _end_shape})
             shape->as_wireframe({
@@ -83,8 +83,8 @@ namespace mousetrap
                     Vector2f{-0.5 * pixel_size.x, 0.5 * pixel_size.y},
             });
 
-        float w = state::layer_resolution.x / _canvas_size.x;
-        float h = state::layer_resolution.y / _canvas_size.y;
+        float w = active_state->layer_resolution.x / _canvas_size.x;
+        float h = active_state->layer_resolution.y / _canvas_size.y;
 
         Vector2f layer_top_left = {0.5 - w / 2, 0.5 - h / 2};
         layer_top_left = to_gl_position(layer_top_left);

@@ -19,9 +19,9 @@ namespace mousetrap
             return true;
         }, this);
 
-        _brush_opacity = state::brush_opacity;
-        _brush_color = state::primary_color;
-        _current_brush = state::current_brush;
+        _brush_opacity = active_state->brush_opacity;
+        _brush_color = active_state->primary_color;
+        _current_brush = active_state->current_brush;
     }
 
     Canvas::BrushCursorLayer::operator Widget*()
@@ -86,11 +86,11 @@ namespace mousetrap
 
     void Canvas::BrushCursorLayer::reformat()
     {
-        float width = state::layer_resolution.x / _canvas_size.x;
-        float height = state::layer_resolution.y / _canvas_size.y;
+        float width = active_state->layer_resolution.x / _canvas_size.x;
+        float height = active_state->layer_resolution.y / _canvas_size.y;
 
-        float pixel_w = width / state::layer_resolution.x * _transform_scale;
-        float pixel_h = height / state::layer_resolution.y * _transform_scale;
+        float pixel_w = width / active_state->layer_resolution.x * _transform_scale;
+        float pixel_h = height / active_state->layer_resolution.y * _transform_scale;
 
         if (_cursor_shape == nullptr)
             return;
@@ -107,9 +107,9 @@ namespace mousetrap
             {pixel_w, pixel_h},
             {0, pixel_h}
         );
-        _cursor_shape->set_texture(state::current_brush->get_texture());
+        _cursor_shape->set_texture(active_state->current_brush->get_texture());
 
-        auto texture_size = state::current_brush->get_texture()->get_size();
+        auto texture_size = active_state->current_brush->get_texture()->get_size();
         auto adjusted_pixel_size = Vector2f(pixel_w / texture_size.x, pixel_h / texture_size.y);
 
         std::vector<std::pair<Vector2f, Vector2f>> outline_outline;
@@ -168,7 +168,7 @@ namespace mousetrap
             return out;
         };
 
-        auto vertices = state::current_brush->get_outline_vertices();
+        auto vertices = active_state->current_brush->get_outline_vertices();
 
         _cursor_outline_shape_top->as_lines(convert_vertex_coordinates(vertices.top));
         _cursor_outline_shape_right->as_lines(convert_vertex_coordinates(vertices.right));
@@ -182,8 +182,8 @@ namespace mousetrap
 
         _cursor_outline_outline_shape->set_color(RGBA(0, 0, 0, 1));
 
-        _brush_color = state::primary_color;
-        _brush_opacity = state::brush_opacity;
+        _brush_color = active_state->primary_color;
+        _brush_opacity = active_state->brush_opacity;
 
         auto cursor_color = HSVA(
             _brush_color.h,
@@ -193,7 +193,7 @@ namespace mousetrap
         );
         auto outline_color = HSVA(0, 0, cursor_color.v > 0.5 ? 0 : 1, _brush_opacity);
 
-        if (state::active_tool == ERASER)
+        if (active_state->active_tool == ERASER)
         {
             cursor_color = HSVA(0, 0, 1, 0.25);
             outline_color = HSVA(0, 0, 0, 1);
@@ -207,14 +207,14 @@ namespace mousetrap
 
     void Canvas::BrushCursorLayer::update()
     {
-        if (_current_brush != state::current_brush or ((_transform_scale != *_owner->_transform_scale) and _area.get_is_realized()))
+        if (_current_brush != active_state->current_brush or ((_transform_scale != *_owner->_transform_scale) and _area.get_is_realized()))
         {
-            _current_brush = state::current_brush;
+            _current_brush = active_state->current_brush;
             _cursor_in_bounds = *_owner->_cursor_in_bounds;
             _cursor_position = *_owner->_current_cursor_position;
             _transform_scale = *_owner->_transform_scale;
-            _brush_color = state::primary_color;
-            _brush_opacity = state::brush_opacity;
+            _brush_color = active_state->primary_color;
+            _brush_opacity = active_state->brush_opacity;
 
             reformat();
         }
@@ -229,8 +229,8 @@ namespace mousetrap
             Vector2f pos = {_cursor_position.x / widget_w, _cursor_position.y / widget_h};
 
             // align with texture-space pixel grid
-            float w = state::layer_resolution.x / _canvas_size.x;
-            float h = state::layer_resolution.y / _canvas_size.y;
+            float w = active_state->layer_resolution.x / _canvas_size.x;
+            float h = active_state->layer_resolution.y / _canvas_size.y;
 
             Vector2f layer_top_left = {0.5 - w / 2, 0.5 - h / 2};
             layer_top_left = to_gl_position(layer_top_left);
@@ -238,8 +238,8 @@ namespace mousetrap
             layer_top_left = from_gl_position(layer_top_left);
 
             Vector2f layer_size = {
-                state::layer_resolution.x / _canvas_size.x,
-                state::layer_resolution.y / _canvas_size.y
+                active_state->layer_resolution.x / _canvas_size.x,
+                active_state->layer_resolution.y / _canvas_size.y
             };
 
             layer_size *= _transform_scale;
@@ -247,7 +247,7 @@ namespace mousetrap
             float x_dist = (pos.x - layer_top_left.x);
             float y_dist = (pos.y - layer_top_left.y);
 
-            Vector2f pixel_size = {layer_size.x / state::layer_resolution.x, layer_size.y / state::layer_resolution.y};
+            Vector2f pixel_size = {layer_size.x / active_state->layer_resolution.x, layer_size.y / active_state->layer_resolution.y};
 
             x_dist /= pixel_size.x;
             y_dist /= pixel_size.y;
@@ -268,7 +268,7 @@ namespace mousetrap
             float x_offset = 0.5;
             float y_offset = 0.5;
 
-            auto* brush_texture = state::current_brush->get_texture();
+            auto* brush_texture = active_state->current_brush->get_texture();
 
             if (brush_texture and brush_texture->get_size().x % 2 == 0)
                 x_offset = 1;
@@ -296,13 +296,13 @@ namespace mousetrap
             _cursor_outline_shape_left->set_centroid(centroid - left_offset);
         }
 
-        auto should_update_opacity = _brush_opacity != state::brush_opacity;
-        auto should_update_color = _brush_color != state::primary_color;
+        auto should_update_opacity = _brush_opacity != active_state->brush_opacity;
+        auto should_update_color = _brush_color != active_state->primary_color;
 
         if ((should_update_opacity or should_update_color) and _area.get_is_realized())
         {
-            _brush_color = state::primary_color;
-            _brush_opacity = state::brush_opacity;
+            _brush_color = active_state->primary_color;
+            _brush_opacity = active_state->brush_opacity;
 
             auto cursor_color = HSVA(
                 _brush_color.h,
@@ -312,7 +312,7 @@ namespace mousetrap
             );
             auto outline_color = HSVA(0, 0, cursor_color.v > 0.5 ? 0 : 1, _brush_opacity);
 
-            if (state::active_tool == ERASER)
+            if (active_state->active_tool == ERASER)
             {
                 cursor_color = HSVA(0, 0, 1, 0.25);
                 outline_color = HSVA(0, 0, 0, 1);

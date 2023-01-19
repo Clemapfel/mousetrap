@@ -127,8 +127,8 @@ namespace mousetrap
         Vector2f pos = {x / widget_w, y / widget_h};
 
         // align with texture-space pixel grid
-        float w = state::layer_resolution.x / widget_w;
-        float h = state::layer_resolution.y / widget_h;
+        float w = active_state->layer_resolution.x / widget_w;
+        float h = active_state->layer_resolution.y / widget_h;
 
         Vector2f layer_top_left = {0.5 - w / 2, 0.5 - h / 2};
         layer_top_left = to_gl_position(layer_top_left);
@@ -136,8 +136,8 @@ namespace mousetrap
         layer_top_left = from_gl_position(layer_top_left);
 
         Vector2f layer_size = {
-                state::layer_resolution.x / widget_w,
-                state::layer_resolution.y / widget_h
+                active_state->layer_resolution.x / widget_w,
+                active_state->layer_resolution.y / widget_h
         };
 
         layer_size *= *_owner->_transform_scale;
@@ -145,7 +145,7 @@ namespace mousetrap
         float x_dist = (pos.x - layer_top_left.x);
         float y_dist = (pos.y - layer_top_left.y);
 
-        Vector2f pixel_size = {layer_size.x / state::layer_resolution.x, layer_size.y / state::layer_resolution.y};
+        Vector2f pixel_size = {layer_size.x / active_state->layer_resolution.x, layer_size.y / active_state->layer_resolution.y};
 
         x_dist /= pixel_size.x;
         y_dist /= pixel_size.y;
@@ -176,9 +176,9 @@ namespace mousetrap
         *instance->_owner->_current_cursor_position = {x, y};
         instance->update_pixel_position();
 
-        if (state::active_tool == BRUSH)
+        if (active_state->active_tool == BRUSH)
             instance->_owner->resolve_brush_click_pressed();
-        else if (state::active_tool == ERASER)
+        else if (active_state->active_tool == ERASER)
             instance->_owner->resolve_eraser_click_pressed();
     }
 
@@ -189,9 +189,9 @@ namespace mousetrap
         *instance->_owner->_current_cursor_position = {x, y};
         instance->update_pixel_position();
 
-        if (state::active_tool == BRUSH)
+        if (active_state->active_tool == BRUSH)
             instance->_owner->resolve_brush_click_released();
-        else if (state::active_tool == ERASER)
+        else if (active_state->active_tool == ERASER)
             instance->_owner->resolve_eraser_click_released();
     }
 
@@ -218,9 +218,9 @@ namespace mousetrap
         *instance->_owner->_current_cursor_position = {x, y};
         instance->update_pixel_position();
 
-        if (state::active_tool == BRUSH)
+        if (active_state->active_tool == BRUSH)
             instance->_owner->resolve_brush_motion();
-        else if (state::active_tool == ERASER)
+        else if (active_state->active_tool == ERASER)
             instance->_owner->resolve_eraser_motion();
     }
 

@@ -10,7 +10,7 @@ namespace mousetrap
         _brush_preview_list.clear();
         _brush_previews.clear();
 
-        for (auto* brush : state::brushes)
+        for (auto* brush : active_state->brushes)
         {
             auto shape = brush->get_shape();
             if (shape == BrushShape::CUSTOM)
@@ -79,8 +79,8 @@ namespace mousetrap
             instance->set_brush_opacity(scale->get_value());
         }, this);
 
-        set_brush_opacity(state::brush_opacity);
-        set_brush_size(state::brush_size);
+        set_brush_opacity(active_state->brush_opacity);
+        set_brush_size(active_state->brush_size);
 
         // Actions
 
@@ -209,7 +209,7 @@ namespace mousetrap
     {
         x = glm::clamp<float>(x, 0, 1);
 
-        state::brush_opacity = x;
+        active_state->brush_opacity = x;
 
         _brush_opacity_scale.set_signal_value_changed_blocked(true);
         _brush_opacity_scale.set_value(x);
@@ -222,14 +222,14 @@ namespace mousetrap
 
     float BrushOptions::get_brush_opacity() const
     {
-        return state::brush_opacity;
+        return active_state->brush_opacity;
     }
 
     void BrushOptions::set_brush_size(size_t x)
     {
         x = glm::clamp<size_t>(x, 1, max_brush_size);
 
-        state::brush_size = x;
+        active_state->brush_size = x;
 
         _brush_size_scale.set_signal_value_changed_blocked(true);
         _brush_size_scale.set_value(x);
@@ -242,7 +242,7 @@ namespace mousetrap
 
     size_t BrushOptions::get_brush_size() const
     {
-        return state::brush_size;
+        return active_state->brush_size;
     }
 
     BrushOptions::operator Widget*()
@@ -379,14 +379,14 @@ namespace mousetrap::state
 {
     void reload_brushes()
     {
-        state::brushes.clear();
+        active_state->brushes.clear();
 
-        state::brushes.emplace_back(new Brush())->as_circle();
-        state::brushes.emplace_back(new Brush())->as_square();
-        state::brushes.emplace_back(new Brush())->as_ellipse_horizontal();
-        state::brushes.emplace_back(new Brush())->as_ellipse_vertical();
-        state::brushes.emplace_back(new Brush())->as_rectangle_horizontal();
-        state::brushes.emplace_back(new Brush())->as_rectangle_vertical();
+        active_state->brushes.emplace_back(new Brush())->as_circle();
+        active_state->brushes.emplace_back(new Brush())->as_square();
+        active_state->brushes.emplace_back(new Brush())->as_ellipse_horizontal();
+        active_state->brushes.emplace_back(new Brush())->as_ellipse_vertical();
+        active_state->brushes.emplace_back(new Brush())->as_rectangle_horizontal();
+        active_state->brushes.emplace_back(new Brush())->as_rectangle_vertical();
 
         auto files = get_all_files_in_directory(get_resource_path() + "brushes", false, false);
         std::sort(files.begin(), files.end(), [](FileDescriptor& a, FileDescriptor& b) -> bool {
@@ -400,11 +400,10 @@ namespace mousetrap::state
             if (image.create_from_file(file.get_path()))
             {
                 brush->as_custom(image);
-                state::brushes.emplace_back(brush);
+                active_state->brushes.emplace_back(brush);
             }
         }
 
-        state::current_brush = state::brushes.at(0);
+        active_state->current_brush = active_state->brushes.at(0);
     }
-
 }

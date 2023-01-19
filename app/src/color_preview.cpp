@@ -28,11 +28,11 @@ namespace mousetrap
 
         instance->_previous_color_shape = new Shape();
         instance->_previous_color_shape->as_rectangle({0, 0}, {_previous_to_color_current_width_ratio, 1});
-        instance->_previous_color_shape->set_color(state::primary_color);
+        instance->_previous_color_shape->set_color(active_state->primary_color);
 
         instance->_current_color_shape = new Shape();
         instance->_current_color_shape->as_rectangle({_previous_to_color_current_width_ratio, 0}, {1 - _previous_to_color_current_width_ratio, 1});
-        instance->_current_color_shape->set_color(state::primary_color);
+        instance->_current_color_shape->set_color(active_state->primary_color);
 
         {
             auto size = instance->_transparency_tiling_shape->get_size();
@@ -62,7 +62,7 @@ namespace mousetrap
         area->add_render_task(instance->_previous_color_shape);
         area->add_render_task(instance->_frame_shape);
 
-        instance->update(state::primary_color, state::secondary_color);
+        instance->update(active_state->primary_color, active_state->secondary_color);
         area->queue_render();
     }
 
@@ -74,7 +74,7 @@ namespace mousetrap
 
     void ColorPreview::update()
     {
-        update(state::preview_color_current, state::preview_color_previous);
+        update(active_state->preview_color_current, active_state->preview_color_previous);
     }
 
     void ColorPreview::update(HSVA current, HSVA previous)

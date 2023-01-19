@@ -139,7 +139,7 @@ namespace mousetrap
 
         instance->_layer_shapes.clear();
 
-        for (auto* layer : state::layers)
+        for (auto* layer : active_state->layers)
         {
             auto* shape = instance->_layer_shapes.emplace_back(new Shape());
             shape->as_rectangle({0, 0}, {1, 1});
@@ -163,9 +163,9 @@ namespace mousetrap
 
         _area.add_render_task(transparency_task);
 
-        for (size_t layer_i = 0; layer_i < state::layers.size(); ++layer_i)
+        for (size_t layer_i = 0; layer_i < active_state->layers.size(); ++layer_i)
         {
-            auto task = RenderTask(_layer_shapes.at(layer_i), nullptr, nullptr, state::layers.at(layer_i)->blend_mode);
+            auto task = RenderTask(_layer_shapes.at(layer_i), nullptr, nullptr, active_state->layers.at(layer_i)->blend_mode);
             _area.add_render_task(task);
         }
 
@@ -195,8 +195,8 @@ namespace mousetrap
 
         auto centroid = Vector2f{0.5, 0.5};
         auto size = Vector2f(
-                pixel_size.x * state::layer_resolution.x * _scale_factor,
-                pixel_size.y * state::layer_resolution.y * _scale_factor
+                pixel_size.x * active_state->layer_resolution.x * _scale_factor,
+                pixel_size.y * active_state->layer_resolution.y * _scale_factor
         );
 
         for (auto* shape : _layer_shapes)
@@ -257,10 +257,10 @@ namespace mousetrap
     {
         if (not _playback_active or _fps == 0)
         {
-            if (_current_frame == state::current_frame)
+            if (_current_frame == active_state->current_frame)
                 return;
 
-            _current_frame = state::current_frame;
+            _current_frame = active_state->current_frame;
         }
         else
         {
@@ -270,13 +270,13 @@ namespace mousetrap
             while (_elapsed > frame_duration)
             {
                 _elapsed -= frame_duration;
-                _current_frame = _current_frame + 1 == state::n_frames ? 0 : _current_frame + 1;
+                _current_frame = _current_frame + 1 == active_state->n_frames ? 0 : _current_frame + 1;
             }
         }
 
-        for (size_t layer_i = 0; _layer_shapes.size() == state::layers.size() and layer_i < state::layers.size(); ++layer_i)
+        for (size_t layer_i = 0; _layer_shapes.size() == active_state->layers.size() and layer_i < active_state->layers.size(); ++layer_i)
         {
-            auto* layer = state::layers.at(layer_i);
+            auto* layer = active_state->layers.at(layer_i);
             _layer_shapes.at(layer_i)->set_texture(layer->frames.at(_current_frame).texture);
         }
 
@@ -289,10 +289,10 @@ namespace mousetrap
 
         if (not _playback_active)
         {
-            _current_frame = state::current_frame;
-            for (size_t layer_i = 0; _layer_shapes.size() == state::layers.size() and layer_i < state::layers.size(); ++layer_i)
+            _current_frame = active_state->current_frame;
+            for (size_t layer_i = 0; _layer_shapes.size() == active_state->layers.size() and layer_i < active_state->layers.size(); ++layer_i)
             {
-                auto* layer = state::layers.at(layer_i);
+                auto* layer = active_state->layers.at(layer_i);
                 _layer_shapes.at(layer_i)->set_texture(layer->frames.at(_current_frame).texture);
             }
             _area.queue_render();

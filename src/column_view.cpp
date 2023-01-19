@@ -75,7 +75,7 @@ namespace mousetrap::detail
 
 namespace mousetrap
 {
-    inline TreeColumnView::TreeColumnView(std::vector<std::string> titles, GtkSelectionMode mode)
+    TreeColumnView::TreeColumnView(std::vector<std::string> titles, GtkSelectionMode mode)
         : WidgetImplementation<GtkColumnView>([&]() -> GtkColumnView* {
             _root = g_list_store_new(G_TYPE_OBJECT);
             _tree_list_model = gtk_tree_list_model_new(G_LIST_MODEL(_root), false, false, on_tree_list_model_create, nullptr, on_tree_list_model_destroy);
@@ -114,7 +114,7 @@ namespace mousetrap
         Widget::add_reference(_selection_model);
     }
 
-    inline GListModel* TreeColumnView::on_tree_list_model_create(void* item, void* user_data)
+    GListModel* TreeColumnView::on_tree_list_model_create(void* item, void* user_data)
     {
         auto* column_view_item = (detail::TreeColumnViewItem*) item;
 
@@ -126,10 +126,10 @@ namespace mousetrap
         return G_LIST_MODEL(out);
     }
 
-    inline void TreeColumnView::on_tree_list_model_destroy(void* item)
+    void TreeColumnView::on_tree_list_model_destroy(void* item)
     {}
 
-    inline void TreeColumnView::on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, void* col_data)
+    void TreeColumnView::on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, void* col_data)
     {
         size_t col_i = *((size_t*) col_data);
         auto* list_item = GTK_LIST_ITEM(object);
@@ -146,16 +146,16 @@ namespace mousetrap
             gtk_list_item_set_child(list_item, GTK_WIDGET(column_view_item->widgets->at(col_i)->operator GtkWidget*()));
     }
 
-    inline void TreeColumnView::on_list_item_factory_unbind(GtkSignalListItemFactory* self, void* object, void*)
+    void TreeColumnView::on_list_item_factory_unbind(GtkSignalListItemFactory* self, void* object, void*)
     {}
 
-    inline void TreeColumnView::on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*)
+    void TreeColumnView::on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*)
     {}
 
-    inline void TreeColumnView::on_list_item_factory_teardown(GtkSignalListItemFactory* self, void* object, void*)
+    void TreeColumnView::on_list_item_factory_teardown(GtkSignalListItemFactory* self, void* object, void*)
     {}
 
-    inline TreeColumnView::Iterator TreeColumnView::append_row(std::vector<Widget*> widgets, Iterator it)
+    TreeColumnView::Iterator TreeColumnView::append_row(std::vector<Widget*> widgets, Iterator it)
     {
         GListModel* to_append_to;
         if (it == nullptr)
@@ -170,12 +170,12 @@ namespace mousetrap
         return detail::G_TREE_COLUMN_VIEW_ITEM(g_list_model_get_item(to_append_to, g_list_model_get_n_items(to_append_to) - 1));
     }
 
-    inline TreeColumnView::Iterator TreeColumnView::prepend_row(std::vector<Widget*> widgets, Iterator it)
+    TreeColumnView::Iterator TreeColumnView::prepend_row(std::vector<Widget*> widgets, Iterator it)
     {
         return insert_row(0, widgets, it);
     }
 
-    inline TreeColumnView::Iterator TreeColumnView::insert_row(size_t i, std::vector<Widget*> widgets, Iterator it)
+    TreeColumnView::Iterator TreeColumnView::insert_row(size_t i, std::vector<Widget*> widgets, Iterator it)
     {
         GListModel* list;
         if (it == nullptr)
@@ -190,14 +190,14 @@ namespace mousetrap
         return detail::G_TREE_COLUMN_VIEW_ITEM(g_list_model_get_item(list, g_list_model_get_n_items(list) - 1));
     }
 
-    inline TreeColumnView::Iterator TreeColumnView::move_row_to(size_t old_position, size_t new_position, Iterator old_iterator, Iterator new_iterator)
+    TreeColumnView::Iterator TreeColumnView::move_row_to(size_t old_position, size_t new_position, Iterator old_iterator, Iterator new_iterator)
     {
         std::vector<Widget*> widgets = get_widgets_in_row(old_position, old_iterator);
         remove_row(old_position, old_iterator);
         return insert_row(new_position, widgets, new_iterator);
     }
 
-    inline void TreeColumnView::remove_row(size_t i, Iterator it)
+    void TreeColumnView::remove_row(size_t i, Iterator it)
     {
         GListStore* list;
         if (it == nullptr)
@@ -208,7 +208,7 @@ namespace mousetrap
         g_list_store_remove(list, i);
     }
 
-    inline Widget* TreeColumnView::get_widget_at(size_t row_i, size_t col_i, Iterator it)
+    Widget* TreeColumnView::get_widget_at(size_t row_i, size_t col_i, Iterator it)
     {
         GListStore* list;
         if (it == nullptr)
@@ -220,7 +220,7 @@ namespace mousetrap
         return row->widgets->at(col_i);
     }
 
-    inline void TreeColumnView::set_widget_at(size_t row_i, size_t col_i, Widget* widget, Iterator it)
+    void TreeColumnView::set_widget_at(size_t row_i, size_t col_i, Widget* widget, Iterator it)
     {
         GListStore* list;
         if (it == nullptr)
@@ -234,7 +234,7 @@ namespace mousetrap
         row->widget_refs->at(col_i) = g_object_ref(widget->operator GtkWidget*());
     }
 
-    inline std::vector<Widget*> TreeColumnView::get_widgets_in_row(size_t row_i, Iterator it)
+    std::vector<Widget*> TreeColumnView::get_widgets_in_row(size_t row_i, Iterator it)
     {
         GListStore* list;
         if (it == nullptr)
@@ -251,7 +251,7 @@ namespace mousetrap
         return out;
     }
 
-    inline void TreeColumnView::set_widgets_in_row(size_t row_i, std::vector<Widget*> widgets, Iterator it)
+    void TreeColumnView::set_widgets_in_row(size_t row_i, std::vector<Widget*> widgets, Iterator it)
     {
         GListStore* list;
         if (it == nullptr)
@@ -274,12 +274,12 @@ namespace mousetrap
         }
     }
 
-    inline GtkColumnViewColumn* TreeColumnView::get_column(size_t i)
+    GtkColumnViewColumn* TreeColumnView::get_column(size_t i)
     {
         return (GtkColumnViewColumn*) g_list_model_get_item(gtk_column_view_get_columns(_column_view), i);
     }
 
-    inline std::vector<Widget*> TreeColumnView::get_widgets_in_column(size_t col_i)
+    std::vector<Widget*> TreeColumnView::get_widgets_in_column(size_t col_i)
     {
         static std::function<void(detail::TreeColumnViewItem*, std::vector<Widget*>&)> add = [&](
                 detail::TreeColumnViewItem* item,
@@ -299,7 +299,7 @@ namespace mousetrap
         return widgets;
     }
 
-    inline void TreeColumnView::set_widgets_in_column(size_t col_i, std::vector<Widget*> widgets)
+    void TreeColumnView::set_widgets_in_column(size_t col_i, std::vector<Widget*> widgets)
     {
         static std::function<void(detail::TreeColumnViewItem*, int& index)> set = [&](
                 detail::TreeColumnViewItem* item,
@@ -323,7 +323,7 @@ namespace mousetrap
             set((detail::TreeColumnViewItem*) g_list_model_get_item(G_LIST_MODEL(_root), i), index);
     }
 
-    inline size_t TreeColumnView::get_n_rows_total()
+    size_t TreeColumnView::get_n_rows_total()
     {
         static std::function<void(detail::TreeColumnViewItem*, size_t&)> sum = [](
             detail::TreeColumnViewItem* item,
@@ -344,27 +344,27 @@ namespace mousetrap
         return n;
     }
 
-    inline void TreeColumnView::set_column_expand(size_t i, bool b)
+    void TreeColumnView::set_column_expand(size_t i, bool b)
     {
         gtk_column_view_column_set_expand(get_column(i), b);
     }
 
-    inline void TreeColumnView::set_column_fixed_width(size_t i, int value)
+    void TreeColumnView::set_column_fixed_width(size_t i, int value)
     {
         gtk_column_view_column_set_fixed_width(get_column(i), value);
     }
 
-    inline void TreeColumnView::set_column_header_menu(size_t i, MenuModel* model)
+    void TreeColumnView::set_column_header_menu(size_t i, MenuModel* model)
     {
         gtk_column_view_column_set_header_menu(get_column(i), model->operator GMenuModel*());
     }
 
-    inline void TreeColumnView::set_column_visible(size_t i, bool b)
+    void TreeColumnView::set_column_visible(size_t i, bool b)
     {
         gtk_column_view_column_set_visible(get_column(i), b);
     }
 
-    inline void TreeColumnView::set_column_resizable(size_t i, bool b)
+    void TreeColumnView::set_column_resizable(size_t i, bool b)
     {
         if (b)
             std::cerr << "[WARNING] In ColumnView::set_column_resizable: resizing right-mose column to it's smallest size may lead to freeze. This feature is not safe to use." << std::endl;
@@ -372,12 +372,12 @@ namespace mousetrap
         gtk_column_view_column_set_resizable(get_column(i), b);
     }
 
-    inline size_t TreeColumnView::get_n_columns()
+    size_t TreeColumnView::get_n_columns()
     {
         return g_list_model_get_n_items(gtk_column_view_get_columns(_column_view));
     }
 
-    inline size_t TreeColumnView::get_n_rows(Iterator it)
+    size_t TreeColumnView::get_n_rows(Iterator it)
     {
         if (it == nullptr)
             return g_list_model_get_n_items(G_LIST_MODEL(_root));
@@ -385,7 +385,7 @@ namespace mousetrap
             return g_list_model_get_n_items(G_LIST_MODEL(it->children));
     }
 
-    inline void TreeColumnView::append_column(const std::string& title, std::vector<Widget*> widgets)
+    void TreeColumnView::append_column(const std::string& title, std::vector<Widget*> widgets)
     {
         static std::function<void(detail::TreeColumnViewItem*, int& index)> append = [&](
                 detail::TreeColumnViewItem* item,
@@ -416,7 +416,7 @@ namespace mousetrap
         gtk_column_view_append_column(_column_view, gtk_column_view_column_new(title.c_str(), GTK_LIST_ITEM_FACTORY(_factories.back())));
     }
 
-    inline void TreeColumnView::remove_column(size_t column_i)
+    void TreeColumnView::remove_column(size_t column_i)
     {
         static std::function<void(detail::TreeColumnViewItem*)> remove = [&](
                 detail::TreeColumnViewItem* item)
@@ -446,17 +446,17 @@ namespace mousetrap
         gtk_column_view_remove_column(_column_view, get_column(column_i));
     }
 
-    inline void TreeColumnView::set_show_column_separators(bool b)
+    void TreeColumnView::set_show_column_separators(bool b)
     {
         gtk_column_view_set_show_column_separators(_column_view, b);
     }
 
-    inline void TreeColumnView::set_show_row_separators(bool b)
+    void TreeColumnView::set_show_row_separators(bool b)
     {
         gtk_column_view_set_show_row_separators(_column_view, b);
     }
 
-    inline void TreeColumnView::set_enable_rubberband_selection(bool b)
+    void TreeColumnView::set_enable_rubberband_selection(bool b)
     {
         gtk_column_view_set_enable_rubberband(_column_view, b);
     }

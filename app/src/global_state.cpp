@@ -2,8 +2,4 @@
 
 namespace mousetrap
 {
-    ProjectState& get_active_state()
-    {
-        return *state::project_states.at(state::active_project);
-    }
 }

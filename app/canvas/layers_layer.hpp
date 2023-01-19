@@ -19,11 +19,11 @@ namespace mousetrap
 
     void Canvas::LayersLayer::update()
     {
-        if (_n_layers != state::layers.size() and _area.get_is_realized())
+        if (_n_layers != active_state->layers.size() and _area.get_is_realized())
         {
-            _n_layers = state::layers.size();
-            _current_frame = state::current_frame;
-            _layer_resolution = state::layer_resolution;
+            _n_layers = active_state->layers.size();
+            _current_frame = active_state->current_frame;
+            _layer_resolution = active_state->layer_resolution;
 
             _area.make_current();
             while (_layer_shapes.size() < _n_layers)
@@ -32,21 +32,21 @@ namespace mousetrap
             reformat();
         }
 
-        if (_layer_resolution != state::layer_resolution and _area.get_is_realized())
+        if (_layer_resolution != active_state->layer_resolution and _area.get_is_realized())
         {
-            _current_frame = state::current_frame;
-            _layer_resolution = state::layer_resolution;
+            _current_frame = active_state->current_frame;
+            _layer_resolution = active_state->layer_resolution;
 
             reformat();
         }
 
-        if (_current_frame != state::current_frame and _area.get_is_realized())
+        if (_current_frame != active_state->current_frame and _area.get_is_realized())
         {
-            _current_frame = state::current_frame;
+            _current_frame = active_state->current_frame;
 
             for (size_t layer_i = 0; layer_i < _n_layers; ++layer_i)
             {
-                auto& layer = state::layers.at(layer_i);
+                auto& layer = active_state->layers.at(layer_i);
                 auto& shape = _layer_shapes.at(layer_i);
                 shape->set_texture(layer->frames.at(_current_frame).texture);
             }
@@ -66,9 +66,9 @@ namespace mousetrap
         auto* area = (GLArea*) widget;
         area->make_current();
 
-        instance->_current_frame = state::current_frame;
-        instance->_n_layers = state::layers.size();
-        instance->_layer_resolution = state::layer_resolution;
+        instance->_current_frame = active_state->current_frame;
+        instance->_n_layers = active_state->layers.size();
+        instance->_layer_resolution = active_state->layer_resolution;
 
         for (size_t i = 0; i < instance->_n_layers; ++i)
             auto* shape = instance->_layer_shapes.emplace_back(new Shape());
@@ -82,7 +82,7 @@ namespace mousetrap
                 instance->_layer_shapes.at(layer_i),
                 nullptr,
                 instance->_owner->_transform,
-                state::layers.at(layer_i)->blend_mode
+                active_state->layers.at(layer_i)->blend_mode
             );
 
             instance->_area.add_render_task(task);
@@ -98,7 +98,7 @@ namespace mousetrap
 
         for (size_t layer_i = 0; layer_i < _n_layers; ++layer_i)
         {
-            auto& layer = state::layers.at(layer_i);
+            auto& layer = active_state->layers.at(layer_i);
             auto& shape = _layer_shapes.at(layer_i);
 
             shape->as_rectangle(

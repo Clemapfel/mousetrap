@@ -1,4 +1,6 @@
 #include <app/config_files.hpp>
+#include <app/bubble_log_area.hpp>
+#include <map>
 
 namespace mousetrap
 {
@@ -10,7 +12,7 @@ namespace mousetrap
         {
             std::stringstream str;
             str << "<b>Invalid Shortcut</b>\n" << "Shortcut `" << shortcut << "` for action `" << action << "` is invalid. Ignoring assignment.";
-            ((BubbleLogArea*) state::bubble_log)->send_message(str.str(), InfoMessageType::ERROR);
+            state::bubble_log->send_message(str.str(), InfoMessageType::ERROR);
         };
 
         bool conflict = false;
@@ -75,6 +77,6 @@ namespace mousetrap
         }
 
         message << "\nPlease resolve these conflicts via the settings menu or by editing keybindings.ini";
-        ((BubbleLogArea*) state::bubble_log)->send_message(message.str(), InfoMessageType::ERROR);
+        state::bubble_log->send_message(message.str(), InfoMessageType::ERROR);
     }
 }

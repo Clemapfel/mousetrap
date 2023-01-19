@@ -104,7 +104,7 @@ namespace mousetrap
     void LayerView::LayerPreview::set_preview_size(size_t px)
     {
         auto height = px;
-        auto width = state::layer_resolution.x / state::layer_resolution.y * height;
+        auto width = active_state->layer_resolution.x / active_state->layer_resolution.y * height;
         _area.set_size_request({width, height});
     }
 
@@ -281,7 +281,7 @@ namespace mousetrap
     void LayerView::LayerRow::update()
     {
         size_t layer_i = 0;
-        for (auto* layer : state::layers)
+        for (auto* layer : active_state->layers)
         {
             if (layer == _layer)
                 break;
@@ -444,8 +444,8 @@ namespace mousetrap
 
     LayerView::LayerView()
     {
-        for (auto* layer : state::layers)
-            _layer_rows.emplace_back(this, layer, state::current_frame);
+        for (auto* layer : active_state->layers)
+            _layer_rows.emplace_back(this, layer, active_state->current_frame);
 
         for (auto& row : _layer_rows)
             _layer_rows_list_view.push_back(row);
@@ -453,7 +453,7 @@ namespace mousetrap
 
         _layer_rows_list_view.set_show_separators(true);
         _layer_rows_list_view.get_selection_model()->connect_signal_selection_changed(on_layer_rows_list_view_selection_changed, this);
-        _layer_rows_list_view.get_selection_model()->select(state::current_layer);
+        _layer_rows_list_view.get_selection_model()->select(active_state->current_layer);
 
         _layer_rows_scrolled_window_spacer.set_size_request({0, state::margin_unit * 10});
 
@@ -623,7 +623,7 @@ namespace mousetrap
     void LayerView::on_layer_rows_list_view_selection_changed(SelectionModel*, size_t first_item_position,
             size_t n_items_changed, LayerView* instance)
     {
-        state::current_layer = first_item_position;
+        active_state->current_layer = first_item_position;
         state::canvas->update();
         state::frame_view->update();
     }
@@ -633,8 +633,8 @@ namespace mousetrap::state
 {
     void swap_layers_at_position(size_t a, size_t b)
     {
-        auto* a_layer = state::layers.at(a);
-        auto* b_layer = state::layers.at(b);
+        auto* a_layer = active_state->layers.at(a);
+        auto* b_layer = active_state->layers.at(b);
 
         std::cout << a_layer->name << " " << b_layer->name << std::endl;
 
@@ -659,10 +659,10 @@ namespace mousetrap::state
             static std::deque<std::pair<size_t, size_t>> move_up_redo_data;
             auto move_up_do = []()
             {
-                if (state::current_layer > 0)
+                if (active_state->current_layer > 0)
                 {
-                    auto before_i = state::current_layer;
-                    auto after_i = state::current_layer - 1;
+                    auto before_i = active_state->current_layer;
+                    auto after_i = active_state->current_layer - 1;
 
                     move_up_undo_data.emplace_back(before_i, after_i);
                     state::swap_layers_at_position(before_i, after_i);

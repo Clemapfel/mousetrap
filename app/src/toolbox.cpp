@@ -236,7 +236,7 @@ namespace mousetrap
             state::add_shortcut_action(*action);
         }
 
-        select(state::active_tool);
+        select(active_state->active_tool);
     }
 
     Toolbox::operator Widget*()
@@ -255,7 +255,7 @@ namespace mousetrap
         for (auto& element : _elements)
             element->set_tool_selected(id);
 
-        state::active_tool = id;
+        active_state->active_tool = id;
         _currently_selected = id;
 
         state::canvas->update();
@@ -263,6 +263,6 @@ namespace mousetrap
 
     void Toolbox::update()
     {
-        select(state::active_tool);
+        select(active_state->active_tool);
     }
 }

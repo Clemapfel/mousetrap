@@ -7,7 +7,7 @@ namespace mousetrap
     namespace detail
     {
         struct _DropDownItem;
-        static _DropDownItem* drop_down_item_new(Widget* in, Widget* label, DropDown* owner, size_t function_id);
+        _DropDownItem* drop_down_item_new(Widget* in, Widget* label, DropDown* owner, size_t function_id);
     }
 
     template<typename Function_t, typename T>

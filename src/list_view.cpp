@@ -64,7 +64,7 @@ namespace mousetrap::detail
 
 namespace mousetrap
 {
-    inline TreeListView::TreeListView(GtkOrientation orientation, GtkSelectionMode mode)
+    TreeListView::TreeListView(GtkOrientation orientation, GtkSelectionMode mode)
         : WidgetImplementation<GtkListView>([&]() -> GtkListView* {
 
             _root = g_list_store_new(G_TYPE_OBJECT);
@@ -100,11 +100,11 @@ namespace mousetrap
         add_reference(_selection_model->operator GtkSelectionModel*());
     }
 
-    inline TreeListView::TreeListView(GtkSelectionMode mode)
+    TreeListView::TreeListView(GtkSelectionMode mode)
         : TreeListView(GTK_ORIENTATION_VERTICAL, mode)
     {}
 
-    inline GListModel* TreeListView::on_tree_list_model_create(void* item, void* user_data)
+    GListModel* TreeListView::on_tree_list_model_create(void* item, void* user_data)
     {
         auto* tree_list_view_item = (detail::TreeListViewItem*) item;
 
@@ -116,10 +116,10 @@ namespace mousetrap
         return G_LIST_MODEL(out);
     }
 
-    inline void TreeListView::on_tree_list_model_destroy(void* item)
+    void TreeListView::on_tree_list_model_destroy(void* item)
     {}
 
-    inline void TreeListView::on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, void* instance)
+    void TreeListView::on_list_item_factory_bind(GtkSignalListItemFactory* self, void* object, void* instance)
     {
         auto* list_item = GTK_LIST_ITEM(object);
         auto* tree_list_row = GTK_TREE_LIST_ROW(gtk_list_item_get_item(list_item));
@@ -137,16 +137,16 @@ namespace mousetrap
         gtk_list_item_set_activatable(list_item, true);
     }
 
-    inline void TreeListView::on_list_item_factory_unbind(GtkSignalListItemFactory* self, void* object, void*)
+    void TreeListView::on_list_item_factory_unbind(GtkSignalListItemFactory* self, void* object, void*)
     {}
 
-    inline void TreeListView::on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*)
+    void TreeListView::on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*)
     {}
 
-    inline void TreeListView::on_list_item_factory_teardown(GtkSignalListItemFactory* self, void* object, void*)
+    void TreeListView::on_list_item_factory_teardown(GtkSignalListItemFactory* self, void* object, void*)
     {}
 
-    inline TreeListView::Iterator TreeListView::push_back(Widget* widget, Iterator it)
+    TreeListView::Iterator TreeListView::push_back(Widget* widget, Iterator it)
     {
         GListModel* to_append_to;
         if (it == nullptr)
@@ -161,12 +161,12 @@ namespace mousetrap
         return detail::G_TREE_VIEW_ITEM(g_list_model_get_item(to_append_to, g_list_model_get_n_items(to_append_to) - 1));
     }
 
-    inline TreeListView::Iterator TreeListView::push_front(Widget* widget, Iterator it)
+    TreeListView::Iterator TreeListView::push_front(Widget* widget, Iterator it)
     {
         return insert(0, widget, it);
     }
 
-    inline TreeListView::Iterator TreeListView::insert(size_t i, Widget* widget, Iterator it)
+    TreeListView::Iterator TreeListView::insert(size_t i, Widget* widget, Iterator it)
     {
         GListModel* to_append_to;
         if (it == nullptr)
@@ -181,7 +181,7 @@ namespace mousetrap
         return detail::G_TREE_VIEW_ITEM(g_list_model_get_item(to_append_to, g_list_model_get_n_items(to_append_to) - 1));
     }
 
-    inline void TreeListView::remove(size_t i, Iterator it)
+    void TreeListView::remove(size_t i, Iterator it)
     {
         GListStore* list;
         if (it == nullptr)
@@ -192,7 +192,7 @@ namespace mousetrap
         g_list_store_remove(list, i);
     }
 
-    inline void TreeListView::clear(Iterator it)
+    void TreeListView::clear(Iterator it)
     {
         GListStore* list;
         if (it == nullptr)
@@ -204,7 +204,7 @@ namespace mousetrap
         g_list_store_remove_all(list);
     }
 
-    inline Widget* TreeListView::get_widget_at(size_t i, Iterator it)
+    Widget* TreeListView::get_widget_at(size_t i, Iterator it)
     {
         GListModel* list;
         if (it == nullptr)
@@ -216,7 +216,7 @@ namespace mousetrap
         return item->widget;
     }
 
-    inline void TreeListView::set_widget_at(size_t i, Widget* widget, Iterator it)
+    void TreeListView::set_widget_at(size_t i, Widget* widget, Iterator it)
     {
         GListModel* list;
         if (it == nullptr)
@@ -231,29 +231,29 @@ namespace mousetrap
         item->widget_ref = g_object_ref(widget->operator GtkWidget*());
     }
 
-    inline void TreeListView::set_enable_rubberband_selection(bool b)
+    void TreeListView::set_enable_rubberband_selection(bool b)
     {
         gtk_list_view_set_enable_rubberband(_list_view, b);
     }
 
-    inline void TreeListView::set_show_separators(bool b)
+    void TreeListView::set_show_separators(bool b)
     {
         gtk_list_view_set_show_separators(_list_view, b);
     }
 
-    inline TreeListView::Iterator TreeListView::move_item_to(size_t old_position, size_t new_position, Iterator old_it, Iterator new_it)
+    TreeListView::Iterator TreeListView::move_item_to(size_t old_position, size_t new_position, Iterator old_it, Iterator new_it)
     {
         auto* widget = get_widget_at(old_position, old_it);
         remove(old_position, old_it);
         return insert(new_position, widget, new_it);
     }
 
-    inline void TreeListView::set_single_click_activate(bool b)
+    void TreeListView::set_single_click_activate(bool b)
     {
         gtk_list_view_set_single_click_activate(_list_view, b);
     }
 
-    inline SelectionModel* TreeListView::get_selection_model()
+    SelectionModel* TreeListView::get_selection_model()
     {
         return _selection_model;
     }

@@ -16,9 +16,9 @@ namespace mousetrap
             _nodraw_set.clear();
             undo_safepoint();
 
-            auto color = state::primary_color;
-            color.a = state::brush_opacity;
-            draw_brush(*_current_pixel_position, state::current_brush, color);
+            auto color = active_state->primary_color;
+            color.a = active_state->brush_opacity;
+            draw_brush(*_current_pixel_position, active_state->current_brush, color);
         }
     }
 
@@ -31,9 +31,9 @@ namespace mousetrap
     {
         if (*_click_pressed)
         {
-            auto color = state::primary_color;
-            color.a = state::brush_opacity;
-            draw_brush_line(*_previous_pixel_position, *_current_pixel_position, state::current_brush, color);
+            auto color = active_state->primary_color;
+            color.a = active_state->brush_opacity;
+            draw_brush_line(*_previous_pixel_position, *_current_pixel_position, active_state->current_brush, color);
         }
     }
 
@@ -45,7 +45,7 @@ namespace mousetrap
         {
             undo_safepoint();
             _nodraw_set.clear();
-            draw_brush(*_current_pixel_position, state::current_brush, HSVA(0, 0, 0, 0));
+            draw_brush(*_current_pixel_position, active_state->current_brush, HSVA(0, 0, 0, 0));
         }
     }
 
@@ -57,6 +57,6 @@ namespace mousetrap
     void Canvas::resolve_eraser_motion()
     {
         if (*_click_pressed)
-            draw_brush_line(*_previous_pixel_position, *_current_pixel_position, state::current_brush, HSVA(0, 0, 0, 0));
+            draw_brush_line(*_previous_pixel_position, *_current_pixel_position, active_state->current_brush, HSVA(0, 0, 0, 0));
     }
 }

@@ -34,51 +34,52 @@
 #include <app/tools.hpp>
 #include <app/tooltip.hpp>
 #include <app/verbose_color_picker.hpp>
+#include <app/config_files.hpp>
 
 using namespace mousetrap;
 
 void initialize_debug_layers()
 {
-    state::layer_resolution = {3, 3};
+    active_state->layer_resolution = {3, 3};
 
     {
-        state::layers.emplace_back(new Layer {"Debug Underlay"});
-        auto* layer = state::layers.back();
+        active_state->layers.emplace_back(new Layer {"Debug Underlay"});
+        auto* layer = active_state->layers.back();
         layer->frames.emplace_back();
         layer->blend_mode = BlendMode::NORMAL;
         auto& frame = layer->frames.at(0);
 
         frame.image = new Image();
-        frame.image->create(state::layer_resolution.x, state::layer_resolution.y, RGBA(1, 0.9, 0.9, 0.25));
+        frame.image->create(active_state->layer_resolution.x, active_state->layer_resolution.y, RGBA(1, 0.9, 0.9, 0.25));
         frame.texture = new Texture();
         frame.update_texture();
     }
 
     {
-        state::layers.emplace_back(new Layer {"Debug Rectangle"});
-        auto* layer = state::layers.back();
+        active_state->layers.emplace_back(new Layer {"Debug Rectangle"});
+        auto* layer = active_state->layers.back();
         layer->frames.emplace_back();
         auto& frame = layer->frames.at(0);
 
         frame.image = new Image();
-        *(frame.image) = generate_circle_outline(state::layer_resolution.x, state::layer_resolution.y);
+        *(frame.image) = generate_circle_outline(active_state->layer_resolution.x, active_state->layer_resolution.y);
         frame.texture = new Texture();
         frame.update_texture();
     }
 
-    state::n_frames = 1;
+    active_state->n_frames = 1;
     return;
 
 
-    state::layers.emplace_back(new Layer{"number"});
+    active_state->layers.emplace_back(new Layer{"number"});
 
     for (size_t i = 0; i < 2; ++i)
     {
-        state::layers.emplace_back(new Layer{"overlay #" + std::to_string(i)});
-        state::layers.back()->blend_mode = BlendMode::NORMAL;
+        active_state->layers.emplace_back(new Layer{"overlay #" + std::to_string(i)});
+        active_state->layers.back()->blend_mode = BlendMode::NORMAL;
     }
 
-    for (auto* layer : state::layers)
+    for (auto* layer : active_state->layers)
     {
         layer->frames.clear();
         layer->frames.resize(10);
@@ -90,11 +91,11 @@ void initialize_debug_layers()
             if (layer->name == "number")
             {
                 frame.image->create_from_file(get_resource_path() + "example_animation/0" + std::to_string(frame_i) + ".png");
-                //*(frame.image) = generate_circle_outline(state::layer_resolution.x, state::layer_resolution.y, RGBA(0, 0, 0, 1).operator HSVA());
+                //*(frame.image) = generate_circle_outline(active_state->layer_resolution.x, active_state->layer_resolution.y, RGBA(0, 0, 0, 1).operator HSVA());
             }
             else
             {
-                frame.image->create(state::layer_resolution.x, state::layer_resolution.y,
+                frame.image->create(active_state->layer_resolution.x, active_state->layer_resolution.y,
                                     RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX),
                                          0.25));
             }
@@ -104,7 +105,7 @@ void initialize_debug_layers()
             frame_i += 1;
         }
 
-        state::n_frames = layer->frames.size();
+        active_state->n_frames = layer->frames.size();
     }
 }
 
@@ -185,9 +186,9 @@ static void activate(GtkApplication* app, void*)
     state::reload_brushes();
     initialize_debug_layers();
 
-    for (size_t x = 0; x < state::layer_resolution.x; ++x)
-        for (size_t y = 0; y < state::layer_resolution.y; ++y)
-            state::selection.insert({20, y});
+    for (size_t x = 0; x < active_state->layer_resolution.x; ++x)
+        for (size_t y = 0; y < active_state->layer_resolution.y; ++y)
+            active_state->selection.insert({20, y});
 
     state::color_swapper = new ColorSwapper();
     state::palette_view = new PaletteView();

@@ -71,10 +71,9 @@ namespace mousetrap
         static inline MenuModel* global_menu_bar_model = nullptr;
         static inline ShortcutController* shortcut_controller = nullptr;
 
-        // ### project ########################################
-
-        static inline std::vector<ProjectState*> project_states = {};
-        static inline ProjectState* active_state = nullptr;
+        static inline size_t margin_unit = 10;
     }
 
+    static inline std::vector<ProjectState*> project_states = {};
+    static inline ProjectState* active_state = nullptr;
 }

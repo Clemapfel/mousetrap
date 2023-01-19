@@ -57,7 +57,7 @@ namespace mousetrap
             void select(ToolID);
 
         private:
-            ToolID _currently_selected = state::active_tool;
+            ToolID _currently_selected = active_state->active_tool;
 
             class Icon
             {
@@ -77,11 +77,11 @@ namespace mousetrap
 
                     ActionID _action_id;
 
-                    ImageDisplay _has_popover_indicator_icon = ImageDisplay(get_resource_path() + "icons/" + "has_popover_indicator" + ".png", state::icon_scale);
-                    ImageDisplay _child_selected_indicator_icon = ImageDisplay(get_resource_path() + "icons/" + "child_selected_horizontal" + ".png", state::icon_scale);
-                    ImageDisplay _selected_indicator_icon = ImageDisplay(get_resource_path() + "icons/" + "selected_indicator" + ".png", state::icon_scale);
+                    ImageDisplay _has_popover_indicator_icon = ImageDisplay(get_resource_path() + "icons/" + "has_popover_indicator" + ".png");
+                    ImageDisplay _child_selected_indicator_icon = ImageDisplay(get_resource_path() + "icons/" + "child_selected_horizontal" + ".png");
+                    ImageDisplay _selected_indicator_icon = ImageDisplay(get_resource_path() + "icons/" + "selected_indicator" + ".png");
 
-                    ImageDisplay _tool_icon = ImageDisplay(get_resource_path() + "icons/" + _id + ".png", state::icon_scale);
+                    ImageDisplay _tool_icon = ImageDisplay(get_resource_path() + "icons/" + _id + ".png");
 
                     Overlay _overlay;
                     AspectFrame _aspect_frame = AspectFrame(1);

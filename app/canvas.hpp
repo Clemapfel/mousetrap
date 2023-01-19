@@ -573,7 +573,7 @@ namespace mousetrap
 
     void Canvas::draw(const SubImage& subimage, BlendMode blend_mode, BackupMode backup_mode)
     {
-        auto& frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
+        auto& frame = active_state->layers.at(active_state->current_layer)->frames.at(active_state->current_frame);
         auto& image = *frame.image;
 
         for (auto& it : subimage)
@@ -610,7 +610,7 @@ namespace mousetrap
     {
         auto to_draw = SubImage();
 
-        auto& frame = state::layers.at(state::current_layer)->frames.at(state::current_frame);
+        auto& frame = active_state->layers.at(active_state->current_layer)->frames.at(active_state->current_frame);
         auto& brush_image = brush->get_image();
         auto points = generate_line_points(a, b);
 

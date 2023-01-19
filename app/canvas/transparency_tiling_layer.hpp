@@ -81,8 +81,8 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
-        float width = state::layer_resolution.x / _owner->_canvas_size->x;
-        float height = state::layer_resolution.y / _owner->_canvas_size->y;
+        float width = active_state->layer_resolution.x / _owner->_canvas_size->x;
+        float height = active_state->layer_resolution.y / _owner->_canvas_size->y;
 
         float eps = 0;
         float x = 0.5 - width / 2 + eps;

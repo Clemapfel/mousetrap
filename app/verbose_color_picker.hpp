@@ -23,8 +23,8 @@ namespace mousetrap
         private:
             void update(HSVA);
 
-            HSVA* _current_color = new HSVA(state::primary_color);
-            HSVA* _previous_color = new HSVA(state::secondary_color);
+            HSVA* _current_color = new HSVA(active_state->primary_color);
+            HSVA* _previous_color = new HSVA(active_state->secondary_color);
 
             void set_color_component_to(char c, float value);
             static inline Shader* transparency_tiling_shader = nullptr;

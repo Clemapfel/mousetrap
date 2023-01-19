@@ -114,7 +114,7 @@ namespace mousetrap
 
                     LayerPreview _layer_preview;
                     Frame _layer_preview_frame;
-                    AspectFrame _layer_preview_aspect_frame = AspectFrame(state::layer_resolution.x / float(state::layer_resolution.y));
+                    AspectFrame _layer_preview_aspect_frame = AspectFrame(active_state->layer_resolution.x / float(active_state->layer_resolution.y));
                     ListView _layer_preview_list_view = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
                     ToggleButton _is_visible_toggle_button;
