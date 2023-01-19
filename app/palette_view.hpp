@@ -13,6 +13,7 @@
 #include <app/bubble_log_area.hpp>
 #include <app/file_chooser_dialog.hpp>
 #include <app/tooltip.hpp>
+#include <app/app_signals.hpp>
 
 namespace mousetrap
 {
@@ -41,7 +42,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(palette_view, select_color_9);
     }
 
-    class PaletteView : public AppComponent
+    class PaletteView : public AppComponent, public HasColorSelectionUpdatedSignal, public HasPaletteUpdatedSignal, public HasPaletteSortModeUpdatedSignal
     {
         public:
             PaletteView();

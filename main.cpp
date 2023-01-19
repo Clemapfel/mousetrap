@@ -38,137 +38,6 @@
 
 using namespace mousetrap;
 
-void initialize_debug_layers()
-{
-    active_state->layer_resolution = {3, 3};
-
-    {
-        active_state->layers.emplace_back(new Layer {"Debug Underlay"});
-        auto* layer = active_state->layers.back();
-        layer->frames.emplace_back();
-        layer->blend_mode = BlendMode::NORMAL;
-        auto& frame = layer->frames.at(0);
-
-        frame.image = new Image();
-        frame.image->create(active_state->layer_resolution.x, active_state->layer_resolution.y, RGBA(1, 0.9, 0.9, 0.25));
-        frame.texture = new Texture();
-        frame.update_texture();
-    }
-
-    {
-        active_state->layers.emplace_back(new Layer {"Debug Rectangle"});
-        auto* layer = active_state->layers.back();
-        layer->frames.emplace_back();
-        auto& frame = layer->frames.at(0);
-
-        frame.image = new Image();
-        *(frame.image) = generate_circle_outline(active_state->layer_resolution.x, active_state->layer_resolution.y);
-        frame.texture = new Texture();
-        frame.update_texture();
-    }
-
-    active_state->n_frames = 1;
-    return;
-
-
-    active_state->layers.emplace_back(new Layer{"number"});
-
-    for (size_t i = 0; i < 2; ++i)
-    {
-        active_state->layers.emplace_back(new Layer{"overlay #" + std::to_string(i)});
-        active_state->layers.back()->blend_mode = BlendMode::NORMAL;
-    }
-
-    for (auto* layer : active_state->layers)
-    {
-        layer->frames.clear();
-        layer->frames.resize(10);
-
-        size_t frame_i = 0;
-        for (auto& frame: layer->frames)
-        {
-            frame.image = new Image();
-            if (layer->name == "number")
-            {
-                frame.image->create_from_file(get_resource_path() + "example_animation/0" + std::to_string(frame_i) + ".png");
-                //*(frame.image) = generate_circle_outline(active_state->layer_resolution.x, active_state->layer_resolution.y, RGBA(0, 0, 0, 1).operator HSVA());
-            }
-            else
-            {
-                frame.image->create(active_state->layer_resolution.x, active_state->layer_resolution.y,
-                                    RGBA(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX),
-                                         0.25));
-            }
-
-            frame.texture = new Texture();
-            frame.texture->create_from_image(*frame.image);
-            frame_i += 1;
-        }
-
-        active_state->n_frames = layer->frames.size();
-    }
-}
-
-
-// TODO
-struct RedoableAction
-{
-    static inline std::deque<std::function<void()>> undo_queue = {};
-    static inline std::deque<std::function<void()>> redo_queue = {};
-    static inline std::function<void()>* do_f = new std::function<void()>([](){});
-    static inline std::function<void()>* undo_f = new std::function<void()>([](){});
-    static inline std::function<void()>* redo_f = new std::function<void()>([](){});
-
-    template<typename DoFunction_t, typename UndoFunction_t, typename RedoFunction_t>
-    void set_f(DoFunction_t do_action, UndoFunction_t undo_action, RedoFunction_t redo_action)
-    {
-        (*do_f) = [&](){
-            do_action();
-            undo_queue.emplace_back([&](){
-                (*undo_f)();
-            });
-        };
-
-        (*undo_f) = [&](){
-            undo_action();
-            redo_queue.emplace_back([&](){
-                (*redo_f)();
-            });
-        };
-
-        (*redo_f) = [&](){
-            redo_action();
-            undo_queue.emplace_back([&](){
-                (*undo_f)();
-            });
-        };
-    }
-
-    void trigger_do()
-    {
-        (*do_f)();
-    }
-    
-    void trigger_undo()
-    {
-        if (undo_queue.empty())
-            return;
-
-        undo_queue.back()();
-        undo_queue.pop_back();
-    }
-    
-    void trigger_redo()
-    {
-        if (redo_queue.empty())
-            return;
-
-        redo_queue.back()();
-        redo_queue.pop_back();
-    }
-};
-// TODO
-
 static void activate(GtkApplication* app, void*)
 {
     state::settings_file = new KeyFile(get_resource_path() + "settings.ini");
@@ -183,8 +52,7 @@ static void activate(GtkApplication* app, void*)
     state::shortcut_controller = new ShortcutController(state::app);
     state::main_window->add_controller(state::shortcut_controller);
 
-    state::reload_brushes();
-    initialize_debug_layers();
+    state::initialize_debug_state();
 
     for (size_t x = 0; x < active_state->layer_resolution.x; ++x)
         for (size_t y = 0; y < active_state->layer_resolution.y; ++y)

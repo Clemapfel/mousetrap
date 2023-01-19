@@ -9,6 +9,7 @@
 #include <app/global_state.hpp>
 #include <app/tooltip.hpp>
 #include <app/add_shortcut_action.hpp>
+#include <app/app_signals.hpp>
 
 namespace mousetrap
 {
@@ -27,7 +28,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(brush_options, open_default_brush_directory);
     }
 
-    class BrushOptions : public AppComponent
+    class BrushOptions : public AppComponent, public HasBrushSelectionUpdatedSignal
     {
         public:
             BrushOptions();
@@ -143,6 +144,5 @@ namespace mousetrap
     namespace state
     {
         static inline BrushOptions* brush_options = nullptr;
-        void reload_brushes();
     }
 }

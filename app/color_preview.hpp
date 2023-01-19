@@ -9,10 +9,11 @@
 
 #include <app/global_state.hpp>
 #include <app/tooltip.hpp>
+#include <app/app_signals.hpp>
 
 namespace mousetrap
 {
-    class ColorPreview : public AppComponent
+    class ColorPreview : public AppComponent, public HasColorSelectionUpdatedSignal
     {
         public:
             ColorPreview();

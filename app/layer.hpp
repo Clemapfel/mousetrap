@@ -18,7 +18,8 @@ namespace mousetrap
                     Frame(Vector2i size);
 
                     Image* get_image();
-                    Texture* get_texture();
+                    const Image* get_image() const;
+                    const Texture* get_texture() const;
                     void update_texture();
 
                     bool get_is_keyframe() const;
@@ -33,6 +34,8 @@ namespace mousetrap
             Layer(const std::string& name, Vector2i size, size_t n_frames);
 
             Layer::Frame* get_frame(size_t index);
+            const Layer::Frame* get_frame(size_t index) const;
+
             size_t get_n_frames() const;
 
             std::string get_name() const;

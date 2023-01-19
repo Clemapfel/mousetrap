@@ -372,7 +372,7 @@ add_library(app SHARED
 
     app/verbose_color_picker.hpp
     app/src/verbose_color_picker.cpp
-)
+        app/app_signals.hpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

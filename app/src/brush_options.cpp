@@ -374,36 +374,3 @@ namespace mousetrap
             instance->set_brush_size(preview->get_base_size());
     }
 }
-
-namespace mousetrap::state
-{
-    void reload_brushes()
-    {
-        active_state->brushes.clear();
-
-        active_state->brushes.emplace_back(new Brush())->as_circle();
-        active_state->brushes.emplace_back(new Brush())->as_square();
-        active_state->brushes.emplace_back(new Brush())->as_ellipse_horizontal();
-        active_state->brushes.emplace_back(new Brush())->as_ellipse_vertical();
-        active_state->brushes.emplace_back(new Brush())->as_rectangle_horizontal();
-        active_state->brushes.emplace_back(new Brush())->as_rectangle_vertical();
-
-        auto files = get_all_files_in_directory(get_resource_path() + "brushes", false, false);
-        std::sort(files.begin(), files.end(), [](FileDescriptor& a, FileDescriptor& b) -> bool {
-            return a.get_name() < b.get_name();
-        });
-
-        for (auto& file : files)
-        {
-            auto* brush = new Brush();
-            auto image = Image();
-            if (image.create_from_file(file.get_path()))
-            {
-                brush->as_custom(image);
-                active_state->brushes.emplace_back(brush);
-            }
-        }
-
-        active_state->current_brush = active_state->brushes.at(0);
-    }
-}

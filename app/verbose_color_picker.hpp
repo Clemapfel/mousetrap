@@ -10,10 +10,11 @@
 #include <app/app_component.hpp>
 #include <app/global_state.hpp>
 #include <app/tooltip.hpp>
+#include <app/app_signals.hpp>
 
 namespace mousetrap
 {
-    class VerboseColorPicker : public AppComponent
+    class VerboseColorPicker : public AppComponent, public HasColorSelectionUpdatedSignal
     {
         public:
             VerboseColorPicker();

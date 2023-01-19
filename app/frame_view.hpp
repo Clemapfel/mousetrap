@@ -9,6 +9,7 @@
 #include <app/global_state.hpp>
 #include <app/add_shortcut_action.hpp>
 #include <app/tooltip.hpp>
+#include <app/app_signals.hpp>
 
 namespace mousetrap
 {
@@ -30,7 +31,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(frame_view, frame_make_keyframe_inbetween);
     }
     
-    class FrameView : public AppComponent
+    class FrameView : public AppComponent, public HasLayerFrameSelectionUpdatedSignal, public HasPlaybackActiveUpdatedSignal, public HasOnionSkinVisibiliyUpdatedSignal, public HasOnionSkinLayerCountUpdatedSignal, public HasImageUpdatedSignal
     {
         public:
             FrameView();

@@ -14,7 +14,12 @@ namespace mousetrap
         return &_image;
     }
 
-    Texture* Layer::Frame::get_texture()
+    const Image* Layer::Frame::get_image() const
+    {
+        return &_image;
+    }
+
+    const Texture* Layer::Frame::get_texture() const
     {
         return &_texture;
     }
@@ -37,11 +42,19 @@ namespace mousetrap
     Layer::Layer(const std::string& name, Vector2i size, size_t n_frames)
         : _name(name)
     {
+        if (n_frames == 0)
+            n_frames = 1;
+
         for (size_t i = 0; i < n_frames; ++i)
             _frames.emplace_back(size);
     }
 
     Layer::Frame* Layer::get_frame(size_t index)
+    {
+        return &_frames.at(index);
+    }
+
+    const Layer::Frame* Layer::get_frame(size_t index) const
     {
         return &_frames.at(index);
     }

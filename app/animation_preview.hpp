@@ -9,6 +9,7 @@
 #include <app/global_state.hpp>
 #include <app/add_shortcut_action.hpp>
 #include <app/tooltip.hpp>
+#include <app/app_signals.hpp>
 
 namespace mousetrap
 {
@@ -20,7 +21,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(animation_preview, toggle_background_visible);
     }
 
-    class AnimationPreview : public AppComponent
+    class AnimationPreview : public AppComponent, public HasLayerFrameSelectionUpdatedSignal, public HasPlaybackActiveUpdatedSignal, public HasImageUpdatedSignal
     {
         public:
             AnimationPreview();
