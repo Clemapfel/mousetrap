@@ -1,5 +1,5 @@
 #include <app/algorithms.hpp>
-#include <app/settings_files.hpp>
+#include <app/config_files.hpp>
 
 namespace mousetrap
 {

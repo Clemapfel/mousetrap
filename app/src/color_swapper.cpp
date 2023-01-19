@@ -32,11 +32,11 @@ namespace mousetrap
         _main.add_controller(&_click_event_controller);
         _main.add_controller(&_motion_event_controller);
 
-        state::actions::color_swapper_swap_action.set_function([]() {
+        state::actions::color_swapper_swap.set_function([]() {
             auto* instance = (ColorSwapper*) state::color_swapper;
             instance->swap_colors();
         });
-        state::add_shortcut_action(state::actions::color_swapper_swap_action);
+        state::add_shortcut_action(state::actions::color_swapper_swap);
 
         _tooltip.create_from("color_swapper", state::tooltips_file, state::keybindings_file);
         operator Widget*()->set_tooltip_widget(_tooltip);

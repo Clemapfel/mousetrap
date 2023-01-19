@@ -475,25 +475,25 @@ namespace mousetrap
         using namespace state::actions;
 
         _layer_move_up_button.set_child(&_layer_move_up_icon);
-        _layer_move_up_button.set_action(layer_view_layer_move_up_action);
+        _layer_move_up_button.set_action(layer_view_layer_move_up);
 
         _layer_create_button.set_child(&_layer_create_icon);
-        _layer_create_button.set_action(layer_view_layer_new_above_current_action);
+        _layer_create_button.set_action(layer_view_layer_new_above_current);
 
         _layer_duplicate_button.set_child(&_layer_duplicate_icon);
-        _layer_duplicate_button.set_action(layer_view_layer_duplicate_action);
+        _layer_duplicate_button.set_action(layer_view_layer_duplicate);
 
         _layer_delete_button.set_child(&_layer_delete_icon);
-        _layer_delete_button.set_action(layer_view_layer_delete_action);
+        _layer_delete_button.set_action(layer_view_layer_delete);
 
         _layer_move_down_button.set_child(&_layer_move_down_icon);
-        _layer_move_down_button.set_action(layer_view_layer_move_down_action);
+        _layer_move_down_button.set_action(layer_view_layer_move_down);
 
         _layer_merge_down_button.set_child(&_layer_merge_down_icon);
-        _layer_merge_down_button.set_action(layer_view_layer_merge_down_action);
+        _layer_merge_down_button.set_action(layer_view_layer_merge_down);
 
         _layer_flatten_all_button.set_child(&_layer_flatten_all_icon);
-        _layer_flatten_all_button.set_action(layer_view_layer_flatten_all_action);
+        _layer_flatten_all_button.set_action(layer_view_layer_flatten_all);
 
         for (auto* button : {
                 &_layer_move_up_button,
@@ -699,20 +699,20 @@ namespace mousetrap::state
                 state::animation_preview->update();
             };
 
-            layer_view_layer_move_up_action.set_function(move_up_do, move_up_undo, move_up_do);
+            layer_view_layer_move_up.set_function(move_up_do, move_up_undo, move_up_do);
         }
 
         for (auto* action : {
-                &layer_view_layer_move_up_action,
-                &layer_view_layer_move_down_action,
-                &layer_view_layer_new_above_current_action,
-                &layer_view_layer_new_below_current_action,
-                &layer_view_layer_duplicate_action,
-                &layer_view_layer_delete_action,
-                &layer_view_layer_merge_down_action,
-                &layer_view_layer_flatten_all_action,
-                &layer_view_set_layer_visible_action,
-                &layer_view_set_layer_locked_action
+                &layer_view_layer_move_up,
+                &layer_view_layer_move_down,
+                &layer_view_layer_new_above_current,
+                &layer_view_layer_new_below_current,
+                &layer_view_layer_duplicate,
+                &layer_view_layer_delete,
+                &layer_view_layer_merge_down,
+                &layer_view_layer_flatten_all,
+                &layer_view_set_layer_visible,
+                &layer_view_set_layer_locked
         })
             state::add_shortcut_action(*action);
     }

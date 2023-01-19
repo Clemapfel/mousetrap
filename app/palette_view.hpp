@@ -164,6 +164,6 @@ namespace mousetrap
 
     namespace state
     {
-        PaletteView* palette_view = nullptr;
+        static inline PaletteView* palette_view = nullptr;
     }
 }

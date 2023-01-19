@@ -165,10 +165,10 @@ add_library(mousetrap SHARED
     src/menu_model.inl
 
     include/list_view.hpp
-        src/list_view.cpp
+    src/list_view.cpp
 
     include/column_view.hpp
-        src/column_view.cpp
+    src/column_view.cpp
 
     include/popover.hpp
     src/popover.inl
@@ -197,10 +197,10 @@ add_library(mousetrap SHARED
     include/signal_component.hpp
 
     include/grid_view.hpp
-        src/grid_view.cpp
+    src/grid_view.cpp
 
     include/reorderable_list.hpp
-        src/reorderable_list.cpp
+    src/reorderable_list.cpp
 
     include/blend_mode.hpp
     src/blend_mode.inl
@@ -324,12 +324,13 @@ add_library(app SHARED
     app/src/color_transform.cpp
 
     app/file_chooser_dialog.hpp
-        app/src/file_chooser_dialog.inl
+    app/src/file_chooser_dialog.inl
 
     app/frame_view.hpp
     app/src/frame_view.cpp
 
     app/global_state.hpp
+    app/src/global_state.cpp
 
     app/image_transform.hpp
     app/src/image_transform.cpp
@@ -355,7 +356,8 @@ add_library(app SHARED
     app/selection.hpp
     app/src/selection.cpp
 
-    app/settings_files.hpp
+    app/config_files.hpp
+    app/src/config_files.cpp
 
     app/shortcut_information.hpp
     app/src/shortcut_information.cpp

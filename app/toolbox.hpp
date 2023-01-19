@@ -141,4 +141,9 @@ namespace mousetrap
             SeparatorLine _spacer_left, _spacer_right;
             Box _outer = Box(GTK_ORIENTATION_HORIZONTAL);
     };
+
+    namespace state
+    {
+        static inline Toolbox* toolbox = nullptr;
+    }
 }

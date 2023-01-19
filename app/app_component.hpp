@@ -21,7 +21,7 @@ namespace mousetrap
 // ###
 namespace mousetrap
 {
-    AppComponent::operator GtkWidget*()
+    inline AppComponent::operator GtkWidget*()
     {
         return operator Widget*()->operator GtkWidget*();
     }

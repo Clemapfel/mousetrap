@@ -5,7 +5,7 @@
 namespace mousetrap
 {
     FrameView::FramePreview::FramePreview(FrameView* owner, Layer* layer, size_t frame_i)
-            : _owner(owner), _layer(layer), _frame_i(frame_i), _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y))
+        : _owner(owner), _layer(layer), _frame_i(frame_i), _aspect_frame(state::layer_resolution.x / float(state::layer_resolution.y))
     {
         _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);
@@ -220,79 +220,79 @@ namespace mousetrap
 
         using namespace state::actions;
 
-        frame_view_toggle_onionskin_visible_action.set_function([instance = this]() {
+        frame_view_toggle_onionskin_visible.set_function([instance = this]() {
             instance->on_toggle_onionskin_visible();
         });
 
-        frame_view_increase_n_onionskin_layers_action.set_function([instance = this]() -> void {
+        frame_view_increase_n_onionskin_layers.set_function([instance = this]() -> void {
             auto current = state::onionskin_n_layers;
             instance->set_n_onionskin_layers(current + 1);
         });
 
-        frame_view_decrease_n_onionskin_layers_action.set_function([instance = this]() -> void {
+        frame_view_decrease_n_onionskin_layers.set_function([instance = this]() -> void {
             auto current = state::onionskin_n_layers;
             instance->set_n_onionskin_layers(current - 1);
         });
 
-        frame_view_jump_to_start_action.set_function([instance = this]() {
+        frame_view_jump_to_start.set_function([instance = this]() {
             instance->on_jump_to_start();
         });
 
-        frame_view_jump_to_end_action.set_function([instance = this]() {
+        frame_view_jump_to_end.set_function([instance = this]() {
             instance->on_jump_to_end();
         });
 
-        frame_view_go_to_previous_frame_action.set_function([instance = this]() {
+        frame_view_go_to_previous_frame.set_function([instance = this]() {
             instance->on_go_to_previous_frame();
         });
 
-        frame_view_go_to_next_frame_action.set_function([instance = this]() {
+        frame_view_go_to_next_frame.set_function([instance = this]() {
             instance->on_go_to_next_frame();
         });
 
-        frame_view_play_pause_action.set_function([instance = this]() {
+        frame_view_play_pause.set_function([instance = this]() {
             instance->on_play_pause();
         });
 
-        frame_view_frame_move_right_action.set_function([instance = this]() {
+        frame_view_frame_move_right.set_function([instance = this]() {
             instance->on_frame_move_right();
         });
 
-        frame_view_frame_move_left_action.set_function([instance = this]() {
+        frame_view_frame_move_left.set_function([instance = this]() {
             instance->on_frame_move_left();
         });
 
-        frame_view_frame_new_left_of_current_action.set_function([instance = this]() {
+        frame_view_frame_new_left_of_current.set_function([instance = this]() {
             instance->on_frame_new_left_of_current();
         });
 
-        frame_view_frame_new_right_of_current_action.set_function([instance = this]() {
+        frame_view_frame_new_right_of_current.set_function([instance = this]() {
             instance->on_frame_new_right_of_current();
         });
 
-        frame_view_frame_delete_action.set_function([instance = this]() {
+        frame_view_frame_delete.set_function([instance = this]() {
             instance->on_frame_delete();
         });
 
-        frame_view_frame_make_keyframe_inbetween_action.set_function([instance = this]() {
+        frame_view_frame_make_keyframe_inbetween.set_function([instance = this]() {
             instance->on_frame_make_keyframe_inbetween();
         });
 
         for (auto* action : {
-                &frame_view_toggle_onionskin_visible_action,
-                &frame_view_increase_n_onionskin_layers_action,
-                &frame_view_decrease_n_onionskin_layers_action,
-                &frame_view_jump_to_start_action,
-                &frame_view_jump_to_end_action,
-                &frame_view_go_to_previous_frame_action,
-                &frame_view_go_to_next_frame_action,
-                &frame_view_play_pause_action,
-                &frame_view_frame_move_right_action,
-                &frame_view_frame_move_left_action,
-                &frame_view_frame_new_left_of_current_action,
-                &frame_view_frame_new_right_of_current_action,
-                &frame_view_frame_delete_action,
-                &frame_view_frame_make_keyframe_inbetween_action
+                &frame_view_toggle_onionskin_visible,
+                &frame_view_increase_n_onionskin_layers,
+                &frame_view_decrease_n_onionskin_layers,
+                &frame_view_jump_to_start,
+                &frame_view_jump_to_end,
+                &frame_view_go_to_previous_frame,
+                &frame_view_go_to_next_frame,
+                &frame_view_play_pause,
+                &frame_view_frame_move_right,
+                &frame_view_frame_move_left,
+                &frame_view_frame_new_left_of_current,
+                &frame_view_frame_new_right_of_current,
+                &frame_view_frame_delete,
+                &frame_view_frame_make_keyframe_inbetween
         })
             state::add_shortcut_action(*action);
 
@@ -300,7 +300,7 @@ namespace mousetrap
         _toggle_onionskin_visible_button.set_active(state::onionskin_visible);
         _toggle_onionskin_visible_button.set_child(&_toggle_onionskin_visible_icon);
         _toggle_onionskin_visible_button.connect_signal_toggled([](ToggleButton*, ControlBar* instance){
-            frame_view_toggle_onionskin_visible_action.activate();
+            frame_view_toggle_onionskin_visible.activate();
         }, this);
 
         _onionskin_n_layers_spin_button.set_value(state::onionskin_n_layers);
@@ -308,58 +308,58 @@ namespace mousetrap
 
         _jump_to_start_button.set_child(&_jump_to_start_icon);
         _jump_to_start_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            frame_view_jump_to_start_action.activate();
+            frame_view_jump_to_start.activate();
         }, this);
 
         _jump_to_end_button.set_child(&_jump_to_end_icon);
         _jump_to_end_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            frame_view_jump_to_end_action.activate();
+            frame_view_jump_to_end.activate();
         }, this);
 
         _go_to_previous_frame_button.set_child(&_go_to_previous_frame_icon);
         _go_to_previous_frame_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            frame_view_go_to_previous_frame_action.activate();
+            frame_view_go_to_previous_frame.activate();
         }, this);
 
         _go_to_next_frame_button.set_child(&_go_to_next_frame_icon);
         _go_to_next_frame_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            frame_view_go_to_next_frame_action.activate();
+            frame_view_go_to_next_frame.activate();
         }, this);
 
         _play_pause_button.set_child(state::playback_active ? &_pause_icon : &_play_icon);
         _play_pause_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            frame_view_play_pause_action.activate();
+            frame_view_play_pause.activate();
         }, this);
 
         _frame_move_right_button.set_child(&_frame_move_right_icon);
         _frame_move_right_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            frame_view_frame_move_right_action.activate();
+            frame_view_frame_move_right.activate();
         }, this);
 
         _frame_move_left_button.set_child(&_frame_move_left_icon);
         _frame_move_left_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            frame_view_frame_move_left_action.activate();
+            frame_view_frame_move_left.activate();
         }, this);
 
         _frame_new_left_of_current_button.set_child(&_frame_new_left_of_current_icon);
         _frame_new_left_of_current_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            frame_view_frame_new_left_of_current_action.activate();
+            frame_view_frame_new_left_of_current.activate();
         }, this);
 
         _frame_new_right_of_current_button.set_child(&_frame_new_right_of_current_icon);
         _frame_new_right_of_current_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            frame_view_frame_new_right_of_current_action.activate();
+            frame_view_frame_new_right_of_current.activate();
         }, this);
 
         _frame_delete_button.set_child(&_frame_delete_icon);
         _frame_delete_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            frame_view_frame_delete_action.activate();
+            frame_view_frame_delete.activate();
         }, this);
 
         bool is_keyframe = state::layers.at(state::current_layer)->frames.at(state::current_frame).is_keyframe;
         _frame_make_keyframe_button.set_child(is_keyframe ? &_frame_is_not_keyframe_icon : &_frame_is_keyframe_icon);
         _frame_make_keyframe_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            frame_view_frame_make_keyframe_inbetween_action.activate();
+            frame_view_frame_make_keyframe_inbetween.activate();
         }, this);
 
         // Tooltips
@@ -428,24 +428,24 @@ namespace mousetrap
         _menu.add_section("Settings", &settings_section);
 
         auto playback_section = MenuModel();
-        playback_section.add_action(jump_to_start_tooltip, frame_view_jump_to_start_action.get_id());
-        playback_section.add_action(jump_to_end_tooltip, frame_view_jump_to_end_action.get_id());
-        playback_section.add_action(go_to_previous_frame_tooltip, frame_view_go_to_previous_frame_action.get_id());
-        playback_section.add_action(go_to_next_frame_tooltip, frame_view_go_to_next_frame_action.get_id());
-        playback_section.add_action(play_pause_tooltip, frame_view_play_pause_action.get_id());
-        playback_section.add_action(toggle_onionskin_visible_tooltip, frame_view_toggle_onionskin_visible_action.get_id());
+        playback_section.add_action(jump_to_start_tooltip, frame_view_jump_to_start.get_id());
+        playback_section.add_action(jump_to_end_tooltip, frame_view_jump_to_end.get_id());
+        playback_section.add_action(go_to_previous_frame_tooltip, frame_view_go_to_previous_frame.get_id());
+        playback_section.add_action(go_to_next_frame_tooltip, frame_view_go_to_next_frame.get_id());
+        playback_section.add_action(play_pause_tooltip, frame_view_play_pause.get_id());
+        playback_section.add_action(toggle_onionskin_visible_tooltip, frame_view_toggle_onionskin_visible.get_id());
         _menu.add_section("Playback", &playback_section);
 
         auto create_section = MenuModel();
-        create_section.add_action(frame_new_left_of_current_tooltip, frame_view_frame_new_left_of_current_action.get_id());
-        create_section.add_action(frame_new_right_of_current_tooltip, frame_view_frame_new_right_of_current_action.get_id());
-        create_section.add_action(frame_delete_tooltip, frame_view_frame_delete_action.get_id());
+        create_section.add_action(frame_new_left_of_current_tooltip, frame_view_frame_new_left_of_current.get_id());
+        create_section.add_action(frame_new_right_of_current_tooltip, frame_view_frame_new_right_of_current.get_id());
+        create_section.add_action(frame_delete_tooltip, frame_view_frame_delete.get_id());
         _menu.add_section("Create / Delete", &create_section);
 
         auto other_section = MenuModel();
-        other_section.add_action(frame_move_left_tooltip, frame_view_frame_move_left_action.get_id());
-        other_section.add_action(frame_move_right_tooltip, frame_view_frame_move_right_action.get_id());
-        other_section.add_action(frame_make_keyframe_inbetween_tooltip, frame_view_frame_make_keyframe_inbetween_action.get_id());
+        other_section.add_action(frame_move_left_tooltip, frame_view_frame_move_left.get_id());
+        other_section.add_action(frame_move_right_tooltip, frame_view_frame_move_right.get_id());
+        other_section.add_action(frame_make_keyframe_inbetween_tooltip, frame_view_frame_make_keyframe_inbetween.get_id());
         _menu.add_section("Other", &other_section);
 
         _popover_menu.refresh_widgets();

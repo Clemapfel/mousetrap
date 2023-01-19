@@ -86,35 +86,35 @@ namespace mousetrap
 
         using namespace state::actions;
 
-        brush_options_increase_brush_opacity_action.set_function([instance = this](){
+        brush_options_increase_brush_opacity.set_function([instance = this](){
             instance->set_brush_opacity(instance->get_brush_opacity() + 0.1f);
         });
-        state::add_shortcut_action(brush_options_increase_brush_opacity_action);
+        state::add_shortcut_action(brush_options_increase_brush_opacity);
 
-        brush_options_decrease_brush_opacity_action.set_function([instance = this](){
+        brush_options_decrease_brush_opacity.set_function([instance = this](){
             instance->set_brush_opacity(instance->get_brush_opacity() - 0.1f);
         });
-        state::add_shortcut_action(brush_options_decrease_brush_opacity_action);
+        state::add_shortcut_action(brush_options_decrease_brush_opacity);
 
-        brush_options_increase_brush_size_action.set_function([instance = this](){
+        brush_options_increase_brush_size.set_function([instance = this](){
             instance->set_brush_opacity(instance->get_brush_opacity() + 1);
         });
-        state::add_shortcut_action(brush_options_increase_brush_size_action);
+        state::add_shortcut_action(brush_options_increase_brush_size);
 
-        brush_options_decrease_brush_size_action.set_function([instance = this](){
+        brush_options_decrease_brush_size.set_function([instance = this](){
             instance->set_brush_opacity(instance->get_brush_opacity() - 1);
         });
-        state::add_shortcut_action(brush_options_decrease_brush_size_action);
+        state::add_shortcut_action(brush_options_decrease_brush_size);
 
-        brush_options_add_brush_action.set_function([](){
-            std::cout << "[TODO] " << brush_options_add_brush_action.get_id() << std::endl;
+        brush_options_add_brush.set_function([](){
+            std::cout << "[TODO] " << brush_options_add_brush.get_id() << std::endl;
         });
-        state::add_shortcut_action(brush_options_add_brush_action);
+        state::add_shortcut_action(brush_options_add_brush);
 
-        brush_options_remove_brush_action.set_function([](){
-            std::cout << "[TODO] " << brush_options_remove_brush_action.get_id() << std::endl;
+        brush_options_remove_brush.set_function([](){
+            std::cout << "[TODO] " << brush_options_remove_brush.get_id() << std::endl;
         });
-        state::add_shortcut_action(brush_options_remove_brush_action);
+        state::add_shortcut_action(brush_options_remove_brush);
 
         brush_options_load_default_brushes.set_function([](){
             std::cout << "[TODO] " << brush_options_load_default_brushes.get_id() << std::endl;
@@ -143,8 +143,8 @@ namespace mousetrap
         _menu.add_section("Settings", &settings_section);
 
         auto brush_section = MenuModel();
-        brush_section.add_action("Add Brush...", brush_options_add_brush_action.get_id());
-        brush_section.add_action("Remove Brush", brush_options_remove_brush_action.get_id());
+        brush_section.add_action("Add Brush...", brush_options_add_brush.get_id());
+        brush_section.add_action("Remove Brush", brush_options_remove_brush.get_id());
         brush_section.add_action("Load Default Brushes...", brush_options_load_default_brushes.get_id());
         _menu.add_section("Manage Brushes", &brush_section);
 

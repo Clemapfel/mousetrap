@@ -441,7 +441,7 @@ namespace mousetrap
             instance->_on_load_dialog.close();
         }, this);
 
-        palette_view_on_load_action.set_function([instance = this](){
+        palette_view_load.set_function([instance = this](){
             instance->_on_load_dialog.show();
         });
 
@@ -457,14 +457,14 @@ namespace mousetrap
             instance->_on_save_as_dialog.close();
         }, this);
 
-        palette_view_on_save_as_action.set_function([instance = this](){
+        palette_view_save_as.set_function([instance = this](){
             instance->_on_save_as_dialog.get_name_entry().set_text("Untitled.palette");
             instance->_on_save_as_dialog.show();
         });
 
         // Action:: Save
 
-        palette_view_on_save_action.set_function([instance = this](){
+        palette_view_save.set_function([instance = this](){
             if (instance->_save_to_path == "")
             {
                 instance->_on_save_as_dialog.get_name_entry().set_text("Untitled.palette");
@@ -475,14 +475,14 @@ namespace mousetrap
         });
 
         // Action: Load Default
-        palette_view_on_load_default_action.set_function([instance = this]()
+        palette_view_load_default.set_function([instance = this]()
                                                          {
                                                              instance->load_from_file(get_resource_path() + "default.palette");
                                                          });
 
         // Action: Save As Default
 
-        palette_view_on_save_as_default_action.set_function([instance = this]()
+        palette_view_save_as_default.set_function([instance = this]()
                                                             {
                                                                 if (state::palette.save_to(get_resource_path() + "default.palette"))
                                                                     ((BubbleLogArea*) state::bubble_log)->send_message("Current palette saved as default");
@@ -492,22 +492,22 @@ namespace mousetrap
 
         // Action:: Sort
 
-        palette_view_on_sort_by_default_action.set_function([instance = this](){
+        palette_view_sort_by_default.set_function([instance = this](){
             state::palette_sort_mode = PaletteSortMode::NONE;
             instance->update_from_palette();
         });
 
-        palette_view_on_sort_by_hue_action.set_function([instance = this](){
+        palette_view_sort_by_hue.set_function([instance = this](){
             state::palette_sort_mode = PaletteSortMode::BY_HUE;
             instance->update_from_palette();
         });
 
-        palette_view_on_sort_by_value_action.set_function([instance = this](){
+        palette_view_sort_by_value.set_function([instance = this](){
             state::palette_sort_mode = PaletteSortMode::BY_VALUE;
             instance->update_from_palette();
         });
 
-        palette_view_on_sort_by_saturation_action.set_function([instance = this](){
+        palette_view_sort_by_saturation.set_function([instance = this](){
             state::palette_sort_mode = PaletteSortMode::BY_SATURATION;
             instance->update_from_palette();
         });
@@ -541,25 +541,25 @@ namespace mousetrap
         }
 
         for (auto* action : {
-                &palette_view_on_load_default_action,
-                &palette_view_on_save_action,
-                &palette_view_on_save_as_default_action,
-                &palette_view_on_load_action,
-                &palette_view_on_save_as_action,
-                &palette_view_on_sort_by_default_action,
-                &palette_view_on_sort_by_hue_action,
-                &palette_view_on_sort_by_saturation_action,
-                &palette_view_on_sort_by_value_action,
-                &palette_view_select_color_0,
-                &palette_view_select_color_1,
-                &palette_view_select_color_2,
-                &palette_view_select_color_3,
-                &palette_view_select_color_4,
-                &palette_view_select_color_5,
-                &palette_view_select_color_6,
-                &palette_view_select_color_7,
-                &palette_view_select_color_8,
-                &palette_view_select_color_9
+            &palette_view_load_default,
+            &palette_view_save,
+            &palette_view_save_as_default,
+            &palette_view_load,
+            &palette_view_save_as,
+            &palette_view_sort_by_default,
+            &palette_view_sort_by_hue,
+            &palette_view_sort_by_saturation,
+            &palette_view_sort_by_value,
+            &palette_view_select_color_0,
+            &palette_view_select_color_1,
+            &palette_view_select_color_2,
+            &palette_view_select_color_3,
+            &palette_view_select_color_4,
+            &palette_view_select_color_5,
+            &palette_view_select_color_6,
+            &palette_view_select_color_7,
+            &palette_view_select_color_8,
+            &palette_view_select_color_9
         })
             state::add_shortcut_action(*action);
 
