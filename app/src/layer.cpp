@@ -3,6 +3,105 @@
 
 namespace mousetrap
 {
+    Layer::Frame::Frame(Vector2i size)
+    {
+        _image.create(size.x, size.y, RGBA(0, 0, 0, 0));
+        _texture.create_from_image(_image);
+    }
+
+    Image* Layer::Frame::get_image()
+    {
+        return &_image;
+    }
+
+    Texture* Layer::Frame::get_texture()
+    {
+        return &_texture;
+    }
+
+    bool Layer::Frame::get_is_keyframe() const
+    {
+        return _is_keyframe;
+    }
+
+    void Layer::Frame::set_is_keyframe(bool b)
+    {
+        _is_keyframe = b;
+    }
+
+    void Layer::Frame::update_texture()
+    {
+        _texture.create_from_image(_image);
+    }
+
+    Layer::Layer(const std::string& name, Vector2i size, size_t n_frames)
+        : _name(name)
+    {
+        for (size_t i = 0; i < n_frames; ++i)
+            _frames.emplace_back(size);
+    }
+
+    Layer::Frame* Layer::get_frame(size_t index)
+    {
+        return &_frames.at(index);
+    }
+
+    size_t Layer::get_n_frames() const
+    {
+        return _frames.size();
+    }
+
+    std::string Layer::get_name() const
+    {
+        return _name;
+    }
+
+    void Layer::set_name(const std::string& name)
+    {
+        _name = name;
+    }
+
+    bool Layer::get_is_locked() const
+    {
+        return _is_locked;
+    }
+
+    bool Layer::get_is_visible() const
+    {
+        return _is_visible;
+    }
+
+    void Layer::set_is_locked(bool b)
+    {
+        _is_locked = b;
+    }
+
+    void Layer::set_is_visible(bool b)
+    {
+        _is_visible = b;
+    }
+
+    float Layer::get_opacity() const
+    {
+        return _opacity;
+    }
+
+    void Layer::set_opacity(float v)
+    {
+        _opacity = glm::clamp<float>(v, 0, 1);
+    }
+
+    BlendMode Layer::get_blendmode() const
+    {
+        return _blend_mode;
+    }
+
+    void Layer::set_blendmode(BlendMode mode)
+    {
+        _blend_mode = mode;
+    }
+
+    /*
     void Layer::Frame::draw_pixel(Vector2i xy, RGBA color, BlendMode blend_mode)
     {
         if (not (xy.x >= 0 and xy.x < image->get_size().x and xy.y >= 0 and xy.y < image->get_size().y))
@@ -221,9 +320,5 @@ namespace mousetrap
             for (size_t y = min_y; y < max_y; ++y)
                 draw_pixel({x, y}, color, blend_mode);
     }
-
-    void Layer::Frame::update_texture()
-    {
-        texture->create_from_image(*image);
-    }
+     */
 }

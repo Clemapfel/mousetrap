@@ -9,39 +9,55 @@
 
 namespace mousetrap
 {
-    struct Layer
+    class Layer
     {
-        std::string name;
+        public:
+            class Frame
+            {
+                public:
+                    Frame(Vector2i size);
 
-        struct Frame
-        {
-            Image* image;
-            Texture* texture;
-            bool is_keyframe = true;
+                    Image* get_image();
+                    Texture* get_texture();
+                    void update_texture();
 
-            void draw_pixel(Vector2i, RGBA, BlendMode = BlendMode::NORMAL);
-            void draw_image(Vector2i centroid, const Image&, RGBA multiplication = RGBA(1, 1, 1, 1), BlendMode = BlendMode::NORMAL);
-            void draw_line(Vector2i start, Vector2i end, RGBA, BlendMode = BlendMode::NORMAL);
+                    bool get_is_keyframe() const;
+                    void set_is_keyframe(bool);
 
-            void draw_rectangle_filled(Vector2i top_left, Vector2i bottom_right, RGBA, BlendMode = BlendMode::NORMAL);
-            void draw_rectangle(Vector2i top_left, Vector2i bottom_right, RGBA, size_t px = 1, BlendMode = BlendMode::NORMAL);
+                private:
+                    Image _image;
+                    Texture _texture;
+                    bool _is_keyframe = true;
+            };
 
-            void draw_polygon(const std::vector<Vector2i>& points, RGBA, BlendMode = BlendMode::NORMAL);
-            void draw_polygon_filled(const std::vector<Vector2i>& points, RGBA, BlendMode = BlendMode::NORMAL);
+            Layer(const std::string& name, Vector2i size, size_t n_frames);
 
-            /// \param aabb_top_left: bounding box top left pixel coordinate
-            /// \param aabb_bottom_right: bounding box bottom right pixel coordinate
-            void draw_ellipse(Vector2i aabb_top_left, Vector2i aabb_bottom_right, RGBA, BlendMode = BlendMode::NORMAL);
-            void draw_ellipse_filled(Vector2i aabb_top_left, Vector2i aabb_bottom_right, RGBA, BlendMode = BlendMode::NORMAL);
+            Layer::Frame* get_frame(size_t index);
+            size_t get_n_frames() const;
 
-            void update_texture();
-        };
+            std::string get_name() const;
+            void set_name(const std::string&);
 
-        std::deque<Frame> frames = std::deque<Frame>();
+            bool get_is_locked() const;
+            bool get_is_visible() const;
 
-        bool is_locked = false;
-        bool is_visible = true;
-        float opacity = 1;
-        BlendMode blend_mode = NORMAL;
+            void set_is_locked(bool);
+            void set_is_visible(bool);
+
+            float get_opacity() const;
+            void set_opacity(float);
+
+            BlendMode get_blendmode() const;
+            void set_blendmode(BlendMode);
+
+        private:
+            std::deque<Frame> _frames = std::deque<Frame>();
+
+            std::string _name;
+
+            bool _is_locked = false;
+            bool _is_visible = true;
+            float _opacity = 1;
+            BlendMode _blend_mode = NORMAL;
     };
 }
