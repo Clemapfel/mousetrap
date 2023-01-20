@@ -283,7 +283,6 @@ namespace mousetrap
         active_state->set_preview_colors(active_state->get_primary_color(), active_state->get_primary_color());
 
         state::color_picker->update();
-        state::verbose_color_picker->update();
         state::color_swapper->update();
         state::color_preview->update();
         state::canvas->update();

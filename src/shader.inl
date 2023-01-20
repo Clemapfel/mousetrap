@@ -20,7 +20,7 @@ namespace mousetrap
         }
         else if (not GL_INITIALIZED)
             std::cerr
-                    << "[WARNING] In Shader::Shader: Trying to initialize the noop shaders, but GL_INITIALIZE is still false."
+                    << "[WARNING] In Shader::Shader: Trying to initialize the noop shaders, but GL_INITIALIZED is still false."
                     << std::endl;
 
         _program_id = _noop_program_id;

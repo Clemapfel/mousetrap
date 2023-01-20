@@ -19,7 +19,9 @@ namespace mousetrap
         public:
             VerboseColorPicker();
             operator Widget*() override;
-            void update() override;
+
+        protected:
+            void on_color_selection_changed() override;
 
         private:
             void update(HSVA);

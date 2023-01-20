@@ -47,7 +47,7 @@ namespace mousetrap
         {
             entry->set_text(text);
             auto color = code_to_color(text);
-            instance->_owner->update(color.operator HSVA());
+            active_state->set_primary_color(color.operator HSVA());
         }
         else
             entry->set_text(color_to_code(*instance->_owner->_current_color));
@@ -383,13 +383,7 @@ namespace mousetrap
         *instance->_owner->_previous_color = *instance->_owner->_current_color;
 
         active_state->set_primary_color(*instance->_owner->_current_color);
-        state::color_picker->update();
-        state::color_swapper->update();
-        state::palette_view->update();
-        state::canvas->update();
-
         active_state->set_preview_colors(active_state->get_primary_color(), active_state->get_primary_color());
-        state::color_preview->update();
     }
 
     void VerboseColorPicker::SliderRegion::on_slider_motion(MotionEventController*, double x, double y, SliderRegion* instance)
@@ -506,13 +500,7 @@ namespace mousetrap
 
         *_current_color = color;
         active_state->set_primary_color(color);
-        state::color_picker->update();
-        state::color_swapper->update();
-        state::palette_view->update();
-        state::canvas->update();
-
         active_state->set_preview_colors(color, active_state->get_preview_color_previous());
-        state::color_preview->update();
     };
 
     VerboseColorPicker::VerboseColorPicker()
@@ -673,7 +661,7 @@ namespace mousetrap
         _html_code_region.update(*_current_color);
     }
 
-    void VerboseColorPicker::update()
+    void VerboseColorPicker::on_color_selection_changed()
     {
         *_current_color = active_state->get_primary_color();
         *_previous_color = active_state->get_primary_color();

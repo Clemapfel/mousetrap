@@ -389,7 +389,6 @@ namespace mousetrap
 
             active_state->set_primary_color(color);
             state::color_swapper->update();
-            state::verbose_color_picker->update();
             state::palette_view->update();
             state::canvas->update();
 
@@ -409,13 +408,7 @@ namespace mousetrap
             color.s = glm::clamp<float>(color.s, 0, 1);
 
             active_state->set_primary_color(color);
-            state::color_swapper->update();
-            state::verbose_color_picker->update();
-            state::palette_view->update();
-            state::canvas->update();
-
             active_state->set_preview_colors(color, active_state->get_preview_color_previous());
-            state::color_preview->update();
         }
 
         auto window_color = active_state->get_primary_color();
