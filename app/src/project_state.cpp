@@ -27,7 +27,7 @@
 
 namespace mousetrap
 {
-    std::deque<Brush>& state::load_default_brushes()
+    std::deque<Brush>& state::load_default_brushes(const std::string& path)
     {
         auto out = std::deque<Brush>();
 
@@ -40,7 +40,7 @@ namespace mousetrap
         out.emplace_back().as_rectangle_horizontal();
         out.emplace_back().as_rectangle_vertical();
 
-        auto files = get_all_files_in_directory(get_resource_path() + "brushes", false, false);
+        auto files = get_all_files_in_directory(path, false, false);
         std::sort(files.begin(), files.end(), [](FileDescriptor& a, FileDescriptor& b) -> bool {
             return a.get_name() < b.get_name();
         });
@@ -91,7 +91,7 @@ namespace mousetrap
         _preview_color_current = _primary_color;
         _preview_color_previous = _primary_color;
 
-        _brushes = state::load_default_brushes();
+        _brushes = state::load_default_brushes(get_resource_path() + "brushes");
 
         for (size_t x = 0; x < _layer_resolution.x; ++x)
             for (size_t y = 0; y < _layer_resolution.y; ++y)
@@ -117,6 +117,37 @@ namespace mousetrap
         return _brushes.size();
     }
 
+    const Brush* ProjectState::get_brush(size_t i) const
+    {
+        return &_brushes.at(i);
+    }
+
+    float ProjectState::get_brush_opacity() const
+    {
+        return _brush_opacity;
+    }
+
+    void ProjectState::set_brush_opacity(float v)
+    {
+        _brush_opacity = v;
+
+        state::brush_options->signal_brush_selection_changed();
+        state::canvas->signal_brush_selection_changed();
+    }
+
+    void ProjectState::set_brush_size(size_t v)
+    {
+        _brush_size = v;
+
+        state::brush_options->signal_brush_selection_changed();
+        state::canvas->signal_brush_selection_changed();
+    }
+
+    size_t ProjectState::get_brush_size() const
+    {
+        return _brush_size;
+    }
+
     ToolID ProjectState::get_active_tool() const
     {
         return _active_tool;
@@ -133,6 +164,26 @@ namespace mousetrap
     const Layer* ProjectState::get_current_layer() const
     {
         return &_layers.at(_current_layer_i);
+    }
+
+    size_t ProjectState::get_current_frame_index() const
+    {
+        return _current_frame_i;
+    }
+
+    size_t ProjectState::get_current_layer_index() const
+    {
+        return _current_layer_i;
+    }
+
+    const Layer* ProjectState::get_layer(size_t i) const
+    {
+        return &_layers.at(i);
+    }
+
+    const Layer::Frame* ProjectState::get_frame(size_t layer_i, size_t frame_i) const
+    {
+        return _layers.at(layer_i).get_frame(frame_i);
     }
 
     size_t ProjectState::get_n_layers() const
@@ -184,6 +235,61 @@ namespace mousetrap
         state::animation_preview->signal_layer_count_changed();
     }
 
+    void ProjectState::set_layer_visible(size_t i, bool b)
+    {
+        _layers.at(i).set_is_visible(i);
+
+        state::canvas->signal_layer_properties_changed();
+        state::layer_view->signal_layer_properties_changed();
+        state::frame_view->signal_layer_properties_changed();
+        state::animation_preview->signal_layer_properties_changed();
+    }
+
+    void ProjectState::set_layer_opacity(size_t i, float v)
+    {
+        _layers.at(i).set_opacity(v);
+
+        state::canvas->signal_layer_properties_changed();
+        state::layer_view->signal_layer_properties_changed();
+        state::frame_view->signal_layer_properties_changed();
+        state::animation_preview->signal_layer_properties_changed();
+    }
+
+    void ProjectState::set_layer_locked(size_t i, bool b)
+    {
+        _layers.at(i).set_is_locked(i);
+
+        state::canvas->signal_layer_properties_changed();
+        state::layer_view->signal_layer_properties_changed();
+        state::frame_view->signal_layer_properties_changed();
+        state::animation_preview->signal_layer_properties_changed();
+    }
+
+    void ProjectState::set_layer_blend_mode(size_t i, BlendMode mode)
+    {
+        _layers.at(i).set_blend_mode(mode);
+
+        state::canvas->signal_layer_properties_changed();
+        state::layer_view->signal_layer_properties_changed();
+        state::frame_view->signal_layer_properties_changed();
+        state::animation_preview->signal_layer_properties_changed();
+    }
+
+    void ProjectState::set_layer_name(size_t i, const std::string& name)
+    {
+        _layers.at(i).set_name(name);
+
+        state::canvas->signal_layer_properties_changed();
+        state::layer_view->signal_layer_properties_changed();
+        state::frame_view->signal_layer_properties_changed();
+        state::animation_preview->signal_layer_properties_changed();
+    }
+
+    Vector2ui ProjectState::get_layer_resolution() const
+    {
+        return _layer_resolution;
+    }
+
     HSVA ProjectState::get_primary_color() const
     {
         return _primary_color;
@@ -216,6 +322,24 @@ namespace mousetrap
         state::color_preview->signal_color_selection_changed();
         state::palette_view->signal_color_selection_changed();
         state::canvas->signal_color_selection_changed();
+    }
+
+    HSVA ProjectState::get_preview_color_current() const
+    {
+        return _preview_color_current;
+    }
+
+    void ProjectState::set_preview_colors(HSVA current, HSVA previous)
+    {
+        _preview_color_current = current;
+        _preview_color_previous = previous;
+
+        state::color_preview->signal_color_selection_changed();
+    }
+
+    HSVA ProjectState::get_preview_color_previous() const
+    {
+        return _preview_color_previous;
     }
 
     const Palette& ProjectState::get_palette() const

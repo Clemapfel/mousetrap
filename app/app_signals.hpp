@@ -25,7 +25,7 @@ namespace mousetrap::signals
                 }                                                          \
                                                                            \
             protected:                                                     \
-                virtual void on_##snake_case_name() = 0;                   \
+                virtual void on_##snake_case_name() {}                   \
                                                                            \
             private:                                                       \
                 bool _blocked = false;                                     \
@@ -42,5 +42,6 @@ namespace mousetrap::signals
     DECLARE_APP_SIGNAL_COMPONENT(LayerFrameSelectionChanged, layer_frame_selection_changed)
     DECLARE_APP_SIGNAL_COMPONENT(LayerImageUpdated, layer_image_updated)
     DECLARE_APP_SIGNAL_COMPONENT(LayerCountChanged, layer_count_changed)
+    DECLARE_APP_SIGNAL_COMPONENT(LayerPropertiesChanged, layer_properties_changed)
     DECLARE_APP_SIGNAL_COMPONENT(ActiveToolChanged, active_tool_changed)
 };

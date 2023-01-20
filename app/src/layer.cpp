@@ -104,12 +104,12 @@ namespace mousetrap
         _opacity = glm::clamp<float>(v, 0, 1);
     }
 
-    BlendMode Layer::get_blendmode() const
+    BlendMode Layer::get_blend_mode() const
     {
         return _blend_mode;
     }
 
-    void Layer::set_blendmode(BlendMode mode)
+    void Layer::set_blend_mode(BlendMode mode)
     {
         _blend_mode = mode;
     }

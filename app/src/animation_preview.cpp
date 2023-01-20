@@ -139,11 +139,13 @@ namespace mousetrap
 
         instance->_layer_shapes.clear();
 
-        for (auto* layer : active_state->layers)
+
+        for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
         {
+            auto* layer = active_state->get_layer(layer_i);
             auto* shape = instance->_layer_shapes.emplace_back(new Shape());
             shape->as_rectangle({0, 0}, {1, 1});
-            shape->set_texture(layer->frames.at(instance->_current_frame).texture);
+            shape->set_texture(active_state->get_frame(layer_i, instance->_current_frame)->get_texture());
         }
 
         instance->set_scale_factor(instance->_scale_factor);
@@ -163,9 +165,9 @@ namespace mousetrap
 
         _area.add_render_task(transparency_task);
 
-        for (size_t layer_i = 0; layer_i < active_state->layers.size(); ++layer_i)
+        for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
         {
-            auto task = RenderTask(_layer_shapes.at(layer_i), nullptr, nullptr, active_state->layers.at(layer_i)->blend_mode);
+            auto task = RenderTask(_layer_shapes.at(layer_i), nullptr, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
             _area.add_render_task(task);
         }
 
@@ -195,8 +197,8 @@ namespace mousetrap
 
         auto centroid = Vector2f{0.5, 0.5};
         auto size = Vector2f(
-                pixel_size.x * active_state->layer_resolution.x * _scale_factor,
-                pixel_size.y * active_state->layer_resolution.y * _scale_factor
+                pixel_size.x * active_state->get_layer_resolution().x * _scale_factor,
+                pixel_size.y * active_state->get_layer_resolution().y * _scale_factor
         );
 
         for (auto* shape : _layer_shapes)
@@ -257,10 +259,10 @@ namespace mousetrap
     {
         if (not _playback_active or _fps == 0)
         {
-            if (_current_frame == active_state->current_frame)
+            if (_current_frame == active_state->get_current_frame_index())
                 return;
 
-            _current_frame = active_state->current_frame;
+            _current_frame = active_state->get_current_frame_index();
         }
         else
         {
@@ -270,14 +272,14 @@ namespace mousetrap
             while (_elapsed > frame_duration)
             {
                 _elapsed -= frame_duration;
-                _current_frame = _current_frame + 1 == active_state->n_frames ? 0 : _current_frame + 1;
+                _current_frame = _current_frame + 1 == active_state->get_n_frames() ? 0 : _current_frame + 1;
             }
         }
 
-        for (size_t layer_i = 0; _layer_shapes.size() == active_state->layers.size() and layer_i < active_state->layers.size(); ++layer_i)
+        for (size_t layer_i = 0; _layer_shapes.size() == active_state->get_n_layers() and layer_i < active_state->get_n_layers(); ++layer_i)
         {
-            auto* layer = active_state->layers.at(layer_i);
-            _layer_shapes.at(layer_i)->set_texture(layer->frames.at(_current_frame).texture);
+            auto* layer = active_state->get_layer(layer_i);
+            _layer_shapes.at(layer_i)->set_texture(layer->get_frame(_current_frame)->get_texture());
         }
 
         _area.queue_render();
@@ -289,11 +291,11 @@ namespace mousetrap
 
         if (not _playback_active)
         {
-            _current_frame = active_state->current_frame;
-            for (size_t layer_i = 0; _layer_shapes.size() == active_state->layers.size() and layer_i < active_state->layers.size(); ++layer_i)
+            _current_frame = active_state->get_current_frame_index();
+            for (size_t layer_i = 0; _layer_shapes.size() == active_state->get_n_layers() and layer_i < active_state->get_n_layers(); ++layer_i)
             {
-                auto* layer = active_state->layers.at(layer_i);
-                _layer_shapes.at(layer_i)->set_texture(layer->frames.at(_current_frame).texture);
+                auto* layer = active_state->get_layer(layer_i);
+                _layer_shapes.at(layer_i)->set_texture(layer->get_frame(_current_frame)->get_texture());
             }
             _area.queue_render();
         }

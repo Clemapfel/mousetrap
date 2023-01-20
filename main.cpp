@@ -52,11 +52,7 @@ static void activate(GtkApplication* app, void*)
     state::shortcut_controller = new ShortcutController(state::app);
     state::main_window->add_controller(state::shortcut_controller);
 
-    state::initialize_debug_state();
-
-    for (size_t x = 0; x < active_state->layer_resolution.x; ++x)
-        for (size_t y = 0; y < active_state->layer_resolution.y; ++y)
-            active_state->selection.insert({20, y});
+    active_state = project_states.emplace_back(new ProjectState({75, 50}));
 
     state::color_swapper = new ColorSwapper();
     state::palette_view = new PaletteView();

@@ -11,7 +11,7 @@
 namespace mousetrap
 {
     class SelectionModel : public SignalEmitter,
-            public signals::SelectionChanged<SelectionModel>
+            public HasSelectionChangedSignal<SelectionModel>
     {
         public:
             operator GtkSelectionModel*();

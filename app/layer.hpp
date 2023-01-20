@@ -50,8 +50,8 @@ namespace mousetrap
             float get_opacity() const;
             void set_opacity(float);
 
-            BlendMode get_blendmode() const;
-            void set_blendmode(BlendMode);
+            BlendMode get_blend_mode() const;
+            void set_blend_mode(BlendMode);
 
         private:
             std::deque<Frame> _frames = std::deque<Frame>();

@@ -23,10 +23,8 @@ namespace mousetrap
     {
         using namespace mousetrap;
 
-        std::deque<Brush>& load_default_brushes();
+        std::deque<Brush>& load_default_brushes(const std::string& path);
         std::vector<HSVA> load_default_palette_colors();
-
-        // ### global instances ##############################
 
         static inline Window* main_window = nullptr;
         static inline Application* app = nullptr;
@@ -44,14 +42,25 @@ namespace mousetrap
             const Brush* get_current_brush() const;
             void set_current_brush(size_t);
             size_t get_n_brushes() const;
+            const Brush* get_brush(size_t) const;
+
+            float get_brush_opacity() const;
+            void set_brush_opacity(float);
+
+            size_t get_brush_size() const;
+            void set_brush_size(size_t);
 
             ToolID get_active_tool() const;
             void set_active_tool(ToolID);
 
             const Layer* get_current_layer() const;
+            size_t get_current_layer_index() const;
+            const Layer* get_layer(size_t) const;
             size_t get_n_layers() const;
 
             const Layer::Frame* get_current_frame() const;
+            size_t get_current_frame_index() const;
+            const Layer::Frame* get_frame(size_t layer_i, size_t frame_i) const;
             size_t get_n_frames() const;
 
             void draw_to_layer(size_t layer_i, size_t frame_i, std::map<Vector2i, HSVA>);
@@ -59,11 +68,23 @@ namespace mousetrap
             void add_layer(int above); //-1 for new layer at 0
             void delete_layer(size_t);
 
+            void set_layer_blend_mode(size_t, BlendMode);
+            void set_layer_locked(size_t, bool);
+            void set_layer_visible(size_t, bool);
+            void set_layer_opacity(size_t, float);
+            void set_layer_name(size_t, const std::string&);
+
+            Vector2ui get_layer_resolution() const;
+
             HSVA get_primary_color() const;
             void set_primary_color(HSVA);
 
             HSVA get_secondary_color() const;
             void set_secondary_color(HSVA);
+
+            HSVA get_preview_color_current() const;
+            HSVA get_preview_color_previous() const;
+            void set_preview_colors(HSVA current, HSVA previous);
 
             const Palette& get_palette() const;
             void set_palette(const std::vector<HSVA>&);

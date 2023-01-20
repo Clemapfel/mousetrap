@@ -4,8 +4,8 @@
 
 namespace mousetrap
 {
-    FrameView::FramePreview::FramePreview(FrameView* owner, Layer* layer, size_t frame_i)
-        : _owner(owner), _layer(layer), _frame_i(frame_i), _aspect_frame(active_state->layer_resolution.x / float(active_state->layer_resolution.y))
+    FrameView::FramePreview::FramePreview(FrameView* owner, size_t layer_i, size_t frame_i)
+        : _owner(owner), _layer_i(layer_i), _frame_i(frame_i), _aspect_frame(active_state->get_layer_resolution().x / float(active_state->get_layer_resolution().y))
     {
         _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);
@@ -20,14 +20,14 @@ namespace mousetrap
 
     void FrameView::FramePreview::set_preview_size(size_t x)
     {
-        float width = (active_state->layer_resolution.x / active_state->layer_resolution.y) * x;
+        float width = (active_state->get_layer_resolution().x / active_state->get_layer_resolution().y) * x;
         _area.set_size_request({width, x});
 
         _area.set_expand(true);
         _area.set_align(GTK_ALIGN_CENTER);
-        if (active_state->layer_resolution.x > active_state->layer_resolution.y)
+        if (active_state->get_layer_resolution().x > active_state->get_layer_resolution().y)
             _area.set_hexpand(false);
-        else if (active_state->layer_resolution.y > active_state->layer_resolution.x)
+        else if (active_state->get_layer_resolution().y > active_state->get_layer_resolution().x)
             _area.set_vexpand(false);
     }
 
@@ -47,9 +47,9 @@ namespace mousetrap
         }
     }
 
-    void FrameView::FramePreview::set_layer(Layer* layer)
+    void FrameView::FramePreview::set_layer(size_t i)
     {
-        _layer = layer;
+        _layer_i = i;
         update();
     }
 
@@ -64,8 +64,8 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
-        _layer_shape->set_texture(_layer->frames.at(_frame_i).texture);
-        _layer_shape->set_color(RGBA(1, 1, 1, _layer->opacity));
+        _layer_shape->set_texture(active_state->get_frame(_layer_i, _frame_i)->get_texture());
+        _layer_shape->set_color(RGBA(1, 1, 1, active_state->get_layer(_layer_i)->get_opacity()));
         set_preview_size(_owner->_preview_size);
         _area.queue_render();
     }
@@ -101,7 +101,7 @@ namespace mousetrap
         area->add_render_task(instance->_layer_shape);
 
         instance->set_frame(instance->_frame_i);
-        instance->set_layer(instance->_layer);
+        instance->set_layer(instance->_layer_i);
 
         area->queue_render();
     }
@@ -119,12 +119,12 @@ namespace mousetrap
     {
         _list_view.set_show_separators(true);
 
-        for (size_t layer_i = 0; layer_i <active_state->layers.size() ; ++layer_i)
+        for (size_t layer_i = 0; layer_i <active_state->get_n_layers() ; ++layer_i)
         {
-            auto* layer = active_state->layers.at(layer_i);
+            auto* layer = active_state->get_layer(layer_i);
 
             auto* element = _preview_elements.emplace_back(new PreviewElement{
-                    FramePreview(owner, layer, _frame_i),
+                    FramePreview(owner, layer_i, _frame_i),
                     ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE),
                     Frame(),
                     Label(std::string("<tt>") + (_frame_i < 10 ? "00" : (_frame_i < 100 ? "0" : "")) + std::to_string(_frame_i) + "</tt>"),
@@ -225,12 +225,12 @@ namespace mousetrap
         });
 
         frame_view_increase_n_onionskin_layers.set_function([instance = this]() -> void {
-            auto current = active_state->onionskin_n_layers;
+            auto current = active_state->get_n_onionskin_layers();
             instance->set_n_onionskin_layers(current + 1);
         });
 
         frame_view_decrease_n_onionskin_layers.set_function([instance = this]() -> void {
-            auto current = active_state->onionskin_n_layers;
+            auto current = active_state->get_n_onionskin_layers();
             instance->set_n_onionskin_layers(current - 1);
         });
 
@@ -297,13 +297,13 @@ namespace mousetrap
             state::add_shortcut_action(*action);
 
         // GUI
-        _toggle_onionskin_visible_button.set_active(active_state->onionskin_visible);
+        _toggle_onionskin_visible_button.set_active(active_state->get_onionskin_visible());
         _toggle_onionskin_visible_button.set_child(&_toggle_onionskin_visible_icon);
         _toggle_onionskin_visible_button.connect_signal_toggled([](ToggleButton*, ControlBar* instance){
             frame_view_toggle_onionskin_visible.activate();
         }, this);
 
-        _onionskin_n_layers_spin_button.set_value(active_state->onionskin_n_layers);
+        _onionskin_n_layers_spin_button.set_value(active_state->get_n_onionskin_layers());
         _onionskin_n_layers_spin_button.connect_signal_value_changed(on_onionskin_spin_button_value_changed, this);
 
         _jump_to_start_button.set_child(&_jump_to_start_icon);
@@ -326,7 +326,7 @@ namespace mousetrap
             frame_view_go_to_next_frame.activate();
         }, this);
 
-        _play_pause_button.set_child(active_state->playback_active ? &_pause_icon : &_play_icon);
+        _play_pause_button.set_child(active_state->get_playback_active() ? &_pause_icon : &_play_icon);
         _play_pause_button.connect_signal_clicked([](Button*, ControlBar* instance){
             frame_view_play_pause.activate();
         }, this);
@@ -356,7 +356,7 @@ namespace mousetrap
             frame_view_frame_delete.activate();
         }, this);
 
-        bool is_keyframe = active_state->layers.at(active_state->current_layer)->frames.at(active_state->current_frame).is_keyframe;
+        bool is_keyframe = active_state->get_current_frame()->get_is_keyframe();
         _frame_make_keyframe_button.set_child(is_keyframe ? &_frame_is_not_keyframe_icon : &_frame_is_keyframe_icon);
         _frame_make_keyframe_button.connect_signal_clicked([](Button*, ControlBar* instance){
             frame_view_frame_make_keyframe_inbetween.activate();
@@ -565,16 +565,16 @@ namespace mousetrap
 
     void FrameView::ControlBar::on_toggle_onionskin_visible()
     {
-        active_state->onionskin_visible = not active_state->onionskin_visible;
+        active_state->set_onionskin_visible(not active_state->get_onionskin_visible());
 
         _toggle_onionskin_visible_button.set_signal_toggled_blocked(true);
-        _toggle_onionskin_visible_button.set_active(active_state->onionskin_visible);
+        _toggle_onionskin_visible_button.set_active(active_state->get_onionskin_visible());
         _toggle_onionskin_visible_button.set_signal_toggled_blocked(false);
     }
 
     void FrameView::ControlBar::set_n_onionskin_layers(size_t n)
     {
-        active_state->onionskin_n_layers = std::min(active_state->current_frame, n);
+        active_state->set_n_onionskin_layers(std::min(active_state->get_current_frame_index(), n));
         _onionskin_n_layers_spin_button.set_signal_value_changed_blocked(true);
         _onionskin_n_layers_spin_button.set_value(n);
         _onionskin_n_layers_spin_button.set_signal_value_changed_blocked(false);
@@ -583,14 +583,14 @@ namespace mousetrap
     void FrameView::ControlBar::on_onionskin_spin_button_value_changed(SpinButton* scale, ControlBar* instance)
     {
         auto v = scale->get_value();
-        active_state->onionskin_n_layers = v;
+        active_state->set_n_onionskin_layers(v);
     }
 
     // ###
 
     FrameView::FrameView()
     {
-        for (size_t i = 0; i < active_state->n_frames; ++i)
+        for (size_t i = 0; i < active_state->get_n_frames(); ++i)
         {
             auto* column = _frame_columns.emplace_back(new FrameColumn(this, i));
             _frame_column_list_view.push_back(column->operator Widget*());
@@ -612,7 +612,7 @@ namespace mousetrap
 
     void FrameView::update()
     {
-        set_selection(active_state->current_layer, active_state->current_frame);
+        set_selection(active_state->get_current_layer_index(), active_state->get_current_frame_index());
     }
 
     FrameView::operator Widget*()
@@ -632,8 +632,7 @@ namespace mousetrap
         _frame_column_list_view.get_selection_model()->select(frame_i);
         _frame_column_list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
 
-        active_state->current_frame = _selected_frame_i;
-        active_state->current_layer = _selected_layer_i;
+        active_state->set_current_layer_and_frame(_selected_layer_i, _selected_frame_i);
 
         state::layer_view->update();
         state::animation_preview->update();

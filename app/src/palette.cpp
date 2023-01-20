@@ -38,12 +38,12 @@ namespace mousetrap
         _name = name;
     }
 
-    std::string Palette::get_name()
+    std::string Palette::get_name() const
     {
         return _name;
     }
 
-    size_t Palette::get_n_colors()
+    size_t Palette::get_n_colors() const
     {
         return _colors.size();
     }
@@ -117,7 +117,7 @@ namespace mousetrap
         }
     }
 
-    bool Palette::save_to(const std::string& path)
+    bool Palette::save_to(const std::string& path) const
     {
         auto file = KeyFile();
         for (auto& pair : _colors)
@@ -143,7 +143,7 @@ namespace mousetrap
         return file.save_to_file(path);
     }
 
-    std::vector<HSVA> Palette::get_colors()
+    std::vector<HSVA> Palette::get_colors() const
     {
         std::vector<HSVA> out;
         for (auto& pair : _colors)
@@ -152,7 +152,7 @@ namespace mousetrap
         return out;
     }
 
-    std::vector<HSVA> Palette::get_colors_by_hue()
+    std::vector<HSVA> Palette::get_colors_by_hue() const
     {
         auto grayscale = std::vector<HSVA>();
         auto non_grayscale = std::vector<HSVA>();
@@ -181,7 +181,7 @@ namespace mousetrap
         return out;
     }
 
-    std::vector<HSVA> Palette::get_colors_by_saturation()
+    std::vector<HSVA> Palette::get_colors_by_saturation() const
     {
         auto out = get_colors_by_hue();
         std::sort(out.begin(), out.end(), [](HSVA a, HSVA b) -> bool {
@@ -199,7 +199,7 @@ namespace mousetrap
         return out;
     }
 
-    std::vector<HSVA> Palette::get_colors_by_value()
+    std::vector<HSVA> Palette::get_colors_by_value() const
     {
         auto out = get_colors_by_hue();
         std::sort(out.begin(), out.end(), [](HSVA a, HSVA b) -> bool {

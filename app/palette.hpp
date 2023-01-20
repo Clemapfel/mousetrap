@@ -34,17 +34,17 @@ namespace mousetrap
             Palette(const std::vector<HSVA>&);
 
             void set_name(const std::string& name);
-            std::string get_name();
+            std::string get_name() const;
 
             bool load_from(const std::string& file);
-            bool save_to(const std::string& file);
-            std::string serialize();
+            bool save_to(const std::string& file) const;
+            std::string serialize() const;
 
-            size_t get_n_colors();
-            std::vector<HSVA> get_colors();
-            std::vector<HSVA> get_colors_by_hue();
-            std::vector<HSVA> get_colors_by_value();
-            std::vector<HSVA> get_colors_by_saturation();
+            size_t get_n_colors() const;
+            std::vector<HSVA> get_colors() const;
+            std::vector<HSVA> get_colors_by_hue() const;
+            std::vector<HSVA> get_colors_by_value() const;
+            std::vector<HSVA> get_colors_by_saturation() const;
 
             const std::map<size_t, HSVA>& data();
 

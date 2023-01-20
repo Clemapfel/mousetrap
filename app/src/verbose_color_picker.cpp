@@ -30,7 +30,7 @@ namespace mousetrap
 
         _entry.connect_signal_activate(on_entry_activate, this);
         _entry.set_n_chars(7 + 1);
-        update(active_state->primary_color);
+        update(active_state->get_primary_color());
     }
 
     void VerboseColorPicker::HtmlCodeRegion::update(HSVA color)
@@ -370,7 +370,7 @@ namespace mousetrap
         if (instance->_drag_active)
         {
             auto value = glm::clamp<float>(pos.x, 0, 1);
-            auto color = active_state->primary_color;
+            auto color = active_state->get_primary_color();
 
             instance->_value = value;
             instance->_owner->set_color_component_to(instance->_target_id, value);
@@ -382,14 +382,13 @@ namespace mousetrap
 
         *instance->_owner->_previous_color = *instance->_owner->_current_color;
 
-        active_state->primary_color = *instance->_owner->_current_color;
+        active_state->set_primary_color(*instance->_owner->_current_color);
         state::color_picker->update();
         state::color_swapper->update();
         state::palette_view->update();
         state::canvas->update();
 
-        active_state->preview_color_current = active_state->primary_color;
-        active_state->preview_color_previous = active_state->primary_color;
+        active_state->set_preview_colors(active_state->get_primary_color(), active_state->get_primary_color());
         state::color_preview->update();
     }
 
@@ -506,13 +505,13 @@ namespace mousetrap
         }
 
         *_current_color = color;
-        active_state->primary_color = color;
+        active_state->set_primary_color(color);
         state::color_picker->update();
         state::color_swapper->update();
         state::palette_view->update();
         state::canvas->update();
 
-        active_state->preview_color_current = color;
+        active_state->set_preview_colors(color, active_state->get_preview_color_previous());
         state::color_preview->update();
     };
 
@@ -676,8 +675,8 @@ namespace mousetrap
 
     void VerboseColorPicker::update()
     {
-        *_current_color = active_state->primary_color;
-        *_previous_color = active_state->primary_color;
-        update(active_state->primary_color);
+        *_current_color = active_state->get_primary_color();
+        *_previous_color = active_state->get_primary_color();
+        update(active_state->get_primary_color());
     }
 }

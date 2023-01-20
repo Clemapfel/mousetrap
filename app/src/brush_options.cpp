@@ -10,8 +10,9 @@ namespace mousetrap
         _brush_preview_list.clear();
         _brush_previews.clear();
 
-        for (auto* brush : active_state->brushes)
+        for (size_t brush_i = 0; brush_i < active_state->get_n_brushes(); ++brush_i)
         {
+            auto* brush = active_state->get_brush(brush_i);
             auto shape = brush->get_shape();
             if (shape == BrushShape::CUSTOM)
             {
@@ -79,8 +80,8 @@ namespace mousetrap
             instance->set_brush_opacity(scale->get_value());
         }, this);
 
-        set_brush_opacity(active_state->brush_opacity);
-        set_brush_size(active_state->brush_size);
+        set_brush_opacity(active_state->get_brush_opacity());
+        set_brush_size(active_state->get_brush_size());
 
         // Actions
 
@@ -209,7 +210,7 @@ namespace mousetrap
     {
         x = glm::clamp<float>(x, 0, 1);
 
-        active_state->brush_opacity = x;
+        active_state->set_brush_opacity(x);
 
         _brush_opacity_scale.set_signal_value_changed_blocked(true);
         _brush_opacity_scale.set_value(x);
@@ -222,14 +223,14 @@ namespace mousetrap
 
     float BrushOptions::get_brush_opacity() const
     {
-        return active_state->brush_opacity;
+        return active_state->get_brush_opacity();
     }
 
     void BrushOptions::set_brush_size(size_t x)
     {
         x = glm::clamp<size_t>(x, 1, max_brush_size);
 
-        active_state->brush_size = x;
+        active_state->set_brush_size(x);
 
         _brush_size_scale.set_signal_value_changed_blocked(true);
         _brush_size_scale.set_value(x);
@@ -242,7 +243,7 @@ namespace mousetrap
 
     size_t BrushOptions::get_brush_size() const
     {
-        return active_state->brush_size;
+        return active_state->get_brush_size();
     }
 
     BrushOptions::operator Widget*()
@@ -251,9 +252,7 @@ namespace mousetrap
     }
 
     void BrushOptions::update()
-    {
-
-    }
+    {}
 
     size_t BrushOptions::get_preview_size() const
     {

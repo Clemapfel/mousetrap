@@ -37,7 +37,8 @@ namespace mousetrap
         public signals::OnionSkinVisibilityToggled,
         public signals::OnionSkinLayerCountChanged,
         public signals::LayerImageUpdated,
-        public signals::LayerCountChanged
+        public signals::LayerCountChanged,
+        public signals::LayerPropertiesChanged
     {
         public:
             FrameView();
@@ -52,19 +53,19 @@ namespace mousetrap
             class FramePreview
             {
                 public:
-                    FramePreview(FrameView* owner, Layer* layer, size_t frame_i);
+                    FramePreview(FrameView* owner, size_t layer_i, size_t frame_i);
 
                     void update();
                     operator Widget*();
 
-                    void set_layer(Layer*);
+                    void set_layer(size_t);
                     void set_frame(size_t);
                     void set_is_inbetween(bool);
                     void set_preview_size(size_t);
 
                 private:
                     FrameView* _owner;
-                    Layer* _layer;
+                    size_t _layer_i;
                     size_t _frame_i;
 
                     AspectFrame _aspect_frame;

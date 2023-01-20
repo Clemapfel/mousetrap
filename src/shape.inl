@@ -644,12 +644,12 @@ namespace mousetrap
         update_data(true, false, false);
     }
 
-    inline TextureObject* Shape::get_texture()
+    inline const TextureObject* Shape::get_texture()
     {
         return _texture;
     }
 
-    inline void Shape::set_texture(TextureObject* texture)
+    inline void Shape::set_texture(const TextureObject* texture)
     {
         _texture = texture;
     }

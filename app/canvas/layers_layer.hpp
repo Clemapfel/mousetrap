@@ -19,10 +19,10 @@ namespace mousetrap
 
     void Canvas::LayersLayer::update()
     {
-        if (_n_layers != active_state->layers.size() and _area.get_is_realized())
+        if (_n_layers != active_state->get_n_layers() and _area.get_is_realized())
         {
-            _n_layers = active_state->layers.size();
-            _current_frame = active_state->current_frame;
+            _n_layers = active_state->get_n_layers();
+            _current_frame = active_state->get_current_frame_index();
             _layer_resolution = active_state->layer_resolution;
 
             _area.make_current();
@@ -34,15 +34,15 @@ namespace mousetrap
 
         if (_layer_resolution != active_state->layer_resolution and _area.get_is_realized())
         {
-            _current_frame = active_state->current_frame;
+            _current_frame = active_state->get_current_frame_index();
             _layer_resolution = active_state->layer_resolution;
 
             reformat();
         }
 
-        if (_current_frame != active_state->current_frame and _area.get_is_realized())
+        if (_current_frame != active_state->get_current_frame_index() and _area.get_is_realized())
         {
-            _current_frame = active_state->current_frame;
+            _current_frame = active_state->get_current_frame_index();
 
             for (size_t layer_i = 0; layer_i < _n_layers; ++layer_i)
             {
@@ -66,8 +66,8 @@ namespace mousetrap
         auto* area = (GLArea*) widget;
         area->make_current();
 
-        instance->_current_frame = active_state->current_frame;
-        instance->_n_layers = active_state->layers.size();
+        instance->_current_frame = active_state->get_current_frame_index();
+        instance->_n_layers = active_state->get_n_layers();
         instance->_layer_resolution = active_state->layer_resolution;
 
         for (size_t i = 0; i < instance->_n_layers; ++i)

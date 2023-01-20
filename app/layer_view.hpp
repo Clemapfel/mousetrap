@@ -44,7 +44,8 @@ namespace mousetrap
         public signals::LayerFrameSelectionChanged,
         public signals::PlaybackToggled,
         public signals::LayerImageUpdated,
-        public signals::LayerCountChanged
+        public signals::LayerCountChanged,
+        public signals::LayerPropertiesChanged
     {
         public:
             LayerView();
@@ -59,12 +60,12 @@ namespace mousetrap
             class LayerPreview
             {
                 public:
-                    LayerPreview(Layer*, size_t frame_i);
+                    LayerPreview(size_t layer_i, size_t frame_i);
                     ~LayerPreview();
 
                     operator Widget*();
 
-                    void set_layer(Layer*);
+                    void set_layer(size_t);
                     void set_frame(size_t);
                     void set_preview_size(size_t);
                     void set_opacity(float);
@@ -74,7 +75,7 @@ namespace mousetrap
                     void queue_render();
 
                 private:
-                    Layer* _layer;
+                    size_t _layer_i;
                     size_t _frame_i;
                     
                     GLArea _area;
@@ -92,12 +93,12 @@ namespace mousetrap
             class LayerRow
             {
                 public:
-                    LayerRow(LayerView*, Layer*, size_t frame_i);
+                    LayerRow(LayerView*, size_t layer_i, size_t frame_i);
 
                     void update();
                     operator Widget*();
 
-                    void set_layer(Layer*);
+                    void set_layer(size_t);
                     void set_frame(size_t);
 
                     void set_opacity(float);
@@ -109,7 +110,7 @@ namespace mousetrap
 
                 private:
                     LayerView* _owner;
-                    Layer* _layer;
+                    size_t _layer_i;
                     size_t _frame_i;
 
                     void signal_layer_updated();
@@ -119,7 +120,7 @@ namespace mousetrap
 
                     LayerPreview _layer_preview;
                     Frame _layer_preview_frame;
-                    AspectFrame _layer_preview_aspect_frame = AspectFrame(active_state->layer_resolution.x / float(active_state->layer_resolution.y));
+                    AspectFrame _layer_preview_aspect_frame = AspectFrame(active_state->get_layer_resolution().x / float(active_state->get_layer_resolution().y));
                     ListView _layer_preview_list_view = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
                     ToggleButton _is_visible_toggle_button;

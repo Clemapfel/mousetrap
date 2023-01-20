@@ -58,7 +58,7 @@ namespace mousetrap
             void select(ToolID);
 
         private:
-            ToolID _currently_selected = active_state->active_tool;
+            ToolID _currently_selected = active_state->get_active_tool();
 
             class Icon
             {

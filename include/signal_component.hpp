@@ -941,7 +941,7 @@ namespace mousetrap
     };
 
     template<typename Owner_t>
-    class signals::SelectionChanged
+    class HasSelectionChangedSignal
     {
         public:
             template<typename T>
@@ -955,14 +955,14 @@ namespace mousetrap
             }
 
         protected:
-            signals::SelectionChanged(Owner_t* instance)
+            HasSelectionChangedSignal(Owner_t* instance)
                     : _instance(instance)
             {}
 
         private:
             Owner_t* _instance;
 
-            static void on_selection_changed_wrapper(GtkSelectionModel*, guint position, guint n_items, signals::SelectionChanged<Owner_t>* instance);
+            static void on_selection_changed_wrapper(GtkSelectionModel*, guint position, guint n_items, HasSelectionChangedSignal<Owner_t>* instance);
 
             bool _blocked = false;
             std::function<on_selection_changed_function_t<void*>> _on_selection_changed_f;
@@ -1652,7 +1652,7 @@ namespace mousetrap
 
     template<typename Owner_t>
     template<typename Function_t, typename T>
-    void signals::SelectionChanged<Owner_t>::connect_signal_selection_changed(Function_t f, T data)
+    void HasSelectionChangedSignal<Owner_t>::connect_signal_selection_changed(Function_t f, T data)
     {
         auto temp = std::function<on_selection_changed_function_t<T>>(f);
         _on_selection_changed_f = std::function<on_selection_changed_function_t<void*>>(*((std::function<on_selection_changed_function_t<void*>>*) &temp));
@@ -1662,7 +1662,7 @@ namespace mousetrap
     }
 
     template<typename Owner_t>
-    void signals::SelectionChanged<Owner_t>::on_selection_changed_wrapper(GtkSelectionModel* model, guint position, guint n_items, signals::SelectionChanged<Owner_t>* self)
+    void HasSelectionChangedSignal<Owner_t>::on_selection_changed_wrapper(GtkSelectionModel* model, guint position, guint n_items, HasSelectionChangedSignal<Owner_t>* self)
     {
         if (self->_on_selection_changed_f != nullptr and not self->_blocked)
         {

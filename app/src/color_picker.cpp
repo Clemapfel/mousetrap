@@ -239,7 +239,7 @@ namespace mousetrap
 
     void ColorPicker::update()
     {
-        update(active_state->primary_color);
+        update(active_state->get_primary_color());
     }
 
     void ColorPicker::update(HSVA color)
@@ -374,9 +374,7 @@ namespace mousetrap
         else
             instance->_render_area.set_cursor(GtkCursorType::DEFAULT);
 
-        active_state->preview_color_current = active_state->primary_color;
-        active_state->preview_color_previous = active_state->primary_color;
-        state::color_preview->update();
+        active_state->set_preview_colors(active_state->get_primary_color(), active_state->get_primary_color());
     }
 
     void ColorPicker::update_primary_color(double x, double y)
@@ -386,16 +384,16 @@ namespace mousetrap
             float hue = y / _canvas_size.y;
             hue = glm::clamp<float>(hue, 0, 1);
 
-            auto color = active_state->primary_color;
+            auto color = active_state->get_primary_color();
             color.h = 1 - (hue - _hue_bar_shape->get_top_left().y) / _hue_bar_shape->get_size().y;
 
-            active_state->primary_color = color;
+            active_state->set_primary_color(color);
             state::color_swapper->update();
             state::verbose_color_picker->update();
             state::palette_view->update();
             state::canvas->update();
 
-            active_state->preview_color_current = color;
+            active_state->set_preview_colors(color, active_state->get_preview_color_previous());
             state::color_preview->update();
         }
         else if (_hsv_shape_active)
@@ -403,24 +401,24 @@ namespace mousetrap
             float value = ((x / _canvas_size.x) - _hsv_shape->get_top_left().x) / _hsv_shape->get_size().x;
             float saturation = 1 - ((y / _canvas_size.y) - _hsv_shape->get_top_left().y / _hsv_shape->get_size().y);
 
-            auto color = active_state->primary_color;
+            auto color = active_state->get_primary_color();
             color.v = value;
             color.s = saturation;
 
             color.v = glm::clamp<float>(color.v, 0, 1);
             color.s = glm::clamp<float>(color.s, 0, 1);
 
-            active_state->primary_color = color;
+            active_state->set_primary_color(color);
             state::color_swapper->update();
             state::verbose_color_picker->update();
             state::palette_view->update();
             state::canvas->update();
 
-            active_state->preview_color_current = color;
+            active_state->set_preview_colors(color, active_state->get_preview_color_previous());
             state::color_preview->update();
         }
 
-        auto window_color = active_state->primary_color;
+        auto window_color = active_state->get_primary_color();
         window_color.a = 1;
         _hsv_shape_cursor_window->set_color(window_color);
         _current_color_hsva = window_color;

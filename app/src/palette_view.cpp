@@ -279,9 +279,8 @@ namespace mousetrap
         instance->_color_tiles.at(child_i)->set_selected(true);
         instance->_selected_i = child_i;
 
-        active_state->primary_color = instance->_color_tiles.at(child_i)->get_color();
-        active_state->preview_color_current = active_state->primary_color;
-        active_state->preview_color_previous = active_state->primary_color;
+        active_state->set_primary_color(instance->_color_tiles.at(child_i)->get_color());
+        active_state->set_preview_colors(active_state->get_primary_color(), active_state->get_primary_color());
 
         state::color_picker->update();
         state::verbose_color_picker->update();
@@ -307,26 +306,26 @@ namespace mousetrap
         for (size_t i = 0; i < n_steps; ++i)
             colors.push_back(HSVA(0, 0, i / float(n_steps), 1));
 
-        active_state->palette = Palette(colors);
+        active_state->set_palette(colors);
         update_from_palette();
     }
 
     void PaletteView::load_from_file(const std::string& path)
     {
-        auto& palette = active_state->palette;
-        auto palette_backup = palette;
+        auto palette = Palette();
         if (not palette.load_from(path))
         {
-            palette = palette_backup;
             state::bubble_log->send_message("Unable to load palette at \"" + path + "\"");
             return;
         }
+
+        active_state->set_palette(palette.get_colors());
         update_from_palette();
     }
 
     void PaletteView::save_to_file(const std::string& path)
     {
-        auto& palette = active_state->palette;
+        const auto& palette = active_state->get_palette();
         if (palette.save_to(path))
             state::bubble_log->send_message("Saved current palette as \"" + path + "\"");
         else
@@ -354,8 +353,8 @@ namespace mousetrap
         for (auto* tile : _color_tiles)
             tile->set_color(HSVA(0, 0, 0, 1));
 
-        auto& palette = active_state->palette;
-        auto sort_mode = active_state->palette_sort_mode ;
+        auto& palette = active_state->get_palette();
+        auto sort_mode = active_state->get_palette_sort_mode();
 
         for (size_t i = 0; palette.get_n_colors() > _color_tiles.size() and i < palette.get_n_colors() - _color_tiles.size(); ++i)
             _color_tiles.emplace_back(new ColorTile(this, HSVA(0, 0, 0, 1)));
@@ -476,48 +475,48 @@ namespace mousetrap
 
         // Action: Load Default
         palette_view_load_default.set_function([instance = this]()
-                                                         {
-                                                             instance->load_from_file(get_resource_path() + "default.palette");
-                                                         });
+         {
+             instance->load_from_file(get_resource_path() + "default.palette");
+         });
 
         // Action: Save As Default
 
         palette_view_save_as_default.set_function([instance = this]()
-                                                            {
-                                                                if (active_state->palette.save_to(get_resource_path() + "default.palette"))
-                                                                    state::bubble_log->send_message("Current palette saved as default");
-                                                                else
-                                                                    state::bubble_log->send_message("Unable to save current palette as default");
-                                                            });
+        {
+            if (active_state->get_palette().save_to(get_resource_path() + "default.palette"))
+                state::bubble_log->send_message("Current palette saved as default");
+            else
+                state::bubble_log->send_message("Unable to save current palette as default");
+        });
 
         // Action:: Sort
 
         palette_view_sort_by_default.set_function([instance = this](){
-            active_state->palette_sort_mode  = PaletteSortMode::NONE;
+            active_state->set_palette_sort_mode(PaletteSortMode::NONE);
             instance->update_from_palette();
         });
 
         palette_view_sort_by_hue.set_function([instance = this](){
-            active_state->palette_sort_mode  = PaletteSortMode::BY_HUE;
+            active_state->set_palette_sort_mode(PaletteSortMode::BY_HUE);
             instance->update_from_palette();
         });
 
         palette_view_sort_by_value.set_function([instance = this](){
-            active_state->palette_sort_mode  = PaletteSortMode::BY_VALUE;
+            active_state->set_palette_sort_mode(PaletteSortMode::BY_VALUE);
             instance->update_from_palette();
         });
 
         palette_view_sort_by_saturation.set_function([instance = this](){
-            active_state->palette_sort_mode  = PaletteSortMode::BY_SATURATION;
+            active_state->set_palette_sort_mode(PaletteSortMode::BY_SATURATION);
             instance->update_from_palette();
         });
 
         // on startup: make first color current color
         operator Widget*()->add_tick_callback([](FrameClock, PaletteView* instance) -> bool
-                                              {
-                                                  instance->select(0);
-                                                  return false;
-                                              }, this);
+          {
+              instance->select(0);
+              return false;
+          }, this);
 
         std::vector<Action*> select_color_actions = {
                 &palette_view_select_color_0,
@@ -569,7 +568,7 @@ namespace mousetrap
 
     void PaletteView::update()
     {
-        auto color = active_state->primary_color;
+        auto color = active_state->get_primary_color();
 
         _palette_control_bar.update();
 

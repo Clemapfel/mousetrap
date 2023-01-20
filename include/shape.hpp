@@ -71,8 +71,8 @@ namespace mousetrap
 
             void rotate(Angle);
 
-            void set_texture(TextureObject*);
-            TextureObject* get_texture();
+            void set_texture(const TextureObject*);
+            const TextureObject* get_texture();
 
         protected:
             struct Vertex
@@ -119,7 +119,7 @@ namespace mousetrap
             GLNativeHandle _vertex_array_id = 0,
                     _vertex_buffer_id = 0;
 
-            TextureObject* _texture = nullptr;
+            const TextureObject* _texture = nullptr;
     };
 }
 

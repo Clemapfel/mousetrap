@@ -34,7 +34,8 @@ namespace mousetrap
         public signals::OnionSkinVisibilityToggled,
         public signals::OnionSkinLayerCountChanged,
         public signals::LayerImageUpdated,
-        public signals::LayerCountChanged
+        public signals::LayerCountChanged,
+        public signals::LayerPropertiesChanged
     {
         SeparatorLine _instance;
         Canvas() = default;
@@ -584,7 +585,7 @@ namespace mousetrap
 
     void Canvas::draw(const SubImage& subimage, BlendMode blend_mode, BackupMode backup_mode)
     {
-        auto& frame = active_state->layers.at(active_state->current_layer)->frames.at(active_state->current_frame);
+        auto& frame = active_state->layers.at(active_state->current_layer)->frames.at(active_state->get_current_frame_index());
         auto& image = *frame.image;
 
         for (auto& it : subimage)
@@ -621,7 +622,7 @@ namespace mousetrap
     {
         auto to_draw = SubImage();
 
-        auto& frame = active_state->layers.at(active_state->current_layer)->frames.at(active_state->current_frame);
+        auto& frame = active_state->layers.at(active_state->current_layer)->frames.at(active_state->get_current_frame_index());
         auto& brush_image = brush->get_image();
         auto points = generate_line_points(a, b);
 

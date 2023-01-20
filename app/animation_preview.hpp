@@ -25,7 +25,8 @@ namespace mousetrap
         public signals::LayerFrameSelectionChanged,
         public signals::PlaybackToggled,
         public signals::LayerImageUpdated,
-        public signals::LayerCountChanged
+        public signals::LayerCountChanged,
+        public signals::LayerPropertiesChanged
     {
         public:
             AnimationPreview();
