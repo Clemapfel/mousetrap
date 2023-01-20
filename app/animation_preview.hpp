@@ -123,6 +123,6 @@ namespace mousetrap
 
     namespace state
     {
-        static inline AnimationPreview* animation_preview = nullptr;
+        inline AnimationPreview* animation_preview = nullptr;
     }
 }

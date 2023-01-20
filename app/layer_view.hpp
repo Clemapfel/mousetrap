@@ -228,6 +228,6 @@ namespace mousetrap
 
     namespace state
     {
-        static inline LayerView* layer_view = nullptr;
+        inline LayerView* layer_view = nullptr;
     }
 }

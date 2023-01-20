@@ -81,6 +81,6 @@ namespace mousetrap
 
     namespace state
     {
-        static inline ColorPicker* color_picker = nullptr;
+        inline ColorPicker* color_picker = nullptr;
     }
 }

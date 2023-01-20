@@ -11,10 +11,11 @@ namespace mousetrap
 {
     namespace state
     {
-        static inline KeyFile* settings_file = nullptr;
-        static inline KeyFile* keybindings_file = nullptr;
-        static inline KeyFile* tooltips_file = nullptr;
+        inline KeyFile* settings_file = nullptr;
+        inline KeyFile* keybindings_file = nullptr;
+        inline KeyFile* tooltips_file = nullptr;
     }
 
     void validate_keybindings_file(KeyFile*);
+    void initialize_config_files();
 }

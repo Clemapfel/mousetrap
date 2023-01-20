@@ -43,6 +43,6 @@ namespace mousetrap
 
     namespace state
     {
-        static inline ColorPreview* color_preview;
+        inline ColorPreview* color_preview;
     }
 }

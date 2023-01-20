@@ -34,6 +34,6 @@ namespace mousetrap
 
     namespace state
     {
-        static inline ImageTransform* image_transform = nullptr;
+        inline ImageTransform* image_transform = nullptr;
     }
 }

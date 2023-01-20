@@ -42,12 +42,12 @@ namespace mousetrap
 
             void set_size(size_t);
             size_t get_size() const;
-            Image& get_image() const;
+            const Image& get_image() const;
             BrushShape get_shape() const;
             std::string get_name() const;
 
         private:
-            mutable Image* _image = new Image();
+            Image _image;
 
             void update_image();
             size_t _size = 1;

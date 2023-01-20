@@ -45,7 +45,7 @@ namespace mousetrap
 
     namespace state
     {
-        static inline Canvas* canvas = nullptr;
+        inline Canvas* canvas = nullptr;
     }
 
 }

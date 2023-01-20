@@ -30,7 +30,7 @@ namespace mousetrap
         static inline const float truncate_float_after = 10e4;
 
         public:
-            Palette() = default;
+            Palette();
             Palette(const std::vector<HSVA>&);
 
             void set_name(const std::string& name);

@@ -23,15 +23,15 @@ namespace mousetrap
     {
         using namespace mousetrap;
 
-        std::deque<Brush>& load_default_brushes(const std::string& path);
+        std::deque<Brush> load_default_brushes(const std::string& path);
         std::vector<HSVA> load_default_palette_colors();
 
-        static inline Window* main_window = nullptr;
-        static inline Application* app = nullptr;
-        static inline MenuModel* global_menu_bar_model = nullptr;
-        static inline ShortcutController* shortcut_controller = nullptr;
+        inline Window* main_window = nullptr;
+        inline Application* app = nullptr;
+        inline MenuModel* global_menu_bar_model = nullptr;
+        inline ShortcutController* shortcut_controller = nullptr;
 
-        static inline size_t margin_unit = 10;
+        inline size_t margin_unit = 10;
     }
 
     class ProjectState
@@ -136,6 +136,6 @@ namespace mousetrap
             size_t _onionskin_n_layers = 0;
     };
 
-    static inline std::vector<ProjectState*> project_states = {};
-    static inline ProjectState* active_state = nullptr;
+    inline std::vector<ProjectState*> project_states = {};
+    inline ProjectState* active_state = nullptr;
 }

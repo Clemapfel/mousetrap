@@ -285,7 +285,7 @@ namespace mousetrap
         operator Widget*()->set_tooltip_text(tooltip_text.str());
     }
 
-    BrushOptions::BrushPreview::BrushPreview(const std::string& name, Image& image)
+    BrushOptions::BrushPreview::BrushPreview(const std::string& name, const Image& image)
             : _name(name),
               _image(&image),
               _size(std::max(image.get_size().x, image.get_size().y)),

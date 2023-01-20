@@ -118,6 +118,6 @@ namespace mousetrap
 
     namespace state
     {
-        static inline VerboseColorPicker* verbose_color_picker = nullptr;
+        inline VerboseColorPicker* verbose_color_picker = nullptr;
     }
 }

@@ -20,7 +20,7 @@ namespace mousetrap
     using ActionID = std::string;
     using ShortcutTriggerID = std::string;
 
-    #define DECLARE_GLOBAL_ACTION(group, key) static inline mousetrap::Action group##_##key = Action(#group + std::string(".") + #key);
+    #define DECLARE_GLOBAL_ACTION(group, key) inline mousetrap::Action group##_##key = Action(#group + std::string(".") + #key);
 
     class Action
     {

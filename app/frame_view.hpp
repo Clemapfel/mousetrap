@@ -226,6 +226,6 @@ namespace mousetrap
 
     namespace state
     {
-        static inline FrameView* frame_view = nullptr;
+        inline FrameView* frame_view = nullptr;
     }
 }

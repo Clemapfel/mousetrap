@@ -80,7 +80,7 @@ namespace mousetrap
                     BrushPreview(const std::string& name, const std::string& shader_id);
 
                     /// \brief texture-based custom brushes
-                    BrushPreview(const std::string& name, Image&);
+                    BrushPreview(const std::string& name, const Image&);
                     ~BrushPreview();
 
                     void set_preview_size(size_t);
@@ -103,7 +103,7 @@ namespace mousetrap
                     Shader* _shader;
                     std::string _shader_path = "";
 
-                    Image* _image;
+                    const Image* _image;
                     Texture* _texture;
 
                     Shape* _shape;
@@ -143,6 +143,6 @@ namespace mousetrap
 
     namespace state
     {
-        static inline BrushOptions* brush_options = nullptr;
+        inline BrushOptions* brush_options = nullptr;
     }
 }

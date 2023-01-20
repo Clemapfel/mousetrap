@@ -33,6 +33,10 @@ namespace mousetrap
             _colors.insert({i, vec.at(i)});
     }
 
+    Palette::Palette()
+        : Palette(std::vector<HSVA>{HSVA(0, 0, 1, 1)})
+    {}
+
     void Palette::set_name(const std::string& name)
     {
         _name = name;

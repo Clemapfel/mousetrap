@@ -3,9 +3,7 @@
 namespace mousetrap
 {
     Brush::~Brush()
-    {
-        delete _image;
-    }
+    {}
 
     void Brush::as_circle()
     {
@@ -71,7 +69,7 @@ namespace mousetrap
         {
             for (size_t y = 0; y < size.y; ++y)
             {
-                if (x > base_image.get_size().x or y > base_image.get_size().y)
+                if (x >= base_image.get_size().x or y >= base_image.get_size().y)
                     continue; // padded to square dimensions
 
                 auto base_px = base_image.get_pixel(x, y);
@@ -89,32 +87,32 @@ namespace mousetrap
         switch (_shape)
         {
             case BrushShape::CIRCLE:
-                *_image = generate_circle_filled(_size, _size, color);
+                _image = generate_circle_filled(_size, _size, color);
                 break;
             case BrushShape::SQUARE:
-                *_image = generate_rectangle_filled(_size, _size, color);
+                _image = generate_rectangle_filled(_size, _size, color);
                 break;
             case BrushShape::ELLIPSE_HORIZONTAL:
-                *_image = generate_circle_filled(_size, _size / 3.f, color);
+                _image = generate_circle_filled(_size, _size / 3.f, color);
                 break;
             case BrushShape::ELLIPSE_VERTICAL:
-                *_image = generate_circle_filled(_size / 3.f, _size, color);
+                _image = generate_circle_filled(_size / 3.f, _size, color);
                 break;
             case BrushShape::RECTANGLE_HORIZONTAL:
-                *_image = generate_rectangle_filled(_size, _size / 3.f, color);
+                _image = generate_rectangle_filled(_size, _size / 3.f, color);
                 break;
             case BrushShape::RECTANGLE_VERTICAL:
-                *_image = generate_rectangle_filled(_size / 3.f, _size, color);
+                _image = generate_rectangle_filled(_size / 3.f, _size, color);
                 break;
             case BrushShape::CUSTOM:
-                *_image = _base_image.as_scaled(_size, _size);
+                _image = _base_image.as_scaled(_size, _size);
                 break;
         }
     }
 
-    Image& Brush::get_image() const
+    const Image& Brush::get_image() const
     {
-        return *_image;
+        return _image;
     }
 
     std::string Brush::get_name() const

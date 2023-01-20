@@ -145,6 +145,6 @@ namespace mousetrap
 
     namespace state
     {
-        static inline Toolbox* toolbox = nullptr;
+        inline Toolbox* toolbox = nullptr;
     }
 }

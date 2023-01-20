@@ -79,4 +79,11 @@ namespace mousetrap
         message << "\nPlease resolve these conflicts via the settings menu or by editing keybindings.ini";
         state::bubble_log->send_message(message.str(), InfoMessageType::ERROR);
     }
+
+    void initialize_config_files()
+    {
+        state::settings_file = new KeyFile(get_resource_path() + "settings.ini");
+        state::keybindings_file = new KeyFile(get_resource_path() + "keybindings.ini");
+        state::tooltips_file = new KeyFile(get_resource_path() + "tooltips.ini");
+    }
 }

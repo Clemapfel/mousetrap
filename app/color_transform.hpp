@@ -36,6 +36,6 @@ namespace mousetrap
 
     namespace state
     {
-        static inline ColorTransform* color_transform = nullptr;
+        inline ColorTransform* color_transform = nullptr;
     }
 }

@@ -68,6 +68,6 @@ namespace mousetrap
 
     namespace state
     {
-        static inline ColorSwapper* color_swapper = nullptr;
+        inline ColorSwapper* color_swapper = nullptr;
     }
 }

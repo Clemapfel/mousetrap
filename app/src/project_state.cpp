@@ -27,7 +27,7 @@
 
 namespace mousetrap
 {
-    std::deque<Brush>& state::load_default_brushes(const std::string& path)
+    std::deque<Brush> state::load_default_brushes(const std::string& path)
     {
         auto out = std::deque<Brush>();
 
@@ -108,8 +108,11 @@ namespace mousetrap
     void ProjectState::set_current_brush(size_t i)
     {
         _current_brush_i = i;
-        state::brush_options->signal_brush_selection_changed();
-        state::canvas->signal_brush_selection_changed();
+        if (state::brush_options)
+            state::brush_options->signal_brush_selection_changed();
+
+        if (state::canvas)
+            state::canvas->signal_brush_selection_changed();
     }
 
     size_t ProjectState::get_n_brushes() const
@@ -131,16 +134,22 @@ namespace mousetrap
     {
         _brush_opacity = v;
 
-        state::brush_options->signal_brush_selection_changed();
-        state::canvas->signal_brush_selection_changed();
+        if (state::brush_options)
+            state::brush_options->signal_brush_selection_changed();
+
+        if (state::canvas)
+            state::canvas->signal_brush_selection_changed();
     }
 
     void ProjectState::set_brush_size(size_t v)
     {
         _brush_size = v;
 
-        state::brush_options->signal_brush_selection_changed();
-        state::canvas->signal_brush_selection_changed();
+        if (state::brush_options)
+            state::brush_options->signal_brush_selection_changed();
+
+        if (state::canvas)
+            state::canvas->signal_brush_selection_changed();
     }
 
     size_t ProjectState::get_brush_size() const
@@ -157,8 +166,11 @@ namespace mousetrap
     {
         _active_tool = id;
 
-        state::canvas->signal_active_tool_changed();
-        state::toolbox->signal_active_tool_changed();
+        if (state::canvas)
+            state::canvas->signal_active_tool_changed();
+
+        if (state::toolbox)
+            state::toolbox->signal_active_tool_changed();
     }
 
     const Layer* ProjectState::get_current_layer() const
@@ -206,10 +218,17 @@ namespace mousetrap
         _current_layer_i = layer_i;
         _current_frame_i = frame_i;
 
-        state::canvas->signal_layer_frame_selection_changed();
-        state::layer_view->signal_layer_frame_selection_changed();
-        state::frame_view->signal_layer_frame_selection_changed();
-        state::animation_preview->signal_layer_frame_selection_changed();
+        if (state::canvas)
+            state::canvas->signal_layer_frame_selection_changed();
+
+        if (state::layer_view)
+            state::layer_view->signal_layer_frame_selection_changed();
+
+        if (state::frame_view)
+            state::frame_view->signal_layer_frame_selection_changed();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_layer_frame_selection_changed();
     }
 
     void ProjectState::add_layer(int i)
@@ -219,70 +238,119 @@ namespace mousetrap
 
         // TODO
 
-        state::canvas->signal_layer_count_changed();
-        state::layer_view->signal_layer_count_changed();
-        state::frame_view->signal_layer_count_changed();
-        state::animation_preview->signal_layer_count_changed();
+        if (state::canvas)
+            state::canvas->signal_layer_frame_selection_changed();
+
+        if (state::layer_view)
+            state::layer_view->signal_layer_frame_selection_changed();
+
+        if (state::frame_view)
+            state::frame_view->signal_layer_frame_selection_changed();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_layer_frame_selection_changed();
     }
 
     void ProjectState::delete_layer(size_t i)
     {
         // TODO
 
-        state::canvas->signal_layer_count_changed();
-        state::layer_view->signal_layer_count_changed();
-        state::frame_view->signal_layer_count_changed();
-        state::animation_preview->signal_layer_count_changed();
+        if (state::canvas)
+            state::canvas->signal_layer_frame_selection_changed();
+
+        if (state::layer_view)
+            state::layer_view->signal_layer_frame_selection_changed();
+
+        if (state::frame_view)
+            state::frame_view->signal_layer_frame_selection_changed();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_layer_frame_selection_changed();
     }
 
     void ProjectState::set_layer_visible(size_t i, bool b)
     {
         _layers.at(i).set_is_visible(i);
 
-        state::canvas->signal_layer_properties_changed();
-        state::layer_view->signal_layer_properties_changed();
-        state::frame_view->signal_layer_properties_changed();
-        state::animation_preview->signal_layer_properties_changed();
+        if (state::canvas)
+            state::canvas->signal_layer_properties_changed();
+
+        if (state::layer_view)
+            state::layer_view->signal_layer_properties_changed();
+
+        if (state::frame_view)
+            state::frame_view->signal_layer_properties_changed();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_layer_properties_changed();
     }
 
     void ProjectState::set_layer_opacity(size_t i, float v)
     {
         _layers.at(i).set_opacity(v);
 
-        state::canvas->signal_layer_properties_changed();
-        state::layer_view->signal_layer_properties_changed();
-        state::frame_view->signal_layer_properties_changed();
-        state::animation_preview->signal_layer_properties_changed();
+        if (state::canvas)
+            state::canvas->signal_layer_properties_changed();
+
+        if (state::layer_view)
+            state::layer_view->signal_layer_properties_changed();
+
+        if (state::frame_view)
+            state::frame_view->signal_layer_properties_changed();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_layer_properties_changed();
     }
 
     void ProjectState::set_layer_locked(size_t i, bool b)
     {
         _layers.at(i).set_is_locked(i);
 
-        state::canvas->signal_layer_properties_changed();
-        state::layer_view->signal_layer_properties_changed();
-        state::frame_view->signal_layer_properties_changed();
-        state::animation_preview->signal_layer_properties_changed();
+        if (state::canvas)
+            state::canvas->signal_layer_properties_changed();
+
+        if (state::layer_view)
+            state::layer_view->signal_layer_properties_changed();
+
+        if (state::frame_view)
+            state::frame_view->signal_layer_properties_changed();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_layer_properties_changed();
     }
 
     void ProjectState::set_layer_blend_mode(size_t i, BlendMode mode)
     {
         _layers.at(i).set_blend_mode(mode);
 
-        state::canvas->signal_layer_properties_changed();
-        state::layer_view->signal_layer_properties_changed();
-        state::frame_view->signal_layer_properties_changed();
-        state::animation_preview->signal_layer_properties_changed();
+        if (state::canvas)
+            state::canvas->signal_layer_properties_changed();
+
+        if (state::layer_view)
+            state::layer_view->signal_layer_properties_changed();
+
+        if (state::frame_view)
+            state::frame_view->signal_layer_properties_changed();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_layer_properties_changed();
     }
 
     void ProjectState::set_layer_name(size_t i, const std::string& name)
     {
         _layers.at(i).set_name(name);
 
-        state::canvas->signal_layer_properties_changed();
-        state::layer_view->signal_layer_properties_changed();
-        state::frame_view->signal_layer_properties_changed();
-        state::animation_preview->signal_layer_properties_changed();
+        if (state::canvas)
+            state::canvas->signal_layer_properties_changed();
+
+        if (state::layer_view)
+            state::layer_view->signal_layer_properties_changed();
+
+        if (state::frame_view)
+            state::frame_view->signal_layer_properties_changed();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_layer_properties_changed();
     }
 
     Vector2ui ProjectState::get_layer_resolution() const
@@ -299,12 +367,23 @@ namespace mousetrap
     {
         _primary_color = color;
 
-        state::verbose_color_picker->signal_color_selection_changed();
-        state::color_picker->signal_color_selection_changed();
-        state::color_swapper->signal_color_selection_changed();
-        state::color_preview->signal_color_selection_changed();
-        state::palette_view->signal_color_selection_changed();
-        state::canvas->signal_color_selection_changed();
+        if (state::verbose_color_picker)
+            state::verbose_color_picker->signal_color_selection_changed();
+
+        if (state::color_picker)
+            state::color_picker->signal_color_selection_changed();
+
+        if (state::color_swapper)
+            state::color_swapper->signal_color_selection_changed();
+
+        if (state::color_preview)
+            state::color_preview->signal_color_selection_changed();
+
+        if (state::palette_view)
+            state::palette_view->signal_color_selection_changed();
+
+        if (state::canvas)
+            state::canvas->signal_color_selection_changed();
     }
 
     HSVA ProjectState::get_secondary_color() const
@@ -316,12 +395,23 @@ namespace mousetrap
     {
         _secondary_color = color;
 
-        state::verbose_color_picker->signal_color_selection_changed();
-        state::color_picker->signal_color_selection_changed();
-        state::color_swapper->signal_color_selection_changed();
-        state::color_preview->signal_color_selection_changed();
-        state::palette_view->signal_color_selection_changed();
-        state::canvas->signal_color_selection_changed();
+        if (state::verbose_color_picker)
+            state::verbose_color_picker->signal_color_selection_changed();
+
+        if (state::color_picker)
+            state::color_picker->signal_color_selection_changed();
+
+        if (state::color_swapper)
+            state::color_swapper->signal_color_selection_changed();
+
+        if (state::color_preview)
+            state::color_preview->signal_color_selection_changed();
+
+        if (state::palette_view)
+            state::palette_view->signal_color_selection_changed();
+
+        if (state::canvas)
+            state::canvas->signal_color_selection_changed();
     }
 
     HSVA ProjectState::get_preview_color_current() const
@@ -334,7 +424,8 @@ namespace mousetrap
         _preview_color_current = current;
         _preview_color_previous = previous;
 
-        state::color_preview->signal_color_selection_changed();
+        if (state::color_preview)
+            state::color_preview->signal_color_selection_changed();
     }
 
     HSVA ProjectState::get_preview_color_previous() const
@@ -350,7 +441,9 @@ namespace mousetrap
     void ProjectState::set_palette(const std::vector<HSVA>& colors)
     {
         _palette = Palette(colors);
-        state::palette_view->signal_palette_updated();
+
+        if (state::palette_view)
+            state::palette_view->signal_palette_updated();
     }
 
     PaletteSortMode ProjectState::get_palette_sort_mode() const
@@ -372,7 +465,9 @@ namespace mousetrap
     void ProjectState::set_selection(Vector2Set<int> selection)
     {
         _selection = selection;
-        state::canvas->signal_selection_changed();
+
+        if (state::canvas)
+            state::canvas->signal_selection_changed();
     }
 
     void ProjectState::select_all()
@@ -382,7 +477,8 @@ namespace mousetrap
             for (size_t y = 0; y < _layer_resolution.y; ++y)
                 _selection.insert({x, y});
 
-        state::canvas->signal_selection_changed();
+        if (state::canvas)
+            state::canvas->signal_selection_changed();
     }
 
     bool ProjectState::get_playback_active() const
@@ -394,10 +490,17 @@ namespace mousetrap
     {
         _playback_active = b;
 
-        state::canvas->signal_playback_toggled();
-        state::frame_view->signal_playback_toggled();
-        state::layer_view->signal_playback_toggled();
-        state::animation_preview->signal_playback_toggled();
+        if (state::canvas)
+            state::canvas->signal_playback_toggled();
+
+        if (state::frame_view)
+            state::frame_view->signal_playback_toggled();
+
+        if (state::layer_view)
+            state::layer_view->signal_playback_toggled();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_playback_toggled();
     }
 
     bool ProjectState::get_onionskin_visible() const
@@ -408,7 +511,10 @@ namespace mousetrap
     void ProjectState::set_onionskin_visible(bool b)
     {
         _onionskin_visible = b;
-        state::canvas->signal_onionskin_visibility_toggled();
+        if (state::canvas)
+            state::canvas->signal_onionskin_visibility_toggled();
+
+        if (state::frame_view)
         state::frame_view->signal_onionskin_visibility_toggled();
     }
 
@@ -421,8 +527,11 @@ namespace mousetrap
     {
         _onionskin_n_layers = n;
 
-        state::canvas->signal_onionskin_layer_count_changed();
-        state::frame_view->signal_onionskin_layer_count_changed();
+        if (state::canvas)
+            state::canvas->signal_onionskin_layer_count_changed();
+
+        if (state::frame_view)
+            state::frame_view->signal_onionskin_layer_count_changed();
     }
 
     void ProjectState::draw_to_layer(size_t layer_i, size_t frame_i, std::map<Vector2i, HSVA> data)
@@ -435,9 +544,16 @@ namespace mousetrap
 
         frame->update_texture();
 
-        state::canvas->signal_layer_image_updated();
-        state::layer_view->signal_layer_image_updated();
-        state::frame_view->signal_layer_image_updated();
-        state::animation_preview->signal_layer_image_updated();
+        if (state::canvas)
+            state::canvas->signal_layer_image_updated();
+
+        if (state::layer_view)
+            state::layer_view->signal_layer_image_updated();
+
+        if (state::frame_view)
+            state::frame_view->signal_layer_image_updated();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_layer_image_updated();
     }
 }

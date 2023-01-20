@@ -59,6 +59,6 @@ namespace mousetrap
 
     namespace state
     {
-        static inline BubbleLogArea* bubble_log;
+        inline BubbleLogArea* bubble_log;
     }
 }
