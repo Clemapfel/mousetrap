@@ -82,6 +82,8 @@ namespace mousetrap
             HSVA get_secondary_color() const;
             void set_secondary_color(HSVA);
 
+            void set_primary_and_secondary_color(HSVA primary, HSVA secondary);
+
             HSVA get_preview_color_current() const;
             HSVA get_preview_color_previous() const;
             void set_preview_colors(HSVA current, HSVA previous);

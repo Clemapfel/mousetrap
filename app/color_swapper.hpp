@@ -28,19 +28,16 @@ namespace mousetrap
             ~ColorSwapper();
 
             operator Widget*() override;
-            void update() override;
+
+        protected:
+            void on_color_selection_changed() override;
 
         private:
             static void on_gl_area_realize(Widget* self, ColorSwapper* instance);
             static void on_gl_area_resize(GLArea* self, int, int, ColorSwapper* instance);
-            void swap_colors();
 
             ClickEventController _click_event_controller;
-            static void on_click_release(ClickEventController* self, gint n_press, gdouble x, gdouble y, void* user_data);
-            static void on_global_key_pressed(ColorSwapper* instance);
-
-            MotionEventController _motion_event_controller;
-            static void on_motion_enter(MotionEventController* self, gdouble x, gdouble y, void* user_data);
+            static void on_click_release(ClickEventController* self, gint n_press, gdouble x, gdouble y, ColorSwapper* instance);
 
             Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
             AspectFrame _frame = AspectFrame(1);

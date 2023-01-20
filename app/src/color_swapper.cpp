@@ -27,14 +27,14 @@ namespace mousetrap
         _main.set_expand(false);
 
         _click_event_controller.connect_signal_click_pressed(on_click_release, this);
-        _motion_event_controller.connect_signal_motion_enter(on_motion_enter, this);
-
         _main.add_controller(&_click_event_controller);
-        _main.add_controller(&_motion_event_controller);
 
         state::actions::color_swapper_swap.set_function([]() {
-            auto* instance = (ColorSwapper*) state::color_swapper;
-            instance->swap_colors();
+            auto current_primary = active_state->get_primary_color();
+            auto current_secondary = active_state->get_secondary_color();
+
+            active_state->set_primary_and_secondary_color(current_secondary, current_primary);
+            active_state->set_preview_colors(active_state->get_primary_color(), active_state->get_primary_color());
         });
         state::add_shortcut_action(state::actions::color_swapper_swap);
 
@@ -59,7 +59,7 @@ namespace mousetrap
         return &_main;
     }
 
-    void ColorSwapper::update()
+    void ColorSwapper::on_color_selection_changed()
     {
         if (_primary_color_shape != nullptr)
             _primary_color_shape->set_color(active_state->get_primary_color());
@@ -74,6 +74,7 @@ namespace mousetrap
     {
         auto* self = (GLArea*) widget;
         self->make_current();
+
         instance->initialize_render_area();
         instance->_render_area.queue_render();
     }
@@ -165,36 +166,9 @@ namespace mousetrap
         _render_area.queue_render();
     }
 
-    void ColorSwapper::swap_colors()
+    void ColorSwapper::on_click_release(ClickEventController* self, gint n_press, gdouble x, gdouble y, ColorSwapper* instance)
     {
-        auto current_primary = active_state->get_primary_color();
-        auto current_secondary = active_state->get_secondary_color();
-
-        _primary_color_shape->set_color(current_secondary);
-        _secondary_color_shape->set_color(current_primary);
-
-        active_state->set_primary_color(current_secondary);
-        active_state->set_primary_color(current_primary);
-        active_state->set_preview_colors(active_state->get_primary_color(), active_state->get_primary_color());
-
-        _render_area.queue_render();
-    }
-
-    void ColorSwapper::on_click_release(ClickEventController* self, gint n_press, gdouble x, gdouble y,
-            void* instance)
-    {
-        ((ColorSwapper*) instance)->swap_colors();
-        gtk_widget_grab_focus(((ColorSwapper*) instance)->operator Widget*()->operator GtkWidget*());
-    }
-
-    void ColorSwapper::on_global_key_pressed(ColorSwapper* instance)
-    {
-        instance->swap_colors();
-    }
-
-    void ColorSwapper::on_motion_enter(MotionEventController* self, gdouble x, gdouble y, void* instance)
-    {
-        ((ColorSwapper*) instance)->_render_area.grab_focus();
+        state::actions::color_swapper_swap.activate();
     }
 }
 

@@ -414,6 +414,30 @@ namespace mousetrap
             state::canvas->signal_color_selection_changed();
     }
 
+    void ProjectState::set_primary_and_secondary_color(HSVA primary, HSVA secondary)
+    {
+        _primary_color = primary;
+        _secondary_color = secondary;
+
+        if (state::verbose_color_picker)
+            state::verbose_color_picker->signal_color_selection_changed();
+
+        if (state::color_picker)
+            state::color_picker->signal_color_selection_changed();
+
+        if (state::color_swapper)
+            state::color_swapper->signal_color_selection_changed();
+
+        if (state::color_preview)
+            state::color_preview->signal_color_selection_changed();
+
+        if (state::palette_view)
+            state::palette_view->signal_color_selection_changed();
+
+        if (state::canvas)
+            state::canvas->signal_color_selection_changed();
+    }
+
     HSVA ProjectState::get_preview_color_current() const
     {
         return _preview_color_current;

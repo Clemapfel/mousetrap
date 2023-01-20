@@ -53,7 +53,6 @@ static void activate(GtkApplication* app, void*)
     active_state = project_states.emplace_back(new ProjectState({75, 50}));
 
     /*
-    state::color_swapper = new ColorSwapper();
     state::palette_view = new PaletteView();
     state::brush_options = new BrushOptions();
     state::toolbox = new Toolbox();
@@ -65,11 +64,12 @@ static void activate(GtkApplication* app, void*)
     state::color_preview = new ColorPreview();
     state::animation_preview = new AnimationPreview();
     */
+    state::color_swapper = new ColorSwapper();
     state::bubble_log = new BubbleLogArea();
 
     Widget* layer_view = new SeparatorLine(); //state::layer_view->operator Widget*();
     Widget* palette_view = new SeparatorLine(); //state::palette_view->operator Widget*();
-    Widget* color_swapper = new SeparatorLine(); //state::color_swapper->operator Widget*();
+    Widget* color_swapper = state::color_swapper->operator Widget*();
     Widget* color_picker = new SeparatorLine(); //state::color_picker->operator Widget*();
     Widget* verbose_color_picker = new SeparatorLine(); //state::verbose_color_picker->operator Widget*();
     Widget* canvas = new SeparatorLine(); //state::canvas->operator Widget*();
