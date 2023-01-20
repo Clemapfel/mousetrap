@@ -9,7 +9,7 @@
 
 #include <app/app_component.hpp>
 #include <app/palette.hpp>
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/bubble_log_area.hpp>
 #include <app/file_chooser_dialog.hpp>
 #include <app/tooltip.hpp>
@@ -42,7 +42,10 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(palette_view, select_color_9);
     }
 
-    class PaletteView : public AppComponent, public HasColorSelectionUpdatedSignal, public HasPaletteUpdatedSignal, public HasPaletteSortModeUpdatedSignal
+    class PaletteView : public AppComponent,
+        public signals::ColorSelectionChanged,
+        public signals::PaletteUpdated,
+        public signals::PaletteSortModeChanged
     {
         public:
             PaletteView();

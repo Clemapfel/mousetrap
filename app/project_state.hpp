@@ -45,6 +45,9 @@ namespace mousetrap
             void set_current_brush(size_t);
             size_t get_n_brushes() const;
 
+            ToolID get_active_tool() const;
+            void set_active_tool(ToolID);
+
             const Layer* get_current_layer() const;
             size_t get_n_layers() const;
 
@@ -53,6 +56,8 @@ namespace mousetrap
 
             void draw_to_layer(size_t layer_i, size_t frame_i, std::map<Vector2i, HSVA>);
             void set_current_layer_and_frame(size_t layer_i, size_t frame_i);
+            void add_layer(int above); //-1 for new layer at 0
+            void delete_layer(size_t);
 
             HSVA get_primary_color() const;
             void set_primary_color(HSVA);

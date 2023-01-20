@@ -6,7 +6,7 @@
 #pragma once
 
 #include <mousetrap.hpp>
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/add_shortcut_action.hpp>
 #include <app/tooltip.hpp>
 #include <app/app_signals.hpp>
@@ -40,7 +40,11 @@ namespace mousetrap
         void swap_layers_at_position(size_t a, size_t b);
     }
 
-    class LayerView : public AppComponent, public HasLayerFrameSelectionUpdatedSignal, public HasPlaybackActiveUpdatedSignal, public HasImageUpdatedSignal
+    class LayerView : public AppComponent,
+        public signals::LayerFrameSelectionChanged,
+        public signals::PlaybackToggled,
+        public signals::LayerImageUpdated,
+        public signals::LayerCountChanged
     {
         public:
             LayerView();

@@ -9,8 +9,9 @@
 
 #include <app/tools.hpp>
 #include <app/app_component.hpp>
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/tooltip.hpp>
+#include <app/app_signals.hpp>
 
 namespace mousetrap
 {
@@ -46,7 +47,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(toolbox, select_gradient_smooth);
     }
 
-    class Toolbox : public AppComponent
+    class Toolbox : public AppComponent, public signals::ActiveToolChanged
     {
         public:
             Toolbox();

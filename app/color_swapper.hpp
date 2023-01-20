@@ -8,7 +8,7 @@
 #include <mousetrap.hpp>
 
 #include <app/app_component.hpp>
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/tooltip.hpp>
 #include <app/canvas.hpp>
 #include <app/add_shortcut_action.hpp>
@@ -21,7 +21,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(color_swapper, swap);
     }
 
-    class ColorSwapper : public AppComponent, public HasColorSelectionUpdatedSignal
+    class ColorSwapper : public AppComponent, public signals::ColorSelectionChanged
     {
         public:
             ColorSwapper();

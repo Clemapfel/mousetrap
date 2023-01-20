@@ -5,7 +5,7 @@
 #pragma once
 
 #include <mousetrap.hpp>
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/animation_preview.hpp>
 #include <app/brush_options.hpp>
 #include <app/frame_view.hpp>

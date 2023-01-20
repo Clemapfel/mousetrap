@@ -16,7 +16,7 @@ namespace mousetrap
     }
 
     inline SelectionModel::SelectionModel(GtkSelectionModel* model)
-            : HasSelectionChangedSignal<SelectionModel>(this), _native(model)
+            : signals::SelectionChanged<SelectionModel>(this), _native(model)
     {}
 
     inline std::vector<size_t> SelectionModel::get_selection()

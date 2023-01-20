@@ -7,7 +7,7 @@
 
 #include <mousetrap.hpp>
 
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/app_component.hpp>
 #include <app/shortcut_information.hpp>
 

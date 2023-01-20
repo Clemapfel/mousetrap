@@ -8,12 +8,12 @@
 #include <mousetrap.hpp>
 
 #include <app/tooltip.hpp>
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/app_signals.hpp>
 
 namespace mousetrap
 {
-    class ColorPicker : public AppComponent, public HasColorSelectionUpdatedSignal
+    class ColorPicker : public AppComponent, public signals::ColorSelectionChanged
     {
         public:
             ColorPicker();

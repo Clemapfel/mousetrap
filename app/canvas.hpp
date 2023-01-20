@@ -7,7 +7,7 @@
 
 #include <mousetrap.hpp>
 #include <app/app_component.hpp>
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/app_signals.hpp>
 
 namespace mousetrap
@@ -24,7 +24,17 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(canvas, reset_transform)
     }
 
-    struct Canvas : public AppComponent, public HasBrushSelectionUpdatedSignal, public HasLayerFrameSelectionUpdatedSignal, public HasColorSelectionUpdatedSignal, public HasSelectionUpdatedSignal, public HasPlaybackActiveUpdated, public HasOnionSkinVisibiliyUpdatedSignal, public HasOnionSkinLayerCountUpdatedSignal, public HasImageUpdatedSignal
+    struct Canvas : public AppComponent,
+        public signals::BrushSelectionChanged,
+        public signals::ActiveToolChanged,
+        public signals::LayerFrameSelectionChanged,
+        public signals::ColorSelectionChanged,
+        public signals::SelectionChanged,
+        public signals::PlaybackToggled,
+        public signals::OnionSkinVisibilityToggled,
+        public signals::OnionSkinLayerCountChanged,
+        public signals::LayerImageUpdated,
+        public signals::LayerCountChanged
     {
         SeparatorLine _instance;
         Canvas() = default;

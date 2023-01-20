@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 
 namespace mousetrap
 {

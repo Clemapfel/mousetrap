@@ -329,8 +329,8 @@ add_library(app SHARED
     app/frame_view.hpp
     app/src/frame_view.cpp
 
-    app/global_state.hpp
-    app/src/global_state.cpp
+        app/project_state.hpp
+        app/src/project_state.cpp
 
     app/image_transform.hpp
     app/src/image_transform.cpp

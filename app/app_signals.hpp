@@ -6,10 +6,10 @@
 
 #include <mousetrap.hpp>
 
-namespace mousetrap
+namespace mousetrap::signals
 {
     #define DECLARE_APP_SIGNAL_COMPONENT(camel_case_name, snake_case_name) \
-    struct Has##camel_case_name##Signal                                    \
+    struct camel_case_name                                                 \
     {                                                                      \
             public:                                                        \
                 void signal_##snake_case_name()                            \
@@ -31,14 +31,16 @@ namespace mousetrap
                 bool _blocked = false;                                     \
         };
 
-    DECLARE_APP_SIGNAL_COMPONENT(BrushSelectionUpdated, brush_selection_updated)
-    DECLARE_APP_SIGNAL_COMPONENT(LayerFrameSelectionUpdated, layer_frame_selection_updated)
-    DECLARE_APP_SIGNAL_COMPONENT(ColorSelectionUpdated, color_selection_updated)
+    DECLARE_APP_SIGNAL_COMPONENT(BrushSelectionChanged, brush_selection_changed)
+    DECLARE_APP_SIGNAL_COMPONENT(ColorSelectionChanged, color_selection_changed)
     DECLARE_APP_SIGNAL_COMPONENT(PaletteUpdated, palette_updated)
-    DECLARE_APP_SIGNAL_COMPONENT(PaletteSortModeUpdated, palette_sort_mode_updated)
-    DECLARE_APP_SIGNAL_COMPONENT(SelectionUpdated, selection_updated)
-    DECLARE_APP_SIGNAL_COMPONENT(PlaybackActiveUpdated, playback_active_updated)
-    DECLARE_APP_SIGNAL_COMPONENT(OnionSkinVisibilityUpdated, onionskin_visibility_updated)
-    DECLARE_APP_SIGNAL_COMPONENT(OnionSkinLayerCountUpdated, onionskin_layer_count_updated)
-    DECLARE_APP_SIGNAL_COMPONENT(ImageUpdate, image_updated)
+    DECLARE_APP_SIGNAL_COMPONENT(PaletteSortModeChanged, palette_sort_mode_changed)
+    DECLARE_APP_SIGNAL_COMPONENT(SelectionChanged, selection_changed)
+    DECLARE_APP_SIGNAL_COMPONENT(PlaybackToggled, playback_toggled)
+    DECLARE_APP_SIGNAL_COMPONENT(OnionSkinVisibilityToggled, onionskin_visibility_toggled)
+    DECLARE_APP_SIGNAL_COMPONENT(OnionSkinLayerCountChanged, onionskin_layer_count_changed)
+    DECLARE_APP_SIGNAL_COMPONENT(LayerFrameSelectionChanged, layer_frame_selection_changed)
+    DECLARE_APP_SIGNAL_COMPONENT(LayerImageUpdated, layer_image_updated)
+    DECLARE_APP_SIGNAL_COMPONENT(LayerCountChanged, layer_count_changed)
+    DECLARE_APP_SIGNAL_COMPONENT(ActiveToolChanged, active_tool_changed)
 };

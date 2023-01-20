@@ -1,4 +1,4 @@
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/brush_options.hpp>
 #include <app/animation_preview.hpp>
 #include <app/brush_options.hpp>
@@ -10,7 +10,7 @@
 #include <app/color_transform.hpp>
 #include <app/config_files.hpp>
 #include <app/frame_view.hpp>
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/image_transform.hpp>
 #include <app/layer.hpp>
 #include <app/layer_view.hpp>
@@ -108,13 +108,26 @@ namespace mousetrap
     void ProjectState::set_current_brush(size_t i)
     {
         _current_brush_i = i;
-        state::brush_options->signal_brush_selection_updated();
-        state::canvas->signal_brush_selection_updated();
+        state::brush_options->signal_brush_selection_changed();
+        state::canvas->signal_brush_selection_changed();
     }
 
     size_t ProjectState::get_n_brushes() const
     {
         return _brushes.size();
+    }
+
+    ToolID ProjectState::get_active_tool() const
+    {
+        return _active_tool;
+    }
+
+    void ProjectState::set_active_tool(ToolID id)
+    {
+        _active_tool = id;
+
+        state::canvas->signal_active_tool_changed();
+        state::toolbox->signal_active_tool_changed();
     }
 
     const Layer* ProjectState::get_current_layer() const
@@ -142,10 +155,33 @@ namespace mousetrap
         _current_layer_i = layer_i;
         _current_frame_i = frame_i;
 
-        state::canvas->signal_layer_frame_selection_updated();
-        state::layer_view->signal_layer_frame_selection_updated();
-        state::frame_view->signal_layer_frame_selection_updated();
-        state::animation_preview->signal_layer_frame_selection_updated();
+        state::canvas->signal_layer_frame_selection_changed();
+        state::layer_view->signal_layer_frame_selection_changed();
+        state::frame_view->signal_layer_frame_selection_changed();
+        state::animation_preview->signal_layer_frame_selection_changed();
+    }
+
+    void ProjectState::add_layer(int i)
+    {
+        if (i < -1)
+            i = -1;
+
+        // TODO
+
+        state::canvas->signal_layer_count_changed();
+        state::layer_view->signal_layer_count_changed();
+        state::frame_view->signal_layer_count_changed();
+        state::animation_preview->signal_layer_count_changed();
+    }
+
+    void ProjectState::delete_layer(size_t i)
+    {
+        // TODO
+
+        state::canvas->signal_layer_count_changed();
+        state::layer_view->signal_layer_count_changed();
+        state::frame_view->signal_layer_count_changed();
+        state::animation_preview->signal_layer_count_changed();
     }
 
     HSVA ProjectState::get_primary_color() const
@@ -157,12 +193,12 @@ namespace mousetrap
     {
         _primary_color = color;
 
-        state::verbose_color_picker->signal_color_selection_updated();
-        state::color_picker->signal_color_selection_updated();
-        state::color_swapper->signal_color_selection_updated();
-        state::color_preview->signal_color_selection_updated();
-        state::palette_view->signal_color_selection_updated();
-        state::canvas->signal_color_selection_updated();
+        state::verbose_color_picker->signal_color_selection_changed();
+        state::color_picker->signal_color_selection_changed();
+        state::color_swapper->signal_color_selection_changed();
+        state::color_preview->signal_color_selection_changed();
+        state::palette_view->signal_color_selection_changed();
+        state::canvas->signal_color_selection_changed();
     }
 
     HSVA ProjectState::get_secondary_color() const
@@ -174,12 +210,12 @@ namespace mousetrap
     {
         _secondary_color = color;
 
-        state::verbose_color_picker->signal_color_selection_updated();
-        state::color_picker->signal_color_selection_updated();
-        state::color_swapper->signal_color_selection_updated();
-        state::color_preview->signal_color_selection_updated();
-        state::palette_view->signal_color_selection_updated();
-        state::canvas->signal_color_selection_updated();
+        state::verbose_color_picker->signal_color_selection_changed();
+        state::color_picker->signal_color_selection_changed();
+        state::color_swapper->signal_color_selection_changed();
+        state::color_preview->signal_color_selection_changed();
+        state::palette_view->signal_color_selection_changed();
+        state::canvas->signal_color_selection_changed();
     }
 
     const Palette& ProjectState::get_palette() const
@@ -201,7 +237,7 @@ namespace mousetrap
     void ProjectState::set_palette_sort_mode(PaletteSortMode mode)
     {
         _palette_sort_mode = mode;
-        state::palette_view->signal_palette_sort_mode_updated();
+        state::palette_view->signal_palette_sort_mode_changed();
     }
 
     const Vector2Set<int>& ProjectState::get_selection() const
@@ -212,7 +248,7 @@ namespace mousetrap
     void ProjectState::set_selection(Vector2Set<int> selection)
     {
         _selection = selection;
-        state::canvas->signal_selection_updated();
+        state::canvas->signal_selection_changed();
     }
 
     void ProjectState::select_all()
@@ -222,7 +258,7 @@ namespace mousetrap
             for (size_t y = 0; y < _layer_resolution.y; ++y)
                 _selection.insert({x, y});
 
-        state::canvas->signal_selection_updated();
+        state::canvas->signal_selection_changed();
     }
 
     bool ProjectState::get_playback_active() const
@@ -234,10 +270,10 @@ namespace mousetrap
     {
         _playback_active = b;
 
-        state::canvas->signal_playback_active_updated();
-        state::frame_view->signal_playback_active_updated();
-        state::layer_view->signal_playback_active_updated();
-        state::animation_preview->signal_playback_active_updated();
+        state::canvas->signal_playback_toggled();
+        state::frame_view->signal_playback_toggled();
+        state::layer_view->signal_playback_toggled();
+        state::animation_preview->signal_playback_toggled();
     }
 
     bool ProjectState::get_onionskin_visible() const
@@ -248,8 +284,8 @@ namespace mousetrap
     void ProjectState::set_onionskin_visible(bool b)
     {
         _onionskin_visible = b;
-        state::canvas->signal_onionskin_visibility_updated();
-        state::frame_view->signal_onionskin_visibility_updated();
+        state::canvas->signal_onionskin_visibility_toggled();
+        state::frame_view->signal_onionskin_visibility_toggled();
     }
 
     size_t ProjectState::get_n_onionskin_layers() const
@@ -261,8 +297,8 @@ namespace mousetrap
     {
         _onionskin_n_layers = n;
 
-        state::canvas->signal_onionskin_layer_count_updated();
-        state::frame_view->signal_onionskin_layer_count_updated();
+        state::canvas->signal_onionskin_layer_count_changed();
+        state::frame_view->signal_onionskin_layer_count_changed();
     }
 
     void ProjectState::draw_to_layer(size_t layer_i, size_t frame_i, std::map<Vector2i, HSVA> data)
@@ -275,9 +311,9 @@ namespace mousetrap
 
         frame->update_texture();
 
-        state::canvas->signal_image_updated();
-        state::layer_view->signal_image_updated();
-        state::frame_view->signal_image_updated();
-        state::animation_preview->signal_image_updated();
+        state::canvas->signal_layer_image_updated();
+        state::layer_view->signal_layer_image_updated();
+        state::frame_view->signal_layer_image_updated();
+        state::animation_preview->signal_layer_image_updated();
     }
 }

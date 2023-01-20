@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/save_file.hpp>
 #include <app/selection.hpp>
 #include <app/image_transform.hpp>

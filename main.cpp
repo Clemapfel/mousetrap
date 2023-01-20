@@ -19,7 +19,7 @@
 #include <app/color_transform.hpp>
 #include <app/file_chooser_dialog.hpp>
 #include <app/frame_view.hpp>
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/image_transform.hpp>
 #include <app/layer.hpp>
 #include <app/layer_view.hpp>

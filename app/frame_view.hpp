@@ -6,7 +6,7 @@
 #pragma once
 
 #include <mousetrap.hpp>
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/add_shortcut_action.hpp>
 #include <app/tooltip.hpp>
 #include <app/app_signals.hpp>
@@ -31,7 +31,13 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(frame_view, frame_make_keyframe_inbetween);
     }
     
-    class FrameView : public AppComponent, public HasLayerFrameSelectionUpdatedSignal, public HasPlaybackActiveUpdatedSignal, public HasOnionSkinVisibiliyUpdatedSignal, public HasOnionSkinLayerCountUpdatedSignal, public HasImageUpdatedSignal
+    class FrameView : public AppComponent,
+        public signals::LayerFrameSelectionChanged,
+        public signals::PlaybackToggled,
+        public signals::OnionSkinVisibilityToggled,
+        public signals::OnionSkinLayerCountChanged,
+        public signals::LayerImageUpdated,
+        public signals::LayerCountChanged
     {
         public:
             FrameView();

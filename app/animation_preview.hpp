@@ -6,7 +6,7 @@
 
 #include <mousetrap.hpp>
 #include <app/app_component.hpp>
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/add_shortcut_action.hpp>
 #include <app/tooltip.hpp>
 #include <app/app_signals.hpp>
@@ -21,7 +21,11 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(animation_preview, toggle_background_visible);
     }
 
-    class AnimationPreview : public AppComponent, public HasLayerFrameSelectionUpdatedSignal, public HasPlaybackActiveUpdatedSignal, public HasImageUpdatedSignal
+    class AnimationPreview : public AppComponent,
+        public signals::LayerFrameSelectionChanged,
+        public signals::PlaybackToggled,
+        public signals::LayerImageUpdated,
+        public signals::LayerCountChanged
     {
         public:
             AnimationPreview();

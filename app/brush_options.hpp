@@ -6,7 +6,7 @@
 #include <mousetrap.hpp>
 #include <app/brush.hpp>
 #include <app/app_component.hpp>
-#include <app/global_state.hpp>
+#include <app/project_state.hpp>
 #include <app/tooltip.hpp>
 #include <app/add_shortcut_action.hpp>
 #include <app/app_signals.hpp>
@@ -28,7 +28,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(brush_options, open_default_brush_directory);
     }
 
-    class BrushOptions : public AppComponent, public HasBrushSelectionUpdatedSignal
+    class BrushOptions : public AppComponent, public signals::BrushSelectionChanged
     {
         public:
             BrushOptions();
