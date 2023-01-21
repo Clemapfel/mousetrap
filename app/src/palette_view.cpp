@@ -137,6 +137,7 @@ namespace mousetrap
         _preview_size_label.set_hexpand(false);
         _preview_size_label.set_halign(GTK_ALIGN_START);
         _preview_size_scale.set_hexpand(true);
+        _preview_size_scale.set_value(_owner->_preview_size);
         _preview_size_scale.connect_signal_value_changed(on_preview_size_scale_value_changed, this);
 
         _preview_size_box.push_back(&_preview_size_label);
@@ -308,7 +309,7 @@ namespace mousetrap
 
         auto filter = FileFilter(".palette");
         filter.add_allowed_suffix("palette");
-        _dialog.get_file_chooser().add_filter(filter);
+        _dialog.get_file_chooser().add_filter(filter, true);
     }
 
     void PaletteView::PaletteFileSelectSave::show()
@@ -508,7 +509,7 @@ namespace mousetrap
         {
             auto path = state::palette_view->_palette_file_save_path;
             if (path.empty())
-               state::palette_view->_palette_file_select_save.show();
+               palette_view_save_as.activate();
             else
                state::palette_view->save_palette_to_file(path);
         });

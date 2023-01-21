@@ -321,10 +321,11 @@ home_folder = <Alt>Home
             {
                 auto file = selected.at(0);
                 instance->_file_preview.update_from(&file);
-                instance->_previously_selected_path = file.get_path();
 
                 if (not instance->_name_entry_focused)
-                    instance->_name_entry.set_text(file.get_name());
+                    instance->_name_entry.set_text(selected.at(0).get_name());
+
+                instance->_previously_selected_path = selected.at(0).get_name();
             }
 
             if (M == FileChooserDialogMode::SAVE_AS)
@@ -447,8 +448,6 @@ home_folder = <Alt>Home
     template<FileChooserDialogMode M>
     void FileChooserDialog<M>::on_focus_lost(FocusEventController*, double x, double y, FileChooserDialog<M>* instance)
     {
-        instance->_name_entry_focused = false;
+       instance->_name_entry_focused = false;
     }
-
-
 }

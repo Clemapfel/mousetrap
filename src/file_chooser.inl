@@ -98,7 +98,11 @@ namespace mousetrap
         out.reserve(g_list_model_get_n_items(list));
 
         for (size_t i = 0; i < g_list_model_get_n_items(list); ++i)
-            out.emplace_back((GFile*) g_list_model_get_item(list, i));
+        {
+            auto* item = g_list_model_get_item(list, i);
+            if (G_IS_FILE(item))
+                out.emplace_back((GFile*) item);
+        }
 
         return out;
     }

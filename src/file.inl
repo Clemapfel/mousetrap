@@ -87,7 +87,7 @@ namespace mousetrap
 
     inline FilePath FileDescriptor::get_path()
     {
-        auto* path = g_file_get_path(_native);
+        char* path = G_IS_FILE(_native) ? g_file_get_path(_native) : nullptr;
         return path == nullptr ? "" : path;
     }
 
