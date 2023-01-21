@@ -481,6 +481,17 @@ namespace mousetrap
         state::palette_view->signal_palette_sort_mode_changed();
     }
 
+    void ProjectState::set_palette_editing_enabled(bool b)
+    {
+        _palette_editing_enabled = b;
+        state::palette_view->signal_palette_editing_toggled();
+    }
+
+    bool ProjectState::get_palette_editing_enabled() const
+    {
+        return _palette_editing_enabled;
+    }
+
     const Vector2Set<int>& ProjectState::get_selection() const
     {
         return _selection;

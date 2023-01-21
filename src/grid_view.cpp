@@ -153,4 +153,9 @@ namespace mousetrap
     {
         return _selection_model;
     }
+
+    size_t GridView::get_n_items() const
+    {
+        return g_list_model_get_n_items(G_LIST_MODEL(_selection_model->operator GtkSelectionModel*()));
+    }
 }

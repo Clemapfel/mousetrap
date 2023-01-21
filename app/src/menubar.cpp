@@ -1,4 +1,5 @@
 #include <app/menubar.hpp>
+#include <app/bubble_log_area.hpp>
 
 namespace mousetrap
 {

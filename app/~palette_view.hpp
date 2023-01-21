@@ -1,12 +1,17 @@
 //
-// Copyright (c) Clemens Cords (mail@clemens-cords.com), created 1/21/23
+// Copyright 2022 Clemens Cords
+// Created on 10/17/22 by clem (mail@clemens-cords.com)
 //
 
 #pragma once
 
+#include <mousetrap.hpp>
+
 #include <app/app_component.hpp>
 #include <app/palette.hpp>
 #include <app/project_state.hpp>
+#include <app/bubble_log_area.hpp>
+#include <app/file_chooser_dialog.hpp>
 #include <app/tooltip.hpp>
 #include <app/app_signals.hpp>
 
@@ -38,32 +43,40 @@ namespace mousetrap
     }
 
     class PaletteView : public AppComponent,
-            public signals::ColorSelectionChanged,
-            public signals::PaletteUpdated,
-            public signals::PaletteSortModeChanged,
-            public signals::PaletteEditingToggled
+        public signals::ColorSelectionChanged,
+        public signals::PaletteUpdated,
+        public signals::PaletteSortModeChanged
     {
         public:
             PaletteView();
-            ~PaletteView();
             operator Widget*() override;
+
+            void select(size_t i);
 
             void set_preview_size(size_t);
             size_t get_preview_size() const;
 
-        private:
-            void on_color_selection_changed();
-            void on_palette_updated();
-            void on_palette_sort_mode_changed();
-            void on_palette_editing_toggled();
+            void set_palette_locked(bool);
+            bool get_palette_locked() const;
 
+            void reload();
+
+        protected:
+            void load_from_file(const std::string& path);
+            void load_as_debug();
+
+            void save_to_file(const std::string& path);
+
+        private:
+            bool _palette_locked = state::settings_file->get_value_as<bool>("palette_view", "palette_locked");
             size_t _preview_size = state::settings_file->get_value_as<size_t>("palette_view", "color_preview_size");
+
+            void update_from_palette();
 
             class ColorTile
             {
                 public:
                     ColorTile(PaletteView* owner, HSVA color);
-                    ~ColorTile();
                     operator Widget*();
 
                     void set_color(HSVA color);
@@ -96,8 +109,7 @@ namespace mousetrap
                 public:
                     PaletteControlBar(PaletteView* owner);
                     operator Widget*();
-
-                    void set_palette_editing_enabled(bool);
+                    void update();
 
                 private:
                     PaletteView* _owner;
@@ -121,6 +133,9 @@ namespace mousetrap
                     SpinButton _preview_size_scale = SpinButton(2, 512, 1);
                     static void on_preview_size_scale_value_changed(SpinButton*, PaletteControlBar* instance);
 
+                    void update_palette_locked();
+                    void update_preview_size_changed();
+
                     Label _menu_button_label = Label("Palette");
                     MenuButton _menu_button;
                     MenuModel _menu;
@@ -128,16 +143,25 @@ namespace mousetrap
 
             PaletteControlBar _palette_control_bar = PaletteControlBar(this);
 
+            size_t _selected_i = 0;
             static void on_color_tile_view_selection_model_selection_changed(SelectionModel*, size_t child_i, size_t n_items, PaletteView* instance);
 
             std::vector<ColorTile*> _color_tiles;
             GridView _color_tile_view = GridView(GTK_SELECTION_SINGLE);
             ScrolledWindow _scrolled_window;
 
-            size_t _selected_i = 0;
             Box _palette_view_box = Box(GTK_ORIENTATION_HORIZONTAL);
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
 
+            // actions
+
+            OpenFileDialog _on_load_dialog = OpenFileDialog("Load Palette");
+            void on_load_ok_pressed();
+
+            SaveAsFileDialog _on_save_as_dialog = SaveAsFileDialog("Save Palette As");
+            void on_save_as_ok_pressed();
+
+            std::string _save_to_path = "";
             Tooltip _tooltip;
     };
 

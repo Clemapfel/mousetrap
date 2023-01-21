@@ -94,6 +94,9 @@ namespace mousetrap
             PaletteSortMode get_palette_sort_mode() const;
             void set_palette_sort_mode(PaletteSortMode);
 
+            bool get_palette_editing_enabled() const;
+            void set_palette_editing_enabled(bool b);
+
             void set_selection(Vector2Set<int>);
             const Vector2Set<int>& get_selection() const;
             void select_all();
@@ -113,6 +116,7 @@ namespace mousetrap
 
             Palette _palette;
             PaletteSortMode _palette_sort_mode = PaletteSortMode::NONE;
+            bool _palette_editing_enabled = false;
 
             HSVA _preview_color_current;
             HSVA _preview_color_previous;
