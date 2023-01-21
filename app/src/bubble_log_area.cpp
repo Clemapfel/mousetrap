@@ -25,9 +25,10 @@ namespace mousetrap
         _spacer.set_valign(GTK_ALIGN_START);
 
         _box.push_back(&_spacer);
-        _box.set_expand(true);
+        _box.set_expand(false);
         _box.set_valign(GTK_ALIGN_END);
-        _box.set_vexpand(false);
+        _box.set_halign(GTK_ALIGN_END);
+        _box.set_size_request({300, 0});
 
         _suppress_info = state::settings_file->get_value_as<bool>("bubble_log_area", "suppress_message_type_info");
         _suppress_warning = state::settings_file->get_value_as<bool>("bubble_log_area", "suppress_message_type_warning");
@@ -142,6 +143,10 @@ namespace mousetrap
 
         box->push_back(spacer);
         box->push_back(&message->revealer);
+
+        box->set_halign(GTK_ALIGN_END);
+        box->set_hexpand(false);
+
         _box.push_back(box);
 
         _scrolled_window_vadjustment.set_value(_scrolled_window_vadjustment.get_upper());

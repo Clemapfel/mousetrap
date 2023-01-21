@@ -462,6 +462,24 @@ namespace mousetrap
         return _palette;
     }
 
+    const Palette& ProjectState::get_default_palette() const
+    {
+        if (not _default_palette.load_from(_default_palette_path))
+            std::cerr << "[ERROR] In ProjectState::get_default_palette: Unable to load palette from " + _default_palette_path << std::endl;
+
+        return _default_palette;
+    }
+
+    void ProjectState::set_default_palette(const std::vector<HSVA>& colors)
+    {
+        _default_palette = Palette(colors);
+
+        if (not _default_palette.save_to(_default_palette_path))
+            std::cerr << "[ERROR] In ProjectState::set_default_palette: Unable to save default palette to " + _default_palette_path << std::endl;
+        else
+            state::bubble_log->send_message("Saved current palette as default");
+    }
+
     void ProjectState::set_palette(const std::vector<HSVA>& colors)
     {
         _palette = Palette(colors);

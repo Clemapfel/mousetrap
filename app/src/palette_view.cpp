@@ -3,6 +3,8 @@
 //
 
 #include <app/palette_view.hpp>
+#include <app/add_shortcut_action.hpp>
+#include <app/bubble_log_area.hpp>
 
 namespace mousetrap
 {
@@ -253,6 +255,78 @@ namespace mousetrap
         return &_main;
     }
 
+    PaletteView::PaletteFileSelectOpen::PaletteFileSelectOpen(PaletteView* owner)
+        : _owner(owner), _dialog("Load Palette...")
+    {
+        _dialog.set_on_accept_pressed([](FileChooserDialog<FileChooserDialogMode::OPEN>* instance)
+        {
+            auto path = instance->get_current_name();
+            auto palette = Palette({HSVA(0, 0, 0, 1)});
+
+            if (palette.load_from(path))
+            {
+                auto& backup = state::actions::detail::palette_view_load_undo_backup.emplace_back();
+                for (auto* tile : state::palette_view->_color_tiles)
+                    backup.push_back(tile->get_color());
+
+                active_state->set_palette(palette.get_colors());
+            }
+            else
+                state::bubble_log->send_message("Unable to load palette at `" + path + "`: " + state::tooltips_file->get_value("palette_view", "on_palette_load_error"), InfoMessageType::ERROR);
+
+            instance->close();
+        });
+
+        _dialog.set_on_cancel_pressed([](FileChooserDialog<FileChooserDialogMode::OPEN>* instance)
+        {
+            instance->close();
+        });
+
+        auto filter = FileFilter(".palette");
+        filter.add_allowed_suffix("palette");
+        _dialog.get_file_chooser().add_filter(filter);
+    }
+
+    void PaletteView::PaletteFileSelectOpen::show()
+    {
+        _dialog.show();
+    }
+
+    PaletteView::PaletteFileSelectSave::PaletteFileSelectSave(PaletteView* owner)
+        : _owner(owner), _dialog("Save Palette...")
+    {
+        _dialog.set_on_accept_pressed([](SaveAsFileDialog* instance)
+        {
+            state::palette_view->save_palette_to_file(instance->get_current_name());
+            instance->close();
+        });
+
+        _dialog.set_on_cancel_pressed([](SaveAsFileDialog* instance)
+        {
+            instance->close();
+        });
+
+        auto filter = FileFilter(".palette");
+        filter.add_allowed_suffix("palette");
+        _dialog.get_file_chooser().add_filter(filter);
+    }
+
+    void PaletteView::PaletteFileSelectSave::show()
+    {
+        _dialog.show();
+    }
+
+    void PaletteView::save_palette_to_file(const std::string& path)
+    {
+        if (active_state->get_palette().save_to(path))
+        {
+            state::bubble_log->send_message("Wrote current palette to `" + path + "`");
+            _palette_file_save_path = path;
+        }
+        else
+            state::bubble_log->send_message("Unable to write current palette to `" + path + "`", InfoMessageType::ERROR);
+    }
+
     void PaletteView::on_palette_updated()
     {
         auto sort_mode = active_state->get_palette_sort_mode();
@@ -273,6 +347,7 @@ namespace mousetrap
             _color_tiles.emplace_back(new ColorTile(this, HSVA(0, 0, 0, 0)));
         }
 
+        _color_tile_view.clear();
         for (size_t i = 0; i < _color_tiles.size(); ++i)
         {
             auto* tile = _color_tiles.at(i);
@@ -366,6 +441,120 @@ namespace mousetrap
         _main.set_vexpand(true);
 
         on_color_selection_changed();
+
+        using namespace state::actions;
+
+        palette_view_select_color_0.set_function([](){
+            active_state->set_primary_color(state::palette_view->_color_tiles.at(0)->get_color());
+        });
+
+        palette_view_select_color_1.set_function([](){
+            active_state->set_primary_color(state::palette_view->_color_tiles.at(1)->get_color());
+        });
+
+        palette_view_select_color_2.set_function([](){
+            active_state->set_primary_color(state::palette_view->_color_tiles.at(2)->get_color());
+        });
+
+        palette_view_select_color_3.set_function([](){
+            active_state->set_primary_color(state::palette_view->_color_tiles.at(3)->get_color());
+        });
+
+        palette_view_select_color_4.set_function([](){
+            active_state->set_primary_color(state::palette_view->_color_tiles.at(4)->get_color());
+        });
+
+        palette_view_select_color_5.set_function([](){
+            active_state->set_primary_color(state::palette_view->_color_tiles.at(5)->get_color());
+        });
+
+        palette_view_select_color_6.set_function([](){
+            active_state->set_primary_color(state::palette_view->_color_tiles.at(6)->get_color());
+        });
+
+        palette_view_select_color_7.set_function([](){
+            active_state->set_primary_color(state::palette_view->_color_tiles.at(7)->get_color());
+        });
+
+        palette_view_select_color_8.set_function([](){
+            active_state->set_primary_color(state::palette_view->_color_tiles.at(8)->get_color());
+        });
+
+        palette_view_select_color_9.set_function([](){
+            active_state->set_primary_color(state::palette_view->_color_tiles.at(9)->get_color());
+        });
+
+        palette_view_sort_by_default.set_function([](){
+           active_state->set_palette_sort_mode(PaletteSortMode::NONE);
+        });
+
+        palette_view_sort_by_hue.set_function([](){
+            active_state->set_palette_sort_mode(PaletteSortMode::BY_HUE);
+        });
+
+        palette_view_sort_by_saturation.set_function([](){
+            active_state->set_palette_sort_mode(PaletteSortMode::BY_SATURATION);
+        });
+
+        palette_view_sort_by_value.set_function([](){
+            active_state->set_palette_sort_mode(PaletteSortMode::BY_VALUE);
+        });
+
+        palette_view_load.set_function( [](){
+            state::palette_view->_palette_file_select_open.show();
+        });
+
+        palette_view_save.set_function([]()
+        {
+            auto path = state::palette_view->_palette_file_save_path;
+            if (path.empty())
+               state::palette_view->_palette_file_select_save.show();
+            else
+               state::palette_view->save_palette_to_file(path);
+        });
+
+        palette_view_save_as.set_function([](){
+            state::palette_view->_palette_file_select_save.show();
+        });
+
+        palette_view_load_default.set_function([]
+        {
+           auto palette = active_state->get_default_palette();
+           active_state->set_palette(palette.get_colors());
+        });
+
+        palette_view_save_as_default.set_function([]
+        {
+            std::vector<HSVA> colors;
+            for (auto* tile : state::palette_view->_color_tiles)
+                if (tile->operator Widget*()->get_visible())
+                    colors.push_back(tile->get_color());
+
+            active_state->set_default_palette(colors);
+        });
+
+        for (auto* action : {
+                &palette_view_load_default,
+                &palette_view_save,
+                &palette_view_save_as_default,
+                &palette_view_load,
+                &palette_view_save_as,
+                &palette_view_sort_by_default,
+                &palette_view_sort_by_hue,
+                &palette_view_sort_by_saturation,
+                &palette_view_sort_by_value,
+                &palette_view_select_color_0,
+                &palette_view_select_color_1,
+                &palette_view_select_color_2,
+                &palette_view_select_color_3,
+                &palette_view_select_color_4,
+                &palette_view_select_color_5,
+                &palette_view_select_color_6,
+                &palette_view_select_color_7,
+                &palette_view_select_color_8,
+                &palette_view_select_color_9
+        })
+            state::add_shortcut_action(*action);
     }
 
     PaletteView::~PaletteView()

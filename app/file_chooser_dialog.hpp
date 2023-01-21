@@ -54,8 +54,14 @@ namespace mousetrap
             template<typename Function_t, typename Arg_t>
             void set_on_accept_pressed(Function_t, Arg_t);
 
+            template<typename Function_t>
+            void set_on_accept_pressed(Function_t);
+
             template<typename Function_t, typename Arg_t>
             void set_on_cancel_pressed(Function_t, Arg_t);
+
+            template<typename Function_t>
+            void set_on_cancel_pressed(Function_t);
 
             FileChooser& get_file_chooser();
 
@@ -122,6 +128,14 @@ namespace mousetrap
             ShortcutController _shortcut_controller = ShortcutController(state::app);
 
             Overlay _show_keybinds_overlay;
+
+            KeyEventController _key_event_controller;
+            static bool on_key_pressed(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, FileChooserDialog<Mode>* instance);
+
+            bool _name_entry_focused = false;
+            FocusEventController _focus_event_controller;
+            static void on_focus_gained(FocusEventController*, double x, double y, FileChooserDialog<Mode>* instance);
+            static void on_focus_lost(FocusEventController*, double x, double y, FileChooserDialog<Mode>* instance);
     };
     
     using SaveAsFileDialog = FileChooserDialog<FileChooserDialogMode::SAVE_AS>;

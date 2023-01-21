@@ -1,6 +1,6 @@
 # mousetrap palette file
 # format: index=hue;saturation;value[;alpha] (index in {0, 1, 2, ...}, components in [0, 1])
-# generated 2022-11-14T21:38:42.276034+01
+#
 [palette]
 0=0;0.33000001311302185;0.33000001311302185;1;
 1=0;0.33000001311302185;0.6600000262260437;1;

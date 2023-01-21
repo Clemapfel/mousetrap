@@ -9,6 +9,7 @@
 #include <app/project_state.hpp>
 #include <app/tooltip.hpp>
 #include <app/app_signals.hpp>
+#include <app/file_chooser_dialog.hpp>
 
 namespace mousetrap
 {
@@ -128,10 +129,36 @@ namespace mousetrap
 
             PaletteControlBar _palette_control_bar = PaletteControlBar(this);
 
-            static void on_color_tile_view_selection_model_selection_changed(SelectionModel*, size_t child_i, size_t n_items, PaletteView* instance);
+            class PaletteFileSelectOpen
+            {
+                public:
+                    PaletteFileSelectOpen(PaletteView*);
+                    void show();
+
+                private:
+                    PaletteView* _owner;
+                    OpenFileDialog _dialog;
+            };
+            PaletteFileSelectOpen _palette_file_select_open = PaletteFileSelectOpen(this);
+
+            class PaletteFileSelectSave
+            {
+                public:
+                    PaletteFileSelectSave(PaletteView*);
+                    void show();
+
+                private:
+                    PaletteView* _owner;
+                    SaveAsFileDialog _dialog;
+            };
+
+            std::string _palette_file_save_path = "";
+            void save_palette_to_file(const std::string& path);
+            PaletteFileSelectSave _palette_file_select_save = PaletteFileSelectSave(this);
 
             std::vector<ColorTile*> _color_tiles;
             GridView _color_tile_view = GridView(GTK_SELECTION_SINGLE);
+            static void on_color_tile_view_selection_model_selection_changed(SelectionModel*, size_t child_i, size_t n_items, PaletteView* instance);
             ScrolledWindow _scrolled_window;
 
             size_t _selected_i = 0;
@@ -144,5 +171,11 @@ namespace mousetrap
     namespace state
     {
         inline PaletteView* palette_view = nullptr;
+    }
+
+    namespace state::actions::detail
+    {
+        inline std::vector<std::vector<HSVA>> palette_view_load_undo_backup = {};
+        inline std::vector<HSVA> palette_view_load_redo_palette = {};
     }
 }

@@ -348,6 +348,11 @@ namespace mousetrap
         gtk_widget_set_sensitive(operator GtkWidget*(), b);
     }
 
+    inline bool Widget::get_can_respond_to_input() const
+    {
+        return gtk_widget_is_sensitive(operator GtkWidget*());
+    }
+
     inline void Widget::set_tooltip_widget(Widget* widget)
     {
         _tooltip_widget = widget;

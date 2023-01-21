@@ -165,7 +165,7 @@ namespace mousetrap
         _show_keybindings_button.set_halign(GTK_ALIGN_START);
         _show_keybindings_button.set_valign(GTK_ALIGN_END);
         _show_keybindings_button.set_always_show_arrow(true);
-        _show_keybindings_button.set_child(&_show_keybindings_button_label);
+        //_show_keybindings_button.set_child(&_show_keybindings_button_label);
 
         _dialog.get_content_area().push_back(&_content_area);
 
@@ -244,6 +244,12 @@ namespace mousetrap
         temp_file.load_from_string(R"(
 [file_chooser_dialog]
 
+# Close Dialog
+close_dialog = Escape
+
+# Enter Folder
+enter_folder = Return
+
 # Toggle show location popup
 location_popup = <Control>L
 
@@ -269,7 +275,7 @@ desktop_folder = <Alt>D
 home_folder = <Alt>Home
         )");
 
-        _show_keybindings_content.set_title("Keybinding Shortcuts");
+        _show_keybindings_content.set_title("Keybindings");
         _show_keybindings_content.create_from_group("file_chooser_dialog", &temp_file);
         _show_keybindings_popover.set_child(_show_keybindings_content);
         _show_keybindings_button.set_popover(&_show_keybindings_popover);
@@ -291,6 +297,7 @@ home_folder = <Alt>Home
 
         gtk_box_prepend(GTK_BOX(button_area), _action_button_area_spacer.operator GtkWidget*());
         gtk_box_prepend(GTK_BOX(button_area), _show_keybindings_button.operator GtkWidget*());
+        gtk_widget_set_hexpand(GTK_WIDGET(button_area), true);
 
         // can't get button_area to expand no matter what so the length needs to hardcoded
         // button_area doesn't even have a getter to access it so this is jank to begin with
@@ -310,12 +317,14 @@ home_folder = <Alt>Home
         _file_chooser.add_tick_callback([](FrameClock clock, FileChooserDialog* instance) -> bool {
 
             auto selected = instance->_file_chooser.get_selected();
-            if (not selected.empty() and instance->_previously_selected_path != selected.at(0).get_name() and
-                    selected.at(0).is_file())
+            if (not selected.empty() and instance->_previously_selected_path != selected.at(0).get_name() and selected.at(0).is_file())
             {
                 auto file = selected.at(0);
                 instance->_file_preview.update_from(&file);
                 instance->_previously_selected_path = file.get_path();
+
+                if (not instance->_name_entry_focused)
+                    instance->_name_entry.set_text(file.get_name());
             }
 
             if (M == FileChooserDialogMode::SAVE_AS)
@@ -327,6 +336,17 @@ home_folder = <Alt>Home
 
             return true;
         }, this);
+
+        _key_event_controller.connect_signal_key_pressed(on_key_pressed, this);
+        _dialog.add_controller(&_key_event_controller);
+
+        _name_entry.connect_signal_activate([](Entry*, FileChooserDialog<M>* instance) {
+            instance->_on_accept_pressed(instance);
+        }, this);
+
+        _focus_event_controller.connect_signal_focus_gained(on_focus_gained, this);
+        _focus_event_controller.connect_signal_focus_lost(on_focus_lost, this);
+        _name_entry.add_controller(&_focus_event_controller);
     }
 
     template<FileChooserDialogMode M>
@@ -344,6 +364,24 @@ home_folder = <Alt>Home
     {
         _on_cancel_pressed = [f = f_in, arg = arg_in](FileChooserDialog* instance){
             f(instance, arg);
+        };
+    }
+
+    template<FileChooserDialogMode M>
+    template<typename Function_t>
+    void FileChooserDialog<M>::set_on_accept_pressed(Function_t f_in)
+    {
+        _on_accept_pressed = [f = f_in](FileChooserDialog* instance){
+            f(instance);
+        };
+    }
+
+    template<FileChooserDialogMode M>
+    template<typename Function_t>
+    void FileChooserDialog<M>::set_on_cancel_pressed(Function_t f_in)
+    {
+        _on_cancel_pressed = [f = f_in](FileChooserDialog* instance){
+            f(instance);
         };
     }
 
@@ -388,4 +426,29 @@ home_folder = <Alt>Home
         if (M == FileChooserDialogMode::SAVE_AS)
             _warn_on_override_dialog.close();
     }
+
+    template<FileChooserDialogMode M>
+    bool FileChooserDialog<M>::on_key_pressed(KeyEventController*, guint keyval, guint keycode, GdkModifierType state, FileChooserDialog<M>* instance)
+    {
+        if (keyval == GDK_KEY_Escape)
+            instance->_on_cancel_pressed(instance);
+
+        // return already consumed by GTK file explorer
+        //if (keyval == GDK_KEY_Return and instance->_accept_button.get_can_respond_to_input())
+        //   instance->_on_accept_pressed(instance);
+    }
+
+    template<FileChooserDialogMode M>
+    void FileChooserDialog<M>::on_focus_gained(FocusEventController*, double x, double y, FileChooserDialog<M>* instance)
+    {
+        instance->_name_entry_focused = true;
+    }
+
+    template<FileChooserDialogMode M>
+    void FileChooserDialog<M>::on_focus_lost(FocusEventController*, double x, double y, FileChooserDialog<M>* instance)
+    {
+        instance->_name_entry_focused = false;
+    }
+
+
 }

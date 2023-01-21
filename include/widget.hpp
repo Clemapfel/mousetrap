@@ -84,6 +84,7 @@ namespace mousetrap
 
             void unparent();
             void set_can_respond_to_input(bool);
+            bool get_can_respond_to_input() const;
 
             void beep();
 

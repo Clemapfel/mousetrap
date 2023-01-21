@@ -91,6 +91,9 @@ namespace mousetrap
             const Palette& get_palette() const;
             void set_palette(const std::vector<HSVA>&);
 
+            const Palette& get_default_palette() const;
+            void set_default_palette(const std::vector<HSVA>&);
+
             PaletteSortMode get_palette_sort_mode() const;
             void set_palette_sort_mode(PaletteSortMode);
 
@@ -117,6 +120,9 @@ namespace mousetrap
             Palette _palette;
             PaletteSortMode _palette_sort_mode = PaletteSortMode::NONE;
             bool _palette_editing_enabled = false;
+
+            mutable Palette _default_palette;
+            std::string _default_palette_path = get_resource_path() + "default.palette";
 
             HSVA _preview_color_current;
             HSVA _preview_color_previous;
