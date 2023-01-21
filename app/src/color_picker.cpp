@@ -393,7 +393,6 @@ namespace mousetrap
             state::canvas->update();
 
             active_state->set_preview_colors(color, active_state->get_preview_color_previous());
-            state::color_preview->update();
         }
         else if (_hsv_shape_active)
         {

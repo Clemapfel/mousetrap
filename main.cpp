@@ -60,9 +60,9 @@ static void activate(GtkApplication* app, void*)
     state::layer_view = new LayerView();
     state::frame_view = new FrameView();
     state::canvas = new Canvas();
-    state::color_preview = new ColorPreview();
     state::animation_preview = new AnimationPreview();
     */
+    state::color_preview = new ColorPreview();
     state::verbose_color_picker = new VerboseColorPicker();
     state::color_swapper = new ColorSwapper();
     state::bubble_log = new BubbleLogArea();
@@ -75,7 +75,7 @@ static void activate(GtkApplication* app, void*)
     Widget* canvas = new SeparatorLine(); //state::canvas->operator Widget*();
     Widget* toolbox = new SeparatorLine(); //state::toolbox->operator Widget*();
     Widget* brush_options = new SeparatorLine(); //state::brush_options->operator Widget*();
-    Widget* color_preview = new SeparatorLine(); //state::color_preview->operator Widget*();
+    Widget* color_preview = state::color_preview->operator Widget*();
     Widget* bubble_log = state::bubble_log->operator Widget*();
     Widget* frame_view = new SeparatorLine(); //state::frame_view->operator Widget*();
     Widget* animation_preview = new SeparatorLine(); //state::animation_preview->operator Widget*();

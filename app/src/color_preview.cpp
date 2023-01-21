@@ -62,7 +62,6 @@ namespace mousetrap
         area->add_render_task(instance->_previous_color_shape);
         area->add_render_task(instance->_frame_shape);
 
-        instance->update(active_state->get_primary_color(), active_state->get_secondary_color());
         area->queue_render();
     }
 
@@ -72,7 +71,7 @@ namespace mousetrap
         instance->_gl_area.queue_render();
     }
 
-    void ColorPreview::update()
+    void ColorPreview::on_color_selection_changed()
     {
         update(active_state->get_preview_color_current(), active_state->get_preview_color_previous());
     }

@@ -281,11 +281,6 @@ namespace mousetrap
 
         active_state->set_primary_color(instance->_color_tiles.at(child_i)->get_color());
         active_state->set_preview_colors(active_state->get_primary_color(), active_state->get_primary_color());
-
-        state::color_picker->update();
-        state::color_swapper->update();
-        state::color_preview->update();
-        state::canvas->update();
     }
 
     void PaletteView::load_as_debug()

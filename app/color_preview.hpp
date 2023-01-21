@@ -20,9 +20,10 @@ namespace mousetrap
             ~ColorPreview();
 
             operator Widget*() override;
-            void update() override;
 
         private:
+            void on_color_selection_changed();
+
             void update(HSVA current, HSVA previous);
             static inline const float _previous_to_color_current_width_ratio = 0.15;
 
