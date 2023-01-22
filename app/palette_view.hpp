@@ -73,6 +73,7 @@ namespace mousetrap
                     void set_selected(bool);
 
                 private:
+
                     PaletteView* _owner;
                     HSVA _color;
 
@@ -165,6 +166,8 @@ namespace mousetrap
             size_t _selected_i = 0;
             Box _palette_view_box = Box(GTK_ORIENTATION_HORIZONTAL);
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
+
+            static bool colors_equal(HSVA a, HSVA b);
 
             Tooltip _tooltip;
     };

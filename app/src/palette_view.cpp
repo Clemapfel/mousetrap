@@ -362,7 +362,7 @@ namespace mousetrap
 
             tile->operator Widget*()->set_visible(true);
             tile->set_color(colors.at(i));
-            tile->set_selected(rgba_to_html_code(colors.at(i)) == rgba_to_html_code(active_state->get_primary_color()));
+            tile->set_selected(colors_equal(colors.at(i), active_state->get_primary_color()));
             _color_tile_view.push_back(tile->operator Widget*());
         }
     }
@@ -388,9 +388,7 @@ namespace mousetrap
             if (not tile->operator Widget*()->get_visible())
                 break;
 
-            auto a = tile->get_color();
-            auto b = active_state->get_primary_color();
-            auto matched = rgba_to_html_code(tile->get_color()) == rgba_to_html_code(active_state->get_primary_color());
+            auto matched = colors_equal(tile->get_color(), active_state->get_primary_color());
             tile->set_selected(matched);
 
             if (matched)
@@ -405,7 +403,6 @@ namespace mousetrap
         else
         {
             _color_tile_view.get_selection_model()->unselect_all();
-            //std::cout << "unselected" << std::endl;
         }
     }
 
@@ -588,7 +585,15 @@ namespace mousetrap
     {
         instance->_selected_i = child_i;
         auto color = instance->_color_tiles.at(child_i)->get_color();
+        color.a = active_state->get_primary_color().a;
         active_state->set_primary_color(color);
         active_state->set_preview_colors(color, color);
+    }
+
+    bool PaletteView::colors_equal(HSVA a, HSVA b)
+    {
+        return (int(a.h * 255) == int(b.h * 255)) and
+            (int(a.s * 255) == int(b.s * 255)) and
+            (int(a.v * 255) == int(b.v * 255));
     }
 }
