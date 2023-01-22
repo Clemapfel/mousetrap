@@ -82,6 +82,7 @@ namespace mousetrap
                     Shape* _color_shape = nullptr;
                     Shape* _frame_shape = nullptr;
 
+                    bool _selected = false;
                     static inline Texture* is_selected_overlay_texture = nullptr;
                     Shape* _is_selected_shape = nullptr;
 

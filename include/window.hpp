@@ -39,25 +39,6 @@ namespace mousetrap
             void set_modal(bool);
             void set_transient_for(Window* partner);
             void set_decorated(bool);
-
-        private:
-            using ShortcutID = std::string;
-
-            struct GlobalShortcut
-            {
-                ShortcutID id;
-                GtkShortcutTrigger* trigger;
-                std::function<void(void*)> action;
-                void* argument;
-                bool shift = false;
-                bool control = false;
-                bool alt = false;
-            };
-
-            static inline std::vector<GlobalShortcut> _global_shortcuts;
-
-            static bool on_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, void*);
-            static inline KeyEventController* _global_shortcut_controller = nullptr;
     };
 }
 

@@ -47,7 +47,10 @@ namespace mousetrap
 
     inline bool RGBA::operator==(const RGBA& other)
     {
-        return r == other.r and g == other.g and b == other.b and a == other.a;
+        return int(r * 256) == int(other.r == 256) and
+            int(g * 256) == int(other.g == 256) and
+            int(b * 256) == int(other.b == 256) and
+            int(a * 256) == int(other.a == 256);
     }
 
     inline bool RGBA::operator!=(const RGBA& other)
@@ -101,7 +104,10 @@ namespace mousetrap
 
     inline bool HSVA::operator==(const HSVA& other)
     {
-        return h == other.h and s == other.s and v == other.v and a == other.a;
+        return int(h * 256) == int(other.h == 256) and
+            int(s * 256) == int(other.s == 256) and
+            int(v * 256) == int(other.v == 256) and
+            int(a * 256) == int(other.a == 256);
     }
 
     inline bool HSVA::operator!=(const HSVA& other)

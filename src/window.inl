@@ -13,15 +13,7 @@ namespace mousetrap
 
     inline Window::Window(GtkWindow* window)
         : WidgetImplementation<GtkWindow>(window), HasCloseSignal<Window>(this)
-    {
-        if (_global_shortcut_controller == nullptr)
-        {
-            _global_shortcut_controller = new KeyEventController();
-            _global_shortcut_controller->connect_signal_key_pressed(on_key_pressed, nullptr);
-        }
-
-        add_controller(_global_shortcut_controller);
-    }
+    {}
 
     inline void Window::present()
     {
@@ -111,6 +103,7 @@ namespace mousetrap
         gtk_window_set_decorated(get_native(), b);
     }
 
+    /*
     inline bool Window::on_key_pressed(KeyEventController* self, guint keyval, guint keycode, GdkModifierType state, void*)
     {
         std::vector<std::pair<ShortcutID, GtkShortcutTrigger*>> triggered;
@@ -146,4 +139,5 @@ namespace mousetrap
         }
         return false;
     }
+     */
 }

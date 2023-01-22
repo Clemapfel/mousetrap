@@ -6,7 +6,7 @@
 namespace mousetrap
 {
     inline ShortcutController::ShortcutController(ActionMap* map)
-            : EventController(gtk_shortcut_controller_new()), _action_map(map)
+        : EventController(gtk_shortcut_controller_new()), _action_map(map)
     {}
 
     inline ShortcutController::~ShortcutController()

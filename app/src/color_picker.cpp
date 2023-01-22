@@ -2,7 +2,6 @@
 #include <app/color_preview.hpp>
 #include <app/color_swapper.hpp>
 #include <app/verbose_color_picker.hpp>
-#include <app/palette_view.hpp>
 #include <app/canvas.hpp>
 
 namespace mousetrap
@@ -388,10 +387,6 @@ namespace mousetrap
             color.h = 1 - (hue - _hue_bar_shape->get_top_left().y) / _hue_bar_shape->get_size().y;
 
             active_state->set_primary_color(color);
-            state::color_swapper->update();
-            state::palette_view->update();
-            state::canvas->update();
-
             active_state->set_preview_colors(color, active_state->get_preview_color_previous());
         }
         else if (_hsv_shape_active)
