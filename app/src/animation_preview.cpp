@@ -10,29 +10,9 @@ namespace mousetrap
 
         _menu_button.set_child(&_menu_button_label);
 
+        // actions
+
         using namespace state::actions;
-
-        animation_preview_toggle_playback_active.set_function([](){
-            auto* instance = ((AnimationPreview*) state::animation_preview);
-            instance->on_playback_toggled();
-        });
-
-        animation_preview_increase_scale_factor.set_function([](){
-            auto* instance = ((AnimationPreview*) state::animation_preview);
-            if (instance->_scale_factor < instance->_max_scale_factor)
-                instance->set_scale_factor(instance->_scale_factor + 1);
-        });
-
-        animation_preview_decrease_scale_factor.set_function([](){
-            auto* instance = ((AnimationPreview*) state::animation_preview);
-            if (instance->_scale_factor > 1)
-                instance->set_scale_factor(instance->_scale_factor - 1);
-        });
-
-        animation_preview_toggle_background_visible.set_function([](){
-            auto* instance = ((AnimationPreview*) state::animation_preview);
-            instance->set_background_visible(not instance->_background_visible);
-        });
 
         for (auto* action : {&animation_preview_toggle_playback_active, &animation_preview_decrease_scale_factor, &animation_preview_increase_scale_factor, &animation_preview_toggle_background_visible})
             state::add_shortcut_action(*action);
@@ -113,11 +93,6 @@ namespace mousetrap
     AnimationPreview::operator Widget*()
     {
         return &_main;
-    }
-
-    void AnimationPreview::update()
-    {
-        // frame set in on_tick_callback
     }
 
     void AnimationPreview::on_realize(Widget* widget, AnimationPreview* instance)

@@ -23,7 +23,6 @@ namespace mousetrap
 
     class AnimationPreview : public AppComponent,
         public signals::LayerFrameSelectionChanged,
-        public signals::PlaybackToggled,
         public signals::LayerImageUpdated,
         public signals::LayerCountChanged,
         public signals::LayerPropertiesChanged
@@ -32,7 +31,6 @@ namespace mousetrap
             AnimationPreview();
 
             operator Widget*() override;
-            void update() override;
 
             size_t get_scale_factor() const;
             void set_scale_factor(size_t);
@@ -42,6 +40,12 @@ namespace mousetrap
 
             bool get_background_visible() const;
             void set_background_visible(bool);
+
+        protected:
+            void on_layer_frame_selection_changed() override;
+            void on_layer_image_updated() override;
+            void on_layer_count_changed() override;
+            void on_layer_properties_changed() override;
 
         private:
             // render
@@ -111,10 +115,6 @@ namespace mousetrap
             Frame _frame;
             Box _box = Box(GTK_ORIENTATION_VERTICAL);
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
-
-            // actions
-
-            void on_playback_toggled();
 
             Tooltip _tooltip;
             ClickEventController _click_controller;
