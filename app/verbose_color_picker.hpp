@@ -78,13 +78,13 @@ namespace mousetrap
                     bool _use_shader;
 
                     static inline Shader* _bar_shader = nullptr;
-                    Shape* _bar_shape;
-                    Shape* _bar_frame_shape;
+                    Shape* _bar_shape = nullptr;
+                    Shape* _bar_frame_shape = nullptr;
 
-                    Shape* _cursor_shape;
-                    Shape* _cursor_frame_shape;
+                    Shape* _cursor_shape = nullptr;
+                    Shape* _cursor_frame_shape = nullptr;
 
-                    Shape* _transparency_tiling_shape;
+                    Shape* _transparency_tiling_shape = nullptr;
                     Vector2f _canvas_size = {1, 1};
 
                     GLArea _gl_area;

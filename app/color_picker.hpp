@@ -42,23 +42,23 @@ namespace mousetrap
             GLArea _render_area;
 
             Shader* _hue_bar_shader;
-            Shape* _hue_bar_shape;
-            Shape* _hue_bar_frame;
+            Shape* _hue_bar_shape = nullptr;
+            Shape* _hue_bar_frame = nullptr;
 
-            Shape* _hue_bar_cursor;
-            Shape* _hue_bar_cursor_frame;
-            Shape* _hue_bar_cursor_window;
-            Shape* _hue_bar_cursor_window_frame;
+            Shape* _hue_bar_cursor = nullptr;
+            Shape* _hue_bar_cursor_frame = nullptr;
+            Shape* _hue_bar_cursor_window = nullptr;
+            Shape* _hue_bar_cursor_window_frame = nullptr;
 
-            Shader* _hsv_shape_shader;
-            Shape* _hsv_shape;
-            Shape* _hsv_shape_frame;
+            Shader* _hsv_shape_shader = nullptr;
+            Shape* _hsv_shape = nullptr;
+            Shape* _hsv_shape_frame = nullptr;
 
-            Shape* _hsv_shape_cursor;
-            Shape* _hsv_shape_cursor_frame;
+            Shape* _hsv_shape_cursor = nullptr;
+            Shape* _hsv_shape_cursor_frame = nullptr;
 
-            Shape* _hsv_shape_cursor_window;
-            Shape* _hsv_shape_cursor_window_frame;
+            Shape* _hsv_shape_cursor_window = nullptr;
+            Shape* _hsv_shape_cursor_window_frame = nullptr;
 
             Vector2f _canvas_size;
             HSVA _current_color_hsva;

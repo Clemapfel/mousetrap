@@ -35,9 +35,9 @@ namespace mousetrap
             GLTransform* get_transform();
             
         private:
-            Shape* _shape;
-            Shader* _shader;
-            GLTransform* _transform;
+            Shape* _shape = nullptr;
+            Shader* _shader = nullptr;
+            GLTransform* _transform = nullptr;
             BlendMode _blend_mode;
             
             static inline Shader* noop_shader = nullptr;

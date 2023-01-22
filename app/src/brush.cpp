@@ -39,7 +39,7 @@ namespace mousetrap
 
     void Brush::as_rectangle_horizontal()
     {
-        _shape = BrushShape::RECTANGLE_VERTICAL;
+        _shape = BrushShape::RECTANGLE_HORIZONTAL;
         _name = "Horizontal Rectangle";
         _base_image.create(0, 0);
         update_image();

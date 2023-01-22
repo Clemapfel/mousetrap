@@ -1,39 +1,158 @@
+//
+// Created by clem on 1/22/23.
+//
+
 #include <app/brush_options.hpp>
+#include <app/bubble_log_area.hpp>
 
 namespace mousetrap
 {
-    void BrushOptions::initialize_brushes()
+    void BrushOptions::BrushPreview::set_as_algorithmic(const std::string& name, const std::string& shader_id)
     {
-        for (auto* preview : _brush_previews)
-            delete preview;
+        _size = -1;
+        _name = name;
+        _label.set_text(BrushOptions::make_index_label("&#8734;"));
+        _shader_path = get_resource_path() + "shaders/" + shader_id + ".frag";
 
-        _brush_preview_list.clear();
-        _brush_previews.clear();
+        delete _texture;
+        _texture = nullptr;
 
-        for (size_t brush_i = 0; brush_i < active_state->get_n_brushes(); ++brush_i)
+        std::stringstream tooltip_text;
+        tooltip_text << "<b>Brush \"" + _name + "\"</b>" << std::endl;
+        tooltip_text << "Base Size: Any";
+        operator Widget*()->set_tooltip_text(tooltip_text.str());
+
+        if (_area.get_is_realized())
+            on_realize(&_area, this);
+    }
+
+    void BrushOptions::BrushPreview::set_as_custom(const std::string& name, const Image& image)
+    {
+        _size = std::max(image.get_size().x, image.get_size().y);
+        _name = name;
+        _label.set_text(BrushOptions::make_index_label(std::to_string(_size)));
+        _shader_path = "";
+
+        if (_texture == nullptr)
+            _texture = new Texture();
+
+        _texture->create_from_image(image);
+
+        std::stringstream tooltip_text;
+        tooltip_text << "<b>Brush \"" + _name + "\"</b>" << std::endl;
+        tooltip_text << "Base Size: " << _size;
+        operator Widget*()->set_tooltip_text(tooltip_text.str());
+
+        if (_area.get_is_realized())
+            on_realize(&_area, this);
+    }
+
+    BrushOptions::BrushPreview::BrushPreview()
+    {
+        _area.connect_signal_realize(on_realize, this);
+        _frame.set_child(&_area);
+        _aspect_frame.set_child(&_frame);
+
+        _label.set_align(GTK_ALIGN_END);
+
+        _overlay.set_child(&_aspect_frame);
+        _overlay.add_overlay(&_label);
+    }
+
+    BrushOptions::BrushPreview::~BrushPreview()
+    {
+        delete _shader;
+        delete _shape;
+        delete _texture;
+    }
+
+    BrushOptions::BrushPreview::operator Widget*()
+    {
+        return &_overlay;
+    }
+
+    void BrushOptions::BrushPreview::set_preview_size(size_t x)
+    {
+        _area.set_size_request({x, x});
+    }
+
+    void BrushOptions::BrushPreview::on_realize(Widget* widget, BrushPreview* instance)
+    {
+        auto* area = (GLArea*) widget;
+        area->make_current();
+
+        if (instance->_shape == nullptr)
+            instance->_shape = new Shape();
+
+        instance->_shape->as_rectangle(Vector2f(BrushOptions::brush_margin), Vector2f(1 - 2 * BrushOptions::brush_margin));
+
+        if (instance->_background == nullptr)
+            instance->_background = new Shape();
+
+        instance->_background->as_rectangle({0, 0}, {1, 1});
+        instance->_background->set_color(HSVA(0, 0, BrushOptions::background_value, 1));
+
+        area->clear_render_tasks();
+        area->add_render_task(instance->_background);
+
+        if (instance->_shader_path.empty())
         {
-            auto* brush = active_state->get_brush(brush_i);
-            auto shape = brush->get_shape();
-            if (shape == BrushShape::CUSTOM)
+            instance->_shape->set_texture(instance->_texture);
+            area->add_render_task(instance->_shape);
+        }
+        else
+        {
+            if (instance->_shader == nullptr)
+                instance->_shader = new Shader();
+
+            instance->_shader->create_from_file(instance->_shader_path, ShaderType::FRAGMENT);
+            auto task = RenderTask(instance->_shape, instance->_shader, nullptr, BlendMode::NORMAL);
+            task.register_float("_half_margin", &BrushOptions::brush_margin);
+            area->add_render_task(task);
+        }
+
+        area->queue_render();
+    }
+
+    BrushOptions::AddBrushDialog::AddBrushDialog()
+        : _dialog("Add Brush...")
+    {
+        _dialog.set_on_accept_pressed([](FileChooserDialog<FileChooserDialogMode::OPEN>* instance)
+        {
+            auto path = instance->get_current_name();
+            auto brush = Brush();
+            auto image = Image();
+
+            if (image.create_from_file(path))
             {
-                _brush_previews.emplace_back(new BrushPreview(brush->get_name(), brush->get_image()));
-                continue;
+                auto max_brush_size = state::settings_file->get_value_as<size_t>("brush_options", "maximum_brush_size");
+                if (image.get_size().x > max_brush_size or image.get_size().y > max_brush_size)
+                    state::bubble_log->send_message("Unable to load brush from file at `" + path + "`: Image width or height exceeds 256px", InfoMessageType::ERROR);
+                else
+                {
+                    brush.as_custom(image);
+                    state::bubble_log->send_message("Added new Custom Brush `" + brush.get_name() + "`");
+                }
             }
+            else
+                state::bubble_log->send_message("Unable to load brush from file at `" + path + "`: File is not an image or has unsupported format", InfoMessageType::ERROR);
 
-            // user shader instead of texture if algorithmic
-            std::stringstream name;
-            name << "brush_";
-            for (auto c : brush_shape_to_string(shape))
-                name << (char) std::tolower(c);
+            instance->close();
+        });
 
-            _brush_previews.emplace_back(new BrushPreview(brush->get_name(), name.str()));
-        }
-
-        for (auto* preview : _brush_previews)
+        _dialog.set_on_cancel_pressed([](FileChooserDialog<FileChooserDialogMode::OPEN>* instance)
         {
-            _brush_preview_list.push_back(preview->operator Widget*());
-            preview->set_preview_size(_preview_size);
-        }
+            instance->close();
+        });
+
+        auto filter = FileFilter("image files");
+        filter.add_allow_all_supported_image_formats();
+        _dialog.get_file_chooser().add_filter(filter);
+    }
+
+    void BrushOptions::AddBrushDialog::show()
+    {
+        _dialog.show();
     }
 
     BrushOptions::BrushOptions()
@@ -55,8 +174,8 @@ namespace mousetrap
         _main.push_back(&_brush_opacity_scale_box);
 
         auto spin_button_width = std::max(
-                _brush_size_spin_button.get_preferred_size().natural_size.x,
-                _brush_opacity_spin_button.get_preferred_size().natural_size.x
+            _brush_size_spin_button.get_preferred_size().natural_size.x,
+            _brush_opacity_spin_button.get_preferred_size().natural_size.x
         );
 
         _brush_size_spin_button.set_size_request({spin_button_width, 0});
@@ -65,68 +184,75 @@ namespace mousetrap
         _brush_opacity_spin_button.set_digits(3);
 
         _brush_size_scale.connect_signal_value_changed([](Scale* scale, BrushOptions* instance) -> void {
-            instance->set_brush_size(scale->get_value());
+            active_state->set_brush_size(scale->get_value());
         }, this);
 
         _brush_size_spin_button.connect_signal_value_changed([](SpinButton* scale, BrushOptions* instance) -> void {
-            instance->set_brush_size(scale->get_value());
+            active_state->set_brush_size(scale->get_value());
         }, this);
 
         _brush_opacity_scale.connect_signal_value_changed([](Scale* scale, BrushOptions* instance) -> void {
-            instance->set_brush_opacity(scale->get_value());
+            active_state->set_brush_opacity(scale->get_value());
         }, this);
 
         _brush_opacity_spin_button.connect_signal_value_changed([](SpinButton* scale, BrushOptions* instance) -> void {
-            instance->set_brush_opacity(scale->get_value());
+            active_state->set_brush_opacity(scale->get_value());
         }, this);
 
         set_brush_opacity(active_state->get_brush_opacity());
         set_brush_size(active_state->get_brush_size());
 
-        // Actions
+        // actions
 
         using namespace state::actions;
 
-        brush_options_increase_brush_opacity.set_function([instance = this](){
-            instance->set_brush_opacity(instance->get_brush_opacity() + 0.1f);
+        brush_options_increase_brush_size.set_function([](){
+            active_state->set_brush_size(active_state->get_brush_size() + 1);
         });
-        state::add_shortcut_action(brush_options_increase_brush_opacity);
 
-        brush_options_decrease_brush_opacity.set_function([instance = this](){
-            instance->set_brush_opacity(instance->get_brush_opacity() - 0.1f);
+        brush_options_decrease_brush_size.set_function([](){
+            active_state->set_brush_size(active_state->get_brush_size() - 1);
         });
-        state::add_shortcut_action(brush_options_decrease_brush_opacity);
 
-        brush_options_increase_brush_size.set_function([instance = this](){
-            instance->set_brush_opacity(instance->get_brush_opacity() + 1);
+        brush_options_increase_brush_opacity.set_function([](){
+            active_state->set_brush_opacity(active_state->get_brush_opacity() + 0.1);
         });
-        state::add_shortcut_action(brush_options_increase_brush_size);
 
-        brush_options_decrease_brush_size.set_function([instance = this](){
-            instance->set_brush_opacity(instance->get_brush_opacity() - 1);
+        brush_options_decrease_brush_opacity.set_function([](){
+            active_state->set_brush_opacity(active_state->get_brush_opacity() - 0.1);
         });
-        state::add_shortcut_action(brush_options_decrease_brush_size);
 
         brush_options_add_brush.set_function([](){
-            std::cout << "[TODO] " << brush_options_add_brush.get_id() << std::endl;
+           state::brush_options->_add_brush_dialog.show();
         });
-        state::add_shortcut_action(brush_options_add_brush);
 
         brush_options_remove_brush.set_function([](){
-            std::cout << "[TODO] " << brush_options_remove_brush.get_id() << std::endl;
+           active_state->remove_brush(active_state->get_current_brush_index());
         });
-        state::add_shortcut_action(brush_options_remove_brush);
 
-        brush_options_load_default_brushes.set_function([](){
-            std::cout << "[TODO] " << brush_options_load_default_brushes.get_id() << std::endl;
+        brush_options_load_default_brushes.set_function([]() {
+           active_state->load_default_brushes();
         });
-        state::add_shortcut_action(brush_options_load_default_brushes);
+
+        for (auto* action : {
+            &brush_options_increase_brush_size,
+            &brush_options_decrease_brush_size,
+            &brush_options_increase_brush_opacity,
+            &brush_options_decrease_brush_opacity,
+            &brush_options_add_brush,
+            &brush_options_remove_brush,
+            &brush_options_load_default_brushes,
+            &brush_options_open_default_brush_directory
+        })
+            state::add_shortcut_action(*action);
 
         // menu
 
         _preview_size_spin_button.set_margin_start(state::margin_unit);
         _preview_size_spin_button.set_value(_preview_size);
-        _preview_size_spin_button.connect_signal_value_changed(on_preview_size_spin_button_value_changed, this);
+        _preview_size_spin_button.connect_signal_value_changed([](SpinButton* scale, BrushOptions* instance){
+            instance->set_preview_size(scale->get_value());
+        }, this);
         _preview_size_box.push_back(&_preview_size_label);
 
         auto spacer = SeparatorLine();
@@ -145,8 +271,8 @@ namespace mousetrap
 
         auto brush_section = MenuModel();
         brush_section.add_action("Add Brush...", brush_options_add_brush.get_id());
-        brush_section.add_action("Remove Brush", brush_options_remove_brush.get_id());
-        brush_section.add_action("Load Default Brushes...", brush_options_load_default_brushes.get_id());
+        brush_section.add_action("Remove Current Brush", brush_options_remove_brush.get_id());
+        brush_section.add_action("Load Default Brushes", brush_options_load_default_brushes.get_id());
         _menu.add_section("Manage Brushes", &brush_section);
 
         _menu_button.set_child(&_menu_button_label);
@@ -168,11 +294,11 @@ namespace mousetrap
         _tooltip.create_from("brush_options", state::tooltips_file, state::keybindings_file);
         _main.set_tooltip_widget(_tooltip);
 
-        initialize_brushes();
-
         // layout
 
-        _brush_preview_list.get_selection_model()->connect_signal_selection_changed(on_brush_preview_list_selection_changed, this);
+        _brush_preview_list.get_selection_model()->connect_signal_selection_changed([](SelectionModel*, size_t i, size_t, BrushOptions* instance) {
+            active_state->set_current_brush(i);
+        }, this);
         _brush_preview_window.set_child(&_brush_preview_list);
         _brush_preview_list_frame.set_child(&_brush_preview_window);
 
@@ -199,39 +325,18 @@ namespace mousetrap
 
         _brush_preview_list_frame.set_margin_horizontal(state::margin_unit);
         _brush_preview_list_frame.set_margin_top(state::margin_unit);
+
+        on_brush_set_updated();
+        on_brush_selection_changed();
     }
 
-    void BrushOptions::on_preview_size_spin_button_value_changed(SpinButton* scale, BrushOptions* instance)
+    BrushOptions::operator Widget*()
     {
-        instance->set_preview_size(scale->get_value());
-    }
-
-    void BrushOptions::set_brush_opacity(float x)
-    {
-        x = glm::clamp<float>(x, 0, 1);
-
-        active_state->set_brush_opacity(x);
-
-        _brush_opacity_scale.set_signal_value_changed_blocked(true);
-        _brush_opacity_scale.set_value(x);
-        _brush_opacity_scale.set_signal_value_changed_blocked(false);
-
-        _brush_opacity_spin_button.set_signal_value_changed_blocked(true);
-        _brush_opacity_spin_button.set_value(x);
-        _brush_opacity_spin_button.set_signal_value_changed_blocked(false);
-    }
-
-    float BrushOptions::get_brush_opacity() const
-    {
-        return active_state->get_brush_opacity();
+        return &_main;
     }
 
     void BrushOptions::set_brush_size(size_t x)
     {
-        x = glm::clamp<size_t>(x, 1, max_brush_size);
-
-        active_state->set_brush_size(x);
-
         _brush_size_scale.set_signal_value_changed_blocked(true);
         _brush_size_scale.set_value(x);
         _brush_size_scale.set_signal_value_changed_blocked(false);
@@ -241,135 +346,62 @@ namespace mousetrap
         _brush_size_spin_button.set_signal_value_changed_blocked(false);
     }
 
-    size_t BrushOptions::get_brush_size() const
+    void BrushOptions::set_brush_opacity(float x)
     {
-        return active_state->get_brush_size();
-    }
+        _brush_opacity_scale.set_signal_value_changed_blocked(true);
+        _brush_opacity_scale.set_value(x);
+        _brush_opacity_scale.set_signal_value_changed_blocked(false);
 
-    BrushOptions::operator Widget*()
-    {
-        return &_main;
-    }
-
-    void BrushOptions::update()
-    {}
-
-    size_t BrushOptions::get_preview_size() const
-    {
-        return 50;
+        _brush_opacity_spin_button.set_signal_value_changed_blocked(true);
+        _brush_opacity_spin_button.set_value(x);
+        _brush_opacity_spin_button.set_signal_value_changed_blocked(false);
     }
 
     void BrushOptions::set_preview_size(size_t v)
     {
         _preview_size = v;
-        for (auto* preview : _brush_previews)
-            preview->set_preview_size(v);
+        for (auto& preview : _brush_previews)
+            preview.set_preview_size(v);
     }
 
-    BrushOptions::BrushPreview::BrushPreview(const std::string& name, const std::string& shader_id)
-            : _name(name), _image(nullptr), _size(-1), _label(BrushOptions::make_index_label("&#8734;")), _shader_path(get_resource_path() + "shaders/" + shader_id + ".frag")
+    void BrushOptions::on_brush_selection_changed()
     {
-        _area.connect_signal_realize(on_realize, this);
-        _frame.set_child(&_area);
-        _aspect_frame.set_child(&_frame);
+        set_brush_size(active_state->get_brush_size());
+        set_brush_opacity(active_state->get_brush_opacity());
 
-        _label.set_align(GTK_ALIGN_END);
-
-        _overlay.set_child(&_aspect_frame);
-        _overlay.add_overlay(&_label);
-
-        std::stringstream tooltip_text;
-        tooltip_text << "<b>Brush \"" + _name + "\"</b>" << std::endl;
-        tooltip_text << "Base Size: Any";
-
-        operator Widget*()->set_tooltip_text(tooltip_text.str());
+        _brush_preview_list.get_selection_model()->set_signal_selection_changed_blocked(true);
+        _brush_preview_list.get_selection_model()->select(active_state->get_current_brush_index());
+        _brush_preview_list.get_selection_model()->set_signal_selection_changed_blocked(false);
     }
 
-    BrushOptions::BrushPreview::BrushPreview(const std::string& name, const Image& image)
-            : _name(name),
-              _image(&image),
-              _size(std::max(image.get_size().x, image.get_size().y)),
-              _label(BrushOptions::make_index_label(std::to_string(_size)))
+    void BrushOptions::on_brush_set_updated()
     {
-        _area.connect_signal_realize(on_realize, this);
-        _frame.set_child(&_area);
-        _aspect_frame.set_child(&_frame);
+        auto& brushes = active_state->get_brushes();
 
-        _label.set_align(GTK_ALIGN_END);
+        while (_brush_previews.size() < brushes.size()) // overfill will not be pushed to grid view
+            _brush_previews.emplace_back();
 
-        _overlay.set_child(&_aspect_frame);
-        _overlay.add_overlay(&_label);
+        _brush_preview_list.clear();
 
-        std::stringstream tooltip_text;
-        tooltip_text << "<b>Brush \"" + _name + "\"</b>" << std::endl;
-        tooltip_text << "Base Size: " << _size;
-
-        operator Widget*()->set_tooltip_text(tooltip_text.str());
-    }
-
-    BrushOptions::BrushPreview::~BrushPreview()
-    {
-        delete _shader;
-        delete _shape;
-    }
-
-    BrushOptions::BrushPreview::operator Widget*()
-    {
-        return &_overlay;
-    }
-
-    int BrushOptions::BrushPreview::get_base_size() const
-    {
-        return _size;
-    }
-
-    void BrushOptions::BrushPreview::set_preview_size(size_t x)
-    {
-        _area.set_size_request({x, x});
-    }
-
-    void BrushOptions::BrushPreview::on_realize(Widget* widget, BrushPreview* instance)
-    {
-        auto* area = (GLArea*) widget;
-        area->make_current();
-
-        if (instance->_image != nullptr)
+        for (size_t i = 0; i < brushes.size(); ++i)
         {
-            instance->_texture = new Texture();
-            instance->_texture->create_from_image(*instance->_image);
+            const auto& brush = brushes.at(i);
+            auto& preview = _brush_previews.at(i);
+
+            if (brush.get_shape() == BrushShape::CUSTOM)
+                preview.set_as_custom(brush.get_name(), brush.get_image());
+            else
+            {
+                std::stringstream shader_name;
+                shader_name << "brush_";
+                for (auto c:brush_shape_to_string(brush.get_shape()))
+                    shader_name << (char) std::tolower(c);
+
+                preview.set_as_algorithmic(brush.get_name(), shader_name.str());
+            }
+
+            _brush_preview_list.push_back(preview);
+            preview.set_preview_size(_preview_size);
         }
-
-        instance->_shape = new Shape();
-        instance->_shape->as_rectangle(Vector2f(BrushOptions::brush_margin), Vector2f(1 - 2 * BrushOptions::brush_margin));
-        instance->_background = new Shape();
-        instance->_background->as_rectangle({0, 0}, {1, 1});
-        instance->_background->set_color(HSVA(0, 0, BrushOptions::background_value, 1));
-
-        area->clear_render_tasks();
-        area->add_render_task(instance->_background);
-
-        if (instance->_shader_path.empty())
-        {
-            instance->_shape->set_texture(instance->_texture);
-            area->add_render_task(instance->_shape);
-        }
-        else
-        {
-            instance->_shader = new Shader();
-            instance->_shader->create_from_file(instance->_shader_path, ShaderType::FRAGMENT);
-            auto task = RenderTask(instance->_shape, instance->_shader, nullptr, BlendMode::NORMAL);
-            task.register_float("_half_margin", &BrushOptions::brush_margin);
-            area->add_render_task(task);
-        }
-
-        area->queue_render();
-    }
-
-    void BrushOptions::on_brush_preview_list_selection_changed(SelectionModel*, size_t first_item_position, size_t, BrushOptions* instance)
-    {
-        auto* preview = instance->_brush_previews.at(first_item_position);
-
-        if (preview->get_base_size() > 0)
-            instance->set_brush_size(preview->get_base_size());
     }
 }

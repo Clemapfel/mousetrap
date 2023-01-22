@@ -32,6 +32,8 @@ namespace mousetrap::signals
         };
 
     DECLARE_APP_SIGNAL_COMPONENT(BrushSelectionChanged, brush_selection_changed)
+    DECLARE_APP_SIGNAL_COMPONENT(BrushSetUpdated, brush_set_updated)
+
     DECLARE_APP_SIGNAL_COMPONENT(ColorSelectionChanged, color_selection_changed)
     DECLARE_APP_SIGNAL_COMPONENT(PaletteUpdated, palette_updated)
     DECLARE_APP_SIGNAL_COMPONENT(PaletteSortModeChanged, palette_sort_mode_changed)

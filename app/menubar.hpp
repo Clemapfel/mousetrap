@@ -14,7 +14,6 @@
 #include <app/layer_view.hpp>
 #include <app/frame_view.hpp>
 #include <app/canvas.hpp>
-#include <app/brush_options.hpp>
 
 #include <include/menu_model.hpp>
 #include <include/application.hpp>

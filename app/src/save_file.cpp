@@ -7,7 +7,6 @@
 #include <app/layer_view.hpp>
 #include <app/frame_view.hpp>
 #include <app/animation_preview.hpp>
-#include <app/brush_options.hpp>
 #include <app/color_swapper.hpp>
 
 namespace mousetrap

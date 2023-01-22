@@ -50,10 +50,7 @@ namespace mousetrap
             auto& brush = out.emplace_back();
             auto image = Image();
             if (image.create_from_file(file.get_path()))
-            {
                 brush.as_custom(image);
-                out.emplace_back(brush);
-            }
             else
                 out.pop_back();
         }
@@ -115,6 +112,11 @@ namespace mousetrap
             state::canvas->signal_brush_selection_changed();
     }
 
+    size_t ProjectState::get_current_brush_index() const
+    {
+        return _current_brush_i;
+    }
+
     size_t ProjectState::get_n_brushes() const
     {
         return _brushes.size();
@@ -128,6 +130,42 @@ namespace mousetrap
     float ProjectState::get_brush_opacity() const
     {
         return _brush_opacity;
+    }
+
+    const std::deque<Brush>& ProjectState::get_brushes() const
+    {
+        return _brushes;
+    }
+
+    void ProjectState::remove_brush(size_t i)
+    {
+        auto to_erase = _brushes.at(i);
+        if (to_erase.get_shape() != BrushShape::CUSTOM)
+        {
+            state::bubble_log->send_message("Brush `" + to_erase.get_name() + "` is a default brush and cannot be deleted", InfoMessageType::WARNING);
+            return;
+        }
+
+        _brushes.erase(_brushes.begin() + i);
+
+        if (state::brush_options)
+            state::brush_options->signal_brush_set_updated();
+    }
+
+    void ProjectState::add_brush(Brush brush)
+    {
+        _brushes.push_back(brush);
+
+        if (state::brush_options)
+            state::brush_options->signal_brush_set_updated();
+    }
+
+    void ProjectState::load_default_brushes()
+    {
+        _brushes = state::load_default_brushes(get_resource_path() + "brushes");
+
+        if (state::brush_options)
+            state::brush_options->signal_brush_set_updated();
     }
 
     void ProjectState::set_brush_opacity(float v)

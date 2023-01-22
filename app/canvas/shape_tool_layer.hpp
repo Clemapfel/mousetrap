@@ -75,7 +75,7 @@ namespace mousetrap
         size_t count = 0;
         auto add = [&](float a_x, float a_y, float b_x, float b_y) -> void {
 
-            Shape* out;
+            Shape* out = nullptr;
             if (not _initialized)
                 out = _edges.emplace_back(new Shape());
             else

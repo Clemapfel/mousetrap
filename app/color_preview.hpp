@@ -34,10 +34,10 @@ namespace mousetrap
 
             static inline Shader* transparency_tiling_shader = nullptr;
 
-            Shape* _current_color_shape;
-            Shape* _previous_color_shape;
-            Shape* _frame_shape;
-            Shape* _transparency_tiling_shape;
+            Shape* _current_color_shape = nullptr;
+            Shape* _previous_color_shape = nullptr;
+            Shape* _frame_shape = nullptr;
+            Shape* _transparency_tiling_shape = nullptr;
 
             Tooltip _tooltip;
     };

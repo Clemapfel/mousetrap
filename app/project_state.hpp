@@ -41,8 +41,14 @@ namespace mousetrap
 
             const Brush* get_current_brush() const;
             void set_current_brush(size_t);
+            size_t get_current_brush_index() const;
             size_t get_n_brushes() const;
             const Brush* get_brush(size_t) const;
+            const std::deque<Brush>& get_brushes() const;
+
+            void remove_brush(size_t);
+            void add_brush(Brush);
+            void load_default_brushes();
 
             float get_brush_opacity() const;
             void set_brush_opacity(float);

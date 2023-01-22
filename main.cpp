@@ -53,7 +53,6 @@ static void activate(GtkApplication* app, void*)
     active_state = project_states.emplace_back(new ProjectState({75, 50}));
 
     /*
-    state::brush_options = new BrushOptions();
     state::toolbox = new Toolbox();
     state::color_picker = new ColorPicker();
     state::layer_view = new LayerView();
@@ -61,6 +60,7 @@ static void activate(GtkApplication* app, void*)
     state::canvas = new Canvas();
     state::animation_preview = new AnimationPreview();
     */
+    state::brush_options = new BrushOptions();
     state::color_preview = new ColorPreview();
     state::verbose_color_picker = new VerboseColorPicker();
     state::color_swapper = new ColorSwapper();
@@ -74,11 +74,13 @@ static void activate(GtkApplication* app, void*)
     Widget* verbose_color_picker = state::verbose_color_picker->operator Widget*();
     Widget* canvas = new SeparatorLine(); //state::canvas->operator Widget*();
     Widget* toolbox = new SeparatorLine(); //state::toolbox->operator Widget*();
-    Widget* brush_options = new SeparatorLine(); //state::brush_options->operator Widget*();
+    Widget* brush_options = state::brush_options->operator Widget*();
     Widget* color_preview = state::color_preview->operator Widget*();
     Widget* bubble_log = state::bubble_log->operator Widget*();
     Widget* frame_view = new SeparatorLine(); //state::frame_view->operator Widget*();
     Widget* animation_preview = new SeparatorLine(); //state::animation_preview->operator Widget*();
+
+    canvas->set_size_request({500, 0});
 
     auto* color_picker_window = new Window();
     color_picker_window->set_child(color_picker);

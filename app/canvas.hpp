@@ -318,8 +318,8 @@ namespace mousetrap
                     Vector2i _start_point;
                     Vector2i _end_point;
 
-                    Shape* _start_shape;
-                    Shape* _end_shape;
+                    Shape* _start_shape = nullptr;
+                    Shape* _end_shape = nullptr;
 
                     Shape* _line_shape;
                     Shape* _line_outline_shape;

@@ -10,6 +10,7 @@
 #include <app/tooltip.hpp>
 #include <app/add_shortcut_action.hpp>
 #include <app/app_signals.hpp>
+#include <app/file_chooser_dialog.hpp>
 
 namespace mousetrap
 {
@@ -28,23 +29,28 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(brush_options, open_default_brush_directory);
     }
 
-    class BrushOptions : public AppComponent, public signals::BrushSelectionChanged
+    class BrushOptions : public AppComponent,
+        public signals::BrushSelectionChanged,
+        public signals::BrushSetUpdated
     {
         public:
             BrushOptions();
 
-            void update();
             operator Widget*();
 
             size_t get_preview_size() const;
             void set_preview_size(size_t);
 
+        protected:
+            void on_brush_selection_changed() override;
+            void on_brush_set_updated() override;
+
+        private:
             void set_brush_size(size_t);
             size_t get_brush_size() const;
             void set_brush_opacity(float);
             float get_brush_opacity() const;
 
-        private:
             // Scales
 
             size_t max_brush_size = state::settings_file->get_value_as<size_t>("brush_options", "maximum_brush_size");
@@ -63,6 +69,20 @@ namespace mousetrap
             SpinButton _brush_opacity_spin_button = SpinButton(0, 1, 0.0001);
             Box _brush_opacity_scale_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
+            // Open Brush
+
+            class AddBrushDialog
+            {
+                public:
+                    AddBrushDialog();
+                    void show();
+
+                private:
+                    OpenFileDialog _dialog;
+            };
+
+            AddBrushDialog _add_brush_dialog;
+
             // Previews
 
             static inline float background_value = 0.3;
@@ -76,18 +96,15 @@ namespace mousetrap
             class BrushPreview
             {
                 public:
-                    /// \brief algorithmic brushes
-                    BrushPreview(const std::string& name, const std::string& shader_id);
-
-                    /// \brief texture-based custom brushes
+                    BrushPreview();
                     BrushPreview(const std::string& name, const Image&);
                     ~BrushPreview();
 
                     void set_preview_size(size_t);
                     operator Widget*();
 
-                    /// \returns -1 if algorithmic, max(texture->size) otherwise
-                    int get_base_size() const;
+                    void set_as_algorithmic(const std::string& name, const std::string& shader_id);
+                    void set_as_custom(const std::string& name, const Image&);
 
                 private:
                     int _size;
@@ -100,17 +117,15 @@ namespace mousetrap
                     GLArea _area;
                     static void on_realize(Widget* widget, BrushPreview* instance);
 
-                    Shader* _shader;
+                    Shader* _shader = nullptr;
                     std::string _shader_path = "";
+                    Texture* _texture = nullptr;
 
-                    const Image* _image;
-                    Texture* _texture;
-
-                    Shape* _shape;
-                    Shape* _background;
+                    Shape* _shape = nullptr;
+                    Shape* _background = nullptr;
             };
 
-            std::vector<BrushPreview*> _brush_previews;
+            std::deque<BrushPreview> _brush_previews;
 
             // Menu
 
@@ -124,16 +139,12 @@ namespace mousetrap
             Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
             Label _preview_size_label = Label("Preview Size (px): ");
             SpinButton _preview_size_spin_button = SpinButton(2, 256, 1);
-            static void on_preview_size_spin_button_value_changed(SpinButton*, BrushOptions* instance);
 
             // Layout
-
-            void initialize_brushes();
 
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
 
             GridView _brush_preview_list = GridView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_SINGLE);
-            static void on_brush_preview_list_selection_changed(SelectionModel*, size_t first_item_position, size_t, BrushOptions* instance);
 
             ScrolledWindow _brush_preview_window;
             Frame _brush_preview_list_frame;
