@@ -35,6 +35,7 @@
 #include <app/tooltip.hpp>
 #include <app/verbose_color_picker.hpp>
 #include <app/config_files.hpp>
+#include <app/open_uri.hpp>
 
 using namespace mousetrap;
 

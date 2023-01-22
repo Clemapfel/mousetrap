@@ -6,17 +6,7 @@ namespace mousetrap
 {
     void initialize_menubar_actions()
     {
-        static auto open_uri = [](const std::string& uri)
-        {
-            GError* error = nullptr;
-            g_app_info_launch_default_for_uri(uri.c_str(), nullptr, &error);
-            if (error != nullptr)
-            {
-                auto error_message = "Unable to open uri at `" + uri + ": " + error->message;
-                state::bubble_log->send_message(error_message);
-                std::cerr << error_message << std::endl;
-            }
-        };
+
     }
 
     void setup_global_menu_bar_model()

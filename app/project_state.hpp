@@ -49,6 +49,7 @@ namespace mousetrap
             void remove_brush(size_t);
             void add_brush(Brush);
             void load_default_brushes();
+            static std::string get_default_brush_directory();
 
             float get_brush_opacity() const;
             void set_brush_opacity(float);

@@ -88,7 +88,7 @@ namespace mousetrap
         _preview_color_current = _primary_color;
         _preview_color_previous = _primary_color;
 
-        _brushes = state::load_default_brushes(get_resource_path() + "brushes");
+        _brushes = state::load_default_brushes(get_default_brush_directory());
 
         for (size_t x = 0; x < _layer_resolution.x; ++x)
             for (size_t y = 0; y < _layer_resolution.y; ++y)
@@ -162,10 +162,18 @@ namespace mousetrap
 
     void ProjectState::load_default_brushes()
     {
-        _brushes = state::load_default_brushes(get_resource_path() + "brushes");
+        auto path = get_default_brush_directory();
+        _brushes = state::load_default_brushes(path);
 
         if (state::brush_options)
             state::brush_options->signal_brush_set_updated();
+
+        state::bubble_log->send_message("Loaded set of default brushes from `" + path + "`");
+    }
+
+    std::string ProjectState::get_default_brush_directory()
+    {
+        return get_resource_path() + "brushes";
     }
 
     void ProjectState::set_brush_opacity(float v)

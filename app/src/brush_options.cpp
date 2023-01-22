@@ -4,6 +4,7 @@
 
 #include <app/brush_options.hpp>
 #include <app/bubble_log_area.hpp>
+#include <app/open_uri.hpp>
 
 namespace mousetrap
 {
@@ -127,11 +128,31 @@ namespace mousetrap
             {
                 auto max_brush_size = state::settings_file->get_value_as<size_t>("brush_options", "maximum_brush_size");
                 if (image.get_size().x > max_brush_size or image.get_size().y > max_brush_size)
+                {
                     state::bubble_log->send_message("Unable to load brush from file at `" + path + "`: Image width or height exceeds 256px", InfoMessageType::ERROR);
+                    return;
+                }
                 else
                 {
+                    bool alpha_0_detected = false;
+                    for (size_t x = 0; x < image.get_size().x; ++x)
+                    {
+                        for (size_t y = 0; y < image.get_size().y; ++y)
+                        {
+                            if (image.get_pixel(x, y).a == 0)
+                            {
+                                alpha_0_detected = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (not alpha_0_detected)
+                        state::bubble_log->send_message("Image file at `" + path + "` does not have a pixel with opacity 0, the resulting brush will appear as a solid rectangle", InfoMessageType::WARNING);
+
                     brush.as_custom(image);
-                    state::bubble_log->send_message("Added new Custom Brush `" + brush.get_name() + "`");
+                    active_state->add_brush(brush);
+                    state::bubble_log->send_message("Added new Custom Brush from `" + path + "`");
                 }
             }
             else
@@ -232,6 +253,10 @@ namespace mousetrap
 
         brush_options_load_default_brushes.set_function([]() {
            active_state->load_default_brushes();
+        });
+
+        brush_options_open_default_brush_directory.set_function([](){
+            state::open_uri(active_state->get_default_brush_directory());
         });
 
         for (auto* action : {
@@ -378,10 +403,11 @@ namespace mousetrap
     {
         auto& brushes = active_state->get_brushes();
 
+        _brush_preview_list.clear();
+        _brush_previews.clear();
+
         while (_brush_previews.size() < brushes.size()) // overfill will not be pushed to grid view
             _brush_previews.emplace_back();
-
-        _brush_preview_list.clear();
 
         for (size_t i = 0; i < brushes.size(); ++i)
         {

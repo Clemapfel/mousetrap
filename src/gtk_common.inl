@@ -49,3 +49,5 @@ inline bool gtk_initialize_opengl(GtkWindow* window)
     GL_INITIALIZED = true;
     return not failed;
 }
+
+

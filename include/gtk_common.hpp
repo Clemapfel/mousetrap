@@ -9,10 +9,8 @@
 
 extern "C"
 {
-    ///
     bool gtk_initialize_opengl(GtkWindow* window);
 
-    ///
     enum class GtkCursorType
     {
         NONE,
