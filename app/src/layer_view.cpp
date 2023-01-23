@@ -362,6 +362,16 @@ namespace mousetrap
         _layer_preview.set_texture(texture);
     }
 
+    void LayerView::LayerRow::set_all_signals_blocked(bool b)
+    {
+        _is_visible_toggle_button.set_signal_toggled_blocked(b);
+        _is_locked_toggle_button.set_signal_toggled_blocked(b);
+        _layer_name_entry.set_signal_activate_blocked(b);
+        _blend_mode_drop_down.set_signal_selection_blocked(b);
+        _opacity_scale.set_signal_value_changed_blocked(b);
+        _opacity_spin_button.set_signal_value_changed_blocked(b);
+    }
+
     LayerView::LayerView()
     {
         on_layer_count_changed();
@@ -507,6 +517,64 @@ namespace mousetrap
         _main.push_back(&_header_menu_button);
         _main.push_back(&_layer_rows_scrolled_window);
         _main.push_back(&_control_bar_box);
+
+        // actions
+
+        layer_view_layer_new_above_current.set_function([](){
+           active_state->add_layer(active_state->get_current_layer_index() - 1);
+        });
+
+        layer_view_layer_new_below_current.set_function([](){
+            active_state->add_layer(active_state->get_current_layer_index());
+        });
+
+        layer_view_layer_duplicate.set_function([](){
+            auto current_i = active_state->get_current_layer_index();
+            active_state->duplicate_layer(current_i, *active_state->get_layer(current_i));
+        });
+
+        layer_view_layer_delete.set_function([](){
+            active_state->delete_layer(active_state->get_current_layer_index());
+        });
+
+        layer_view_layer_move_up.set_function([]()
+        {
+           auto current = active_state->get_current_layer_index();
+           if (current > 0)
+           {
+               auto next = current - 1;
+               active_state->swap_layers(current, next);
+               active_state->set_current_layer_and_frame(next, active_state->get_current_frame_index());
+           }
+        });
+
+        layer_view_layer_move_down.set_function([]()
+        {
+            auto current = active_state->get_current_layer_index();
+            if (current < active_state->get_n_layers() - 1)
+            {
+                auto next = current + 1;
+                active_state->swap_layers(current, next);
+                active_state->set_current_layer_and_frame(next, active_state->get_current_frame_index());
+            }
+        });
+
+        for (auto* action : {
+            &layer_view_layer_move_up,
+            &layer_view_layer_move_down,
+            &layer_view_layer_new_above_current,
+            &layer_view_layer_new_below_current,
+            &layer_view_layer_duplicate,
+            &layer_view_layer_delete,
+            &layer_view_layer_merge_down,
+            &layer_view_layer_flatten_all,
+            &layer_view_layer_create_from_visible,
+            &layer_view_toggle_layer_visible,
+            &layer_view_toggle_layer_locked,
+            &layer_view_show_all_other_layers,
+            &layer_view_hide_all_other_layers
+        })
+            state::add_shortcut_action(*action);
     }
 
     void LayerView::set_preview_size(size_t v)
@@ -522,7 +590,9 @@ namespace mousetrap
         for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
             _layer_rows.at(layer_i).set_texture(active_state->get_frame(layer_i, active_state->get_current_frame_index())->get_texture());
 
+        _layer_rows_list_view.get_selection_model()->set_signal_selection_changed_blocked(true);
         _layer_rows_list_view.get_selection_model()->select(active_state->get_current_layer_index());
+        _layer_rows_list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
     }
 
     void LayerView::on_layer_image_updated()
@@ -548,13 +618,22 @@ namespace mousetrap
 
     void LayerView::on_layer_count_changed()
     {
+        _layer_rows_list_view.get_selection_model()->set_signal_selection_changed_blocked(true);
+
         _layer_rows_list_view.clear();
+        _layer_rows.clear();
 
         while (_layer_rows.size() < active_state->get_n_layers())
             _layer_rows.emplace_back(this, _layer_rows.size());
 
         for (auto& row : _layer_rows)
-            _layer_rows_list_view.push_back(row);
+        {
+            row.set_all_signals_blocked(true);
+            _layer_rows_list_view.push_front(row);
+            row.set_all_signals_blocked(false);
+        }
+
+        _layer_rows_list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
 
         on_layer_properties_changed();
         on_layer_frame_selection_changed(); // also updates texture

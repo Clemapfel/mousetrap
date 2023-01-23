@@ -108,7 +108,7 @@ namespace mousetrap
         layer_submenu.add_section("Layer Position", &layer_move_section);
 
         auto layer_show_section = MenuModel();
-        layer_show_section.add_action("Hide / Show Current Layer", layer_view_set_layer_visible.get_id());
+        layer_show_section.add_action("Hide / Show Current Layer", layer_view_toggle_layer_visible.get_id());
         layer_show_section.add_action("Hide All Other Layers", layer_view_hide_all_other_layers.get_id());
         layer_show_section.add_action("Show All Other Layers", layer_view_show_all_other_layers.get_id());
         layer_submenu.add_section("Hide / Show", &layer_show_section);

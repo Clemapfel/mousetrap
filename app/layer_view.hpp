@@ -25,8 +25,8 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(layer_view, layer_merge_down);
         DECLARE_GLOBAL_ACTION(layer_view, layer_flatten_all);
         DECLARE_GLOBAL_ACTION(layer_view, layer_create_from_visible);
-        DECLARE_GLOBAL_ACTION(layer_view, set_layer_visible);
-        DECLARE_GLOBAL_ACTION(layer_view, set_layer_locked);
+        DECLARE_GLOBAL_ACTION(layer_view, toggle_layer_visible);
+        DECLARE_GLOBAL_ACTION(layer_view, toggle_layer_locked);
 
         DECLARE_GLOBAL_ACTION(layer_view, show_all_other_layers);
         DECLARE_GLOBAL_ACTION(layer_view, hide_all_other_layers);
@@ -87,6 +87,8 @@ namespace mousetrap
                 public:
                     LayerRow(LayerView*, size_t layer_i);
                     operator Widget*();
+
+                    void set_all_signals_blocked(bool);
 
                     void set_texture(const Texture*);
                     void set_opacity(float);

@@ -113,7 +113,7 @@ namespace mousetrap
         gtk_list_item_set_child(item, dropdown_item->label_widget->operator GtkWidget*());
 
         auto& f = dropdown_item->owner->_functions.at(dropdown_item->function_id);
-        if (f != nullptr)
+        if (f != nullptr and not *dropdown_item->owner->_activation_blocked)
             f();
     }
 
@@ -125,5 +125,10 @@ namespace mousetrap
     void DropDown::set_selected(size_t i)
     {
         gtk_drop_down_set_selected(get_native(), i);
+    }
+
+    void DropDown::set_signal_selection_blocked(bool b)
+    {
+        *_activation_blocked = b;
     }
 }

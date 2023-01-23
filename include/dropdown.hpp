@@ -40,6 +40,8 @@ namespace mousetrap
             void set_selected(size_t);
             size_t get_selected();
 
+            void set_signal_selection_blocked(bool b);
+
         private:
             static void on_list_factory_bind(GtkSignalListItemFactory* self, void* object, void*);
             static void on_label_factory_bind(GtkSignalListItemFactory* self, void* object, void*);

@@ -73,6 +73,9 @@ namespace mousetrap
             void draw_to_layer(size_t layer_i, size_t frame_i, std::vector<std::pair<Vector2i, HSVA>>);
             void set_current_layer_and_frame(size_t layer_i, size_t frame_i);
             void add_layer(int above); //-1 for new layer at 0
+            void duplicate_layer(int create_above, const Layer& duplicate_from);
+            void swap_layers(size_t a, size_t b);
+
             void delete_layer(size_t);
 
             void set_layer_blend_mode(size_t, BlendMode);
@@ -153,6 +156,23 @@ namespace mousetrap
             bool _playback_active = false;
             bool _onionskin_visible = false;
             size_t _onionskin_n_layers = 0;
+
+            static inline size_t new_layer_count = 0;
+
+            void signal_brush_selection_changed();
+            void signal_brush_set_updated();
+            void signal_color_selection_changed();
+            void signal_palette_updated();
+            void signal_palette_sort_mode_changed();
+            void signal_palette_editing_toggled();
+            void signal_selection_changed();
+            void signal_onionskin_visibility_toggled();
+            void signal_onionskin_layer_count_changed();
+            void signal_layer_frame_selection_changed();
+            void signal_layer_image_updated();
+            void signal_layer_count_changed();
+            void signal_layer_properties_changed();
+            void signal_active_tool_changed();
     };
 
     inline std::vector<ProjectState*> project_states = {};

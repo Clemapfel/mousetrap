@@ -70,8 +70,8 @@ namespace mousetrap
         return str.str();
     }
 
-    inline HSVA::HSVA(float r, float g, float b, float a)
-            : h(r), s(g), v(b), a(a)
+    inline HSVA::HSVA(float h, float s, float v, float a)
+            : h(h), s(s), v(v), a(a)
     {}
 
     inline HSVA::HSVA(glm::vec4 vec)

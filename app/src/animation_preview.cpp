@@ -276,7 +276,6 @@ namespace mousetrap
 
         _layer_shapes.clear();
 
-
         for (size_t i = 0; i < active_state->get_n_layers(); ++i)
         {
             if (_layer_shapes.size() <= i)
@@ -285,9 +284,12 @@ namespace mousetrap
             auto* layer = _layer_shapes.at(i);
             layer->as_rectangle({0, 0}, {1, 1});
             layer->set_texture(active_state->get_frame(i, _current_frame)->get_texture());
+            layer->set_visible(active_state->get_layer(i)->get_is_visible());
+            layer->set_color(RGBA(1, 1, 1, active_state->get_layer(i)->get_is_visible()));
         }
 
         queue_render_tasks();
+        on_resize(&_area, _canvas_size.x, _canvas_size.y, this);
     }
 
     void AnimationPreview::on_layer_properties_changed()
@@ -303,6 +305,7 @@ namespace mousetrap
         }
 
         queue_render_tasks();
+        on_resize(&_area, _canvas_size.x, _canvas_size.y, this);
     }
 
     void AnimationPreview::on_layer_image_updated()
@@ -313,7 +316,7 @@ namespace mousetrap
         for (size_t i = 0; i < active_state->get_n_layers(); ++i)
             _layer_shapes.at(i)->set_texture(active_state->get_frame(i, _current_frame)->get_texture());
 
-        _area.queue_render();
+        on_resize(&_area, _canvas_size.x, _canvas_size.y, this);
     }
 
     void AnimationPreview::on_layer_frame_selection_changed()
