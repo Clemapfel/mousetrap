@@ -1,7 +1,3 @@
-//
-// Created by clem on 1/23/23.
-//
-
 #include <app/animation_preview.hpp>
 
 namespace mousetrap
@@ -28,9 +24,7 @@ namespace mousetrap
         auto settings_section = MenuModel();
 
         _fps_spin_button.set_value(_fps);
-        _fps_spin_button.connect_signal_value_changed([](SpinButton* scale, AnimationPreview* instance){
-            state::animation_preview->set_fps(scale->get_value());
-        }, this);
+        _fps_spin_button.connect_signal_value_changed(on_fps_spin_button_value_changed, this);
         _fps_box.push_back(&_fps_label);
         _fps_spacer.set_opacity(0);
         _fps_box.push_back(&_fps_spacer);
@@ -42,9 +36,7 @@ namespace mousetrap
         settings_section.add_submenu("Fps...", &fps_submenu);
 
         _scale_factor_spin_button.set_value(_scale_factor);
-        _scale_factor_spin_button.connect_signal_value_changed([](SpinButton* scale, AnimationPreview* instance){
-            state::animation_preview->set_scale_factor(scale->get_value());
-        }, this);
+        _scale_factor_spin_button.connect_signal_value_changed(on_scale_factor_spin_button_value_changed, this);
         _scale_factor_box.push_back(&_scale_factor_label);
         _scale_factor_spacer.set_opacity(0);
         _scale_factor_box.push_back(&_scale_factor_spacer);
@@ -56,10 +48,7 @@ namespace mousetrap
         settings_section.add_submenu("Scale Factor...", &scale_factor_submenu);
 
         _background_visible_switch.set_active(_background_visible);
-        _background_visible_switch.connect_signal_state_set([](Switch* s, bool state, AnimationPreview* instance) {
-            state::animation_preview->set_background_visible(state);
-            s->set_state((Switch::State) state);
-        }, this);
+        _background_visible_switch.connect_signal_state_set(on_background_visible_switch_state_set, this);
         _background_visible_box.push_back(&_background_visible_label);
         _background_visible_spacer.set_opacity(0);
         _background_visible_box.push_back(&_background_visible_spacer);
@@ -87,6 +76,7 @@ namespace mousetrap
         _box.push_back(&_frame);
 
         _tooltip.create_from("animation_preview", state::tooltips_file, state::keybindings_file);
+
         _box.set_tooltip_widget(_tooltip);
 
         _click_controller.connect_signal_click_pressed(on_click_pressed, this);
@@ -103,6 +93,72 @@ namespace mousetrap
     AnimationPreview::operator Widget*()
     {
         return &_main;
+    }
+
+    void AnimationPreview::on_realize(Widget* widget, AnimationPreview* instance)
+    {
+        auto* area = (GLArea*) widget;
+        area->make_current();
+
+        if (_transparency_tiling_shader == nullptr)
+        {
+            _transparency_tiling_shader = new Shader();
+            _transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
+        }
+
+        instance->_transparency_tiling_shape = new Shape();
+        instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
+
+        for (auto* shape : instance->_layer_shapes)
+            delete shape;
+
+        instance->_layer_shapes.clear();
+
+
+        for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
+        {
+            auto* layer = active_state->get_layer(layer_i);
+            auto* shape = instance->_layer_shapes.emplace_back(new Shape());
+            shape->as_rectangle({0, 0}, {1, 1});
+            shape->set_texture(active_state->get_frame(layer_i, instance->_current_frame)->get_texture());
+        }
+
+        instance->set_scale_factor(instance->_scale_factor);
+        instance->set_fps(instance->_fps);
+        instance->set_background_visible(instance->_background_visible);
+
+        instance->queue_render_tasks();
+        area->queue_render();
+    }
+
+    void AnimationPreview::queue_render_tasks()
+    {
+        _area.clear_render_tasks();
+
+        auto transparency_task = RenderTask(_transparency_tiling_shape, _transparency_tiling_shader);
+        transparency_task.register_vec2("_canvas_size", &_canvas_size);
+
+        _area.add_render_task(transparency_task);
+
+        for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
+        {
+            auto task = RenderTask(_layer_shapes.at(layer_i), nullptr, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
+            _area.add_render_task(task);
+        }
+
+        _area.queue_render();
+    }
+
+    void AnimationPreview::on_resize(GLArea*, int w, int h, AnimationPreview* instance)
+    {
+        instance->_canvas_size = {w, h};
+        instance->set_scale_factor(instance->_scale_factor);
+        instance->_area.queue_render();
+    }
+
+    void AnimationPreview::on_scale_factor_spin_button_value_changed(SpinButton* spin_button, AnimationPreview* instance)
+    {
+        instance->set_scale_factor(spin_button->get_value());
     }
 
     void AnimationPreview::set_scale_factor(size_t x)
@@ -133,9 +189,30 @@ namespace mousetrap
         _area.queue_render();
     }
 
+    size_t AnimationPreview::get_scale_factor() const
+    {
+        return _scale_factor;
+    }
+
+    void AnimationPreview::on_fps_spin_button_value_changed(SpinButton* spin_button, AnimationPreview* instance)
+    {
+        instance->set_fps(spin_button->get_value());
+    }
+
     void AnimationPreview::set_fps(float value)
     {
         _fps = value;
+    }
+
+    float AnimationPreview::get_fps() const
+    {
+        return _fps;
+    }
+
+    void AnimationPreview::on_background_visible_switch_state_set(Switch* s, bool state, AnimationPreview* instance)
+    {
+        instance->set_background_visible(state);
+        s->set_state((Switch::State) state);
     }
 
     void AnimationPreview::set_background_visible(bool b)
@@ -146,6 +223,11 @@ namespace mousetrap
             _transparency_tiling_shape->set_visible(b);
 
         _area.queue_render();
+    }
+
+    bool AnimationPreview::get_background_visible() const
+    {
+        return _background_visible;
     }
 
     void AnimationPreview::on_tick_callback(FrameClock& clock)
@@ -165,7 +247,7 @@ namespace mousetrap
             while (_elapsed > frame_duration)
             {
                 _elapsed -= frame_duration;
-                _current_frame = _current_frame + 1 >= active_state->get_n_frames() ? 0 : _current_frame + 1;
+                _current_frame = _current_frame + 1 == active_state->get_n_frames() ? 0 : _current_frame + 1;
             }
         }
 
@@ -178,9 +260,9 @@ namespace mousetrap
         _area.queue_render();
     }
 
-    void AnimationPreview::set_playback_active(bool b)
+    void AnimationPreview::on_playback_toggled()
     {
-        _playback_active = b;
+        _playback_active = not _playback_active;
 
         if (not _playback_active)
         {
@@ -197,101 +279,6 @@ namespace mousetrap
     void AnimationPreview::on_click_pressed(ClickEventController*, gint n_press, double x, double y, AnimationPreview* instance)
     {
         for (size_t i = 0; i < n_press; ++i)
-            state::animation_preview->set_playback_active(not state::animation_preview->_playback_active);
-    }
-
-    void AnimationPreview::queue_render_tasks()
-    {
-        _area.clear_render_tasks();
-
-        auto transparency_task = RenderTask(_transparency_tiling_shape, _transparency_tiling_shader);
-        transparency_task.register_vec2("_canvas_size", &_canvas_size);
-
-        _area.add_render_task(transparency_task);
-
-        for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
-        {
-            auto task = RenderTask(_layer_shapes.at(layer_i), nullptr, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
-            _area.add_render_task(task);
-        }
-
-        _area.queue_render();
-    }
-
-    void AnimationPreview::on_realize(Widget* widget, AnimationPreview* instance)
-    {
-        auto* area = (GLArea*) widget;
-        area->make_current();
-
-        if (_transparency_tiling_shader == nullptr)
-        {
-            _transparency_tiling_shader = new Shader();
-            _transparency_tiling_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
-        }
-
-        instance->_transparency_tiling_shape = new Shape();
-        instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
-
-        instance->on_layer_count_changed();
-
-        instance->set_scale_factor(instance->_scale_factor);
-        instance->set_fps(instance->_fps);
-        instance->set_background_visible(instance->_background_visible);
-
-        area->queue_render();
-    }
-
-    void AnimationPreview::on_resize(GLArea*, int w, int h, AnimationPreview* instance)
-    {
-        instance->_canvas_size = {w, h};
-        instance->set_scale_factor(instance->_scale_factor);
-        instance->_area.queue_render();
-    }
-
-    void AnimationPreview::on_layer_count_changed()
-    {
-        _area.make_current();
-
-        for (auto* shape : _layer_shapes)
-            delete shape;
-
-        _layer_shapes.clear();
-
-
-        for (size_t i = 0; i < active_state->get_n_layers(); ++i)
-        {
-            if (_layer_shapes.size() <= i)
-                _layer_shapes.emplace_back(new Shape());
-
-            auto* layer = _layer_shapes.at(i);
-            layer->as_rectangle({0, 0}, {1, 1});
-            layer->set_texture(active_state->get_frame(i, _current_frame)->get_texture());
-        }
-
-        queue_render_tasks();
-    }
-
-    void AnimationPreview::on_layer_properties_changed()
-    {
-        for (size_t i = 0; i < active_state->get_n_layers(); ++i)
-            _layer_shapes.at(i)->set_visible(active_state->get_layer(i)->get_is_visible());
-
-        queue_render_tasks();
-    }
-
-    void AnimationPreview::on_layer_image_updated()
-    {
-        if (not _area.get_is_realized())
-            return;
-
-        for (size_t i = 0; i < active_state->get_n_layers(); ++i)
-            _layer_shapes.at(i)->set_texture(active_state->get_frame(i, _current_frame)->get_texture());
-
-        _area.queue_render();
-    }
-
-    void AnimationPreview::on_layer_frame_selection_changed()
-    {
-        on_layer_image_updated();
+            state::actions::animation_preview_toggle_playback_active.activate();
     }
 }

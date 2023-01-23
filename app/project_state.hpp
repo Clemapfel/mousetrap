@@ -70,7 +70,7 @@ namespace mousetrap
             const Layer::Frame* get_frame(size_t layer_i, size_t frame_i) const;
             size_t get_n_frames() const;
 
-            void draw_to_layer(size_t layer_i, size_t frame_i, std::map<Vector2i, HSVA>);
+            void draw_to_layer(size_t layer_i, size_t frame_i, std::vector<std::pair<Vector2i, HSVA>>);
             void set_current_layer_and_frame(size_t layer_i, size_t frame_i);
             void add_layer(int above); //-1 for new layer at 0
             void delete_layer(size_t);

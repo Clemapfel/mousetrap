@@ -90,11 +90,29 @@ namespace mousetrap
 
         _brushes = state::load_default_brushes(get_default_brush_directory());
 
+        _layers.emplace_back("Layer 01", layer_resolution, 3);
+        _n_frames = _layers.back().get_n_frames();
+
         for (size_t x = 0; x < _layer_resolution.x; ++x)
             for (size_t y = 0; y < _layer_resolution.y; ++y)
                 _selection.insert({x, y});
 
-        _layers.emplace_back("Layer 01", layer_resolution, 1);
+        // TODO
+        for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+        {
+            for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+            {
+                std::vector<std::pair<Vector2i, HSVA>> to_draw;
+
+                for (size_t x = 0; x < _layer_resolution.x; ++x)
+                    for (size_t y = 0; y < _layer_resolution.y; ++y)
+                        to_draw.push_back({Vector2i(x, y), HSVA(rand() / float(RAND_MAX), 1, 1, 1)});
+
+                draw_to_layer(layer_i, frame_i, to_draw);
+            }
+        }
+
+        // TODO
     }
 
     const Brush* ProjectState::get_current_brush() const
@@ -597,9 +615,6 @@ namespace mousetrap
 
         if (state::layer_view)
             state::layer_view->signal_playback_toggled();
-
-        if (state::animation_preview)
-            state::animation_preview->signal_playback_toggled();
     }
 
     bool ProjectState::get_onionskin_visible() const
@@ -633,7 +648,7 @@ namespace mousetrap
             state::frame_view->signal_onionskin_layer_count_changed();
     }
 
-    void ProjectState::draw_to_layer(size_t layer_i, size_t frame_i, std::map<Vector2i, HSVA> data)
+    void ProjectState::draw_to_layer(size_t layer_i, size_t frame_i, std::vector<std::pair<Vector2i, HSVA>> data)
     {
         auto* frame = _layers.at(layer_i).get_frame(frame_i);
         auto* image = frame->get_image();

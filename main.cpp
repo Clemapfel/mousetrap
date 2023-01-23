@@ -59,7 +59,6 @@ static void activate(GtkApplication* app, void*)
     state::layer_view = new LayerView();
     state::frame_view = new FrameView();
     state::canvas = new Canvas();
-    state::animation_preview = new AnimationPreview();
     */
     state::brush_options = new BrushOptions();
     state::color_preview = new ColorPreview();
@@ -67,6 +66,7 @@ static void activate(GtkApplication* app, void*)
     state::color_swapper = new ColorSwapper();
     state::bubble_log = new BubbleLogArea();
     state::palette_view = new PaletteView();
+    state::animation_preview = new AnimationPreview();
 
     Widget* layer_view = new SeparatorLine(); //state::layer_view->operator Widget*();
     Widget* palette_view = state::palette_view->operator Widget*();
@@ -79,7 +79,7 @@ static void activate(GtkApplication* app, void*)
     Widget* color_preview = state::color_preview->operator Widget*();
     Widget* bubble_log = state::bubble_log->operator Widget*();
     Widget* frame_view = new SeparatorLine(); //state::frame_view->operator Widget*();
-    Widget* animation_preview = new SeparatorLine(); //state::animation_preview->operator Widget*();
+    Widget* animation_preview = state::animation_preview->operator Widget*();
 
     canvas->set_size_request({500, 0});
 

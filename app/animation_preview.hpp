@@ -32,14 +32,10 @@ namespace mousetrap
 
             operator Widget*() override;
 
-            size_t get_scale_factor() const;
             void set_scale_factor(size_t);
-
-            float get_fps() const;
             void set_fps(float);
-
-            bool get_background_visible() const;
             void set_background_visible(bool);
+            void set_playback_active(bool);
 
         protected:
             void on_layer_frame_selection_changed() override;
@@ -49,6 +45,7 @@ namespace mousetrap
 
         private:
             // render
+
             GLArea _area;
 
             std::vector<Shape*> _layer_shapes;
@@ -71,8 +68,6 @@ namespace mousetrap
             Label _scale_factor_label = Label("Scale Factor: ");
             Box _scale_factor_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
-            static void on_scale_factor_spin_button_value_changed(SpinButton* spin_button, AnimationPreview*);
-
             // fps
 
             float _fps = state::settings_file->get_value_as<float>("animation_preview", "default_fps");
@@ -83,7 +78,6 @@ namespace mousetrap
             Label _fps_label = Label("Scale Factor: ");
             Box _fps_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
-            static void on_fps_spin_button_value_changed(SpinButton* spin_button, AnimationPreview*);
             void on_tick_callback(FrameClock&);
 
             // background
@@ -94,8 +88,6 @@ namespace mousetrap
             Label _background_visible_label = Label("Show Background: ");
             SeparatorLine _background_visible_spacer;
             Box _background_visible_box = Box(GTK_ORIENTATION_HORIZONTAL);
-
-            static void on_background_visible_switch_state_set(Switch*, bool, AnimationPreview*);
 
             // playback
 
