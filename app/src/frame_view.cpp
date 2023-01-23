@@ -1,5 +1,4 @@
 #include <app/frame_view.hpp>
-#include <app/layer_view.hpp>
 #include <app/animation_preview.hpp>
 
 namespace mousetrap
@@ -196,7 +195,6 @@ namespace mousetrap
             FrameColumn* instance)
     {
         instance->_owner->set_selection(i, instance->_frame_i);
-        state::layer_view->update();
         state::animation_preview->update();
     }
 
@@ -634,7 +632,6 @@ namespace mousetrap
 
         active_state->set_current_layer_and_frame(_selected_layer_i, _selected_frame_i);
 
-        state::layer_view->update();
         state::animation_preview->update();
     }
 

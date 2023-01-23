@@ -56,7 +56,6 @@ static void activate(GtkApplication* app, void*)
     /*
     state::toolbox = new Toolbox();
     state::color_picker = new ColorPicker();
-    state::layer_view = new LayerView();
     state::frame_view = new FrameView();
     state::canvas = new Canvas();
     */
@@ -67,8 +66,9 @@ static void activate(GtkApplication* app, void*)
     state::bubble_log = new BubbleLogArea();
     state::palette_view = new PaletteView();
     state::animation_preview = new AnimationPreview();
+    state::layer_view = new LayerView();
 
-    Widget* layer_view = new SeparatorLine(); //state::layer_view->operator Widget*();
+    Widget* layer_view = state::layer_view->operator Widget*();
     Widget* palette_view = state::palette_view->operator Widget*();
     Widget* color_swapper = state::color_swapper->operator Widget*();
     Widget* color_picker = new SeparatorLine(); //state::color_picker->operator Widget*();

@@ -32,41 +32,34 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(layer_view, hide_all_other_layers);
     }
 
-    namespace state
-    {
-        void initialize_layer_view_actions();
-        void update_layer_view_actions_inhibition();
-
-        void swap_layers_at_position(size_t a, size_t b);
-    }
-
     class LayerView : public AppComponent,
         public signals::LayerFrameSelectionChanged,
-        public signals::PlaybackToggled,
         public signals::LayerImageUpdated,
         public signals::LayerCountChanged,
         public signals::LayerPropertiesChanged
     {
         public:
             LayerView();
-            
-            void update() override;
             operator Widget*() override;
 
-            size_t get_preview_size() const;
             void set_preview_size(size_t);
+
+        protected:
+            void on_layer_frame_selection_changed() override;
+            void on_layer_image_updated() override;
+            void on_layer_count_changed() override;
+            void on_layer_properties_changed() override;
             
         private:
             class LayerPreview
             {
                 public:
-                    LayerPreview(size_t layer_i, size_t frame_i);
+                    LayerPreview(size_t layer_i);
                     ~LayerPreview();
 
                     operator Widget*();
 
-                    void set_layer(size_t);
-                    void set_frame(size_t);
+                    void set_texture(const Texture*);
                     void set_preview_size(size_t);
                     void set_opacity(float);
                     void set_visible(bool);
@@ -76,8 +69,7 @@ namespace mousetrap
 
                 private:
                     size_t _layer_i;
-                    size_t _frame_i;
-                    
+
                     GLArea _area;
 
                     static inline Shader* _transparency_tiling_shader = nullptr;
@@ -93,14 +85,10 @@ namespace mousetrap
             class LayerRow
             {
                 public:
-                    LayerRow(LayerView*, size_t layer_i, size_t frame_i);
-
-                    void update();
+                    LayerRow(LayerView*, size_t layer_i);
                     operator Widget*();
 
-                    void set_layer(size_t);
-                    void set_frame(size_t);
-
+                    void set_texture(const Texture*);
                     void set_opacity(float);
                     void set_visible(bool);
                     void set_locked(bool);
@@ -111,30 +99,23 @@ namespace mousetrap
                 private:
                     LayerView* _owner;
                     size_t _layer_i;
-                    size_t _frame_i;
-
-                    void signal_layer_updated();
 
                     Box _inner_box = Box(GTK_ORIENTATION_HORIZONTAL, state::margin_unit);
                     Box _outer_box = Box(GTK_ORIENTATION_VERTICAL);
 
                     LayerPreview _layer_preview;
-                    Frame _layer_preview_frame;
                     AspectFrame _layer_preview_aspect_frame = AspectFrame(active_state->get_layer_resolution().x / float(active_state->get_layer_resolution().y));
                     ListView _layer_preview_list_view = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
 
                     ToggleButton _is_visible_toggle_button;
                     ImageDisplay _is_visible_icon = ImageDisplay(get_resource_path() + "icons/layer_visible.png");
                     ImageDisplay _is_not_visible_icon = ImageDisplay(get_resource_path() + "icons/layer_not_visible.png");
-                    static void on_is_visible_toggle_button_toggled(ToggleButton*, LayerRow* instance);
 
                     ToggleButton _is_locked_toggle_button;
                     ImageDisplay _is_locked_icon = ImageDisplay(get_resource_path() + "icons/layer_locked.png");
                     ImageDisplay _is_not_locked_icon = ImageDisplay(get_resource_path() + "icons/layer_not_locked.png");
-                    static void on_is_locked_toggle_button_toggled(ToggleButton*, LayerRow* instance);
 
                     Entry _layer_name_entry;
-                    static void on_layer_name_entry_activated(Entry*, LayerRow* instance);
 
                     LevelBar _opacity_level_bar = LevelBar(0, 1);
                     Overlay _opacity_level_bar_name_entry_overlay;
@@ -148,9 +129,6 @@ namespace mousetrap
 
                     Popover _opacity_popover;
                     MenuButton _opacity_menu_button;
-
-                    static void on_opacity_scale_value_changed(Scale*, LayerRow* instance);
-                    static void on_opacity_spin_button_value_changed(SpinButton*, LayerRow* instance);
 
                     DropDown _blend_mode_drop_down;
                     std::vector<Label*> _blend_mode_drop_down_label_items;
@@ -209,13 +187,11 @@ namespace mousetrap
             Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
             Label _preview_size_label = Label("Preview Size (px): ");
             SpinButton _preview_size_spin_button = SpinButton(2, 256, 1);
-            static void on_preview_size_spin_button_value_changed(SpinButton*, LayerView* instance);
 
             // layout
 
             std::deque<LayerRow> _layer_rows;
             ListView _layer_rows_list_view = ListView(GTK_ORIENTATION_VERTICAL, GTK_SELECTION_MULTIPLE);
-            static void on_layer_rows_list_view_selection_changed(SelectionModel*, size_t first_item_position, size_t n_items_changed, LayerView* instance);
 
             ScrolledWindow _layer_rows_scrolled_window;
             Box _layer_rows_scrolled_window_box = Box(GTK_ORIENTATION_VERTICAL);

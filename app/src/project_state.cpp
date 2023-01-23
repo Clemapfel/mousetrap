@@ -334,7 +334,7 @@ namespace mousetrap
 
     void ProjectState::set_layer_visible(size_t i, bool b)
     {
-        _layers.at(i).set_is_visible(i);
+        _layers.at(i).set_is_visible(b);
 
         if (state::canvas)
             state::canvas->signal_layer_properties_changed();
@@ -368,7 +368,7 @@ namespace mousetrap
 
     void ProjectState::set_layer_locked(size_t i, bool b)
     {
-        _layers.at(i).set_is_locked(i);
+        _layers.at(i).set_is_locked(b);
 
         if (state::canvas)
             state::canvas->signal_layer_properties_changed();
@@ -606,15 +606,6 @@ namespace mousetrap
     void ProjectState::set_playback_active(bool b)
     {
         _playback_active = b;
-
-        if (state::canvas)
-            state::canvas->signal_playback_toggled();
-
-        if (state::frame_view)
-            state::frame_view->signal_playback_toggled();
-
-        if (state::layer_view)
-            state::layer_view->signal_playback_toggled();
     }
 
     bool ProjectState::get_onionskin_visible() const

@@ -292,8 +292,15 @@ namespace mousetrap
 
     void AnimationPreview::on_layer_properties_changed()
     {
+        if (not _area.get_is_realized())
+            return;
+
         for (size_t i = 0; i < active_state->get_n_layers(); ++i)
-            _layer_shapes.at(i)->set_visible(active_state->get_layer(i)->get_is_visible());
+        {
+            const auto* layer = active_state->get_layer(i);
+            _layer_shapes.at(i)->set_visible(layer->get_is_visible());
+            _layer_shapes.at(i)->set_color(RGBA(1, 1, 1, layer->get_opacity()));
+        }
 
         queue_render_tasks();
     }

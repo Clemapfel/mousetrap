@@ -45,7 +45,6 @@ namespace mousetrap
 
         private:
             // render
-
             GLArea _area;
 
             std::vector<Shape*> _layer_shapes;

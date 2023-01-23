@@ -33,7 +33,6 @@ namespace mousetrap
     
     class FrameView : public AppComponent,
         public signals::LayerFrameSelectionChanged,
-        public signals::PlaybackToggled,
         public signals::OnionSkinVisibilityToggled,
         public signals::OnionSkinLayerCountChanged,
         public signals::LayerImageUpdated,

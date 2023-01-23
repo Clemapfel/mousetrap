@@ -30,7 +30,6 @@ namespace mousetrap
         public signals::LayerFrameSelectionChanged,
         public signals::ColorSelectionChanged,
         public signals::SelectionChanged,
-        public signals::PlaybackToggled,
         public signals::OnionSkinVisibilityToggled,
         public signals::OnionSkinLayerCountChanged,
         public signals::LayerImageUpdated,

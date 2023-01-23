@@ -8,7 +8,6 @@
 #include <app/project_state.hpp>
 #include <app/animation_preview.hpp>
 #include <app/frame_view.hpp>
-#include <app/layer_view.hpp>
 #include <app/palette_view.hpp>
 
 namespace mousetrap

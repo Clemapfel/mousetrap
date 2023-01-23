@@ -1,13 +1,12 @@
-//
-// Created by clem on 1/23/23.
-//
-
 #include <app/layer_view.hpp>
+#include <app/canvas.hpp>
+#include <app/frame_view.hpp>
+#include <app/animation_preview.hpp>
 
 namespace mousetrap
 {
-    LayerView::LayerPreview::LayerPreview(size_t layer_i)
-            : _layer_i(layer_i)
+    LayerView::LayerPreview::LayerPreview(size_t layer_i, size_t frame_i)
+            : _layer_i(layer_i), _frame_i(frame_i)
     {
         _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);
@@ -24,12 +23,20 @@ namespace mousetrap
         return &_area;
     }
 
-    void LayerView::LayerPreview::set_texture(const Texture* texture)
+    void LayerView::LayerPreview::set_layer(size_t layer_i)
     {
-        if (_layer_shape != nullptr)
-            _layer_shape->set_texture(texture);
+        _layer_i = layer_i;
 
-        _area.queue_render();
+        if (_layer_shape != nullptr)
+            _layer_shape->set_texture(active_state->get_frame(_layer_i, _frame_i)->get_texture());
+    }
+
+    void LayerView::LayerPreview::set_frame(size_t i)
+    {
+        _frame_i = i;
+
+        if (_layer_shape != nullptr)
+            _layer_shape->set_texture(active_state->get_frame(_layer_i, _frame_i)->get_texture());
     }
 
     void LayerView::LayerPreview::set_opacity(float v)
@@ -81,9 +88,9 @@ namespace mousetrap
         area->add_render_task(transparency_task);
         area->add_render_task(instance->_layer_shape);
 
-        instance->set_texture(active_state->get_frame(instance->_layer_i, active_state->get_current_frame_index())->get_texture());
+        instance->set_frame(instance->_frame_i);
+        instance->set_layer(instance->_layer_i);
         instance->set_opacity(active_state->get_layer(instance->_layer_i)->get_opacity());
-        instance->set_visible(active_state->get_layer(instance->_layer_i)->get_is_visible());
 
         area->queue_render();
     }
@@ -106,12 +113,16 @@ namespace mousetrap
         _area.queue_render();
     }
 
-    LayerView::LayerRow::LayerRow(LayerView* owner, size_t layer_i)
-            : _owner(owner), _layer_i(layer_i), _layer_preview(layer_i)
+    // ###
+
+    LayerView::LayerRow::LayerRow(LayerView* owner, size_t layer_i, size_t frame_i)
+            : _owner(owner), _layer_i(layer_i), _frame_i(frame_i), _layer_preview(layer_i, frame_i)
     {
         _layer_preview.set_preview_size(_owner->_preview_size);
 
-        _layer_preview_aspect_frame.set_child(_layer_preview);
+        _layer_preview_frame.set_child(_layer_preview);
+        _layer_preview_frame.set_label_widget(nullptr);
+        _layer_preview_aspect_frame.set_child(&_layer_preview_frame);
         _layer_preview_list_view.push_back(&_layer_preview_aspect_frame);
 
         _visible_locked_buttons_box.push_back(&_is_visible_toggle_button);
@@ -125,13 +136,8 @@ namespace mousetrap
             button->set_align(GTK_ALIGN_CENTER);
         }
 
-        _is_visible_toggle_button.connect_signal_toggled([](ToggleButton* button, LayerRow* instance){
-            active_state->set_layer_visible(instance->_layer_i, button->get_active());
-        }, this);
-
-        _is_locked_toggle_button.connect_signal_toggled([](ToggleButton* button, LayerRow* instance){
-            active_state->set_layer_locked(instance->_layer_i, button->get_active());
-        }, this);
+        _is_visible_toggle_button.connect_signal_toggled(on_is_visible_toggle_button_toggled, this);
+        _is_locked_toggle_button.connect_signal_toggled(on_is_locked_toggle_button_toggled, this);
 
         for (auto* icon : {&_is_visible_icon, &_is_not_visible_icon, &_is_locked_icon, &_is_not_locked_icon})
             icon->set_size_request(icon->get_size());
@@ -140,9 +146,7 @@ namespace mousetrap
         _layer_name_entry.set_hexpand(true);
         _layer_name_entry.set_vexpand(false);
         _layer_name_entry.set_has_frame(false);
-        _layer_name_entry.connect_signal_activate([](Entry* entry, LayerRow* instance){
-            active_state->set_layer_name(instance->_layer_i, entry->get_text());
-        }, this);
+        _layer_name_entry.connect_signal_activate(on_layer_name_entry_activated, this);
 
         _opacity_level_bar.set_value(float(rand()) / RAND_MAX);
         _opacity_level_bar.set_opacity(0.5);
@@ -167,33 +171,35 @@ namespace mousetrap
             list_item->set_halign(GTK_ALIGN_START);
 
             _blend_mode_drop_down.push_back(
-                list_item,
-                label_item,
-                [](blend_mode_drop_down_data data) {
-                    auto i = data.instance->_blend_mode_drop_down.get_selected();
+                    list_item,
+                    label_item,
+                    [](blend_mode_drop_down_data data) {
+                        auto i = data.instance->_blend_mode_drop_down.get_selected();
 
-                    std::string key;
-                    auto mode = blend_mode_to_label.at(i).first;
+                        std::string key;
+                        auto mode = blend_mode_to_label.at(i).first;
 
-                    if (mode == BlendMode::NORMAL)
-                        key = "normal";
-                    else if (mode == BlendMode::ADD)
-                        key = "add";
-                    else if (mode == BlendMode::SUBTRACT)
-                        key = "subtract";
-                    else if (mode == BlendMode::REVERSE_SUBTRACT)
-                        key = "reverse_subtract";
-                    else if (mode == BlendMode::MULTIPLY)
-                        key = "multiply";
-                    else if (mode == BlendMode::MIN)
-                        key = "min";
-                    else if (mode == BlendMode::MAX)
-                        key = "max";
+                        if (mode == BlendMode::NORMAL)
+                            key = "normal";
+                        else if (mode == BlendMode::ADD)
+                            key = "add";
+                        else if (mode == BlendMode::SUBTRACT)
+                            key = "subtract";
+                        else if (mode == BlendMode::REVERSE_SUBTRACT)
+                            key = "reverse_subtract";
+                        else if (mode == BlendMode::MULTIPLY)
+                            key = "multiply";
+                        else if (mode == BlendMode::MIN)
+                            key = "min";
+                        else if (mode == BlendMode::MAX)
+                            key = "max";
 
-                    data.instance->_blend_mode_drop_down.set_tooltip_text(state::tooltips_file->get_value("layer_view", "blend_mode_" + key + "_label"));
-                    active_state->set_layer_blend_mode(data.instance->_layer_i, mode);
+                        data.instance->_blend_mode_drop_down.set_tooltip_text(state::tooltips_file->get_value("layer_view", "blend_mode_" + key + "_label"));
 
-                }, blend_mode_drop_down_data{pair.first, this}
+                        active_state->set_layer_blend_mode(data.instance->_layer_i, mode);
+                        data.instance->signal_layer_updated();
+
+                    }, blend_mode_drop_down_data{pair.first, this}
             );
         }
 
@@ -201,14 +207,8 @@ namespace mousetrap
         _blend_mode_drop_down.set_valign(GTK_ALIGN_CENTER);
         _blend_mode_drop_down.set_halign(GTK_ALIGN_END);
 
-        _opacity_scale.connect_signal_value_changed([](Scale* scale, LayerRow* instance) {
-            active_state->set_layer_opacity(instance->_layer_i, scale->get_value());
-        }, this);
-
-        _opacity_spin_button.connect_signal_value_changed([](SpinButton* scale, LayerRow* instance){
-            active_state->set_layer_opacity(instance->_layer_i, scale->get_value());
-        }, this);
-
+        _opacity_scale.connect_signal_value_changed(on_opacity_scale_value_changed, this);
+        _opacity_spin_button.connect_signal_value_changed(on_opacity_spin_button_value_changed, this);
         set_opacity(active_state->get_layer(layer_i)->get_opacity());
 
         _opacity_scale.set_hexpand(true);
@@ -238,7 +238,6 @@ namespace mousetrap
         _outer_box.push_back(&_inner_box);
 
         // tooltips
-
         auto get_tooltip = [](const std::string key) -> std::string {
             return state::tooltips_file->get_value("layer_view", key);
         };
@@ -270,11 +269,35 @@ namespace mousetrap
             _blend_mode_drop_down_label_items.at(i)->set_tooltip_text(get_tooltip("blend_mode_" + key + "_label"));
             _blend_mode_drop_down_list_items.at(i)->set_tooltip_text(get_tooltip("blend_mode_" + key + "_explanation"));
         }
+
+        update();
     }
 
     LayerView::LayerRow::operator Widget*()
     {
         return &_outer_box;
+    }
+
+    void LayerView::LayerRow::update()
+    {
+        std::stringstream tooltip;
+        tooltip << "Layer #" << std::to_string(_layer_i) << ": \"" << _layer_name_entry.get_text() << "\"";
+        _layer_name_entry.set_tooltip_text(tooltip.str());
+        _layer_preview.operator Widget*()->set_tooltip_text(tooltip.str());
+    }
+
+    void LayerView::LayerRow::set_layer(size_t layer_i)
+    {
+        _layer_i = layer_i;
+        _layer_preview.set_layer(_layer_i);
+
+        const auto* layer = active_state->get_layer(_layer_i);
+        set_locked(layer->get_is_locked());
+        set_visible(layer->get_is_visible());
+        set_blend_mode(layer->get_blend_mode());
+        set_name(layer->get_name());
+
+        update();
     }
 
     void LayerView::LayerRow::set_blend_mode(BlendMode mode)
@@ -288,6 +311,12 @@ namespace mousetrap
             blend_mode_i += 1;
         }
         _blend_mode_drop_down.set_selected(blend_mode_i);
+    }
+
+    void LayerView::LayerRow::set_frame(size_t i)
+    {
+        _frame_i = i;
+        _layer_preview.set_frame(i);
     }
 
     void LayerView::LayerRow::set_opacity(float v)
@@ -357,19 +386,65 @@ namespace mousetrap
         _layer_preview.set_preview_size(px);
     }
 
-    void LayerView::LayerRow::set_texture(const Texture* texture)
+    void LayerView::LayerRow::signal_layer_updated()
     {
-        _layer_preview.set_texture(texture);
+        state::canvas->update();
+        state::frame_view->update();
     }
+
+    void LayerView::LayerRow::on_is_visible_toggle_button_toggled(ToggleButton* button, LayerRow* instance)
+    {
+        auto b = button->get_active();
+        instance->set_visible(b);
+
+        active_state->set_layer_visible(instance->_layer_i, b);
+        instance->signal_layer_updated();
+    }
+
+    void LayerView::LayerRow::on_is_locked_toggle_button_toggled(ToggleButton* button, LayerRow* instance)
+    {
+        auto b = button->get_active();
+        instance->set_locked(b);
+
+        active_state->set_layer_locked(instance->_layer_i, b);
+        instance->signal_layer_updated();
+    }
+
+    void LayerView::LayerRow::on_layer_name_entry_activated(Entry* entry, LayerRow* instance)
+    {
+        active_state->set_layer_name(instance->_layer_i, instance->_layer_name_entry.get_text());
+        instance->signal_layer_updated();
+    }
+
+    void LayerView::LayerRow::on_opacity_scale_value_changed(Scale* scale, LayerRow* instance)
+    {
+        auto v = scale->get_value();
+        instance->set_opacity(v);
+        active_state->set_layer_opacity(instance->_layer_i, v);
+        instance->signal_layer_updated();
+    }
+
+    void LayerView::LayerRow::on_opacity_spin_button_value_changed(SpinButton* scale, LayerRow* instance)
+    {
+        auto v = scale->get_value();
+        instance->set_opacity(v);
+        active_state->set_layer_opacity(instance->_layer_i, v);
+        instance->signal_layer_updated();
+    }
+
+    // ###
 
     LayerView::LayerView()
     {
-        on_layer_count_changed();
+        for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
+            _layer_rows.emplace_back(this, layer_i, active_state->get_current_frame_index());
+
+        for (auto& row : _layer_rows)
+            _layer_rows_list_view.push_back(row);
+
 
         _layer_rows_list_view.set_show_separators(true);
-        _layer_rows_list_view.get_selection_model()->connect_signal_selection_changed([](SelectionModel*, size_t i, size_t, LayerView* instance){
-            active_state->set_current_layer_and_frame(i, active_state->get_current_frame_index());
-        }, this);
+        _layer_rows_list_view.get_selection_model()->connect_signal_selection_changed(on_layer_rows_list_view_selection_changed, this);
         _layer_rows_list_view.get_selection_model()->select(active_state->get_current_layer_index());
 
         _layer_rows_scrolled_window_spacer.set_size_request({0, state::margin_unit * 10});
@@ -384,6 +459,7 @@ namespace mousetrap
         _layer_rows_scrolled_window.set_expand(true);
 
         // control bar
+        state::initialize_layer_view_actions();
 
         for (auto* display : {&_layer_move_up_icon, &_layer_create_icon, &_layer_duplicate_icon, &_layer_delete_icon, &_layer_move_down_icon, &_layer_merge_down_icon, &_layer_flatten_all_icon})
             display->set_size_request(display->get_size());
@@ -459,9 +535,7 @@ namespace mousetrap
 
         _preview_size_spin_button.set_margin_start(state::margin_unit);
         _preview_size_spin_button.set_value(_preview_size);
-        _preview_size_spin_button.connect_signal_value_changed([](SpinButton* scale, LayerView* instance) {
-            instance->set_preview_size(scale->get_value());
-        }, this);
+        _preview_size_spin_button.connect_signal_value_changed(on_preview_size_spin_button_value_changed, this);
         _preview_size_box.push_back(&_preview_size_label);
 
         auto spacer = SeparatorLine();
@@ -517,51 +591,57 @@ namespace mousetrap
             row.set_preview_size(_preview_size);
     }
 
-    void LayerView::on_layer_frame_selection_changed()
+    size_t LayerView::get_preview_size() const
     {
-        for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
-            _layer_rows.at(layer_i).set_texture(active_state->get_frame(layer_i, active_state->get_current_frame_index())->get_texture());
-
-        _layer_rows_list_view.get_selection_model()->select(active_state->get_current_layer_index());
+        return _preview_size;
     }
 
-    void LayerView::on_layer_image_updated()
+    void LayerView::on_preview_size_spin_button_value_changed(SpinButton* scale, LayerView* instance)
     {
-        for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
-            _layer_rows.at(layer_i).set_texture(active_state->get_frame(layer_i, active_state->get_current_frame_index())->get_texture());
-    }
-
-    void LayerView::on_layer_properties_changed()
-    {
-        for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
-        {
-            auto& row = _layer_rows.at(layer_i);
-            const auto* layer = active_state->get_layer(layer_i);
-
-            row.set_opacity(layer->get_opacity());
-            row.set_visible(layer->get_is_visible());
-            row.set_locked(layer->get_is_locked());
-            row.set_blend_mode(layer->get_blend_mode());
-            row.set_name(layer->get_name());
-        }
-    }
-
-    void LayerView::on_layer_count_changed()
-    {
-        _layer_rows_list_view.clear();
-
-        while (_layer_rows.size() < active_state->get_n_layers())
-            _layer_rows.emplace_back(this, _layer_rows.size());
-
-        for (auto& row : _layer_rows)
-            _layer_rows_list_view.push_back(row);
-
-        on_layer_properties_changed();
-        on_layer_frame_selection_changed(); // also updates texture
+        instance->set_preview_size(scale->get_value());
     }
 
     LayerView::operator Widget*()
     {
         return &_main;
+    }
+
+    void LayerView::update()
+    {
+        for (auto& row : _layer_rows)
+            row.update();
+    }
+
+    void LayerView::on_layer_rows_list_view_selection_changed(SelectionModel*, size_t first_item_position,
+            size_t n_items_changed, LayerView* instance)
+    {
+        active_state->set_current_layer_and_frame(first_item_position, active_state->get_current_frame_index());
+        state::canvas->update();
+        state::frame_view->update();
+    }
+}
+
+namespace mousetrap::state
+{
+    void swap_layers_at_position(size_t a, size_t b)
+    {}
+
+    void initialize_layer_view_actions()
+    {
+        using namespace state::actions;
+
+        for (auto* action : {
+                &layer_view_layer_move_up,
+                &layer_view_layer_move_down,
+                &layer_view_layer_new_above_current,
+                &layer_view_layer_new_below_current,
+                &layer_view_layer_duplicate,
+                &layer_view_layer_delete,
+                &layer_view_layer_merge_down,
+                &layer_view_layer_flatten_all,
+                &layer_view_set_layer_visible,
+                &layer_view_set_layer_locked
+        })
+            state::add_shortcut_action(*action);
     }
 }
