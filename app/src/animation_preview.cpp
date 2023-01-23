@@ -18,6 +18,25 @@ namespace mousetrap
 
         using namespace state::actions;
 
+        animation_preview_increase_scale_factor.set_function([](){
+           state::animation_preview->set_scale_factor(state::animation_preview->_scale_factor + 1);
+        });
+
+        animation_preview_increase_scale_factor.set_function([](){
+            auto current = state::animation_preview->_scale_factor;
+            state::animation_preview->set_scale_factor(current > 0 ? current - 1 : current);
+        });
+
+        animation_preview_toggle_playback_active.set_function([](){
+           auto current = state::animation_preview->_playback_active;
+           state::animation_preview->set_playback_active(not current);
+        });
+
+        animation_preview_toggle_background_visible.set_function([](){
+           auto current = state::animation_preview->_background_visible;
+           state::animation_preview->set_background_visible(not current);
+        });
+
         for (auto* action : {&animation_preview_toggle_playback_active, &animation_preview_decrease_scale_factor, &animation_preview_increase_scale_factor, &animation_preview_toggle_background_visible})
             state::add_shortcut_action(*action);
 
