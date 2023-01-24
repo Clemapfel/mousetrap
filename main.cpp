@@ -56,9 +56,9 @@ static void activate(GtkApplication* app, void*)
     /*
     state::toolbox = new Toolbox();
     state::color_picker = new ColorPicker();
-    state::frame_view = new FrameView();
     state::canvas = new Canvas();
     */
+    state::frame_view = new FrameView();
     state::brush_options = new BrushOptions();
     state::color_preview = new ColorPreview();
     state::verbose_color_picker = new VerboseColorPicker();
@@ -78,7 +78,7 @@ static void activate(GtkApplication* app, void*)
     Widget* brush_options = state::brush_options->operator Widget*();
     Widget* color_preview = state::color_preview->operator Widget*();
     Widget* bubble_log = state::bubble_log->operator Widget*();
-    Widget* frame_view = new SeparatorLine(); //state::frame_view->operator Widget*();
+    Widget* frame_view = state::frame_view->operator Widget*();
     Widget* animation_preview = state::animation_preview->operator Widget*();
 
     canvas->set_size_request({500, 0});

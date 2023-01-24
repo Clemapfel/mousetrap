@@ -1,13 +1,10 @@
-//
-// Created by clem on 1/24/23.
-//
-
 #include <app/frame_view.hpp>
+#include <app/animation_preview.hpp>
 
 namespace mousetrap
 {
-    FrameView::FramePreview::FramePreview(FrameView* owner)
-        : _owner(owner), _aspect_frame(active_state->get_layer_resolution().x / active_state->get_layer_resolution().y)
+    FrameView::FramePreview::FramePreview(FrameView* owner, size_t layer_i, size_t frame_i)
+        : _owner(owner), _layer_i(layer_i), _frame_i(frame_i), _aspect_frame(active_state->get_layer_resolution().x / float(active_state->get_layer_resolution().y))
     {
         _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);
@@ -16,12 +13,8 @@ namespace mousetrap
         set_preview_size(owner->_preview_size);
         _inbetween_label_overlay.set_child(&_aspect_frame);
         _inbetween_label_overlay.add_overlay(&_inbetween_label);
-    }
 
-    FrameView::FramePreview::~FramePreview()
-    {
-        delete _transparency_tiling_shape;
-        delete _layer_shape;
+        set_is_inbetween(false);
     }
 
     void FrameView::FramePreview::set_preview_size(size_t x)
@@ -53,16 +46,27 @@ namespace mousetrap
         }
     }
 
-    void FrameView::FramePreview::set_opacity(float x)
+    void FrameView::FramePreview::set_layer(size_t i)
     {
-        _area.set_opacity(x);
+        _layer_i = i;
+        update();
     }
 
-    void FrameView::FramePreview::set_texture(const Texture* texture)
+    void FrameView::FramePreview::set_frame(size_t i)
     {
-        _texture = texture;
-        if (_layer_shape != nullptr)
-            _layer_shape->set_texture(_texture);
+        _frame_i = i;
+        update();
+    }
+
+    void FrameView::FramePreview::update()
+    {
+        if (not _area.get_is_realized())
+            return;
+
+        _layer_shape->set_texture(active_state->get_frame(_layer_i, _frame_i)->get_texture());
+        _layer_shape->set_color(RGBA(1, 1, 1, active_state->get_layer(_layer_i)->get_opacity()));
+        set_preview_size(_owner->_preview_size);
+        _area.queue_render();
     }
 
     FrameView::FramePreview::operator Widget*()
@@ -87,10 +91,6 @@ namespace mousetrap
         for (auto* shape : {instance->_transparency_tiling_shape, instance->_layer_shape})
             shape->as_rectangle({0, 0}, {1, 1});
 
-
-        if (instance->_texture != nullptr)
-            instance->_layer_shape->set_texture(instance->_texture);
-
         area->clear_render_tasks();
 
         auto transparency_task = RenderTask(instance->_transparency_tiling_shape, _transparency_tiling_shader);
@@ -98,6 +98,9 @@ namespace mousetrap
 
         area->add_render_task(transparency_task);
         area->add_render_task(instance->_layer_shape);
+
+        instance->set_frame(instance->_frame_i);
+        instance->set_layer(instance->_layer_i);
 
         area->queue_render();
     }
@@ -108,64 +111,91 @@ namespace mousetrap
         instance->_area.queue_render();
     }
 
-    FrameView::FrameColumn::PreviewElement::PreviewElement(FrameView* owner)
-        :  _preview(owner),
-          _wrapper(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE),
-          _wrapper_box(GTK_ORIENTATION_HORIZONTAL)
+    // ###
+
+    FrameView::FrameColumn::FrameColumn(FrameView* owner, size_t frame_i)
+            : _owner(owner), _frame_i(frame_i)
     {
-        _frame_label.set_visible(false);
-        _layer_label.set_margin_horizontal(state::margin_unit);
-
-        _frame.set_label_align(0.5);
-        _frame.set_child(_preview);
-        _frame.set_label_widget(&_frame_label);
-
-        _layer_label_spacer.set_size_request({state::margin_unit / 10 * 4, 0});
-        _layer_label_spacer.set_margin_horizontal((state::margin_unit / 10 * 4) / 2);
-        _wrapper_box.push_back(&_layer_label);
-        _wrapper_box.push_back(&_layer_label_spacer);
-        _wrapper_box.push_back(&_frame);
-        _wrapper.push_back(&_wrapper_box);
-    }
-
-    void FrameView::FrameColumn::PreviewElement::set_layer_frame_index(size_t layer_i, size_t frame_i)
-    {
-        _frame_label.set_text(std::string("<tt>") + (frame_i < 10 ? "00" : (frame_i < 100 ? "0" : "")) + std::to_string(frame_i) + "</tt>");
-        _layer_label.set_text(std::string("<tt><span size=\"120%\">") + (frame_i < 10 ? "0" : "") + std::to_string(layer_i) + "</span></tt>");
-
-        _preview.set_texture(active_state->get_frame(layer_i, frame_i)->get_texture());
-        _layer_label_spacer.set_visible(frame_i == 0);
-        _layer_label.set_visible(frame_i == 0);
-    }
-
-    FrameView::FrameColumn::PreviewElement::operator Widget*()
-    {
-        return &_wrapper;
-    }
-
-    void FrameView::FrameColumn::PreviewElement::set_preview_size(size_t x)
-    {
-        _preview.set_preview_size(x);
-    }
-
-    void FrameView::FrameColumn::PreviewElement::set_opacity(float x)
-    {
-        _preview.set_opacity(x);
-    }
-
-    void FrameView::FrameColumn::PreviewElement::set_is_inbetween(bool b)
-    {
-        _preview.set_is_inbetween(b);
-    }
-
-    FrameView::FrameColumn::FrameColumn::FrameColumn(FrameView* owner, size_t frame_i)
-        : _owner(owner), _frame_i(frame_i)
-    {
-        set_n_layers(active_state->get_n_layers());
         _list_view.set_show_separators(true);
-        _list_view.get_selection_model()->connect_signal_selection_changed([](SelectionModel*, size_t i, size_t n_items, FrameColumn* instance){
-            active_state->set_current_layer_and_frame(i, instance->_frame_i);
-        }, this);
+
+        for (size_t layer_i = 0; layer_i <active_state->get_n_layers() ; ++layer_i)
+        {
+            auto* layer = active_state->get_layer(layer_i);
+
+            auto* element = _preview_elements.emplace_back(new PreviewElement{
+                    FramePreview(owner, layer_i, _frame_i),
+                    ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE),
+                    Frame(),
+                    Label(std::string("<tt>") + (_frame_i < 10 ? "00" : (_frame_i < 100 ? "0" : "")) + std::to_string(_frame_i) + "</tt>"),
+                    Label(std::string("<tt><span size=\"120%\">") + (_frame_i < 10 ? "0" : "") + std::to_string(layer_i) + "</span></tt>"),
+                    SeparatorLine(),
+                    Box(GTK_ORIENTATION_HORIZONTAL)
+            });
+
+            element->frame_label.set_visible(false);
+            element->layer_label.set_margin_horizontal(state::margin_unit);
+
+            element->frame.set_label_align(0.5);
+            element->frame.set_child(element->preview);
+            element->frame.set_label_widget(&element->frame_label);
+
+            element->layer_label_spacer.set_size_request({state::margin_unit / 10 * 4, 0});
+            element->layer_label_spacer.set_margin_horizontal((state::margin_unit / 10 * 4) / 2);
+            element->wrapper_box.push_back(&element->layer_label);
+            element->wrapper_box.push_back(&element->layer_label_spacer);
+            element->wrapper_box.push_back(&element->frame);
+            element->wrapper.push_back(&element->wrapper_box);
+            _list_view.push_back(&element->wrapper);
+        }
+
+        _list_view.get_selection_model()->connect_signal_selection_changed(on_selection_changed, this);
+        set_is_first_frame(_frame_i == 0);
+    }
+
+    FrameView::FrameColumn::~FrameColumn()
+    {
+        for (auto* preview : _preview_elements)
+            delete preview;
+    }
+
+    void FrameView::FrameColumn::set_frame(size_t i)
+    {
+        _frame_i = i;
+
+        for (auto* e : _preview_elements)
+            e->preview.set_frame(i);
+    }
+
+    void FrameView::FrameColumn::select_layer(size_t layer_i)
+    {
+        _list_view.get_selection_model()->set_signal_selection_changed_blocked(true);
+        _list_view.get_selection_model()->select(layer_i);
+        _list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
+
+        for (size_t i = 0; i < _preview_elements.size(); ++i)
+            _preview_elements.at(i)->frame_label.set_visible(i == layer_i);
+    }
+
+    void FrameView::FrameColumn::set_is_first_frame(bool b)
+    {
+        for (auto& preview : _preview_elements)
+        {
+            preview->layer_label_spacer.set_visible(b);
+            preview->layer_label.set_visible(b);
+        }
+    }
+
+    void FrameView::FrameColumn::set_preview_size(size_t x)
+    {
+        for (auto* preview : _preview_elements)
+            preview->preview.set_preview_size(x);
+    }
+
+    void FrameView::FrameColumn::on_selection_changed(SelectionModel*, size_t i, size_t n_items,
+            FrameColumn* instance)
+    {
+        instance->_owner->set_selection(i, instance->_frame_i);
+        state::animation_preview->update();
     }
 
     FrameView::FrameColumn::operator Widget*()
@@ -173,56 +203,13 @@ namespace mousetrap
         return &_list_view;
     }
 
-    void FrameView::FrameColumn::set_n_layers(size_t n)
+    void FrameView::FrameColumn::update()
     {
-        _list_view.clear();
-
-        while (_preview_elements.size() < n)
-            _preview_elements.emplace_back(_owner);
-
-        for (size_t i = 0; i < _preview_elements.size(); ++i)
-        {
-            auto& element = _preview_elements.at(i);
-            element.set_layer_frame_index(i, _frame_i);
-            _list_view.push_back(element);
-        }
+        for (auto* e : _preview_elements)
+            e->preview.update();
     }
 
-    void FrameView::FrameColumn::set_frame(size_t i)
-    {
-        _frame_i = i;
-
-        for (size_t i = 0; i < _preview_elements.size(); ++i)
-        {
-            auto& element = _preview_elements.at(i);
-            element.set_layer_frame_index(i, _frame_i);
-            _list_view.push_back(element);
-        }
-    }
-
-    void FrameView::FrameColumn::set_preview_size(size_t size)
-    {
-        for (auto& preview : _preview_elements)
-            preview.set_preview_size(size);
-    }
-
-    void FrameView::FrameColumn::set_is_inbetween(bool b)
-    {
-        for (auto& preview : _preview_elements)
-            preview.set_is_inbetween(b);
-    }
-
-    void FrameView::FrameColumn::select_layer(size_t i)
-    {
-        _list_view.get_selection_model()->set_signal_selection_changed_blocked(true);
-        _list_view.get_selection_model()->select(i);
-        _list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
-    }
-
-    void FrameView::FrameColumn::set_layer_visible(size_t i, bool b)
-    {
-        _preview_elements.at(i).set_opacity(b ? 1.0 : 0.25);
-    }
+    // ###
 
     FrameView::ControlBar::ControlBar(FrameView* owner)
             : _owner(owner)
@@ -230,6 +217,64 @@ namespace mousetrap
         // ACTIONS
 
         using namespace state::actions;
+
+        frame_view_toggle_onionskin_visible.set_function([instance = this]() {
+            instance->on_toggle_onionskin_visible();
+        });
+
+        frame_view_increase_n_onionskin_layers.set_function([instance = this]() -> void {
+            auto current = active_state->get_n_onionskin_layers();
+            instance->set_n_onionskin_layers(current + 1);
+        });
+
+        frame_view_decrease_n_onionskin_layers.set_function([instance = this]() -> void {
+            auto current = active_state->get_n_onionskin_layers();
+            instance->set_n_onionskin_layers(current - 1);
+        });
+
+        frame_view_jump_to_start.set_function([instance = this]() {
+            instance->on_jump_to_start();
+        });
+
+        frame_view_jump_to_end.set_function([instance = this]() {
+            instance->on_jump_to_end();
+        });
+
+        frame_view_go_to_previous_frame.set_function([instance = this]() {
+            instance->on_go_to_previous_frame();
+        });
+
+        frame_view_go_to_next_frame.set_function([instance = this]() {
+            instance->on_go_to_next_frame();
+        });
+
+        frame_view_play_pause.set_function([instance = this]() {
+            instance->on_play_pause();
+        });
+
+        frame_view_frame_move_right.set_function([instance = this]() {
+            instance->on_frame_move_right();
+        });
+
+        frame_view_frame_move_left.set_function([instance = this]() {
+            instance->on_frame_move_left();
+        });
+
+        frame_view_frame_new_left_of_current.set_function([instance = this]() {
+            instance->on_frame_new_left_of_current();
+        });
+
+        frame_view_frame_new_right_of_current.set_function([instance = this]() {
+            instance->on_frame_new_right_of_current();
+        });
+
+        frame_view_frame_delete.set_function([instance = this]() {
+            instance->on_frame_delete();
+        });
+
+        frame_view_frame_make_keyframe_inbetween.set_function([instance = this]() {
+            instance->on_frame_make_keyframe_inbetween();
+        });
 
         for (auto* action : {
                 &frame_view_toggle_onionskin_visible,
@@ -257,39 +302,57 @@ namespace mousetrap
         }, this);
 
         _onionskin_n_layers_spin_button.set_value(active_state->get_n_onionskin_layers());
-        _onionskin_n_layers_spin_button.connect_signal_value_changed([](SpinButton* scale, ControlBar* instance){
-            active_state->set_n_onionskin_layers(scale->get_value());
-        }, this);
+        _onionskin_n_layers_spin_button.connect_signal_value_changed(on_onionskin_spin_button_value_changed, this);
 
         _jump_to_start_button.set_child(&_jump_to_start_icon);
-        _jump_to_start_button.set_action(frame_view_jump_to_start);
+        _jump_to_start_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            frame_view_jump_to_start.activate();
+        }, this);
 
         _jump_to_end_button.set_child(&_jump_to_end_icon);
-        _jump_to_end_button.set_action(frame_view_jump_to_end);
+        _jump_to_end_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            frame_view_jump_to_end.activate();
+        }, this);
 
         _go_to_previous_frame_button.set_child(&_go_to_previous_frame_icon);
-        _go_to_previous_frame_button.set_action(frame_view_go_to_previous_frame);
+        _go_to_previous_frame_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            frame_view_go_to_previous_frame.activate();
+        }, this);
 
         _go_to_next_frame_button.set_child(&_go_to_next_frame_icon);
-        _go_to_next_frame_button.set_action(frame_view_go_to_next_frame);
+        _go_to_next_frame_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            frame_view_go_to_next_frame.activate();
+        }, this);
 
         _play_pause_button.set_child(active_state->get_playback_active() ? &_pause_icon : &_play_icon);
-        _play_pause_button.set_action(frame_view_play_pause);
+        _play_pause_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            frame_view_play_pause.activate();
+        }, this);
 
         _frame_move_right_button.set_child(&_frame_move_right_icon);
-        _frame_move_right_button.set_action(frame_view_frame_move_right);
+        _frame_move_right_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            frame_view_frame_move_right.activate();
+        }, this);
 
         _frame_move_left_button.set_child(&_frame_move_left_icon);
-        _frame_move_left_button.set_action(frame_view_frame_move_right);
+        _frame_move_left_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            frame_view_frame_move_left.activate();
+        }, this);
 
         _frame_new_left_of_current_button.set_child(&_frame_new_left_of_current_icon);
-        _frame_new_left_of_current_button.set_action(frame_view_frame_new_left_of_current);
+        _frame_new_left_of_current_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            frame_view_frame_new_left_of_current.activate();
+        }, this);
 
         _frame_new_right_of_current_button.set_child(&_frame_new_right_of_current_icon);
-        _frame_new_right_of_current_button.set_action(frame_view_frame_new_right_of_current);
+        _frame_new_right_of_current_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            frame_view_frame_new_right_of_current.activate();
+        }, this);
 
         _frame_delete_button.set_child(&_frame_delete_icon);
-        _frame_delete_button.set_action(frame_view_frame_delete);
+        _frame_delete_button.connect_signal_clicked([](Button*, ControlBar* instance){
+            frame_view_frame_delete.activate();
+        }, this);
 
         bool is_keyframe = active_state->get_current_frame()->get_is_keyframe();
         _frame_make_keyframe_button.set_child(is_keyframe ? &_frame_is_not_keyframe_icon : &_frame_is_keyframe_icon);
@@ -345,9 +408,7 @@ namespace mousetrap
         _preview_size_spin_button.set_margin_start(state::margin_unit);
         _preview_size_spin_button.set_halign(GTK_ALIGN_END);
         _preview_size_spin_button.set_value(_preview_size);
-        _preview_size_spin_button.connect_signal_value_changed([](SpinButton* scale, ControlBar* instance) {
-            state::frame_view->set_preview_size(scale->get_value());
-        }, this);
+        _preview_size_spin_button.connect_signal_value_changed(on_preview_size_spin_button_value_changed, this);
         _preview_size_box.push_back(&_preview_size_label);
 
         auto spacer = SeparatorLine();
@@ -391,7 +452,6 @@ namespace mousetrap
         _menu_button.set_popover(&_popover_menu);
 
         // Layout
-
         for (auto& image : {&_toggle_onionskin_visible_icon, &_jump_to_start_icon, &_jump_to_end_icon, &_go_to_previous_frame_icon, &_go_to_next_frame_icon, &_play_icon, &_pause_icon, &_frame_move_left_icon, &_frame_move_right_icon, &_frame_new_left_of_current_icon, &_frame_new_right_of_current_icon, &_frame_delete_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
             image->set_size_request(image->get_size());
 
@@ -437,31 +497,104 @@ namespace mousetrap
         _box.push_back(&separator_right);
     }
 
-    void FrameView::ControlBar::set_onionskin_visible(bool b)
-    {
-        _toggle_onionskin_visible_button.set_signal_toggled_blocked(true);
-        _toggle_onionskin_visible_button.set_active(b);
-        _toggle_onionskin_visible_button.set_signal_toggled_blocked(false);
-    }
-
-    void FrameView::ControlBar::set_n_onionskin_layers(size_t x)
-    {
-        _onionskin_n_layers_spin_button.set_signal_value_changed_blocked(true);
-        _onionskin_n_layers_spin_button.set_value(x);
-        _onionskin_n_layers_spin_button.set_signal_value_changed_blocked(false);
-    }
-
     FrameView::ControlBar::operator Widget*() {
         return &_box;
     }
 
+    void FrameView::ControlBar::on_preview_size_spin_button_value_changed(SpinButton* scale, ControlBar* instance)
+    {
+        instance->_owner->set_preview_size(scale->get_value());
+    }
+
+    void FrameView::ControlBar::on_jump_to_start()
+    {
+        std::cout << "[TODO] animation jump to start" << std::endl;
+    }
+
+    void FrameView::ControlBar::on_jump_to_end()
+    {
+        std::cout << "[TODO] animation jump to end" << std::endl;
+    }
+
+    void FrameView::ControlBar::on_go_to_previous_frame()
+    {
+        std::cout << "[TODO] animation go to previous frame" << std::endl;
+    }
+
+    void FrameView::ControlBar::on_go_to_next_frame()
+    {
+        std::cout << "[TODO] animation go to next frame" << std::endl;
+    }
+
+    void FrameView::ControlBar::on_play_pause()
+    {
+        std::cout << "[TODO] animation play pause" << std::endl;
+    }
+
+    void FrameView::ControlBar::on_frame_move_left()
+    {
+        std::cout << "[TODO] animation frame move left" << std::endl;
+    }
+
+    void FrameView::ControlBar::on_frame_move_right()
+    {
+        std::cout << "[TODO] animation frame move right" << std::endl;
+    }
+
+    void FrameView::ControlBar::on_frame_new_left_of_current()
+    {
+        std::cout << "[TODO] frame new left" << std::endl;
+    }
+
+    void FrameView::ControlBar::on_frame_new_right_of_current()
+    {
+        std::cout << "[TODO] frame new right" << std::endl;
+    }
+
+    void FrameView::ControlBar::on_frame_delete()
+    {
+        std::cout << "[TODO] frame delete" << std::endl;
+    }
+
+    void FrameView::ControlBar::on_frame_make_keyframe_inbetween()
+    {
+        std::cout << "[TODO] frame keyframe inbetween" << std::endl;
+    }
+
+    void FrameView::ControlBar::on_toggle_onionskin_visible()
+    {
+        active_state->set_onionskin_visible(not active_state->get_onionskin_visible());
+
+        _toggle_onionskin_visible_button.set_signal_toggled_blocked(true);
+        _toggle_onionskin_visible_button.set_active(active_state->get_onionskin_visible());
+        _toggle_onionskin_visible_button.set_signal_toggled_blocked(false);
+    }
+
+    void FrameView::ControlBar::set_n_onionskin_layers(size_t n)
+    {
+        active_state->set_n_onionskin_layers(std::min(active_state->get_current_frame_index(), n));
+        _onionskin_n_layers_spin_button.set_signal_value_changed_blocked(true);
+        _onionskin_n_layers_spin_button.set_value(n);
+        _onionskin_n_layers_spin_button.set_signal_value_changed_blocked(false);
+    }
+
+    void FrameView::ControlBar::on_onionskin_spin_button_value_changed(SpinButton* scale, ControlBar* instance)
+    {
+        auto v = scale->get_value();
+        active_state->set_n_onionskin_layers(v);
+    }
+
+    // ###
+
     FrameView::FrameView()
     {
-        on_layer_count_changed();
+        for (size_t i = 0; i < active_state->get_n_frames(); ++i)
+        {
+            auto* column = _frame_columns.emplace_back(new FrameColumn(this, i));
+            _frame_column_list_view.push_back(column->operator Widget*());
+        }
 
-        _frame_column_list_view.get_selection_model()->connect_signal_selection_changed([](SelectionModel*, size_t i, size_t n_items, FrameView* instance){
-            active_state->set_current_layer_and_frame(instance->_selected_layer_i, i);
-        }, this);
+        _frame_column_list_view.get_selection_model()->connect_signal_selection_changed(on_selection_changed, this);
 
         _frame_column_list_view.set_expand(false);
         _frame_colum_list_view_window_spacer.set_expand(true);
@@ -475,6 +608,11 @@ namespace mousetrap
         _main.push_back(&_frame_column_list_view_window);
     }
 
+    void FrameView::update()
+    {
+        set_selection(active_state->get_current_layer_index(), active_state->get_current_frame_index());
+    }
+
     FrameView::operator Widget*()
     {
         return &_main;
@@ -485,68 +623,34 @@ namespace mousetrap
         _selected_layer_i = layer_i;
         _selected_frame_i = frame_i;
 
-        for (auto& column : _frame_columns)
-            column.select_layer(layer_i);
+        for (auto* column : _frame_columns)
+            column->select_layer(layer_i);
 
         _frame_column_list_view.get_selection_model()->set_signal_selection_changed_blocked(true);
         _frame_column_list_view.get_selection_model()->select(frame_i);
         _frame_column_list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
+
+        active_state->set_current_layer_and_frame(_selected_layer_i, _selected_frame_i);
+
+        state::animation_preview->update();
+    }
+
+    void FrameView::on_selection_changed(SelectionModel*, size_t i, size_t n_items, FrameView* instance)
+    {
+        // override ui changing if user clicks 1px border between columns
+        instance->set_selection(instance->_selected_layer_i, i);
     }
 
     void FrameView::set_preview_size(size_t x)
     {
         _preview_size = x;
 
-        for (auto& column : _frame_columns)
-            column.set_preview_size(_preview_size);
+        for (auto* column : _frame_columns)
+            column->set_preview_size(_preview_size);
     }
 
-    void FrameView::on_layer_count_changed()
+    size_t FrameView::get_preview_size() const
     {
-        _frame_column_list_view.clear();
-        _frame_columns.clear();
-
-        for (size_t i = 0; i < active_state->get_n_frames(); ++i)
-        {
-            auto& column = _frame_columns.emplace_back(this, i);
-            _frame_column_list_view.push_back(column);
-        }
+        return _preview_size;
     }
-
-    void FrameView::on_layer_frame_selection_changed()
-    {
-        set_selection(active_state->get_current_layer_index(), active_state->get_current_frame_index());
-    }
-
-    void FrameView::on_layer_image_updated()
-    {
-        for (size_t i = 0; i < active_state->get_n_frames(); ++i)
-            _frame_columns.at(i).set_frame(i);
-    }
-
-    void FrameView::on_layer_properties_changed()
-    {
-        for (size_t frame_i = 0; frame_i < active_state->get_n_frames(); ++frame_i)
-        {
-            auto& column = _frame_columns.at(frame_i);
-            for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
-            {
-                auto* layer = active_state->get_layer(layer_i);
-                column.set_layer_visible(layer_i, layer->get_is_visible());
-                column.set_is_inbetween(not layer->get_frame(frame_i)->get_is_keyframe());
-            }
-        }
-    }
-
-    void FrameView::on_onionskin_visibility_toggled()
-    {
-        _control_bar.set_onionskin_visible(active_state->get_onionskin_visible());
-    }
-
-    void FrameView::on_onionskin_layer_count_changed()
-    {
-        _control_bar.set_n_onionskin_layers(active_state->get_n_onionskin_layers());
-    }
-
-
 }

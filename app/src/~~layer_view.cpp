@@ -396,7 +396,6 @@ namespace mousetrap
     {
         auto b = button->get_active();
         instance->set_visible(b);
-
         active_state->set_layer_visible(instance->_layer_i, b);
         instance->signal_layer_updated();
     }
