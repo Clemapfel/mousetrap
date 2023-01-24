@@ -34,7 +34,8 @@ namespace mousetrap
         public signals::OnionSkinLayerCountChanged,
         public signals::LayerImageUpdated,
         public signals::LayerCountChanged,
-        public signals::LayerPropertiesChanged
+        public signals::LayerPropertiesChanged,
+        public signals::LayerResolutionChanged
     {
         SeparatorLine _instance;
         Canvas() = default;

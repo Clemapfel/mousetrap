@@ -8,7 +8,7 @@ namespace mousetrap
 
     void Toolbox::Icon::on_click_pressed(ClickEventController*, size_t, double, double, Icon* instance)
     {
-        instance->_owner->select(instance->_id);
+        active_state->set_active_tool(instance->_id);
     }
 
     Toolbox::Icon::Icon(ToolID id, Toolbox* owner)
@@ -231,7 +231,7 @@ namespace mousetrap
                 which << (char) action->get_id().at(i);
 
             action->set_function([id = std::string(which.str())](){
-                ((Toolbox*) state::toolbox)->select(id);
+                active_state->set_active_tool(id);
             });
             state::add_shortcut_action(*action);
         }
@@ -252,16 +252,13 @@ namespace mousetrap
         if (id == SHAPES_FILL)
             id = POLYGON_FILL;
 
-        for (auto& element : _elements)
-            element->set_tool_selected(id);
-
-        active_state->set_active_tool(id);
         _currently_selected = id;
 
-        state::canvas->update();
+        for (auto& element : _elements)
+            element->set_tool_selected(id);
     }
 
-    void Toolbox::update()
+    void Toolbox::on_active_tool_changed()
     {
         select(active_state->get_active_tool());
     }

@@ -85,6 +85,7 @@ namespace mousetrap
             void set_layer_name(size_t, const std::string&);
 
             Vector2ui get_layer_resolution() const;
+            void set_layer_resolution(Vector2ui);
 
             HSVA get_primary_color() const;
             void set_primary_color(HSVA);
@@ -173,6 +174,7 @@ namespace mousetrap
             void signal_layer_count_changed();
             void signal_layer_properties_changed();
             void signal_active_tool_changed();
+            void signal_layer_resolution_changed();
     };
 
     inline std::vector<ProjectState*> project_states = {};

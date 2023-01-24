@@ -37,7 +37,8 @@ namespace mousetrap
         public signals::OnionSkinLayerCountChanged,
         public signals::LayerImageUpdated,
         public signals::LayerCountChanged,
-        public signals::LayerPropertiesChanged
+        public signals::LayerPropertiesChanged,
+        public signals::LayerResolutionChanged
     {
         public:
             FrameView();
@@ -52,6 +53,9 @@ namespace mousetrap
             void on_layer_image_updated() override;
             void on_layer_count_changed() override;
             void on_layer_properties_changed() override;
+            void on_layer_resolution_changed() override {
+                // TODO
+            }
 
         private:
             class FramePreview

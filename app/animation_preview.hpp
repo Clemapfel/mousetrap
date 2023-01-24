@@ -25,7 +25,8 @@ namespace mousetrap
         public signals::LayerFrameSelectionChanged,
         public signals::LayerImageUpdated,
         public signals::LayerCountChanged,
-        public signals::LayerPropertiesChanged
+        public signals::LayerPropertiesChanged,
+        public signals::LayerResolutionChanged
     {
         public:
             AnimationPreview();
@@ -44,18 +45,26 @@ namespace mousetrap
             void on_layer_properties_changed() override;
 
         private:
-            // render
-            GLArea _area;
+            // render: layers
 
+            GLArea _layer_area;
             std::vector<Shape*> _layer_shapes;
+
+            static void on_layer_area_realize(Widget*, AnimationPreview*);
+            static void on_layer_area_resize(GLArea*, int w, int h, AnimationPreview*);
+
+            // render: transparency tiling
+
+            GLArea _transparency_area;
 
             static inline Shader* _transparency_tiling_shader = nullptr;
             Vector2f _canvas_size = Vector2f(1, 1);
             Shape* _transparency_tiling_shape = nullptr;
 
+            static void on_transparency_area_realize(Widget*, AnimationPreview*);
+            static void on_transparency_area_resize(GLArea*, int w, int h, AnimationPreview*);
+
             void queue_render_tasks();
-            static void on_realize(Widget*, AnimationPreview*);
-            static void on_resize(GLArea*, int w, int h, AnimationPreview*);
 
             // scale factor
 
@@ -105,6 +114,7 @@ namespace mousetrap
 
             Frame _frame;
             Box _box = Box(GTK_ORIENTATION_VERTICAL);
+            Overlay _overlay;
             Box _main = Box(GTK_ORIENTATION_VERTICAL);
 
             Tooltip _tooltip;

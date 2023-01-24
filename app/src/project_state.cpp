@@ -269,7 +269,7 @@ namespace mousetrap
         if (i < -1)
             i = -1;
 
-        _layers.emplace(_layers.begin() + i, "New Layer #" + std::to_string(new_layer_count++), _layer_resolution, _n_frames);
+        _layers.emplace(_layers.begin() + (1 + i), "New Layer #" + std::to_string(new_layer_count++), _layer_resolution, _n_frames);
 
         signal_layer_count_changed();
     }
@@ -396,6 +396,13 @@ namespace mousetrap
     Vector2ui ProjectState::get_layer_resolution() const
     {
         return _layer_resolution;
+    }
+
+    void ProjectState::set_layer_resolution(Vector2ui)
+    {
+        std::cerr << "[ERROR] In ProjecState::set_layer_resolution: TODO" << std::endl;
+
+        signal_layer_resolution_changed();
     }
 
     HSVA ProjectState::get_primary_color() const
@@ -684,6 +691,21 @@ namespace mousetrap
 
         if (state::animation_preview)
             state::animation_preview->signal_layer_count_changed();
+    }
+
+    void ProjectState::signal_layer_resolution_changed()
+    {
+        if (state::canvas)
+            state::canvas->signal_layer_resolution_changed();
+
+        if (state::layer_view)
+            state::layer_view->signal_layer_resolution_changed();
+
+        if (state::frame_view)
+            state::frame_view->signal_layer_resolution_changed();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_layer_resolution_changed();
     }
 
     void ProjectState::signal_layer_properties_changed()

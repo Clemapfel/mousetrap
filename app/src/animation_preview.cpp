@@ -8,9 +8,15 @@ namespace mousetrap
 {
     AnimationPreview::AnimationPreview()
     {
-        _area.connect_signal_realize(on_realize, this);
-        _area.connect_signal_resize(on_resize, this);
-        _area.set_size_request({0, 0});
+        _layer_area.connect_signal_realize(on_layer_area_realize, this);
+        _layer_area.connect_signal_resize(on_layer_area_resize, this);
+        _layer_area.set_size_request({0, 0});
+
+        _transparency_area.connect_signal_realize(on_transparency_area_realize, this);
+        _transparency_area.connect_signal_realize(on_transparency_area_realize, this);
+
+        _overlay.set_child(&_transparency_area);
+        _overlay.add_overlay(&_layer_area);
 
         _menu_button.set_child(&_menu_button_label);
 
@@ -98,7 +104,7 @@ namespace mousetrap
         for (auto* box : {&_fps_box, &_scale_factor_box, &_background_visible_box})
             box->set_margin_horizontal(state::margin_unit);
 
-        _frame.set_child(&_area);
+        _frame.set_child(&_overlay);
         _frame.set_expand(true);
         _frame.set_label_widget(nullptr);
 
@@ -128,6 +134,8 @@ namespace mousetrap
     {
         _scale_factor = x;
 
+        _layer_area.make_current();
+
         auto pixel_size = Vector2f{
                 1 / float(_canvas_size.x),
                 1 / float(_canvas_size.y)
@@ -142,14 +150,15 @@ namespace mousetrap
         for (auto* shape : _layer_shapes)
         {
             shape->as_rectangle(
-                    {centroid.x - size.x, centroid.y - size.y},
-                    {centroid.x + size.x, centroid.y - size.y},
-                    {centroid.x + size.x, centroid.y + size.y},
-                    {centroid.x - size.x, centroid.y + size.y}
+                {centroid.x - size.x, centroid.y - size.y},
+                {centroid.x + size.x, centroid.y - size.y},
+                {centroid.x + size.x, centroid.y + size.y},
+                {centroid.x - size.x, centroid.y + size.y}
             );
         }
 
-        _area.queue_render();
+        _transparency_area.queue_render();
+        _layer_area.queue_render();
     }
 
     void AnimationPreview::set_fps(float value)
@@ -164,7 +173,7 @@ namespace mousetrap
         if (_transparency_tiling_shape != nullptr)
             _transparency_tiling_shape->set_visible(b);
 
-        _area.queue_render();
+        _transparency_area.queue_render();
     }
 
     void AnimationPreview::on_tick_callback(FrameClock& clock)
@@ -194,7 +203,8 @@ namespace mousetrap
             _layer_shapes.at(layer_i)->set_texture(layer->get_frame(_current_frame)->get_texture());
         }
 
-        _area.queue_render();
+        _transparency_area.queue_render();
+        _layer_area.queue_render();
     }
 
     void AnimationPreview::set_playback_active(bool b)
@@ -209,7 +219,7 @@ namespace mousetrap
                 auto* layer = active_state->get_layer(layer_i);
                 _layer_shapes.at(layer_i)->set_texture(layer->get_frame(_current_frame)->get_texture());
             }
-            _area.queue_render();
+            _layer_area.queue_render();
         }
     }
 
@@ -221,23 +231,40 @@ namespace mousetrap
 
     void AnimationPreview::queue_render_tasks()
     {
-        _area.clear_render_tasks();
+        _transparency_area.clear_render_tasks();
 
         auto transparency_task = RenderTask(_transparency_tiling_shape, _transparency_tiling_shader);
         transparency_task.register_vec2("_canvas_size", &_canvas_size);
 
-        _area.add_render_task(transparency_task);
+        _transparency_area.add_render_task(transparency_task);
+        _transparency_area.queue_render();
+
+        _layer_area.clear_render_tasks();
 
         for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
         {
             auto task = RenderTask(_layer_shapes.at(layer_i), nullptr, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
-            _area.add_render_task(task);
+            _layer_area.add_render_task(task);
         }
 
-        _area.queue_render();
+        _layer_area.queue_render();
     }
 
-    void AnimationPreview::on_realize(Widget* widget, AnimationPreview* instance)
+    void AnimationPreview::on_layer_area_realize(Widget* widget, AnimationPreview* instance)
+    {
+        auto* area = (GLArea*) widget;
+        area->make_current();
+
+        instance->on_layer_count_changed();
+
+        instance->set_scale_factor(instance->_scale_factor);
+        instance->set_fps(instance->_fps);
+        instance->set_background_visible(instance->_background_visible);
+
+        area->queue_render();
+    }
+
+    void AnimationPreview::on_transparency_area_realize(Widget* widget, AnimationPreview* instance)
     {
         auto* area = (GLArea*) widget;
         area->make_current();
@@ -251,25 +278,26 @@ namespace mousetrap
         instance->_transparency_tiling_shape = new Shape();
         instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
 
-        instance->on_layer_count_changed();
-
-        instance->set_scale_factor(instance->_scale_factor);
-        instance->set_fps(instance->_fps);
-        instance->set_background_visible(instance->_background_visible);
-
         area->queue_render();
     }
 
-    void AnimationPreview::on_resize(GLArea*, int w, int h, AnimationPreview* instance)
+    void AnimationPreview::on_layer_area_resize(GLArea*, int w, int h, AnimationPreview* instance)
     {
         instance->_canvas_size = {w, h};
         instance->set_scale_factor(instance->_scale_factor);
-        instance->_area.queue_render();
+        instance->_transparency_area.queue_render();
+    }
+
+    void AnimationPreview::on_transparency_area_resize(GLArea*, int w, int h, AnimationPreview* instance)
+    {
+        instance->_canvas_size = {w, h};
+        instance->set_scale_factor(instance->_scale_factor);
+        instance->_transparency_area.queue_render();
     }
 
     void AnimationPreview::on_layer_count_changed()
     {
-        _area.make_current();
+        _layer_area.make_current();
 
         for (auto* shape : _layer_shapes)
             delete shape;
@@ -289,34 +317,38 @@ namespace mousetrap
         }
 
         queue_render_tasks();
-        on_resize(&_area, _canvas_size.x, _canvas_size.y, this);
+        on_transparency_area_resize(&_transparency_area, _canvas_size.x, _canvas_size.y, this);
+        on_layer_area_resize(&_layer_area, _canvas_size.x, _canvas_size.y, this);
     }
 
     void AnimationPreview::on_layer_properties_changed()
     {
-        if (not _area.get_is_realized())
+        if (not _transparency_area.get_is_realized() or not _layer_area.get_is_realized())
             return;
 
         for (size_t i = 0; i < active_state->get_n_layers(); ++i)
         {
             const auto* layer = active_state->get_layer(i);
+            _layer_shapes.at(i)->set_texture(layer->get_frame(_current_frame)->get_texture());
             _layer_shapes.at(i)->set_visible(layer->get_is_visible());
             _layer_shapes.at(i)->set_color(RGBA(1, 1, 1, layer->get_opacity()));
         }
 
         queue_render_tasks();
-        on_resize(&_area, _canvas_size.x, _canvas_size.y, this);
+        on_transparency_area_resize(&_transparency_area, _canvas_size.x, _canvas_size.y, this);
+        on_layer_area_resize(&_layer_area, _canvas_size.x, _canvas_size.y, this);
     }
 
     void AnimationPreview::on_layer_image_updated()
     {
-        if (not _area.get_is_realized())
+        if (not _transparency_area.get_is_realized() or not _layer_area.get_is_realized())
             return;
 
         for (size_t i = 0; i < active_state->get_n_layers(); ++i)
             _layer_shapes.at(i)->set_texture(active_state->get_frame(i, _current_frame)->get_texture());
 
-        on_resize(&_area, _canvas_size.x, _canvas_size.y, this);
+        on_transparency_area_resize(&_transparency_area, _canvas_size.x, _canvas_size.y, this);
+        on_layer_area_resize(&_layer_area, _canvas_size.x, _canvas_size.y, this);
     }
 
     void AnimationPreview::on_layer_frame_selection_changed()

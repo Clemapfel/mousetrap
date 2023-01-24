@@ -51,14 +51,14 @@ namespace mousetrap
     {
         public:
             Toolbox();
-
-            void update() override;
             operator Widget*() override;
 
-            void select(ToolID);
+        protected:
+            void on_active_tool_changed() override;
 
         private:
-            ToolID _currently_selected = active_state->get_active_tool();
+            void select(ToolID);
+            ToolID _currently_selected;
 
             class Icon
             {
@@ -129,8 +129,8 @@ namespace mousetrap
                 new IconWithPopover(EYEDROPPER, {}, this),
                 new IconWithPopover(BUCKET_FILL, {}, this),
                 new IconWithPopover(LINE, {}, this),
-                new IconWithPopover(SHAPES_OUTLINE, {{RECTANGLE_OUTLINE, CIRCLE_OUTLINE, POLYGON_OUTLINE}}, this),
-                new IconWithPopover(SHAPES_FILL, {{RECTANGLE_FILL, CIRCLE_FILL, POLYGON_FILL}}, this),
+                new IconWithPopover(RECTANGLE_OUTLINE, {{CIRCLE_OUTLINE, POLYGON_OUTLINE}}, this),
+                new IconWithPopover(RECTANGLE_FILL, {{CIRCLE_FILL, POLYGON_FILL}}, this),
                 new IconWithPopover(GRADIENT_DITHERED, {{GRADIENT_DITHERED, GRADIENT_SMOOTH}}, this)
             };
 
