@@ -8,6 +8,7 @@
 #include <app/app_signals.hpp>
 #include <app/app_component.hpp>
 #include <app/tools.hpp>
+#include <app/tooltip.hpp>
 
 #include <deque>
 
@@ -16,13 +17,13 @@ namespace mousetrap
     namespace state::actions
     {
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_neighborhood_select);
-        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_rectangle);
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_rectangle_replace);
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_rectangle_add);
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_rectangle_subtract);
-        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_circle);
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_circle_replace);
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_circle_add);
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_circle_subtract);
-        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_polygon);
+        DECLARE_GLOBAL_ACTION(toolbox, select_marquee_polygon_replace);
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_polygon_add);
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_polygon_subtract);
 
@@ -130,6 +131,8 @@ namespace mousetrap
             SeparatorLine _main_spacer_left;
             Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
             SeparatorLine _main_spacer_right;
+
+            std::deque<Tooltip> _tooltips;
     };
 
     namespace state
