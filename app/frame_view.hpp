@@ -69,6 +69,8 @@ namespace mousetrap
                     void set_is_inbetween(bool);
                     void set_preview_size(size_t);
                     void set_opacity(float);
+                    void set_visible(bool);
+                    void set_selected(bool);
 
                 private:
                     FrameView* _owner;
@@ -104,6 +106,7 @@ namespace mousetrap
 
                     void select_layer(size_t i);
                     void set_layer_visible(size_t i, bool);
+                    void set_layer_opacity(size_t i, float);
                     void set_is_inbetween(bool);
                     void set_preview_size(size_t);
 
@@ -126,7 +129,9 @@ namespace mousetrap
                             void set_layer_frame_index(size_t layer_i, size_t frame_i);
                             void set_preview_size(size_t);
                             void set_opacity(float);
+                            void set_visible(bool);
                             void set_is_inbetween(bool);
+                            void set_selected(bool);
 
                         private:
                             FramePreview _preview;
@@ -204,9 +209,12 @@ namespace mousetrap
                     MenuModel _menu;
                     PopoverMenu _popover_menu = PopoverMenu(&_menu);
 
+                    ScrolledWindow _scrolled_window;
+                    Box _button_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                    Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+
                     Tooltip _tooltip;
 
-                    Box _box = Box(GTK_ORIENTATION_HORIZONTAL);
             };
 
             ControlBar _control_bar = ControlBar(this);

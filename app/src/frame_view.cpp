@@ -55,7 +55,26 @@ namespace mousetrap
 
     void FrameView::FramePreview::set_opacity(float x)
     {
-        _area.set_opacity(x);
+        if (_layer_shape != nullptr)
+            _layer_shape->set_color(RGBA(1, 1, 1, x));
+
+        _area.queue_render();
+    }
+
+    void FrameView::FramePreview::set_visible(bool b)
+    {
+        if (_layer_shape != nullptr)
+            _layer_shape->set_visible(b);
+
+        if (_transparency_tiling_shape)
+            _transparency_tiling_shape->set_visible(b);
+
+        _area.queue_render();
+    }
+
+    void FrameView::FramePreview::set_selected(bool b)
+    {
+        // noop
     }
 
     void FrameView::FramePreview::set_texture(const Texture* texture)
@@ -153,9 +172,20 @@ namespace mousetrap
         _preview.set_opacity(x);
     }
 
+    void FrameView::FrameColumn::PreviewElement::set_visible(bool x)
+    {
+        _preview.set_visible(x);
+    }
+
     void FrameView::FrameColumn::PreviewElement::set_is_inbetween(bool b)
     {
         _preview.set_is_inbetween(b);
+    }
+
+    void FrameView::FrameColumn::PreviewElement::set_selected(bool b)
+    {
+        _frame_label.set_visible(b);
+        _preview.set_selected(b);
     }
 
     FrameView::FrameColumn::FrameColumn::FrameColumn(FrameView* owner, size_t frame_i)
@@ -164,7 +194,7 @@ namespace mousetrap
         set_n_layers(active_state->get_n_layers());
         _list_view.set_show_separators(true);
         _list_view.get_selection_model()->connect_signal_selection_changed([](SelectionModel*, size_t i, size_t n_items, FrameColumn* instance){
-            active_state->set_current_layer_and_frame(i, instance->_frame_i);
+            active_state->set_current_layer_and_frame(instance->_list_view.get_n_items() - i - 1, instance->_frame_i);
         }, this);
     }
 
@@ -184,7 +214,12 @@ namespace mousetrap
         {
             auto& element = _preview_elements.at(i);
             element.set_layer_frame_index(i, _frame_i);
-            _list_view.push_back(element);
+            _list_view.push_front(element);
+
+            auto* layer = active_state->get_layer(i);
+            element.set_visible(layer->get_is_visible());
+            element.set_opacity(layer->get_opacity());
+            element.set_is_inbetween(not layer->get_frame(_frame_i)->get_is_keyframe());
         }
     }
 
@@ -196,7 +231,6 @@ namespace mousetrap
         {
             auto& element = _preview_elements.at(i);
             element.set_layer_frame_index(i, _frame_i);
-            _list_view.push_back(element);
         }
     }
 
@@ -214,14 +248,22 @@ namespace mousetrap
 
     void FrameView::FrameColumn::select_layer(size_t i)
     {
+        for (size_t preview_i = 0; preview_i < _preview_elements.size(); ++preview_i)
+            _preview_elements.at(preview_i).set_selected(preview_i == i);
+
         _list_view.get_selection_model()->set_signal_selection_changed_blocked(true);
-        _list_view.get_selection_model()->select(i);
+        _list_view.get_selection_model()->select(_list_view.get_n_items() - i - 1);
         _list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
     }
 
-    void FrameView::FrameColumn::set_layer_visible(size_t i, bool b)
+    void FrameView::FrameColumn::set_layer_opacity(size_t i, float v)
     {
-        _preview_elements.at(i).set_opacity(b ? 1.0 : 0.25);
+        _preview_elements.at(i).set_opacity(v);
+    }
+
+    void FrameView::FrameColumn::set_layer_visible(size_t i, bool v)
+    {
+        _preview_elements.at(i).set_visible(v);
     }
 
     FrameView::ControlBar::ControlBar(FrameView* owner)
@@ -398,43 +440,45 @@ namespace mousetrap
         auto button_width = _play_pause_button.get_preferred_size().natural_size.x;
         _menu_button.set_size_request({4 * button_width, 0});
 
-        _box.push_back(&_menu_button);
-
         auto onion_separator = SeparatorLine();
         onion_separator.set_size_request({button_width, 0});
         onion_separator.set_hexpand(false);
 
-        _box.push_back(&onion_separator);
-        _box.push_back(&_toggle_onionskin_visible_button);
-        _box.push_back(&_onionskin_n_layers_spin_button);
+        _button_box.push_back(&onion_separator);
+        _button_box.push_back(&_toggle_onionskin_visible_button);
+        _button_box.push_back(&_onionskin_n_layers_spin_button);
 
         auto separator_start = SeparatorLine();
         separator_start.set_size_request({button_width, 0});
         separator_start.set_hexpand(false);
-        _box.push_back(&separator_start);
+        _button_box.push_back(&separator_start);
 
-        _box.push_back(&_frame_move_left_button);
-        _box.push_back(&_frame_new_left_of_current_button);
-        _box.push_back(&_frame_delete_button);
-        _box.push_back(&_frame_make_keyframe_button);
-        _box.push_back(&_frame_new_right_of_current_button);
-        _box.push_back(&_frame_move_right_button);
+        _button_box.push_back(&_frame_move_left_button);
+        _button_box.push_back(&_frame_new_left_of_current_button);
+        _button_box.push_back(&_frame_delete_button);
+        _button_box.push_back(&_frame_make_keyframe_button);
+        _button_box.push_back(&_frame_new_right_of_current_button);
+        _button_box.push_back(&_frame_move_right_button);
 
         auto separator_left = SeparatorLine();
         separator_left.set_size_request({button_width, 0});
         separator_left.set_hexpand(false);
-        _box.push_back(&separator_left);
+        _button_box.push_back(&separator_left);
 
-        _box.push_back(&_jump_to_start_button);
-        _box.push_back(&_go_to_previous_frame_button);
-        _box.push_back(&_play_pause_button);
-        _box.push_back(&_go_to_next_frame_button);
-        _box.push_back(&_jump_to_end_button);
+        _button_box.push_back(&_jump_to_start_button);
+        _button_box.push_back(&_go_to_previous_frame_button);
+        _button_box.push_back(&_play_pause_button);
+        _button_box.push_back(&_go_to_next_frame_button);
+        _button_box.push_back(&_jump_to_end_button);
 
         auto separator_right = SeparatorLine();
         separator_right.set_size_request({button_width, 0});
         separator_right.set_hexpand(true);
-        _box.push_back(&separator_right);
+        _button_box.push_back(&separator_right);
+        _scrolled_window.set_child(&_button_box);
+
+        _main.push_back(&_menu_button);
+        _main.push_back(&_scrolled_window);
     }
 
     void FrameView::ControlBar::set_onionskin_visible(bool b)
@@ -452,7 +496,7 @@ namespace mousetrap
     }
 
     FrameView::ControlBar::operator Widget*() {
-        return &_box;
+        return &_main;
     }
 
     FrameView::FrameView()
@@ -533,6 +577,7 @@ namespace mousetrap
             {
                 auto* layer = active_state->get_layer(layer_i);
                 column.set_layer_visible(layer_i, layer->get_is_visible());
+                column.set_layer_opacity(layer_i, layer->get_opacity());
                 column.set_is_inbetween(not layer->get_frame(frame_i)->get_is_keyframe());
             }
         }

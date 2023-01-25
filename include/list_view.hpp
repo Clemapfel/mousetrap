@@ -41,6 +41,7 @@ namespace mousetrap
             void set_single_click_activate(bool);
 
             SelectionModel* get_selection_model();
+            size_t get_n_items() const;
 
         private:
             static void on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*);

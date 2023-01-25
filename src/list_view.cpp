@@ -257,4 +257,9 @@ namespace mousetrap
     {
         return _selection_model;
     }
+
+    size_t TreeListView::get_n_items() const
+    {
+        return g_list_model_get_n_items(G_LIST_MODEL(_root));
+    }
 }

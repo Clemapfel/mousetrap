@@ -92,9 +92,8 @@ namespace mousetrap
 
         _n_frames = 3;
 
-        _layers.emplace_back("Layer 01", layer_resolution, _n_frames);
-        _layers.emplace_back("Layer 02", layer_resolution, _n_frames);
-        _layers.emplace_back("Layer 03", layer_resolution, _n_frames);
+        for (size_t i = 0; i < 6; ++i)
+            _layers.emplace_back(new Layer("Layer #" + std::to_string(i), _layer_resolution, _n_frames));
 
         for (size_t x = 0; x < _layer_resolution.x; ++x)
             for (size_t y = 0; y < _layer_resolution.y; ++y)
@@ -107,9 +106,10 @@ namespace mousetrap
             {
                 std::vector<std::pair<Vector2i, HSVA>> to_draw;
 
+                auto saturation = glm::clamp<float>(rand() / float(RAND_MAX), 0.1, 0.9);
                 for (size_t x = 0; x < _layer_resolution.x; ++x)
                     for (size_t y = 0; y < _layer_resolution.y; ++y)
-                        to_draw.push_back({Vector2i(x, y), HSVA(rand() / float(RAND_MAX), 1 / (layer_i+1), 1, 1)});
+                        to_draw.push_back({Vector2i(x, y), HSVA(rand() / float(RAND_MAX), saturation, 1, 1)});
 
                 draw_to_layer(layer_i, frame_i, to_draw);
             }
@@ -218,7 +218,7 @@ namespace mousetrap
 
     const Layer* ProjectState::get_current_layer() const
     {
-        return &_layers.at(_current_layer_i);
+        return _layers.at(_current_layer_i);
     }
 
     size_t ProjectState::get_current_frame_index() const
@@ -233,12 +233,12 @@ namespace mousetrap
 
     const Layer* ProjectState::get_layer(size_t i) const
     {
-        return &_layers.at(i);
+        return _layers.at(i);
     }
 
     const Layer::Frame* ProjectState::get_frame(size_t layer_i, size_t frame_i) const
     {
-        return _layers.at(layer_i).get_frame(frame_i);
+        return _layers.at(layer_i)->get_frame(frame_i);
     }
 
     size_t ProjectState::get_n_layers() const
@@ -269,25 +269,24 @@ namespace mousetrap
         if (i < -1)
             i = -1;
 
-        _layers.emplace(_layers.begin() + (1 + i), "New Layer #" + std::to_string(new_layer_count++), _layer_resolution, _n_frames);
-
+        _layers.emplace(_layers.begin() + (1 + i), new Layer("New Layer #" + std::to_string(new_layer_count++ + 1), _layer_resolution, _n_frames));
         signal_layer_count_changed();
     }
 
     void ProjectState::duplicate_layer(int create_above, const Layer& duplicate_from)
     {
-        auto& new_layer = *_layers.emplace(_layers.begin() + create_above, duplicate_from.get_name() + " (Copy)", _layer_resolution, _n_frames);
+        auto& new_layer = *_layers.emplace(_layers.begin() + (1 + create_above), new Layer(duplicate_from.get_name() + " (Copy)", _layer_resolution, _n_frames));
 
         for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
         {
             auto* from = duplicate_from.get_frame(frame_i)->get_image();
-            auto* to = new_layer.get_frame(frame_i)->get_image();
+            auto* to = new_layer->get_frame(frame_i)->get_image();
 
             for (size_t x = 0; x < _layer_resolution.x; ++x)
                 for (size_t y = 0; y < _layer_resolution.y; ++y)
                     to->set_pixel(x, y, from->get_pixel(x, y));
 
-            new_layer.get_frame(frame_i)->update_texture();
+            new_layer->get_frame(frame_i)->update_texture();
         }
 
         signal_layer_count_changed();
@@ -306,24 +305,24 @@ namespace mousetrap
         auto& a = _layers.at(a_i);
         auto& b = _layers.at(b_i);
 
-        auto a_copy = Layer(a);//a.get_name(), _layer_resolution, _n_frames);
+        auto a_copy = Layer(*a);
 
-        a.set_name(b.get_name());
-        a.set_is_locked(b.get_is_locked());
-        a.set_is_visible(b.get_is_visible());
-        a.set_opacity(b.get_opacity());
-        a.set_blend_mode(b.get_blend_mode());
+        a->set_name(b->get_name());
+        a->set_is_locked(b->get_is_locked());
+        a->set_is_visible(b->get_is_visible());
+        a->set_opacity(b->get_opacity());
+        a->set_blend_mode(b->get_blend_mode());
 
-        b.set_name(a_copy.get_name());
-        b.set_is_locked(a_copy.get_is_locked());
-        b.set_is_visible(a_copy.get_is_visible());
-        b.set_opacity(a_copy.get_opacity());
-        b.set_blend_mode(a_copy.get_blend_mode());
+        b->set_name(a_copy.get_name());
+        b->set_is_locked(a_copy.get_is_locked());
+        b->set_is_visible(a_copy.get_is_visible());
+        b->set_opacity(a_copy.get_opacity());
+        b->set_blend_mode(a_copy.get_blend_mode());
 
         for (size_t i = 0; i < _n_frames; ++i)
         {
-            auto* a_frame = a.get_frame(i);
-            auto* b_frame = b.get_frame(i);
+            auto* a_frame = a->get_frame(i);
+            auto* b_frame = b->get_frame(i);
 
             for (size_t x = 0; x < _layer_resolution.x; ++x)
             {
@@ -353,42 +352,44 @@ namespace mousetrap
         if (i > _layers.size())
             i = _layers.size() - 1;
 
+        auto* to_delete = _layers.at(i);
         _layers.erase(_layers.begin() + i);
 
         signal_layer_count_changed();
+        delete to_delete;
     }
 
     void ProjectState::set_layer_visible(size_t i, bool b)
     {
-        _layers.at(i).set_is_visible(b);
+        _layers.at(i)->set_is_visible(b);
 
         signal_layer_properties_changed();
     }
 
     void ProjectState::set_layer_opacity(size_t i, float v)
     {
-        _layers.at(i).set_opacity(v);
+        _layers.at(i)->set_opacity(v);
 
         signal_layer_properties_changed();
     }
 
     void ProjectState::set_layer_locked(size_t i, bool b)
     {
-        _layers.at(i).set_is_locked(b);
+        _layers.at(i)->set_is_locked(b);
 
         signal_layer_properties_changed();
     }
 
     void ProjectState::set_layer_blend_mode(size_t i, BlendMode mode)
     {
-        _layers.at(i).set_blend_mode(mode);
+        _layers.at(i)->set_blend_mode(mode);
 
         signal_layer_properties_changed();
     }
 
     void ProjectState::set_layer_name(size_t i, const std::string& name)
     {
-        _layers.at(i).set_name(name);
+        _layers.at(i)->set_name(name);
 
         signal_layer_properties_changed();
     }
@@ -561,7 +562,7 @@ namespace mousetrap
 
     void ProjectState::draw_to_layer(size_t layer_i, size_t frame_i, std::vector<std::pair<Vector2i, HSVA>> data)
     {
-        auto* frame = _layers.at(layer_i).get_frame(frame_i);
+        auto* frame = _layers.at(layer_i)->get_frame(frame_i);
         auto* image = frame->get_image();
 
         for (auto& pair : data)

@@ -377,8 +377,8 @@ namespace mousetrap
         on_layer_count_changed();
 
         _layer_rows_list_view.set_show_separators(true);
-        _layer_rows_list_view.get_selection_model()->connect_signal_selection_changed([](SelectionModel*, size_t i, size_t, LayerView* instance){
-            active_state->set_current_layer_and_frame(i, active_state->get_current_frame_index());
+        _layer_rows_list_view.get_selection_model()->connect_signal_selection_changed([](SelectionModel* model, size_t i, size_t, LayerView* instance){
+            active_state->set_current_layer_and_frame(instance->_layer_rows_list_view.get_n_items() - i - 1, active_state->get_current_frame_index());
         }, this);
         _layer_rows_list_view.get_selection_model()->select(active_state->get_current_layer_index());
 
@@ -490,21 +490,22 @@ namespace mousetrap
         _menu.add_section("Settings", &settings_section);
 
         auto create_section = MenuModel();
-        create_section.add_action(layer_create_tooltip, "layer_view.layer_create");
-        create_section.add_action(layer_delete_tooltip, "layer_view.layer_delete");
-        create_section.add_action(layer_duplicate_tooltip, "layer_view.layer_duplicate");
+        create_section.add_action("New Layer Above Current", layer_view_layer_new_above_current.get_id());
+        create_section.add_action("New Layer Below Current", layer_view_layer_new_below_current.get_id());
+        create_section.add_action(layer_delete_tooltip, layer_view_layer_delete.get_id());
+        create_section.add_action(layer_duplicate_tooltip, layer_view_layer_duplicate.get_id());
         _menu.add_section("Create / Delete", &create_section);
 
         auto merge_section = MenuModel();
-        merge_section.add_action(layer_merge_down_tooltip, "layer_view.layer_merge_down");
-        merge_section.add_action(layer_flatten_all_tooltip, "layer_view.layer_flatten_all");
+        merge_section.add_action(layer_merge_down_tooltip, layer_view_layer_merge_down.get_id());
+        merge_section.add_action(layer_flatten_all_tooltip, layer_view_layer_flatten_all.get_id());
         _menu.add_section("Merge", &merge_section);
 
         auto other_section = MenuModel();
-        other_section.add_action(layer_move_up_tooltip, "layer_view.layer_move_up");
-        other_section.add_action(layer_move_down_tooltip, "layer_view.layer_move_down");
-        other_section.add_action(set_layer_visible_tooltip, "layer_view.set_layer_visible");
-        other_section.add_action(set_layer_locked_tooltip, "layer_view.set_layer_locked");
+        other_section.add_action(layer_move_up_tooltip, layer_view_layer_move_up.get_id());
+        other_section.add_action(layer_move_down_tooltip, layer_view_layer_move_down.get_id());
+        other_section.add_action(set_layer_visible_tooltip, layer_view_toggle_layer_visible.get_id());
+        other_section.add_action(set_layer_locked_tooltip, layer_view_toggle_layer_locked.get_id());
 
         _menu.add_section("Other", &other_section);
 
@@ -521,16 +522,17 @@ namespace mousetrap
         // actions
 
         layer_view_layer_new_above_current.set_function([](){
-           active_state->add_layer(active_state->get_current_layer_index() - 1);
+           active_state->add_layer(active_state->get_current_layer_index());
         });
 
         layer_view_layer_new_below_current.set_function([](){
-            active_state->add_layer(active_state->get_current_layer_index());
+            active_state->add_layer(active_state->get_current_layer_index()-1);
         });
 
         layer_view_layer_duplicate.set_function([](){
             auto current_i = active_state->get_current_layer_index();
             active_state->duplicate_layer(current_i, *active_state->get_layer(current_i));
+            active_state->set_current_layer_and_frame(current_i, active_state->get_current_frame_index());
         });
 
         layer_view_layer_delete.set_function([](){
@@ -591,7 +593,7 @@ namespace mousetrap
             _layer_rows.at(layer_i).set_texture(active_state->get_frame(layer_i, active_state->get_current_frame_index())->get_texture());
 
         _layer_rows_list_view.get_selection_model()->set_signal_selection_changed_blocked(true);
-        _layer_rows_list_view.get_selection_model()->select(active_state->get_current_layer_index());
+        _layer_rows_list_view.get_selection_model()->select(_layer_rows_list_view.get_n_items() - active_state->get_current_layer_index() - 1);
         _layer_rows_list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
     }
 

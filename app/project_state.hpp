@@ -148,7 +148,7 @@ namespace mousetrap
             Vector2Set<int> _selection;
 
             Vector2ui _layer_resolution;
-            std::deque<Layer> _layers;
+            std::deque<Layer*> _layers;
 
             size_t _current_layer_i = 0;
             size_t _current_frame_i = 0;
