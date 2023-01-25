@@ -81,7 +81,9 @@ static void activate(GtkApplication* app, void*)
     Widget* frame_view = state::frame_view->operator Widget*();
     Widget* animation_preview = state::animation_preview->operator Widget*();
 
-    canvas->set_size_request({500, 0});
+    toolbox->set_vexpand(false);
+
+    //canvas->set_size_request({500, 0});
 
     auto* color_picker_window = new Window();
     color_picker_window->set_child(color_picker);

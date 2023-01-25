@@ -1,25 +1,20 @@
-// 
-// Copyright 2022 Clemens Cords
-// Created on 10/16/22 by clem (mail@clemens-cords.com)
+//
+// Copyright (c) Clemens Cords (mail@clemens-cords.com), created 1/24/23
 //
 
 #pragma once
 
 #include <mousetrap.hpp>
-
-#include <app/tools.hpp>
-#include <app/app_component.hpp>
-#include <app/project_state.hpp>
-#include <app/tooltip.hpp>
 #include <app/app_signals.hpp>
+#include <app/app_component.hpp>
+#include <app/tools.hpp>
+
+#include <deque>
 
 namespace mousetrap
 {
     namespace state::actions
     {
-        DECLARE_GLOBAL_ACTION(toolbox, select_shapes_fill);
-        DECLARE_GLOBAL_ACTION(toolbox, select_shapes_outline);
-
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_neighborhood_select);
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_rectangle);
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_rectangle_add);
@@ -51,7 +46,8 @@ namespace mousetrap
     {
         public:
             Toolbox();
-            operator Widget*() override;
+            ~Toolbox();
+            operator Widget*();
 
         protected:
             void on_active_tool_changed() override;
@@ -60,87 +56,80 @@ namespace mousetrap
             void select(ToolID);
             ToolID _currently_selected;
 
-            class Icon
+            class ToolIcon
             {
                 public:
-                    Icon(ToolID id, Toolbox*);
+                    ToolIcon(const std::string& image_id, Toolbox*);
                     operator Widget*();
 
                     void set_selection_indicator_visible(bool);
                     void set_child_selection_indicator_visible(bool);
                     void set_has_popover_indicator_visible(bool);
 
-                    ToolID get_id();
+                    template<typename Function_t>
+                    void set_on_click(Function_t f) {
+                        _on_click = f;
+                    }
 
                 private:
                     Toolbox* _owner;
-                    ToolID _id;
-
-                    ActionID _action_id;
 
                     ImageDisplay _has_popover_indicator_icon = ImageDisplay(get_resource_path() + "icons/" + "has_popover_indicator" + ".png");
                     ImageDisplay _child_selected_indicator_icon = ImageDisplay(get_resource_path() + "icons/" + "child_selected_horizontal" + ".png");
                     ImageDisplay _selected_indicator_icon = ImageDisplay(get_resource_path() + "icons/" + "selected_indicator" + ".png");
 
-                    ImageDisplay _tool_icon = ImageDisplay(get_resource_path() + "icons/" + _id + ".png");
+                    ImageDisplay _tool_icon;
 
                     Overlay _overlay;
-                    AspectFrame _aspect_frame = AspectFrame(1);
+                    AspectFrame _main = AspectFrame(1);
 
-                    ListView _main = ListView(GTK_SELECTION_NONE);
-
+                    std::function<void()> _on_click;
                     ClickEventController _click_event_controller;
-                    static void on_click_pressed(ClickEventController*, size_t, double, double, Icon* instance);
-
-                    Tooltip _tooltip;
             };
 
-            class IconWithPopover
+            class ClickForPopover
             {
                 public:
-                    IconWithPopover(ToolID main, std::vector<std::vector<ToolID>> children, Toolbox* owner);
+                    ClickForPopover();
                     operator Widget*();
 
-                    void set_tool_selected(ToolID);
+                    Box& get_label_box();
+                    Box& get_popover_box();
 
                 private:
-                    Toolbox* _owner = nullptr;
-                    Viewport _main;
+                    Box _label_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                    Popover _popover = Popover();
+                    Box _popover_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
-                    std::vector<Box> _popover_rows;
-                    Box _popover_box = Box(GTK_ORIENTATION_VERTICAL);
-                    Popover _popover;
-
-                    Icon* _parent_icon;
-                    std::vector<Icon*> _child_icons;
-
-                    ClickEventController _click_event_controller;
-                    static void on_parent_icon_click_pressed(ClickEventController*, size_t, double, double, IconWithPopover* instance);
+                    ClickEventController _label_click_controller;
+                    ClickEventController _popover_click_controller;
             };
 
-            std::vector<IconWithPopover*> _elements =
-            {
-                new IconWithPopover(MARQUEE_RECTANGLE, {{MARQUEE_RECTANGLE_ADD, MARQUEE_RECTANGLE, MARQUEE_RECTANGLE_SUBTRACT}}, this),
-                new IconWithPopover(MARQUEE_CIRCLE, {{MARQUEE_CIRCLE_ADD, MARQUEE_CIRCLE, MARQUEE_CIRCLE_SUBTRACT}}, this),
-                new IconWithPopover(MARQUEE_POLYGON, {{MARQUEE_POLYGON_ADD, MARQUEE_POLYGON, MARQUEE_POLYGON_SUBTRACT}}, this),
-                new IconWithPopover(MARQUEE_NEIGHBORHODD_SELECT, {}, this),
-                new IconWithPopover(BRUSH, {}, this),
-                new IconWithPopover(ERASER, {}, this),
-                new IconWithPopover(EYEDROPPER, {}, this),
-                new IconWithPopover(BUCKET_FILL, {}, this),
-                new IconWithPopover(LINE, {}, this),
-                new IconWithPopover(RECTANGLE_OUTLINE, {{CIRCLE_OUTLINE, POLYGON_OUTLINE}}, this),
-                new IconWithPopover(RECTANGLE_FILL, {{CIRCLE_FILL, POLYGON_FILL}}, this),
-                new IconWithPopover(GRADIENT_DITHERED, {{GRADIENT_DITHERED, GRADIENT_SMOOTH}}, this)
-            };
+            std::map<ToolID, ToolIcon*> _id_to_icons;
+            std::map<ToolID, size_t> _id_to_listview_positions;
 
-            static inline ToolID _shapes_fill_forwarding_id = POLYGON_FILL;
-            static inline ToolID _shapes_outline_forwarding_id = POLYGON_OUTLINE;
+            ToolIcon _filled_shapes_icon = ToolIcon("shapes_fill", this);
+            ClickForPopover _filled_shapes_popover;
 
-            ListView _element_container = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE);
+            ToolIcon _outline_shapes_icon = ToolIcon("shapes_outline", this);
+            ClickForPopover _outline_shapes_popover;
 
-            SeparatorLine _spacer_left, _spacer_right;
-            Box _outer = Box(GTK_ORIENTATION_HORIZONTAL);
+            ToolIcon _marquee_rectangle_icon = ToolIcon("marquee_rectangle", this);
+            ClickForPopover _marquee_rectangle_popover;
+
+            ToolIcon _marquee_circle_icon = ToolIcon("marquee_circle", this);
+            ClickForPopover _marquee_circle_popover;
+
+            ToolIcon _marquee_polygon_icon = ToolIcon("marquee_polygon", this);
+            ClickForPopover _marquee_polygon_popover;
+
+            ListView _list_view = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
+
+            ScrolledWindow _scrolled_window;
+
+            SeparatorLine _main_spacer_left;
+            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+            SeparatorLine _main_spacer_right;
     };
 
     namespace state

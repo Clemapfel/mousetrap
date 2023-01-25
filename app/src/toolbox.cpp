@@ -1,18 +1,14 @@
+//
+// Created by clem on 1/24/23.
+//
+
 #include <app/toolbox.hpp>
-#include <app/add_shortcut_action.hpp>
-#include <app/canvas.hpp>
+#include <app/project_state.hpp>
 
 namespace mousetrap
 {
-    // ICON
-
-    void Toolbox::Icon::on_click_pressed(ClickEventController*, size_t, double, double, Icon* instance)
-    {
-        active_state->set_active_tool(instance->_id);
-    }
-
-    Toolbox::Icon::Icon(ToolID id, Toolbox* owner)
-            : _owner(owner), _id(id), _action_id("toolbox.select_" + id)
+    Toolbox::ToolIcon::ToolIcon(const std::string& image_id, Toolbox* owner)
+        : _tool_icon(get_resource_path() + "icons/" + image_id + ".png"), _owner(owner)
     {
         for (auto* w : {&_has_popover_indicator_icon, &_child_selected_indicator_icon, &_selected_indicator_icon, &_tool_icon})
         {
@@ -23,243 +19,257 @@ namespace mousetrap
 
         _overlay.set_child(&_selected_indicator_icon);
         _overlay.add_overlay(&_tool_icon);
-        _overlay.add_overlay(&_child_selected_indicator_icon);
         _overlay.add_overlay(&_has_popover_indicator_icon);
-        _aspect_frame.set_child(&_overlay);
+        _overlay.add_overlay(&_child_selected_indicator_icon);
 
-        _main.push_back(&_aspect_frame);
+        set_selection_indicator_visible(false);
+        set_child_selection_indicator_visible(false);
+        set_has_popover_indicator_visible(false);
 
-        _click_event_controller.connect_signal_click_pressed(on_click_pressed, this);
+        _main.set_child(&_overlay);
+
+        _click_event_controller.connect_signal_click_pressed([](ClickEventController*, size_t, double, double, ToolIcon* instance) {
+            if (instance->_on_click)
+                instance->_on_click();
+        }, this);
         _main.add_controller(&_click_event_controller);
-
-        _tooltip.set_title(state::tooltips_file->get_value("toolbox." + id, "title"));
-        _tooltip.set_description(state::tooltips_file->get_value("toolbox." + id, "description"));
-
-        auto add_shortcut = [&](const std::string& id)
-        {
-            auto value = state::keybindings_file->get_value("toolbox", "select_" + id);
-            if (value != "never")
-            {
-                _tooltip.add_shortcut(
-                        value,
-                        state::keybindings_file->get_comment_above("toolbox", "select_" + id)
-                );
-            }
-        };
-
-        if (id == SHAPES_OUTLINE)
-        {
-            for (auto name : {RECTANGLE_OUTLINE, CIRCLE_OUTLINE, POLYGON_OUTLINE})
-                add_shortcut(name);
-        }
-        else if (id == SHAPES_FILL)
-        {
-            for (auto name : {RECTANGLE_FILL, CIRCLE_FILL, POLYGON_FILL})
-                add_shortcut(name);
-        }
-        else
-            add_shortcut(id);
-
-
-        operator Widget*()->set_tooltip_widget(_tooltip);
     }
 
-    void Toolbox::Icon::set_has_popover_indicator_visible(bool b)
+    Toolbox::ToolIcon::operator Widget*()
+    {
+        return &_main;
+    }
+
+    void Toolbox::ToolIcon::set_has_popover_indicator_visible(bool b)
     {
         _has_popover_indicator_icon.set_opacity(b ? 1 : 0);
     }
 
-    void Toolbox::Icon::set_selection_indicator_visible(bool b)
+    void Toolbox::ToolIcon::set_selection_indicator_visible(bool b)
     {
         _selected_indicator_icon.set_opacity(b ? 1 : 0);
     }
 
-    void Toolbox::Icon::set_child_selection_indicator_visible(bool b)
+    void Toolbox::ToolIcon::set_child_selection_indicator_visible(bool b)
     {
         _child_selected_indicator_icon.set_opacity(b ? 1 : 0);
     }
 
-    Toolbox::Icon::operator Widget*()
+    Toolbox::ClickForPopover::ClickForPopover()
     {
-        return &_main;
-    }
-
-    ToolID Toolbox::Icon::get_id()
-    {
-        return _id;
-    }
-
-    // ICON WITH POPOVER
-
-    void Toolbox::IconWithPopover::on_parent_icon_click_pressed(ClickEventController*, size_t, double, double, IconWithPopover* instance)
-    {
-        for (auto* element : instance->_owner->_elements)
-            if (not element->_popover_rows.empty())
-                element->_popover.popdown();
-
-        if (not instance->_popover_rows.empty())
-            instance->_popover.popup();
-    }
-
-    Toolbox::IconWithPopover::IconWithPopover(ToolID main, std::vector<std::vector<ToolID>> children, Toolbox* owner)
-            : _owner(owner), _parent_icon(new Icon(main, owner))
-    {
-        _popover_rows.reserve(children.size());
-        for (auto& row : children)
-        {
-            if (row.empty())
-                continue;
-
-            _popover_rows.emplace_back(GTK_ORIENTATION_HORIZONTAL);
-            for (auto& child : row)
-            {
-                _child_icons.emplace_back(new Icon(child, owner));
-                _popover_rows.back().push_back(_child_icons.back()->operator Widget*());
-            }
-        }
-
-        for (auto& row : _popover_rows)
-            _popover_box.push_back(&row);
-
+        _popover.attach_to(&_label_box);
         _popover.set_child(&_popover_box);
-        _popover.attach_to(&_main);
-        _main.set_child(_parent_icon->operator Widget*());
 
-        _parent_icon->set_selection_indicator_visible(false);
-        _parent_icon->set_child_selection_indicator_visible(false);
-        _parent_icon->set_has_popover_indicator_visible(_child_icons.size() != 0);
+        _label_click_controller.connect_signal_click_pressed([](ClickEventController*, size_t, double, double, ClickForPopover* instance) {
+            instance->_popover.popup();
+        }, this);
+        _label_box.add_controller(&_label_click_controller);
 
-        for (auto* child : _child_icons)
-        {
-            child->set_selection_indicator_visible(false);
-            child->set_child_selection_indicator_visible(false);
-            child->set_has_popover_indicator_visible(false);
-        }
-
-        _click_event_controller.connect_signal_click_pressed(on_parent_icon_click_pressed, this);
-        _parent_icon->operator Widget*()->add_controller(&_click_event_controller);
+        _popover_click_controller.connect_signal_click_pressed([](ClickEventController*, size_t, double, double, ClickForPopover* instance) {
+            //instance->_popover.popdown();
+        }, this);
+        _popover_box.add_controller(&_popover_click_controller);
     }
 
-    Toolbox::IconWithPopover::operator Widget*()
+    Box& Toolbox::ClickForPopover::get_label_box()
     {
-        return &_main;
+        return _label_box;
     }
 
-    void Toolbox::IconWithPopover::set_tool_selected(ToolID id)
+    Box& Toolbox::ClickForPopover::get_popover_box()
     {
-        _parent_icon->set_has_popover_indicator_visible(not _child_icons.empty());
-
-        if (_parent_icon->get_id() == id)
-        {
-            _parent_icon->set_selection_indicator_visible(true);
-            _parent_icon->set_child_selection_indicator_visible(false);
-        }
-        else
-        {
-            _parent_icon->set_selection_indicator_visible(false);
-            _parent_icon->set_child_selection_indicator_visible(false);
-        }
-
-        for (auto* child : _child_icons)
-        {
-            if (child->get_id() == id)
-            {
-                _parent_icon->set_selection_indicator_visible(false);
-                _parent_icon->set_child_selection_indicator_visible(true);
-                _parent_icon->set_has_popover_indicator_visible(false);
-
-                child->set_selection_indicator_visible(true);
-            }
-            else
-                child->set_selection_indicator_visible(false);
-        }
+        return _popover_box;
     }
 
-    // TOOLBOX
+    Toolbox::ClickForPopover::operator Widget*()
+    {
+        return &_label_box;
+    }
 
     Toolbox::Toolbox()
     {
-        for (auto e : _elements)
+        for (auto id : {
+            MARQUEE_NEIGHBORHODD_SELECT,
+            MARQUEE_RECTANGLE,
+            MARQUEE_RECTANGLE_ADD,
+            MARQUEE_RECTANGLE_SUBTRACT,
+            MARQUEE_CIRCLE,
+            MARQUEE_CIRCLE_ADD,
+            MARQUEE_CIRCLE_SUBTRACT,
+            MARQUEE_POLYGON,
+            MARQUEE_POLYGON_ADD,
+            MARQUEE_POLYGON_SUBTRACT,
+            BRUSH,
+            ERASER,
+            COLOR_SELECT,
+            BUCKET_FILL,
+            LINE,
+            RECTANGLE_OUTLINE,
+            RECTANGLE_FILL,
+            CIRCLE_OUTLINE,
+            CIRCLE_FILL,
+            POLYGON_OUTLINE,
+            POLYGON_FILL,
+            GRADIENT
+        })
         {
-            e->operator Widget *()->set_halign(GTK_ALIGN_START);
-            _element_container.push_back(e->operator Widget*());
-        }
-
-        _element_container.set_align(GTK_ALIGN_CENTER);
-        _element_container.set_hexpand(false);
-
-        _spacer_right.set_hexpand(true);
-        _spacer_left.set_hexpand(true);
-
-        _outer.push_back(&_spacer_left);
-        _outer.push_back(&_element_container);
-        _outer.push_back(&_spacer_right);
-
-        _outer.set_hexpand(true);
-
-        using namespace state::actions;
-
-        for (auto* action : {
-                &toolbox_select_shapes_fill,
-                &toolbox_select_shapes_outline,
-                &toolbox_select_marquee_neighborhood_select,
-                &toolbox_select_marquee_rectangle,
-                &toolbox_select_marquee_rectangle_add,
-                &toolbox_select_marquee_rectangle_subtract,
-                &toolbox_select_marquee_circle,
-                &toolbox_select_marquee_circle_add,
-                &toolbox_select_marquee_circle_subtract,
-                &toolbox_select_marquee_polygon,
-                &toolbox_select_marquee_polygon_add,
-                &toolbox_select_marquee_polygon_subtract,
-                &toolbox_select_brush,
-                &toolbox_select_eraser,
-                &toolbox_select_eyedropper,
-                &toolbox_select_bucket_fill,
-                &toolbox_select_line,
-                &toolbox_select_rectangle_outline,
-                &toolbox_select_rectangle_fill,
-                &toolbox_select_circle_outline,
-                &toolbox_select_circle_fill,
-                &toolbox_select_polygon_outline,
-                &toolbox_select_polygon_fill,
-                &toolbox_select_gradient_dithered,
-                &toolbox_select_gradient_smooth
-        }){
-            std::stringstream which;
-            for (size_t i = std::string("toolbox.select_").size(); i < action->get_id().size(); ++i)
-                which << (char) action->get_id().at(i);
-
-            action->set_function([id = std::string(which.str())](){
+            auto* inserted = _id_to_icons.insert({id, new ToolIcon(tool_id_to_string(id), this)}).first->second;
+            inserted->set_on_click([id = id](){
+                std::cout << tool_id_to_string(id) << std::endl;
                 active_state->set_active_tool(id);
             });
-            state::add_shortcut_action(*action);
         }
 
-        select(active_state->get_active_tool());
+        _filled_shapes_popover.get_label_box().push_back(_filled_shapes_icon);
+        for (auto id : {ToolID::RECTANGLE_FILL, ToolID::CIRCLE_FILL, ToolID::POLYGON_FILL})
+            _filled_shapes_popover.get_popover_box().push_back(_id_to_icons.at(id)->operator Widget*());
+
+        _outline_shapes_popover.get_label_box().push_back(_outline_shapes_icon);
+        for (auto id : {ToolID::RECTANGLE_OUTLINE, ToolID::CIRCLE_OUTLINE, ToolID::POLYGON_OUTLINE})
+            _outline_shapes_popover.get_popover_box().push_back(_id_to_icons.at(id)->operator Widget*());
+
+        _marquee_rectangle_popover.get_label_box().push_back(_marquee_rectangle_icon);
+        for (auto id : {ToolID::MARQUEE_RECTANGLE_ADD, ToolID::MARQUEE_RECTANGLE_REPLACE, ToolID::MARQUEE_RECTANGLE_SUBTRACT})
+            _marquee_rectangle_popover.get_popover_box().push_back(_id_to_icons.at(id)->operator Widget*());
+
+        _marquee_circle_popover.get_label_box().push_back(_marquee_circle_icon);
+        for (auto id : {ToolID::MARQUEE_CIRCLE_ADD, ToolID::MARQUEE_CIRCLE_REPLACE, ToolID::MARQUEE_CIRCLE_SUBTRACT})
+            _marquee_circle_popover.get_popover_box().push_back(_id_to_icons.at(id)->operator Widget*());
+
+        _marquee_polygon_popover.get_label_box().push_back(_marquee_polygon_icon);
+        for (auto id : {ToolID::MARQUEE_POLYGON_ADD, ToolID::MARQUEE_POLYGON_REPLACE, ToolID::MARQUEE_POLYGON_SUBTRACT})
+            _marquee_polygon_popover.get_popover_box().push_back(_id_to_icons.at(id)->operator Widget*());
+
+        _list_view.push_back(*_id_to_icons.at(MARQUEE_NEIGHBORHODD_SELECT));
+        _list_view.push_back(_marquee_rectangle_popover);
+        _list_view.push_back(_marquee_circle_popover);
+        _list_view.push_back(_marquee_polygon_popover);
+        _list_view.push_back(*_id_to_icons.at(BRUSH));
+        _list_view.push_back(*_id_to_icons.at(ERASER));
+        _list_view.push_back(*_id_to_icons.at(BUCKET_FILL));
+        _list_view.push_back(*_id_to_icons.at(COLOR_SELECT));
+        _list_view.push_back(*_id_to_icons.at(LINE));
+
+        _list_view.push_back(_filled_shapes_popover);
+        _list_view.push_back(_outline_shapes_popover);
+
+        _list_view.push_back(*_id_to_icons.at(GRADIENT));
+
+        _id_to_listview_positions = {
+                {MARQUEE_NEIGHBORHODD_SELECT, 0},
+                {MARQUEE_RECTANGLE_REPLACE, 1},
+                {MARQUEE_RECTANGLE_ADD, 1},
+                {MARQUEE_RECTANGLE_SUBTRACT, 1},
+                {MARQUEE_CIRCLE_ADD, 2},
+                {MARQUEE_CIRCLE_SUBTRACT, 2},
+                {MARQUEE_CIRCLE_REPLACE, 2},
+                {MARQUEE_POLYGON_ADD, 3},
+                {MARQUEE_POLYGON_SUBTRACT, 3},
+                {MARQUEE_POLYGON_REPLACE, 3},
+
+                {BRUSH, 4},
+                {ERASER, 5},
+                {BUCKET_FILL, 6},
+                {COLOR_SELECT, 7},
+                {LINE, 8},
+
+                {CIRCLE_FILL, 9},
+                {RECTANGLE_FILL, 9},
+                {POLYGON_FILL, 9},
+
+                {RECTANGLE_OUTLINE, 10},
+                {CIRCLE_OUTLINE, 10},
+                {POLYGON_OUTLINE, 10},
+
+                {GRADIENT, 11}
+        };
+
+        _main_spacer_left.set_expand(true);
+        _main_spacer_left.set_halign(GTK_ALIGN_START);
+        _list_view.set_hexpand(false);
+        _list_view.set_halign(GTK_ALIGN_CENTER);
+        _main_spacer_right.set_expand(true);
+        _main_spacer_right.set_halign(GTK_ALIGN_END);
+
+        _main.push_back(&_main_spacer_left);
+        _main.push_back(&_list_view);
+        _main.push_back(&_main_spacer_right);
+
+        _scrolled_window.set_child(&_main);
+        _scrolled_window.set_policy(GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
+        _scrolled_window.set_propagate_natural_height(true);
+        _scrolled_window.set_hexpand(true);
+
+        for (auto* icon : {
+            &_filled_shapes_icon,
+            &_outline_shapes_icon,
+            &_marquee_rectangle_icon,
+            &_marquee_circle_icon,
+            &_marquee_polygon_icon
+        })
+            icon->set_has_popover_indicator_visible(true);
     }
 
     Toolbox::operator Widget*()
     {
-        return &_outer;
+        return &_scrolled_window;
     }
 
     void Toolbox::select(ToolID id)
     {
-        if (id == SHAPES_OUTLINE)
-            id = POLYGON_OUTLINE;
+        for (auto& pair : _id_to_icons)
+        {
+            bool selected = pair.first == id;
+            auto& icon = pair.second;
+            icon->set_selection_indicator_visible(selected);
+        }
 
-        if (id == SHAPES_FILL)
-            id = POLYGON_FILL;
+        auto marquee_rectangle_selected = id == MARQUEE_RECTANGLE_REPLACE or
+            id == MARQUEE_RECTANGLE_ADD or
+            id == MARQUEE_RECTANGLE_SUBTRACT;
 
-        _currently_selected = id;
+        _marquee_rectangle_icon.set_child_selection_indicator_visible(marquee_rectangle_selected);
+        _marquee_rectangle_icon.set_has_popover_indicator_visible(not marquee_rectangle_selected);
 
-        for (auto& element : _elements)
-            element->set_tool_selected(id);
+        auto marquee_circle_selected = id == MARQUEE_CIRCLE_REPLACE or
+                id == MARQUEE_CIRCLE_ADD or
+                id == MARQUEE_CIRCLE_SUBTRACT;
+
+        _marquee_circle_icon.set_child_selection_indicator_visible(marquee_circle_selected);
+        _marquee_circle_icon.set_has_popover_indicator_visible(not marquee_circle_selected);
+
+        auto marquee_polygon_selected = id == MARQUEE_POLYGON_REPLACE or
+                id == MARQUEE_POLYGON_ADD or
+                id == MARQUEE_POLYGON_SUBTRACT;
+
+        _marquee_polygon_icon.set_child_selection_indicator_visible(marquee_polygon_selected);
+        _marquee_polygon_icon.set_has_popover_indicator_visible(not marquee_polygon_selected);
+
+        auto shapes_fill_selected =id == CIRCLE_FILL or
+                id == RECTANGLE_FILL or
+                id == POLYGON_FILL;
+
+        _filled_shapes_icon.set_child_selection_indicator_visible(shapes_fill_selected);
+        _filled_shapes_icon.set_has_popover_indicator_visible(not shapes_fill_selected);
+
+        auto shapes_outline_selected =id == CIRCLE_OUTLINE or
+                id == RECTANGLE_OUTLINE or
+                id == POLYGON_OUTLINE;
+
+        _outline_shapes_icon.set_child_selection_indicator_visible(shapes_outline_selected);
+        _outline_shapes_icon.set_has_popover_indicator_visible(not shapes_outline_selected);
+
+        _list_view.get_selection_model()->select(_id_to_listview_positions.at(id));
     }
 
     void Toolbox::on_active_tool_changed()
     {
         select(active_state->get_active_tool());
+    }
+
+    Toolbox::~Toolbox()
+    {
+        for (auto& pair : _id_to_icons)
+            delete pair.second;
     }
 }
