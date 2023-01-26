@@ -42,15 +42,9 @@ namespace mousetrap
         _is_inbetween = b;
 
         if (_is_inbetween)
-        {
-            _area.set_opacity(0.25);
             _inbetween_label.set_visible(true);
-        }
         else
-        {
-            _area.set_opacity(1);
             _inbetween_label.set_visible(false);
-        }
     }
 
     void FrameView::FramePreview::set_opacity(float x)
@@ -63,12 +57,7 @@ namespace mousetrap
 
     void FrameView::FramePreview::set_visible(bool b)
     {
-        if (_layer_shape != nullptr)
-            _layer_shape->set_visible(b);
-
-        if (_transparency_tiling_shape)
-            _transparency_tiling_shape->set_visible(b);
-
+        _area.set_opacity(b ? 1 : state::settings_file->get_value_as<float>("layer_view", "hidden_layer_opacity"));
         _area.queue_render();
     }
 

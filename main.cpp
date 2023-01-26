@@ -81,13 +81,6 @@ static void activate(GtkApplication* app, void*)
     Widget* frame_view = state::frame_view->operator Widget*();
     Widget* animation_preview = state::animation_preview->operator Widget*();
 
-    // TODO
-    {
-        auto* canvas_pre = canvas;
-        canvas = animation_preview;
-        animation_preview = canvas_pre;
-    }
-
     toolbox->set_vexpand(false);
 
     //canvas->set_size_request({500, 0});
@@ -185,6 +178,8 @@ static void activate(GtkApplication* app, void*)
     auto right_column_paned = Paned(GTK_ORIENTATION_VERTICAL);
     right_column_paned.set_start_child(&right_column_paned_top);
     right_column_paned.set_end_child(layer_view);
+
+    right_column_paned.set_position(-10e6); // fully extend layer view
 
     auto main_paned = Paned(GTK_ORIENTATION_HORIZONTAL);
     main_paned.set_start_child_shrinkable(false);
