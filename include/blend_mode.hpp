@@ -21,9 +21,9 @@ namespace mousetrap
         MAX         // max(src, dest)
     };
 
-    static void set_current_blend_mode(BlendMode);
-    static std::string blend_mode_to_string(BlendMode);
-    static BlendMode blend_mode_from_string(const std::string&);
-}
+    /// \param allow_alpha_blend: should resulting alpha be affected by blendmode
+    void set_current_blend_mode(BlendMode, bool allow_alpha_blend = true);
 
-#include <src/blend_mode.cpp>
+    std::string blend_mode_to_string(BlendMode);
+    BlendMode blend_mode_from_string(const std::string&);
+}

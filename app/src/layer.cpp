@@ -5,23 +5,29 @@ namespace mousetrap
 {
     Layer::Frame::Frame(Vector2i size)
     {
-        _image.create(size.x, size.y, RGBA(0, 0, 0, 0));
-        _texture.create_from_image(_image);
+        _image->create(size.x, size.y, RGBA(0, 0, 0, 0));
+        _texture->create_from_image(*_image);
+    }
+
+    Layer::Frame::~Frame()
+    {
+        delete _image;
+        delete _texture;
     }
 
     Image* Layer::Frame::get_image()
     {
-        return &_image;
+        return _image;
     }
 
     const Image* Layer::Frame::get_image() const
     {
-        return &_image;
+        return _image;
     }
 
     const Texture* Layer::Frame::get_texture() const
     {
-        return &_texture;
+        return _texture;
     }
 
     bool Layer::Frame::get_is_keyframe() const
@@ -36,7 +42,7 @@ namespace mousetrap
 
     void Layer::Frame::update_texture()
     {
-        _texture.create_from_image(_image);
+        _texture->create_from_image(*_image);
     }
 
     Layer::Layer(const std::string& name, Vector2i size, size_t n_frames)

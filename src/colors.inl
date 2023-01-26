@@ -132,11 +132,12 @@ namespace mousetrap
 
         auto delta = max - min;
 
-        if (max == r)
+        if (delta == 0)
+            h = 0;
+        else if (max == r)
             h = 60 * (fmod(((g - b) / delta), 6));
         else if (max == g)
             h = 60 * (((b - r) / delta) + 2);
-
         else if (max == b)
             h = 60 * (((r - g) / delta) + 4);
 

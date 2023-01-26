@@ -203,7 +203,7 @@ add_library(mousetrap SHARED
     src/reorderable_list.cpp
 
     include/blend_mode.hpp
-        src/blend_mode.cpp
+    src/blend_mode.cpp
 
     include/viewport.hpp
     src/viewport.inl

@@ -16,6 +16,7 @@ namespace mousetrap
             {
                 public:
                     Frame(Vector2i size);
+                    ~Frame();
 
                     Image* get_image();
                     const Image* get_image() const;
@@ -26,8 +27,8 @@ namespace mousetrap
                     void set_is_keyframe(bool);
 
                 private:
-                    Image _image;
-                    Texture _texture;
+                    Image* _image = new Image();
+                    Texture* _texture = new Texture();
                     bool _is_keyframe = true;
             };
 

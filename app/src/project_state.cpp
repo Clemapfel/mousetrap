@@ -92,30 +92,50 @@ namespace mousetrap
 
         _n_frames = 3;
 
-        for (size_t i = 0; i < 6; ++i)
-            _layers.emplace_back(new Layer("Layer #" + std::to_string(i), _layer_resolution, _n_frames));
+        constexpr float COLOR = 2;
+        constexpr float ZERO = 0;
+        constexpr float HALF = 0.5;
+        constexpr float ONE = 1;
+
+        auto add_debug_layer = [&](float rgb_mode, float alpha_mode)
+        {
+            _layers.emplace_front(new Layer("Layer #" + std::to_string(_layers.size()), _layer_resolution, _n_frames));
+
+            for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+            {
+                std::vector<std::pair<Vector2i, HSVA>> to_draw;
+
+                if (rgb_mode == COLOR)
+                {
+                    for (size_t x = 0; x < _layer_resolution.x; ++x)
+                        for (size_t y = 0; y < _layer_resolution.y; ++y)
+                            to_draw.push_back({Vector2i(x, y), HSVA(rand() / float(RAND_MAX), 1, 1, glm::clamp<float>(alpha_mode, 0, 1))});
+                }
+                else
+                {
+                    for (size_t x = 0; x < _layer_resolution.x; ++x)
+                        for (size_t y = 0; y < _layer_resolution.y; ++y)
+                            to_draw.push_back({Vector2i(x, y), RGBA(rgb_mode, rgb_mode, rgb_mode, glm::clamp<float>(alpha_mode, 0, 1)).operator HSVA()});
+                }
+
+                draw_to_layer(0, frame_i, to_draw);
+            }
+        };
 
         for (size_t x = 0; x < _layer_resolution.x; ++x)
             for (size_t y = 0; y < _layer_resolution.y; ++y)
                 _selection.insert({x, y});
 
-        // TODO
-        for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
-        {
-            for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
-            {
-                std::vector<std::pair<Vector2i, HSVA>> to_draw;
+        add_debug_layer(ZERO, ONE);
+        add_debug_layer(HALF, ONE);
+        add_debug_layer(ONE, ONE);
+        add_debug_layer(COLOR, ONE);
 
-                auto saturation = glm::clamp<float>(rand() / float(RAND_MAX), 0.1, 0.9);
-                for (size_t x = 0; x < _layer_resolution.x; ++x)
-                    for (size_t y = 0; y < _layer_resolution.y; ++y)
-                        to_draw.push_back({Vector2i(x, y), HSVA(rand() / float(RAND_MAX), saturation, 1, 1)});
-
-                draw_to_layer(layer_i, frame_i, to_draw);
-            }
-        }
-
-        // TODO
+        add_debug_layer(ZERO, ONE);
+        add_debug_layer(HALF, ONE);
+        add_debug_layer(ONE, ONE);
+        add_debug_layer(COLOR, ONE);
+        add_debug_layer(COLOR, HALF);
     }
 
     const Brush* ProjectState::get_current_brush() const
