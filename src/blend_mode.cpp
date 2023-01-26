@@ -3,6 +3,7 @@
 // Created on 9/26/22 by clem (mail@clemens-cords.com)
 //
 
+#include <include/blend_mode.hpp>
 
 namespace mousetrap
 {
@@ -18,9 +19,8 @@ namespace mousetrap
 
         if (mode == NORMAL)
         {
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            //glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-            //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         }
         else if (mode == SUBTRACT)
         {

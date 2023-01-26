@@ -81,6 +81,13 @@ static void activate(GtkApplication* app, void*)
     Widget* frame_view = state::frame_view->operator Widget*();
     Widget* animation_preview = state::animation_preview->operator Widget*();
 
+    // TODO
+    {
+        auto* canvas_pre = canvas;
+        canvas = animation_preview;
+        animation_preview = canvas_pre;
+    }
+
     toolbox->set_vexpand(false);
 
     //canvas->set_size_request({500, 0});

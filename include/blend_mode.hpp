@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <string>
+
 namespace mousetrap
 {
     enum BlendMode
@@ -24,4 +26,4 @@ namespace mousetrap
     static BlendMode blend_mode_from_string(const std::string&);
 }
 
-#include <src/blend_mode.inl>
+#include <src/blend_mode.cpp>
