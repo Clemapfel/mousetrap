@@ -19,6 +19,9 @@ namespace mousetrap
 
             void present();
 
+        protected:
+            void on_layer_resolution_changed() override;
+
         private:
             enum ScaleMode
             {
@@ -64,8 +67,14 @@ namespace mousetrap
             Label _relative_when_selected_label = Label("%");
 
             CheckButton _maintain_aspect_ratio_button = CheckButton();
-            Label _maintain_aspect_ratio_label = Label(state::tooltips_file->get_value("scale_canvas_dialog", "maintain_aspect_ratio_label"));
+            Label _maintain_aspect_ratio_label;
             Box _maintain_aspect_ratio_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
+            Button _accept_button;
+            Label _accept_button_label = Label("Scale");
+
+            Button _cancel_button;
+            Label _cancel_button_label = Label("Cancel");
     };
 
     namespace state

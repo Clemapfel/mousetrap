@@ -29,7 +29,7 @@ if(NOT GLM_FOUND)
 endif()
 
 # Boost
-find_package(Boost REQUIRED COMPONENTS system iostreams)
+find_package(Boost REQUIRED COMPONENTS system iostreams system)
 
 ### CONFIGURE ###
 
