@@ -10,7 +10,7 @@ namespace mousetrap
     inline Dialog::Dialog(Window* host_window, const std::string& title, bool is_modal)
             : WidgetImplementation<GtkDialog>(GTK_DIALOG(gtk_dialog_new_with_buttons(
                     title.c_str(),
-                    host_window->operator GtkWindow*(),
+                    host_window == nullptr ? nullptr : host_window->operator GtkWindow*(),
                     static_cast<GtkDialogFlags>(GTK_DIALOG_DESTROY_WITH_PARENT | (is_modal ? GTK_DIALOG_MODAL : 0)),
                     nullptr, GTK_RESPONSE_NONE, nullptr))),
               HasCloseSignal<Dialog>(this),
