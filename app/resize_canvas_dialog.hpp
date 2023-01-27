@@ -13,7 +13,7 @@ namespace mousetrap
     {
         public:
             ResizeCanvasDialog();
-            operator Widget*();
+            operator Widget*() override;
 
             void present();
 
@@ -31,7 +31,7 @@ namespace mousetrap
                 CENTER
             };
 
-            Alignment _alignment;
+            Alignment _alignment = CENTER;
 
             class AlignmentSelector
             {
@@ -47,22 +47,12 @@ namespace mousetrap
                         ButtonAndArrow(Alignment alignment, const std::string& id);
                         operator Widget*();
 
-                        Alignment alignment;
-                        ImageDisplay arrow;
-                        ToggleButton button;
+                        Alignment _alignment;
+                        ImageDisplay _arrow;
+                        ToggleButton _button;
                     };
 
-                    std::map<Alignment, ButtonAndArrow> _arrows {
-                        {TOP_LEFT, ButtonAndArrow(TOP_LEFT, "top_left")},
-                        {TOP, ButtonAndArrow(TOP, "top")},
-                        {TOP_RIGHT, ButtonAndArrow(TOP_RIGHT, "top_right")},
-                        {RIGHT, ButtonAndArrow(RIGHT, "right")},
-                        {BOTTOM_RIGHT, ButtonAndArrow(BOTTOM_RIGHT, "bottom_right")},
-                        {BOTTOM, ButtonAndArrow(BOTTOM, "bottom")},
-                        {BOTTOM_LEFT, ButtonAndArrow(BOTTOM_LEFT, "bottom_left")},
-                        {LEFT, ButtonAndArrow(LEFT, "left")},
-                        {CENTER, ButtonAndArrow(CENTER, "center")}
-                    };
+                    std::map<Alignment, ButtonAndArrow*> _arrows;
 
                     Box _top_row = Box(GTK_ORIENTATION_HORIZONTAL);
                     Box _center_row = Box(GTK_ORIENTATION_HORIZONTAL);
@@ -73,7 +63,7 @@ namespace mousetrap
 
             AlignmentSelector _alignment_selector = AlignmentSelector(this);
             Window _window;
-            Dialog _dialog = Dialog(&_window, "Resize Canvas...");
+            //Dialog _dialog = Dialog(&_window, "Resize Canvas...");
     };
 
     namespace state

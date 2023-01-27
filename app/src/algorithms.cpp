@@ -408,4 +408,10 @@ namespace mousetrap
         return out;
     }
 
+    Image rotate_image_clockwise(const Image& in)
+    {
+        auto out = in;
+    }
+
+
 }

@@ -30,4 +30,10 @@ namespace mousetrap
     Image generate_rectangle_filled(size_t width, size_t height, HSVA color = HSVA(0, 1, 0, 1));
     Image generate_circle_outline(size_t width, size_t height, HSVA color = HSVA(0, 1, 0, 1));
     Image generate_circle_filled(size_t width, size_t height, HSVA color = HSVA(0, 1, 0, 1));
+
+    [[nodiscard]] Image rotate_image_clockwise(const Image&);
+    [[nodiscard]] Image rotate_image_counter_clockwise(const Image&);
+    [[nodiscard]] Image flip_image_horizontally(const Image&);
+    [[nodiscard]] Image flip_image_vertically(const Image&);
+
 }
