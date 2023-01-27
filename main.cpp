@@ -37,6 +37,7 @@
 #include <app/config_files.hpp>
 #include <app/open_uri.hpp>
 #include <app/scale_canvas_dialog.hpp>
+#include <app/resize_canvas_dialog.hpp>
 
 using namespace mousetrap;
 
@@ -69,6 +70,7 @@ static void activate(GtkApplication* app, void*)
     state::layer_view = new LayerView();
     state::toolbox = new Toolbox();
     state::scale_canvas_dialog = new ScaleCanvasDialog();
+    state::resize_canvas_dialog = new ResizeCanvasDialog();
 
     Widget* layer_view = state::layer_view->operator Widget*();
     Widget* palette_view = state::palette_view->operator Widget*();
@@ -82,8 +84,8 @@ static void activate(GtkApplication* app, void*)
     Widget* bubble_log = state::bubble_log->operator Widget*();
     Widget* frame_view = state::frame_view->operator Widget*();
     Widget* animation_preview = state::animation_preview->operator Widget*();
+    Widget* resize_canvas_dialog = state::resize_canvas_dialog->operator Widget*();
 
-    state::scale_canvas_dialog->present();
 
     toolbox->set_vexpand(false);
 
