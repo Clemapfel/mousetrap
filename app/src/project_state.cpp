@@ -419,11 +419,19 @@ namespace mousetrap
         return _layer_resolution;
     }
 
-    void ProjectState::set_layer_resolution(Vector2ui)
+    void ProjectState::resize_canvas(Vector2ui)
     {
-        std::cerr << "[ERROR] In ProjecState::set_layer_resolution: TODO" << std::endl;
+        std::cerr << "[ERROR] In ProjecState::resize_canvas: TODO" << std::endl;
 
         signal_layer_resolution_changed();
+    }
+
+    void ProjectState::scale_canvas(Vector2ui, GdkInterpType)
+    {
+        std::cerr << "[ERROR] In ProjecState::scale_canvas: TODO" << std::endl;
+
+        signal_layer_resolution_changed();
+        signal_layer_image_updated();
     }
 
     HSVA ProjectState::get_primary_color() const

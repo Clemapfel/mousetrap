@@ -11,6 +11,11 @@
 
 namespace mousetrap
 {
+    namespace state::actions
+    {
+        DECLARE_GLOBAL_ACTION(scale_canvas_dialog, open);
+    }
+
     class ScaleCanvasDialog : public AppComponent, public signals::LayerResolutionChanged
     {
         public:
@@ -40,6 +45,7 @@ namespace mousetrap
 
             void set_width(float);
             void set_height(float);
+            void set_final_size(size_t w, size_t h);
 
             Window _window;
             Dialog _dialog = Dialog(&_window, "Scale Image...");
@@ -59,12 +65,31 @@ namespace mousetrap
             Box _spin_button_and_dropdown_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
             Label _instruction_label = Label(state::tooltips_file->get_value("scale_canvas_dialog", "instruction_label"));
+            Label _final_size_label;
 
             DropDown _absolute_or_relative_dropdown;
             Label _absolute_list_label = Label("px");
             Label _absolute_when_selected_label = Label("px");
             Label _relative_list_label = Label("%");
             Label _relative_when_selected_label = Label("%");
+
+            GdkInterpType _interpolation_type = GDK_INTERP_NEAREST;
+
+            Label _interpolation_label = Label("<b>Interpolation</b>");
+            Box _interpolation_dropdown_box = Box(GTK_ORIENTATION_VERTICAL);
+            DropDown _interpolation_dropdown;
+
+            Label _nearest_neighbor_list_label = Label("Nearest Neighbor (None)");
+            Label _nearest_neighbor_selected_label = Label("None");
+
+            Label _tiles_list_label = Label("Tiled (Recommended)");
+            Label _tiles_selected_label = Label("Recommended");
+
+            Label _bilinear_list_label = Label("Bilinear (Good)");
+            Label _bilinear_selected_label = Label("Good");
+
+            Label _hyper_list_label = Label("Hyperbolic (Best)");
+            Label _hyper_selected_label = Label("Best");
 
             CheckButton _maintain_aspect_ratio_button = CheckButton();
             Label _maintain_aspect_ratio_label;

@@ -1,6 +1,8 @@
 #include <app/menubar.hpp>
 #include <app/bubble_log_area.hpp>
 #include <app/brush_options.hpp>
+#include <app/resize_canvas_dialog.hpp>
+#include <app/scale_canvas_dialog.hpp>
 
 namespace mousetrap
 {
@@ -52,16 +54,23 @@ namespace mousetrap
         auto image_submenu = MenuModel();
 
         auto image_submenu_size_section = MenuModel();
-        image_submenu_size_section.add_action("Resize Canvas...", image_transform_open_resize_canvas_dialog.get_id());
-        image_submenu_size_section.add_action("Scale Canvas...", image_transform_open_scale_canvas_dialog.get_id());
-        image_submenu.add_section("Canvas Size", &image_submenu_size_section);
+        image_submenu_size_section.add_action("Resize Canvas...", resize_canvas_dialog_open.get_id());
+        image_submenu_size_section.add_action("Scale Image...", scale_canvas_dialog_open.get_id());
+        image_submenu.add_section("Size", &image_submenu_size_section);
 
-        auto image_submenu_transform_section = MenuModel();
-        image_submenu_transform_section.add_action("Flip Horizontally", image_transform_flip_horizontally.get_id());
-        image_submenu_transform_section.add_action("Flip Vertically", image_transform_flip_vertically.get_id());
-        image_submenu_transform_section.add_action("Rotate +90°", image_transform_rotate_clockwise.get_id());
-        image_submenu_transform_section.add_action("Rotate -90°", image_transform_rotate_counterclockwise.get_id());
-        image_submenu.add_section("Transform", &image_submenu_transform_section);
+        auto image_submenu_transform_all_section = MenuModel();
+        image_submenu_transform_all_section.add_action("Flip Horizontally", image_transform_flip_horizontally.get_id());
+        image_submenu_transform_all_section.add_action("Flip Vertically", image_transform_flip_vertically.get_id());
+        image_submenu_transform_all_section.add_action("Rotate +90°", image_transform_rotate_clockwise.get_id());
+        image_submenu_transform_all_section.add_action("Rotate -90°", image_transform_rotate_counterclockwise.get_id());
+        image_submenu.add_section("Transform Whole Image", &image_submenu_transform_all_section);
+
+        auto image_submenu_transform_current_section = MenuModel();
+        image_submenu_transform_current_section.add_action("Flip Layer Horizontally", image_transform_flip_current_layer_horizontally.get_id());
+        image_submenu_transform_current_section.add_action("Flip Layer Vertically", image_transform_flip_current_layer_vertically.get_id());
+        image_submenu_transform_current_section.add_action("Rotate Layer +90°", image_transform_rotate_current_layer_clockwise.get_id());
+        image_submenu_transform_current_section.add_action("Rotate Layer -90°", image_transform_rotate_current_layer_counterclockwise.get_id());
+        image_submenu.add_section("Transform Current Layer", &image_submenu_transform_current_section);
 
         // COLORS
 

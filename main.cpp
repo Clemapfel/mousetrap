@@ -86,9 +86,6 @@ static void activate(GtkApplication* app, void*)
     Widget* animation_preview = state::animation_preview->operator Widget*();
     Widget* resize_canvas_dialog = state::resize_canvas_dialog->operator Widget*();
 
-    // TODO
-    state::resize_canvas_dialog->present();
-
     toolbox->set_vexpand(false);
 
     //canvas->set_size_request({500, 0});

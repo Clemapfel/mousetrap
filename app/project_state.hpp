@@ -72,10 +72,10 @@ namespace mousetrap
 
             void draw_to_layer(size_t layer_i, size_t frame_i, std::vector<std::pair<Vector2i, HSVA>>);
             void set_current_layer_and_frame(size_t layer_i, size_t frame_i);
+
             void add_layer(int above); //-1 for new layer at 0
             void duplicate_layer(int create_above, const Layer& duplicate_from);
             void swap_layers(size_t a, size_t b);
-
             void delete_layer(size_t);
 
             void set_layer_blend_mode(size_t, BlendMode);
@@ -85,7 +85,13 @@ namespace mousetrap
             void set_layer_name(size_t, const std::string&);
 
             Vector2ui get_layer_resolution() const;
-            void set_layer_resolution(Vector2ui);
+            void resize_canvas(Vector2ui);
+            void scale_canvas(Vector2ui, GdkInterpType = GDK_INTERP_TILES);
+
+            void flip_horizontally(size_t layer_i, size_t frame_i);
+            void flip_vertically(size_t layer_i, size_t frame_i);
+            void rotate_clockwise(size_t layer_i, size_t frame_i);
+            void rotate_clockwise(size_t layer_i, size_t frame_i);
 
             HSVA get_primary_color() const;
             void set_primary_color(HSVA);
