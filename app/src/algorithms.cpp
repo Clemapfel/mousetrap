@@ -401,6 +401,9 @@ namespace mousetrap
         auto out = Image();
         out.create(width, height, RGBA(0, 0, 0, 0));
 
+        if (width == 0 or height == 0)
+            return out;
+
         for (auto& pair : ranges)
             for (size_t x = pair.second.first; x < pair.second.second; ++x)
                 out.set_pixel(x, pair.first, color);
@@ -408,9 +411,73 @@ namespace mousetrap
         return out;
     }
 
+    Image rotate_image_counter_clockwise(const Image& in)
+    {
+        size_t width_in = in.get_size().x;
+        size_t height_in = in.get_size().y;
+
+        auto out = Image();
+        out.create(height_in, width_in, RGBA(0, 0, 0, 0));
+
+        if (width_in == 0 or height_in == 0)
+            return out;
+
+        for (size_t y = 0; y < height_in; y++)
+            for(int x = 0; x < width_in; x++)
+                out.set_pixel(y, x, in.get_pixel(width_in - 1 - x, y));
+
+        return out;
+    }
+
     Image rotate_image_clockwise(const Image& in)
     {
-        auto out = in;
+        size_t width_in = in.get_size().x;
+        size_t height_in = in.get_size().y;
+
+        auto out = Image();
+        out.create(height_in, width_in, RGBA(0, 0, 0, 0));
+
+        if (width_in == 0 or height_in == 0)
+            return out;
+
+        for (size_t x = 0; x < width_in; x++)
+            for(int y = 0; y < height_in; y++)
+                out.set_pixel(y, x, in.get_pixel(x, height_in - 1 - y));
+
+        return out;
+    }
+
+    Image flip_image_horizontally(const Image& in)
+    {
+        size_t width = in.get_size().x;
+        size_t height = in.get_size().y;
+
+        auto out = Image();
+        out.create(width, height, RGBA(0, 0, 0, 0));
+
+        if (width == 0 or height == 0)
+            return out;
+
+        for (size_t x = 0; x < width; ++x)
+            for (size_t y = 0; y < height; ++y)
+                out.set_pixel(x, y, in.get_pixel(width - 1 - x, y));
+
+        return out;
+    }
+
+    Image flip_image_vertically(const Image& in)
+    {
+        size_t width = in.get_size().x;
+        size_t height = in.get_size().y;
+
+        auto out = Image();
+        out.create(width, height, RGBA(0, 0, 0, 0));
+
+        for (size_t x = 0; x < width; ++x)
+            for (size_t y = 0; y < height; ++y)
+                out.set_pixel(x, y, in.get_pixel(x, height - 1 - y));
+
+        return out;
     }
 
 

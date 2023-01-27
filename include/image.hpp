@@ -18,6 +18,8 @@ namespace mousetrap
             bool create_from_file(const std::string&);
             void create_from_pixbuf(GdkPixbuf*);
 
+            bool save_to_file(const std::string&);
+
             void* data() const;
             /// \returns <number of pixels> * <number of components>
             size_t get_data_size() const;

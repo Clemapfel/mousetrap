@@ -70,6 +70,27 @@ namespace mousetrap
         return out;
     }
 
+    inline bool Image::save_to_file(const std::string& path)
+    {
+        if (_size.x == 0 and _size.y == 0)
+        {
+            std::cerr << "[WARNING] In Image::save_to_file: Attempting to write an image of size 0x0 to disk, no file will be generated." << std::endl;
+            return false;
+        }
+
+        auto* as_pixbuf = to_pixbuf();
+        GError* error = nullptr;
+
+        gdk_pixbuf_save(as_pixbuf, path.c_str(), "png", &error);
+        if (error != nullptr)
+        {
+            std::cerr << "[ERROR] In Image::save_to_file: " << error->message << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+
     inline Vector2ui Image::get_size() const
     {
         return _size;
