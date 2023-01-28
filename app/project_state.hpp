@@ -91,7 +91,7 @@ namespace mousetrap
             void flip_horizontally(size_t layer_i, size_t frame_i);
             void flip_vertically(size_t layer_i, size_t frame_i);
             void rotate_clockwise(size_t layer_i, size_t frame_i);
-            void rotate_clockwise(size_t layer_i, size_t frame_i);
+            void rotate_counterclockwise(size_t layer_i, size_t frame_i);
 
             HSVA get_primary_color() const;
             void set_primary_color(HSVA);
