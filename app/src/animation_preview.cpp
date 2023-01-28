@@ -355,4 +355,14 @@ namespace mousetrap
     {
         on_layer_image_updated();
     }
+
+    void AnimationPreview::on_playback_toggled()
+    {
+        set_playback_active(active_state->get_playback_active());
+    }
+
+    void AnimationPreview::on_playback_fps_changed()
+    {
+        set_fps(active_state->get_fps());
+    }
 }

@@ -18,16 +18,20 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(frame_view, toggle_onionskin_visible);
         DECLARE_GLOBAL_ACTION(frame_view, increase_n_onionskin_layers);
         DECLARE_GLOBAL_ACTION(frame_view, decrease_n_onionskin_layers);
+
         DECLARE_GLOBAL_ACTION(frame_view, jump_to_start);
         DECLARE_GLOBAL_ACTION(frame_view, jump_to_end);
         DECLARE_GLOBAL_ACTION(frame_view, go_to_previous_frame);
         DECLARE_GLOBAL_ACTION(frame_view, go_to_next_frame);
         DECLARE_GLOBAL_ACTION(frame_view, play_pause);
+
         DECLARE_GLOBAL_ACTION(frame_view, frame_move_right);
         DECLARE_GLOBAL_ACTION(frame_view, frame_move_left);
+
         DECLARE_GLOBAL_ACTION(frame_view, frame_new_left_of_current);
         DECLARE_GLOBAL_ACTION(frame_view, frame_new_right_of_current);
         DECLARE_GLOBAL_ACTION(frame_view, frame_delete);
+
         DECLARE_GLOBAL_ACTION(frame_view, frame_make_keyframe_inbetween);
     }
     
@@ -38,7 +42,9 @@ namespace mousetrap
         public signals::LayerImageUpdated,
         public signals::LayerCountChanged,
         public signals::LayerPropertiesChanged,
-        public signals::LayerResolutionChanged
+        public signals::LayerResolutionChanged,
+        public signals::PlaybackToggled,
+        public signals::PlaybackFpsChanged
     {
         public:
             FrameView();
@@ -53,9 +59,9 @@ namespace mousetrap
             void on_layer_image_updated() override;
             void on_layer_count_changed() override;
             void on_layer_properties_changed() override;
-            void on_layer_resolution_changed() override {
-                // TODO
-            }
+            void on_playback_toggled() override;
+            void on_layer_resolution_changed() override;
+            void on_playback_fps_changed() override;
 
         private:
             class FramePreview
@@ -154,6 +160,8 @@ namespace mousetrap
 
                     void set_onionskin_visible(bool);
                     void set_n_onionskin_layers(size_t);
+                    void set_playback_active(bool);
+                    void set_fps(float);
 
                 private:
                     FrameView* _owner;
@@ -174,7 +182,7 @@ namespace mousetrap
                     Button _go_to_next_frame_button;
                     ImageDisplay _go_to_next_frame_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_go_to_next_frame.png");
 
-                    Button _play_pause_button;
+                    ToggleButton _play_pause_button;
                     ImageDisplay _play_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_play.png");
                     ImageDisplay _pause_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_pause.png");
 
@@ -212,6 +220,11 @@ namespace mousetrap
                     ScrolledWindow _scrolled_window;
                     Box _button_box = Box(GTK_ORIENTATION_HORIZONTAL);
                     Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+
+                    SpinButton _fps_spin_button = SpinButton(1, state::settings_file->get_value_as<float>("animation_preview", "max_fps"), 0.5);
+                    Label _fps_label;
+                    Overlay _fps_label_overlay;
+                    SeparatorLine _fps_label_underlay;
 
                     Tooltip _tooltip;
 

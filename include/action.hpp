@@ -44,6 +44,8 @@ namespace mousetrap
             const std::vector<ShortcutTriggerID>& get_shortcuts() const;
 
             operator GAction*() const;
+            void set_enabled(bool);
+            bool get_enabled() const;
 
         private:
             ActionID _id;
@@ -64,6 +66,7 @@ namespace mousetrap
 
             static void on_action_activate(GSimpleAction*, GVariant*, Action*);
             GSimpleAction* _g_action = nullptr;
+            bool _enabled = true;
     };
 }
 

@@ -130,6 +130,9 @@ namespace mousetrap
             void set_n_onionskin_layers(size_t);
             size_t get_n_onionskin_layers() const;
 
+            void set_fps(float);
+            float get_fps() const;
+
         private:
             HSVA _primary_color = RGBA(1, 0, 1, 1).operator HSVA();
             HSVA _secondary_color = RGBA(1, 1, 0, 1).operator HSVA();
@@ -161,6 +164,8 @@ namespace mousetrap
             size_t _n_frames = 0;
 
             bool _playback_active = false;
+            float _playback_fps = 12.5;
+
             bool _onionskin_visible = false;
             size_t _onionskin_n_layers = 0;
 
@@ -181,6 +186,8 @@ namespace mousetrap
             void signal_layer_properties_changed();
             void signal_active_tool_changed();
             void signal_layer_resolution_changed();
+            void signal_playback_toggled();
+            void signal_playback_fps_changed();
     };
 
     inline std::vector<ProjectState*> project_states = {};

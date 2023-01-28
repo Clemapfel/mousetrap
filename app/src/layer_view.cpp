@@ -403,6 +403,18 @@ namespace mousetrap
 
         using namespace state::actions;
 
+        auto add_tooltip = [](Button& button, const std::string& id){
+
+            /*
+            auto* tooltip = new Tooltip();
+            tooltip->set_title(state::tooltips_file->get_value("layer_view", id));
+            tooltip->add_shortcut(state::keybindings_file->get_value("layer_view", id), "");
+            button.set_tooltip_widget(tooltip->operator Widget *());
+             */
+
+            button.set_tooltip_text(state::tooltips_file->get_value("layer_view", id));
+        };
+
         _layer_move_up_button.set_child(&_layer_move_up_icon);
         _layer_move_up_button.set_action(layer_view_layer_move_up);
 
@@ -438,6 +450,14 @@ namespace mousetrap
             button->set_hexpand(true);
             _control_bar_box.push_back(button);
         }
+
+        add_tooltip(_layer_move_up_button, "layer_move_up");
+        add_tooltip(_layer_move_down_button, "layer_move_down");
+        add_tooltip(_layer_delete_button, "layer_delete");
+        add_tooltip(_layer_duplicate_button, "layer_duplicate");
+        add_tooltip(_layer_create_button, "layer_create");
+        add_tooltip(_layer_merge_down_button, "layer_merge_down");
+        add_tooltip(_layer_flatten_all_button, "layer_flatten_all");
 
         _control_bar_box.set_hexpand(true);
 
@@ -504,12 +524,14 @@ namespace mousetrap
         merge_section.add_action(layer_flatten_all_tooltip, layer_view_layer_flatten_all.get_id());
         _menu.add_section("Merge", &merge_section);
 
+        auto position_section = MenuModel();
+        position_section.add_action(layer_move_up_tooltip, layer_view_layer_move_up.get_id());
+        position_section.add_action(layer_move_down_tooltip, layer_view_layer_move_down.get_id());
+        _menu.add_section("Position", &position_section);
+
         auto other_section = MenuModel();
-        other_section.add_action(layer_move_up_tooltip, layer_view_layer_move_up.get_id());
-        other_section.add_action(layer_move_down_tooltip, layer_view_layer_move_down.get_id());
         other_section.add_action(set_layer_visible_tooltip, layer_view_toggle_layer_visible.get_id());
         other_section.add_action(set_layer_locked_tooltip, layer_view_toggle_layer_locked.get_id());
-
         _menu.add_section("Other", &other_section);
 
         _header_menu_button.set_child(&_header_menu_button_label);
@@ -525,24 +547,26 @@ namespace mousetrap
         // actions
 
         layer_view_layer_new_above_current.set_function([](){
-           active_state->add_layer(active_state->get_current_layer_index());
+            active_state->add_layer(active_state->get_current_layer_index());
+            active_state->set_current_layer_and_frame(active_state->get_current_layer_index()+1, active_state->get_current_frame_index());
         });
 
         layer_view_layer_new_below_current.set_function([](){
             active_state->add_layer(active_state->get_current_layer_index()-1);
+            active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), active_state->get_current_frame_index());
         });
 
         layer_view_layer_duplicate.set_function([](){
             auto current_i = active_state->get_current_layer_index();
             active_state->duplicate_layer(current_i, *active_state->get_layer(current_i));
-            active_state->set_current_layer_and_frame(current_i, active_state->get_current_frame_index());
+            active_state->set_current_layer_and_frame(current_i+1, active_state->get_current_frame_index());
         });
 
         layer_view_layer_delete.set_function([](){
             active_state->delete_layer(active_state->get_current_layer_index());
         });
 
-        layer_view_layer_move_up.set_function([]()
+        layer_view_layer_move_down.set_function([]()
         {
            auto current = active_state->get_current_layer_index();
            if (current > 0)
@@ -553,7 +577,7 @@ namespace mousetrap
            }
         });
 
-        layer_view_layer_move_down.set_function([]()
+        layer_view_layer_move_up.set_function([]()
         {
             auto current = active_state->get_current_layer_index();
             if (current < active_state->get_n_layers() - 1)
@@ -562,6 +586,22 @@ namespace mousetrap
                 active_state->swap_layers(current, next);
                 active_state->set_current_layer_and_frame(next, active_state->get_current_frame_index());
             }
+        });
+
+        layer_view_toggle_layer_visible.set_function([]()
+        {
+            active_state->set_layer_visible(
+                active_state->get_current_layer_index(),
+                not active_state->get_current_layer()->get_is_visible()
+            );
+        });
+
+        layer_view_toggle_layer_locked.set_function([]()
+        {
+            active_state->set_layer_locked(
+                active_state->get_current_layer_index(),
+                not active_state->get_current_layer()->get_is_locked()
+            );
         });
 
         for (auto* action : {
@@ -580,6 +620,8 @@ namespace mousetrap
             &layer_view_hide_all_other_layers
         })
             state::add_shortcut_action(*action);
+
+        on_layer_frame_selection_changed(); // update action enabled
     }
 
     void LayerView::set_preview_size(size_t v)
@@ -598,6 +640,12 @@ namespace mousetrap
         _layer_rows_list_view.get_selection_model()->set_signal_selection_changed_blocked(true);
         _layer_rows_list_view.get_selection_model()->select(_layer_rows_list_view.get_n_items() - active_state->get_current_layer_index() - 1);
         _layer_rows_list_view.get_selection_model()->set_signal_selection_changed_blocked(false);
+
+        auto layer_i = active_state->get_current_layer_index();
+
+        using namespace state::actions;
+        layer_view_layer_move_up.set_enabled(layer_i < active_state->get_n_layers() - 1);
+        layer_view_layer_move_down.set_enabled(layer_i > 0);
     }
 
     void LayerView::on_layer_image_updated()

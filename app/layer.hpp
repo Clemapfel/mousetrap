@@ -34,6 +34,12 @@ namespace mousetrap
 
             Layer(const std::string& name, Vector2i size, size_t n_frames);
 
+            Layer(const Layer&);
+            Layer& operator=(const Layer&);
+
+            Layer(Layer&&) = delete;
+            Layer& operator=(Layer&&) = delete;
+
             Layer::Frame* get_frame(size_t index);
             const Layer::Frame* get_frame(size_t index) const;
 
@@ -55,7 +61,7 @@ namespace mousetrap
             void set_blend_mode(BlendMode);
 
         private:
-            std::deque<Frame> _frames = std::deque<Frame>();
+            std::deque<Frame> _frames;
 
             std::string _name;
 

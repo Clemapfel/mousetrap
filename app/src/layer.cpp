@@ -55,6 +55,54 @@ namespace mousetrap
             _frames.emplace_back(size);
     }
 
+    Layer::Layer(const Layer& other)
+    {
+        _name = other._name;
+        _is_locked = other._is_locked;
+        _is_visible = other._is_visible;
+        _opacity = other._opacity;
+        _blend_mode = other._blend_mode;
+
+        auto size = other._frames.at(0).get_image()->get_size();
+
+        _frames.clear();
+        for (size_t i = 0; i < other._frames.size(); ++i)
+        {
+            _frames.emplace_back(size);
+            for (size_t x = 0; x < size.x; ++x)
+                for (size_t y = 0; y < size.y; ++y)
+                    _frames.back().get_image()->set_pixel(x, y, other._frames.at(i).get_image()->get_pixel(x, y));
+
+            _frames.back().update_texture();
+            _frames.back().set_is_keyframe(other._frames.at(i).get_is_keyframe());
+        }
+    }
+
+    Layer& Layer::operator=(const Layer& other)
+    {
+        _name = other._name;
+        _is_locked = other._is_locked;
+        _is_visible = other._is_visible;
+        _opacity = other._opacity;
+        _blend_mode = other._blend_mode;
+
+        auto size = other._frames.at(0).get_image()->get_size();
+
+        _frames.clear();
+        for (size_t i = 0; i < other._frames.size(); ++i)
+        {
+            _frames.emplace_back(size);
+            for (size_t x = 0; x < size.x; ++x)
+                for (size_t y = 0; y < size.y; ++y)
+                    _frames.back().get_image()->set_pixel(x, y, other._frames.at(i).get_image()->get_pixel(x, y));
+
+            _frames.back().update_texture();
+            _frames.back().set_is_keyframe(other._frames.at(i).get_is_keyframe());
+        }
+
+        return *this;
+    }
+
     Layer::Frame* Layer::get_frame(size_t index)
     {
         return &_frames.at(index);

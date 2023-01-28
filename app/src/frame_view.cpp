@@ -256,11 +256,56 @@ namespace mousetrap
     }
 
     FrameView::ControlBar::ControlBar(FrameView* owner)
-            : _owner(owner)
+            : _owner(owner), _fps_label("fps:")
     {
         // ACTIONS
 
         using namespace state::actions;
+
+        frame_view_jump_to_start.set_function([](){
+           active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), 0);
+        });
+
+        frame_view_jump_to_end.set_function([](){
+            active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), active_state->get_n_frames() - 1);
+        });
+
+        frame_view_go_to_previous_frame.set_function([]()
+        {
+            auto current = active_state->get_current_frame_index();
+            if (current == 0)
+                active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), active_state->get_n_frames() - 1);
+            else
+                active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), current - 1);
+        });
+
+        frame_view_go_to_next_frame.set_function([]()
+        {
+            auto current = active_state->get_current_frame_index();
+            if (current == active_state->get_n_frames() - 1)
+                active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), 0);
+            else
+                active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), current + 1);
+        });
+
+        frame_view_toggle_onionskin_visible.set_function([](){
+           active_state->set_onionskin_visible(not active_state->get_onionskin_visible());
+        });
+
+        frame_view_increase_n_onionskin_layers.set_function([](){
+            auto current = active_state->get_n_onionskin_layers();
+            active_state->set_n_onionskin_layers(current + 1);
+        });
+
+        frame_view_increase_n_onionskin_layers.set_function([](){
+            auto current = active_state->get_n_onionskin_layers();
+            if (current > 0)
+                active_state->set_n_onionskin_layers(current - 1);
+        });
+
+        frame_view_play_pause.set_function([](){
+
+        });
 
         for (auto* action : {
                 &frame_view_toggle_onionskin_visible,
@@ -305,7 +350,9 @@ namespace mousetrap
         _go_to_next_frame_button.set_action(frame_view_go_to_next_frame);
 
         _play_pause_button.set_child(active_state->get_playback_active() ? &_pause_icon : &_play_icon);
-        _play_pause_button.set_action(frame_view_play_pause);
+        _play_pause_button.connect_signal_toggled([](ToggleButton* button, ControlBar* instance){
+            active_state->set_playback_active(button->get_active());
+        }, this);
 
         _frame_move_right_button.set_child(&_frame_move_right_icon);
         _frame_move_right_button.set_action(frame_view_frame_move_right);
@@ -401,7 +448,6 @@ namespace mousetrap
         playback_section.add_action(go_to_previous_frame_tooltip, frame_view_go_to_previous_frame.get_id());
         playback_section.add_action(go_to_next_frame_tooltip, frame_view_go_to_next_frame.get_id());
         playback_section.add_action(play_pause_tooltip, frame_view_play_pause.get_id());
-        playback_section.add_action(toggle_onionskin_visible_tooltip, frame_view_toggle_onionskin_visible.get_id());
         _menu.add_section("Playback", &playback_section);
 
         auto create_section = MenuModel();
@@ -410,10 +456,14 @@ namespace mousetrap
         create_section.add_action(frame_delete_tooltip, frame_view_frame_delete.get_id());
         _menu.add_section("Create / Delete", &create_section);
 
+        auto position_section = MenuModel();
+        position_section.add_action(frame_move_left_tooltip, frame_view_frame_move_left.get_id());
+        position_section.add_action(frame_move_right_tooltip, frame_view_frame_move_right.get_id());
+        _menu.add_section("Other", &position_section);
+
         auto other_section = MenuModel();
-        other_section.add_action(frame_move_left_tooltip, frame_view_frame_move_left.get_id());
-        other_section.add_action(frame_move_right_tooltip, frame_view_frame_move_right.get_id());
         other_section.add_action(frame_make_keyframe_inbetween_tooltip, frame_view_frame_make_keyframe_inbetween.get_id());
+        other_section.add_action(toggle_onionskin_visible_tooltip, frame_view_toggle_onionskin_visible.get_id());
         _menu.add_section("Other", &other_section);
 
         _popover_menu.refresh_widgets();
@@ -429,18 +479,22 @@ namespace mousetrap
         auto button_width = _play_pause_button.get_preferred_size().natural_size.x;
         _menu_button.set_size_request({4 * button_width, 0});
 
-        auto onion_separator = SeparatorLine();
-        onion_separator.set_size_request({button_width, 0});
-        onion_separator.set_hexpand(false);
+        {
+            auto separator = SeparatorLine();
+            separator.set_size_request({button_width, 0});
+            separator.set_hexpand(false);
+            _button_box.push_back(&separator);
+        }
 
-        _button_box.push_back(&onion_separator);
         _button_box.push_back(&_toggle_onionskin_visible_button);
         _button_box.push_back(&_onionskin_n_layers_spin_button);
 
-        auto separator_start = SeparatorLine();
-        separator_start.set_size_request({button_width, 0});
-        separator_start.set_hexpand(false);
-        _button_box.push_back(&separator_start);
+        {
+            auto separator = SeparatorLine();
+            separator.set_size_request({button_width, 0});
+            separator.set_hexpand(false);
+            _button_box.push_back(&separator);
+        }
 
         _button_box.push_back(&_frame_move_left_button);
         _button_box.push_back(&_frame_new_left_of_current_button);
@@ -449,10 +503,12 @@ namespace mousetrap
         _button_box.push_back(&_frame_new_right_of_current_button);
         _button_box.push_back(&_frame_move_right_button);
 
-        auto separator_left = SeparatorLine();
-        separator_left.set_size_request({button_width, 0});
-        separator_left.set_hexpand(false);
-        _button_box.push_back(&separator_left);
+        {
+            auto separator = SeparatorLine();
+            separator.set_size_request({button_width, 0});
+            separator.set_hexpand(false);
+            _button_box.push_back(&separator);
+        }
 
         _button_box.push_back(&_jump_to_start_button);
         _button_box.push_back(&_go_to_previous_frame_button);
@@ -460,11 +516,38 @@ namespace mousetrap
         _button_box.push_back(&_go_to_next_frame_button);
         _button_box.push_back(&_jump_to_end_button);
 
-        auto separator_right = SeparatorLine();
-        separator_right.set_size_request({button_width, 0});
-        separator_right.set_hexpand(true);
-        _button_box.push_back(&separator_right);
+        {
+            auto separator = SeparatorLine();
+            separator.set_size_request({button_width * 0.5, 0});
+            separator.set_hexpand(false);
+            _button_box.push_back(&separator);
+        }
+
+        _fps_label_underlay.set_size_request({button_width, 0});
+        _fps_label_underlay.set_hexpand(false);
+
+        _fps_label_overlay.set_child(&_fps_label_underlay);
+        _fps_label_overlay.add_overlay(&_fps_label);
+
+        _button_box.push_back(&_fps_label_overlay);
+
+        _fps_spin_button.set_tooltip_text(state::tooltips_file->get_value("frame_view", "set_fps"));
+        _fps_spin_button.set_value(active_state->get_fps());
+        _fps_spin_button.connect_signal_value_changed([](SpinButton* button, ControlBar* instance){
+            active_state->set_fps(button->get_value());
+        }, this);
+
+        _button_box.push_back(&_fps_spin_button);
+
+        {
+            auto separator = SeparatorLine();
+            separator.set_size_request({button_width, 0});
+            separator.set_hexpand(true);
+            _button_box.push_back(&separator);
+        }
+
         _scrolled_window.set_child(&_button_box);
+        _scrolled_window.set_hexpand(true);
 
         _main.push_back(&_menu_button);
         _main.push_back(&_scrolled_window);
@@ -482,6 +565,25 @@ namespace mousetrap
         _onionskin_n_layers_spin_button.set_signal_value_changed_blocked(true);
         _onionskin_n_layers_spin_button.set_value(x);
         _onionskin_n_layers_spin_button.set_signal_value_changed_blocked(false);
+    }
+
+    void FrameView::ControlBar::set_playback_active(bool b)
+    {
+        _play_pause_button.set_signal_toggled_blocked(true);
+        _play_pause_button.set_active(b);
+        _play_pause_button.set_signal_toggled_blocked(false);
+
+        if (b)
+            _play_pause_button.set_child(&_pause_icon);
+        else
+            _play_pause_button.set_child(&_play_icon);
+    }
+
+    void FrameView::ControlBar::set_fps(float fps)
+    {
+        _fps_spin_button.set_signal_value_changed_blocked(true);
+        _fps_spin_button.set_value(fps);
+        _fps_spin_button.set_signal_value_changed_blocked(false);
     }
 
     FrameView::ControlBar::operator Widget*() {
@@ -549,6 +651,11 @@ namespace mousetrap
     void FrameView::on_layer_frame_selection_changed()
     {
         set_selection(active_state->get_current_layer_index(), active_state->get_current_frame_index());
+
+        using namespace state::actions;
+        auto frame_i = active_state->get_current_frame_index();
+        frame_view_jump_to_start.set_enabled(frame_i > 0);
+        frame_view_jump_to_end.set_enabled(frame_i < active_state->get_n_frames() - 1);
     }
 
     void FrameView::on_layer_image_updated()
@@ -570,6 +677,21 @@ namespace mousetrap
                 column.set_is_inbetween(not layer->get_frame(frame_i)->get_is_keyframe());
             }
         }
+    }
+
+    void FrameView::on_playback_toggled()
+    {
+        _control_bar.set_playback_active(active_state->get_playback_active());
+    }
+
+    void FrameView::on_playback_fps_changed()
+    {
+        _control_bar.set_fps(active_state->get_fps());
+    }
+
+    void FrameView::on_layer_resolution_changed()
+    {
+        // TODO
     }
 
     void FrameView::on_onionskin_visibility_toggled()

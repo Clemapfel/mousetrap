@@ -26,7 +26,9 @@ namespace mousetrap
         public signals::LayerImageUpdated,
         public signals::LayerCountChanged,
         public signals::LayerPropertiesChanged,
-        public signals::LayerResolutionChanged
+        public signals::LayerResolutionChanged,
+        public signals::PlaybackToggled,
+        public signals::PlaybackFpsChanged
     {
         public:
             AnimationPreview();
@@ -43,6 +45,8 @@ namespace mousetrap
             void on_layer_image_updated() override;
             void on_layer_count_changed() override;
             void on_layer_properties_changed() override;
+            void on_playback_toggled() override;
+            void on_playback_fps_changed() override;
 
         private:
             // render: layers

@@ -322,10 +322,10 @@ namespace mousetrap
             return;
         }
 
-        auto& a = _layers.at(a_i);
-        auto& b = _layers.at(b_i);
+        auto* a = _layers.at(a_i);
+        auto* b = _layers.at(b_i);
 
-        auto a_copy = Layer(*a);
+        auto a_copy = Layer(*_layers.at(a_i));
 
         a->set_name(b->get_name());
         a->set_is_locked(b->get_is_locked());
@@ -564,6 +564,7 @@ namespace mousetrap
     void ProjectState::set_playback_active(bool b)
     {
         _playback_active = b;
+        signal_playback_toggled();
     }
 
     bool ProjectState::get_onionskin_visible() const
@@ -598,6 +599,17 @@ namespace mousetrap
 
         frame->update_texture();
         signal_layer_image_updated();
+    }
+
+    void ProjectState::set_fps(float fps)
+    {
+        _playback_fps = fps;
+        signal_playback_fps_changed();
+    }
+
+    float ProjectState::get_fps() const
+    {
+        return _playback_fps;
     }
 
     void ProjectState::signal_brush_selection_changed()
@@ -759,6 +771,24 @@ namespace mousetrap
 
         if (state::toolbox)
             state::toolbox->signal_active_tool_changed();
+    }
+
+    void ProjectState::signal_playback_toggled()
+    {
+        if (state::frame_view)
+            state::frame_view->signal_playback_toggled();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_playback_toggled();
+    }
+
+    void ProjectState::signal_playback_fps_changed()
+    {
+        if (state::frame_view)
+            state::frame_view->signal_playback_fps_changed();
+
+        if (state::animation_preview)
+        state::animation_preview->signal_playback_fps_changed();
     }
 
 }

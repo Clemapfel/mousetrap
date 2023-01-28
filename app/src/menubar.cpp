@@ -58,8 +58,6 @@ namespace mousetrap
         image_submenu_size_section.add_action("Scale Image...", scale_canvas_dialog_open.get_id());
         image_submenu.add_section("Size", &image_submenu_size_section);
 
-
-
         auto image_submenu_transform_all_section = MenuModel();
         image_submenu_transform_all_section.add_action("Flip Horizontally", image_transform_flip_horizontally.get_id());
         image_submenu_transform_all_section.add_action("Flip Vertically", image_transform_flip_vertically.get_id());

@@ -28,6 +28,12 @@ namespace mousetrap
             Texture(); // should be called while gl context is bound
             virtual ~Texture();
 
+            Texture(const Texture&) = delete;
+            Texture& operator=(const Texture&) = delete;
+
+            Texture(Texture&&);
+            Texture& operator=(Texture&&);
+
             void bind(size_t texture_unit) const;
 
             void bind() const override;

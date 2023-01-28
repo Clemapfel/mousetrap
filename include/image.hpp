@@ -14,6 +14,13 @@ namespace mousetrap
     class Image
     {
         public:
+            Image() = default;
+
+            Image(const Image&);
+            Image(Image&&);
+            Image& operator=(const Image&);
+            Image& operator=(Image&&);
+
             void create(size_t width, size_t height, RGBA default_color = RGBA(0, 0, 0, 1));
             bool create_from_file(const std::string&);
             void create_from_pixbuf(GdkPixbuf*);

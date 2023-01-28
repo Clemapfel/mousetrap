@@ -26,6 +26,7 @@ namespace mousetrap
 
         _g_action = g_object_ref(g_simple_action_new(_id.c_str(), nullptr));
         g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
+        set_enabled(_enabled);
     }
 
     template<typename DoFunction_t, typename UndoFunction_t, typename RedoFunction_t>
@@ -57,6 +58,7 @@ namespace mousetrap
 
         _g_action = g_object_ref(g_simple_action_new(_id.c_str(), nullptr));
         g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
+        set_enabled(_enabled);
     }
 
     inline void Action::on_action_activate(GSimpleAction*, GVariant*, Action* instance)
@@ -116,5 +118,18 @@ namespace mousetrap
     inline ActionID Action::get_id() const
     {
         return _id;
+    }
+
+    inline void Action::set_enabled(bool b)
+    {
+        _enabled = b;
+
+        if (_g_action != nullptr)
+            g_simple_action_set_enabled(_g_action, b);
+    }
+
+    inline bool Action::get_enabled() const
+    {
+        return _enabled;
     }
 }

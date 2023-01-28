@@ -14,7 +14,8 @@ namespace mousetrap
 
     inline Texture::~Texture()
     {
-        glDeleteTextures(1, &_native_handle);
+        if (_native_handle != 0)
+            glDeleteTextures(1, &_native_handle);
     }
 
     inline void Texture::create_from_file(const std::string& path)
@@ -23,6 +24,28 @@ namespace mousetrap
         image.create_from_file(path);
 
         create_from_image(image);
+    }
+
+    inline Texture::Texture(Texture&& other)
+    {
+        _native_handle = other._native_handle;
+        _size = other._size;
+        _wrap_mode = other._wrap_mode;
+
+        other._native_handle = 0;
+        other._size = {0, 0};
+    }
+
+    inline Texture& Texture::operator=(Texture&& other)
+    {
+        _native_handle = other._native_handle;
+        _size = other._size;
+        _wrap_mode = other._wrap_mode;
+
+        other._native_handle = 0;
+        other._size = {0, 0};
+
+        return *this;
     }
 
     inline void Texture::create_from_image(const Image& image)

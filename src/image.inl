@@ -5,6 +5,56 @@
 
 namespace mousetrap
 {
+    inline Image::Image(const Image& other)
+    {
+        _data = std::vector<float>();
+        _data.reserve(other._data.size());
+        for (auto v : other._data)
+            _data.push_back(v);
+
+        _size = other._size;
+    }
+
+    inline Image::Image(Image&& other)
+    {
+        _data = std::vector<float>();
+        _data.reserve(other._data.size());
+        for (auto v : other._data)
+            _data.push_back(v);
+
+        _size = other._size;
+
+        other._data.clear();
+        other._size = {0, 0};
+    }
+
+    inline Image& Image::operator=(const Image& other)
+    {
+        _data = std::vector<float>();
+        _data.reserve(other._data.size());
+        for (auto v : other._data)
+            _data.push_back(v);
+
+        _size = other._size;
+
+        return *this;
+    }
+
+    inline Image& Image::operator=(Image&& other)
+    {
+        _data = std::vector<float>();
+        _data.reserve(other._data.size());
+        for (auto v : other._data)
+            _data.push_back(v);
+
+        _size = other._size;
+
+        other._data.clear();
+        other._size = {0, 0};
+
+        return *this;
+    }
+
     inline void Image::create(size_t width, size_t height, RGBA default_color)
     {
         _data.clear();
