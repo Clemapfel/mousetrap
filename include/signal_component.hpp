@@ -247,7 +247,7 @@ namespace mousetrap
     {
         public:
             template<typename T>
-            using on_render_function_t = void(Owner_t*, GdkGLContext*, T);
+            using on_render_function_t = gboolean(Owner_t*, GdkGLContext*, T);
 
             template<typename Function_t, typename T>
             void connect_signal_render(Function_t, T);
@@ -264,7 +264,7 @@ namespace mousetrap
         private:
             Owner_t* _instance;
 
-            static void on_render_wrapper(void*, GdkGLContext*, HasRenderSignal<Owner_t>* instance);
+            static gboolean on_render_wrapper(void*, GdkGLContext*, HasRenderSignal<Owner_t>* instance);
 
             bool _blocked = false;
             std::function<on_render_function_t<void*>> _on_render_f;
@@ -1182,10 +1182,12 @@ namespace mousetrap
     }
 
     template<typename Owner_t>
-    void HasRenderSignal<Owner_t>::on_render_wrapper(void*, GdkGLContext* context, HasRenderSignal<Owner_t>* self)
+    gboolean HasRenderSignal<Owner_t>::on_render_wrapper(void*, GdkGLContext* context, HasRenderSignal<Owner_t>* self)
     {
         if (self->_on_render_f != nullptr and not self->_blocked)
-            self->_on_render_f(self->_instance, context, self->_on_render_data);
+            return self->_on_render_f(self->_instance, context, self->_on_render_data);
+
+        return FALSE;
     }
 
     // ###

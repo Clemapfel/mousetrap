@@ -38,6 +38,7 @@
 #include <app/open_uri.hpp>
 #include <app/scale_canvas_dialog.hpp>
 #include <app/resize_canvas_dialog.hpp>
+#include <app/canvas_export.hpp>
 
 using namespace mousetrap;
 
@@ -71,6 +72,7 @@ static void activate(GtkApplication* app, void*)
     state::toolbox = new Toolbox();
     state::scale_canvas_dialog = new ScaleCanvasDialog();
     state::resize_canvas_dialog = new ResizeCanvasDialog();
+    state::canvas_export = new CanvasExport();
 
     Widget* layer_view = state::layer_view->operator Widget*();
     Widget* palette_view = state::palette_view->operator Widget*();
@@ -85,6 +87,7 @@ static void activate(GtkApplication* app, void*)
     Widget* frame_view = state::frame_view->operator Widget*();
     Widget* animation_preview = state::animation_preview->operator Widget*();
     Widget* resize_canvas_dialog = state::resize_canvas_dialog->operator Widget*();
+    Widget* canvas_export = state::canvas_export->operator Widget*();
 
     toolbox->set_vexpand(false);
 
@@ -210,6 +213,14 @@ static void activate(GtkApplication* app, void*)
 
     auto bubble_log_overlay = Overlay();
     bubble_log_overlay.set_child(&main);
+
+    // c.f. canvas_export.hpp @note
+    bubble_log_overlay.add_overlay(canvas_export);
+    canvas_export->set_halign(GTK_ALIGN_START);
+    canvas_export->set_valign(GTK_ALIGN_START);
+    canvas_export->set_can_respond_to_input(false);
+    canvas_export->set_opacity(0);
+
     bubble_log_overlay.add_overlay(bubble_log);
 
     // MAIN

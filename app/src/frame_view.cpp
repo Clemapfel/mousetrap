@@ -7,7 +7,7 @@
 namespace mousetrap
 {
     FrameView::FramePreview::FramePreview(FrameView* owner)
-        : _owner(owner), _aspect_frame(active_state->get_layer_resolution().x / active_state->get_layer_resolution().y)
+        : _owner(owner), _aspect_frame(active_state->get_layer_resolution().x / float(active_state->get_layer_resolution().y))
     {
         _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);

@@ -24,6 +24,7 @@
 #include <app/tools.hpp>
 #include <app/tooltip.hpp>
 #include <app/verbose_color_picker.hpp>
+#include <app/canvas_export.hpp>
 
 namespace mousetrap
 {
@@ -717,6 +718,9 @@ namespace mousetrap
 
         if (state::animation_preview)
             state::animation_preview->signal_layer_image_updated();
+
+        if (state::canvas_export)
+            state::canvas_export->signal_layer_image_updated();
     }
 
     void ProjectState::signal_layer_count_changed()
@@ -732,6 +736,9 @@ namespace mousetrap
 
         if (state::animation_preview)
             state::animation_preview->signal_layer_count_changed();
+
+        if (state::canvas_export)
+            state::canvas_export->signal_layer_count_changed();
     }
 
     void ProjectState::signal_layer_resolution_changed()
@@ -747,6 +754,9 @@ namespace mousetrap
 
         if (state::animation_preview)
             state::animation_preview->signal_layer_resolution_changed();
+
+        if (state::canvas_export)
+            state::canvas_export->signal_layer_resolution_changed();
     }
 
     void ProjectState::signal_layer_properties_changed()
@@ -762,6 +772,9 @@ namespace mousetrap
 
         if (state::animation_preview)
             state::animation_preview->signal_layer_properties_changed();
+
+        if (state::canvas_export)
+            state::canvas_export->signal_layer_properties_changed();
     }
 
     void ProjectState::signal_active_tool_changed()

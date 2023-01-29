@@ -3,6 +3,7 @@
 //
 
 #include <app/layer_view.hpp>
+#include <app/canvas_export.hpp>
 
 namespace mousetrap
 {
@@ -602,6 +603,16 @@ namespace mousetrap
                 active_state->get_current_layer_index(),
                 not active_state->get_current_layer()->get_is_locked()
             );
+        });
+
+        layer_view_layer_flatten_all.set_function([]()
+        {
+            std::set<size_t> layers;
+            for (size_t i = 0; i < active_state->get_n_layers(); ++i)
+                layers.insert(i);
+
+            auto image = state::canvas_export->merge_layers(layers);
+            image.save_to_file(get_resource_path() + "out.png");
         });
 
         for (auto* action : {
