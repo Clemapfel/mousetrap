@@ -29,7 +29,7 @@ namespace mousetrap
     
     void CanvasExport::queue_render_tasks()
     {
-        _area.clear_render_tasks();
+        _render_tasks.clear();
 
         for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
             _render_tasks.emplace_back(_shapes.at(layer_i), nullptr, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
@@ -41,6 +41,7 @@ namespace mousetrap
         area->make_current();
 
         instance->on_layer_count_changed();
+        instance->operator Widget*()->set_opacity(1 / 255.f); // lowest possible opacity that still counts as visible
     }
     
     void CanvasExport::on_area_resize(GLArea*, int w, int h, CanvasExport* instance)
@@ -53,8 +54,18 @@ namespace mousetrap
        // noop
     }
 
-    Image CanvasExport::merge_layers(const std::set<size_t>& layer_is)
+    void CanvasExport::set_frame(size_t i)
     {
+        _frame_i = i;
+
+        for (size_t layer_i = 0; layer_i < _render_tasks.size(); ++layer_i)
+            _shapes.at(layer_i)->set_texture(active_state->get_frame(layer_i, _frame_i)->get_texture());
+    }
+
+    Image CanvasExport::merge_layers(const std::set<size_t>& layer_is, size_t frame_i)
+    {
+        set_frame(frame_i);
+
         std::vector<RenderTask> tasks;
         tasks.reserve(layer_is.size());
 

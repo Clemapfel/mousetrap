@@ -8,6 +8,19 @@ namespace mousetrap
         : _id(id)
     {}
 
+    inline Action::Action(const std::string& id, bool* state)
+        : _id(id)
+    {
+        set_function([](){
+            std::cout << "called" << std::endl;
+        });
+
+        auto* variant = g_variant_new_boolean(false);
+        _g_action = g_object_ref(g_simple_action_new_stateful(_id.c_str(), NULL, variant));
+        g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
+        set_enabled(_enabled);
+    }
+
     inline Action::~Action()
     {}
 

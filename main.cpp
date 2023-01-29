@@ -219,7 +219,7 @@ static void activate(GtkApplication* app, void*)
     canvas_export->set_halign(GTK_ALIGN_START);
     canvas_export->set_valign(GTK_ALIGN_START);
     canvas_export->set_can_respond_to_input(false);
-    canvas_export->set_opacity(0);
+    canvas_export->set_opacity(1);
 
     bubble_log_overlay.add_overlay(bubble_log);
 

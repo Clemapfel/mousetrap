@@ -77,6 +77,7 @@ namespace mousetrap
             void duplicate_layer(int create_above, const Layer& duplicate_from);
             void swap_layers(size_t a, size_t b);
             void delete_layer(size_t);
+            void new_layer_from(int above, const std::set<size_t>& from_layer_is, bool delete_froms = true);
 
             void set_layer_blend_mode(size_t, BlendMode);
             void set_layer_locked(size_t, bool);
@@ -170,6 +171,7 @@ namespace mousetrap
             size_t _onionskin_n_layers = 0;
 
             static inline size_t new_layer_count = 0;
+            static inline size_t merged_layer_count = 0;
 
             void signal_brush_selection_changed();
             void signal_brush_set_updated();

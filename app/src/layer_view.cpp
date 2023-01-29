@@ -441,11 +441,11 @@ namespace mousetrap
                 &_layer_move_up_button,
                 &_layer_move_down_button,
                 &_layer_create_button,
-                &_layer_duplicate_button,
                 &_layer_delete_button,
+                &_layer_duplicate_button,
                 &_layer_merge_down_button,
-                &_layer_flatten_all_button}
-                )
+                &_layer_flatten_all_button
+        })
         {
             button->set_vexpand(false);
             button->set_hexpand(true);
@@ -490,6 +490,7 @@ namespace mousetrap
 
         auto set_layer_visible_tooltip = state::tooltips_file->get_value("layer_view", "set_layer_visible");
         auto set_layer_locked_tooltip = state::tooltips_file->get_value("layer_view", "set_layer_locked");
+        auto layer_create_from_visible_tooltip = state::tooltips_file->get_value("layer_view", "layer_create_from_visible");
 
         _preview_size_spin_button.set_margin_start(state::margin_unit);
         _preview_size_spin_button.set_value(_preview_size);
@@ -523,6 +524,7 @@ namespace mousetrap
         auto merge_section = MenuModel();
         merge_section.add_action(layer_merge_down_tooltip, layer_view_layer_merge_down.get_id());
         merge_section.add_action(layer_flatten_all_tooltip, layer_view_layer_flatten_all.get_id());
+        merge_section.add_action(layer_create_from_visible_tooltip, layer_view_layer_create_from_visible.get_id());
         _menu.add_section("Merge", &merge_section);
 
         auto position_section = MenuModel();
@@ -605,14 +607,56 @@ namespace mousetrap
             );
         });
 
+        layer_view_layer_merge_down.set_function([]()
+        {
+            auto current = active_state->get_current_layer_index();
+            if (current == 0)
+                return;
+
+            active_state->new_layer_from(current, {current, current-1}, true);
+            active_state->set_current_layer_and_frame(current-1, active_state->get_current_frame_index());
+        });
+
         layer_view_layer_flatten_all.set_function([]()
         {
-            std::set<size_t> layers;
-            for (size_t i = 0; i < active_state->get_n_layers(); ++i)
-                layers.insert(i);
+            auto current = active_state->get_current_layer_index();
+            if (current == 0)
+                return;
 
-            auto image = state::canvas_export->merge_layers(layers);
-            image.save_to_file(get_resource_path() + "out.png");
+            auto all_layers = std::set<size_t>();
+            for (size_t i = 0; i < active_state->get_n_layers(); ++i)
+                all_layers.insert(i);
+
+            active_state->new_layer_from(-1, all_layers, true);
+            active_state->set_current_layer_and_frame(0, active_state->get_current_frame_index());
+        });
+
+        layer_view_layer_create_from_visible.set_function([]()
+        {
+            auto current = active_state->get_current_layer_index();
+            if (current == 0)
+              return;
+
+            auto all_layers = std::set<size_t>();
+            for (size_t i = 0; i < active_state->get_n_layers(); ++i)
+              all_layers.insert(i);
+
+            active_state->new_layer_from(active_state->get_n_layers()-1, all_layers, false);
+            active_state->set_current_layer_and_frame(active_state->get_n_layers()-1, active_state->get_current_frame_index());
+        });
+
+        layer_view_show_all_other_layers.set_function([]()
+        {
+            for (size_t i = 0; i < active_state->get_n_layers(); ++i)
+                if (i != active_state->get_current_layer_index())
+                    active_state->set_layer_visible(i, true);
+        });
+
+        layer_view_hide_all_other_layers.set_function([]()
+        {
+          for (size_t i = 0; i < active_state->get_n_layers(); ++i)
+              if (i != active_state->get_current_layer_index())
+                  active_state->set_layer_visible(i, false);
         });
 
         for (auto* action : {
@@ -655,8 +699,12 @@ namespace mousetrap
         auto layer_i = active_state->get_current_layer_index();
 
         using namespace state::actions;
-        layer_view_layer_move_up.set_enabled(layer_i < active_state->get_n_layers() - 1);
-        layer_view_layer_move_down.set_enabled(layer_i > 0);
+
+        bool is_top_layer = layer_i >= active_state->get_n_layers() - 1;
+        bool is_bottom_layer = layer_i == 0;
+        layer_view_layer_move_up.set_enabled(not is_top_layer);
+        layer_view_layer_move_down.set_enabled(not is_bottom_layer);
+        layer_view_layer_merge_down.set_enabled(not is_bottom_layer);
     }
 
     void LayerView::on_layer_image_updated()
@@ -701,6 +749,8 @@ namespace mousetrap
 
         on_layer_properties_changed();
         on_layer_frame_selection_changed(); // also updates texture
+
+        state::actions::layer_view_layer_delete.set_enabled(active_state->get_n_layers() > 1);
     }
 
     LayerView::operator Widget*()

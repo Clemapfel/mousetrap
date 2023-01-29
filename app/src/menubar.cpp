@@ -44,10 +44,12 @@ namespace mousetrap
         // SELECTION
 
         auto selection_submenu = MenuModel();
+        auto selection_section = MenuModel();
 
-        selection_submenu.add_action("Invert", selection_invert.get_id());
-        selection_submenu.add_action("Select All", selection_select_all.get_id());
-        selection_submenu.add_action("Select Color...", selection_open_select_color_dialog.get_id());
+        selection_section.add_action("Invert", selection_invert.get_id());
+        selection_section.add_action("Select All", selection_select_all.get_id());
+        selection_section.add_action("Select Color...", selection_open_select_color_dialog.get_id());
+        selection_submenu.add_section("Selection", &selection_section);
 
         // IMAGE
 
@@ -141,7 +143,7 @@ namespace mousetrap
         frame_navigation_section.add_action("Select Next", frame_view_go_to_next_frame.get_id());
         frame_navigation_section.add_action("Jump to Start", frame_view_jump_to_start.get_id());
         frame_navigation_section.add_action("Jump to End", frame_view_jump_to_end.get_id());
-        frame_submenu.add_section("Playback", &frame_navigation_section);
+        frame_submenu.add_section("Playback / Navigation", &frame_navigation_section);
 
         auto frame_other_section = MenuModel();
         frame_other_section.add_action("Toggle Keyframe / Inbetween", frame_view_frame_make_keyframe_inbetween.get_id());
@@ -222,6 +224,21 @@ namespace mousetrap
         troubleshooting_section.add_action("About...", menu_open_about_dialog.get_id());
         troubleshooting_section.add_action("Logs...", menu_open_log_folder.get_id());
         other_submenu.add_section("Troubleshooting", &troubleshooting_section);
+
+        // TODO
+
+        auto* state = new bool(false);
+        auto* action = new Action("stateful", state);
+        state::app->add_action(*action);
+
+        auto label = "Stateful";
+        auto* item = g_menu_item_new(label, ("app." + action->get_id()).c_str());
+        g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
+        //g_menu_item_set_attribute_value(item, G_MENU_ATTRIBUTE_TARGET, g_variant_new_boolean(false));
+        g_menu_append_item(G_MENU(other_submenu.operator GMenuModel*()), item);
+
+        // TODO
+
 
         // main layout
 

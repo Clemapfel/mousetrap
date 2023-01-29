@@ -26,7 +26,7 @@ namespace mousetrap
             operator Widget*() override;
 
             /// @brief merge layer textures respecting state properties
-            Image merge_layers(const std::set<size_t>& layer_is);
+            Image merge_layers(const std::set<size_t>& layer_is, size_t frame_i);
 
             /// @brief merge arbitrary textures/shapes
             Image merge(const std::vector<RenderTask>& tasks);
@@ -38,6 +38,9 @@ namespace mousetrap
             void on_layer_resolution_changed() override;
 
         private:
+            size_t _frame_i = 0;
+            void set_frame(size_t);
+
             mutable GLArea _area;
             std::vector<Shape*> _shapes;
             Vector2i _canvas_size;

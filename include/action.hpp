@@ -26,6 +26,7 @@ namespace mousetrap
     {
         public:
             Action(const std::string& id);
+            Action(const std::string& id, bool* state);
             ~Action();
 
             ActionID get_id() const;

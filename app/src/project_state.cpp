@@ -127,9 +127,9 @@ namespace mousetrap
             for (size_t y = 0; y < _layer_resolution.y; ++y)
                 _selection.insert({x, y});
 
-        add_debug_layer(ZERO, ONE);
-        add_debug_layer(HALF, ONE);
-        add_debug_layer(ONE, ONE);
+        //add_debug_layer(ZERO, ONE);
+        //add_debug_layer(HALF, ONE);
+        add_debug_layer(ONE, HALF);
         add_debug_layer(COLOR, ONE);
 
         add_debug_layer(ZERO, ONE);
@@ -279,6 +279,19 @@ namespace mousetrap
 
     void ProjectState::set_current_layer_and_frame(size_t layer_i, size_t frame_i)
     {
+        if (layer_i >= _layers.size())
+        {
+            std::cerr << "[ERROR] In ProjectState::set_current_layer_and_frame: Layer index " << layer_i << " is out of bounds for project with " << _layers.size() << " layers" << std::endl;
+            return;
+        }
+
+        if (frame_i >= _n_frames)
+        {
+            std::cerr << "[ERROR] In ProjectState::set_current_layer_and_frame: Frame index " << layer_i << " is out of bounds for project with " << _n_frames << " frames" << std::endl;
+            return;
+        }
+
+
         _current_layer_i = layer_i;
         _current_frame_i = frame_i;
 
@@ -370,14 +383,69 @@ namespace mousetrap
             return;
         }
 
-        if (i > _layers.size())
-            i = _layers.size() - 1;
+        i = glm::clamp<size_t>(i, 0, _layers.size() - 1);
 
         auto* to_delete = _layers.at(i);
         _layers.erase(_layers.begin() + i);
 
         signal_layer_count_changed();
         delete to_delete;
+    }
+
+    void ProjectState::new_layer_from(int above, const std::set<size_t>& from_layer_is, bool delete_froms)
+    {
+        if (state::canvas_export == nullptr)
+        {
+            std::cerr << "[ERROR] In ProjectState::new_layer_from: Attempting to merge layers but state::canvas_export is not yet initialized" << std::endl;
+            return;
+        }
+
+        above = glm::clamp<int>(above, -1, _layers.size() - 1);
+
+        std::stringstream new_name;
+        new_name << "Merged Layer #" << merged_layer_count++;
+
+        Layer* new_layer = new Layer(new_name.str() , _layer_resolution, _n_frames);
+
+        const size_t frame_i_before = get_current_frame_index();
+        const size_t layer_i_before = get_current_layer_index();
+        for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+        {
+            auto image = state::canvas_export->merge_layers(from_layer_is, frame_i);
+            auto* new_frame = new_layer->get_frame(frame_i);
+
+            for (size_t x = 0; x < _layer_resolution.x; ++x)
+                for (size_t y = 0; y < _layer_resolution.y; ++y)
+                    new_frame->get_image()->set_pixel(x, y, image.get_pixel(x, y));
+
+            new_frame->update_texture();
+        }
+
+        _layers.emplace(_layers.begin() + (1 + above), new_layer);
+
+        if (not delete_froms)
+        {
+            signal_layer_count_changed();
+            return;
+        }
+
+        // delete layers, indices adjusted
+
+        std::deque<size_t> to_delete_is;
+        for (auto i : from_layer_is)
+            to_delete_is.push_front(i > (1 + above) ? i + 1 : i);
+
+        std::vector<Layer*> to_delete;
+        for (auto i : to_delete_is)
+        {
+            to_delete.push_back(_layers.at(i));
+            _layers.erase(_layers.begin() + i);
+        }
+
+        signal_layer_count_changed();
+
+        for (auto* layer : to_delete)
+            delete layer;
     }
 
     void ProjectState::set_layer_visible(size_t i, bool b)
