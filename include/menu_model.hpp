@@ -6,6 +6,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <include/widget.hpp>
 
 #include <string>
 #include <set>
@@ -19,6 +20,11 @@ namespace mousetrap
             ~MenuModel();
 
             void add_action(
+                const std::string& label,
+                const std::string& action_id,
+                bool use_markup = true);
+
+            void add_stateful_action(
                 const std::string& label,
                 const std::string& action_id,
                 bool use_markup = true);
@@ -53,5 +59,3 @@ namespace mousetrap
             std::set<MenuModel*> _submenus;
     };
 }
-
-#include <src/menu_model.inl>

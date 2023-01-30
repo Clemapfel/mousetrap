@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <include/~action.hpp>
+#include <include/action.hpp>
 
 namespace mousetrap
 {

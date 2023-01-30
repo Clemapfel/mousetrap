@@ -4,20 +4,21 @@
 //
 
 #include <include/get_resource_path.hpp>
+#include <include/menu_model.hpp>
 
 namespace mousetrap
 {
-    inline MenuModel::MenuModel()
+    MenuModel::MenuModel()
     {
         _native = g_object_ref(g_menu_new());
     }
 
-    inline MenuModel::~MenuModel()
+    MenuModel::~MenuModel()
     {
         g_object_unref(_native);
     }
 
-    inline void MenuModel::add_action(const std::string& label, const std::string& action_id, bool use_markup)
+    void MenuModel::add_action(const std::string& label, const std::string& action_id, bool use_markup)
     {
         auto* item = g_menu_item_new(label.c_str(), ("app." + action_id).c_str());
         g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string(use_markup ? "yes" : "no"));
@@ -25,7 +26,16 @@ namespace mousetrap
         g_object_unref(item);
     }
 
-    inline void MenuModel::add_widget(Widget* widget)
+    void MenuModel::add_stateful_action(const std::string& label, const std::string& action_id, bool use_markup)
+    {
+        auto* item = g_menu_item_new(label.c_str(), ("app." + action_id).c_str());
+        g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string(use_markup ? "yes" : "no"));
+        g_menu_item_set_attribute_value(item, "target", g_variant_new_boolean(false));
+        g_menu_append_item(_native, item);
+        g_object_unref(item);
+    }
+
+    void MenuModel::add_widget(Widget* widget)
     {
         auto id = std::to_string(current_id).c_str();
         auto* item = g_menu_item_new(id, id);
@@ -37,7 +47,7 @@ namespace mousetrap
         current_id += 1;
     }
 
-    inline void MenuModel::add_section(const std::string& label, MenuModel* model, MenuSectionFormat format)
+    void MenuModel::add_section(const std::string& label, MenuModel* model, MenuSectionFormat format)
     {
         auto* item = g_menu_item_new_section(label.c_str(), G_MENU_MODEL(model->_native));
 
@@ -73,7 +83,7 @@ namespace mousetrap
         g_menu_append_item(_native, item);
     }
 
-    inline void MenuModel::add_submenu(const std::string& label, MenuModel* model)
+    void MenuModel::add_submenu(const std::string& label, MenuModel* model)
     {
         if (model->_submenus.find(this) != model->_submenus.end())
             std::cerr << "[ERROR] In MenuModel::add_submenu: Trying to add menu " << model << " to " << this << ", even though " << this << " is already a submenu of " << model << ". This will create an infinite loop on initialization." << std::endl;
@@ -84,12 +94,12 @@ namespace mousetrap
         g_menu_append_item(_native, item);
     }
 
-    inline MenuModel::operator GMenuModel*()
+    MenuModel::operator GMenuModel*()
     {
         return G_MENU_MODEL(_native);
     }
 
-    inline std::unordered_map<std::string, Widget*> MenuModel::get_widgets()
+    std::unordered_map<std::string, Widget*> MenuModel::get_widgets()
     {
         auto out = std::unordered_map<std::string, Widget*>(_id_to_widget);
 

@@ -17,7 +17,8 @@ namespace mousetrap
 
     void Action::on_action_activate(GSimpleAction*, GVariant*, Action* instance)
     {
-        instance->_stateless_f();
+        if (instance->_stateless_f)
+            instance->_stateless_f();
     }
 
     void Action::on_action_change_state(GSimpleAction*, GVariant* variant, Action* instance)

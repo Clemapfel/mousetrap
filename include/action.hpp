@@ -34,7 +34,7 @@ namespace mousetrap
             void set_function(Function_t f);
 
             template<typename Function_t>
-            void set_stateful_function(Function_t f, bool initial_state = false;);
+            void set_stateful_function(Function_t f, bool initial_state = false);
             
             void activate() const;
            
@@ -58,7 +58,7 @@ namespace mousetrap
             std::function<void()> _stateless_f = nullptr;
             void initialize_as_stateless();
 
-            std::function<void(bool)> _stateful_bool_f = nullptr;
+            std::function<void(GVariant*)> _stateful_bool_f = nullptr;
             void initialize_as_stateful_bool(bool initial);
             
             bool _enabled = true;
@@ -84,7 +84,6 @@ namespace mousetrap
         _stateful_bool_f = [f = std::function<void(bool)>(function)](GVariant* state){
             f(g_variant_get_boolean(state));
         };
-        _stateless_f = nullptr;
 
         initialize_as_stateful_bool(initial_state);
         set_enabled(_enabled);

@@ -162,7 +162,7 @@ add_library(mousetrap SHARED
     src/menu_button.inl
 
     include/menu_model.hpp
-    src/menu_model.inl
+        src/menu_model.cpp
 
     include/list_view.hpp
     src/list_view.cpp

@@ -7,7 +7,7 @@
 
 #include <include/widget.hpp>
 #include <include/signal_component.hpp>
-#include <include/~action.hpp>
+#include <include/action.hpp>
 
 namespace mousetrap
 {
