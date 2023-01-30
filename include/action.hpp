@@ -81,8 +81,10 @@ namespace mousetrap
     template<typename Function_t>
     void Action::set_stateful_function(Function_t function, bool initial_state)
     {
-        _stateful_bool_f = [f = std::function<void(bool)>(function)](GVariant* state){
-            f(g_variant_get_boolean(state));
+        _stateful_bool_f = [this, f = std::function<bool(bool)>(function)](GVariant* state) -> void
+        {
+            auto result = f(g_variant_get_boolean(g_action_get_state(G_ACTION(_g_action))));
+            g_action_change_state(G_ACTION(_g_action), g_variant_new_boolean(result));
         };
 
         initialize_as_stateful_bool(initial_state);

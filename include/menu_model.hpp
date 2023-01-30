@@ -24,11 +24,6 @@ namespace mousetrap
                 const std::string& action_id,
                 bool use_markup = true);
 
-            void add_stateful_action(
-                const std::string& label,
-                const std::string& action_id,
-                bool use_markup = true);
-
             void add_widget(Widget*);
 
             enum MenuSectionFormat

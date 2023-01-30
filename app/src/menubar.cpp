@@ -228,23 +228,19 @@ namespace mousetrap
         // TODO
 
         static auto* action = new Action("stateful");
-        action->set_stateful_function([](bool in) {
-            std::cout << "State: " << in << std::endl;
+        action->set_stateful_function([](bool current) {
+
+            std::cout << "current: " << current << std::endl;
+            return not current;
         });
         state::app->add_action(*action);
 
-        //https://docs.gtk.org/gtk4/class.PopoverMenu.html#menu-models
-
-        auto label = "Stateful";
-        auto* item = g_menu_item_new(label, ("app." + action->get_id()).c_str());
-        g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
-        //g_menu_item_set_attribute_value(item, G_MENU_ATTRIBUTE_TARGET, g_variant_new_boolean(false));
-
-        g_menu_append_item(G_MENU(other_submenu.operator GMenuModel*()), item);
-
-
-        // TODO
-
+        auto* _native = other_submenu.operator GMenuModel*();
+        auto* item = g_menu_item_new("Stateful", ("app." + action->get_id()).c_str());
+        g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string(true ? "yes" : "no"));
+        g_menu_item_set_attribute_value(item, G_MENU_ATTRIBUTE_TARGET, g_variant_new_boolean(true));
+        g_menu_append_item(G_MENU(_native), item);
+        g_object_unref(item);
 
         // main layout
 

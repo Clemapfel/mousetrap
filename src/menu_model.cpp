@@ -26,15 +26,6 @@ namespace mousetrap
         g_object_unref(item);
     }
 
-    void MenuModel::add_stateful_action(const std::string& label, const std::string& action_id, bool use_markup)
-    {
-        auto* item = g_menu_item_new(label.c_str(), ("app." + action_id).c_str());
-        g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string(use_markup ? "yes" : "no"));
-        g_menu_item_set_attribute_value(item, "target", g_variant_new_boolean(false));
-        g_menu_append_item(_native, item);
-        g_object_unref(item);
-    }
-
     void MenuModel::add_widget(Widget* widget)
     {
         auto id = std::to_string(current_id).c_str();

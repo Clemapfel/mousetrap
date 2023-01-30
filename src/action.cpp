@@ -15,19 +15,22 @@ namespace mousetrap
     Action::~Action()
     {}
 
-    void Action::on_action_activate(GSimpleAction*, GVariant*, Action* instance)
+    void Action::on_action_activate(GSimpleAction*, GVariant* variant, Action* instance)
     {
         if (instance->_stateless_f)
             instance->_stateless_f();
+
+        if (instance->_stateful_bool_f)
+            instance->_stateful_bool_f(variant);
     }
 
     void Action::on_action_change_state(GSimpleAction*, GVariant* variant, Action* instance)
     {
+        if (instance->_stateless_f)
+            instance->_stateless_f();
+
         if (instance->_stateful_bool_f)
-        {
             instance->_stateful_bool_f(variant);
-            return;
-        }
     }
 
     void Action::initialize_as_stateless()
@@ -42,8 +45,9 @@ namespace mousetrap
     {
         _stateless_f = nullptr;
 
-        _g_action = g_object_ref(g_simple_action_new_stateful(_id.c_str(), nullptr, g_variant_new_boolean(initial)));
-        g_signal_connect(G_OBJECT(_g_action), "change-state", G_CALLBACK(on_action_change_state), this);
+        auto* variant = g_variant_new_boolean(true);
+        _g_action = g_object_ref(g_simple_action_new_stateful(_id.c_str(), G_VARIANT_TYPE_BOOLEAN, variant));
+        g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
     }
 
     void Action::activate() const
