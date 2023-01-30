@@ -68,7 +68,60 @@ namespace mousetrap
             static void on_action_activate(GSimpleAction*, GVariant*, Action*);
             GSimpleAction* _g_action = nullptr;
             bool _enabled = true;
+
+            static void on_action_change_state(GSimpleAction*, GVariant*, Action*);
     };
 }
 
-#include <src/action.inl>
+namespace mousetrap
+{
+    template<typename DoFunction_t>
+    void Action::set_function(DoFunction_t do_function)
+    {
+        _instance_states.insert({_id, new InstanceState()});
+        auto* state = _instance_states.at(_id);
+
+        (*state->do_f) = [f = std::function<void()>(do_function)](){
+            f();
+        };
+
+        (*state->undo_f) = [](){};
+        (*state->redo_f) = [](){};
+
+        _g_action = g_object_ref(g_simple_action_new(_id.c_str(), nullptr));
+        g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
+        set_enabled(_enabled);
+    }
+
+    template<typename DoFunction_t, typename UndoFunction_t, typename RedoFunction_t>
+    void Action::set_function(DoFunction_t do_function, UndoFunction_t undo_function, RedoFunction_t redo_function)
+    {
+        _instance_states.insert({_id, new InstanceState()});
+        auto* state = _instance_states.at(_id);
+
+        (*state->do_f) = [f = std::function<void()>(do_function), state](){
+            f();
+            state->undo_queue->emplace_back([&](){
+                (*state->undo_f)();
+            });
+        };
+
+        (*state->undo_f) = [f = std::function<void()>(undo_function), state](){
+            f();
+            state->redo_queue->emplace_back([&](){
+                (*state->redo_f)();
+            });
+        };
+
+        (*state->redo_f) = [f = std::function<void()>(redo_function), state](){
+            f();
+            state->undo_queue->emplace_back([&](){
+                (*state->undo_f)();
+            });
+        };
+
+        _g_action = g_object_ref(g_simple_action_new(_id.c_str(), nullptr));
+        g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
+        set_enabled(_enabled);
+    }
+}
