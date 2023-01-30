@@ -12,52 +12,53 @@ namespace mousetrap
         : _id(id)
     {}
 
-    Action::Action(const std::string& id, bool* state)
-        : _id(id)
-    {
-        auto* variant = g_variant_new_boolean(true);
-        _g_action = g_object_ref(g_simple_action_new_stateful(_id.c_str(), NULL, variant));
-        g_signal_connect(G_OBJECT(_g_action), "change-state", G_CALLBACK(on_action_change_state), this);
-        set_enabled(_enabled);
-    }
-
     Action::~Action()
     {}
 
     void Action::on_action_activate(GSimpleAction*, GVariant*, Action* instance)
     {
-        instance->activate();
+        instance->_stateless_f();
     }
 
-    void Action::on_action_change_state(GSimpleAction*, GVariant* variant, Action*)
+    void Action::on_action_change_state(GSimpleAction*, GVariant* variant, Action* instance)
     {
-        std::cout << g_variant_get_boolean(variant) << std::endl;
+        if (instance->_stateful_bool_f)
+        {
+            instance->_stateful_bool_f(variant);
+            return;
+        }
+    }
+
+    void Action::initialize_as_stateless()
+    {
+        _stateful_bool_f = nullptr;
+
+        _g_action = g_object_ref(g_simple_action_new(_id.c_str(), nullptr));
+        g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
+    }
+
+    void Action::initialize_as_stateful_bool(bool initial)
+    {
+        _stateless_f = nullptr;
+
+        _g_action = g_object_ref(g_simple_action_new_stateful(_id.c_str(), nullptr, g_variant_new_boolean(initial)));
+        g_signal_connect(G_OBJECT(_g_action), "change-state", G_CALLBACK(on_action_change_state), this);
     }
 
     void Action::activate() const
     {
-        auto& state = _instance_states.at(_id);
-        if (state->do_f)
-            (*state->do_f)();
-    }
-
-    void Action::undo() const
-    {
-        auto& state = _instance_states.at(_id);
-        if (not state->undo_queue->empty())
+        if (_stateless_f)
         {
-            state->undo_queue->back()();
-            state->undo_queue->pop_back();
+            _stateless_f();
+            return;
         }
-    }
 
-    void Action::redo() const
-    {
-        auto& state = _instance_states.at(_id);
-        if (not state->redo_queue->empty())
+        if (_stateful_bool_f)
         {
-            state->redo_queue->back()();
-            state->redo_queue->pop_back();
+            auto* state = g_action_get_state(G_ACTION(_g_action));
+            _stateful_bool_f(state);
+            g_variant_unref(state);
+            return;
         }
     }
 

@@ -26,21 +26,18 @@ namespace mousetrap
     {
         public:
             Action(const std::string& id);
-            Action(const std::string& id, bool* state);
             ~Action();
 
             ActionID get_id() const;
 
-            template<typename DoFunction_t>
-            void set_function(DoFunction_t do_function);
+            template<typename Function_t>
+            void set_function(Function_t f);
 
-            template<typename DoFunction_t, typename UndoFunction_t, typename RedoFunction_t>
-            void set_function(DoFunction_t do_function, UndoFunction_t undo_function, RedoFunction_t redo_function);
-
+            template<typename Function_t>
+            void set_stateful_function(Function_t f, bool initial_state = false;);
+            
             void activate() const;
-            void undo() const;
-            void redo() const;
-
+           
             void add_shortcut(const ShortcutTriggerID&);
             const std::vector<ShortcutTriggerID>& get_shortcuts() const;
 
@@ -50,78 +47,46 @@ namespace mousetrap
 
         private:
             ActionID _id;
-
-            struct InstanceState
-            {
-                InstanceState() = default;
-
-                std::deque<std::function<void()>>* undo_queue = new std::deque<std::function<void()>>{};
-                std::deque<std::function<void()>>* redo_queue = new std::deque<std::function<void()>>{};
-                std::function<void()>* do_f = new std::function<void()>([](){});
-                std::function<void()>* undo_f = new std::function<void()>([](){});
-                std::function<void()>* redo_f = new std::function<void()>([](){});
-            };
-            static inline std::unordered_map<ActionID, InstanceState*> _instance_states = {};
-
             std::vector<ShortcutTriggerID> _shortcuts;
 
             static void on_action_activate(GSimpleAction*, GVariant*, Action*);
-            GSimpleAction* _g_action = nullptr;
-            bool _enabled = true;
-
             static void on_action_change_state(GSimpleAction*, GVariant*, Action*);
+            
+            GSimpleAction* _g_action = nullptr;
+            GVariant* _g_state = nullptr;
+            
+            std::function<void()> _stateless_f = nullptr;
+            void initialize_as_stateless();
+
+            std::function<void(bool)> _stateful_bool_f = nullptr;
+            void initialize_as_stateful_bool(bool initial);
+            
+            bool _enabled = true;
     };
 }
 
 namespace mousetrap
 {
-    template<typename DoFunction_t>
-    void Action::set_function(DoFunction_t do_function)
+    template<typename Function_t>
+    void Action::set_function(Function_t function)
     {
-        _instance_states.insert({_id, new InstanceState()});
-        auto* state = _instance_states.at(_id);
-
-        (*state->do_f) = [f = std::function<void()>(do_function)](){
+        _stateless_f = [f = std::function<void()>(function)](){
             f();
         };
 
-        (*state->undo_f) = [](){};
-        (*state->redo_f) = [](){};
-
-        _g_action = g_object_ref(g_simple_action_new(_id.c_str(), nullptr));
-        g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
+        initialize_as_stateless();
         set_enabled(_enabled);
     }
 
-    template<typename DoFunction_t, typename UndoFunction_t, typename RedoFunction_t>
-    void Action::set_function(DoFunction_t do_function, UndoFunction_t undo_function, RedoFunction_t redo_function)
+    template<typename Function_t>
+    void Action::set_stateful_function(Function_t function, bool initial_state)
     {
-        _instance_states.insert({_id, new InstanceState()});
-        auto* state = _instance_states.at(_id);
-
-        (*state->do_f) = [f = std::function<void()>(do_function), state](){
-            f();
-            state->undo_queue->emplace_back([&](){
-                (*state->undo_f)();
-            });
+        _stateful_bool_f = [f = std::function<void(bool)>(function)](GVariant* state){
+            f(g_variant_get_boolean(state));
         };
+        _stateless_f = nullptr;
 
-        (*state->undo_f) = [f = std::function<void()>(undo_function), state](){
-            f();
-            state->redo_queue->emplace_back([&](){
-                (*state->redo_f)();
-            });
-        };
-
-        (*state->redo_f) = [f = std::function<void()>(redo_function), state](){
-            f();
-            state->undo_queue->emplace_back([&](){
-                (*state->undo_f)();
-            });
-        };
-
-        _g_action = g_object_ref(g_simple_action_new(_id.c_str(), nullptr));
-        g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
+        initialize_as_stateful_bool(initial_state);
         set_enabled(_enabled);
     }
 }

@@ -261,7 +261,7 @@ add_library(mousetrap SHARED
     include/string_compression.hpp
 
     include/action.hpp
-        src/action.cpp
+    src/action.cpp
 
     include/link_button.hpp
     src/link_button.inl
