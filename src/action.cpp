@@ -20,8 +20,8 @@ namespace mousetrap
         if (instance->_stateless_f)
             instance->_stateless_f();
 
-        if (instance->_stateful_bool_f)
-            instance->_stateful_bool_f(variant);
+        if (instance->_stateful_f)
+            instance->_stateful_f();
     }
 
     void Action::on_action_change_state(GSimpleAction*, GVariant* variant, Action* instance)
@@ -29,42 +29,16 @@ namespace mousetrap
         if (instance->_stateless_f)
             instance->_stateless_f();
 
-        if (instance->_stateful_bool_f)
-            instance->_stateful_bool_f(variant);
+        if (instance->_stateful_f)
+            instance->_stateful_f();
     }
-
-    void Action::initialize_as_stateless()
-    {
-        _stateful_bool_f = nullptr;
-
-        _g_action = g_object_ref(g_simple_action_new(_id.c_str(), nullptr));
-        g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
-    }
-
-    void Action::initialize_as_stateful_bool(bool initial)
-    {
-        _stateless_f = nullptr;
-
-        auto* variant = g_variant_new_boolean(true);
-        _g_action = g_object_ref(g_simple_action_new_stateful(_id.c_str(), G_VARIANT_TYPE_BOOLEAN, variant));
-        g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
-    }
-
+    
     void Action::activate() const
     {
         if (_stateless_f)
-        {
             _stateless_f();
-            return;
-        }
-
-        if (_stateful_bool_f)
-        {
-            auto* state = g_action_get_state(G_ACTION(_g_action));
-            _stateful_bool_f(state);
-            g_variant_unref(state);
-            return;
-        }
+        else if (_stateful_f)
+            _stateful_f();
     }
 
     void Action::add_shortcut(const ShortcutTriggerID& shortcut)

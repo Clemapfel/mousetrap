@@ -56,11 +56,8 @@ namespace mousetrap
             GVariant* _g_state = nullptr;
             
             std::function<void()> _stateless_f = nullptr;
-            void initialize_as_stateless();
+            std::function<void()> _stateful_f = nullptr;
 
-            std::function<void(GVariant*)> _stateful_bool_f = nullptr;
-            void initialize_as_stateful_bool(bool initial);
-            
             bool _enabled = true;
     };
 }
@@ -74,20 +71,26 @@ namespace mousetrap
             f();
         };
 
-        initialize_as_stateless();
+        _stateful_f = nullptr;
+        _g_action = g_object_ref(g_simple_action_new(_id.c_str(), nullptr));
+        g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
         set_enabled(_enabled);
     }
 
     template<typename Function_t>
     void Action::set_stateful_function(Function_t function, bool initial_state)
     {
-        _stateful_bool_f = [this, f = std::function<bool(bool)>(function)](GVariant* state) -> void
+        _stateful_f = [this, f = std::function<bool(bool)>(function)]() -> void
         {
             auto result = f(g_variant_get_boolean(g_action_get_state(G_ACTION(_g_action))));
             g_action_change_state(G_ACTION(_g_action), g_variant_new_boolean(result));
         };
 
-        initialize_as_stateful_bool(initial_state);
+        _stateless_f = nullptr;
+
+        auto* variant = g_variant_new_boolean(true);
+        _g_action = g_object_ref(g_simple_action_new_stateful(_id.c_str(), G_VARIANT_TYPE_BOOLEAN, variant));
+        g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
         set_enabled(_enabled);
     }
 }

@@ -229,7 +229,6 @@ namespace mousetrap
 
         static auto* action = new Action("stateful");
         action->set_stateful_function([](bool current) {
-
             std::cout << "current: " << current << std::endl;
             return not current;
         });
