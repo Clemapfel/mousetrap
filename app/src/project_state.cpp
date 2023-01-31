@@ -486,7 +486,6 @@ namespace mousetrap
     void ProjectState::set_frame_is_keyframe(size_t layer_i, size_t frame_i, bool b)
     {
         _layers.at(layer_i)->get_frame(frame_i)->set_is_keyframe(b);
-
         signal_layer_properties_changed();
     }
 

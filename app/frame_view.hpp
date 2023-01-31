@@ -92,12 +92,13 @@ namespace mousetrap
                     const Texture* _texture = nullptr;
                     Shape* _transparency_tiling_shape = nullptr;
                     Shape* _layer_shape = nullptr;
+                    Shape* _negative_overlay = nullptr;
 
                     static void on_realize(Widget*, FramePreview*);
                     static void on_resize(GLArea*, int w, int h, FramePreview*);
 
                     bool _is_inbetween;
-                    Label _inbetween_label = Label("&#8943;");
+                    ImageDisplay _inbetween_indicator = ImageDisplay(get_resource_path() + "icons/inbetween_indicator.png");
                     Overlay _inbetween_label_overlay;
             };
 
@@ -113,7 +114,7 @@ namespace mousetrap
                     void select_layer(size_t i);
                     void set_layer_visible(size_t i, bool);
                     void set_layer_opacity(size_t i, float);
-                    void set_is_inbetween(bool);
+                    void set_is_inbetween(size_t i, bool);
                     void set_preview_size(size_t);
 
                     void set_n_layers(size_t);
@@ -168,7 +169,9 @@ namespace mousetrap
                     FrameView* _owner;
 
                     ToggleButton _toggle_onionskin_visible_button;
-                    ImageDisplay _toggle_onionskin_visible_icon = ImageDisplay(get_resource_path() + "icons/toggle_onionskin_visible.png");
+                    ImageDisplay _onionskin_visible_icon = ImageDisplay(get_resource_path() + "icons/onionskin_visible.png");
+                    ImageDisplay _onionskin_not_visible_icon = ImageDisplay(get_resource_path() + "icons/onionskin_not_visible.png");
+
                     SpinButton _onionskin_n_layers_spin_button = SpinButton(0, 99, 1);
 
                     Button _jump_to_start_button;

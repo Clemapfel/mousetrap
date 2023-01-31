@@ -13,15 +13,20 @@ namespace mousetrap
         _area.connect_signal_resize(on_resize, this);
         _aspect_frame.set_child(&_area);
 
+        _inbetween_indicator.set_size_request(_inbetween_indicator.get_size());
+        _inbetween_indicator.set_expand(false);
+        _inbetween_indicator.set_align(GTK_ALIGN_CENTER);
+
         set_preview_size(owner->_preview_size);
         _inbetween_label_overlay.set_child(&_aspect_frame);
-        _inbetween_label_overlay.add_overlay(&_inbetween_label);
+        _inbetween_label_overlay.add_overlay(&_inbetween_indicator);
     }
 
     FrameView::FramePreview::~FramePreview()
     {
         delete _transparency_tiling_shape;
         delete _layer_shape;
+        delete _negative_overlay;
     }
 
     void FrameView::FramePreview::set_preview_size(size_t x)
@@ -41,10 +46,10 @@ namespace mousetrap
     {
         _is_inbetween = b;
 
-        if (_is_inbetween)
-            _inbetween_label.set_visible(true);
-        else
-            _inbetween_label.set_visible(false);
+        _inbetween_indicator.set_visible(b);
+
+        if (_negative_overlay)
+            _negative_overlay->set_visible(b);
     }
 
     void FrameView::FramePreview::set_opacity(float x)
@@ -99,6 +104,11 @@ namespace mousetrap
         if (instance->_texture != nullptr)
             instance->_layer_shape->set_texture(instance->_texture);
 
+        instance->_negative_overlay = new Shape();
+        instance->_negative_overlay->as_rectangle({-0.5, -0.5}, {2.0, 2.0});
+        instance->_negative_overlay->set_color(RGBA(0, 0, 0, 0));
+        instance->_negative_overlay->set_visible(false);
+
         area->clear_render_tasks();
 
         auto transparency_task = RenderTask(instance->_transparency_tiling_shape, _transparency_tiling_shader);
@@ -106,6 +116,9 @@ namespace mousetrap
 
         area->add_render_task(transparency_task);
         area->add_render_task(instance->_layer_shape);
+
+        auto task = RenderTask(instance->_negative_overlay, nullptr, nullptr, BlendMode::MULTIPLY);
+        area->add_render_task(task);
 
         area->queue_render();
     }
@@ -229,10 +242,10 @@ namespace mousetrap
             preview.set_preview_size(size);
     }
 
-    void FrameView::FrameColumn::set_is_inbetween(bool b)
+    void FrameView::FrameColumn::set_is_inbetween(size_t i, bool b)
     {
-        for (auto& preview : _preview_elements)
-            preview.set_is_inbetween(b);
+        auto& element = _preview_elements.at(i);
+        element.set_is_inbetween(b);
     }
 
     void FrameView::FrameColumn::select_layer(size_t i)
@@ -336,8 +349,9 @@ namespace mousetrap
             state::add_shortcut_action(*action);
 
         // GUI
-        _toggle_onionskin_visible_button.set_active(active_state->get_onionskin_visible());
-        _toggle_onionskin_visible_button.set_child(&_toggle_onionskin_visible_icon);
+        auto onionskin_visible = active_state->get_onionskin_visible();
+        _toggle_onionskin_visible_button.set_active(onionskin_visible);
+        _toggle_onionskin_visible_button.set_child(onionskin_visible ? &_onionskin_visible_icon : &_onionskin_not_visible_icon);
         _toggle_onionskin_visible_button.connect_signal_toggled([](ToggleButton*, ControlBar* instance){
             frame_view_toggle_onionskin_visible.activate();
         }, this);
@@ -483,7 +497,7 @@ namespace mousetrap
 
         // Layout
 
-        for (auto& image : {&_toggle_onionskin_visible_icon, &_jump_to_start_icon, &_jump_to_end_icon, &_go_to_previous_frame_icon, &_go_to_next_frame_icon, &_play_icon, &_pause_icon, &_frame_move_left_icon, &_frame_move_right_icon, &_frame_new_left_of_current_icon, &_frame_new_right_of_current_icon, &_frame_delete_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
+        for (auto& image : {&_onionskin_visible_icon, &_onionskin_not_visible_icon, &_jump_to_start_icon, &_jump_to_end_icon, &_go_to_previous_frame_icon, &_go_to_next_frame_icon, &_play_icon, &_pause_icon, &_frame_move_left_icon, &_frame_move_right_icon, &_frame_new_left_of_current_icon, &_frame_new_right_of_current_icon, &_frame_delete_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
             image->set_size_request(image->get_size());
 
         auto button_width = _play_pause_button.get_preferred_size().natural_size.x;
@@ -568,6 +582,11 @@ namespace mousetrap
         _toggle_onionskin_visible_button.set_signal_toggled_blocked(true);
         _toggle_onionskin_visible_button.set_active(b);
         _toggle_onionskin_visible_button.set_signal_toggled_blocked(false);
+
+        if (b)
+            _toggle_onionskin_visible_button.set_child(&_onionskin_visible_icon);
+        else
+            _toggle_onionskin_visible_button.set_child(&_onionskin_not_visible_icon);
     }
 
     void FrameView::ControlBar::set_n_onionskin_layers(size_t x)
@@ -678,6 +697,7 @@ namespace mousetrap
         auto frame_i = active_state->get_current_frame_index();
         frame_view_jump_to_start.set_enabled(frame_i > 0);
         frame_view_jump_to_end.set_enabled(frame_i < active_state->get_n_frames() - 1);
+        _control_bar.set_is_keyframe(active_state->get_current_frame()->get_is_keyframe());
     }
 
     void FrameView::on_layer_image_updated()
@@ -696,7 +716,7 @@ namespace mousetrap
                 auto* layer = active_state->get_layer(layer_i);
                 column.set_layer_visible(layer_i, layer->get_is_visible());
                 column.set_layer_opacity(layer_i, layer->get_opacity());
-                column.set_is_inbetween(not layer->get_frame(frame_i)->get_is_keyframe());
+                column.set_is_inbetween(layer_i, not layer->get_frame(frame_i)->get_is_keyframe());
             }
         }
 
