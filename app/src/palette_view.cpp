@@ -146,43 +146,22 @@ namespace mousetrap
         _preview_size_box.push_back(&_preview_size_label);
         _preview_size_box.push_back(&_preview_size_spacer);
         _preview_size_box.push_back(&_preview_size_scale);
-
-        _palette_locked_label.set_hexpand(false);
-        _palette_locked_label.set_halign(GTK_ALIGN_START);
-        _palette_locked_spacer.set_hexpand(true);
-        _palette_locked_switch.set_size_request({state::margin_unit, state::margin_unit});
-        _palette_locked_switch.set_halign(GTK_ALIGN_END);
-        _palette_locked_switch.connect_signal_state_set(on_palette_locked_switch_state_set, this);
-
-        _palette_locked_box.push_back(&_palette_locked_label);
-        _palette_locked_box.push_back(&_palette_locked_spacer);
-        _palette_locked_box.push_back(&_palette_locked_switch);
-
-        _palette_locked_box.set_tooltip_text(state::tooltips_file->get_value_as<std::string>("palette_view.control_bar", "palette_editing_menu_item"));
         _preview_size_box.set_tooltip_text(state::tooltips_file->get_value_as<std::string>("palette_view.control_bar", "preview_size_menu_item"));
 
-        for (auto* box : {&_palette_locked_box, &_preview_size_box})
-            box->set_margin(state::margin_unit);
-
-        for (auto* spacer : {&_palette_locked_spacer, &_preview_size_spacer})
-        {
-            spacer->set_opacity(0);
-            spacer->set_size_request({state::margin_unit, 0});
-        }
+        _preview_size_box.set_margin(state::margin_unit);
+        _preview_size_spacer.set_opacity(0);
+        _preview_size_spacer.set_size_request({state::margin_unit, 0});
 
         auto settings_section = MenuModel();
 
         auto preview_size_submenu = MenuModel();
         preview_size_submenu.add_widget(&_preview_size_box);
 
-        auto palette_locked_submenu = MenuModel();
-        palette_locked_submenu.add_widget(&_palette_locked_box);
-
-        settings_section.add_submenu("Preview Size...", &preview_size_submenu);
-        settings_section.add_submenu("Editing...", &palette_locked_submenu);
-        _menu.add_section("Settings", &settings_section);
-
         using namespace state::actions;
+
+        settings_section.add_stateful_action("Toggle Palette Locked", palette_view_toggle_palette_locked.get_id(), active_state->get_palette_editing_enabled());
+        settings_section.add_submenu("Preview Size...", &preview_size_submenu);
+        _menu.add_section("Settings", &settings_section);
 
         auto load_save_submenu = MenuModel();
         load_save_submenu.add_action("Load...", palette_view_load.get_id());
@@ -232,19 +211,9 @@ namespace mousetrap
         _palette_locked_button.set_signal_toggled_blocked(true);
         _palette_locked_button.set_active(is_locked);
         _palette_locked_button.set_signal_toggled_blocked(false);
-
-        _palette_locked_switch.set_signal_state_set_blocked(true);
-        _palette_locked_switch.set_active(is_locked);
-        _palette_locked_switch.set_state(is_locked ? Switch::State::ON : Switch::State::OFF);
-        _palette_locked_switch.set_signal_state_set_blocked(false);
     }
 
     void PaletteView::PaletteControlBar::on_palette_locked_button_toggled(ToggleButton* button, PaletteControlBar* instance)
-    {
-        active_state->set_palette_editing_enabled(not button->get_active());
-    }
-
-    void PaletteView::PaletteControlBar::on_palette_locked_switch_state_set(Switch* button, bool value, PaletteControlBar* instance)
     {
         active_state->set_palette_editing_enabled(not button->get_active());
     }
@@ -413,7 +382,9 @@ namespace mousetrap
 
     void PaletteView::on_palette_editing_toggled()
     {
-        _palette_control_bar.set_palette_editing_enabled(active_state->get_palette_editing_enabled());
+        auto state = active_state->get_palette_editing_enabled();
+        _palette_control_bar.set_palette_editing_enabled(state);
+        state::actions::palette_view_toggle_palette_locked.set_state(state);
     }
 
     PaletteView::PaletteView()
@@ -534,6 +505,13 @@ namespace mousetrap
             active_state->set_default_palette(colors);
         });
 
+        palette_view_toggle_palette_locked.set_stateful_function([](bool) -> bool
+        {
+           auto next = not active_state->get_palette_editing_enabled();
+           active_state->set_palette_editing_enabled(next);
+           return next;
+        });
+
         for (auto* action : {
                 &palette_view_load_default,
                 &palette_view_save,
@@ -553,9 +531,12 @@ namespace mousetrap
                 &palette_view_select_color_6,
                 &palette_view_select_color_7,
                 &palette_view_select_color_8,
-                &palette_view_select_color_9
+                &palette_view_select_color_9,
+                &palette_view_toggle_palette_locked
         })
             state::add_shortcut_action(*action);
+
+        on_palette_editing_toggled();
     }
 
     PaletteView::~PaletteView()

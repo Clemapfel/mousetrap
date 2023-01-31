@@ -24,8 +24,8 @@ namespace mousetrap
         auto file_submenu = MenuModel();
 
         auto file_submenu_save_section = MenuModel();
-        file_submenu_save_section.add_action("Open...", save_file_open_load_dialog.get_id());
         file_submenu_save_section.add_action("New", save_file_new_state.get_id());
+        file_submenu_save_section.add_action("Open...", save_file_open_load_dialog.get_id());
         file_submenu_save_section.add_action("Save", save_file_save_state_to_file.get_id());
         file_submenu_save_section.add_action("Save As...", save_file_open_save_dialog.get_id());
         file_submenu_save_section.add_action("Restore from Backup...", save_file_open_restore_from_backup_dialog.get_id());
@@ -70,7 +70,7 @@ namespace mousetrap
         auto image_submenu_transform_current_section = MenuModel();
         image_submenu_transform_current_section.add_action("Flip Layer Horizontally", image_transform_flip_current_layer_horizontally.get_id());
         image_submenu_transform_current_section.add_action("Flip Layer Vertically", image_transform_flip_current_layer_vertically.get_id());
-        image_submenu.add_section("Transform Current Layer", &image_submenu_transform_current_section);
+        image_submenu.add_section("Transform Layer", &image_submenu_transform_current_section);
 
         // COLORS
 
@@ -86,13 +86,19 @@ namespace mousetrap
         color_submenu_transform_section.add_action("Palette Shift...", color_transform_open_palette_shift_dialog.get_id());
         colors_submenu.add_section("Transform", &color_submenu_transform_section);
 
+        auto palette_editing_section = MenuModel();
+        palette_editing_section.add_stateful_action("Toggle Palette Locked", palette_view_toggle_palette_locked.get_id(), false);
+        colors_submenu.add_section("Palette Editing", &palette_editing_section);
+
+
         auto color_palette_section = MenuModel();
         color_palette_section.add_action("Load...", palette_view_load.get_id());
         color_palette_section.add_action("Load Default", palette_view_load_default.get_id());
         color_palette_section.add_action("Save", palette_view_save.get_id());
         color_palette_section.add_action("Save As...", palette_view_save_as.get_id());
         color_palette_section.add_action("Save As Default", palette_view_save_as_default.get_id());
-        colors_submenu.add_section("Palette", &color_palette_section);
+        colors_submenu.add_section("Palette Load / Save", &color_palette_section);
+
 
         // LAYERS
 
@@ -116,8 +122,12 @@ namespace mousetrap
         layer_move_section.add_action("Move Layer Up", layer_view_layer_move_up.get_id());
         layer_submenu.add_section("Layer Position", &layer_move_section);
 
+        auto layer_property_section = MenuModel();
+        layer_property_section.add_stateful_action("Toggle Layer Visible", layer_view_toggle_layer_visible.get_id(), true);
+        layer_property_section.add_stateful_action("Toggle Layer Locked", layer_view_toggle_layer_locked.get_id(), true);
+        layer_submenu.add_section("Layer Properties", &layer_property_section);
+
         auto layer_show_section = MenuModel();
-        layer_show_section.add_action("Hide / Show Current Layer", layer_view_toggle_layer_visible.get_id());
         layer_show_section.add_action("Hide All Other Layers", layer_view_hide_all_other_layers.get_id());
         layer_show_section.add_action("Show All Other Layers", layer_view_show_all_other_layers.get_id());
         layer_submenu.add_section("Hide / Show", &layer_show_section);
@@ -138,7 +148,7 @@ namespace mousetrap
         frame_submenu.add_section("Frame Position", &frame_move_section);
 
         auto frame_navigation_section = MenuModel();
-        frame_navigation_section.add_action("Play / Pause Playback", frame_view_play_pause.get_id());
+        frame_navigation_section.add_action("Play / Pause Playback", frame_view_toggle_playback_active.get_id());
         frame_navigation_section.add_action("Select Previous", frame_view_go_to_previous_frame.get_id());
         frame_navigation_section.add_action("Select Next", frame_view_go_to_next_frame.get_id());
         frame_navigation_section.add_action("Jump to Start", frame_view_jump_to_start.get_id());
@@ -146,8 +156,8 @@ namespace mousetrap
         frame_submenu.add_section("Playback / Navigation", &frame_navigation_section);
 
         auto frame_other_section = MenuModel();
-        frame_other_section.add_action("Toggle Keyframe / Inbetween", frame_view_frame_make_keyframe_inbetween.get_id());
-        frame_other_section.add_action("Toggle Onionskin Visible", frame_view_toggle_onionskin_visible.get_id());
+        frame_other_section.add_stateful_action("Toggle Keyframe", frame_view_toggle_current_frame_is_keyframe.get_id(), false);
+        frame_other_section.add_stateful_action("Toggle Onionskin Visible", frame_view_toggle_onionskin_visible.get_id(), false);
         frame_submenu.add_section("Other", &frame_other_section);
 
         // CANVAS

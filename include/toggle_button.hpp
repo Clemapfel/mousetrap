@@ -17,6 +17,8 @@ namespace mousetrap
             bool get_active() const;
             void set_active(bool b);
 
+            void set_action(Action& stateful_action);
+
             void set_label(const std::string&);
             void set_child(Widget*);
             void set_has_frame(bool b);

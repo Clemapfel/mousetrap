@@ -41,6 +41,11 @@ namespace mousetrap
             _stateful_f();
     }
 
+    void Action::set_state(bool b)
+    {
+        g_action_change_state(G_ACTION(_g_action), g_variant_new_boolean(b));
+    }
+
     void Action::add_shortcut(const ShortcutTriggerID& shortcut)
     {
         if (gtk_shortcut_trigger_parse_string(shortcut.c_str()) == nullptr)

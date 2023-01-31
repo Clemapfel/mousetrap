@@ -35,7 +35,8 @@ namespace mousetrap
 
             template<typename Function_t>
             void set_stateful_function(Function_t f, bool initial_state = false);
-            
+
+            void set_state(bool);
             void activate() const;
            
             void add_shortcut(const ShortcutTriggerID&);
@@ -89,7 +90,7 @@ namespace mousetrap
         _stateless_f = nullptr;
 
         auto* variant = g_variant_new_boolean(true);
-        _g_action = g_object_ref(g_simple_action_new_stateful(_id.c_str(), nullptr, variant));
+        _g_action = g_object_ref(g_simple_action_new_stateful(_id.c_str(), G_VARIANT_TYPE_BOOLEAN, variant));
         g_signal_connect(G_OBJECT(_g_action), "activate", G_CALLBACK(on_action_activate), this);
         set_enabled(_enabled);
     }

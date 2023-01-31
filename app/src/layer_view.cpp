@@ -533,9 +533,9 @@ namespace mousetrap
         _menu.add_section("Position", &position_section);
 
         auto other_section = MenuModel();
-        other_section.add_action(set_layer_visible_tooltip, layer_view_toggle_layer_visible.get_id());
-        other_section.add_action(set_layer_locked_tooltip, layer_view_toggle_layer_locked.get_id());
-        _menu.add_section("Other", &other_section);
+        other_section.add_stateful_action(set_layer_visible_tooltip, layer_view_toggle_layer_visible.get_id(), active_state->get_current_layer()->get_is_visible());
+        other_section.add_stateful_action(set_layer_locked_tooltip, layer_view_toggle_layer_locked.get_id(), active_state->get_current_layer()->get_is_locked());
+        _menu.add_section("Layer Properties", &other_section);
 
         _header_menu_button.set_child(&_header_menu_button_label);
 
@@ -591,20 +591,18 @@ namespace mousetrap
             }
         });
 
-        layer_view_toggle_layer_visible.set_function([]()
+        layer_view_toggle_layer_visible.set_stateful_function([](bool)
         {
-            active_state->set_layer_visible(
-                active_state->get_current_layer_index(),
-                not active_state->get_current_layer()->get_is_visible()
-            );
+            auto next = not active_state->get_current_layer()->get_is_visible();
+            active_state->set_layer_visible(active_state->get_current_layer_index(), next);
+            return next;
         });
 
-        layer_view_toggle_layer_locked.set_function([]()
+        layer_view_toggle_layer_locked.set_stateful_function([](bool)
         {
-            active_state->set_layer_locked(
-                active_state->get_current_layer_index(),
-                not active_state->get_current_layer()->get_is_locked()
-            );
+            auto next = not active_state->get_current_layer()->get_is_locked();
+            active_state->set_layer_locked(active_state->get_current_layer_index(), next);
+            return next;
         });
 
         layer_view_layer_merge_down.set_function([]()
@@ -705,6 +703,9 @@ namespace mousetrap
         layer_view_layer_move_up.set_enabled(not is_top_layer);
         layer_view_layer_move_down.set_enabled(not is_bottom_layer);
         layer_view_layer_merge_down.set_enabled(not is_bottom_layer);
+
+        layer_view_toggle_layer_visible.set_state(active_state->get_current_layer()->get_is_visible());
+        layer_view_toggle_layer_locked.set_state(active_state->get_current_layer()->get_is_locked());
     }
 
     void LayerView::on_layer_image_updated()
@@ -726,6 +727,9 @@ namespace mousetrap
             row.set_blend_mode(layer->get_blend_mode());
             row.set_name(layer->get_name());
         }
+
+        state::actions::layer_view_toggle_layer_visible.set_state(active_state->get_current_layer()->get_is_visible());
+        state::actions::layer_view_toggle_layer_locked.set_state(active_state->get_current_layer()->get_is_locked());
     }
 
     void LayerView::on_layer_count_changed()

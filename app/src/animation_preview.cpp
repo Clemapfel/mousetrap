@@ -33,21 +33,23 @@ namespace mousetrap
             state::animation_preview->set_scale_factor(current > 0 ? current - 1 : current);
         });
 
-        animation_preview_toggle_playback_active.set_function([](){
-           auto current = state::animation_preview->_playback_active;
-           state::animation_preview->set_playback_active(not current);
+        animation_preview_toggle_playback_active.set_stateful_function([](bool){
+           auto next = not state::animation_preview->_playback_active;
+           state::animation_preview->set_playback_active(next);
+           return next;
         });
 
         animation_preview_toggle_background_visible.set_function([](){
-           auto current = state::animation_preview->_background_visible;
-           state::animation_preview->set_background_visible(not current);
+            auto next = not state::animation_preview->_background_visible;
+            state::animation_preview->set_background_visible(next);
+            return next;
         });
 
         for (auto* action : {&animation_preview_toggle_playback_active, &animation_preview_decrease_scale_factor, &animation_preview_increase_scale_factor, &animation_preview_toggle_background_visible})
             state::add_shortcut_action(*action);
 
         auto playback_section = MenuModel();
-        playback_section.add_action("Start / Stop Playback", "animation_preview.toggle_playback_active");
+        playback_section.add_stateful_action("Start / Stop Playback", animation_preview_toggle_playback_active.get_id(), _playback_active);
         _menu.add_section("Playback", &playback_section);
 
         auto settings_section = MenuModel();
@@ -80,29 +82,11 @@ namespace mousetrap
         scale_factor_submenu.add_widget(&_scale_factor_box);
         settings_section.add_submenu("Scale Factor...", &scale_factor_submenu);
 
-        _background_visible_switch.set_active(_background_visible);
-        _background_visible_switch.connect_signal_state_set([](Switch* s, bool state, AnimationPreview* instance) {
-            state::animation_preview->set_background_visible(state);
-            s->set_state((Switch::State) state);
-        }, this);
-        _background_visible_box.push_back(&_background_visible_label);
-        _background_visible_spacer.set_opacity(0);
-        _background_visible_box.push_back(&_background_visible_spacer);
-        _background_visible_box.push_back(&_background_visible_switch);
-        _background_visible_box.set_tooltip_text(state::tooltips_file->get_value("animation_preview", "show_background_setting"));
-
-        auto background_submenu = MenuModel();
-        background_submenu.add_widget(&_background_visible_box);
-        settings_section.add_submenu("Show / Hide Background...", &background_submenu);
-
         _menu.add_section("Settings", &settings_section);
 
         _popover_menu.refresh_widgets();
         _menu_button.set_popover(&_popover_menu);
         _menu_button.set_popover_position(GTK_POS_LEFT);
-
-        for (auto* box : {&_fps_box, &_scale_factor_box, &_background_visible_box})
-            box->set_margin_horizontal(state::margin_unit);
 
         _frame.set_child(&_overlay);
         _frame.set_expand(true);

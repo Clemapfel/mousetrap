@@ -21,6 +21,11 @@ namespace mousetrap
         gtk_toggle_button_set_active(get_native(), b ? TRUE : FALSE);
     }
 
+    inline void ToggleButton::set_action(Action& stateful_action)
+    {
+        gtk_actionable_set_action_name(GTK_ACTIONABLE(get_native()), ("app." + stateful_action.get_id()).c_str());
+    }
+
     inline void ToggleButton::set_label(const std::string& str)
     {
         gtk_button_set_label(GTK_BUTTON(get_native()), str.c_str());

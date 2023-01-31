@@ -483,6 +483,13 @@ namespace mousetrap
         signal_layer_properties_changed();
     }
 
+    void ProjectState::set_frame_is_keyframe(size_t layer_i, size_t frame_i, bool b)
+    {
+        _layers.at(layer_i)->get_frame(frame_i)->set_is_keyframe(b);
+
+        signal_layer_properties_changed();
+    }
+
     Vector2ui ProjectState::get_layer_resolution() const
     {
         return _layer_resolution;

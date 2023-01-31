@@ -93,16 +93,9 @@ namespace mousetrap
             void on_tick_callback(FrameClock&);
 
             // background
-
             bool _background_visible = state::settings_file->get_value_as<bool>("animation_preview", "background_visible");
 
-            Switch _background_visible_switch;
-            Label _background_visible_label = Label("Show Background: ");
-            SeparatorLine _background_visible_spacer;
-            Box _background_visible_box = Box(GTK_ORIENTATION_HORIZONTAL);
-
             // playback
-
             bool _playback_active = state::settings_file->get_value_as<bool>("animation_preview", "playback_active");
             size_t _current_frame = 0;
             Time _elapsed = seconds(0);

@@ -23,7 +23,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(frame_view, jump_to_end);
         DECLARE_GLOBAL_ACTION(frame_view, go_to_previous_frame);
         DECLARE_GLOBAL_ACTION(frame_view, go_to_next_frame);
-        DECLARE_GLOBAL_ACTION(frame_view, play_pause);
+        DECLARE_GLOBAL_ACTION(frame_view, toggle_playback_active);
 
         DECLARE_GLOBAL_ACTION(frame_view, frame_move_right);
         DECLARE_GLOBAL_ACTION(frame_view, frame_move_left);
@@ -32,7 +32,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(frame_view, frame_new_right_of_current);
         DECLARE_GLOBAL_ACTION(frame_view, frame_delete);
 
-        DECLARE_GLOBAL_ACTION(frame_view, frame_make_keyframe_inbetween);
+        DECLARE_GLOBAL_ACTION(frame_view, toggle_current_frame_is_keyframe);
     }
     
     class FrameView : public AppComponent,
@@ -161,6 +161,7 @@ namespace mousetrap
                     void set_onionskin_visible(bool);
                     void set_n_onionskin_layers(size_t);
                     void set_playback_active(bool);
+                    void set_is_keyframe(bool);
                     void set_fps(float);
 
                 private:
@@ -201,9 +202,9 @@ namespace mousetrap
                     Button _frame_delete_button;
                     ImageDisplay _frame_delete_icon = ImageDisplay(get_resource_path() + "icons/frame_delete.png");
 
-                    Button _frame_make_keyframe_button;
+                    ToggleButton _frame_is_keyframe_toggle_button;
                     ImageDisplay _frame_is_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_keyframe.png");
-                    ImageDisplay _frame_is_not_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_keyframe.png");
+                    ImageDisplay _frame_is_not_keyframe_icon = ImageDisplay(get_resource_path() + "icons/frame_is_not_keyframe.png");
 
                     size_t _preview_size = state::settings_file->get_value_as<int>("frame_view", "frame_preview_size");
                     MenuModel _preview_size_submenu;

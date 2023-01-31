@@ -36,6 +36,8 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(palette_view, select_color_7);
         DECLARE_GLOBAL_ACTION(palette_view, select_color_8);
         DECLARE_GLOBAL_ACTION(palette_view, select_color_9);
+
+        DECLARE_GLOBAL_ACTION(palette_view, toggle_palette_locked);
     }
 
     class PaletteView : public AppComponent,
@@ -111,12 +113,6 @@ namespace mousetrap
                     ImageDisplay _palette_not_locked_icon = ImageDisplay(get_resource_path() + "icons/palette_not_locked.png");
                     ToggleButton _palette_locked_button;
                     static void on_palette_locked_button_toggled(ToggleButton*, PaletteControlBar* instance);
-
-                    Box _palette_locked_box = Box(GTK_ORIENTATION_HORIZONTAL);
-                    Label _palette_locked_label = Label("Palette Editing Enabled: ");
-                    SeparatorLine _palette_locked_spacer;
-                    Switch _palette_locked_switch;
-                    static void on_palette_locked_switch_state_set(Switch*, bool, PaletteControlBar* instance);
 
                     Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
                     Label _preview_size_label = Label("Preview Size (px): ");

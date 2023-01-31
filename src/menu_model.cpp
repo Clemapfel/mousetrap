@@ -26,6 +26,15 @@ namespace mousetrap
         g_object_unref(item);
     }
 
+    void MenuModel::add_stateful_action(const std::string& label, const std::string& action_id, bool initial_state, bool use_markup)
+    {
+        auto* item = g_menu_item_new(label.c_str(), ("app." + action_id).c_str());
+        g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string(use_markup ? "yes" : "no"));
+        g_menu_item_set_attribute_value(item, "target", g_variant_new_boolean(initial_state));
+        g_menu_append_item(_native, item);
+        g_object_unref(item);
+    }
+
     void MenuModel::add_widget(Widget* widget)
     {
         auto id = std::to_string(current_id).c_str();
@@ -40,7 +49,7 @@ namespace mousetrap
 
     void MenuModel::add_section(const std::string& label, MenuModel* model, MenuSectionFormat format)
     {
-        auto* item = g_menu_item_new_section(label.c_str(), G_MENU_MODEL(model->_native));
+        auto* item = g_menu_item_new_section((label).c_str(), G_MENU_MODEL(model->_native));
 
         if (format == HORIZONTAL_BUTTONS)
         {
@@ -70,7 +79,6 @@ namespace mousetrap
         }
 
         _submenus.insert(model);
-
         g_menu_append_item(_native, item);
     }
 

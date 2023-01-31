@@ -288,8 +288,10 @@ namespace mousetrap
                 active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), current + 1);
         });
 
-        frame_view_toggle_onionskin_visible.set_function([](){
-           active_state->set_onionskin_visible(not active_state->get_onionskin_visible());
+        frame_view_toggle_onionskin_visible.set_stateful_function([](bool){
+            auto next = not active_state->get_onionskin_visible();
+            active_state->set_onionskin_visible(next);
+            return next;
         });
 
         frame_view_increase_n_onionskin_layers.set_function([](){
@@ -303,8 +305,16 @@ namespace mousetrap
                 active_state->set_n_onionskin_layers(current - 1);
         });
 
-        frame_view_play_pause.set_function([](){
+        frame_view_toggle_playback_active.set_stateful_function([](bool){
+            auto next = not active_state->get_playback_active();
+            active_state->set_playback_active(next);
+            return next;
+        });
 
+        frame_view_toggle_current_frame_is_keyframe.set_stateful_function([](bool){
+            auto next = not active_state->get_current_frame()->get_is_keyframe();
+            active_state->set_frame_is_keyframe(active_state->get_current_layer_index(), active_state->get_current_frame_index(), next);
+            return next;
         });
 
         for (auto* action : {
@@ -315,13 +325,13 @@ namespace mousetrap
                 &frame_view_jump_to_end,
                 &frame_view_go_to_previous_frame,
                 &frame_view_go_to_next_frame,
-                &frame_view_play_pause,
+                &frame_view_toggle_playback_active,
                 &frame_view_frame_move_right,
                 &frame_view_frame_move_left,
                 &frame_view_frame_new_left_of_current,
                 &frame_view_frame_new_right_of_current,
                 &frame_view_frame_delete,
-                &frame_view_frame_make_keyframe_inbetween
+                &frame_view_toggle_current_frame_is_keyframe
         })
             state::add_shortcut_action(*action);
 
@@ -370,10 +380,10 @@ namespace mousetrap
         _frame_delete_button.set_action(frame_view_frame_delete);
 
         bool is_keyframe = active_state->get_current_frame()->get_is_keyframe();
-        _frame_make_keyframe_button.set_child(is_keyframe ? &_frame_is_not_keyframe_icon : &_frame_is_keyframe_icon);
-        _frame_make_keyframe_button.connect_signal_clicked([](Button*, ControlBar* instance){
-            frame_view_frame_make_keyframe_inbetween.activate();
+        _frame_is_keyframe_toggle_button.connect_signal_toggled([](ToggleButton* button, ControlBar* instance) {
+            active_state->set_frame_is_keyframe(active_state->get_current_layer_index(), active_state->get_current_frame_index(), button->get_active());
         }, this);
+
 
         // Tooltips
 
@@ -414,7 +424,7 @@ namespace mousetrap
         _frame_delete_button.set_tooltip_text(frame_delete_tooltip);
 
         auto frame_make_keyframe_inbetween_tooltip = state::tooltips_file->get_value("frame_view", "frame_make_keyframe_inbetween");
-        _frame_make_keyframe_button.set_tooltip_text(frame_make_keyframe_inbetween_tooltip);
+        _frame_is_keyframe_toggle_button.set_tooltip_text(frame_make_keyframe_inbetween_tooltip);
 
         _tooltip.create_from("frame_view", state::tooltips_file, state::keybindings_file);
 
@@ -447,7 +457,7 @@ namespace mousetrap
         playback_section.add_action(jump_to_end_tooltip, frame_view_jump_to_end.get_id());
         playback_section.add_action(go_to_previous_frame_tooltip, frame_view_go_to_previous_frame.get_id());
         playback_section.add_action(go_to_next_frame_tooltip, frame_view_go_to_next_frame.get_id());
-        playback_section.add_action(play_pause_tooltip, frame_view_play_pause.get_id());
+        playback_section.add_stateful_action(play_pause_tooltip, frame_view_toggle_playback_active.get_id(), active_state->get_playback_active());
         _menu.add_section("Playback", &playback_section);
 
         auto create_section = MenuModel();
@@ -462,8 +472,8 @@ namespace mousetrap
         _menu.add_section("Other", &position_section);
 
         auto other_section = MenuModel();
-        other_section.add_action(frame_make_keyframe_inbetween_tooltip, frame_view_frame_make_keyframe_inbetween.get_id());
-        other_section.add_action(toggle_onionskin_visible_tooltip, frame_view_toggle_onionskin_visible.get_id());
+        other_section.add_stateful_action(frame_make_keyframe_inbetween_tooltip, frame_view_toggle_current_frame_is_keyframe.get_id(), active_state->get_current_frame()->get_is_keyframe());
+        other_section.add_stateful_action(toggle_onionskin_visible_tooltip, frame_view_toggle_onionskin_visible.get_id(), active_state->get_onionskin_visible());
         _menu.add_section("Other", &other_section);
 
         _popover_menu.refresh_widgets();
@@ -499,7 +509,7 @@ namespace mousetrap
         _button_box.push_back(&_frame_move_left_button);
         _button_box.push_back(&_frame_new_left_of_current_button);
         _button_box.push_back(&_frame_delete_button);
-        _button_box.push_back(&_frame_make_keyframe_button);
+        _button_box.push_back(&_frame_is_keyframe_toggle_button);
         _button_box.push_back(&_frame_new_right_of_current_button);
         _button_box.push_back(&_frame_move_right_button);
 
@@ -577,6 +587,18 @@ namespace mousetrap
             _play_pause_button.set_child(&_pause_icon);
         else
             _play_pause_button.set_child(&_play_icon);
+    }
+
+    void FrameView::ControlBar::set_is_keyframe(bool b)
+    {
+        _frame_is_keyframe_toggle_button.set_signal_toggled_blocked(true);
+        _frame_is_keyframe_toggle_button.set_active(b);
+        _frame_is_keyframe_toggle_button.set_signal_toggled_blocked(false);
+
+        if (b)
+            _frame_is_keyframe_toggle_button.set_child(&_frame_is_keyframe_icon);
+        else
+            _frame_is_keyframe_toggle_button.set_child(&_frame_is_not_keyframe_icon);
     }
 
     void FrameView::ControlBar::set_fps(float fps)
@@ -677,11 +699,17 @@ namespace mousetrap
                 column.set_is_inbetween(not layer->get_frame(frame_i)->get_is_keyframe());
             }
         }
+
+        auto* current = active_state->get_current_frame();
+        _control_bar.set_is_keyframe(current->get_is_keyframe());
+        state::actions::frame_view_toggle_current_frame_is_keyframe.set_state(current->get_is_keyframe());
     }
 
     void FrameView::on_playback_toggled()
     {
-        _control_bar.set_playback_active(active_state->get_playback_active());
+        auto active = active_state->get_playback_active();
+        _control_bar.set_playback_active(active);
+        state::actions::frame_view_toggle_playback_active.set_state(active);
     }
 
     void FrameView::on_playback_fps_changed()
@@ -696,7 +724,9 @@ namespace mousetrap
 
     void FrameView::on_onionskin_visibility_toggled()
     {
-        _control_bar.set_onionskin_visible(active_state->get_onionskin_visible());
+        auto active = active_state->get_onionskin_visible();
+        _control_bar.set_onionskin_visible(active);
+        state::actions::frame_view_toggle_onionskin_visible.set_state(active);
     }
 
     void FrameView::on_onionskin_layer_count_changed()
