@@ -566,7 +566,8 @@ namespace mousetrap
         });
 
         layer_view_layer_delete.set_function([](){
-            active_state->delete_layer(active_state->get_current_layer_index());
+            auto current = active_state->get_current_layer_index();
+            active_state->delete_layer(current);
         });
 
         layer_view_layer_move_down.set_function([]()

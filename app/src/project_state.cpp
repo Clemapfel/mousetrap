@@ -388,6 +388,9 @@ namespace mousetrap
         auto* to_delete = _layers.at(i);
         _layers.erase(_layers.begin() + i);
 
+        if (_current_layer_i > 0)
+            _current_layer_i -= 1;
+
         signal_layer_count_changed();
         delete to_delete;
     }
@@ -441,6 +444,9 @@ namespace mousetrap
             to_delete.push_back(_layers.at(i));
             _layers.erase(_layers.begin() + i);
         }
+
+        if (_current_layer_i >= _layers.size())
+            _current_layer_i = _layers.size() - 1;
 
         signal_layer_count_changed();
 
