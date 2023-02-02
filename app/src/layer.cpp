@@ -3,10 +3,87 @@
 
 namespace mousetrap
 {
+    Layer::Frame::Frame()
+        : _image(new Image()), _texture(new Texture())
+    {}
+
     Layer::Frame::Frame(Vector2i size)
+        : Frame::Frame()
     {
         _image->create(size.x, size.y, RGBA(0, 0, 0, 0));
         _texture->create_from_image(*_image);
+    }
+
+    Layer::Frame::Frame(const Frame& other)
+        : Frame::Frame()
+    {
+        _image->create(other._image->get_size().x, other._image->get_size().y);
+        for (size_t x = 0; x < other._image->get_size().x; ++x)
+            for (size_t y = 0; y < other._image->get_size().y; ++y)
+                _image->set_pixel(x, y, other._image->get_pixel(x, y));
+
+        _texture->create_from_image(*_image);
+    }
+
+    Layer::Frame& Layer::Frame::operator=(const Frame& other)
+    {
+        if (_image == nullptr)
+            _image = new Image();
+
+        if (_texture == nullptr)
+            _texture = new Texture();
+
+        _image->create(other._image->get_size().x, other._image->get_size().y);
+        for (size_t x = 0; x < other._image->get_size().x; ++x)
+            for (size_t y = 0; y < other._image->get_size().y; ++y)
+                _image->set_pixel(x, y, other._image->get_pixel(x, y));
+
+        _texture->create_from_image(*_image);
+        return *this;
+    }
+
+    Layer::Frame::Frame(Frame&& other)
+            : _image(new Image()), _texture(new Texture())
+    {
+        if (_image == nullptr)
+            _image = new Image();
+
+        if (_texture == nullptr)
+            _texture = new Texture();
+
+        _image->create(other._image->get_size().x, other._image->get_size().y);
+        for (size_t x = 0; x < other._image->get_size().x; ++x)
+            for (size_t y = 0; y < other._image->get_size().y; ++y)
+                _image->set_pixel(x, y, other._image->get_pixel(x, y));
+
+        _texture->create_from_image(*_image);
+
+        delete other._image;
+        other._image = nullptr;
+        delete other._texture;
+        other._texture = nullptr;
+    }
+
+    Layer::Frame& Layer::Frame::operator=(Frame&& other)
+    {
+        if (_image == nullptr)
+            _image = new Image();
+
+        if (_texture == nullptr)
+            _texture = new Texture();
+
+        _image->create(other._image->get_size().x, other._image->get_size().y);
+        for (size_t x = 0; x < other._image->get_size().x; ++x)
+            for (size_t y = 0; y < other._image->get_size().y; ++y)
+                _image->set_pixel(x, y, other._image->get_pixel(x, y));
+
+        _texture->create_from_image(*_image);
+
+        delete other._image;
+        other._image = nullptr;
+        delete other._texture;
+        other._texture = nullptr;
+        return *this;
     }
 
     Layer::Frame::~Frame()
@@ -46,13 +123,35 @@ namespace mousetrap
     }
 
     Layer::Layer(const std::string& name, Vector2i size, size_t n_frames)
-        : _name(name)
+        : _name(name), _resolution(size)
     {
         if (n_frames == 0)
             n_frames = 1;
 
         for (size_t i = 0; i < n_frames; ++i)
-            _frames.emplace_back(size);
+            add_frame(i);
+    }
+
+    Layer::Frame* Layer::add_frame(size_t i)
+    {
+        Layer::Frame* out;
+        if (i >= _frames.size())
+            out = &_frames.emplace_back(_resolution);
+        else
+           out = &*(_frames.emplace(_frames.begin() + i, Frame(_resolution)));
+
+        return out;
+    }
+
+    void Layer::delete_frame(size_t i)
+    {
+        if (i >= _frames.size())
+        {
+            std::cerr << "[ERROR] In Layer::delete_frame: Trying to delete frame at index " << i << " but layer only has " << _frames.size() << " frames" << std::endl;
+            return;
+        }
+
+        _frames.erase(_frames.begin() + i);
     }
 
     Layer::Layer(const Layer& other)

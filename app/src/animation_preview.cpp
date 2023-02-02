@@ -283,6 +283,8 @@ namespace mousetrap
     {
         _layer_area.make_current();
 
+        _current_frame = active_state->get_current_frame_index();
+
         for (auto* shape : _layer_shapes)
             delete shape;
 

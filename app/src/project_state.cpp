@@ -291,7 +291,6 @@ namespace mousetrap
             return;
         }
 
-
         _current_layer_i = layer_i;
         _current_frame_i = frame_i;
 
@@ -303,12 +302,16 @@ namespace mousetrap
         if (i < -1)
             i = -1;
 
+        if (i > int(_layers.size() - 1))
+            i = _layers.size() - 1;
+
         _layers.emplace(_layers.begin() + (1 + i), new Layer("New Layer #" + std::to_string(new_layer_count++ + 1), _layer_resolution, _n_frames));
         signal_layer_count_changed();
     }
 
-    void ProjectState::duplicate_layer(int create_above, const Layer& duplicate_from)
+    void ProjectState::duplicate_layer(int create_above, size_t duplicate_from_i)
     {
+        const auto& duplicate_from = *_layers.at(duplicate_from_i);
         auto& new_layer = *_layers.emplace(_layers.begin() + (1 + create_above), new Layer(duplicate_from.get_name() + " (Copy)", _layer_resolution, _n_frames));
 
         for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
@@ -452,6 +455,52 @@ namespace mousetrap
 
         for (auto* layer : to_delete)
             delete layer;
+    }
+
+    void ProjectState::add_frame(int after)
+    {
+        if (after < -1)
+            after = -1;
+
+        if (after > int(_n_frames - 1))
+            after = _n_frames - 1;
+
+        auto frame_i = after+1;
+        for (auto& layer : _layers)
+            layer->add_frame(frame_i);
+
+        _n_frames += 1;
+
+        signal_layer_count_changed();
+        signal_layer_frame_selection_changed();
+    }
+
+    void ProjectState::swap_frames(size_t a, size_t b)
+    {
+        std::cerr << "In ProjectState::swap_frames: TODO" << std::endl;
+    }
+
+    void ProjectState::duplicate_frame(int after, size_t duplicate_from)
+    {
+        std::cerr << "In ProjectState::duplicate_frame: TODO" << std::endl;
+    }
+
+    void ProjectState::delete_frame(size_t i)
+    {
+        for (auto* layer : _layers)
+            layer->delete_frame(i);
+
+        _n_frames -= 1;
+        if (_current_frame_i >= i and i != 0)
+            _current_frame_i -= 1;
+
+        signal_layer_count_changed();
+        signal_layer_frame_selection_changed();
+    }
+
+    void ProjectState::new_frame_from(int after, const std::set<size_t>& from_layer_is, bool delete_froms)
+    {
+        std::cerr << "In ProjectState::new_frame_from: TODO" << std::endl;
     }
 
     void ProjectState::set_layer_visible(size_t i, bool b)

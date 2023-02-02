@@ -74,10 +74,16 @@ namespace mousetrap
             void set_current_layer_and_frame(size_t layer_i, size_t frame_i);
 
             void add_layer(int above); //-1 for new layer at 0
-            void duplicate_layer(int create_above, const Layer& duplicate_from);
+            void duplicate_layer(int create_above, size_t duplicate_from);
             void swap_layers(size_t a, size_t b);
             void delete_layer(size_t);
             void new_layer_from(int above, const std::set<size_t>& from_layer_is, bool delete_froms = true);
+
+            void add_frame(int after); // -1 for left-most
+            void swap_frames(size_t a, size_t b);
+            void duplicate_frame(int after, size_t duplicate_from);
+            void delete_frame(size_t);
+            void new_frame_from(int after, const std::set<size_t>& from_layer_is, bool delete_froms = true);
 
             void set_layer_blend_mode(size_t, BlendMode);
             void set_layer_locked(size_t, bool);

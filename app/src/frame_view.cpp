@@ -301,33 +301,84 @@ namespace mousetrap
                 active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), current + 1);
         });
 
-        frame_view_toggle_onionskin_visible.set_stateful_function([](bool){
+        frame_view_toggle_onionskin_visible.set_stateful_function([](bool)
+        {
             auto next = not active_state->get_onionskin_visible();
             active_state->set_onionskin_visible(next);
             return next;
         });
 
-        frame_view_increase_n_onionskin_layers.set_function([](){
+        frame_view_increase_n_onionskin_layers.set_function([]()
+        {
             auto current = active_state->get_n_onionskin_layers();
             active_state->set_n_onionskin_layers(current + 1);
         });
 
-        frame_view_increase_n_onionskin_layers.set_function([](){
+        frame_view_decrease_n_onionskin_layers.set_function([]()
+        {
             auto current = active_state->get_n_onionskin_layers();
             if (current > 0)
                 active_state->set_n_onionskin_layers(current - 1);
         });
 
-        frame_view_toggle_playback_active.set_stateful_function([](bool){
+        frame_view_toggle_playback_active.set_stateful_function([](bool)
+        {
             auto next = not active_state->get_playback_active();
             active_state->set_playback_active(next);
             return next;
         });
 
-        frame_view_toggle_current_frame_is_keyframe.set_stateful_function([](bool){
+        frame_view_toggle_current_frame_is_keyframe.set_stateful_function([](bool)
+        {
             auto next = not active_state->get_current_frame()->get_is_keyframe();
             active_state->set_frame_is_keyframe(active_state->get_current_layer_index(), active_state->get_current_frame_index(), next);
             return next;
+        });
+
+        frame_view_frame_move_left.set_function([]()
+        {
+            auto current = active_state->get_current_frame_index();
+            if (current == 0)
+               return;
+
+            active_state->swap_frames(current, current-1);
+            active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), current-1);
+        });
+
+        frame_view_frame_move_right.set_function([]()
+        {
+            auto current = active_state->get_current_frame_index();
+            if (current >= active_state->get_n_layers() - 1)
+                return;
+
+            active_state->swap_frames(current, current+1);
+            active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), current+1);
+        });
+
+        frame_view_frame_new_left_of_current.set_function([]()
+        {
+            int current = active_state->get_current_frame_index();
+            active_state->add_frame(current - int(1));
+            active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), current);
+        });
+
+        frame_view_frame_new_right_of_current.set_function([]()
+        {
+            auto current = active_state->get_current_frame_index();
+            active_state->add_frame(current);
+            active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), current+1);
+        });
+
+        frame_view_frame_delete.set_function([]()
+        {
+            if (active_state->get_n_frames() == 1)
+                return;
+
+            auto current = active_state->get_current_frame_index();
+            active_state->delete_frame(current);
+
+            if (current != 0)
+                active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), current-1);
         });
 
         for (auto* action : {
@@ -382,7 +433,7 @@ namespace mousetrap
         _frame_move_right_button.set_action(frame_view_frame_move_right);
 
         _frame_move_left_button.set_child(&_frame_move_left_icon);
-        _frame_move_left_button.set_action(frame_view_frame_move_right);
+        _frame_move_left_button.set_action(frame_view_frame_move_left);
 
         _frame_new_left_of_current_button.set_child(&_frame_new_left_of_current_icon);
         _frame_new_left_of_current_button.set_action(frame_view_frame_new_left_of_current);
@@ -687,6 +738,8 @@ namespace mousetrap
             auto& column = _frame_columns.emplace_back(this, i);
             _frame_column_list_view.push_back(column);
         }
+
+        state::actions::frame_view_frame_delete.set_enabled(active_state->get_n_frames() > 1);
     }
 
     void FrameView::on_layer_frame_selection_changed()
@@ -694,10 +747,14 @@ namespace mousetrap
         set_selection(active_state->get_current_layer_index(), active_state->get_current_frame_index());
 
         using namespace state::actions;
+
         auto frame_i = active_state->get_current_frame_index();
         frame_view_jump_to_start.set_enabled(frame_i > 0);
         frame_view_jump_to_end.set_enabled(frame_i < active_state->get_n_frames() - 1);
         _control_bar.set_is_keyframe(active_state->get_current_frame()->get_is_keyframe());
+
+        frame_view_frame_move_left.set_enabled(frame_i > 0);
+        frame_view_frame_move_right.set_enabled(frame_i < active_state->get_n_frames() - 1);
     }
 
     void FrameView::on_layer_image_updated()

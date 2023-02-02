@@ -561,7 +561,7 @@ namespace mousetrap
 
         layer_view_layer_duplicate.set_function([](){
             auto current_i = active_state->get_current_layer_index();
-            active_state->duplicate_layer(current_i, *active_state->get_layer(current_i));
+            active_state->duplicate_layer(current_i, current_i);
             active_state->set_current_layer_and_frame(current_i+1, active_state->get_current_frame_index());
         });
 

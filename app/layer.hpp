@@ -15,7 +15,14 @@ namespace mousetrap
             class Frame
             {
                 public:
+                    Frame();
                     Frame(Vector2i size);
+
+                    Frame(const Frame&);
+                    Frame(Frame&&);
+                    Frame& operator=(const Frame&);
+                    Frame& operator=(Frame&&);
+
                     ~Frame();
 
                     Image* get_image();
@@ -27,8 +34,8 @@ namespace mousetrap
                     void set_is_keyframe(bool);
 
                 private:
-                    Image* _image = new Image();
-                    Texture* _texture = new Texture();
+                    Image* _image = nullptr;
+                    Texture* _texture = nullptr;
                     bool _is_keyframe = true;
             };
 
@@ -39,6 +46,9 @@ namespace mousetrap
 
             Layer(Layer&&) = delete;
             Layer& operator=(Layer&&) = delete;
+
+            Layer::Frame* add_frame(size_t);
+            void delete_frame(size_t);
 
             Layer::Frame* get_frame(size_t index);
             const Layer::Frame* get_frame(size_t index) const;
@@ -69,5 +79,6 @@ namespace mousetrap
             bool _is_visible = true;
             float _opacity = 1;
             BlendMode _blend_mode = NORMAL;
+            Vector2i _resolution;
     };
 }
