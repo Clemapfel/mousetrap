@@ -34,6 +34,8 @@ namespace mousetrap
         inline size_t margin_unit = 10;
     }
 
+    using CellPosition = Vector2ui;
+
     class ProjectState
     {
         public:
@@ -70,7 +72,6 @@ namespace mousetrap
             const Layer::Frame* get_frame(size_t layer_i, size_t frame_i) const;
             size_t get_n_frames() const;
 
-            void draw_to_layer(size_t layer_i, size_t frame_i, std::vector<std::pair<Vector2i, HSVA>>);
             void set_current_layer_and_frame(size_t layer_i, size_t frame_i);
 
             void add_layer(int above); //-1 for new layer at 0
@@ -81,9 +82,14 @@ namespace mousetrap
 
             void add_frame(int after); // -1 for left-most
             void swap_frames(size_t a, size_t b);
-            void duplicate_frame(int after, size_t duplicate_from);
+            void duplicate_frame(int after, size_t from_frame_i);
             void delete_frame(size_t);
             void new_frame_from(int after, const std::set<size_t>& from_layer_is, bool delete_froms = true);
+
+            void copy_to_cell(CellPosition b, CellPosition a);
+            void swap_cells(CellPosition a, CellPosition b);
+            void draw_to_cell(CellPosition, std::vector<std::pair<Vector2i, HSVA>>);
+            void set_frame_is_keyframe(CellPosition, bool);
 
             void set_layer_blend_mode(size_t, BlendMode);
             void set_layer_locked(size_t, bool);
@@ -91,7 +97,6 @@ namespace mousetrap
             void set_layer_opacity(size_t, float);
             void set_layer_name(size_t, const std::string&);
 
-            void set_frame_is_keyframe(size_t layer_i, size_t frame_i, bool);
 
             Vector2ui get_layer_resolution() const;
             void resize_canvas(Vector2ui);

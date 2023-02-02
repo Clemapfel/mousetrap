@@ -477,7 +477,7 @@ namespace mousetrap
 
     void ProjectState::swap_frames(size_t a, size_t b)
     {
-        std::cerr << "In ProjectState::swap_frames: TODO" << std::endl;
+
     }
 
     void ProjectState::duplicate_frame(int after, size_t duplicate_from)
