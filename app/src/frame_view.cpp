@@ -76,6 +76,8 @@ namespace mousetrap
         _texture = texture;
         if (_layer_shape != nullptr)
             _layer_shape->set_texture(_texture);
+
+        _area.queue_render();
     }
 
     FrameView::FramePreview::operator Widget*()
@@ -331,7 +333,7 @@ namespace mousetrap
         frame_view_toggle_current_frame_is_keyframe.set_stateful_function([](bool)
         {
             auto next = not active_state->get_current_frame()->get_is_keyframe();
-            active_state->set_frame_is_keyframe(active_state->get_current_layer_index(), active_state->get_current_frame_index(), next);
+            active_state->set_frame_is_keyframe({active_state->get_current_layer_index(), active_state->get_current_frame_index()}, next);
             return next;
         });
 
@@ -369,6 +371,13 @@ namespace mousetrap
             active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), current+1);
         });
 
+        frame_view_frame_duplicate.set_function([]()
+        {
+            auto current = active_state->get_current_frame_index();
+            active_state->duplicate_frame(current, current);
+            active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), current+1);
+        });
+
         frame_view_frame_delete.set_function([]()
         {
             if (active_state->get_n_frames() == 1)
@@ -394,6 +403,7 @@ namespace mousetrap
                 &frame_view_frame_move_left,
                 &frame_view_frame_new_left_of_current,
                 &frame_view_frame_new_right_of_current,
+                &frame_view_frame_duplicate,
                 &frame_view_frame_delete,
                 &frame_view_toggle_current_frame_is_keyframe
         })
@@ -446,7 +456,7 @@ namespace mousetrap
 
         bool is_keyframe = active_state->get_current_frame()->get_is_keyframe();
         _frame_is_keyframe_toggle_button.connect_signal_toggled([](ToggleButton* button, ControlBar* instance) {
-            active_state->set_frame_is_keyframe(active_state->get_current_layer_index(), active_state->get_current_frame_index(), button->get_active());
+            active_state->set_frame_is_keyframe({active_state->get_current_layer_index(), active_state->get_current_frame_index()}, button->get_active());
         }, this);
 
 
@@ -528,6 +538,7 @@ namespace mousetrap
         auto create_section = MenuModel();
         create_section.add_action(frame_new_left_of_current_tooltip, frame_view_frame_new_left_of_current.get_id());
         create_section.add_action(frame_new_right_of_current_tooltip, frame_view_frame_new_right_of_current.get_id());
+        create_section.add_action("Duplicate Frame", frame_view_frame_duplicate.get_id());
         create_section.add_action(frame_delete_tooltip, frame_view_frame_delete.get_id());
         _menu.add_section("Create / Delete", &create_section);
 

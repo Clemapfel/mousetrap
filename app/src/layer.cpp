@@ -136,9 +136,9 @@ namespace mousetrap
     {
         Layer::Frame* out;
         if (i >= _frames.size())
-            out = &_frames.emplace_back(_resolution);
+            out = _frames.emplace_back(new Frame(_resolution));
         else
-           out = &*(_frames.emplace(_frames.begin() + i, Frame(_resolution)));
+            out = *(_frames.emplace(_frames.begin() + i, new Frame(_resolution)));
 
         return out;
     }
@@ -151,7 +151,9 @@ namespace mousetrap
             return;
         }
 
+        auto to_delete = _frames.at(i);
         _frames.erase(_frames.begin() + i);
+        delete to_delete;
     }
 
     Layer::Layer(const Layer& other)
@@ -162,18 +164,18 @@ namespace mousetrap
         _opacity = other._opacity;
         _blend_mode = other._blend_mode;
 
-        auto size = other._frames.at(0).get_image()->get_size();
+        auto size = other._frames.at(0)->get_image()->get_size();
 
         _frames.clear();
         for (size_t i = 0; i < other._frames.size(); ++i)
         {
-            _frames.emplace_back(size);
+            _frames.emplace_back(new Frame(size));
             for (size_t x = 0; x < size.x; ++x)
                 for (size_t y = 0; y < size.y; ++y)
-                    _frames.back().get_image()->set_pixel(x, y, other._frames.at(i).get_image()->get_pixel(x, y));
+                    _frames.back()->get_image()->set_pixel(x, y, other._frames.at(i)->get_image()->get_pixel(x, y));
 
-            _frames.back().update_texture();
-            _frames.back().set_is_keyframe(other._frames.at(i).get_is_keyframe());
+            _frames.back()->update_texture();
+            _frames.back()->set_is_keyframe(other._frames.at(i)->get_is_keyframe());
         }
     }
 
@@ -185,18 +187,18 @@ namespace mousetrap
         _opacity = other._opacity;
         _blend_mode = other._blend_mode;
 
-        auto size = other._frames.at(0).get_image()->get_size();
+        auto size = other._frames.at(0)->get_image()->get_size();
 
         _frames.clear();
         for (size_t i = 0; i < other._frames.size(); ++i)
         {
-            _frames.emplace_back(size);
+            _frames.emplace_back(new Frame(size));
             for (size_t x = 0; x < size.x; ++x)
                 for (size_t y = 0; y < size.y; ++y)
-                    _frames.back().get_image()->set_pixel(x, y, other._frames.at(i).get_image()->get_pixel(x, y));
+                    _frames.back()->get_image()->set_pixel(x, y, other._frames.at(i)->get_image()->get_pixel(x, y));
 
-            _frames.back().update_texture();
-            _frames.back().set_is_keyframe(other._frames.at(i).get_is_keyframe());
+            _frames.back()->update_texture();
+            _frames.back()->set_is_keyframe(other._frames.at(i)->get_is_keyframe());
         }
 
         return *this;
@@ -204,12 +206,12 @@ namespace mousetrap
 
     Layer::Frame* Layer::get_frame(size_t index)
     {
-        return &_frames.at(index);
+        return _frames.at(index);
     }
 
     const Layer::Frame* Layer::get_frame(size_t index) const
     {
-        return &_frames.at(index);
+        return _frames.at(index);
     }
 
     size_t Layer::get_n_frames() const

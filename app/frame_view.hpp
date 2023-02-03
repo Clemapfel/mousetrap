@@ -32,6 +32,8 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(frame_view, frame_new_right_of_current);
         DECLARE_GLOBAL_ACTION(frame_view, frame_delete);
 
+        DECLARE_GLOBAL_ACTION(frame_view, frame_duplicate);
+
         DECLARE_GLOBAL_ACTION(frame_view, toggle_current_frame_is_keyframe);
     }
     

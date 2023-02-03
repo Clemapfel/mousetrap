@@ -108,9 +108,10 @@ namespace mousetrap
 
                 if (rgb_mode == COLOR)
                 {
+                    float value = rand() / float(RAND_MAX);
                     for (size_t x = 0; x < _layer_resolution.x; ++x)
                         for (size_t y = 0; y < _layer_resolution.y; ++y)
-                            to_draw.push_back({Vector2i(x, y), HSVA(rand() / float(RAND_MAX), 1, 1, glm::clamp<float>(alpha_mode, 0, 1))});
+                            to_draw.push_back({Vector2i(x, y), HSVA(rand() / float(RAND_MAX), 1, value, glm::clamp<float>(alpha_mode, 0, 1))});
                 }
                 else
                 {
@@ -119,7 +120,7 @@ namespace mousetrap
                             to_draw.push_back({Vector2i(x, y), RGBA(rgb_mode, rgb_mode, rgb_mode, glm::clamp<float>(alpha_mode, 0, 1)).operator HSVA()});
                 }
 
-                draw_to_layer(0, frame_i, to_draw);
+                draw_to_cell({0, frame_i}, to_draw);
             }
         };
 
@@ -477,12 +478,47 @@ namespace mousetrap
 
     void ProjectState::swap_frames(size_t a, size_t b)
     {
+        for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+        {
+            auto* a_frame = _layers.at(layer_i)->get_frame(a);
+            auto* b_frame = _layers.at(layer_i)->get_frame(b);
 
+            Image a_img = Image(*a_frame->get_image());
+            Image b_img = Image(*b_frame->get_image());
+
+            for (size_t x = 0; x < _layer_resolution.x; ++x)
+            {
+                for (size_t y = 0; y < _layer_resolution.y; ++y)
+                {
+                    a_frame->get_image()->set_pixel(x, y, b_img.get_pixel(x, y));
+                    b_frame->get_image()->set_pixel(x, y, a_img.get_pixel(x, y));
+                }
+            }
+
+            a_frame->update_texture();
+            b_frame->update_texture();
+        }
+
+        signal_layer_image_updated();
     }
 
     void ProjectState::duplicate_frame(int after, size_t duplicate_from)
     {
-        std::cerr << "In ProjectState::duplicate_frame: TODO" << std::endl;
+        for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+        {
+            auto* layer = _layers.at(layer_i);
+            Image image = Image(*layer->get_frame(duplicate_from)->get_image());
+            auto* inserted = layer->add_frame(after + 1);
+
+            for (size_t x = 0; x < _layer_resolution.x; ++x)
+                for (size_t y = 0; y < _layer_resolution.y; ++y)
+                    inserted->get_image()->set_pixel(x, y, image.get_pixel(x, y));
+
+            inserted->update_texture();
+        }
+
+        _n_frames += 1;
+        signal_layer_count_changed();
     }
 
     void ProjectState::delete_frame(size_t i)
@@ -538,8 +574,10 @@ namespace mousetrap
         signal_layer_properties_changed();
     }
 
-    void ProjectState::set_frame_is_keyframe(size_t layer_i, size_t frame_i, bool b)
+    void ProjectState::set_frame_is_keyframe(Vector2ui cell_ij, bool b)
     {
+        size_t layer_i = cell_ij.x;
+        size_t frame_i = cell_ij.y;
         _layers.at(layer_i)->get_frame(frame_i)->set_is_keyframe(b);
         signal_layer_properties_changed();
     }
@@ -719,8 +757,10 @@ namespace mousetrap
         signal_onionskin_layer_count_changed();
     }
 
-    void ProjectState::draw_to_layer(size_t layer_i, size_t frame_i, std::vector<std::pair<Vector2i, HSVA>> data)
+    void ProjectState::draw_to_cell(Vector2ui cell_ij, std::vector<std::pair<Vector2i, HSVA>> data)
     {
+        size_t layer_i = cell_ij.x;
+        size_t frame_i = cell_ij.y;
         auto* frame = _layers.at(layer_i)->get_frame(frame_i);
         auto* image = frame->get_image();
 
@@ -729,6 +769,16 @@ namespace mousetrap
 
         frame->update_texture();
         signal_layer_image_updated();
+    }
+
+    void ProjectState::copy_to_cell(CellPosition b, CellPosition a)
+    {
+
+    }
+
+    void ProjectState::swap_cells(CellPosition a, CellPosition b)
+    {
+
     }
 
     void ProjectState::set_fps(float fps)

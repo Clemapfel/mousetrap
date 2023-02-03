@@ -71,7 +71,7 @@ namespace mousetrap
             void set_blend_mode(BlendMode);
 
         private:
-            std::deque<Frame> _frames;
+            std::deque<Frame*> _frames;
 
             std::string _name;
 
