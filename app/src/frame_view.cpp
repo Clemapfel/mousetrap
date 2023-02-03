@@ -389,6 +389,94 @@ namespace mousetrap
             if (current != 0)
                 active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), current-1);
         });
+        
+        frame_view_copy_to_cell_above.set_function([](){
+
+            Vector2ui current = {active_state->get_current_layer_index(), active_state->get_current_frame_index()};
+            Vector2ui next = {
+                current.x + 1,
+                current.y + 0
+            };
+            active_state->copy_to_cell(current, next);
+            active_state->set_current_layer_and_frame(next.x, next.y);
+        });
+
+        frame_view_copy_to_cell_below.set_function([](){
+
+            Vector2ui current = {active_state->get_current_layer_index(), active_state->get_current_frame_index()};
+            Vector2ui next = {
+                    current.x - 1,
+                    current.y + 0
+            };
+            active_state->copy_to_cell(current, next);
+            active_state->set_current_layer_and_frame(next.x, next.y);
+        });
+
+        frame_view_copy_to_cell_after.set_function([](){
+
+            Vector2ui current = {active_state->get_current_layer_index(), active_state->get_current_frame_index()};
+            Vector2ui next = {
+                    current.x + 0,
+                    current.y + 1
+            };
+            active_state->copy_to_cell(current, next);
+            active_state->set_current_layer_and_frame(next.x, next.y);
+        });
+
+        frame_view_copy_to_cell_before.set_function([](){
+
+            Vector2ui current = {active_state->get_current_layer_index(), active_state->get_current_frame_index()};
+            Vector2ui next = {
+                    current.x + 0,
+                    current.y - 1
+            };
+            active_state->copy_to_cell(current, next);
+            active_state->set_current_layer_and_frame(next.x, next.y);
+        });
+
+        frame_view_swap_with_cell_above.set_function([](){
+
+            Vector2ui current = {active_state->get_current_layer_index(), active_state->get_current_frame_index()};
+            Vector2ui next = {
+                    current.x + 1,
+                    current.y + 0
+            };
+            active_state->swap_cells(current, next);
+            active_state->set_current_layer_and_frame(next.x, next.y);
+        });
+
+        frame_view_swap_with_cell_below.set_function([](){
+
+            Vector2ui current = {active_state->get_current_layer_index(), active_state->get_current_frame_index()};
+            Vector2ui next = {
+                    current.x - 1,
+                    current.y + 0
+            };
+            active_state->swap_cells(current, next);
+            active_state->set_current_layer_and_frame(next.x, next.y);
+        });
+
+        frame_view_swap_with_cell_after.set_function([](){
+
+            Vector2ui current = {active_state->get_current_layer_index(), active_state->get_current_frame_index()};
+            Vector2ui next = {
+                    current.x + 0,
+                    current.y + 1
+            };
+            active_state->swap_cells(current, next);
+            active_state->set_current_layer_and_frame(next.x, next.y);
+        });
+
+        frame_view_swap_with_cell_before.set_function([](){
+
+            Vector2ui current = {active_state->get_current_layer_index(), active_state->get_current_frame_index()};
+            Vector2ui next = {
+                    current.x + 0,
+                    current.y - 1
+            };
+            active_state->swap_cells(current, next);
+            active_state->set_current_layer_and_frame(next.x, next.y);
+        });
 
         for (auto* action : {
                 &frame_view_toggle_onionskin_visible,
@@ -405,7 +493,15 @@ namespace mousetrap
                 &frame_view_frame_new_right_of_current,
                 &frame_view_frame_duplicate,
                 &frame_view_frame_delete,
-                &frame_view_toggle_current_frame_is_keyframe
+                &frame_view_toggle_current_frame_is_keyframe,
+                &frame_view_copy_to_cell_above,
+                &frame_view_copy_to_cell_below,
+                &frame_view_copy_to_cell_before,
+                &frame_view_copy_to_cell_after,
+                &frame_view_swap_with_cell_above,
+                &frame_view_swap_with_cell_below,
+                &frame_view_swap_with_cell_before,
+                &frame_view_swap_with_cell_after,
         })
             state::add_shortcut_action(*action);
 
@@ -451,6 +547,9 @@ namespace mousetrap
         _frame_new_right_of_current_button.set_child(&_frame_new_right_of_current_icon);
         _frame_new_right_of_current_button.set_action(frame_view_frame_new_right_of_current);
 
+        _frame_duplicate_button.set_child(&_frame_duplicate_icon);
+        _frame_duplicate_button.set_action(frame_view_frame_duplicate);
+
         _frame_delete_button.set_child(&_frame_delete_icon);
         _frame_delete_button.set_action(frame_view_frame_delete);
 
@@ -495,12 +594,25 @@ namespace mousetrap
         auto frame_new_right_of_current_tooltip = state::tooltips_file->get_value("frame_view", "frame_new_right_of_current");
         _frame_new_right_of_current_button.set_tooltip_text(frame_new_right_of_current_tooltip);
 
+        auto frame_duplicate_tooltip = state::tooltips_file->get_value("frame_view", "frame_duplicate");
+        _frame_duplicate_button.set_tooltip_text(frame_duplicate_tooltip);
+
         auto frame_delete_tooltip = state::tooltips_file->get_value("frame_view", "frame_delete");
         _frame_delete_button.set_tooltip_text(frame_delete_tooltip);
 
         auto frame_make_keyframe_inbetween_tooltip = state::tooltips_file->get_value("frame_view", "frame_make_keyframe_inbetween");
         _frame_is_keyframe_toggle_button.set_tooltip_text(frame_make_keyframe_inbetween_tooltip);
 
+        auto copy_to_cell_above_tooltip = state::tooltips_file->get_value("frame_view", "copy_to_cell_above");
+        auto copy_to_cell_below_tooltip = state::tooltips_file->get_value("frame_view", "copy_to_cell_below");
+        auto copy_to_cell_before_tooltip = state::tooltips_file->get_value("frame_view", "copy_to_cell_before");
+        auto copy_to_cell_after_tooltip = state::tooltips_file->get_value("frame_view", "copy_to_cell_after");
+
+        auto swap_with_cell_above_tooltip = state::tooltips_file->get_value("frame_view", "swap_with_cell_above");
+        auto swap_with_cell_below_tooltip = state::tooltips_file->get_value("frame_view", "swap_with_cell_below");
+        auto swap_with_cell_before_tooltip = state::tooltips_file->get_value("frame_view", "swap_with_cell_before");
+        auto swap_with_cell_after_tooltip = state::tooltips_file->get_value("frame_view", "swap_with_cell_after");
+        
         _tooltip.create_from("frame_view", state::tooltips_file, state::keybindings_file);
 
         // Menu
@@ -538,15 +650,29 @@ namespace mousetrap
         auto create_section = MenuModel();
         create_section.add_action(frame_new_left_of_current_tooltip, frame_view_frame_new_left_of_current.get_id());
         create_section.add_action(frame_new_right_of_current_tooltip, frame_view_frame_new_right_of_current.get_id());
-        create_section.add_action("Duplicate Frame", frame_view_frame_duplicate.get_id());
+        create_section.add_action(frame_duplicate_tooltip, frame_view_frame_duplicate.get_id());
         create_section.add_action(frame_delete_tooltip, frame_view_frame_delete.get_id());
         _menu.add_section("Create / Delete", &create_section);
 
         auto position_section = MenuModel();
         position_section.add_action(frame_move_left_tooltip, frame_view_frame_move_left.get_id());
         position_section.add_action(frame_move_right_tooltip, frame_view_frame_move_right.get_id());
-        _menu.add_section("Other", &position_section);
+        _menu.add_section("Position", &position_section);
+        
+        auto copy_to_cell_section = MenuModel();
+        copy_to_cell_section.add_action(copy_to_cell_above_tooltip, frame_view_copy_to_cell_above.get_id());
+        copy_to_cell_section.add_action(copy_to_cell_below_tooltip, frame_view_copy_to_cell_below.get_id());
+        copy_to_cell_section.add_action(copy_to_cell_before_tooltip, frame_view_copy_to_cell_before.get_id());
+        copy_to_cell_section.add_action(copy_to_cell_after_tooltip, frame_view_copy_to_cell_after.get_id());
+        _menu.add_section("Copy Cells", &copy_to_cell_section);
 
+        auto swap_with_cell_section = MenuModel();
+        swap_with_cell_section.add_action(swap_with_cell_above_tooltip, frame_view_swap_with_cell_above.get_id());
+        swap_with_cell_section.add_action(swap_with_cell_below_tooltip, frame_view_swap_with_cell_below.get_id());
+        swap_with_cell_section.add_action(swap_with_cell_before_tooltip, frame_view_swap_with_cell_before.get_id());
+        swap_with_cell_section.add_action(swap_with_cell_after_tooltip, frame_view_swap_with_cell_after.get_id());
+        _menu.add_section("Swap Cells", &swap_with_cell_section);
+        
         auto other_section = MenuModel();
         other_section.add_stateful_action(frame_make_keyframe_inbetween_tooltip, frame_view_toggle_current_frame_is_keyframe.get_id(), active_state->get_current_frame()->get_is_keyframe());
         other_section.add_stateful_action(toggle_onionskin_visible_tooltip, frame_view_toggle_onionskin_visible.get_id(), active_state->get_onionskin_visible());
@@ -559,7 +685,7 @@ namespace mousetrap
 
         // Layout
 
-        for (auto& image : {&_onionskin_visible_icon, &_onionskin_not_visible_icon, &_jump_to_start_icon, &_jump_to_end_icon, &_go_to_previous_frame_icon, &_go_to_next_frame_icon, &_play_icon, &_pause_icon, &_frame_move_left_icon, &_frame_move_right_icon, &_frame_new_left_of_current_icon, &_frame_new_right_of_current_icon, &_frame_delete_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
+        for (auto& image : {&_onionskin_visible_icon, &_onionskin_not_visible_icon, &_jump_to_start_icon, &_jump_to_end_icon, &_go_to_previous_frame_icon, &_go_to_next_frame_icon, &_play_icon, &_pause_icon, &_frame_move_left_icon, &_frame_move_right_icon, &_frame_new_left_of_current_icon, &_frame_new_right_of_current_icon, &_frame_duplicate_icon, &_frame_delete_icon, &_frame_is_keyframe_icon, &_frame_is_not_keyframe_icon})
             image->set_size_request(image->get_size());
 
         auto button_width = _play_pause_button.get_preferred_size().natural_size.x;
@@ -586,6 +712,7 @@ namespace mousetrap
         _button_box.push_back(&_frame_new_left_of_current_button);
         _button_box.push_back(&_frame_delete_button);
         _button_box.push_back(&_frame_is_keyframe_toggle_button);
+        _button_box.push_back(&_frame_duplicate_button);
         _button_box.push_back(&_frame_new_right_of_current_button);
         _button_box.push_back(&_frame_move_right_button);
 
@@ -760,12 +887,24 @@ namespace mousetrap
         using namespace state::actions;
 
         auto frame_i = active_state->get_current_frame_index();
+        auto layer_i = active_state->get_current_layer_index();
+
         frame_view_jump_to_start.set_enabled(frame_i > 0);
         frame_view_jump_to_end.set_enabled(frame_i < active_state->get_n_frames() - 1);
         _control_bar.set_is_keyframe(active_state->get_current_frame()->get_is_keyframe());
 
         frame_view_frame_move_left.set_enabled(frame_i > 0);
         frame_view_frame_move_right.set_enabled(frame_i < active_state->get_n_frames() - 1);
+
+        frame_view_copy_to_cell_above.set_enabled(layer_i < active_state->get_n_layers() - 1);
+        frame_view_copy_to_cell_below.set_enabled(layer_i > 0);
+        frame_view_copy_to_cell_before.set_enabled(frame_i > 0);
+        frame_view_copy_to_cell_after.set_enabled(frame_i < active_state->get_n_frames() - 1);
+
+        frame_view_swap_with_cell_above.set_enabled(layer_i < active_state->get_n_layers() - 1);
+        frame_view_swap_with_cell_below.set_enabled(layer_i > 0);
+        frame_view_swap_with_cell_before.set_enabled(frame_i > 0);
+        frame_view_swap_with_cell_after.set_enabled(frame_i < active_state->get_n_frames() - 1);
     }
 
     void FrameView::on_layer_image_updated()

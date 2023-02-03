@@ -771,14 +771,41 @@ namespace mousetrap
         signal_layer_image_updated();
     }
 
-    void ProjectState::copy_to_cell(CellPosition b, CellPosition a)
+    void ProjectState::copy_to_cell(CellPosition a, CellPosition b)
     {
+        auto* from = _layers.at(a.x)->get_frame(a.y);
+        auto* to = _layers.at(b.x)->get_frame(b.y);
 
+        for (size_t x = 0; x < _layer_resolution.x; ++x)
+            for (size_t y = 0; y < _layer_resolution.y; ++y)
+                to->get_image()->set_pixel(x, y, from->get_image()->get_pixel(x, y));
+
+        to->update_texture();
+
+        signal_layer_image_updated();
     }
 
     void ProjectState::swap_cells(CellPosition a, CellPosition b)
     {
+        auto* a_frame = _layers.at(a.x)->get_frame(a.y);
+        auto* b_frame = _layers.at(b.x)->get_frame(b.y);
 
+        Image a_img = Image(*a_frame->get_image());
+        Image b_img = Image(*b_frame->get_image());
+
+        for (size_t x = 0; x < _layer_resolution.x; ++x)
+        {
+            for (size_t y = 0; y < _layer_resolution.y; ++y)
+            {
+                a_frame->get_image()->set_pixel(x, y, b_img.get_pixel(x, y));
+                b_frame->get_image()->set_pixel(x, y, a_img.get_pixel(x, y));
+            }
+        }
+
+        a_frame->update_texture();
+        b_frame->update_texture();
+
+        signal_layer_image_updated();
     }
 
     void ProjectState::set_fps(float fps)

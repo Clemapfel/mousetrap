@@ -31,8 +31,17 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(frame_view, frame_new_left_of_current);
         DECLARE_GLOBAL_ACTION(frame_view, frame_new_right_of_current);
         DECLARE_GLOBAL_ACTION(frame_view, frame_delete);
-
         DECLARE_GLOBAL_ACTION(frame_view, frame_duplicate);
+
+        DECLARE_GLOBAL_ACTION(frame_view, copy_to_cell_above)
+        DECLARE_GLOBAL_ACTION(frame_view, copy_to_cell_below)
+        DECLARE_GLOBAL_ACTION(frame_view, copy_to_cell_before)
+        DECLARE_GLOBAL_ACTION(frame_view, copy_to_cell_after)
+
+        DECLARE_GLOBAL_ACTION(frame_view, swap_with_cell_above)
+        DECLARE_GLOBAL_ACTION(frame_view, swap_with_cell_below)
+        DECLARE_GLOBAL_ACTION(frame_view, swap_with_cell_before)
+        DECLARE_GLOBAL_ACTION(frame_view, swap_with_cell_after)
 
         DECLARE_GLOBAL_ACTION(frame_view, toggle_current_frame_is_keyframe);
     }
@@ -204,6 +213,9 @@ namespace mousetrap
                     Button _frame_new_right_of_current_button;
                     ImageDisplay _frame_new_right_of_current_icon = ImageDisplay(get_resource_path() + "icons/frame_new_right_of_current.png");
 
+                    Button _frame_duplicate_button;
+                    ImageDisplay _frame_duplicate_icon = ImageDisplay(get_resource_path() + "icons/frame_duplicate.png");
+
                     Button _frame_delete_button;
                     ImageDisplay _frame_delete_icon = ImageDisplay(get_resource_path() + "icons/frame_delete.png");
 
@@ -233,7 +245,6 @@ namespace mousetrap
                     SeparatorLine _fps_label_underlay;
 
                     Tooltip _tooltip;
-
             };
 
             ControlBar _control_bar = ControlBar(this);
