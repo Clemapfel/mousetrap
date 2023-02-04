@@ -29,10 +29,23 @@ namespace mousetrap
         delete _negative_overlay;
     }
 
-    void FrameView::FramePreview::set_preview_size(size_t x)
+    void FrameView::FramePreview::set_preview_size(size_t px)
     {
-        float width = (active_state->get_layer_resolution().x / active_state->get_layer_resolution().y) * x;
-        _area.set_size_request({width, x});
+        auto resolution = active_state->get_layer_resolution();
+        float height, width;
+
+        if (resolution.x <= resolution.y)
+        {
+            height = px;
+            width = (resolution.x / float(resolution.y)) * height;
+        }
+        else
+        {
+            width = px;
+            height = (resolution.y / float(resolution.x)) * width;
+        }
+
+        _area.set_size_request({width, height});
 
         _area.set_expand(true);
         _area.set_align(GTK_ALIGN_CENTER);
@@ -131,6 +144,11 @@ namespace mousetrap
         instance->_area.queue_render();
     }
 
+    void FrameView::FramePreview::set_resolution(Vector2ui resolution)
+    {
+        _aspect_frame.set_ratio(resolution.x / float(resolution.y));
+    }
+
     FrameView::FrameColumn::PreviewElement::PreviewElement(FrameView* owner)
         :  _preview(owner),
           _wrapper(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_NONE),
@@ -164,6 +182,11 @@ namespace mousetrap
     FrameView::FrameColumn::PreviewElement::operator Widget*()
     {
         return &_wrapper;
+    }
+
+    void FrameView::FrameColumn::PreviewElement::set_resolution(Vector2ui resolution)
+    {
+        _preview.set_resolution(resolution);
     }
 
     void FrameView::FrameColumn::PreviewElement::set_preview_size(size_t x)
@@ -205,6 +228,12 @@ namespace mousetrap
     FrameView::FrameColumn::operator Widget*()
     {
         return &_list_view;
+    }
+
+    void FrameView::FrameColumn::set_resolution(Vector2ui resolution)
+    {
+        for (auto& element : _preview_elements)
+            element.set_resolution(resolution);
     }
 
     void FrameView::FrameColumn::set_n_layers(size_t n)
@@ -946,7 +975,10 @@ namespace mousetrap
 
     void FrameView::on_layer_resolution_changed()
     {
-        // TODO
+        for (auto& column : _frame_columns)
+            column.set_resolution(active_state->get_layer_resolution());
+
+        set_preview_size(_preview_size);
     }
 
     void FrameView::on_onionskin_visibility_toggled()

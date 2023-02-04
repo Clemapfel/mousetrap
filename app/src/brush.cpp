@@ -105,7 +105,7 @@ namespace mousetrap
                 _image = generate_rectangle_filled(_size / 3.f, _size, color);
                 break;
             case BrushShape::CUSTOM:
-                _image = _base_image.as_scaled(_size, _size);
+                _image = _base_image.as_scaled(_size, _size, GDK_INTERP_NEAREST);
                 break;
         }
     }

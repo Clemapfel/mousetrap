@@ -50,9 +50,7 @@ namespace mousetrap
             void on_layer_image_updated() override;
             void on_layer_count_changed() override;
             void on_layer_properties_changed() override;
-            void on_layer_resolution_changed() override {
-                // TODO
-            }
+            void on_layer_resolution_changed() override;
             
         private:
             class LayerPreview
@@ -68,6 +66,7 @@ namespace mousetrap
                     void set_opacity(float);
                     void set_visible(bool);
                     void set_locked(bool);
+                    void set_resolution(Vector2ui);
 
                     void queue_render();
 
@@ -101,6 +100,7 @@ namespace mousetrap
                     void set_blend_mode(BlendMode);
                     void set_name(const std::string&);
                     void set_preview_size(size_t);
+                    void set_resolution(Vector2ui);
 
                 private:
                     LayerView* _owner;

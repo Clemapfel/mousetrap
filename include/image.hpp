@@ -36,7 +36,8 @@ namespace mousetrap
             GdkPixbuf* to_pixbuf() const;
             Vector2ui get_size() const;
 
-            Image as_scaled(size_t size_x, size_t size_y);
+            Image as_scaled(size_t size_x, size_t size_y, GdkInterpType type);
+            Image as_cropped(size_t offset_x, size_t offset_y, size_t new_width, size_t new_height);
 
             void set_pixel(size_t, size_t, RGBA);
             void set_pixel(size_t, size_t, HSVA);
@@ -46,8 +47,6 @@ namespace mousetrap
             void set_pixel(size_t linear_index, HSVA);
             RGBA get_pixel(size_t linear_index) const;
 
-            Image as_cropped(size_t x_min, size_t y_min, size_t x_max, size_t y_max);
-
         private:
             Vector2i _size;
             std::vector<float> _data; // rgba 32f per component
@@ -55,5 +54,3 @@ namespace mousetrap
             size_t to_linear_index(size_t, size_t) const;
     };
 }
-
-#include <src/image.inl>

@@ -16,7 +16,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(resize_canvas_dialog, open);
     }
 
-    class ResizeCanvasDialog : public AppComponent, signals::LayerResolutionChanged
+    class ResizeCanvasDialog : public AppComponent, public signals::LayerResolutionChanged
     {
         public:
             ResizeCanvasDialog();

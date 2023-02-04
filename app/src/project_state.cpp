@@ -25,6 +25,8 @@
 #include <app/tooltip.hpp>
 #include <app/verbose_color_picker.hpp>
 #include <app/canvas_export.hpp>
+#include <app/scale_canvas_dialog.hpp>
+#include <app/resize_canvas_dialog.hpp>
 
 namespace mousetrap
 {
@@ -594,12 +596,21 @@ namespace mousetrap
         signal_layer_resolution_changed();
     }
 
-    void ProjectState::scale_canvas(Vector2ui, GdkInterpType)
+    void ProjectState::scale_canvas(Vector2ui new_size, GdkInterpType interpolation_type)
     {
-        std::cerr << "[ERROR] In ProjecState::scale_canvas: TODO" << std::endl;
+        for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+        {
+            for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+            {
+                auto* frame = _layers.at(layer_i)->get_frame(frame_i);
+                auto* image = frame->get_image();
+                *image = image->as_scaled(new_size.x, new_size.y, interpolation_type);
+            }
+        }
+
+        _layer_resolution = new_size;
 
         signal_layer_resolution_changed();
-        signal_layer_image_updated();
     }
 
     HSVA ProjectState::get_primary_color() const
@@ -963,6 +974,12 @@ namespace mousetrap
 
         if (state::canvas_export)
             state::canvas_export->signal_layer_resolution_changed();
+
+        if (state::scale_canvas_dialog)
+            state::scale_canvas_dialog->signal_layer_resolution_changed();
+
+        if (state::resize_canvas_dialog)
+            state::resize_canvas_dialog->signal_layer_resolution_changed();
     }
 
     void ProjectState::signal_layer_properties_changed()

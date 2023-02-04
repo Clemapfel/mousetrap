@@ -351,4 +351,9 @@ namespace mousetrap
     {
         set_fps(active_state->get_fps());
     }
+
+    void AnimationPreview::on_layer_resolution_changed()
+    {
+        on_layer_image_updated();
+    }
 }

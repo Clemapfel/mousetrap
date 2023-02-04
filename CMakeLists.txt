@@ -108,7 +108,7 @@ add_library(mousetrap SHARED
     src/texture.inl
 
     include/image.hpp
-    src/image.inl
+        src/image.cpp
 
     include/frame.hpp
     src/frame.inl

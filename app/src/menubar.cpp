@@ -56,7 +56,6 @@ namespace mousetrap
         auto image_submenu = MenuModel();
 
         auto image_submenu_size_section = MenuModel();
-        image_submenu_size_section.add_action("Resize Canvas...", resize_canvas_dialog_open.get_id());
         image_submenu_size_section.add_action("Scale Image...", scale_canvas_dialog_open.get_id());
         image_submenu.add_section("Size", &image_submenu_size_section);
 
@@ -65,11 +64,13 @@ namespace mousetrap
         image_submenu_transform_all_section.add_action("Flip Vertically", image_transform_flip_vertically.get_id());
         image_submenu_transform_all_section.add_action("Rotate +90°", image_transform_rotate_clockwise.get_id());
         image_submenu_transform_all_section.add_action("Rotate -90°", image_transform_rotate_counterclockwise.get_id());
-        image_submenu.add_section("Transform", &image_submenu_transform_all_section);
+        image_submenu.add_section("Transform Image", &image_submenu_transform_all_section);
 
         auto image_submenu_transform_current_section = MenuModel();
         image_submenu_transform_current_section.add_action("Flip Layer Horizontally", image_transform_flip_current_layer_horizontally.get_id());
         image_submenu_transform_current_section.add_action("Flip Layer Vertically", image_transform_flip_current_layer_vertically.get_id());
+        image_submenu_transform_current_section.add_action("Rotate Layer +90°", image_transform_rotate_current_layer_clockwise.get_id());
+        image_submenu_transform_current_section.add_action("Rotate Layer -90°", image_transform_rotate_current_layer_counterclockwise.get_id());
         image_submenu.add_section("Transform Layer", &image_submenu_transform_current_section);
 
         // COLORS
@@ -178,6 +179,11 @@ namespace mousetrap
         // CANVAS
 
         auto canvas_submenu = MenuModel();
+
+        auto canvas_submenu_size_section = MenuModel();
+        canvas_submenu_size_section.add_action("Resize Canvas...", resize_canvas_dialog_open.get_id());
+        canvas_submenu.add_section("Size", &canvas_submenu_size_section);
+
 
         auto canvas_grid_section = MenuModel();
         canvas_grid_section.add_action("Hide / Show Grid", canvas_toggle_grid_visible.get_id());

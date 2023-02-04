@@ -43,14 +43,6 @@ namespace mousetrap
 
     void LayerView::LayerPreview::set_visible(bool b)
     {
-        /*
-        if (_layer_shape != nullptr)
-            _layer_shape->set_visible(b);
-
-        if (_transparency_tiling_shape != nullptr)
-            _transparency_tiling_shape->set_visible(b);
-            */
-
         _area.set_opacity(b ? 1 : state::settings_file->get_value_as<float>("frame_view", "hidden_layer_opacity"));
         _area.queue_render();
     }
@@ -58,6 +50,13 @@ namespace mousetrap
     void LayerView::LayerPreview::set_locked(bool b)
     {
         // noop
+        _area.queue_render();
+    }
+
+    void LayerView::LayerPreview::set_resolution(Vector2ui resolution)
+    {
+        // noop
+        _area.queue_render();
     }
 
     void LayerView::LayerPreview::on_realize(Widget* widget, LayerPreview* instance)
@@ -100,8 +99,20 @@ namespace mousetrap
 
     void LayerView::LayerPreview::set_preview_size(size_t px)
     {
-        auto height = px;
-        auto width = active_state->get_layer_resolution().x / active_state->get_layer_resolution().y * height;
+        auto resolution = active_state->get_layer_resolution();
+        float height, width;
+
+        if (resolution.x <= resolution.y)
+        {
+            height = px;
+            width = (resolution.x / float(resolution.y)) * height;
+        }
+        else
+        {
+            width = px;
+            height = (resolution.y / float(resolution.x)) * width;
+        }
+
         _area.set_size_request({width, height});
     }
 
@@ -359,6 +370,12 @@ namespace mousetrap
     void LayerView::LayerRow::set_preview_size(size_t px)
     {
         _layer_preview.set_preview_size(px);
+    }
+
+    void LayerView::LayerRow::set_resolution(Vector2ui resolution)
+    {
+        _layer_preview_aspect_frame.set_ratio(resolution.x / float(resolution.y));
+        _layer_preview.set_resolution(resolution);
     }
 
     void LayerView::LayerRow::set_texture(const Texture* texture)
@@ -756,6 +773,17 @@ namespace mousetrap
         on_layer_frame_selection_changed(); // also updates texture
 
         state::actions::layer_view_layer_delete.set_enabled(active_state->get_n_layers() > 1);
+    }
+
+    void LayerView::on_layer_resolution_changed()
+    {
+        for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
+        {
+            _layer_rows.at(layer_i).set_resolution(active_state->get_layer_resolution());
+            _layer_rows.at(layer_i).set_texture(active_state->get_frame(layer_i, active_state->get_current_frame_index())->get_texture());
+        }
+
+        set_preview_size(_preview_size);
     }
 
     LayerView::operator Widget*()

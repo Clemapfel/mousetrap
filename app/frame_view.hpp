@@ -88,6 +88,7 @@ namespace mousetrap
                     void set_opacity(float);
                     void set_visible(bool);
                     void set_selected(bool);
+                    void set_resolution(Vector2ui);
 
                 private:
                     FrameView* _owner;
@@ -130,6 +131,7 @@ namespace mousetrap
 
                     void set_n_layers(size_t);
                     void set_frame(size_t i);
+                    void set_resolution(Vector2ui);
 
                 private:
                     FrameView* _owner;
@@ -150,6 +152,7 @@ namespace mousetrap
                             void set_visible(bool);
                             void set_is_inbetween(bool);
                             void set_selected(bool);
+                            void set_resolution(Vector2ui);
 
                         private:
                             FramePreview _preview;

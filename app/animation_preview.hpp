@@ -47,6 +47,7 @@ namespace mousetrap
             void on_layer_properties_changed() override;
             void on_playback_toggled() override;
             void on_playback_fps_changed() override;
+            void on_layer_resolution_changed() override;
 
         private:
             // render: layers

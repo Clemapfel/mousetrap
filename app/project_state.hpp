@@ -97,7 +97,6 @@ namespace mousetrap
             void set_layer_opacity(size_t, float);
             void set_layer_name(size_t, const std::string&);
 
-
             Vector2ui get_layer_resolution() const;
             void resize_canvas(Vector2ui);
             void scale_canvas(Vector2ui, GdkInterpType = GDK_INTERP_TILES);

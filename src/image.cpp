@@ -3,9 +3,11 @@
 // Created on 8/6/22 by clem (mail@clemens-cords.com)
 //
 
+#include <include/image.hpp>
+
 namespace mousetrap
 {
-    inline Image::Image(const Image& other)
+    Image::Image(const Image& other)
     {
         _data = std::vector<float>();
         _data.reserve(other._data.size());
@@ -15,7 +17,7 @@ namespace mousetrap
         _size = other._size;
     }
 
-    inline Image::Image(Image&& other)
+    Image::Image(Image&& other)
     {
         _data = std::vector<float>();
         _data.reserve(other._data.size());
@@ -28,7 +30,7 @@ namespace mousetrap
         other._size = {0, 0};
     }
 
-    inline Image& Image::operator=(const Image& other)
+    Image& Image::operator=(const Image& other)
     {
         _data = std::vector<float>();
         _data.reserve(other._data.size());
@@ -40,7 +42,7 @@ namespace mousetrap
         return *this;
     }
 
-    inline Image& Image::operator=(Image&& other)
+    Image& Image::operator=(Image&& other)
     {
         _data = std::vector<float>();
         _data.reserve(other._data.size());
@@ -55,7 +57,7 @@ namespace mousetrap
         return *this;
     }
 
-    inline void Image::create(size_t width, size_t height, RGBA default_color)
+    void Image::create(size_t width, size_t height, RGBA default_color)
     {
         _data.clear();
         _data.reserve(width * height * 4);
@@ -70,7 +72,7 @@ namespace mousetrap
         _size = {width, height};
     }
 
-    inline void Image::create_from_pixbuf(GdkPixbuf* pixbuf)
+    void Image::create_from_pixbuf(GdkPixbuf* pixbuf)
     {
         unsigned char* buffer = gdk_pixbuf_get_pixels(pixbuf);
 
@@ -91,7 +93,7 @@ namespace mousetrap
         }
     }
 
-    inline bool Image::create_from_file(const std::string& path)
+    bool Image::create_from_file(const std::string& path)
     {
         GError* error_maybe = nullptr;
         auto* pixbuf = gdk_pixbuf_new_from_file(path.c_str(), &error_maybe);
@@ -109,7 +111,7 @@ namespace mousetrap
         return true;
     }
 
-    inline GdkPixbuf* Image::to_pixbuf() const
+    GdkPixbuf* Image::to_pixbuf() const
     {
         auto* out = gdk_pixbuf_new(GDK_COLORSPACE_RGB, true, 8, _size.x, _size.y);
         auto* data = gdk_pixbuf_get_pixels(out);
@@ -120,7 +122,7 @@ namespace mousetrap
         return out;
     }
 
-    inline bool Image::save_to_file(const std::string& path)
+    bool Image::save_to_file(const std::string& path)
     {
         if (_size.x == 0 and _size.y == 0)
         {
@@ -141,32 +143,32 @@ namespace mousetrap
         return true;
     }
 
-    inline Vector2ui Image::get_size() const
+    Vector2ui Image::get_size() const
     {
         return _size;
     }
 
-    inline void* Image::data() const
+    void* Image::data() const
     {
         return (void*) _data.data();
     }
 
-    inline size_t Image::get_data_size() const
+    size_t Image::get_data_size() const
     {
         return _data.size();
     }
 
-    inline size_t Image::get_n_pixels() const
+    size_t Image::get_n_pixels() const
     {
         return get_size().x * get_size().y;
     }
 
-    inline size_t Image::to_linear_index(size_t x, size_t y) const
+    size_t Image::to_linear_index(size_t x, size_t y) const
     {
         return y * (_size.x * 4) + (x * 4);
     }
 
-    inline void Image::set_pixel(size_t x, size_t y, RGBA color)
+    void Image::set_pixel(size_t x, size_t y, RGBA color)
     {
         auto i = to_linear_index(x, y);
 
@@ -182,12 +184,12 @@ namespace mousetrap
         _data.at(i+3) = color.a;
     }
 
-    inline void Image::set_pixel(size_t x, size_t y, HSVA color)
+    void Image::set_pixel(size_t x, size_t y, HSVA color)
     {
         set_pixel(x, y, color.operator RGBA());
     }
 
-    inline RGBA Image::get_pixel(size_t x, size_t y) const
+    RGBA Image::get_pixel(size_t x, size_t y) const
     {
         auto i = to_linear_index(x, y);
 
@@ -206,7 +208,7 @@ namespace mousetrap
         );
     }
 
-    inline void Image::set_pixel(size_t i, RGBA color)
+    void Image::set_pixel(size_t i, RGBA color)
     {
         i *= 4;
 
@@ -222,7 +224,7 @@ namespace mousetrap
         _data.at(i+3) = color.a;
     }
 
-    inline void Image::set_pixel(size_t i, HSVA color_hsva)
+    void Image::set_pixel(size_t i, HSVA color_hsva)
     {
         auto color = color_hsva.operator RGBA();
 
@@ -240,7 +242,7 @@ namespace mousetrap
         _data.at(i+3) = color.a;
     }
 
-    inline RGBA Image::get_pixel(size_t i) const
+    RGBA Image::get_pixel(size_t i) const
     {
         i *= 4;
 
@@ -253,25 +255,17 @@ namespace mousetrap
         );
     }
 
-    inline Image Image::as_cropped(size_t x_min, size_t y_min, size_t x_max, size_t y_max)
+    Image Image::as_cropped(size_t offset_x, size_t offset_y, size_t size_x, size_t size_y)
     {
-        if (x_min > x_max)
-            x_min = x_max;
-
-        if (y_min > y_max)
-            y_min = y_max;
-
         auto out = Image();
-        out.create(x_max - x_min, y_max - y_min);
+        out.create(size_x, size_y);
 
-        for (size_t x = x_min; x < x_max; ++x)
-            for (size_t y = y_min; y < y_max; ++y)
-                out.set_pixel(x, y, get_pixel(x, y));
+        // TODO
 
         return out;
     }
 
-    inline Image Image::as_scaled(size_t size_x, size_t size_y)
+    Image Image::as_scaled(size_t size_x, size_t size_y, GdkInterpType interpolation_type)
     {
         if (int(size_x) == _size.x and int(size_y) == _size.y)
             return *this;
@@ -283,7 +277,7 @@ namespace mousetrap
             size_y = 1;
 
         GdkPixbuf* unscaled = g_object_ref(to_pixbuf());
-        auto scaled = g_object_ref(gdk_pixbuf_scale_simple(unscaled, size_x, size_y, GDK_INTERP_NEAREST));
+        auto scaled = g_object_ref(gdk_pixbuf_scale_simple(unscaled, size_x, size_y, interpolation_type));
 
         auto out = Image();
         out.create_from_pixbuf(scaled);
