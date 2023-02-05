@@ -3,6 +3,7 @@
 #include <app/brush_options.hpp>
 #include <app/resize_canvas_dialog.hpp>
 #include <app/scale_canvas_dialog.hpp>
+#include <app/color_transform_dialog.hpp>
 
 namespace mousetrap
 {
@@ -80,9 +81,7 @@ namespace mousetrap
         auto color_submenu_transform_section = MenuModel();
         color_submenu_transform_section.add_action("Invert", color_transform_invert.get_id());
         color_submenu_transform_section.add_action("To Grayscale", color_transform_to_grayscale.get_id());
-        color_submenu_transform_section.add_action("Hue...", color_transform_open_hsv_shift_dialog.get_id());
-        color_submenu_transform_section.add_action("Saturation...", color_transform_open_hsv_shift_dialog.get_id());
-        color_submenu_transform_section.add_action("Value...", color_transform_open_hsv_shift_dialog.get_id());
+        color_submenu_transform_section.add_action("Component Offset...", color_transform_dialog_open.get_id());
         color_submenu_transform_section.add_action("Replace...", color_transform_open_color_replace_dialog.get_id());
         color_submenu_transform_section.add_action("Palette Shift...", color_transform_open_palette_shift_dialog.get_id());
         colors_submenu.add_section("Transform", &color_submenu_transform_section);

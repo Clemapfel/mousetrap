@@ -362,7 +362,7 @@ namespace mousetrap
         frame_view_toggle_current_frame_is_keyframe.set_stateful_function([](bool)
         {
             auto next = not active_state->get_current_frame()->get_is_keyframe();
-            active_state->set_frame_is_keyframe({active_state->get_current_layer_index(), active_state->get_current_frame_index()}, next);
+            active_state->set_cell_is_key({active_state->get_current_layer_index(), active_state->get_current_frame_index()}, next);
             return next;
         });
 
@@ -389,14 +389,14 @@ namespace mousetrap
         frame_view_frame_new_left_of_current.set_function([]()
         {
             int current = active_state->get_current_frame_index();
-            active_state->add_frame(current - int(1));
+            active_state->add_frame(current - int(1), false);
             active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), current);
         });
 
         frame_view_frame_new_right_of_current.set_function([]()
         {
             auto current = active_state->get_current_frame_index();
-            active_state->add_frame(current);
+            active_state->add_frame(current, false);
             active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), current+1);
         });
 
@@ -584,7 +584,7 @@ namespace mousetrap
 
         bool is_keyframe = active_state->get_current_frame()->get_is_keyframe();
         _frame_is_keyframe_toggle_button.connect_signal_toggled([](ToggleButton* button, ControlBar* instance) {
-            active_state->set_frame_is_keyframe({active_state->get_current_layer_index(), active_state->get_current_frame_index()}, button->get_active());
+            active_state->set_cell_is_key({active_state->get_current_layer_index(), active_state->get_current_frame_index()}, button->get_active());
         }, this);
 
 
@@ -907,6 +907,7 @@ namespace mousetrap
         }
 
         state::actions::frame_view_frame_delete.set_enabled(active_state->get_n_frames() > 1);
+        on_layer_properties_changed();
     }
 
     void FrameView::on_layer_frame_selection_changed()

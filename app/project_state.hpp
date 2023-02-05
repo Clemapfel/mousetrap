@@ -80,7 +80,7 @@ namespace mousetrap
             void delete_layer(size_t);
             void new_layer_from(int above, const std::set<size_t>& from_layer_is, bool delete_froms = true);
 
-            void add_frame(int after); // -1 for left-most
+            void add_frame(int after, bool is_keyframe = true); // -1 for left-most
             void swap_frames(size_t a, size_t b);
             void duplicate_frame(int after, size_t from_frame_i);
             void delete_frame(size_t);
@@ -89,7 +89,7 @@ namespace mousetrap
             void copy_to_cell(CellPosition b, CellPosition a);
             void swap_cells(CellPosition a, CellPosition b);
             void draw_to_cell(CellPosition, std::vector<std::pair<Vector2i, HSVA>>);
-            void set_frame_is_keyframe(CellPosition, bool);
+            void set_cell_is_key(CellPosition, bool);
 
             void set_layer_blend_mode(size_t, BlendMode);
             void set_layer_locked(size_t, bool);
@@ -98,7 +98,7 @@ namespace mousetrap
             void set_layer_name(size_t, const std::string&);
 
             Vector2ui get_layer_resolution() const;
-            void resize_canvas(Vector2ui);
+            void resize_canvas(Vector2ui new_size, Vector2i offset);
             void scale_canvas(Vector2ui, GdkInterpType = GDK_INTERP_TILES);
 
             void flip_horizontally(size_t layer_i, size_t frame_i);

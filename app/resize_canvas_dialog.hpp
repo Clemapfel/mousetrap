@@ -1,5 +1,5 @@
 //
-// Copyright (c) Clemens Cords (mail@clemens-cords.com), created 1/26/23
+// Copyright (c) Clemens Cords (mail@clemens-cords.com), created 2/5/23
 //
 
 #pragma once
@@ -28,54 +28,6 @@ namespace mousetrap
             void on_layer_resolution_changed() override;
 
         private:
-            using Alignment = const char*;
-            static constexpr Alignment TOP_LEFT = "top-left";
-            static constexpr Alignment TOP = "top";
-            static constexpr Alignment TOP_RIGHT = "top-right";
-            static constexpr Alignment RIGHT = "right";
-            static constexpr Alignment BOTTOM_RIGHT = "bottom-right";
-            static constexpr Alignment BOTTOM = "bottom";
-            static constexpr Alignment BOTTOM_LEFT = "bottom-left";
-            static constexpr Alignment LEFT = "left";
-            static constexpr Alignment CENTER = "center";
-
-            Alignment _alignment = CENTER;
-            void set_alignment(Alignment);
-
-            class AlignmentSelector
-            {
-                public:
-                    AlignmentSelector(ResizeCanvasDialog* owner);
-                    ~AlignmentSelector();
-                    operator Widget*();
-
-                    void set_alignment(Alignment);
-
-                private:
-                    ResizeCanvasDialog* _owner;
-
-                    struct ButtonAndArrow
-                    {
-                        ButtonAndArrow(Alignment alignment, const std::string& id);
-                        operator Widget*();
-
-                        Alignment _alignment;
-                        ImageDisplay _arrow;
-                        ToggleButton _button;
-                    };
-
-                    std::map<Alignment, ButtonAndArrow*> _arrows;
-
-                    Box _top_row = Box(GTK_ORIENTATION_HORIZONTAL);
-                    Box _center_row = Box(GTK_ORIENTATION_HORIZONTAL);
-                    Box _bottom_row = Box(GTK_ORIENTATION_HORIZONTAL);
-
-                    Box _all_rows = Box(GTK_ORIENTATION_VERTICAL);
-                    Frame _frame;
-            };
-
-            AlignmentSelector _alignment_selector = AlignmentSelector(this);
-
             enum ScaleMode
             {
                 ABSOLUTE = false,
@@ -109,23 +61,21 @@ namespace mousetrap
             SeparatorLine _height_spacer;
             Box _height_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
-            Box _spin_button_box = Box(GTK_ORIENTATION_VERTICAL);
-            Box _spin_button_and_dropdown_box = Box(GTK_ORIENTATION_HORIZONTAL);
-
-            Label _instruction_label = Label(state::tooltips_file->get_value("resize_canvas_dialog", "instruction_label"));
-            Label _final_size_label;
-            Label _alignment_instruction_label = Label("<b>Alignment</b>");
-            Label _alignment_state_label;
-
             DropDown _absolute_or_relative_dropdown;
             Label _absolute_list_label = Label("px");
             Label _absolute_when_selected_label = Label("px");
             Label _relative_list_label = Label("%");
             Label _relative_when_selected_label = Label("%");
 
+            Box _spin_button_box = Box(GTK_ORIENTATION_VERTICAL);
+            Box _spin_button_and_dropdown_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
             CheckButton _maintain_aspect_ratio_button = CheckButton();
             Label _maintain_aspect_ratio_label;
             Box _maintain_aspect_ratio_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
+            Label _instruction_label = Label(state::tooltips_file->get_value("resize_canvas_dialog", "instruction_label"));
+            Label _final_size_label;
 
             Button _accept_button;
             Label _accept_button_label = Label("Resize");

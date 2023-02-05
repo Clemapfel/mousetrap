@@ -460,7 +460,7 @@ namespace mousetrap
             delete layer;
     }
 
-    void ProjectState::add_frame(int after)
+    void ProjectState::add_frame(int after, bool is_keyframe)
     {
         if (after < -1)
             after = -1;
@@ -470,7 +470,10 @@ namespace mousetrap
 
         auto frame_i = after+1;
         for (auto& layer : _layers)
-            layer->add_frame(frame_i);
+        {
+            auto* added = layer->add_frame(frame_i);
+            added->set_is_keyframe(is_keyframe);
+        }
 
         _n_frames += 1;
 
@@ -576,7 +579,7 @@ namespace mousetrap
         signal_layer_properties_changed();
     }
 
-    void ProjectState::set_frame_is_keyframe(Vector2ui cell_ij, bool b)
+    void ProjectState::set_cell_is_key(Vector2ui cell_ij, bool b)
     {
         size_t layer_i = cell_ij.x;
         size_t frame_i = cell_ij.y;
@@ -589,10 +592,20 @@ namespace mousetrap
         return _layer_resolution;
     }
 
-    void ProjectState::resize_canvas(Vector2ui)
+    void ProjectState::resize_canvas(Vector2ui new_size, Vector2i offset)
     {
-        std::cerr << "[ERROR] In ProjecState::resize_canvas: TODO" << std::endl;
+        for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+        {
+            for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+            {
+                auto* frame = _layers.at(layer_i)->get_frame(frame_i);
+                auto* image = frame->get_image();
+                *image = image->as_cropped(offset.x, offset.y, new_size.x, new_size.y);
+                frame->update_texture();
+            }
+        }
 
+        _layer_resolution = new_size;
         signal_layer_resolution_changed();
     }
 
@@ -605,11 +618,11 @@ namespace mousetrap
                 auto* frame = _layers.at(layer_i)->get_frame(frame_i);
                 auto* image = frame->get_image();
                 *image = image->as_scaled(new_size.x, new_size.y, interpolation_type);
+                frame->update_texture();
             }
         }
 
         _layer_resolution = new_size;
-
         signal_layer_resolution_changed();
     }
 

@@ -372,7 +372,7 @@ add_library(app SHARED
 
     app/verbose_color_picker.hpp
     app/src/verbose_color_picker.cpp
-        app/app_signals.hpp app/open_uri.hpp app/detect_platform.hpp app/resize_canvas_dialog.hpp app/scale_canvas_dialog.hpp app/src/scale_canvas_dialog.cpp app/src/resize_canvas_dialog.cpp app/canvas_export.hpp app/src/canvas_export.cpp)
+        app/app_signals.hpp app/open_uri.hpp app/detect_platform.hpp app/resize_canvas_dialog.hpp app/scale_canvas_dialog.hpp app/src/scale_canvas_dialog.cpp app/src/resize_canvas_dialog.cpp app/canvas_export.hpp app/src/canvas_export.cpp app/color_transform_dialog.hpp app/src/color_transform_dialog.cpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

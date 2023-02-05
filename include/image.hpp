@@ -37,7 +37,7 @@ namespace mousetrap
             Vector2ui get_size() const;
 
             Image as_scaled(size_t size_x, size_t size_y, GdkInterpType type);
-            Image as_cropped(size_t offset_x, size_t offset_y, size_t new_width, size_t new_height);
+            Image as_cropped(int offset_x, int offset_y, size_t new_width, size_t new_height);
 
             void set_pixel(size_t, size_t, RGBA);
             void set_pixel(size_t, size_t, HSVA);

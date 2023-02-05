@@ -201,10 +201,10 @@ namespace mousetrap
 
         return RGBA
         (
-                _data.at(i),
-                _data.at(i+1),
-                _data.at(i+2),
-                _data.at(i+3)
+            _data.at(i),
+            _data.at(i+1),
+            _data.at(i+2),
+            _data.at(i+3)
         );
     }
 
@@ -255,12 +255,23 @@ namespace mousetrap
         );
     }
 
-    Image Image::as_cropped(size_t offset_x, size_t offset_y, size_t size_x, size_t size_y)
+    Image Image::as_cropped(int offset_x, int offset_y, size_t size_x, size_t size_y)
     {
         auto out = Image();
         out.create(size_x, size_y);
 
-        // TODO
+        for (size_t y = 0; y < size_y; ++y)
+        {
+            for (size_t x = 0; x < size_x; ++x)
+            {
+                Vector2i pos = {x - offset_x, y - offset_y};
+
+                if (pos.x < 0 or pos.x >= get_size().x or pos.y < 0 or pos.y >= get_size().y)
+                    out.set_pixel(x, y, RGBA(0, 0, 0, 0));
+                else
+                    out.set_pixel(x, y, get_pixel(pos.x, pos.y));
+            }
+        }
 
         return out;
     }
