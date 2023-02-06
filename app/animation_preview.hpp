@@ -11,7 +11,7 @@
 #include <app/tooltip.hpp>
 #include <app/app_signals.hpp>
 
-#include <app/render_texture.hpp> // TODO
+#include "include/render_texture.hpp" // TODO
 
 namespace mousetrap
 {
@@ -30,7 +30,8 @@ namespace mousetrap
         public signals::LayerPropertiesChanged,
         public signals::LayerResolutionChanged,
         public signals::PlaybackToggled,
-        public signals::PlaybackFpsChanged
+        public signals::PlaybackFpsChanged,
+        public signals::ColorOffsetChanged
     {
         public:
             AnimationPreview();
@@ -50,6 +51,7 @@ namespace mousetrap
             void on_playback_toggled() override;
             void on_playback_fps_changed() override;
             void on_layer_resolution_changed() override;
+            void on_color_offset_changed() override;
 
         private:
             // render: layers
@@ -58,13 +60,20 @@ namespace mousetrap
             std::vector<Shape*> _layer_shapes;
 
             RenderTexture* _post_fx_texture = nullptr;
-            Shader* _draw_to_render_texture_shader = nullptr;
             Shader* _post_fx_shader = nullptr;
             Shape* _post_fx_shape = nullptr;
 
             static void on_layer_area_realize(Widget*, AnimationPreview*);
             static void on_layer_area_resize(GLArea*, int w, int h, AnimationPreview*);
             static gboolean on_layer_area_render(GLArea*, GdkGLContext*, AnimationPreview*);
+
+            float* _h_offset = new float(0);
+            float* _s_offset = new float(0);
+            float* _v_offset = new float(0);
+            float* _r_offset = new float(0);
+            float* _g_offset = new float(0);
+            float* _b_offset = new float(0);
+            float* _a_offset = new float(0);
 
             // render: transparency tiling
 

@@ -7,6 +7,7 @@
 #include <mousetrap.hpp>
 #include <app/app_component.hpp>
 #include <app/config_files.hpp>
+#include <app/project_state.hpp>
 
 namespace mousetrap
 {
@@ -84,22 +85,17 @@ namespace mousetrap
 
             Label _apply_to_label = Label("<b>Apply To...</b>");
 
-            using ApplyToTarget = const char*;
-            static constexpr ApplyToTarget CURRENT_LAYER = "Current Layer";
-            static constexpr ApplyToTarget CURRENT_FRAME = "Current Frame";
-            static constexpr ApplyToTarget CURRENT_CELL = "Current Cell";
-            static constexpr ApplyToTarget EVERYWHERE = "All Layers and Frames";
-            ApplyToTarget _target = EVERYWHERE;
-
             DropDown _apply_to_dropdown;
-            Label _current_layer_list_label = Label(CURRENT_LAYER);
-            Label _current_layer_when_selected_label = Label(CURRENT_LAYER);
-            Label _current_frame_list_label = Label(CURRENT_FRAME);
-            Label _current_frame_when_selected_label = Label(CURRENT_FRAME);
-            Label _current_cell_list_label = Label(CURRENT_CELL);
-            Label _current_cell_when_selected_label = Label(CURRENT_CELL);
-            Label _everywhere_list_label = Label(EVERYWHERE);
-            Label _everywhere_when_selected_label = Label(EVERYWHERE);
+            Label _current_layer_list_label = Label(apply_scope_to_string(ApplyScope::CURRENT_LAYER));
+            Label _current_layer_when_selected_label = Label(apply_scope_to_string(ApplyScope::CURRENT_LAYER));
+            Label _current_frame_list_label = Label(apply_scope_to_string(ApplyScope::CURRENT_FRAME));
+            Label _current_frame_when_selected_label = Label(apply_scope_to_string(ApplyScope::CURRENT_FRAME));
+            Label _current_cell_list_label = Label(apply_scope_to_string(ApplyScope::CURRENT_CELL));
+            Label _current_cell_when_selected_label = Label(apply_scope_to_string(ApplyScope::CURRENT_CELL));
+            Label _everywhere_list_label = Label(apply_scope_to_string(ApplyScope::EVERYWHERE));
+            Label _everywhere_when_selected_label = Label(apply_scope_to_string(ApplyScope::EVERYWHERE));
+
+            ApplyScope _apply_scope = ApplyScope::EVERYWHERE;
 
             SeparatorLine _button_spacer;
 
@@ -111,6 +107,8 @@ namespace mousetrap
 
             Label _reset_label = Label("Reset");
             Button _reset_button;
+
+            void reset();
 
             Box _button_box = Box(GTK_ORIENTATION_HORIZONTAL);
             SeparatorLine _button_box_spacer;

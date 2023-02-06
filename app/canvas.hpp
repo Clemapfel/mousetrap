@@ -35,7 +35,8 @@ namespace mousetrap
         public signals::LayerImageUpdated,
         public signals::LayerCountChanged,
         public signals::LayerPropertiesChanged,
-        public signals::LayerResolutionChanged
+        public signals::LayerResolutionChanged,
+        public signals::ColorOffsetChanged
     {
         SeparatorLine _instance;
         Canvas() = default;

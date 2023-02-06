@@ -36,6 +36,16 @@ namespace mousetrap
 
     using CellPosition = Vector2ui;
 
+    enum ApplyScope
+    {
+        CURRENT_CELL,
+        CURRENT_FRAME,
+        CURRENT_LAYER,
+        EVERYWHERE
+    };
+
+    std::string apply_scope_to_string(ApplyScope);
+
     class ProjectState
     {
         public:
@@ -113,7 +123,19 @@ namespace mousetrap
             void set_secondary_color(HSVA);
 
             void set_primary_and_secondary_color(HSVA primary, HSVA secondary);
-            void set_color_component_offset(float h, float s, float v, float r, float g, float b, float a);
+
+            void set_color_offset(
+                float h = 0, float s = 0, float v = 0,
+                float r = 0, float g = 0, float b = 0,
+                float a = 0
+            );
+            const std::array<float, 7> get_color_offset();
+
+            void apply_color_offset(ApplyScope,
+                float h = 0, float s = 0, float v = 0,
+                float r = 0, float g = 0, float b = 0,
+                float a = 0
+            );
 
             HSVA get_preview_color_current() const;
             HSVA get_preview_color_previous() const;
@@ -186,6 +208,8 @@ namespace mousetrap
             static inline size_t new_layer_count = 0;
             static inline size_t merged_layer_count = 0;
 
+            std::array<float, 7> _color_component_preview_offset = {0, 0, 0, 0, 0, 0, 0};
+
             void signal_brush_selection_changed();
             void signal_brush_set_updated();
             void signal_color_selection_changed();
@@ -203,6 +227,7 @@ namespace mousetrap
             void signal_layer_resolution_changed();
             void signal_playback_toggled();
             void signal_playback_fps_changed();
+            void signal_color_offset_changed();
     };
 
     inline std::vector<ProjectState*> project_states = {};

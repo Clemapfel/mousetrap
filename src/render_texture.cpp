@@ -1,4 +1,4 @@
-#include <app/render_texture.hpp>
+#include "include/render_texture.hpp"
 
 namespace mousetrap
 {
@@ -30,9 +30,11 @@ namespace mousetrap
 
     void RenderTexture::bind_as_rendertarget() const
     {
+        constexpr auto ATTACHMENT = GL_COLOR_ATTACHMENT5;
+
         glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer_handle);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, get_native_handle(), 0);
-        GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+        glFramebufferTexture(GL_FRAMEBUFFER, ATTACHMENT, get_native_handle(), 0);
+        GLenum DrawBuffers[1] = {ATTACHMENT};
         glDrawBuffers(1, DrawBuffers);
     }
 

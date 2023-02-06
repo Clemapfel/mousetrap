@@ -28,6 +28,15 @@ namespace mousetrap
             void register_color(const std::string& uniform_name, RGBA*);
             void register_color(const std::string& uniform_name, HSVA* will_not_be_converted);
 
+            void register_float(const std::string& uniform_name, const float*);
+            void register_int(const std::string& uniform_name, const int*);
+            void register_vec2(const std::string& uniform_name, const Vector2f*);
+            void register_vec3(const std::string& uniform_name, const Vector3f*);
+            void register_vec4(const std::string& uniform_name, const Vector4f*);
+            void register_transform(const std::string& uniform_name, const GLTransform*);
+            void register_color(const std::string& uniform_name, const RGBA*);
+            void register_color(const std::string& uniform_name, const HSVA* will_not_be_converted);
+
             void render();
 
             Shape* get_shape();
@@ -43,14 +52,14 @@ namespace mousetrap
             static inline Shader* noop_shader = nullptr;
             static inline GLTransform* noop_transform = nullptr;
             
-            std::map<std::string, float*> _floats;
-            std::map<std::string, int*> _ints;
-            std::map<std::string, Vector2f*> _vec2s;
-            std::map<std::string, Vector3f*> _vec3s;
-            std::map<std::string, Vector4f*> _vec4s;
-            std::map<std::string, GLTransform*> _transforms;
-            std::map<std::string, RGBA*> _colors_rgba;
-            std::map<std::string, HSVA*> _colors_hsva;
+            std::map<std::string, const float*> _floats;
+            std::map<std::string, const int*> _ints;
+            std::map<std::string, const Vector2f*> _vec2s;
+            std::map<std::string, const Vector3f*> _vec3s;
+            std::map<std::string, const Vector4f*> _vec4s;
+            std::map<std::string, const GLTransform*> _transforms;
+            std::map<std::string, const RGBA*> _colors_rgba;
+            std::map<std::string, const HSVA*> _colors_hsva;
     };
 }
 

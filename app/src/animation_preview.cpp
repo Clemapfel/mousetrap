@@ -224,16 +224,28 @@ namespace mousetrap
         _transparency_area.add_render_task(transparency_task);
         _transparency_area.queue_render();
 
-        // layer
+        // layers
+
         _layer_area_render_tasks.clear();
 
         for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
         {
-            auto task = RenderTask(_layer_shapes.at(layer_i), _draw_to_render_texture_shader, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
+            auto task = RenderTask(_layer_shapes.at(layer_i), nullptr, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
             _layer_area_render_tasks.push_back(task);
         }
 
+        // post fx
+
         _post_fx_shape_render_task = RenderTask(_post_fx_shape, _post_fx_shader);
+
+        auto& offset = active_state->get_color_offset();
+        _post_fx_shape_render_task.register_float("_h_offset", _h_offset);
+        _post_fx_shape_render_task.register_float("_s_offset", _s_offset);
+        _post_fx_shape_render_task.register_float("_v_offset", _v_offset);
+        _post_fx_shape_render_task.register_float("_r_offset", _r_offset);
+        _post_fx_shape_render_task.register_float("_g_offset", _g_offset);
+        _post_fx_shape_render_task.register_float("_b_offset", _b_offset);
+        _post_fx_shape_render_task.register_float("_a_offset", _a_offset);
 
         _layer_area.queue_render();
     }
@@ -242,9 +254,6 @@ namespace mousetrap
     {
         auto* area = (GLArea*) widget;
         area->make_current();
-
-        instance->_draw_to_render_texture_shader = new Shader();
-        instance->_draw_to_render_texture_shader->create_from_file(get_resource_path() + "shaders/to_render_texture.frag", ShaderType::FRAGMENT);
 
         instance->_post_fx_shader = new Shader();
         instance->_post_fx_shader->create_from_file(get_resource_path() + "shaders/project_post_fx.frag", ShaderType::FRAGMENT);
@@ -416,5 +425,20 @@ namespace mousetrap
     void AnimationPreview::on_layer_resolution_changed()
     {
         on_layer_image_updated();
+    }
+
+    void AnimationPreview::on_color_offset_changed()
+    {
+        const auto& offset = active_state->get_color_offset();
+
+        *_h_offset = offset.at(0);
+        *_s_offset = offset.at(1);
+        *_v_offset = offset.at(2);
+        *_r_offset = offset.at(3);
+        *_g_offset = offset.at(4);
+        *_b_offset = offset.at(5);
+        *_a_offset = offset.at(6);
+
+        _layer_area.queue_render();
     }
 }

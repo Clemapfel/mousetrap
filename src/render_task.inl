@@ -113,6 +113,46 @@ namespace mousetrap
         _colors_hsva.insert({uniform_name, value});
     }
 
+    inline void RenderTask::register_float(const std::string& uniform_name, const float* value)
+    {
+        _floats.insert({uniform_name, value});
+    }
+
+    inline void RenderTask::register_int(const std::string& uniform_name, const int* value)
+    {
+        _ints.insert({uniform_name, value});
+    }
+
+    inline void RenderTask::register_vec2(const std::string& uniform_name, const Vector2f* value)
+    {
+        _vec2s.insert({uniform_name, value});
+    }
+
+    inline void RenderTask::register_vec3(const std::string& uniform_name, const Vector3f* value)
+    {
+        _vec3s.insert({uniform_name, value});
+    }
+
+    inline void RenderTask::register_vec4(const std::string& uniform_name, const Vector4f* value)
+    {
+        _vec4s.insert({uniform_name, value});
+    }
+
+    inline void RenderTask::register_transform(const std::string& uniform_name, const GLTransform* value)
+    {
+        _transforms.insert({uniform_name, value});
+    }
+
+    inline void RenderTask::register_color(const std::string& uniform_name, const RGBA* value)
+    {
+        _colors_rgba.insert({uniform_name, value});
+    }
+
+    inline void RenderTask::register_color(const std::string& uniform_name, const HSVA* value)
+    {
+        _colors_hsva.insert({uniform_name, value});
+    }
+
     inline Shape* RenderTask::get_shape()
     {
         return _shape;

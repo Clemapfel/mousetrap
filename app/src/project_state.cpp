@@ -656,20 +656,84 @@ namespace mousetrap
         signal_color_selection_changed();
     }
 
-    void ProjectState::set_color_component_offset(float h, float s, float v, float r, float g, float b, float a)
+    void ProjectState::set_color_offset(float h, float s, float v, float r, float g, float b, float a)
     {
-        for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+        _color_component_preview_offset = {h, s, v, r, g, b, a};
+        signal_color_offset_changed();
+    }
+
+    const std::array<float, 7> ProjectState::get_color_offset()
+    {
+        return _color_component_preview_offset;
+    }
+
+    void ProjectState::apply_color_offset(ApplyScope scope, float h, float s, float v, float r, float g, float b, float a)
+    {
+        auto& offset = _color_component_preview_offset;
+
+        auto apply_to_image = [&](Image* image)
+        {
+            for (size_t y = 0; y < image->get_size().y; ++y)
+            {
+                for (size_t x = 0; x < image->get_size().x; ++x)
+                {
+                    auto as_hsva = image->get_pixel(x, y).operator HSVA();
+                    as_hsva.h = glm::fract<float>(as_hsva.h + offset.at(0));
+                    as_hsva.s = glm::clamp<float>(as_hsva.s + offset.at(1), 0, 1);
+                    as_hsva.v = glm::clamp<float>(as_hsva.v + offset.at(2), 0, 1);
+
+                    auto as_rgba = as_hsva.operator RGBA();
+                    as_rgba.r = glm::clamp<float>(as_rgba.r + offset.at(3), 0, 1);
+                    as_rgba.g = glm::clamp<float>(as_rgba.g + offset.at(4), 0, 1);
+                    as_rgba.b = glm::clamp<float>(as_rgba.b + offset.at(5), 0, 1);
+                    as_rgba.a = glm::clamp<float>(as_rgba.a + offset.at(6), 0, 1);
+
+                    image->set_pixel(x, y, as_rgba);
+                }
+            }
+        };
+
+        if (scope == CURRENT_CELL)
+        {
+            auto* frame = _layers.at(_current_layer_i)->get_frame(_current_frame_i);
+            apply_to_image(frame->get_image());
+            frame->update_texture();
+        }
+        else if (scope == CURRENT_LAYER)
         {
             for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
             {
-                auto* frame = _layers.at(layer_i)->get_frame(frame_i);
-                frame->set_color_offset(h, s, v, r, g, b, a);
+                auto* frame = _layers.at(_current_layer_i)->get_frame(frame_i);
+                apply_to_image(frame->get_image());
                 frame->update_texture();
+            }
+        }
+        else if (scope == CURRENT_FRAME)
+        {
+            for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+            {
+                auto* frame = _layers.at(layer_i)->get_frame(_current_frame_i);
+                apply_to_image(frame->get_image());
+                frame->update_texture();
+            }
+        }
+        else if (scope == ApplyScope::EVERYWHERE)
+        {
+            for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+            {
+                for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+                {
+                    auto* frame = _layers.at(layer_i)->get_frame(frame_i);
+                    apply_to_image(frame->get_image());
+                    frame->update_texture();
+                }
             }
         }
 
         signal_layer_image_updated();
     }
+
+
 
     HSVA ProjectState::get_preview_color_current() const
     {
@@ -1052,7 +1116,28 @@ namespace mousetrap
             state::frame_view->signal_playback_fps_changed();
 
         if (state::animation_preview)
-        state::animation_preview->signal_playback_fps_changed();
+            state::animation_preview->signal_playback_fps_changed();
+    }
+
+    void ProjectState::signal_color_offset_changed()
+    {
+        if (state::canvas)
+            state::canvas->signal_color_offset_changed();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_color_offset_changed();
+    }
+
+    std::string apply_scope_to_string(ApplyScope scope)
+    {
+        if (scope == ApplyScope::CURRENT_CELL)
+            return "Current Cell";
+        else if (scope == ApplyScope::CURRENT_LAYER)
+            return "Current Layer";
+        else if (scope == ApplyScope::CURRENT_FRAME)
+            return "Current Frame";
+        else if (scope == ApplyScope::EVERYWHERE)
+            return "All Layers and Frames";
     }
 
 }

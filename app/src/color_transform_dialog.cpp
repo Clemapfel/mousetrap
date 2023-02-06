@@ -112,19 +112,19 @@ namespace mousetrap
         }
         
         _apply_to_dropdown.push_back(&_current_layer_list_label, &_current_layer_when_selected_label, [](ColorTransformDialog* instance){
-            instance->_target = CURRENT_LAYER;
+            instance->_apply_scope = CURRENT_LAYER;
         }, this);
 
         _apply_to_dropdown.push_back(&_current_frame_list_label, &_current_frame_when_selected_label, [](ColorTransformDialog* instance){
-            instance->_target = CURRENT_FRAME;
+            instance->_apply_scope = CURRENT_FRAME;
         }, this);
 
         _apply_to_dropdown.push_back(&_current_cell_list_label, &_current_cell_when_selected_label, [](ColorTransformDialog* instance){
-            instance->_target = CURRENT_CELL;
+            instance->_apply_scope = CURRENT_CELL;
         }, this);
 
         _apply_to_dropdown.push_back(&_everywhere_list_label, &_everywhere_when_selected_label, [](ColorTransformDialog* instance){
-            instance->_target = EVERYWHERE;
+            instance->_apply_scope = EVERYWHERE;
         }, this);
 
         _apply_to_dropdown.set_margin_horizontal(state::margin_unit);
@@ -191,21 +191,33 @@ namespace mousetrap
         _reset_button.set_child(&_reset_label);
 
         _accept_button.connect_signal_clicked([](Button*, ColorTransformDialog* instance){
+
+            active_state->apply_color_offset(instance->_apply_scope,
+                 instance->_h_offset,
+                 instance->_s_offset,
+                 instance->_v_offset,
+                 instance->_r_offset,
+                 instance->_g_offset,
+                 instance->_b_offset,
+                 instance->_a_offset
+            );
+
             instance->_dialog.close();
+            instance->reset();
         }, this);
 
         _cancel_button.connect_signal_clicked([](Button*, ColorTransformDialog* instance){
             instance->_dialog.close();
+            instance->reset();
         }, this);
 
         _reset_button.connect_signal_clicked([](Button*, ColorTransformDialog* instance){
-            instance->set_h_offset(0);
-            instance->set_s_offset(0);
-            instance->set_v_offset(0);
-            instance->set_r_offset(0);
-            instance->set_g_offset(0);
-            instance->set_b_offset(0);
-            instance->set_a_offset(0);
+            instance->reset();
+        }, this);
+
+        _dialog.connect_signal_close([](Dialog*, ColorTransformDialog* instance) -> bool{
+            instance->reset();
+            return false;
         }, this);
 
         auto button_size = std::max<float>(_accept_button.get_preferred_size().natural_size.x, _cancel_button.get_preferred_size().natural_size.x);
@@ -243,7 +255,7 @@ namespace mousetrap
 
     void ColorTransformDialog::update_preview()
     {
-        active_state->set_color_component_offset(
+        active_state->set_color_offset(
             _h_offset,
             _s_offset,
             _v_offset,
@@ -315,5 +327,16 @@ namespace mousetrap
         _a_offset_scale.set_value(v);
         _a_offset_scale.set_signal_value_changed_blocked(false);
         update_preview();
+    }
+
+    void ColorTransformDialog::reset()
+    {
+        set_h_offset(0);
+        set_s_offset(0);
+        set_v_offset(0);
+        set_r_offset(0);
+        set_g_offset(0);
+        set_b_offset(0);
+        set_a_offset(0);
     }
 }
