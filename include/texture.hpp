@@ -39,6 +39,7 @@ namespace mousetrap
             void bind() const override;
             void unbind() const override;
 
+            void create(size_t width, size_t height);
             void create_from_file(const std::string& path);
             void create_from_image(const Image&);
 
@@ -52,7 +53,6 @@ namespace mousetrap
         private:
             GLNativeHandle _native_handle = 0;
             TextureWrapMode _wrap_mode = TextureWrapMode::STRETCH;
-
             Vector2i _size;
     };
 }

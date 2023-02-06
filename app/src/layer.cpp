@@ -117,9 +117,43 @@ namespace mousetrap
         _is_keyframe = b;
     }
 
+    void Layer::Frame::set_color_offset(float h, float s, float v, float r, float g, float b, float a)
+    {
+        _hsvrgba_offset = {h, s, v, r, g, b, a};
+    }
+
     void Layer::Frame::update_texture()
     {
-        _texture->create_from_image(*_image);
+        auto& offset = _hsvrgba_offset;
+
+        if (true)
+        {
+            auto temp = Image(*_image);
+
+
+            for (size_t y = 0; y < _image->get_size().y; ++y)
+            {
+                for (size_t x = 0; x < _image->get_size().x; ++x)
+                {
+                    auto as_hsva = _image->get_pixel(x, y).operator HSVA();
+                    as_hsva.h = glm::clamp<float>(as_hsva.h + offset.at(0), 0, 1);
+                    as_hsva.s = glm::clamp<float>(as_hsva.s + offset.at(1), 0, 1);
+                    as_hsva.v = glm::clamp<float>(as_hsva.v + offset.at(2), 0, 1);
+
+                    auto as_rgba = as_hsva.operator RGBA();
+                    as_rgba.r = glm::clamp<float>(as_rgba.r + offset.at(3), 0, 1);
+                    as_rgba.g = glm::clamp<float>(as_rgba.g + offset.at(4), 0, 1);
+                    as_rgba.b = glm::clamp<float>(as_rgba.b + offset.at(5), 0, 1);
+                    as_rgba.a = glm::clamp<float>(as_rgba.a + offset.at(6), 0, 1);
+
+                    temp.set_pixel(x, y, as_rgba);
+                }
+            }
+
+            _texture->create_from_image(temp);
+        }
+        else
+            _texture->create_from_image(*_image);
     }
 
     Layer::Layer(const std::string& name, Vector2i size, size_t n_frames)

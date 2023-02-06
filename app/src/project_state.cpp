@@ -656,6 +656,21 @@ namespace mousetrap
         signal_color_selection_changed();
     }
 
+    void ProjectState::set_color_component_offset(float h, float s, float v, float r, float g, float b, float a)
+    {
+        for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+        {
+            for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+            {
+                auto* frame = _layers.at(layer_i)->get_frame(frame_i);
+                frame->set_color_offset(h, s, v, r, g, b, a);
+                frame->update_texture();
+            }
+        }
+
+        signal_layer_image_updated();
+    }
+
     HSVA ProjectState::get_preview_color_current() const
     {
         return _preview_color_current;

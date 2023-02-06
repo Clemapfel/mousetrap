@@ -18,6 +18,26 @@ namespace mousetrap
             glDeleteTextures(1, &_native_handle);
     }
 
+    inline void Texture::create(size_t width, size_t height)
+    {
+        glActiveTexture(GL_TEXTURE0 + 0);
+        glBindTexture(GL_TEXTURE_2D, _native_handle);
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     GL_RGBA32F,
+                     width,
+                     height,
+                     0,
+                     GL_RGBA,
+                     GL_FLOAT,
+                     nullptr
+        );
+
+        _size = {width, height};
+    }
+
     inline void Texture::create_from_file(const std::string& path)
     {
         auto image = Image();

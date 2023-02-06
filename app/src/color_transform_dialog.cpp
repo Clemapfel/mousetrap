@@ -20,6 +20,8 @@ namespace mousetrap
 
     ColorTransformDialog::ColorTransformDialog()
     {
+        _window.set_modal(false);
+
         _h_offset_scale.connect_signal_value_changed([](Scale* scale, ColorTransformDialog* instance){
             instance->set_h_offset(scale->get_value());
         }, this);
@@ -241,11 +243,20 @@ namespace mousetrap
 
     void ColorTransformDialog::update_preview()
     {
-        // TODO
+        active_state->set_color_component_offset(
+            _h_offset,
+            _s_offset,
+            _v_offset,
+            _r_offset,
+            _g_offset,
+            _b_offset,
+            _a_offset
+        );
     }
 
     void ColorTransformDialog::set_h_offset(float v)
     {
+        _h_offset = v;
         _h_offset_scale.set_signal_value_changed_blocked(true);
         _h_offset_scale.set_value(v);
         _h_offset_scale.set_signal_value_changed_blocked(false);
@@ -254,6 +265,7 @@ namespace mousetrap
 
     void ColorTransformDialog::set_s_offset(float v)
     {
+        _s_offset = v;
         _s_offset_scale.set_signal_value_changed_blocked(true);
         _s_offset_scale.set_value(v);
         _s_offset_scale.set_signal_value_changed_blocked(false);
@@ -262,6 +274,7 @@ namespace mousetrap
 
     void ColorTransformDialog::set_v_offset(float v)
     {
+        _v_offset = v;
         _v_offset_scale.set_signal_value_changed_blocked(true);
         _v_offset_scale.set_value(v);
         _v_offset_scale.set_signal_value_changed_blocked(false);
@@ -270,6 +283,7 @@ namespace mousetrap
 
     void ColorTransformDialog::set_r_offset(float v)
     {
+        _r_offset = v;
         _r_offset_scale.set_signal_value_changed_blocked(true);
         _r_offset_scale.set_value(v);
         _r_offset_scale.set_signal_value_changed_blocked(false);
@@ -278,6 +292,7 @@ namespace mousetrap
 
     void ColorTransformDialog::set_g_offset(float v)
     {
+        _g_offset = v;
         _g_offset_scale.set_signal_value_changed_blocked(true);
         _g_offset_scale.set_value(v);
         _g_offset_scale.set_signal_value_changed_blocked(false);
@@ -286,6 +301,7 @@ namespace mousetrap
 
     void ColorTransformDialog::set_b_offset(float v)
     {
+        _b_offset = v;
         _b_offset_scale.set_signal_value_changed_blocked(true);
         _b_offset_scale.set_value(v);
         _b_offset_scale.set_signal_value_changed_blocked(false);
@@ -294,6 +310,7 @@ namespace mousetrap
 
     void ColorTransformDialog::set_a_offset(float v)
     {
+        _a_offset = v;
         _a_offset_scale.set_signal_value_changed_blocked(true);
         _a_offset_scale.set_value(v);
         _a_offset_scale.set_signal_value_changed_blocked(false);

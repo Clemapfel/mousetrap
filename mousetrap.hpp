@@ -80,3 +80,4 @@
 #include <include/level_bar.hpp>
 #include <include/string_compression.hpp>
 #include <include/link_button.hpp>
+#include <include/render_texture.hpp>

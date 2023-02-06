@@ -159,6 +159,9 @@ namespace mousetrap
 
     void CanvasExport::on_layer_image_updated()
     {
+        if (not _area.get_is_realized())
+            return;
+
         for (size_t i = 0; i < active_state->get_n_layers(); ++i)
             _shapes.at(i)->set_texture(active_state->get_frame(i, active_state->get_current_frame_index())->get_texture());
     }

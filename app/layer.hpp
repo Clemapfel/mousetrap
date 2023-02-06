@@ -33,10 +33,22 @@ namespace mousetrap
                     bool get_is_keyframe() const;
                     void set_is_keyframe(bool);
 
+                    void set_color_offset(
+                        float h = 0,
+                        float s = 0,
+                        float v = 0,
+                        float r = 0,
+                        float g = 0,
+                        float b = 0,
+                        float a = 0
+                    );
+
                 private:
                     Image* _image = nullptr;
                     Texture* _texture = nullptr;
                     bool _is_keyframe = true;
+
+                    std::array<float, 7> _hsvrgba_offset = {0, 0, 0, 0, 0, 0, 0};
             };
 
             Layer(const std::string& name, Vector2i size, size_t n_frames);

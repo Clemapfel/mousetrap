@@ -9,6 +9,7 @@ namespace mousetrap
     AnimationPreview::AnimationPreview()
     {
         _layer_area.connect_signal_realize(on_layer_area_realize, this);
+        _layer_area.connect_signal_render(on_layer_area_render, this);
         _layer_area.connect_signal_resize(on_layer_area_resize, this);
         _layer_area.set_size_request({0, 0});
 
@@ -223,13 +224,16 @@ namespace mousetrap
         _transparency_area.add_render_task(transparency_task);
         _transparency_area.queue_render();
 
-        _layer_area.clear_render_tasks();
+        // layer
+        _layer_area_render_tasks.clear();
 
         for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
         {
-            auto task = RenderTask(_layer_shapes.at(layer_i), nullptr, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
-            _layer_area.add_render_task(task);
+            auto task = RenderTask(_layer_shapes.at(layer_i), _draw_to_render_texture_shader, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
+            _layer_area_render_tasks.push_back(task);
         }
+
+        _post_fx_shape_render_task = RenderTask(_post_fx_shape, _post_fx_shader);
 
         _layer_area.queue_render();
     }
@@ -239,6 +243,19 @@ namespace mousetrap
         auto* area = (GLArea*) widget;
         area->make_current();
 
+        instance->_draw_to_render_texture_shader = new Shader();
+        instance->_draw_to_render_texture_shader->create_from_file(get_resource_path() + "shaders/to_render_texture.frag", ShaderType::FRAGMENT);
+
+        instance->_post_fx_shader = new Shader();
+        instance->_post_fx_shader->create_from_file(get_resource_path() + "shaders/project_post_fx.frag", ShaderType::FRAGMENT);
+
+        instance->_post_fx_texture = new RenderTexture();
+        instance->_post_fx_texture->create(1, 1);
+
+        instance->_post_fx_shape = new Shape();
+        instance->_post_fx_shape->as_rectangle({0, 0}, {1, 1});
+        instance->_post_fx_shape->set_texture(instance->_post_fx_texture);
+
         instance->on_layer_count_changed();
 
         instance->set_scale_factor(instance->_scale_factor);
@@ -246,6 +263,49 @@ namespace mousetrap
         instance->set_background_visible(instance->_background_visible);
 
         area->queue_render();
+    }
+
+    gboolean AnimationPreview::on_layer_area_render(GLArea*, GdkGLContext* context, AnimationPreview* instance)
+    {
+        gdk_gl_context_make_current(context);
+
+        static GLNativeHandle before = [](){
+            GLint before = 0;
+            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &before);
+            return before;
+        }();
+
+        {
+            instance->_post_fx_texture->bind_as_rendertarget();
+
+            glClearColor(0, 0, 0, 0);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            glEnable(GL_BLEND);
+            set_current_blend_mode(BlendMode::NORMAL);
+
+            for (auto task:instance->_layer_area_render_tasks)
+                task.render();
+
+            glFlush();
+        }
+
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, before);
+
+            gdk_gl_context_realize(context, nullptr);
+            gdk_gl_context_make_current(context);
+
+            glClearColor(0, 0, 0, 0);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            glEnable(GL_BLEND);
+            set_current_blend_mode(BlendMode::NORMAL);
+
+            instance->_post_fx_shape_render_task.render();
+
+            glFlush();
+        }
     }
 
     void AnimationPreview::on_transparency_area_realize(Widget* widget, AnimationPreview* instance)
@@ -270,6 +330,7 @@ namespace mousetrap
         instance->_canvas_size = {w, h};
         instance->set_scale_factor(instance->_scale_factor);
         instance->_transparency_area.queue_render();
+        instance->_post_fx_texture->create(w, h);
     }
 
     void AnimationPreview::on_transparency_area_resize(GLArea*, int w, int h, AnimationPreview* instance)
