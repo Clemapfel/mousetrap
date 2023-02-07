@@ -52,38 +52,16 @@ namespace mousetrap
         selection_section.add_action("Select Color...", selection_open_select_color_dialog.get_id());
         selection_submenu.add_section("Selection", &selection_section);
 
-        // IMAGE
-
-        auto image_submenu = MenuModel();
-
-        auto image_submenu_size_section = MenuModel();
-        image_submenu_size_section.add_action("Scale Image...", scale_canvas_dialog_open.get_id());
-        image_submenu.add_section("Size", &image_submenu_size_section);
-
-        auto image_submenu_transform_all_section = MenuModel();
-        image_submenu_transform_all_section.add_action("Flip Horizontally", image_transform_flip_horizontally.get_id());
-        image_submenu_transform_all_section.add_action("Flip Vertically", image_transform_flip_vertically.get_id());
-        image_submenu_transform_all_section.add_action("Rotate +90°", image_transform_rotate_clockwise.get_id());
-        image_submenu_transform_all_section.add_action("Rotate -90°", image_transform_rotate_counterclockwise.get_id());
-        image_submenu.add_section("Transform Image", &image_submenu_transform_all_section);
-
-        auto image_submenu_transform_current_section = MenuModel();
-        image_submenu_transform_current_section.add_action("Flip Layer Horizontally", image_transform_flip_current_layer_horizontally.get_id());
-        image_submenu_transform_current_section.add_action("Flip Layer Vertically", image_transform_flip_current_layer_vertically.get_id());
-        image_submenu_transform_current_section.add_action("Rotate Layer +90°", image_transform_rotate_current_layer_clockwise.get_id());
-        image_submenu_transform_current_section.add_action("Rotate Layer -90°", image_transform_rotate_current_layer_counterclockwise.get_id());
-        image_submenu.add_section("Transform Layer", &image_submenu_transform_current_section);
-
         // COLORS
 
         auto colors_submenu = MenuModel();
 
         auto color_submenu_transform_section = MenuModel();
-        color_submenu_transform_section.add_action("Invert", color_transform_invert.get_id());
-        color_submenu_transform_section.add_action("To Grayscale", color_transform_to_grayscale.get_id());
+        color_submenu_transform_section.add_action("Invert", color_transform_dialog_invert.get_id());
+        color_submenu_transform_section.add_action("To Grayscale", color_transform_dialog_to_grayscale.get_id());
         color_submenu_transform_section.add_action("Component Offset...", color_transform_dialog_open.get_id());
-        color_submenu_transform_section.add_action("Replace...", color_transform_open_color_replace_dialog.get_id());
-        color_submenu_transform_section.add_action("Palette Shift...", color_transform_open_palette_shift_dialog.get_id());
+        color_submenu_transform_section.add_action("Replace...", "TODO");
+        color_submenu_transform_section.add_action("Palette Shift...", "TODO");
         colors_submenu.add_section("Transform", &color_submenu_transform_section);
 
         auto palette_editing_section = MenuModel();
@@ -98,7 +76,6 @@ namespace mousetrap
         color_palette_section.add_action("Save As...", palette_view_save_as.get_id());
         color_palette_section.add_action("Save As Default", palette_view_save_as_default.get_id());
         colors_submenu.add_section("Palette Load / Save", &color_palette_section);
-
 
         // LAYERS
 
@@ -181,8 +158,14 @@ namespace mousetrap
 
         auto canvas_submenu_size_section = MenuModel();
         canvas_submenu_size_section.add_action("Resize Canvas...", resize_canvas_dialog_open.get_id());
+        canvas_submenu_size_section.add_action("Scale Image...", scale_canvas_dialog_open.get_id());
         canvas_submenu.add_section("Size", &canvas_submenu_size_section);
 
+        auto canvas_transform_section = MenuModel();
+        canvas_transform_section.add_action("Flip...", image_transform_dialog_open.get_id());
+        canvas_transform_section.add_action("Rotate +90°", image_transform_dialog_rotate_clockwise.get_id());
+        canvas_transform_section.add_action("Rotate -90°", image_transform_dialog_rotate_counterclockwise.get_id());
+        canvas_submenu.add_section("Transform", &canvas_transform_section);
 
         auto canvas_grid_section = MenuModel();
         canvas_grid_section.add_action("Hide / Show Grid", canvas_toggle_grid_visible.get_id());
@@ -277,10 +260,9 @@ namespace mousetrap
         // main layout
 
         main.add_submenu("File", &file_submenu);
-        main.add_submenu("Image", &image_submenu);
+        main.add_submenu("Canvas", &canvas_submenu);
         main.add_submenu("Selection", &selection_submenu);
         main.add_submenu("Colors", &colors_submenu);
-        main.add_submenu("Canvas", &canvas_submenu);
         main.add_submenu("Layers", &layer_submenu);
         main.add_submenu("Frames", &frame_submenu);
         main.add_submenu("Brushes", &brushes_submenu);

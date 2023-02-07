@@ -14,6 +14,8 @@ namespace mousetrap
     namespace state::actions
     {
         DECLARE_GLOBAL_ACTION(color_transform_dialog, open);
+        DECLARE_GLOBAL_ACTION(color_transform_dialog, invert);
+        DECLARE_GLOBAL_ACTION(color_transform_dialog, to_grayscale);
     }
 
     class ColorTransformDialog : public AppComponent
@@ -43,14 +45,14 @@ namespace mousetrap
 
             float _s_offset = 0;
             void set_s_offset(float);
-            Label _s_label = Label("Value:");
+            Label _s_label = Label("Saturation:");
             Scale _s_offset_scale = Scale(-1, 1, 0.001);
             SeparatorLine _s_offset_spacer;
             Box _s_offset_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
             float _v_offset = 0;
             void set_v_offset(float);
-            Label _v_label = Label("Saturation:");
+            Label _v_label = Label("Value:");
             Scale _v_offset_scale = Scale(-1, 1, 0.001);
             SeparatorLine _v_offset_spacer;
             Box _v_offset_box = Box(GTK_ORIENTATION_HORIZONTAL);

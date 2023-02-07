@@ -74,15 +74,6 @@ namespace mousetrap
             float* _b_offset = new float(0);
             float* _a_offset = new float(0);
 
-            static constexpr glm::uint COLOR_OFFSET_MODE = glm::uint(0);
-            static constexpr glm::uint RGB_INVERT_MODE = glm::uint(1);
-            static constexpr glm::uint TO_GRAYSCALE_MODE = glm::uint(2);
-
-            glm::uint* _mode = new glm::uint(0);
-            bool* _invert_r = new bool(true);
-            bool* _invert_g = new bool(true);
-            bool* _invert_b = new bool(true);
-
             // render: transparency tiling
 
             GLArea _transparency_area;

@@ -1,1 +1,1 @@
-#include <app/image_transform.hpp>
+#include <app/image_transform_dialog.hpp>

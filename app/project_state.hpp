@@ -127,6 +127,9 @@ namespace mousetrap
             ApplyScope get_color_offset_apply_scope() const;
             void apply_color_offset();
 
+            void color_invert(ApplyScope);
+            void color_to_grayscale(ApplyScope);
+
             HSVA get_preview_color_current() const;
             HSVA get_preview_color_previous() const;
             void set_preview_colors(HSVA current, HSVA previous);

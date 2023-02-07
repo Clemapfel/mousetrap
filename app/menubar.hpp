@@ -8,8 +8,7 @@
 #include <app/project_state.hpp>
 #include <app/save_file.hpp>
 #include <app/selection.hpp>
-#include <app/image_transform.hpp>
-#include <app/color_transform.hpp>
+#include <app/image_transform_dialog.hpp>
 #include <app/palette_view.hpp>
 #include <app/layer_view.hpp>
 #include <app/frame_view.hpp>

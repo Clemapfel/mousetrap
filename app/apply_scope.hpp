@@ -16,5 +16,15 @@ namespace mousetrap
         EVERYWHERE
     };
 
-    std::string apply_scope_to_string(ApplyScope);
+    inline std::string apply_scope_to_string(ApplyScope scope)
+    {
+        if (scope == ApplyScope::CURRENT_CELL)
+            return "Current Cell";
+        else if (scope == ApplyScope::CURRENT_LAYER)
+            return "Current Layer, All Frames";
+        else if (scope == ApplyScope::CURRENT_FRAME)
+            return "Current Frame, All Layers";
+        else if (scope == ApplyScope::EVERYWHERE)
+            return "All Layers and Frames";
+    }
 }

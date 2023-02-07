@@ -16,11 +16,10 @@
 #include <app/color_picker.hpp>
 #include <app/color_preview.hpp>
 #include <app/color_swapper.hpp>
-#include <app/color_transform.hpp>
 #include <app/file_chooser_dialog.hpp>
 #include <app/frame_view.hpp>
 #include <app/project_state.hpp>
-#include <app/image_transform.hpp>
+#include <app/image_transform_dialog.hpp>
 #include <app/layer.hpp>
 #include <app/layer_view.hpp>
 #include <app/menubar.hpp>

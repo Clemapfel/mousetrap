@@ -323,9 +323,6 @@ add_library(app SHARED
     app/color_swapper.hpp
     app/src/color_swapper.cpp
 
-    app/color_transform.hpp
-    app/src/color_transform.cpp
-
     app/file_chooser_dialog.hpp
     app/src/file_chooser_dialog.inl
 
@@ -335,7 +332,7 @@ add_library(app SHARED
         app/project_state.hpp
         app/src/project_state.cpp
 
-    app/image_transform.hpp
+        app/image_transform_dialog.hpp
     app/src/image_transform.cpp
 
     app/layer.hpp
@@ -375,7 +372,7 @@ add_library(app SHARED
 
     app/verbose_color_picker.hpp
     app/src/verbose_color_picker.cpp
-        app/app_signals.hpp app/open_uri.hpp app/detect_platform.hpp app/resize_canvas_dialog.hpp app/scale_canvas_dialog.hpp app/src/scale_canvas_dialog.cpp app/src/resize_canvas_dialog.cpp app/canvas_export.hpp app/src/canvas_export.cpp app/color_transform_dialog.hpp app/src/color_transform_dialog.cpp app/apply_scope.hpp)
+        app/app_signals.hpp app/open_uri.hpp app/detect_platform.hpp app/resize_canvas_dialog.hpp app/scale_canvas_dialog.hpp app/src/scale_canvas_dialog.cpp app/src/resize_canvas_dialog.cpp app/canvas_export.hpp app/src/canvas_export.cpp app/color_transform_dialog.hpp app/src/color_transform_dialog.cpp app/apply_scope.hpp app/src/image_transform_dialog.cpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

@@ -251,7 +251,6 @@ namespace mousetrap
                 task.register_float("_g_offset", _g_offset);
                 task.register_float("_b_offset", _b_offset);
                 task.register_float("_a_offset", _a_offset);
-                task.register_
             }
 
             _layer_area.add_render_task(task);

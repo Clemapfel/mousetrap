@@ -7,11 +7,10 @@
 #include <app/color_picker.hpp>
 #include <app/color_preview.hpp>
 #include <app/color_swapper.hpp>
-#include <app/color_transform.hpp>
 #include <app/config_files.hpp>
 #include <app/frame_view.hpp>
 #include <app/project_state.hpp>
-#include <app/image_transform.hpp>
+#include <app/image_transform_dialog.hpp>
 #include <app/layer.hpp>
 #include <app/layer_view.hpp>
 #include <app/menubar.hpp>
@@ -110,10 +109,9 @@ namespace mousetrap
 
                 if (rgb_mode == COLOR)
                 {
-                    float value = rand() / float(RAND_MAX);
                     for (size_t x = 0; x < _layer_resolution.x; ++x)
                         for (size_t y = 0; y < _layer_resolution.y; ++y)
-                            to_draw.push_back({Vector2i(x, y), HSVA(rand() / float(RAND_MAX), 1, value, glm::clamp<float>(alpha_mode, 0, 1))});
+                            to_draw.push_back({Vector2i(x, y), HSVA(rand() / float(RAND_MAX), 1, rand() / float(RAND_MAX), glm::clamp<float>(alpha_mode, 0, 1))});
                 }
                 else
                 {
@@ -745,6 +743,80 @@ namespace mousetrap
         signal_layer_image_updated();
     }
 
+    void ProjectState::color_to_grayscale(ApplyScope scope)
+    {
+        auto offset_before = _color_offset;
+        auto offset_scope_before = _color_offset_apply_scope;
+
+        _color_offset = {0, -1, 0, 0, 0, 0, 0};
+        _color_offset_apply_scope = scope;
+
+        apply_color_offset();
+
+        _color_offset = offset_before;
+        _color_offset_apply_scope = offset_scope_before;
+
+        signal_layer_image_updated();
+    }
+
+    void ProjectState::color_invert(ApplyScope scope)
+    {
+        auto apply_to_image = [&](Image* image)
+        {
+            for (size_t y = 0; y < image->get_size().y; ++y)
+            {
+                for (size_t x = 0; x < image->get_size().x; ++x)
+                {
+                    auto as_rgba = image->get_pixel(x, y);
+                    as_rgba.r = 1 - as_rgba.r;
+                    as_rgba.g = 1 - as_rgba.g;
+                    as_rgba.b = 1 - as_rgba.b;
+
+                    image->set_pixel(x, y, as_rgba);
+                }
+            }
+        };
+
+        if (scope == CURRENT_CELL)
+        {
+            auto* frame = _layers.at(_current_layer_i)->get_frame(_current_frame_i);
+            apply_to_image(frame->get_image());
+            frame->update_texture();
+        }
+        else if (scope == CURRENT_LAYER)
+        {
+            for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+            {
+                auto* frame = _layers.at(_current_layer_i)->get_frame(frame_i);
+                apply_to_image(frame->get_image());
+                frame->update_texture();
+            }
+        }
+        else if (scope == CURRENT_FRAME)
+        {
+            for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+            {
+                auto* frame = _layers.at(layer_i)->get_frame(_current_frame_i);
+                apply_to_image(frame->get_image());
+                frame->update_texture();
+            }
+        }
+        else if (scope == ApplyScope::EVERYWHERE)
+        {
+            for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+            {
+                for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+                {
+                    auto* frame = _layers.at(layer_i)->get_frame(frame_i);
+                    apply_to_image(frame->get_image());
+                    frame->update_texture();
+                }
+            }
+        }
+
+        signal_layer_image_updated();
+    }
+
     HSVA ProjectState::get_preview_color_current() const
     {
         return _preview_color_current;
@@ -1137,17 +1209,4 @@ namespace mousetrap
         if (state::animation_preview)
             state::animation_preview->signal_color_offset_changed();
     }
-
-    std::string apply_scope_to_string(ApplyScope scope)
-    {
-        if (scope == ApplyScope::CURRENT_CELL)
-            return "Current Cell";
-        else if (scope == ApplyScope::CURRENT_LAYER)
-            return "Current Layer";
-        else if (scope == ApplyScope::CURRENT_FRAME)
-            return "Current Frame";
-        else if (scope == ApplyScope::EVERYWHERE)
-            return "All Layers and Frames";
-    }
-
 }
