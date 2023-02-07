@@ -16,6 +16,7 @@
 #include <app/palette.hpp>
 #include <app/brush.hpp>
 #include <app/tools.hpp>
+#include <app/apply_scope.hpp>
 
 namespace mousetrap
 {
@@ -35,16 +36,6 @@ namespace mousetrap
     }
 
     using CellPosition = Vector2ui;
-
-    enum ApplyScope
-    {
-        CURRENT_CELL,
-        CURRENT_FRAME,
-        CURRENT_LAYER,
-        EVERYWHERE
-    };
-
-    std::string apply_scope_to_string(ApplyScope);
 
     class ProjectState
     {
@@ -124,18 +115,17 @@ namespace mousetrap
 
             void set_primary_and_secondary_color(HSVA primary, HSVA secondary);
 
+            // post fx: component shift
+
             void set_color_offset(
                 float h = 0, float s = 0, float v = 0,
                 float r = 0, float g = 0, float b = 0,
                 float a = 0
             );
-            const std::array<float, 7> get_color_offset();
-
-            void apply_color_offset(ApplyScope,
-                float h = 0, float s = 0, float v = 0,
-                float r = 0, float g = 0, float b = 0,
-                float a = 0
-            );
+            const std::array<float, 7> get_color_offset() const;
+            void set_color_offset_apply_scope(ApplyScope);
+            ApplyScope get_color_offset_apply_scope() const;
+            void apply_color_offset();
 
             HSVA get_preview_color_current() const;
             HSVA get_preview_color_previous() const;
@@ -208,7 +198,8 @@ namespace mousetrap
             static inline size_t new_layer_count = 0;
             static inline size_t merged_layer_count = 0;
 
-            std::array<float, 7> _color_component_preview_offset = {0, 0, 0, 0, 0, 0, 0};
+            std::array<float, 7> _color_offset = {0, 0, 0, 0, 0, 0, 0};
+            ApplyScope _color_offset_apply_scope = ApplyScope::EVERYWHERE;
 
             void signal_brush_selection_changed();
             void signal_brush_set_updated();

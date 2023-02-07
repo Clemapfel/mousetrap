@@ -112,19 +112,19 @@ namespace mousetrap
         }
         
         _apply_to_dropdown.push_back(&_current_layer_list_label, &_current_layer_when_selected_label, [](ColorTransformDialog* instance){
-            instance->_apply_scope = CURRENT_LAYER;
+            active_state->set_color_offset_apply_scope(CURRENT_LAYER);
         }, this);
 
         _apply_to_dropdown.push_back(&_current_frame_list_label, &_current_frame_when_selected_label, [](ColorTransformDialog* instance){
-            instance->_apply_scope = CURRENT_FRAME;
+            active_state->set_color_offset_apply_scope(CURRENT_FRAME);
         }, this);
 
         _apply_to_dropdown.push_back(&_current_cell_list_label, &_current_cell_when_selected_label, [](ColorTransformDialog* instance){
-            instance->_apply_scope = CURRENT_CELL;
+            active_state->set_color_offset_apply_scope(CURRENT_CELL);
         }, this);
 
         _apply_to_dropdown.push_back(&_everywhere_list_label, &_everywhere_when_selected_label, [](ColorTransformDialog* instance){
-            instance->_apply_scope = EVERYWHERE;
+            active_state->set_color_offset_apply_scope(EVERYWHERE);
         }, this);
 
         _apply_to_dropdown.set_margin_horizontal(state::margin_unit);
@@ -192,15 +192,7 @@ namespace mousetrap
 
         _accept_button.connect_signal_clicked([](Button*, ColorTransformDialog* instance){
 
-            active_state->apply_color_offset(instance->_apply_scope,
-                 instance->_h_offset,
-                 instance->_s_offset,
-                 instance->_v_offset,
-                 instance->_r_offset,
-                 instance->_g_offset,
-                 instance->_b_offset,
-                 instance->_a_offset
-            );
+            active_state->apply_color_offset();
 
             instance->_dialog.close();
             instance->reset();

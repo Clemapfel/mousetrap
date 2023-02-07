@@ -658,18 +658,29 @@ namespace mousetrap
 
     void ProjectState::set_color_offset(float h, float s, float v, float r, float g, float b, float a)
     {
-        _color_component_preview_offset = {h, s, v, r, g, b, a};
+        _color_offset = {h, s, v, r, g, b, a};
         signal_color_offset_changed();
     }
 
-    const std::array<float, 7> ProjectState::get_color_offset()
+    const std::array<float, 7> ProjectState::get_color_offset() const
     {
-        return _color_component_preview_offset;
+        return _color_offset;
     }
 
-    void ProjectState::apply_color_offset(ApplyScope scope, float h, float s, float v, float r, float g, float b, float a)
+    void ProjectState::set_color_offset_apply_scope(ApplyScope scope)
     {
-        auto& offset = _color_component_preview_offset;
+        _color_offset_apply_scope = scope;
+        signal_color_offset_changed();
+    }
+
+    ApplyScope ProjectState::get_color_offset_apply_scope() const
+    {
+        return _color_offset_apply_scope;
+    }
+
+    void ProjectState::apply_color_offset()
+    {
+        auto& offset = _color_offset;
 
         auto apply_to_image = [&](Image* image)
         {
@@ -693,6 +704,7 @@ namespace mousetrap
             }
         };
 
+        auto& scope = _color_offset_apply_scope;
         if (scope == CURRENT_CELL)
         {
             auto* frame = _layers.at(_current_layer_i)->get_frame(_current_frame_i);
@@ -732,8 +744,6 @@ namespace mousetrap
 
         signal_layer_image_updated();
     }
-
-
 
     HSVA ProjectState::get_preview_color_current() const
     {

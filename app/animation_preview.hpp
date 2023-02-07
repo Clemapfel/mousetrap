@@ -58,10 +58,7 @@ namespace mousetrap
 
             GLArea _layer_area;
             std::vector<Shape*> _layer_shapes;
-
-            RenderTexture* _post_fx_texture = nullptr;
             Shader* _post_fx_shader = nullptr;
-            Shape* _post_fx_shape = nullptr;
 
             static void on_layer_area_realize(Widget*, AnimationPreview*);
             static void on_layer_area_resize(GLArea*, int w, int h, AnimationPreview*);
@@ -86,8 +83,6 @@ namespace mousetrap
             static void on_transparency_area_realize(Widget*, AnimationPreview*);
             static void on_transparency_area_resize(GLArea*, int w, int h, AnimationPreview*);
 
-            std::vector<RenderTask> _layer_area_render_tasks;
-            RenderTask _post_fx_shape_render_task = RenderTask(new Shape()); // TODO
             void queue_render_tasks();
 
             // scale factor

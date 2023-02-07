@@ -95,8 +95,6 @@ namespace mousetrap
             Label _everywhere_list_label = Label(apply_scope_to_string(ApplyScope::EVERYWHERE));
             Label _everywhere_when_selected_label = Label(apply_scope_to_string(ApplyScope::EVERYWHERE));
 
-            ApplyScope _apply_scope = ApplyScope::EVERYWHERE;
-
             SeparatorLine _button_spacer;
 
             Label _accept_label = Label("Apply");

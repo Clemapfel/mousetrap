@@ -7,9 +7,6 @@ namespace mousetrap
 {
     inline RenderTask::RenderTask(Shape* shape, Shader* shader, GLTransform* transform, BlendMode blend_mode)
     {
-        if (shape == nullptr)
-            throw std::invalid_argument("In RenderTask::RenderTask: shape == nullptr");
-
         if (noop_shader == nullptr)
             noop_shader = new Shader();
 
@@ -25,10 +22,7 @@ namespace mousetrap
     inline void RenderTask::render()
     {
         if (_shape == nullptr)
-        {
-            std::cerr << "[WARNING] In RenderTask::render: trying to render a shape pointer that is no longer valid" << std::endl;
             return;
-        }
 
         auto* shader = _shader == nullptr ? noop_shader : _shader;
         auto* transform = _transform == nullptr ? noop_transform : _transform;

@@ -9,7 +9,7 @@ namespace mousetrap
     AnimationPreview::AnimationPreview()
     {
         _layer_area.connect_signal_realize(on_layer_area_realize, this);
-        _layer_area.connect_signal_render(on_layer_area_render, this);
+        //_layer_area.connect_signal_render(on_layer_area_render, this);
         _layer_area.connect_signal_resize(on_layer_area_resize, this);
         _layer_area.set_size_request({0, 0});
 
@@ -224,28 +224,37 @@ namespace mousetrap
         _transparency_area.add_render_task(transparency_task);
         _transparency_area.queue_render();
 
-        // layers
+        if (not _layer_area.get_is_realized())
+            return;
 
-        _layer_area_render_tasks.clear();
+        _layer_area.clear_render_tasks();
 
+        auto scope = active_state->get_color_offset_apply_scope();
         for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
         {
-            auto task = RenderTask(_layer_shapes.at(layer_i), nullptr, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
-            _layer_area_render_tasks.push_back(task);
+            Shader* shader = nullptr;
+            if (scope == EVERYWHERE or scope == CURRENT_FRAME)
+                shader = _post_fx_shader;
+            else if (layer_i == active_state->get_current_layer_index() and (scope == CURRENT_CELL or scope == CURRENT_LAYER))
+                shader = _post_fx_shader;
+            else
+                shader = nullptr;
+
+            auto task = RenderTask(_layer_shapes.at(layer_i), shader, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
+
+            if (shader != nullptr)
+            {
+                task.register_float("_h_offset", _h_offset);
+                task.register_float("_s_offset", _s_offset);
+                task.register_float("_v_offset", _v_offset);
+                task.register_float("_r_offset", _r_offset);
+                task.register_float("_g_offset", _g_offset);
+                task.register_float("_b_offset", _b_offset);
+                task.register_float("_a_offset", _a_offset);
+            }
+
+            _layer_area.add_render_task(task);
         }
-
-        // post fx
-
-        _post_fx_shape_render_task = RenderTask(_post_fx_shape, _post_fx_shader);
-
-        auto& offset = active_state->get_color_offset();
-        _post_fx_shape_render_task.register_float("_h_offset", _h_offset);
-        _post_fx_shape_render_task.register_float("_s_offset", _s_offset);
-        _post_fx_shape_render_task.register_float("_v_offset", _v_offset);
-        _post_fx_shape_render_task.register_float("_r_offset", _r_offset);
-        _post_fx_shape_render_task.register_float("_g_offset", _g_offset);
-        _post_fx_shape_render_task.register_float("_b_offset", _b_offset);
-        _post_fx_shape_render_task.register_float("_a_offset", _a_offset);
 
         _layer_area.queue_render();
     }
@@ -258,13 +267,6 @@ namespace mousetrap
         instance->_post_fx_shader = new Shader();
         instance->_post_fx_shader->create_from_file(get_resource_path() + "shaders/project_post_fx.frag", ShaderType::FRAGMENT);
 
-        instance->_post_fx_texture = new RenderTexture();
-        instance->_post_fx_texture->create(1, 1);
-
-        instance->_post_fx_shape = new Shape();
-        instance->_post_fx_shape->as_rectangle({0, 0}, {1, 1});
-        instance->_post_fx_shape->set_texture(instance->_post_fx_texture);
-
         instance->on_layer_count_changed();
 
         instance->set_scale_factor(instance->_scale_factor);
@@ -274,6 +276,7 @@ namespace mousetrap
         area->queue_render();
     }
 
+    /*
     gboolean AnimationPreview::on_layer_area_render(GLArea*, GdkGLContext* context, AnimationPreview* instance)
     {
         gdk_gl_context_make_current(context);
@@ -316,6 +319,7 @@ namespace mousetrap
             glFlush();
         }
     }
+     */
 
     void AnimationPreview::on_transparency_area_realize(Widget* widget, AnimationPreview* instance)
     {
@@ -339,7 +343,6 @@ namespace mousetrap
         instance->_canvas_size = {w, h};
         instance->set_scale_factor(instance->_scale_factor);
         instance->_transparency_area.queue_render();
-        instance->_post_fx_texture->create(w, h);
     }
 
     void AnimationPreview::on_transparency_area_resize(GLArea*, int w, int h, AnimationPreview* instance)
@@ -439,6 +442,7 @@ namespace mousetrap
         *_b_offset = offset.at(5);
         *_a_offset = offset.at(6);
 
+        queue_render_tasks();
         _layer_area.queue_render();
     }
 }
