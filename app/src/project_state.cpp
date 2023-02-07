@@ -1004,6 +1004,77 @@ namespace mousetrap
         return _playback_fps;
     }
 
+    void ProjectState::set_image_flip(bool flip_horizontally, bool flip_vertically)
+    {
+        _image_flip.flip_horizontally = flip_horizontally;
+        _image_flip.flip_vertically = flip_vertically;
+        signal_image_flip_changed();
+    }
+
+    ProjectState::flip_state ProjectState::get_image_flip() const
+    {
+        return _image_flip;
+    }
+
+    void ProjectState::set_image_flip_apply_scope(ApplyScope scope)
+    {
+        _image_flip_apply_scope = scope;
+        signal_image_flip_changed();
+    }
+
+    ApplyScope ProjectState::get_image_flip_apply_scope() const
+    {
+        return _image_flip_apply_scope;
+    }
+
+    void ProjectState::apply_image_flip()
+    {
+        auto apply_to_image = [&](Image* image)
+        {
+            *image = image->as_flipped(_image_flip.flip_horizontally, _image_flip.flip_vertically);
+        };
+
+        auto& scope = _image_flip_apply_scope;
+        if (scope == CURRENT_CELL)
+        {
+            auto* frame = _layers.at(_current_layer_i)->get_frame(_current_frame_i);
+            apply_to_image(frame->get_image());
+            frame->update_texture();
+        }
+        else if (scope == CURRENT_LAYER)
+        {
+            for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+            {
+                auto* frame = _layers.at(_current_layer_i)->get_frame(frame_i);
+                apply_to_image(frame->get_image());
+                frame->update_texture();
+            }
+        }
+        else if (scope == CURRENT_FRAME)
+        {
+            for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+            {
+                auto* frame = _layers.at(layer_i)->get_frame(_current_frame_i);
+                apply_to_image(frame->get_image());
+                frame->update_texture();
+            }
+        }
+        else if (scope == ApplyScope::EVERYWHERE)
+        {
+            for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+            {
+                for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+                {
+                    auto* frame = _layers.at(layer_i)->get_frame(frame_i);
+                    apply_to_image(frame->get_image());
+                    frame->update_texture();
+                }
+            }
+        }
+
+        signal_layer_image_updated();
+    }
+
     void ProjectState::signal_brush_selection_changed()
     {
         if (state::brush_options)
@@ -1208,5 +1279,14 @@ namespace mousetrap
 
         if (state::animation_preview)
             state::animation_preview->signal_color_offset_changed();
+    }
+
+    void ProjectState::signal_image_flip_changed()
+    {
+        if (state::canvas)
+            state::canvas->signal_image_flip_changed();
+
+        if (state::animation_preview)
+            state::animation_preview->signal_image_flip_changed();
     }
 }

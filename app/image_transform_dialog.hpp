@@ -31,15 +31,16 @@ namespace mousetrap
 
         private:
             void update_preview();
+            void reset();
 
             Window _window;
-            Dialog _dialog = Dialog(&_window, "Color Transform...");
+            Dialog _dialog = Dialog(&_window, "Canvas Transform...");
             Box _window_box = Box(GTK_ORIENTATION_VERTICAL);
 
             bool _flip_horizontally = false;
             bool _flip_vertically = false;
 
-            Label _instruction_label = Label("<b>Flip Canvas</b>");
+            Label _instruction_label = Label("<b>Flip Canvas...</b>");
 
             Label _h_flip_label = Label("Flip Horizontally:");
             SeparatorLine _h_flip_spacer;
@@ -47,15 +48,14 @@ namespace mousetrap
             Box _h_flip_box = Box(GTK_ORIENTATION_HORIZONTAL);
             void set_flip_horizontally(bool);
 
-            Label _v_flip_label = Label("Flip Horizontally:");
+            Label _v_flip_label = Label("Flip Vertically:");
             SeparatorLine _v_flip_spacer;
             CheckButton _v_flip_check_button;
             Box _v_flip_box = Box(GTK_ORIENTATION_HORIZONTAL);
             void set_flip_vertically(bool);
 
-            SeparatorLine _dropdown_spacer;
-
             Label _apply_to_label = Label("<b>Apply To...</b>");
+
             DropDown _apply_to_dropdown;
             Label _current_layer_list_label = Label(apply_scope_to_string(ApplyScope::CURRENT_LAYER));
             Label _current_layer_when_selected_label = Label(apply_scope_to_string(ApplyScope::CURRENT_LAYER));
@@ -66,14 +66,13 @@ namespace mousetrap
             Label _everywhere_list_label = Label(apply_scope_to_string(ApplyScope::EVERYWHERE));
             Label _everywhere_when_selected_label = Label(apply_scope_to_string(ApplyScope::EVERYWHERE));
 
-            SeparatorLine _button_spacer;
-
             Label _accept_label = Label("Apply");
             Button _accept_button;
 
             Label _cancel_label = Label("Cancel");
             Button _cancel_button;
 
+            SeparatorLine _button_box_spacer;
             Box _button_box = Box(GTK_ORIENTATION_HORIZONTAL);
     };
 

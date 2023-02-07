@@ -31,7 +31,8 @@ namespace mousetrap
         public signals::LayerResolutionChanged,
         public signals::PlaybackToggled,
         public signals::PlaybackFpsChanged,
-        public signals::ColorOffsetChanged
+        public signals::ColorOffsetChanged,
+        public signals::ImageFlipChanged
     {
         public:
             AnimationPreview();
@@ -52,6 +53,7 @@ namespace mousetrap
             void on_playback_fps_changed() override;
             void on_layer_resolution_changed() override;
             void on_color_offset_changed() override;
+            void on_image_flip_changed() override;
 
         private:
             // render: layers
@@ -73,6 +75,15 @@ namespace mousetrap
             float* _g_offset = new float(0);
             float* _b_offset = new float(0);
             float* _a_offset = new float(0);
+
+            int* _flip_horizontally = new int(0);
+            int* _flip_vertically = new int(0);
+
+            static inline const int* yes = new int(1);
+            static inline const int* no = new int(0);
+
+            ApplyScope _color_offset_apply_scope = active_state->get_color_offset_apply_scope();
+            ApplyScope _image_flip_apply_scope = active_state->get_image_flip_apply_scope();
 
             // render: transparency tiling
 

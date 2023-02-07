@@ -229,20 +229,30 @@ namespace mousetrap
 
         _layer_area.clear_render_tasks();
 
-        auto scope = active_state->get_color_offset_apply_scope();
+        auto color_offset_scope = active_state->get_color_offset_apply_scope();
+        auto flip_scope = active_state->get_image_flip_apply_scope();
+
         for (size_t layer_i = 0; layer_i < active_state->get_n_layers(); ++layer_i)
         {
-            Shader* shader = nullptr;
-            if (scope == EVERYWHERE or scope == CURRENT_FRAME)
-                shader = _post_fx_shader;
-            else if (layer_i == active_state->get_current_layer_index() and (scope == CURRENT_CELL or scope == CURRENT_LAYER))
-                shader = _post_fx_shader;
-            else
-                shader = nullptr;
+            bool should_apply_color_offset = false;
+            bool should_apply_flip = false;
 
-            auto task = RenderTask(_layer_shapes.at(layer_i), shader, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
+            if (color_offset_scope == CURRENT_FRAME or color_offset_scope == EVERYWHERE)
+                should_apply_color_offset = true;
+            else if (layer_i == active_state->get_current_layer_index())
+                should_apply_color_offset = true;
 
-            if (shader != nullptr)
+            if (flip_scope == CURRENT_FRAME or flip_scope == EVERYWHERE)
+                should_apply_flip = true;
+            else if (layer_i == active_state->get_current_layer_index())
+                should_apply_flip = true;
+
+            auto task = RenderTask(_layer_shapes.at(layer_i), _post_fx_shader, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
+
+            task.register_int("_apply_color_offset", should_apply_color_offset ? yes : no);
+            task.register_int("_apply_flip", should_apply_flip ? yes : no);
+
+            if (should_apply_color_offset)
             {
                 task.register_float("_h_offset", _h_offset);
                 task.register_float("_s_offset", _s_offset);
@@ -251,6 +261,12 @@ namespace mousetrap
                 task.register_float("_g_offset", _g_offset);
                 task.register_float("_b_offset", _b_offset);
                 task.register_float("_a_offset", _a_offset);
+            }
+
+            if (should_apply_flip)
+            {
+                task.register_int("_flip_horizontally", _flip_horizontally);
+                task.register_int("_flip_vertically", _flip_vertically);
             }
 
             _layer_area.add_render_task(task);
@@ -442,7 +458,27 @@ namespace mousetrap
         *_b_offset = offset.at(5);
         *_a_offset = offset.at(6);
 
-        queue_render_tasks();
+        if (active_state->get_color_offset_apply_scope() != _color_offset_apply_scope)
+        {
+            _color_offset_apply_scope = active_state->get_color_offset_apply_scope();
+            queue_render_tasks();
+        }
+
+        _layer_area.queue_render();
+    }
+
+    void AnimationPreview::on_image_flip_changed()
+    {
+        const auto& state = active_state->get_image_flip();
+        *_flip_horizontally = state.flip_horizontally;
+        *_flip_vertically = state.flip_vertically;
+
+        //if (active_state->get_image_flip_apply_scope() != _image_flip_apply_scope)
+        {
+            _image_flip_apply_scope = active_state->get_image_flip_apply_scope();
+            queue_render_tasks();
+        }
+
         _layer_area.queue_render();
     }
 }

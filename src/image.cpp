@@ -298,4 +298,28 @@ namespace mousetrap
 
         return out;
     }
+
+    Image Image::as_flipped(bool flip_horizontally, bool flip_vertically)
+    {
+        auto out = Image();
+        out.create(_size.x, _size.y);
+
+        for (size_t x = 0; x < _size.x; ++x)
+        {
+            for (size_t y = 0; y < _size.y; ++y)
+            {
+                Vector2ui pos = {x, y};
+
+                if (flip_horizontally)
+                    pos.x = _size.x - pos.x - 1;
+
+                if (flip_vertically)
+                    pos.y = _size.y - pos.y - 1;
+
+                out.set_pixel(pos.x, pos.y, get_pixel(x, y));
+            }
+        }
+
+        return out;
+    }
 }

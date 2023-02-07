@@ -115,8 +115,6 @@ namespace mousetrap
 
             void set_primary_and_secondary_color(HSVA primary, HSVA secondary);
 
-            // post fx: component shift
-
             void set_color_offset(
                 float h = 0, float s = 0, float v = 0,
                 float r = 0, float g = 0, float b = 0,
@@ -129,6 +127,13 @@ namespace mousetrap
 
             void color_invert(ApplyScope);
             void color_to_grayscale(ApplyScope);
+
+            void set_image_flip(bool flip_horizontally, bool flip_vertically);
+            using flip_state = struct {bool flip_horizontally, flip_vertically;};
+            flip_state get_image_flip() const;
+            void set_image_flip_apply_scope(ApplyScope);
+            ApplyScope get_image_flip_apply_scope() const;
+            void apply_image_flip();
 
             HSVA get_preview_color_current() const;
             HSVA get_preview_color_previous() const;
@@ -204,6 +209,9 @@ namespace mousetrap
             std::array<float, 7> _color_offset = {0, 0, 0, 0, 0, 0, 0};
             ApplyScope _color_offset_apply_scope = ApplyScope::EVERYWHERE;
 
+            flip_state _image_flip;
+            ApplyScope _image_flip_apply_scope = ApplyScope::EVERYWHERE;
+
             void signal_brush_selection_changed();
             void signal_brush_set_updated();
             void signal_color_selection_changed();
@@ -222,6 +230,7 @@ namespace mousetrap
             void signal_playback_toggled();
             void signal_playback_fps_changed();
             void signal_color_offset_changed();
+            void signal_image_flip_changed();
     };
 
     inline std::vector<ProjectState*> project_states = {};

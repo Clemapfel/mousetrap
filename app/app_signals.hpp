@@ -49,6 +49,7 @@ namespace mousetrap::signals
     DECLARE_APP_SIGNAL_COMPONENT(PlaybackFpsChanged, playback_fps_changed)
 
     DECLARE_APP_SIGNAL_COMPONENT(ColorOffsetChanged, color_offset_changed)
+    DECLARE_APP_SIGNAL_COMPONENT(ImageFlipChanged, image_flip_changed)
 
     DECLARE_APP_SIGNAL_COMPONENT(LayerResolutionChanged, layer_resolution_changed)
     DECLARE_APP_SIGNAL_COMPONENT(LayerImageUpdated, layer_image_updated)

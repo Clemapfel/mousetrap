@@ -39,6 +39,7 @@
 #include <app/resize_canvas_dialog.hpp>
 #include <app/canvas_export.hpp>
 #include <app/color_transform_dialog.hpp>
+#include <app/image_transform_dialog.hpp>
 
 using namespace mousetrap;
 
@@ -74,6 +75,7 @@ static void activate(GtkApplication* app, void*)
     state::resize_canvas_dialog = new ResizeCanvasDialog();
     state::canvas_export = new CanvasExport();
     state::color_transform_dialog = new ColorTransformDialog();
+    state::image_transform_dialog = new ImageTransformDialog();
 
     Widget* layer_view = state::layer_view->operator Widget*();
     Widget* palette_view = state::palette_view->operator Widget*();

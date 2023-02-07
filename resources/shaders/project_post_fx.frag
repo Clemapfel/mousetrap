@@ -17,6 +17,12 @@ uniform float _g_offset;
 uniform float _b_offset;
 uniform float _a_offset;
 
+uniform int _flip_horizontally;
+uniform int _flip_vertically;
+
+uniform int _apply_flip;
+uniform int _apply_color_offset;
+
 vec3 rgb_to_hsv(vec3 c)
 {
     vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -35,9 +41,25 @@ vec3 hsv_to_rgb(vec3 c)
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
+float flip(float coord)
+{
+    return 1 - coord;
+}
+
 void main()
 {
-    vec4 color = texture2D(_texture, _texture_coordinates);
+    vec2 pos = vec2(
+        _apply_flip == 1 && _flip_horizontally == 1 ? flip(_texture_coordinates.x) : _texture_coordinates.x,
+        _apply_flip == 1 && _flip_vertically == 1 ? flip(_texture_coordinates.y) : _texture_coordinates.y
+    );
+
+    vec4 color = texture2D(_texture, pos);
+
+    if (_apply_color_offset != 1)
+    {
+        _fragment_color = color;
+        return;
+    }
 
     vec3 as_hsv = rgb_to_hsv(color.rgb);
     as_hsv.x = fract(as_hsv.x + _h_offset);
