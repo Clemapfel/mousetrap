@@ -58,11 +58,13 @@ namespace mousetrap
 
             GLArea _layer_area;
             std::vector<Shape*> _layer_shapes;
-            Shader* _post_fx_shader = nullptr;
 
             static void on_layer_area_realize(Widget*, AnimationPreview*);
             static void on_layer_area_resize(GLArea*, int w, int h, AnimationPreview*);
             static gboolean on_layer_area_render(GLArea*, GdkGLContext*, AnimationPreview*);
+
+            Shader* _post_fx_shader = nullptr;
+            // uniforms, c.f. resources/shaders/project_post_fx.frag
 
             float* _h_offset = new float(0);
             float* _s_offset = new float(0);
@@ -71,6 +73,15 @@ namespace mousetrap
             float* _g_offset = new float(0);
             float* _b_offset = new float(0);
             float* _a_offset = new float(0);
+
+            static constexpr glm::uint COLOR_OFFSET_MODE = glm::uint(0);
+            static constexpr glm::uint RGB_INVERT_MODE = glm::uint(1);
+            static constexpr glm::uint TO_GRAYSCALE_MODE = glm::uint(2);
+
+            glm::uint* _mode = new glm::uint(0);
+            bool* _invert_r = new bool(true);
+            bool* _invert_g = new bool(true);
+            bool* _invert_b = new bool(true);
 
             // render: transparency tiling
 

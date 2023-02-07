@@ -21,6 +21,7 @@ namespace mousetrap
 
             void register_float(const std::string& uniform_name, float*);
             void register_int(const std::string& uniform_name, int*);
+            void register_uint(const std::string& uniform_name, glm::uint*);
             void register_vec2(const std::string& uniform_name, Vector2f*);
             void register_vec3(const std::string& uniform_name, Vector3f*);
             void register_vec4(const std::string& uniform_name, Vector4f*);
@@ -30,6 +31,7 @@ namespace mousetrap
 
             void register_float(const std::string& uniform_name, const float*);
             void register_int(const std::string& uniform_name, const int*);
+            void register_uint(const std::string& uniform_name, const glm::uint*);
             void register_vec2(const std::string& uniform_name, const Vector2f*);
             void register_vec3(const std::string& uniform_name, const Vector3f*);
             void register_vec4(const std::string& uniform_name, const Vector4f*);
@@ -54,6 +56,7 @@ namespace mousetrap
             
             std::map<std::string, const float*> _floats;
             std::map<std::string, const int*> _ints;
+            std::map<std::string, const glm::uint*> _uints;
             std::map<std::string, const Vector2f*> _vec2s;
             std::map<std::string, const Vector3f*> _vec3s;
             std::map<std::string, const Vector4f*> _vec4s;

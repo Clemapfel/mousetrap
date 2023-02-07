@@ -77,6 +77,11 @@ namespace mousetrap
         _ints.insert({uniform_name, value});
     }
 
+    inline void RenderTask::register_uint(const std::string& uniform_name, glm::uint* value)
+    {
+        _uints.insert({uniform_name, value});
+    }
+
     inline void RenderTask::register_vec2(const std::string& uniform_name, Vector2f* value)
     {
         _vec2s.insert({uniform_name, value});
@@ -115,6 +120,11 @@ namespace mousetrap
     inline void RenderTask::register_int(const std::string& uniform_name, const int* value)
     {
         _ints.insert({uniform_name, value});
+    }
+
+    inline void RenderTask::register_uint(const std::string& uniform_name, const glm::uint* value)
+    {
+        _uints.insert({uniform_name, value});
     }
 
     inline void RenderTask::register_vec2(const std::string& uniform_name, const Vector2f* value)

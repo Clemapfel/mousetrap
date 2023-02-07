@@ -162,6 +162,11 @@ namespace mousetrap
         glUniform1i(get_uniform_location(uniform_name), value);
     }
 
+    inline void Shader::set_uniform_uint(const std::string& uniform_name, glm::uint value)
+    {
+        glUniform1ui(get_uniform_location(uniform_name), value);
+    }
+
     inline void Shader::set_uniform_vec2(const std::string& uniform_name, Vector2f value)
     {
         glUniform2f(get_uniform_location(uniform_name), value.x, value.y);

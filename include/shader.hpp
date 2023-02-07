@@ -37,6 +37,7 @@ namespace mousetrap
             //
             void set_uniform_float(const std::string& uniform_name, float);
             void set_uniform_int(const std::string& uniform_name, int);
+            void set_uniform_uint(const std::string& uniform_name, glm::uint);
             void set_uniform_vec2(const std::string& uniform_name, Vector2f);
             void set_uniform_vec3(const std::string& uniform_name, Vector3f);
             void set_uniform_vec4(const std::string& uniform_name, Vector4f);
