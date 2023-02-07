@@ -8,6 +8,7 @@
 #include <app/app_component.hpp>
 #include <app/config_files.hpp>
 #include <app/project_state.hpp>
+#include <app/tooltip.hpp>
 
 namespace mousetrap
 {

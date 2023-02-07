@@ -47,6 +47,27 @@ namespace mousetrap
         _final_size_label.set_text("New Size: " + std::to_string(w) + " x " + std::to_string(h) + " px");
     }
 
+    void ResizeCanvasDialog::set_x_offset(int x)
+    {
+        _x_offset = x;
+        _x_offset_button.set_signal_value_changed_blocked(true);
+        _x_offset_button.set_value(x);
+        _x_offset_button.set_signal_value_changed_blocked(false);
+    }
+
+    void ResizeCanvasDialog::set_y_offset(int y)
+    {
+        _y_offset = y;
+        _y_offset_button.set_signal_value_changed_blocked(true);
+        _y_offset_button.set_value(y);
+        _y_offset_button.set_signal_value_changed_blocked(false);
+    }
+
+    void ResizeCanvasDialog::center()
+    {
+        std::cerr << "[ERROR] In ResizeCanvasDialog::center: TODO" << std::endl;
+    }
+
     void ResizeCanvasDialog::set_scale_mode(ScaleMode mode)
     {
         _width_spin_button.set_signal_value_changed_blocked(true);
@@ -168,7 +189,9 @@ namespace mousetrap
 
     ResizeCanvasDialog::ResizeCanvasDialog()
         : _width_spin_button(1, 1, 1),
-          _height_spin_button(1, 1, 1)
+          _height_spin_button(1, 1, 1),
+          _x_offset_button(0, 0, 1),
+          _y_offset_button(0, 0, 1)
     {
         set_scale_mode(_scale_mode);
         on_layer_resolution_changed();
@@ -261,6 +284,43 @@ namespace mousetrap
         _spin_button_and_dropdown_box.set_margin_start(state::margin_unit);
         _maintain_aspect_ratio_box.set_margin_start(state::margin_unit);
 
+        _offset_label.set_halign(GTK_ALIGN_START);
+
+        for (auto* label : {&_x_offset_label, &_y_offset_label})
+        {
+            label->set_halign(GTK_ALIGN_START);
+            label->set_margin_end(state::margin_unit * 2);
+        }
+
+        for (auto* box : {&_x_offset_box, &_y_offset_box})
+        {
+            box->set_margin_horizontal(state::margin_unit * 2);
+        }
+
+        _x_offset_button.connect_signal_value_changed([](SpinButton* scale, ResizeCanvasDialog* instance){
+            instance->set_x_offset(scale->get_value());
+        }, this);
+
+        _y_offset_button.connect_signal_value_changed([](SpinButton* scale, ResizeCanvasDialog* instance){
+            instance->set_x_offset(scale->get_value());
+        }, this);
+
+        _x_offset_box.push_back(&_x_offset_label);
+        _x_offset_box.push_back(&_x_offset_button);
+        _y_offset_box.push_back(&_y_offset_label);
+        _y_offset_box.push_back(&_y_offset_button);
+
+        _center_button.set_child(&_center_button_label);
+        _center_button.connect_signal_clicked([](Button* button, ResizeCanvasDialog* instance){
+            instance->center();
+        }, this);
+        _center_button.set_valign(GTK_ALIGN_CENTER);
+
+        _offset_box.push_back(&_x_offset_box);
+        _offset_box.push_back(&_y_offset_box);
+        _offset_and_center_box.push_back(&_offset_box);
+        _offset_and_center_box.push_back(&_center_button);
+
         _window_box.push_back(&_instruction_label);
         _window_box.push_back(&_spin_button_and_dropdown_box);
         _window_box.push_back(&_maintain_aspect_ratio_box);
@@ -274,8 +334,21 @@ namespace mousetrap
             _window_box.push_back(spacer);
         }
 
-        _instruction_label.set_justify_mode(JustifyMode::LEFT);
+        _window_box.push_back(&_offset_label);
+        _window_box.push_back(&_offset_and_center_box);
+
+        {
+            auto* spacer = new SeparatorLine();
+            spacer->set_size_request({0, 3});
+            spacer->set_vexpand(false);
+            spacer->set_margin_top(state::margin_unit);
+            _window_box.push_back(spacer);
+        }
+
         _instruction_label.set_halign(GTK_ALIGN_START);
+
+        for (auto* label : {&_offset_label})
+            label->set_margin_vertical(state::margin_unit);
 
         _window_box.set_margin(state::margin_unit);
 
@@ -296,7 +369,11 @@ namespace mousetrap
             auto width = instance->_scale_mode == ABSOLUTE ? width_value  : (width_value / 100) * active_state->get_layer_resolution().x;
             auto height = instance->_scale_mode == ABSOLUTE ? height_value  : (height_value / 100) * active_state->get_layer_resolution().y;
 
-            active_state->resize_canvas(Vector2ui(round(width), round(height)), Vector2i(0, 0));
+            active_state->resize_canvas(
+                Vector2ui(round(width), round(height)),
+                Vector2i(instance->_x_offset, instance->_y_offset)
+            );
+
             instance->_dialog.close();
         }, this);
 

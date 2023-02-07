@@ -74,6 +74,26 @@ namespace mousetrap
             Label _maintain_aspect_ratio_label;
             Box _maintain_aspect_ratio_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
+            Label _offset_label = Label("<b>Offset</b>");
+
+            int _x_offset = 0;
+            SpinButton _x_offset_button;
+            Label _x_offset_label = Label("x :");
+            Box _x_offset_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            void set_x_offset(int);
+
+            SpinButton _y_offset_button;
+            Label _y_offset_label = Label("y :");
+            Box _y_offset_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            int _y_offset = 0;
+            void set_y_offset(int);
+
+            Label _center_button_label = Label("Center");
+            Button _center_button;
+            Box _offset_box = Box(GTK_ORIENTATION_VERTICAL);
+            Box _offset_and_center_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            void center();
+
             Label _instruction_label = Label(state::tooltips_file->get_value("resize_canvas_dialog", "instruction_label"));
             Label _final_size_label;
 

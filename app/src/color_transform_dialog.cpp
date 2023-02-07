@@ -101,6 +101,7 @@ namespace mousetrap
         {
             scale->set_margin_start(state::margin_unit);
             scale->set_draw_value(true);
+            scale->set_vexpand(false);
             scale->set_size_request({20 * state::margin_unit, 0});
         }
 
@@ -144,8 +145,10 @@ namespace mousetrap
 
         _window_box.push_back(&_offset_label);
         _window_box.push_back(&_offset_instruction_label);
+        _window_box.set_homogeneous(false);
 
-        auto add_spacer = [&](float top_margin = 0, float bottom_margin = 0) {
+        auto add_spacer = [&](float top_margin = 0, float bottom_margin = 0)
+        {
             auto* spacer = new SeparatorLine();
             spacer->set_size_request({0, 3});
             spacer->set_vexpand(false);
@@ -253,6 +256,18 @@ namespace mousetrap
             active_state->color_to_grayscale(ApplyScope::EVERYWHERE);
         });
         state::add_shortcut_action(state::actions::color_transform_dialog_to_grayscale);
+
+        auto add_tooltip_text = [](const std::string& id, Widget* widget) {
+            widget->set_tooltip_text(state::tooltips_file->get_value("color_transform_dialog", id));
+        };
+
+        add_tooltip_text("hue", &_h_offset_box);
+        add_tooltip_text("saturation", &_s_offset_box);
+        add_tooltip_text("value", &_v_offset_box);
+        add_tooltip_text("red", &_r_offset_box);
+        add_tooltip_text("green", &_g_offset_box);
+        add_tooltip_text("blue", &_b_offset_box);
+        add_tooltip_text("opacity", &_a_offset_box);
     }
 
     void ColorTransformDialog::update_preview()
