@@ -132,20 +132,23 @@ namespace mousetrap
         frame_navigation_section.add_action("Jump to End", frame_view_jump_to_end.get_id());
         frame_submenu.add_section("Playback / Navigation", &frame_navigation_section);
 
+        auto cells_section = MenuModel();
+
         auto copy_to_cell_section = MenuModel();
         copy_to_cell_section.add_action("Copy to Cell Above", frame_view_copy_to_cell_above.get_id());
         copy_to_cell_section.add_action("Copy to Cell Below", frame_view_copy_to_cell_below.get_id());
         copy_to_cell_section.add_action("Copy to Cell Before", frame_view_copy_to_cell_before.get_id());
         copy_to_cell_section.add_action("Copy to Cell After", frame_view_copy_to_cell_after.get_id());
-        frame_submenu.add_section("Copy Cells", &copy_to_cell_section);
+        cells_section.add_submenu("Copy Cells", &copy_to_cell_section);
 
         auto swap_with_cell_section = MenuModel();
         swap_with_cell_section.add_action("Swap with Cell Above", frame_view_swap_with_cell_above.get_id());
         swap_with_cell_section.add_action("Swap with Cell Below", frame_view_swap_with_cell_below.get_id());
         swap_with_cell_section.add_action("Swap with Cell Before", frame_view_swap_with_cell_before.get_id());
         swap_with_cell_section.add_action("Swap with Cell After", frame_view_swap_with_cell_after.get_id());
-        frame_submenu.add_section("Swap Cells", &swap_with_cell_section);
+        cells_section.add_submenu("Swap Cells", &swap_with_cell_section);
 
+        frame_submenu.add_section("Cells", &cells_section);
 
         auto frame_other_section = MenuModel();
         frame_other_section.add_stateful_action("Toggle Keyframe", frame_view_toggle_current_frame_is_keyframe.get_id(), false);
@@ -237,16 +240,6 @@ namespace mousetrap
         troubleshooting_section.add_action("About...", menu_open_about_dialog.get_id());
         troubleshooting_section.add_action("Logs...", menu_open_log_folder.get_id());
         other_submenu.add_section("Troubleshooting", &troubleshooting_section);
-
-        // TODO
-
-        static auto* action = new Action("stateful");
-        action->set_stateful_function([](bool current) {
-            std::cout << current << " -> " << not current << std::endl;
-            return not current;
-        });
-        state::app->add_action(*action);
-        other_submenu.add_action("Stateful", action->get_id());
 
         /*
         auto* _native = other_submenu.operator GMenuModel*();

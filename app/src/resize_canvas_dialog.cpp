@@ -63,7 +63,12 @@ namespace mousetrap
         _y_offset_button.set_signal_value_changed_blocked(false);
     }
 
-    void ResizeCanvasDialog::center()
+    void ResizeCanvasDialog::center_offset()
+    {
+        std::cerr << "[ERROR] In ResizeCanvasDialog::center: TODO" << std::endl;
+    }
+
+    void ResizeCanvasDialog::reset_offset()
     {
         std::cerr << "[ERROR] In ResizeCanvasDialog::center: TODO" << std::endl;
     }
@@ -310,16 +315,30 @@ namespace mousetrap
         _y_offset_box.push_back(&_y_offset_label);
         _y_offset_box.push_back(&_y_offset_button);
 
-        _center_button.set_child(&_center_button_label);
-        _center_button.connect_signal_clicked([](Button* button, ResizeCanvasDialog* instance){
-            instance->center();
-        }, this);
-        _center_button.set_valign(GTK_ALIGN_CENTER);
 
         _offset_box.push_back(&_x_offset_box);
         _offset_box.push_back(&_y_offset_box);
-        _offset_and_center_box.push_back(&_offset_box);
-        _offset_and_center_box.push_back(&_center_button);
+
+        _center_button.set_child(&_center_button_label);
+        _center_button.connect_signal_clicked([](Button* button, ResizeCanvasDialog* instance){
+            instance->center_offset();
+        }, this);
+
+        _reset_button.set_child(&_reset_button_label);
+        _reset_button.connect_signal_clicked([](Button* button, ResizeCanvasDialog* instance){
+            instance->reset_offset();
+        }, this);
+
+        _offset_button_box.push_back(&_reset_button);
+        _offset_button_box.push_back(&_center_button);
+
+        _offset_button_box.set_margin_top(state::margin_unit);
+
+        for (auto* button : {&_reset_button, &_center_button})
+        {
+            button->set_margin_horizontal(state::margin_unit);
+            button->set_hexpand(true);
+        }
 
         _window_box.push_back(&_instruction_label);
         _window_box.push_back(&_spin_button_and_dropdown_box);
@@ -335,7 +354,8 @@ namespace mousetrap
         }
 
         _window_box.push_back(&_offset_label);
-        _window_box.push_back(&_offset_and_center_box);
+        _window_box.push_back(&_offset_box);
+        _window_box.push_back(&_offset_button_box);
 
         {
             auto* spacer = new SeparatorLine();
