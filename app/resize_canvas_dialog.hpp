@@ -88,6 +88,8 @@ namespace mousetrap
             int _y_offset = 0;
             void set_y_offset(int);
 
+            void update_offset_bounds();
+
             Box _offset_box = Box(GTK_ORIENTATION_VERTICAL);
 
             Label _center_button_label = Label("Center");
@@ -103,13 +105,18 @@ namespace mousetrap
             Label _instruction_label = Label(state::tooltips_file->get_value("resize_canvas_dialog", "instruction_label"));
             Label _final_size_label;
 
-            Frame _area_frame;
+            Label _preview_label = Label("<b>Preview</b>");
+
+            AspectFrame _aspect_frame = AspectFrame(1);
             GLArea _area;
-            Shape* _new_boundary_shape;
-            Shape* _current_canvas_shape;
-            Texture* _current_canvas_texture;
+            Shape* _new_boundary_shape = nullptr;
+            Shape* _current_canvas_shape = nullptr;
+            Shape* _area_frame_shape = nullptr;
+            Texture* _current_canvas_texture = nullptr;
+            void reformat_area();
             void update_current_image_texture();
 
+            Vector2i _area_size = {1, 1};
             static void on_area_realize(Widget*, ResizeCanvasDialog*);
             static void on_area_resize(GLArea*, int w, int h, ResizeCanvasDialog*);
 
