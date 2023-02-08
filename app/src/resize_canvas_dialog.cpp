@@ -315,7 +315,6 @@ namespace mousetrap
         _y_offset_box.push_back(&_y_offset_label);
         _y_offset_box.push_back(&_y_offset_button);
 
-
         _offset_box.push_back(&_x_offset_box);
         _offset_box.push_back(&_y_offset_box);
 
@@ -339,6 +338,8 @@ namespace mousetrap
             button->set_margin_horizontal(state::margin_unit);
             button->set_hexpand(true);
         }
+
+
 
         _window_box.push_back(&_instruction_label);
         _window_box.push_back(&_spin_button_and_dropdown_box);

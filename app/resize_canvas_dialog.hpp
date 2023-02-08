@@ -103,6 +103,16 @@ namespace mousetrap
             Label _instruction_label = Label(state::tooltips_file->get_value("resize_canvas_dialog", "instruction_label"));
             Label _final_size_label;
 
+            Frame _area_frame;
+            GLArea _area;
+            Shape* _new_boundary_shape;
+            Shape* _current_canvas_shape;
+            Texture* _current_canvas_texture;
+            void update_current_image_texture();
+
+            static void on_area_realize(Widget*, ResizeCanvasDialog*);
+            static void on_area_resize(GLArea*, int w, int h, ResizeCanvasDialog*);
+
             Button _accept_button;
             Label _accept_button_label = Label("Resize");
 
