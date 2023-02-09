@@ -55,13 +55,11 @@ namespace mousetrap
         int w_next = _width;
         int h_next = _height;
 
-        _x_offset_button.set_lower_limit(0);
-        _x_offset_button.set_upper_limit(abs(w_old - w_next));
-        _y_offset_button.set_lower_limit(0);
-        _y_offset_button.set_upper_limit(abs(h_old - h_next));
+        bool selectable = not (w_old == w_next and h_old == h_next);
+        _reset_button.set_can_respond_to_input(selectable);
+        _center_button.set_can_respond_to_input(selectable);
 
-        /*
-        if (w_next <= w_old)
+        if (w_next >= w_old)
         {
             _x_offset_button.set_lower_limit(0);
             _x_offset_button.set_upper_limit(abs(w_old - w_next));
@@ -72,7 +70,7 @@ namespace mousetrap
             _x_offset_button.set_upper_limit(0);
         }
 
-        if (h_next <= h_old)
+        if (h_next >= h_old)
         {
             _y_offset_button.set_lower_limit(0);
             _y_offset_button.set_upper_limit(abs(h_old - h_next));
@@ -81,7 +79,7 @@ namespace mousetrap
         {
             _y_offset_button.set_lower_limit(-1 * abs(h_old - h_next));
             _y_offset_button.set_upper_limit(0);
-        }*/
+        }
     }
 
     void ResizeCanvasDialog::set_x_offset(int x)
@@ -106,8 +104,20 @@ namespace mousetrap
 
     void ResizeCanvasDialog::center_offset()
     {
-        set_x_offset(_x_offset_button.get_upper_limit() / 2);
-        set_y_offset(_y_offset_button.get_upper_limit() / 2);
+        int w_old = active_state->get_layer_resolution().x;
+        int h_old = active_state->get_layer_resolution().y;
+        int w_next = _width;
+        int h_next = _height;
+
+        if (w_next >= w_old)
+            set_x_offset(_x_offset_button.get_upper_limit() / 2);
+        else
+            set_x_offset(-1 * _x_offset_button.get_upper_limit() / 2);
+
+        if (h_next >= h_old)
+            set_y_offset(_y_offset_button.get_upper_limit() / 2);
+        else
+            set_y_offset(-1 * _y_offset_button.get_upper_limit() / 2);
     }
 
     void ResizeCanvasDialog::reset_offset()
@@ -341,10 +351,6 @@ namespace mousetrap
         _maintain_aspect_ratio_box.push_back(&_maintain_aspect_ratio_button);
         _maintain_aspect_ratio_box.push_back(&_maintain_aspect_ratio_label);
 
-        _final_size_label.set_justify_mode(JustifyMode::LEFT);
-        _final_size_label.set_halign(GTK_ALIGN_START);
-        _final_size_label.set_margin_top(state::margin_unit);
-
         _spin_button_and_dropdown_box.set_margin_start(state::margin_unit);
         _maintain_aspect_ratio_box.set_margin_start(state::margin_unit);
 
@@ -408,7 +414,6 @@ namespace mousetrap
         _window_box.push_back(&_instruction_label);
         _window_box.push_back(&_spin_button_and_dropdown_box);
         _window_box.push_back(&_maintain_aspect_ratio_box);
-        _window_box.push_back(&_final_size_label);
 
         _spin_button_and_dropdown_box.set_vexpand(false);
 
@@ -435,6 +440,11 @@ namespace mousetrap
         _window_box.push_back(&_preview_label);
         _window_box.push_back(&_aspect_frame);
         _aspect_frame.set_margin(state::margin_unit);
+
+        _final_size_label.set_margin_vertical(state::margin_unit);
+        _final_size_label.set_halign(GTK_ALIGN_CENTER);
+
+        _window_box.push_back(&_final_size_label);
 
         {
             auto* spacer = new SeparatorLine();
@@ -565,7 +575,7 @@ namespace mousetrap
 
         if (new_w < old_w)
         {
-            new_top_left.x = _x_offset / old_w;
+            new_top_left.x = -1 * _x_offset / old_w;
             new_size.x = new_w / old_w;
 
             old_top_left.x = 0;
@@ -582,7 +592,7 @@ namespace mousetrap
 
         if (new_h < old_h)
         {
-            new_top_left.y = _y_offset / old_h;
+            new_top_left.y = -1 * _y_offset / old_h;
             new_size.y = new_h / old_h;
 
             old_top_left.y = 0;
