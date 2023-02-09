@@ -111,7 +111,13 @@ namespace mousetrap
                 {
                     for (size_t x = 0; x < _layer_resolution.x; ++x)
                         for (size_t y = 0; y < _layer_resolution.y; ++y)
-                            to_draw.push_back({Vector2i(x, y), HSVA(rand() / float(RAND_MAX), 1, rand() / float(RAND_MAX), glm::clamp<float>(alpha_mode, 0, 1))});
+                            to_draw.push_back({
+                                Vector2i(x, y),
+                                x == y ? HSVA(0, 0, 0, 1) : HSVA(rand() / float(RAND_MAX),
+                                1,
+                                rand() / float(RAND_MAX) + (x > 0.5 * layer_resolution.x ? 0.5 : 0.2),
+                                glm::clamp<float>(alpha_mode, 0, 1))
+                            });
                 }
                 else
                 {
@@ -1077,12 +1083,67 @@ namespace mousetrap
 
     void ProjectState::rotate_clockwise()
     {
-        std::cerr << "[ERROR] In ProjectState::rotate_clockwise: TODO" << std::endl;
+        auto apply_to_image  = [](Image* image)
+        {
+            auto out = Image();
+            out.create(image->get_size().y, image->get_size().x);
+
+            for(size_t x = 0; x < image->get_size().x; x++)
+                for(size_t y = 0; y < image->get_size().y; y++)
+                    out.set_pixel(y, x, image->get_pixel(image->get_size().x - 1 - x, y));
+
+            *image = out;
+        };
+
+        for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+        {
+            for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+            {
+                auto* frame = _layers.at(layer_i)->get_frame(frame_i);
+                apply_to_image(frame->get_image());
+                frame->update_texture();
+            }
+        }
+
+        auto before = _layer_resolution;
+        _layer_resolution.x = before.y;
+        _layer_resolution.y = before.x;
+
+        signal_layer_count_changed();
+        signal_layer_resolution_changed();
+        signal_layer_image_updated();
     }
 
     void ProjectState::rotate_counterclockwise()
     {
-        std::cerr << "[ERROR] In ProjectState::rotate_counterclockwise: TODO" << std::endl;
+        auto apply_to_image  = [](Image* image)
+        {
+            auto out = Image();
+            out.create(image->get_size().y, image->get_size().x);
+
+            for(size_t x = 0; x < image->get_size().x; x++)
+                for(size_t y = 0; y < image->get_size().y; y++)
+                    out.set_pixel(y, x, image->get_pixel(x, image->get_size().y - 1 - y));
+
+            *image = out;
+        };
+
+        for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
+        {
+            for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
+            {
+                auto* frame = _layers.at(layer_i)->get_frame(frame_i);
+                apply_to_image(frame->get_image());
+                frame->update_texture();
+            }
+        }
+
+        auto before = _layer_resolution;
+        _layer_resolution.x = before.y;
+        _layer_resolution.y = before.x;
+
+        signal_layer_resolution_changed();
+        signal_layer_image_updated();
     }
 
     void ProjectState::signal_brush_selection_changed()
