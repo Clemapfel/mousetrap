@@ -154,6 +154,7 @@ namespace mousetrap
 
         _scale_mode = mode;
         set_final_size(active_state->get_layer_resolution().x, active_state->get_layer_resolution().y);
+        reformat_area();
     }
 
     void ResizeCanvasDialog::set_aspect_ratio_locked(bool b)
@@ -571,8 +572,6 @@ namespace mousetrap
         float new_h = _height;
         float old_h = active_state->get_layer_resolution().y;
 
-        std::cout << new_w << " " << old_w << " " << new_h << " " << old_h << std::endl;
-
         if (new_w < old_w)
         {
             new_top_left.x = -1 * _x_offset / old_w;
@@ -583,11 +582,13 @@ namespace mousetrap
         }
         else if (new_w > old_w)
         {
-            new_top_left.x = 0;
-            new_size.x = 1;
+            auto factor = old_w / new_w;
 
-            old_top_left.x = _x_offset / new_w;
-            old_size.x = (old_w / new_w);
+            new_top_left.x = 0 + 0.5 * factor;
+            new_size.x = 1 * factor;
+
+            old_top_left.x = _x_offset / new_w + 0.5 * factor;
+            old_size.x = (old_w / new_w) * factor;
         }
 
         if (new_h < old_h)
@@ -600,11 +601,13 @@ namespace mousetrap
         }
         else if (new_h > old_h)
         {
-            new_top_left.y = 0;
-            new_size.y = 1;
+            auto factor = old_h / new_h;
 
-            old_top_left.y = _y_offset / new_h;
-            old_size.y = (old_h / new_h);
+            new_top_left.y = 0 + 0.5 * factor;
+            new_size.y = 1 * factor;
+
+            old_top_left.y = _y_offset / new_h + 0.5 * factor;
+            old_size.y = (old_h / new_h) * factor;
         }
 
         old_top_left.x += x_eps;
