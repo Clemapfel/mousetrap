@@ -1075,6 +1075,16 @@ namespace mousetrap
         signal_layer_image_updated();
     }
 
+    void ProjectState::rotate_clockwise()
+    {
+        std::cerr << "[ERROR] In ProjectState::rotate_clockwise: TODO" << std::endl;
+    }
+
+    void ProjectState::rotate_counterclockwise()
+    {
+        std::cerr << "[ERROR] In ProjectState::rotate_counterclockwise: TODO" << std::endl;
+    }
+
     void ProjectState::signal_brush_selection_changed()
     {
         if (state::brush_options)

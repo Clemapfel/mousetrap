@@ -184,7 +184,38 @@ namespace mousetrap
             if (state::image_transform_dialog)
                 state::image_transform_dialog->present();
         });
-        state::add_shortcut_action(state::actions::image_transform_dialog_open);
+
+        state::actions::image_transform_dialog_flip_horizontally.set_function([](){
+            active_state->set_image_flip_apply_scope(EVERYWHERE);
+            active_state->set_image_flip(true, false);
+            active_state->apply_image_flip();
+        });
+
+        state::actions::image_transform_dialog_flip_vertically.set_function([](){
+            active_state->set_image_flip_apply_scope(EVERYWHERE);
+            active_state->set_image_flip(false, true);
+            active_state->apply_image_flip();
+        });
+
+        state::actions::image_transform_dialog_rotate_clockwise.set_function([](){
+            active_state->rotate_clockwise();
+        });
+
+        state::actions::image_transform_dialog_rotate_counterclockwise.set_function([](){
+            active_state->rotate_counterclockwise();
+        });
+
+        for (auto* action : {
+            &state::actions::image_transform_dialog_open,
+            &state::actions::image_transform_dialog_flip_horizontally,
+            &state::actions::image_transform_dialog_flip_vertically,
+            &state::actions::image_transform_dialog_rotate_clockwise,
+            &state::actions::image_transform_dialog_rotate_counterclockwise
+        })
+        {
+            state::add_shortcut_action(*action);
+        }
+
 
         set_flip_horizontally(_flip_horizontally);
         set_flip_vertically(_flip_vertically);
