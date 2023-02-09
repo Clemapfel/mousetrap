@@ -41,6 +41,28 @@ namespace mousetrap
         }
 
         _maintain_aspect_ratio_label.set_text(state::tooltips_file->get_value("scale_canvas_dialog", "maintain_aspect_ratio_label") + " (" + ratio_string_formatted + ")");
+        update_current_image_texture();
+        update_area_aspect_ratio();
+    }
+
+    void ResizeCanvasDialog::on_layer_frame_selection_changed()
+    {
+        update_current_image_texture();
+    }
+
+    void ResizeCanvasDialog::on_layer_image_updated()
+    {
+        update_current_image_texture();
+    }
+
+    void ResizeCanvasDialog::on_layer_count_changed()
+    {
+        update_current_image_texture();
+    }
+
+    void ResizeCanvasDialog::on_layer_properties_changed()
+    {
+        update_current_image_texture();
     }
 
     void ResizeCanvasDialog::set_final_size(size_t w, size_t h)

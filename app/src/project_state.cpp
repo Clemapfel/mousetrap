@@ -1105,11 +1105,10 @@ namespace mousetrap
             }
         }
 
-        auto before = _layer_resolution;
+        auto before = Vector2ui(_layer_resolution);
         _layer_resolution.x = before.y;
         _layer_resolution.y = before.x;
 
-        signal_layer_count_changed();
         signal_layer_resolution_changed();
         signal_layer_image_updated();
     }

@@ -16,7 +16,12 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(resize_canvas_dialog, open);
     }
 
-    class ResizeCanvasDialog : public AppComponent, public signals::LayerResolutionChanged
+    class ResizeCanvasDialog : public AppComponent,
+        public signals::LayerFrameSelectionChanged,
+        public signals::LayerImageUpdated,
+        public signals::LayerCountChanged,
+        public signals::LayerPropertiesChanged,
+        public signals::LayerResolutionChanged
     {
         public:
             ResizeCanvasDialog();
@@ -26,6 +31,10 @@ namespace mousetrap
 
         protected:
             void on_layer_resolution_changed() override;
+            void on_layer_frame_selection_changed() override;
+            void on_layer_image_updated() override;
+            void on_layer_count_changed() override;
+            void on_layer_properties_changed() override;
 
         private:
             enum ScaleMode
