@@ -55,6 +55,12 @@ namespace mousetrap
         int w_next = _width;
         int h_next = _height;
 
+        _x_offset_button.set_lower_limit(0);
+        _x_offset_button.set_upper_limit(abs(w_old - w_next));
+        _y_offset_button.set_lower_limit(0);
+        _y_offset_button.set_upper_limit(abs(h_old - h_next));
+
+        /*
         if (w_next <= w_old)
         {
             _x_offset_button.set_lower_limit(0);
@@ -75,7 +81,7 @@ namespace mousetrap
         {
             _y_offset_button.set_lower_limit(-1 * abs(h_old - h_next));
             _y_offset_button.set_upper_limit(0);
-        }
+        }*/
     }
 
     void ResizeCanvasDialog::set_x_offset(int x)
@@ -100,12 +106,14 @@ namespace mousetrap
 
     void ResizeCanvasDialog::center_offset()
     {
-        std::cerr << "[ERROR] In ResizeCanvasDialog::center: TODO" << std::endl;
+        set_x_offset(_x_offset_button.get_upper_limit() / 2);
+        set_y_offset(_y_offset_button.get_upper_limit() / 2);
     }
 
     void ResizeCanvasDialog::reset_offset()
     {
-        std::cerr << "[ERROR] In ResizeCanvasDialog::center: TODO" << std::endl;
+        set_x_offset(0);
+        set_y_offset(0);
     }
 
     void ResizeCanvasDialog::set_scale_mode(ScaleMode mode)
@@ -145,8 +153,6 @@ namespace mousetrap
 
     void ResizeCanvasDialog::set_width(float v)
     {
-        _width = v;
-
         _width_spin_button.set_signal_value_changed_blocked(true);
         _height_spin_button.set_signal_value_changed_blocked(true);
 
@@ -179,6 +185,9 @@ namespace mousetrap
         _width_spin_button.set_signal_value_changed_blocked(false);
         _height_spin_button.set_signal_value_changed_blocked(false);
 
+        _width = _width_spin_button.get_value();
+        _height = _height_spin_button.get_value();
+
         set_final_size(final_x, final_y);
         update_offset_bounds();
         reformat_area();
@@ -186,8 +195,6 @@ namespace mousetrap
 
     void ResizeCanvasDialog::set_height(float v)
     {
-        _height = v;
-
         _width_spin_button.set_signal_value_changed_blocked(true);
         _height_spin_button.set_signal_value_changed_blocked(true);
 
@@ -219,6 +226,9 @@ namespace mousetrap
 
         _width_spin_button.set_signal_value_changed_blocked(false);
         _height_spin_button.set_signal_value_changed_blocked(false);
+
+        _width = _width_spin_button.get_value();
+        _height = _height_spin_button.get_value();
 
         set_final_size(final_x, final_y);
         update_offset_bounds();
@@ -555,8 +565,6 @@ namespace mousetrap
 
         if (new_w < old_w)
         {
-            std::cout << "called" << std::endl;
-
             new_top_left.x = _x_offset / old_w;
             new_size.x = new_w / old_w;
 
@@ -564,7 +572,13 @@ namespace mousetrap
             old_size.x = 1;
         }
         else if (new_w > old_w)
-        {}
+        {
+            new_top_left.x = 0;
+            new_size.x = 1;
+
+            old_top_left.x = _x_offset / new_w;
+            old_size.x = (old_w / new_w);
+        }
 
         if (new_h < old_h)
         {
@@ -574,11 +588,19 @@ namespace mousetrap
             old_top_left.y = 0;
             old_size.y = 1;
         }
-        else
-        {}
+        else if (new_h > old_h)
+        {
+            new_top_left.y = 0;
+            new_size.y = 1;
 
-        std::cout << "new: " << new_top_left.x << "  " << new_top_left.y << " | " << new_size.x << " " << new_size.y << std::endl;
-        std::cout << "old: " << old_top_left.x << "  " << old_top_left.y << " | " << old_size.x << " " << old_size.y << std::endl;
+            old_top_left.y = _y_offset / new_h;
+            old_size.y = (old_h / new_h);
+        }
+
+        old_top_left.x += x_eps;
+        old_top_left.y += y_eps;
+        old_size.x -= 2 * x_eps;
+        old_size.y -= 2 * y_eps;
 
         _current_canvas_shape->as_rectangle(old_top_left, old_size);
         _current_canvas_shape->set_texture(_current_canvas_texture);
