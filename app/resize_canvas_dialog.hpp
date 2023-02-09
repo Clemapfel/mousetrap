@@ -112,12 +112,15 @@ namespace mousetrap
             GLArea _area;
             Shape* _new_boundary_shape = nullptr;
             Shape* _current_canvas_shape = nullptr;
-            Shape* _area_frame_shape = nullptr;
             Texture* _current_canvas_texture = nullptr;
+
+            Shader* _background_shader = nullptr;
+            Shape* _background_shape = nullptr;
+
             void reformat_area();
             void update_current_image_texture();
 
-            Vector2i _area_size = {1, 1};
+            Vector2f* _area_size = new Vector2f{1, 1};
             static void on_area_realize(Widget*, ResizeCanvasDialog*);
             static void on_area_resize(GLArea*, int w, int h, ResizeCanvasDialog*);
 

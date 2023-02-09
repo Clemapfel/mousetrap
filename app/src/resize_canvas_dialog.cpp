@@ -112,12 +112,12 @@ namespace mousetrap
         if (w_next >= w_old)
             set_x_offset(_x_offset_button.get_upper_limit() / 2);
         else
-            set_x_offset(-1 * _x_offset_button.get_upper_limit() / 2);
+            set_x_offset(_x_offset_button.get_lower_limit() / 2);
 
         if (h_next >= h_old)
             set_y_offset(_y_offset_button.get_upper_limit() / 2);
         else
-            set_y_offset(-1 * _y_offset_button.get_upper_limit() / 2);
+            set_y_offset(_y_offset_button.get_lower_limit() / 2);
     }
 
     void ResizeCanvasDialog::reset_offset()
@@ -160,6 +160,7 @@ namespace mousetrap
     void ResizeCanvasDialog::set_aspect_ratio_locked(bool b)
     {
         _aspect_ratio_locked = b;
+        set_width(_width);
     }
 
     void ResizeCanvasDialog::update_area_aspect_ratio()
@@ -273,6 +274,8 @@ namespace mousetrap
         set_y_offset(0);
 
         update_current_image_texture();
+
+        _aspect_frame.set_size_request({0, _offset_button_box.get_preferred_size().natural_size.x * (active_state->get_layer_resolution().y / float(active_state->get_layer_resolution().x))});
         _dialog.present();
     }
 
@@ -389,6 +392,7 @@ namespace mousetrap
         _y_offset_button.connect_signal_value_changed([](SpinButton* scale, ResizeCanvasDialog* instance){
             instance->set_y_offset(scale->get_value());
         }, this);
+
 
         _x_offset_box.push_back(&_x_offset_label);
         _x_offset_box.push_back(&_x_offset_button);
@@ -541,9 +545,17 @@ namespace mousetrap
         auto* area = (GLArea*) widget;
         area->make_current();
 
+        if (instance->_background_shader == nullptr)
+        {
+            instance->_background_shader = new Shader();
+            instance->_background_shader->create_from_file(get_resource_path() + "shaders/transparency_tiling.frag", ShaderType::FRAGMENT);
+        }
+
+        instance->_background_shape = new Shape();
+        instance->_background_shape->as_rectangle({0, 0}, {1, 1});
+
         instance->_new_boundary_shape = new Shape();
         instance->_current_canvas_shape = new Shape();
-        instance->_area_frame_shape = new Shape();
         instance->_current_canvas_texture = new Texture();
 
         instance->update_current_image_texture();
@@ -551,7 +563,11 @@ namespace mousetrap
         instance->reformat_area();
 
         instance->_area.clear_render_tasks();
-        instance->_area.add_render_task(instance->_area_frame_shape);
+
+        auto background_task = RenderTask(instance->_background_shape, instance->_background_shader);
+        background_task.register_vec2("_canvas_size", instance->_area_size);
+        instance->_area.add_render_task(background_task);
+
         instance->_area.add_render_task(instance->_current_canvas_shape);
         instance->_area.add_render_task(instance->_new_boundary_shape);
 
@@ -560,7 +576,7 @@ namespace mousetrap
 
     void ResizeCanvasDialog::on_area_resize(GLArea*, int w, int h, ResizeCanvasDialog* instance)
     {
-        instance->_area_size = {w, h};
+        *instance->_area_size = {w, h};
         auto res = active_state->get_layer_resolution();
 
         instance->reformat_area();
@@ -574,8 +590,8 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
-        float x_eps = 1.f / _area_size.x;
-        float y_eps = 1.f / _area_size.y;
+        float x_eps = 1.f / _area_size->x;
+        float y_eps = 1.f / _area_size->y;
 
         Vector2f old_top_left = {0, 0};
         Vector2f old_size = {1, 1};
@@ -664,13 +680,6 @@ namespace mousetrap
             for (size_t i = n_vertices; i < n_vertices * 3; ++i)
                 _new_boundary_shape->set_vertex_color(i, RGBA(0, 0, 0, 1));
 
-            _area_frame_shape->as_rectangle(
-                 {0 + x_eps, 0 + y_eps},
-                 {1 - x_eps, 0 + y_eps},
-                 {1 - x_eps, 1 - y_eps},
-                 {0 + x_eps, 1 - y_eps}
-            );
-            _area_frame_shape->set_color(RGBA(0, 0, 0, 0.5));
         }
 
         _area.queue_render();
