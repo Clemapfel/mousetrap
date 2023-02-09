@@ -50,48 +50,52 @@ namespace mousetrap
 
     void ResizeCanvasDialog::update_offset_bounds()
     {
-        size_t w_old = active_state->get_layer_resolution().x;
-        size_t h_old = active_state->get_layer_resolution().y;
-        size_t w_next = _width;
-        size_t h_next = _height;
+        int w_old = active_state->get_layer_resolution().x;
+        int h_old = active_state->get_layer_resolution().y;
+        int w_next = _width;
+        int h_next = _height;
 
         if (w_next <= w_old)
         {
             _x_offset_button.set_lower_limit(0);
-            _x_offset_button.set_upper_limit(w_old - w_next);
+            _x_offset_button.set_upper_limit(abs(w_old - w_next));
         }
         else
         {
-            _x_offset_button.set_lower_limit(-1 * (w_next - w_old));
+            _x_offset_button.set_lower_limit(-1 * abs(w_old - w_next));
             _x_offset_button.set_upper_limit(0);
         }
 
         if (h_next <= h_old)
         {
-            _x_offset_button.set_lower_limit(0);
-            _x_offset_button.set_upper_limit(h_old - h_next);
+            _y_offset_button.set_lower_limit(0);
+            _y_offset_button.set_upper_limit(abs(h_old - h_next));
         }
         else
         {
-            _x_offset_button.set_lower_limit(-1 * (h_next - h_old));
-            _x_offset_button.set_upper_limit(0);
+            _y_offset_button.set_lower_limit(-1 * abs(h_old - h_next));
+            _y_offset_button.set_upper_limit(0);
         }
     }
 
     void ResizeCanvasDialog::set_x_offset(int x)
     {
         _x_offset = x;
+
         _x_offset_button.set_signal_value_changed_blocked(true);
         _x_offset_button.set_value(x);
         _x_offset_button.set_signal_value_changed_blocked(false);
+        reformat_area();
     }
 
     void ResizeCanvasDialog::set_y_offset(int y)
     {
         _y_offset = y;
+
         _y_offset_button.set_signal_value_changed_blocked(true);
         _y_offset_button.set_value(y);
         _y_offset_button.set_signal_value_changed_blocked(false);
+        reformat_area();
     }
 
     void ResizeCanvasDialog::center_offset()
@@ -141,6 +145,8 @@ namespace mousetrap
 
     void ResizeCanvasDialog::set_width(float v)
     {
+        _width = v;
+
         _width_spin_button.set_signal_value_changed_blocked(true);
         _height_spin_button.set_signal_value_changed_blocked(true);
 
@@ -175,10 +181,13 @@ namespace mousetrap
 
         set_final_size(final_x, final_y);
         update_offset_bounds();
+        reformat_area();
     }
 
     void ResizeCanvasDialog::set_height(float v)
     {
+        _height = v;
+
         _width_spin_button.set_signal_value_changed_blocked(true);
         _height_spin_button.set_signal_value_changed_blocked(true);
 
@@ -213,6 +222,7 @@ namespace mousetrap
 
         set_final_size(final_x, final_y);
         update_offset_bounds();
+        reformat_area();
     }
 
     ResizeCanvasDialog::operator Widget*()
@@ -222,6 +232,11 @@ namespace mousetrap
 
     void ResizeCanvasDialog::present()
     {
+        set_width(active_state->get_layer_resolution().x);
+        set_height(active_state->get_layer_resolution().y);
+        set_x_offset(0);
+        set_y_offset(0);
+
         update_current_image_texture();
         _dialog.present();
     }
@@ -238,12 +253,10 @@ namespace mousetrap
 
         _width_spin_button.connect_signal_value_changed([](SpinButton* button, ResizeCanvasDialog* instance) {
             instance->set_width(button->get_value());
-            instance->reformat_area();
         }, this);
 
         _height_spin_button.connect_signal_value_changed([](SpinButton* button, ResizeCanvasDialog* instance) {
             instance->set_height(button->get_value());
-            instance->reformat_area();
         }, this);
 
         _width_box.push_back(&_width_label);
@@ -340,12 +353,10 @@ namespace mousetrap
 
         _x_offset_button.connect_signal_value_changed([](SpinButton* scale, ResizeCanvasDialog* instance){
             instance->set_x_offset(scale->get_value());
-            instance->reformat_area();
         }, this);
 
         _y_offset_button.connect_signal_value_changed([](SpinButton* scale, ResizeCanvasDialog* instance){
-            instance->set_x_offset(scale->get_value());
-            instance->reformat_area();
+            instance->set_y_offset(scale->get_value());
         }, this);
 
         _x_offset_box.push_back(&_x_offset_label);
@@ -505,10 +516,9 @@ namespace mousetrap
         instance->reformat_area();
 
         instance->_area.clear_render_tasks();
+        instance->_area.add_render_task(instance->_area_frame_shape);
         instance->_area.add_render_task(instance->_current_canvas_shape);
         instance->_area.add_render_task(instance->_new_boundary_shape);
-        instance->_area.add_render_task(instance->_area_frame_shape);
-
 
         area->queue_render();
     }
@@ -524,30 +534,60 @@ namespace mousetrap
 
     void ResizeCanvasDialog::reformat_area()
     {
-        float w_old = active_state->get_layer_resolution().x / float(_area_size.x);
-        float h_old = active_state->get_layer_resolution().y / float(_area_size.y);
-        float w_next = _width / float(_area_size.x);
-        float h_next = _height / float(_area_size.y);
-        float x_offset = _x_offset / float(_area_size.x);
-        float y_offset = _y_offset / float(_area_size.y);
+        if (not _area.get_is_realized())
+            return;
+
+        float x_eps = 1.f / _area_size.x;
+        float y_eps = 1.f / _area_size.y;
 
         Vector2f old_top_left = {0, 0};
-        Vector2f old_size = {w_old, h_old};
-        Vector2f new_top_left = {x_offset, y_offset};
-        Vector2f new_size = {w_next, h_next};
+        Vector2f old_size = {1, 1};
+        Vector2f new_top_left = {0, 0};
+        Vector2f new_size = {1, 1};
+
+        float new_w = _width;
+        float old_w = active_state->get_layer_resolution().x;
+
+        float new_h = _height;
+        float old_h = active_state->get_layer_resolution().y;
+
+        std::cout << new_w << " " << old_w << " " << new_h << " " << old_h << std::endl;
+
+        if (new_w < old_w)
+        {
+            std::cout << "called" << std::endl;
+
+            new_top_left.x = _x_offset / old_w;
+            new_size.x = new_w / old_w;
+
+            old_top_left.x = 0;
+            old_size.x = 1;
+        }
+        else if (new_w > old_w)
+        {}
+
+        if (new_h < old_h)
+        {
+            new_top_left.y = _y_offset / old_h;
+            new_size.y = new_h / old_h;
+
+            old_top_left.y = 0;
+            old_size.y = 1;
+        }
+        else
+        {}
+
+        std::cout << "new: " << new_top_left.x << "  " << new_top_left.y << " | " << new_size.x << " " << new_size.y << std::endl;
+        std::cout << "old: " << old_top_left.x << "  " << old_top_left.y << " | " << old_size.x << " " << old_size.y << std::endl;
 
         _current_canvas_shape->as_rectangle(old_top_left, old_size);
         _current_canvas_shape->set_texture(_current_canvas_texture);
 
         {
-            float x_eps = 1.f / _area_size.x;
-            float y_eps = 1.f / _area_size.y;
             float x = new_top_left.x + x_eps;
             float y = new_top_left.y + y_eps;
             float w = new_size.x - 2 * x_eps;
             float h = new_size.y - 2 * y_eps;
-
-            std::cout << x_eps << " " << y_eps << " | " << x << " " << y << " " << w << " " << h << std::endl;
 
            _new_boundary_shape->as_lines(
            {
@@ -577,14 +617,13 @@ namespace mousetrap
             for (size_t i = n_vertices; i < n_vertices * 3; ++i)
                 _new_boundary_shape->set_vertex_color(i, RGBA(0, 0, 0, 1));
 
-            _area_frame_shape->as_line_strip({
+            _area_frame_shape->as_rectangle(
                  {0 + x_eps, 0 + y_eps},
                  {1 - x_eps, 0 + y_eps},
                  {1 - x_eps, 1 - y_eps},
-                 {0 + x_eps, 1 - y_eps},
-                 {0 + x_eps, 0 + y_eps}
-            });
-            _area_frame_shape->set_color(RGBA(1, 0, 1, 1));
+                 {0 + x_eps, 1 - y_eps}
+            );
+            _area_frame_shape->set_color(RGBA(0, 0, 0, 0.5));
         }
 
         _area.queue_render();
