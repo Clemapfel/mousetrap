@@ -162,6 +162,20 @@ namespace mousetrap
         _aspect_ratio_locked = b;
     }
 
+    void ResizeCanvasDialog::update_area_aspect_ratio()
+    {
+        float new_w = _width;
+        float old_w = active_state->get_layer_resolution().x;
+
+        float new_h = _height;
+        float old_h = active_state->get_layer_resolution().y;
+
+        float width = new_w > old_w ? new_w : old_w;
+        float height = new_h > old_h ? new_h : old_h;
+
+        _aspect_frame.set_ratio(width / height);
+    }
+
     void ResizeCanvasDialog::set_width(float v)
     {
         _width_spin_button.set_signal_value_changed_blocked(true);
@@ -555,6 +569,8 @@ namespace mousetrap
 
     void ResizeCanvasDialog::reformat_area()
     {
+        update_area_aspect_ratio();
+
         if (not _area.get_is_realized())
             return;
 
@@ -582,13 +598,11 @@ namespace mousetrap
         }
         else if (new_w > old_w)
         {
-            auto factor = old_w / new_w;
+            new_top_left.x = 0;
+            new_size.x = 1;
 
-            new_top_left.x = 0 + 0.5 * factor;
-            new_size.x = 1 * factor;
-
-            old_top_left.x = _x_offset / new_w + 0.5 * factor;
-            old_size.x = (old_w / new_w) * factor;
+            old_top_left.x = _x_offset / new_w;
+            old_size.x =  old_w / new_w;
         }
 
         if (new_h < old_h)
@@ -601,13 +615,11 @@ namespace mousetrap
         }
         else if (new_h > old_h)
         {
-            auto factor = old_h / new_h;
+            new_top_left.y = 0;
+            new_size.y = 1;
 
-            new_top_left.y = 0 + 0.5 * factor;
-            new_size.y = 1 * factor;
-
-            old_top_left.y = _y_offset / new_h + 0.5 * factor;
-            old_size.y = (old_h / new_h) * factor;
+            old_top_left.y = _y_offset / new_h;
+            old_size.y =  old_h / new_h;
         }
 
         old_top_left.x += x_eps;

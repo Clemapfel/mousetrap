@@ -46,6 +46,7 @@ namespace mousetrap
             void set_width(float);
             void set_height(float);
             void set_final_size(size_t w, size_t h);
+            void update_area_aspect_ratio();
 
             Window _window;
             Dialog _dialog = Dialog(&_window, "Resize Canvas...");
