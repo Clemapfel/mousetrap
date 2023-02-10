@@ -122,23 +122,23 @@ namespace mousetrap
         _texture->create_from_image(*_image);
     }
 
-    Layer::Layer(const std::string& name, Vector2i size, size_t n_frames)
+    Layer::Layer(const std::string& name, Vector2ui size, size_t n_frames)
         : _name(name)
     {
         if (n_frames == 0)
             n_frames = 1;
 
         for (size_t i = 0; i < n_frames; ++i)
-            add_frame(i);
+            add_frame(size, i);
     }
 
     Layer::Frame* Layer::add_frame(Vector2ui resolution, size_t i)
     {
         Layer::Frame* out;
         if (i >= _frames.size())
-            out = _frames.emplace_back(new Frame(_resolution));
+            out = _frames.emplace_back(new Frame(resolution));
         else
-            out = *(_frames.emplace(_frames.begin() + i, new Frame(_resolution)));
+            out = *(_frames.emplace(_frames.begin() + i, new Frame(resolution)));
 
         return out;
     }

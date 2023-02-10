@@ -11,6 +11,7 @@ namespace mousetrap
     {
         _area.connect_signal_realize(on_realize, this);
         _area.connect_signal_resize(on_resize, this);
+
         _aspect_frame.set_child(&_area);
 
         _inbetween_indicator.set_size_request(_inbetween_indicator.get_size());

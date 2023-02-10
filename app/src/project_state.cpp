@@ -284,6 +284,15 @@ namespace mousetrap
         return _n_frames;
     }
 
+    const Texture* ProjectState::get_cell_texture(size_t layer_i, size_t frame_i)
+    {
+        auto i = frame_i;
+        while (i > 0 and not _layers.at(layer_i)->get_frame(i)->get_is_keyframe())
+            i--;
+
+        return _layers.at(layer_i)->get_frame(i)->get_texture();
+    }
+
     void ProjectState::set_current_layer_and_frame(size_t layer_i, size_t frame_i)
     {
         if (layer_i >= _layers.size())
@@ -475,7 +484,7 @@ namespace mousetrap
         auto frame_i = after+1;
         for (auto& layer : _layers)
         {
-            auto* added = layer->add_frame(frame_i);
+            auto* added = layer->add_frame(_layer_resolution, frame_i);
             added->set_is_keyframe(is_keyframe);
         }
 
@@ -517,7 +526,7 @@ namespace mousetrap
         {
             auto* layer = _layers.at(layer_i);
             Image image = Image(*layer->get_frame(duplicate_from)->get_image());
-            auto* inserted = layer->add_frame(after + 1);
+            auto* inserted = layer->add_frame(_layer_resolution, after + 1);
 
             for (size_t x = 0; x < _layer_resolution.x; ++x)
                 for (size_t y = 0; y < _layer_resolution.y; ++y)
@@ -1083,7 +1092,7 @@ namespace mousetrap
 
     void ProjectState::rotate_clockwise()
     {
-        auto apply_to_image  = [](Image* image)
+        auto rotate  = [](Image* image)
         {
             auto out = Image();
             out.create(image->get_size().y, image->get_size().x);
@@ -1092,7 +1101,7 @@ namespace mousetrap
                 for(size_t y = 0; y < image->get_size().y; y++)
                     out.set_pixel(y, x, image->get_pixel(image->get_size().x - 1 - x, y));
 
-            *image = out;
+            return out;
         };
 
         for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
@@ -1100,17 +1109,15 @@ namespace mousetrap
             for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
             {
                 auto* frame = _layers.at(layer_i)->get_frame(frame_i);
-                apply_to_image(frame->get_image());
+                auto* image = frame->get_image();
+                *image = rotate(image);
+
                 frame->update_texture();
             }
         }
 
-        auto before = Vector2ui(_layer_resolution);
-        _layer_resolution.x = before.y;
-        _layer_resolution.y = before.x;
-
+        _layer_resolution = {_layer_resolution.y, _layer_resolution.x};
         signal_layer_resolution_changed();
-        signal_layer_image_updated();
     }
 
     void ProjectState::rotate_counterclockwise()

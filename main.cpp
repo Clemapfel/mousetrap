@@ -224,7 +224,7 @@ static void activate(GtkApplication* app, void*)
     canvas_export->set_can_respond_to_input(false);
     canvas_export->set_opacity(1);
 
-    bubble_log_overlay.add_overlay(bubble_log);
+    ///bubble_log_overlay.add_overlay(bubble_log);
 
     // MAIN
 

@@ -74,6 +74,11 @@ namespace mousetrap
 
             SeparatorLine _button_box_spacer;
             Box _button_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
+            static void test()
+            {
+                active_state->rotate_clockwise();
+            }
     };
 
     namespace state

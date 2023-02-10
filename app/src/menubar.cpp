@@ -58,7 +58,6 @@ namespace mousetrap
 
         auto color_submenu_transform_section = MenuModel();
         color_submenu_transform_section.add_action("Invert", color_transform_dialog_invert.get_id());
-        color_submenu_transform_section.add_action("To Grayscale", color_transform_dialog_to_grayscale.get_id());
         color_submenu_transform_section.add_action("Component Offset...", color_transform_dialog_open.get_id());
         color_submenu_transform_section.add_action("Replace...", "TODO");
         color_submenu_transform_section.add_action("Palette Shift...", "TODO");
@@ -67,7 +66,6 @@ namespace mousetrap
         auto palette_editing_section = MenuModel();
         palette_editing_section.add_stateful_action("Toggle Palette Locked", palette_view_toggle_palette_locked.get_id(), false);
         colors_submenu.add_section("Palette Editing", &palette_editing_section);
-
 
         auto color_palette_section = MenuModel();
         color_palette_section.add_action("Load...", palette_view_load.get_id());

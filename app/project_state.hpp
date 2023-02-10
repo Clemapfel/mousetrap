@@ -73,6 +73,9 @@ namespace mousetrap
             const Layer::Frame* get_frame(size_t layer_i, size_t frame_i) const;
             size_t get_n_frames() const;
 
+            /// \@brief get texture, takes keyframing into account
+            const Texture* get_cell_texture(size_t layer_i, size_t frame_i);
+
             void set_current_layer_and_frame(size_t layer_i, size_t frame_i);
 
             void add_layer(int above); //-1 for new layer at 0

@@ -9,7 +9,6 @@ namespace mousetrap
     AnimationPreview::AnimationPreview()
     {
         _layer_area.connect_signal_realize(on_layer_area_realize, this);
-        //_layer_area.connect_signal_render(on_layer_area_render, this);
         _layer_area.connect_signal_resize(on_layer_area_resize, this);
         _layer_area.set_size_request({0, 0});
 
@@ -183,10 +182,7 @@ namespace mousetrap
         }
 
         for (size_t layer_i = 0; _layer_shapes.size() == active_state->get_n_layers() and layer_i < active_state->get_n_layers(); ++layer_i)
-        {
-            auto* layer = active_state->get_layer(layer_i);
-            _layer_shapes.at(layer_i)->set_texture(layer->get_frame(_current_frame)->get_texture());
-        }
+            _layer_shapes.at(layer_i)->set_texture(active_state->get_cell_texture(layer_i, _current_frame));
 
         _transparency_area.queue_render();
         _layer_area.queue_render();
@@ -200,10 +196,8 @@ namespace mousetrap
         {
             _current_frame = active_state->get_current_frame_index();
             for (size_t layer_i = 0; _layer_shapes.size() == active_state->get_n_layers() and layer_i < active_state->get_n_layers(); ++layer_i)
-            {
-                auto* layer = active_state->get_layer(layer_i);
-                _layer_shapes.at(layer_i)->set_texture(layer->get_frame(_current_frame)->get_texture());
-            }
+                _layer_shapes.at(layer_i)->set_texture(active_state->get_cell_texture(layer_i, _current_frame));
+
             _layer_area.queue_render();
         }
     }
@@ -386,7 +380,7 @@ namespace mousetrap
 
             auto* layer = _layer_shapes.at(i);
             layer->as_rectangle({0, 0}, {1, 1});
-            layer->set_texture(active_state->get_frame(i, _current_frame)->get_texture());
+            layer->set_texture(active_state->get_cell_texture(i, _current_frame));
             layer->set_visible(active_state->get_layer(i)->get_is_visible());
             layer->set_color(RGBA(1, 1, 1, active_state->get_layer(i)->get_is_visible()));
         }
@@ -404,7 +398,7 @@ namespace mousetrap
         for (size_t i = 0; i < active_state->get_n_layers(); ++i)
         {
             const auto* layer = active_state->get_layer(i);
-            _layer_shapes.at(i)->set_texture(layer->get_frame(_current_frame)->get_texture());
+            _layer_shapes.at(i)->set_texture(active_state->get_cell_texture(i, _current_frame));
             _layer_shapes.at(i)->set_visible(layer->get_is_visible());
             _layer_shapes.at(i)->set_color(RGBA(1, 1, 1, layer->get_opacity()));
         }
@@ -420,7 +414,7 @@ namespace mousetrap
             return;
 
         for (size_t i = 0; i < active_state->get_n_layers(); ++i)
-            _layer_shapes.at(i)->set_texture(active_state->get_frame(i, _current_frame)->get_texture());
+            _layer_shapes.at(i)->set_texture(active_state->get_cell_texture(i, _current_frame));
 
         on_transparency_area_resize(&_transparency_area, _canvas_size.x, _canvas_size.y, this);
         on_layer_area_resize(&_layer_area, _canvas_size.x, _canvas_size.y, this);
