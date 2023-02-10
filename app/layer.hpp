@@ -39,7 +39,7 @@ namespace mousetrap
                     bool _is_keyframe = true;
             };
 
-            Layer(const std::string& name, Vector2i size, size_t n_frames);
+            Layer(const std::string& name, Vector2ui size, size_t n_frames);
 
             Layer(const Layer&);
             Layer& operator=(const Layer&);
@@ -47,7 +47,7 @@ namespace mousetrap
             Layer(Layer&&) = delete;
             Layer& operator=(Layer&&) = delete;
 
-            Layer::Frame* add_frame(size_t);
+            Layer::Frame* add_frame(Vector2ui resolution, size_t);
             void delete_frame(size_t);
 
             Layer::Frame* get_frame(size_t index);
@@ -79,6 +79,5 @@ namespace mousetrap
             bool _is_visible = true;
             float _opacity = 1;
             BlendMode _blend_mode = NORMAL;
-            Vector2i _resolution;
     };
 }

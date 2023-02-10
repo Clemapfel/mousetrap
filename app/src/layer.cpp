@@ -123,7 +123,7 @@ namespace mousetrap
     }
 
     Layer::Layer(const std::string& name, Vector2i size, size_t n_frames)
-        : _name(name), _resolution(size)
+        : _name(name)
     {
         if (n_frames == 0)
             n_frames = 1;
@@ -132,7 +132,7 @@ namespace mousetrap
             add_frame(i);
     }
 
-    Layer::Frame* Layer::add_frame(size_t i)
+    Layer::Frame* Layer::add_frame(Vector2ui resolution, size_t i)
     {
         Layer::Frame* out;
         if (i >= _frames.size())
