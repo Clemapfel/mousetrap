@@ -39,10 +39,9 @@ namespace mousetrap
         public signals::ColorOffsetChanged,
         public signals::ImageFlipChanged
     {
-        SeparatorLine _instance;
-        Canvas() = default;
-        operator Widget*() override {return &_instance;}
-        void update() override {}
+        public:
+            Canvas();
+
     };
 
     namespace state
