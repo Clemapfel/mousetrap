@@ -3,6 +3,7 @@
 //
 
 #include <app/canvas.hpp>
+#include <app/config_files.hpp>
 
 namespace mousetrap
 {
@@ -108,7 +109,6 @@ namespace mousetrap
     {
         if (not _area.get_is_realized())
             return;
-
     }
 
     void Canvas::OnionskinLayer::on_layer_resolution_changed() 
@@ -138,5 +138,21 @@ namespace mousetrap
     }
 
     void Canvas::OnionskinLayer::on_onionskin_layer_count_changed()
-    {}
+    {
+        if (not _area.get_is_realized())
+            return;
+
+        size_t n_layers = active_state->get_n_onionskin_layers();
+        float opacity = state::settings_file->get_value_as<float>("canvas", "onionskin_max_opacity");
+        opacity = glm::clamp<float>(opacity, 0, 1);
+
+        const float opacity_step = opacity / n_layers;
+        int current = active_state->get_current_frame_index();
+        for (int i = current - n_layers; i < current - 1; ++i)
+        {
+
+        }
+
+
+    }
 }
