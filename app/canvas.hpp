@@ -42,6 +42,45 @@ namespace mousetrap
         public:
             Canvas();
 
+        private:
+            class TransparencyTilingLayer
+            {
+                public:
+                    TransparencyTilingLayer(Canvas* owner);
+                    operator Widget*();
+
+                private:
+                    GLArea _area;
+                    Shape* _shape;
+                    Shader* _shader;
+
+                    void on_area_realize(Widget* widget, TransparencyTilingLayer* instance);
+                    void on_area_resize(GLArea*, int w, int h, TransparencyTilingLayer* instance);
+            };
+
+            TransparencyTilingLayer* _transparency_tiling_layer = new TransparencyTilingLayer(this);
+
+            class LayerLayer
+            {
+                public:
+                    LayerLayer(Canvas* owner);
+                    operator Widget*();
+
+                private:
+                    GLArea _layer_area;
+                    std::vector<Shape*> _layer_shapes;
+                    void on_area_realize(Widget* widget, LayerLayer* instance);
+                    void on_area_resize(GLArea*, int w, int h, LayerLayer* instance);
+
+                    void queue_render_tasks();
+            };
+
+            LayerLayer* _layer_layer = new LayerLayer(this);
+
+            // main layout
+            Box _main;
+            Overlay _layer_overlay;
+
     };
 
     namespace state
