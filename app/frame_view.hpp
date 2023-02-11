@@ -48,8 +48,8 @@ namespace mousetrap
     
     class FrameView : public AppComponent,
         public signals::LayerFrameSelectionChanged,
-        public signals::OnionSkinVisibilityToggled,
-        public signals::OnionSkinLayerCountChanged,
+        public signals::OnionskinVisibilityToggled,
+        public signals::OnionskinLayerCountChanged,
         public signals::LayerImageUpdated,
         public signals::LayerCountChanged,
         public signals::LayerPropertiesChanged,
@@ -186,7 +186,7 @@ namespace mousetrap
                     ImageDisplay _onionskin_visible_icon = ImageDisplay(get_resource_path() + "icons/onionskin_visible.png");
                     ImageDisplay _onionskin_not_visible_icon = ImageDisplay(get_resource_path() + "icons/onionskin_not_visible.png");
 
-                    SpinButton _onionskin_n_layers_spin_button = SpinButton(0, 99, 1);
+                    SpinButton _onionskin_n_layers_spin_button = SpinButton(1, 99, 1);
 
                     Button _jump_to_start_button;
                     ImageDisplay _jump_to_start_icon = ImageDisplay(get_resource_path() + "icons/animation_playback_jump_to_start.png");

@@ -92,7 +92,26 @@ namespace mousetrap
 
         _brushes = state::load_default_brushes(get_default_brush_directory());
 
-        _n_frames = 3;
+        _n_frames = 10;
+        _layer_resolution = {50, 50};
+        _layers.emplace_front(new Layer("Layer #" + std::to_string(_layers.size()), _layer_resolution, _n_frames));
+
+        for (size_t i = 0; i < 10; ++i)
+        {
+            auto image = Image();
+            image.create_from_file(get_resource_path() + "example_animation/0" + std::to_string(i) + ".png");
+
+            auto* frame = _layers.at(0)->get_frame(i);
+            *(frame->get_image()) = image;
+            frame->update_texture();
+        }
+
+        for (size_t x = 0; x < _layer_resolution.x; ++x)
+            for (size_t y = 0; y < _layer_resolution.y; ++y)
+                _selection.insert({x, y});
+
+
+        /*
 
         constexpr float COLOR = 2;
         constexpr float ZERO = 0;
@@ -144,6 +163,7 @@ namespace mousetrap
         add_debug_layer(ONE, ONE);
         add_debug_layer(COLOR, ONE);
         add_debug_layer(COLOR, HALF);
+        */
     }
 
     const Brush* ProjectState::get_current_brush() const

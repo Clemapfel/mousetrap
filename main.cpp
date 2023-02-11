@@ -76,6 +76,7 @@ static void activate(GtkApplication* app, void*)
     state::canvas_export = new CanvasExport();
     state::color_transform_dialog = new ColorTransformDialog();
     state::image_transform_dialog = new ImageTransformDialog();
+    state::canvas = new Canvas();
 
     Widget* layer_view = state::layer_view->operator Widget*();
     Widget* palette_view = state::palette_view->operator Widget*();

@@ -41,8 +41,8 @@ namespace mousetrap::signals
 
     DECLARE_APP_SIGNAL_COMPONENT(SelectionChanged, selection_changed)
 
-    DECLARE_APP_SIGNAL_COMPONENT(OnionSkinVisibilityToggled, onionskin_visibility_toggled)
-    DECLARE_APP_SIGNAL_COMPONENT(OnionSkinLayerCountChanged, onionskin_layer_count_changed)
+    DECLARE_APP_SIGNAL_COMPONENT(OnionskinVisibilityToggled, onionskin_visibility_toggled)
+    DECLARE_APP_SIGNAL_COMPONENT(OnionskinLayerCountChanged, onionskin_layer_count_changed)
     DECLARE_APP_SIGNAL_COMPONENT(LayerFrameSelectionChanged, layer_frame_selection_changed)
 
     DECLARE_APP_SIGNAL_COMPONENT(PlaybackToggled, playback_toggled)

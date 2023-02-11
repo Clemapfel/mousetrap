@@ -30,8 +30,8 @@ namespace mousetrap
         public signals::LayerFrameSelectionChanged,
         public signals::ColorSelectionChanged,
         public signals::SelectionChanged,
-        public signals::OnionSkinVisibilityToggled,
-        public signals::OnionSkinLayerCountChanged,
+        public signals::OnionskinVisibilityToggled,
+        public signals::OnionskinLayerCountChanged,
         public signals::LayerImageUpdated,
         public signals::LayerCountChanged,
         public signals::LayerPropertiesChanged,
@@ -41,21 +41,61 @@ namespace mousetrap
     {
         public:
             Canvas();
+            operator Widget*() override;
+
+        protected:
+            void on_brush_selection_changed() override;
+            void on_active_tool_changed() override;
+            void on_color_selection_changed() override;
+            void on_selection_changed() override;
+            void on_onionskin_visibility_toggled() override;
+            void on_onionskin_layer_count_changed() override;
+
+            void on_layer_image_updated() override;
+            void on_layer_count_changed() override;
+            void on_layer_properties_changed() override;
+            void on_layer_resolution_changed() override;
+            void on_layer_frame_selection_changed() override;
+
+            void on_color_offset_changed() override;
+            void on_image_flip_changed() override;
 
         private:
+            // global properties
+
+            float _scale = 1;
+            void set_scale(float);
+
+            Vector2f _offset = {0, 0}; // pixel coordinates
+            void set_offset(float, float);
+
+            // layers
+
             class TransparencyTilingLayer
             {
                 public:
                     TransparencyTilingLayer(Canvas* owner);
                     operator Widget*();
 
-                private:
-                    GLArea _area;
-                    Shape* _shape;
-                    Shader* _shader;
+                    void set_scale(float);
+                    void set_offset(Vector2f);
 
-                    void on_area_realize(Widget* widget, TransparencyTilingLayer* instance);
-                    void on_area_resize(GLArea*, int w, int h, TransparencyTilingLayer* instance);
+                    void on_layer_resolution_changed();
+
+                private:
+                    Canvas* _owner;
+
+                    GLArea _area;
+                    Shape* _shape = nullptr;
+                    Shader* _shader = nullptr;
+
+                    Vector2f* _canvas_size = new Vector2f(1, 1);
+                    static void on_area_realize(Widget* widget, TransparencyTilingLayer* instance);
+                    static void on_area_resize(GLArea*, int w, int h, TransparencyTilingLayer* instance);
+
+                    float _scale = 1;
+                    Vector2f _offset = {0, 0};
+                    void reformat();
             };
 
             TransparencyTilingLayer* _transparency_tiling_layer = new TransparencyTilingLayer(this);
@@ -66,19 +106,106 @@ namespace mousetrap
                     LayerLayer(Canvas* owner);
                     operator Widget*();
 
+                    void on_layer_image_updated();
+                    void on_layer_count_changed();
+                    void on_layer_properties_changed();
+                    void on_layer_resolution_changed();
+                    void on_layer_frame_selection_changed();
+
+                    void on_color_offset_changed();
+                    void on_image_flip_changed();
+
+                    void set_scale(float);
+                    void set_offset(Vector2f);
+
                 private:
-                    GLArea _layer_area;
+                    Canvas* _owner;
+
+                    GLArea _area;
                     std::vector<Shape*> _layer_shapes;
-                    void on_area_realize(Widget* widget, LayerLayer* instance);
-                    void on_area_resize(GLArea*, int w, int h, LayerLayer* instance);
+
+                    Shader* _post_fx_shader = nullptr;
+
+                    float* _h_offset = new float(0);
+                    float* _s_offset = new float(0);
+                    float* _v_offset = new float(0);
+                    float* _r_offset = new float(0);
+                    float* _g_offset = new float(0);
+                    float* _b_offset = new float(0);
+                    float* _a_offset = new float(0);
+
+                    int* _flip_horizontally = new int(0);
+                    int* _flip_vertically = new int(0);
+
+                    static inline const int* yes = new int(1);
+                    static inline const int* no = new int(0);
+
+                    ApplyScope _color_offset_apply_scope = active_state->get_color_offset_apply_scope();
+                    ApplyScope _image_flip_apply_scope = active_state->get_image_flip_apply_scope();
+
+                    Vector2f* _canvas_size = new Vector2f{1, 1};
+                    static void on_area_realize(Widget* widget, LayerLayer* instance);
+                    static void on_area_resize(GLArea*, int w, int h, LayerLayer* instance);
 
                     void queue_render_tasks();
+
+                    float _scale = 1;
+                    Vector2f _offset = {0, 0};
+                    void reformat();
             };
 
             LayerLayer* _layer_layer = new LayerLayer(this);
 
+            class OnionskinLayer
+            {
+                public:
+                    OnionskinLayer(Canvas* owner);
+                    operator Widget*();
+
+                    void on_layer_image_updated();
+                    void on_layer_count_changed();
+                    void on_layer_properties_changed();
+                    void on_layer_resolution_changed();
+                    void on_layer_frame_selection_changed();
+
+                    void on_onionskin_visibility_toggled();
+                    void on_onionskin_layer_count_changed();
+
+                    void set_scale(float);
+                    void set_offset(Vector2f);
+
+                private:
+                    Canvas* _owner;
+
+                    GLArea _area;
+                    Shader* _onionskin_shader = nullptr;
+                    std::vector<Shape*> _frame_shapes;
+
+                    Vector2f* _canvas_size = new Vector2f{1, 1};
+                    static void on_area_realize(Widget* widget, OnionskinLayer* instance);
+                    static void on_area_resize(GLArea*, int w, int h, OnionskinLayer* instance);
+
+                    float _scale = 1;
+                    Vector2f _offset = {0, 0};
+                    void reformat();
+            };
+
+            OnionskinLayer* _onionskin_layer = new OnionskinLayer(this);
+
+            // debug
+
+            SpinButton _scale_button = SpinButton(1, 100, 0.1);
+            Label _scale_label = Label("Scale: ");
+
+            SpinButton _x_offset_button = SpinButton(-1000, +1000, 1);
+            SpinButton _y_offset_button = SpinButton(-1000, +1000, 1);
+            Label _offset_label = Label("Offset (xy):");
+
+            Box _debug_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
             // main layout
-            Box _main;
+
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
             Overlay _layer_overlay;
 
     };

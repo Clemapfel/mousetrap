@@ -382,7 +382,7 @@ namespace mousetrap
             layer->as_rectangle({0, 0}, {1, 1});
             layer->set_texture(active_state->get_cell_texture(i, _current_frame));
             layer->set_visible(active_state->get_layer(i)->get_is_visible());
-            layer->set_color(RGBA(1, 1, 1, active_state->get_layer(i)->get_is_visible()));
+            layer->set_color(RGBA(1, 1, 1, active_state->get_layer(i)->get_opacity()));
         }
 
         queue_render_tasks();
@@ -467,11 +467,8 @@ namespace mousetrap
         *_flip_horizontally = state.flip_horizontally;
         *_flip_vertically = state.flip_vertically;
 
-        //if (active_state->get_image_flip_apply_scope() != _image_flip_apply_scope)
-        {
-            _image_flip_apply_scope = active_state->get_image_flip_apply_scope();
-            queue_render_tasks();
-        }
+        _image_flip_apply_scope = active_state->get_image_flip_apply_scope();
+        queue_render_tasks();
 
         _layer_area.queue_render();
     }
