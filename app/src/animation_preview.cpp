@@ -39,7 +39,7 @@ namespace mousetrap
            return next;
         });
 
-        animation_preview_toggle_background_visible.set_function([](){
+        animation_preview_toggle_background_visible.set_stateful_function([](bool){
             auto next = not state::animation_preview->_background_visible;
             state::animation_preview->set_background_visible(next);
             return next;
@@ -53,6 +53,7 @@ namespace mousetrap
         _menu.add_section("Playback", &playback_section);
 
         auto settings_section = MenuModel();
+        settings_section.add_stateful_action("Toggle Background Visible", animation_preview_toggle_background_visible.get_id(), _background_visible);
 
         _fps_spin_button.set_value(_fps);
         _fps_spin_button.connect_signal_value_changed([](SpinButton* scale, AnimationPreview* instance){
@@ -344,7 +345,7 @@ namespace mousetrap
 
         instance->_transparency_tiling_shape = new Shape();
         instance->_transparency_tiling_shape->as_rectangle({0, 0}, {1, 1});
-
+        instance->_transparency_tiling_shape->set_visible(instance->_background_visible);
         area->queue_render();
     }
 

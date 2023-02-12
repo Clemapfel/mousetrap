@@ -85,4 +85,9 @@ namespace mousetrap
     {
         return _enabled;
     }
+
+    bool Action::get_is_stateful() const
+    {
+        return _stateful_f != nullptr;
+    }
 }

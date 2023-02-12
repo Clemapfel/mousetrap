@@ -157,6 +157,8 @@ namespace mousetrap
         {
             auto* shape = _layer_shapes.emplace_back(new Shape());
             shape->set_texture(active_state->get_cell_texture(i, active_state->get_current_frame_index()));
+            shape->set_visible(active_state->get_layer(i)->get_is_visible());
+            shape->set_color(RGBA(1, 1, 1, active_state->get_layer(i)->get_opacity()));
         }
 
         reformat();
@@ -185,6 +187,7 @@ namespace mousetrap
             _layer_shapes.at(i)->set_visible(active_state->get_layer(i)->get_is_visible());
             _layer_shapes.at(i)->set_color(RGBA(1, 1, 1, active_state->get_layer(i)->get_opacity()));
         }
+
         queue_render_tasks();
     }
 

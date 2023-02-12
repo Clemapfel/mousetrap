@@ -72,5 +72,5 @@ void main()
     as_rgb.z = clamp(as_rgb.z + _b_offset, 0, 1);
 
     float a = color.a == 0 ? color.a : clamp(color.a + _a_offset, 0, 1);
-    _fragment_color = vec4(as_rgb.rgb, a);
+    _fragment_color = vec4(as_rgb.rgb, a * _vertex_color.a);
 }

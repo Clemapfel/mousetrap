@@ -46,6 +46,8 @@ namespace mousetrap
             void set_enabled(bool);
             bool get_enabled() const;
 
+            bool get_is_stateful() const;
+
         private:
             ActionID _id;
             std::vector<ShortcutTriggerID> _shortcuts;

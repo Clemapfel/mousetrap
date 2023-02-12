@@ -202,7 +202,7 @@ namespace mousetrap
             float _playback_fps = 12.5;
 
             bool _onionskin_visible = false;
-            size_t _onionskin_n_layers = 0;
+            size_t _onionskin_n_layers = 1;
 
             static inline size_t new_layer_count = 0;
             static inline size_t merged_layer_count = 0;
