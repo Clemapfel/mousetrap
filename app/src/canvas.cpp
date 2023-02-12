@@ -25,21 +25,48 @@ namespace mousetrap
             instance->set_grid_visible(button->get_active());
         }, this);
 
-        _debug_box.push_back(&_scale_label);
-        _debug_box.push_back(&_scale_button);
-        _debug_box.push_back(&_offset_label);
-        _debug_box.push_back(&_x_offset_button);
-        _debug_box.push_back(&_y_offset_button);
-        _debug_box.push_back(&_grid_visible_label);
-        _debug_box.push_back(&_grid_visible_button);
+        _h_ruler_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
+            instance->_symmetry_ruler_layer->set_horizontal_symmetry_pixel_position(scale->get_value());
+        }, this);
 
-        _offset_label.set_margin_start(state::margin_unit);
-        _grid_visible_label.set_margin_start(state::margin_unit);
+        _h_ruler_active_button.connect_signal_toggled([](CheckButton* button, Canvas* instance){
+            instance->_symmetry_ruler_layer->set_horizontal_symmetry_enabled(button->get_active());
+        }, this);
+
+        _v_ruler_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
+            instance->_symmetry_ruler_layer->set_vertical_symmetry_pixel_position(scale->get_value());
+        }, this);
+
+        _v_ruler_active_button.connect_signal_toggled([](CheckButton* button, Canvas* instance){
+            instance->_symmetry_ruler_layer->set_vertical_symmetry_enabled(button->get_active());
+        }, this);
+
+
+        _transform_box.push_back(&_scale_label);
+        _transform_box.push_back(&_scale_button);
+        _transform_box.push_back(&_offset_label);
+        _transform_box.push_back(&_x_offset_button);
+        _transform_box.push_back(&_y_offset_button);
+
+        _grid_box.push_back(&_grid_visible_label);
+        _grid_box.push_back(&_grid_visible_button);
+
+        _ruler_box.push_back(&_ruler_label);
+        _ruler_box.push_back(&_h_ruler_active_button);
+        _ruler_box.push_back(&_h_ruler_button);
+        _ruler_box.push_back(&_v_ruler_active_button);
+        _ruler_box.push_back(&_v_ruler_button);
+
+        _debug_box.push_back(&_transform_box);
+        _debug_box.push_back(&_grid_box);
+        _debug_box.push_back(&_ruler_box);
 
         _layer_overlay.set_child(*_transparency_tiling_layer);
         _layer_overlay.add_overlay(*_layer_layer);
         _layer_overlay.add_overlay(*_onionskin_layer);
+
         _layer_overlay.add_overlay(*_grid_layer);
+        _layer_overlay.add_overlay(*_symmetry_ruler_layer);
 
         _transparency_tiling_layer->operator Widget *()->set_expand(true);
         _layer_layer->operator Widget *()->set_expand(true);
@@ -66,6 +93,7 @@ namespace mousetrap
         _layer_layer->set_scale(_scale);
         _onionskin_layer->set_scale(_scale);
         _grid_layer->set_scale(_scale);
+        _symmetry_ruler_layer->set_scale(_scale);
     }
 
     void Canvas::set_offset(float x, float y)
@@ -75,6 +103,7 @@ namespace mousetrap
         _layer_layer->set_offset(_offset);
         _onionskin_layer->set_offset(_offset);
         _grid_layer->set_offset(_offset);
+        _symmetry_ruler_layer->set_offset(_offset);
     }
 
     void Canvas::set_grid_visible(bool b)
@@ -125,10 +154,14 @@ namespace mousetrap
 
     void Canvas::on_layer_resolution_changed()
     {
+        _h_ruler_button.set_upper_limit(active_state->get_layer_resolution().x - 1);
+        _v_ruler_button.set_upper_limit(active_state->get_layer_resolution().y - 1);
+
         _transparency_tiling_layer->on_layer_resolution_changed();
         _layer_layer->on_layer_resolution_changed();
         _onionskin_layer->on_layer_resolution_changed();
         _grid_layer->on_layer_resolution_changed();
+        _symmetry_ruler_layer->on_layer_resolution_changed();
     }
 
     void Canvas::on_layer_frame_selection_changed()

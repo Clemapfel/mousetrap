@@ -227,6 +227,59 @@ namespace mousetrap
 
             GridLayer* _grid_layer = new GridLayer(this);
 
+            class SymmetryRulerLayer
+            {
+                public:
+                    SymmetryRulerLayer(Canvas*);
+                    operator Widget*();
+                    
+                    void on_layer_resolution_changed();
+
+                    void set_horizontal_symmetry_pixel_position(size_t px);
+                    void set_vertical_symmetry_pixel_position(size_t px);
+
+                    void set_horizontal_symmetry_enabled(bool);
+                    void set_vertical_symmetry_enabled(bool);
+
+                    void set_scale(float);
+                    void set_offset(Vector2f);
+
+                private:
+                    Canvas* _owner;
+
+                    GLArea _area;
+
+                    Vector2f* _canvas_size = new Vector2f{1, 1};
+                    static void on_area_realize(Widget* widget, SymmetryRulerLayer* instance);
+                    static void on_area_resize(GLArea*, int w, int h, SymmetryRulerLayer* instance);
+
+                    float _scale = 1;
+                    Vector2f _offset = {0, 0};
+
+                    size_t _h_position = 0.5 * active_state->get_layer_resolution().x;
+                    size_t _v_position = 0.5 * active_state->get_layer_resolution().y;
+                    size_t _h_enabled = true;
+                    size_t _v_enabled = true;
+                    
+                    Shape* _h_anchor_left = nullptr;
+                    Shape* _h_anchor_left_outline = nullptr;
+                    Shape* _h_anchor_right = nullptr;
+                    Shape* _h_anchor_right_outline = nullptr;
+                    Shape* _h_ruler = nullptr;
+                    Shape* _h_ruler_outline = nullptr;
+
+                    Shape* _v_anchor_top = nullptr;
+                    Shape* _v_anchor_top_outline = nullptr;
+                    Shape* _v_anchor_bottom = nullptr;
+                    Shape* _v_anchor_bottom_outline = nullptr;
+                    Shape* _v_ruler = nullptr;
+                    Shape* _v_ruler_outline = nullptr;
+
+                    void reformat();
+            };
+            
+            SymmetryRulerLayer* _symmetry_ruler_layer = new SymmetryRulerLayer(this);
+
             // debug
 
             SpinButton _scale_button = SpinButton(1, 100, 0.1);
@@ -235,10 +288,19 @@ namespace mousetrap
             SpinButton _x_offset_button = SpinButton(-1000, +1000, 1);
             SpinButton _y_offset_button = SpinButton(-1000, +1000, 1);
             Label _offset_label = Label("Offset (xy):");
-
+            Box _transform_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            
             CheckButton _grid_visible_button;
             Label _grid_visible_label = Label("Grid: ");
-
+            Box _grid_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            
+            CheckButton _h_ruler_active_button;
+            SpinButton _h_ruler_button = SpinButton(0, active_state->get_layer_resolution().x - 1, 1);
+            CheckButton _v_ruler_active_button;
+            SpinButton _v_ruler_button = SpinButton(0, active_state->get_layer_resolution().y - 1, 1);
+            Label _ruler_label = Label("Symmetry (hv): ");
+            Box _ruler_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            
             Box _debug_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
             // main layout
