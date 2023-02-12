@@ -69,6 +69,9 @@ namespace mousetrap
             Vector2f _offset = {0, 0}; // pixel coordinates
             void set_offset(float, float);
 
+            bool _grid_visible = true;
+            void set_grid_visible(bool);
+
             // layers
 
             class TransparencyTilingLayer
@@ -192,6 +195,37 @@ namespace mousetrap
 
             OnionskinLayer* _onionskin_layer = new OnionskinLayer(this);
 
+            class GridLayer
+            {
+                public:
+                    GridLayer(Canvas*);
+                    operator Widget*();
+
+                    void on_layer_resolution_changed();
+
+                    void set_scale(float);
+                    void set_offset(Vector2f);
+                    void set_visible(bool);
+
+                private:
+                    Canvas* _owner;
+
+                    GLArea _area;
+                    std::vector<Shape*> _h_shapes;
+                    std::vector<Shape*> _v_shapes;
+
+                    Vector2f* _canvas_size = new Vector2f{1, 1};
+                    static void on_area_realize(Widget* widget, GridLayer* instance);
+                    static void on_area_resize(GLArea*, int w, int h, GridLayer* instance);
+
+                    float _scale = 1;
+                    Vector2f _offset = {0, 0};
+                    bool _visible_requested = true;
+                    void reformat();
+            };
+
+            GridLayer* _grid_layer = new GridLayer(this);
+
             // debug
 
             SpinButton _scale_button = SpinButton(1, 100, 0.1);
@@ -200,6 +234,9 @@ namespace mousetrap
             SpinButton _x_offset_button = SpinButton(-1000, +1000, 1);
             SpinButton _y_offset_button = SpinButton(-1000, +1000, 1);
             Label _offset_label = Label("Offset (xy):");
+
+            CheckButton _grid_visible_button;
+            Label _grid_visible_label = Label("Grid: ");
 
             Box _debug_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
