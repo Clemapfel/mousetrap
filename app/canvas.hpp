@@ -221,6 +221,7 @@ namespace mousetrap
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
                     bool _visible_requested = true;
+                    void update_visibility();
                     void reformat();
             };
 

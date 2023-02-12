@@ -24,7 +24,7 @@ namespace mousetrap
         area->make_current();
 
         instance->on_layer_resolution_changed();
-        instance->set_visible(instance->_visible);
+        instance->set_visible(instance->_visible_requested);
 
         area->queue_render();
     }
@@ -52,17 +52,8 @@ namespace mousetrap
 
     void Canvas::GridLayer::set_visible(bool b)
     {
-        _visible = b;
-
-        if (not _area.get_is_realized())
-            return;
-
-        for (auto* shape : _h_shapes)
-            shape->set_visible(_visible);
-
-        for (auto* shape : _v_shapes)
-            shape->set_visible(_visible);
-
+        _visible_requested = b;
+        update_visibility();
         _area.queue_render();
     }
 
@@ -140,6 +131,30 @@ namespace mousetrap
             );
         }
 
-        auto hide = std::min(pixel_w * layer_resolution.x, pixel_h * layer_resolution.y) < state::config_file->get_value_as<float>("canvas", )
+        update_visibility();
+    }
+
+    void Canvas::GridLayer::update_visibility()
+    {
+        if (not _area.get_is_realized())
+            return;
+
+        auto layer_resolution = active_state->get_layer_resolution();
+        float width = layer_resolution.x / _canvas_size->x;
+        float height = layer_resolution.y / _canvas_size->y;
+
+        width *= _scale;
+        height *= _scale;
+
+        float pixel_w = width / layer_resolution.x;
+        float pixel_h = height / layer_resolution.y;
+
+        auto hide = std::min(pixel_w * _canvas_size->x, pixel_h * _canvas_size->y) < state::settings_file->get_value_as<float>("canvas", "grid_minimum_square_size");
+
+        for (auto* shape : _v_shapes)
+            shape->set_visible(not hide and _visible_requested);
+
+        for (auto* shape : _h_shapes)
+            shape->set_visible(not hide and _visible_requested);
     }
 }
