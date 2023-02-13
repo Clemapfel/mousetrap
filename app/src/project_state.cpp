@@ -174,6 +174,7 @@ namespace mousetrap
     void ProjectState::set_current_brush(size_t i)
     {
         _current_brush_i = i;
+        _brushes.at(_current_brush_i).set_size(_brush_size);
         signal_brush_selection_changed();
     }
 
@@ -245,6 +246,7 @@ namespace mousetrap
     void ProjectState::set_brush_size(size_t v)
     {
         _brush_size = v;
+        _brushes.at(_current_brush_i).set_size(_brush_size);
         signal_brush_selection_changed();
     }
 

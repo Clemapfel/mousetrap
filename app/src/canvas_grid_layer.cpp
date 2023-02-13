@@ -62,6 +62,8 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
+        _area.make_current();
+
         auto color = state::settings_file->get_value_as<HSVA>("canvas", "grid_color");
 
         for (auto* shape : _h_shapes)
@@ -85,6 +87,8 @@ namespace mousetrap
         }
 
         reformat();
+
+        _area.clear_render_tasks();
 
         for (auto* shape : _h_shapes)
             _area.add_render_task(shape);

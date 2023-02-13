@@ -2,7 +2,6 @@
 #include <app/color_picker.hpp>
 #include <app/palette_view.hpp>
 #include <app/color_swapper.hpp>
-#include <app/canvas.hpp>
 #include <app/color_preview.hpp>
 
 namespace mousetrap

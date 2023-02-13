@@ -108,6 +108,15 @@ namespace mousetrap
                 _image = _base_image.as_scaled(_size, _size, GDK_INTERP_NEAREST);
                 break;
         }
+
+        // prevent downscaling resulting in completely empty picture
+        for (size_t x = 0; x < _image.get_size().x; ++x)
+            for (size_t y = 0; y < _image.get_size().y; ++y)
+                if (_image.get_pixel(x, y).a > 0)
+                    goto end;
+
+        _image.set_pixel(_image.get_size().x / 2, _image.get_size().y / 2, RGBA(1, 1, 1, 1));
+        end:;
     }
 
     const Image& Brush::get_image() const

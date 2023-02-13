@@ -10,7 +10,6 @@
 #include <app/app_component.hpp>
 #include <app/project_state.hpp>
 #include <app/tooltip.hpp>
-#include <app/canvas.hpp>
 #include <app/add_shortcut_action.hpp>
 #include <app/app_signals.hpp>
 

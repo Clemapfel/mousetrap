@@ -66,11 +66,17 @@ namespace mousetrap
             float _scale = 1;
             void set_scale(float);
 
-            Vector2f _offset = {0, 0}; // pixel coordinates
+            Vector2f _offset = {0, 0}; // widget-space coords
             void set_offset(float, float);
 
             bool _grid_visible = true;
             void set_grid_visible(bool);
+
+            bool _brush_outline_visible = true;
+            void set_brush_outline_visible(bool);
+
+            Vector2i _brush_position = {0, 0}; // texture-space coords
+            void set_brush_position(Vector2i);
 
             // layers
 
@@ -280,6 +286,54 @@ namespace mousetrap
             
             SymmetryRulerLayer* _symmetry_ruler_layer = new SymmetryRulerLayer(this);
 
+            class BrushShapeLayer
+            {
+                public:
+                    BrushShapeLayer(Canvas*);
+                    operator Widget*();
+
+                    void set_brush_position(Vector2i);
+                    void set_brush_outline_visible(bool);
+
+                    void set_scale(float);
+                    void set_offset(Vector2f);
+
+                    void on_layer_resolution_changed();
+                    void on_color_selection_changed();
+                    void on_brush_selection_changed();
+
+                    // TODO
+                    void recompile_shader();
+                    // TODO
+
+                private:
+                    Canvas* _owner;
+
+                    GLArea _area;
+
+                    Shape* _brush_shape = nullptr;
+                    Texture* _brush_texture = nullptr;
+                    RenderTask* _brush_shape_task = nullptr;
+
+                    Shader* _outline_shader = nullptr;
+                    RenderTexture* _render_texture = nullptr;
+                    Shape* _render_shape = nullptr;
+                    RenderTask* _render_shape_task = nullptr;
+
+                    Vector2f* _canvas_size = new Vector2f(1, 1);
+                    static void on_area_realize(Widget* widget, BrushShapeLayer* instance);
+                    static void on_area_resize(GLArea*, int w, int h, BrushShapeLayer* instance);
+                    static bool on_area_render(GLArea*, GdkGLContext*, BrushShapeLayer* instance);
+
+                    float _scale = 1;
+                    Vector2f _offset = {0, 0};
+                    Vector2i _position = {0, 0}; // gl coords
+                    bool* _outline_visible = new bool(true);
+                    void reformat();
+            };
+
+            BrushShapeLayer* _brush_shape_layer = new BrushShapeLayer(this);
+
             // debug
 
             SpinButton _scale_button = SpinButton(1, 100, 0.1);
@@ -300,8 +354,14 @@ namespace mousetrap
             SpinButton _v_ruler_button = SpinButton(0, active_state->get_layer_resolution().y - 1, 1);
             Label _ruler_label = Label("Symmetry (hv): ");
             Box _ruler_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
+            CheckButton _brush_outline_button;
+            SpinButton _brush_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);
+            SpinButton _brush_y_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().y + 100, 1);
+            Label _brush_label = Label("Brush (xy): ");
+            Box _brush_box = Box(GTK_ORIENTATION_HORIZONTAL);
             
-            Box _debug_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Box _debug_box = Box(GTK_ORIENTATION_VERTICAL);
 
             // main layout
 

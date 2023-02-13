@@ -118,6 +118,8 @@ namespace mousetrap
         _h_anchor_right_outline->set_visible(_h_enabled);
         _h_ruler->set_visible(_h_enabled);
         _h_ruler_outline->set_visible(_h_enabled);
+
+        _area.queue_render();
     }
 
     void Canvas::SymmetryRulerLayer::set_vertical_symmetry_enabled(bool b)
@@ -133,6 +135,8 @@ namespace mousetrap
         _v_anchor_bottom_outline->set_visible(_v_enabled);
         _v_ruler->set_visible(_v_enabled);
         _v_ruler_outline->set_visible(_v_enabled);
+
+        _area.queue_render();
     }
 
     void Canvas::SymmetryRulerLayer::set_horizontal_symmetry_pixel_position(size_t px) 

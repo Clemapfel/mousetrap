@@ -1,5 +1,4 @@
 #include <app/save_file.hpp>
-#include <app/canvas.hpp>
 #include <app/palette_view.hpp>
 #include <app/color_picker.hpp>
 #include <app/verbose_color_picker.hpp>
