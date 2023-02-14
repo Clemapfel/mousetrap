@@ -70,7 +70,7 @@ namespace mousetrap
             delete shape;
 
         _h_shapes.clear();
-        while (_h_shapes.size() < active_state->get_layer_resolution().y)
+        while (_h_shapes.size() <= active_state->get_layer_resolution().y)
         {
             auto* shape = _h_shapes.emplace_back(new Shape());
             shape->set_color(color);
@@ -80,7 +80,7 @@ namespace mousetrap
             delete shape;
 
         _v_shapes.clear();
-        while (_v_shapes.size() < active_state->get_layer_resolution().x)
+        while (_v_shapes.size() <= active_state->get_layer_resolution().x)
         {
             auto* shape = _v_shapes.emplace_back(new Shape());
             shape->set_color(color);
@@ -119,7 +119,7 @@ namespace mousetrap
         float pixel_w = width / layer_resolution.x;
         float pixel_h = height / layer_resolution.y;
 
-        for (size_t i = 0; i < layer_resolution.x; ++i)
+        for (size_t i = 0; i <= layer_resolution.x; ++i)
         {
             _v_shapes.at(i)->as_line(
                 top_left + Vector2f{i * pixel_w, 0},
@@ -127,7 +127,7 @@ namespace mousetrap
             );
         }
 
-        for (size_t i = 0; i < layer_resolution.y; ++i)
+        for (size_t i = 0; i <= layer_resolution.y; ++i)
         {
             _h_shapes.at(i)->as_line(
                 top_left + Vector2f{0, i * pixel_h},

@@ -18,12 +18,6 @@ void main()
 
     vec2 pos = vec2(_texture_coordinates.x, 1 - _texture_coordinates.y); // because of render texture
 
-    if (_visible != 1)
-    {
-        _fragment_color = texture2D(_texture, pos) * _vertex_color;
-        return;
-    }
-
     float pixel_h = 1.f / _texture_size.x;
     float pixel_w = 1.f / _texture_size.y;
 
@@ -38,8 +32,8 @@ void main()
     bool bottom_right = texture2D(_texture, vec2(pos.x + 1 * pixel_w, pos.y + 1 * pixel_h)).a > 0;
     bool bottom_left = texture2D(_texture, vec2(pos.x - 1 * pixel_w, pos.y + 1 * pixel_h)).a > 0;
 
-    if (!center && (top || bottom || left || right || top_left || top_right || bottom_right || bottom_left))
-        _fragment_color = _line_color_rgba;
+    if ((_outline_visible == 1) && !center && (top || bottom || left || right))
+        _fragment_color = _outline_color_rgba;
     else
         _fragment_color = texture2D(_texture, pos) * _vertex_color;
 }

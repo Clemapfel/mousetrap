@@ -83,11 +83,22 @@ namespace mousetrap
             center + Vector2f{+0.5 * width, +0.5 * height},
             center + Vector2f{-0.5 * width, +0.5 * height}
         );
+        _shape->set_visible(_visible);
     }
 
     void Canvas::TransparencyTilingLayer::on_layer_resolution_changed()
     {
         reformat();
+        _area.queue_render();
+    }
+
+    void Canvas::TransparencyTilingLayer::set_background_visible(bool b)
+    {
+        _visible = b;
+
+        if (_shape != nullptr)
+            _shape->set_visible(_visible);
+
         _area.queue_render();
     }
 }

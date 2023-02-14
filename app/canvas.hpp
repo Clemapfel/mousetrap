@@ -78,6 +78,16 @@ namespace mousetrap
             Vector2i _brush_position = {0, 0}; // texture-space coords
             void set_brush_position(Vector2i);
 
+            bool _background_visible = true;
+            void set_background_visible(bool);
+
+            Vector2i _line_origin = {0, 0};
+            Vector2i _line_destination = {0, 0};
+
+            void set_line(Vector2i origin, Vector2i destination);
+            bool _line_visible;
+            void set_line_visible(bool);
+
             // layers
 
             class TransparencyTilingLayer
@@ -88,6 +98,7 @@ namespace mousetrap
 
                     void set_scale(float);
                     void set_offset(Vector2f);
+                    void set_background_visible(bool);
 
                     void on_layer_resolution_changed();
 
@@ -101,6 +112,8 @@ namespace mousetrap
                     Vector2f* _canvas_size = new Vector2f(1, 1);
                     static void on_area_realize(Widget* widget, TransparencyTilingLayer* instance);
                     static void on_area_resize(GLArea*, int w, int h, TransparencyTilingLayer* instance);
+
+                    bool _visible = true;
 
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
@@ -333,7 +346,95 @@ namespace mousetrap
 
             BrushShapeLayer* _brush_shape_layer = new BrushShapeLayer(this);
 
+            class LineToolLayer
+            {
+                public:
+                    LineToolLayer(Canvas*);
+                    operator Widget*();
+
+                    void on_layer_resolution_changed();
+
+                    void set_scale(float);
+                    void set_offset(Vector2f);
+                    void set_line_position(Vector2i, Vector2i); // texture-space coords
+                    void set_line_visible(bool);
+
+                private:
+                    Canvas* _owner;
+
+                    GLArea _area;
+
+                    Shape* _origin_anchor_shape = nullptr;
+                    Shape* _origin_anchor_inner_outline_shape = nullptr;
+                    Shape* _origin_anchor_outer_outline_shape = nullptr;
+                    Shape* _origin_anchor_center_shape = nullptr;
+
+                    Shape* _line_shape = nullptr;
+                    Shape* _line_outline_shape = nullptr;
+
+                    Shape* _destination_anchor_shape = nullptr;
+                    Shape* _destination_anchor_inner_outline_shape = nullptr;
+                    Shape* _destination_anchor_outer_outline_shape = nullptr;
+                    Shape* _destination_anchor_center_shape = nullptr;
+
+                    Vector2i _origin_point; // texture space coords
+                    Vector2i _destination_point;
+                    bool _visible = true;
+
+                    float _scale = 1;
+                    Vector2f _offset = {0, 0};
+                    void reformat();
+
+                    Vector2f _canvas_size = {1, 1};
+                    static void on_area_realize(Widget* widget, LineToolLayer* instance);
+                    static void on_area_resize(GLArea*, int w, int h, LineToolLayer* instance);
+            };
+
+            LineToolLayer* _line_tool_layer = new LineToolLayer(this);
+
+            class UserInputLayer
+            {
+                public:
+                    UserInputLayer(Canvas*);
+                    operator Widget*();
+
+                private:
+                    Canvas* _owner;
+
+                    GLArea _proxy;
+                    Vector2f _canvas_size;
+
+                    ClickEventController _click_controller;
+                    static void on_click_pressed(ClickEventController*, size_t n, double x, double y, UserInputLayer* instance);
+                    static void on_click_released(ClickEventController*, size_t n, double x, double y, UserInputLayer* instance);
+
+                    MotionEventController _motion_controller;
+                    static void on_motion_enter(MotionEventController*, double x, double y, UserInputLayer* instance);
+                    static void on_motion_leave(MotionEventController*, UserInputLayer* instance);
+                    static void on_motion(MotionEventController*, double x, double y, UserInputLayer* instance);
+
+                    KeyEventController _key_controller;
+                    static bool on_key_pressed(KeyEventController* controller, guint keyval, guint keycode, GdkModifierType state, UserInputLayer* instance);
+                    static bool on_key_released(KeyEventController* controller, guint keyval, guint keycode, GdkModifierType state, UserInputLayer* instance);
+
+                    ScrollEventController _scroll_controller;
+                    static void on_scroll_begin(ScrollEventController*, UserInputLayer* instance);
+                    static void on_scroll_end(ScrollEventController*, UserInputLayer* instance);
+                    static void on_scroll(ScrollEventController*, double x, double y, UserInputLayer* instance);
+
+                    DragEventController _drag_controller;
+                    static void on_drag_begin(DragEventController*, double x, double y, UserInputLayer* instance);
+                    static void on_drag_update(DragEventController*, double x, double y, UserInputLayer* instance);
+                    static void on_drag_end(DragEventController*, double x, double y, UserInputLayer* instance);
+            };
+
+            UserInputLayer* _user_input_layer = new UserInputLayer(this);
+
             // debug
+
+            CheckButton _background_visible_button;
+            Label _background_visible_label = Label("Background Visible: ");
+            Box _background_visible_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
             SpinButton _scale_button = SpinButton(1, 100, 0.1);
             Label _scale_label = Label("Scale: ");
@@ -359,7 +460,15 @@ namespace mousetrap
             SpinButton _brush_y_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().y + 100, 1);
             Label _brush_label = Label("Brush (xy): ");
             Box _brush_box = Box(GTK_ORIENTATION_HORIZONTAL);
-            
+
+            CheckButton _line_visible_button;
+            SpinButton _line_start_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);
+            SpinButton _line_start_y_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().y + 100, 1);
+            SpinButton _line_end_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);
+            SpinButton _line_end_y_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().y + 100, 1);
+            Label _line_label = Label("Line (xy -> xy): ");
+            Box _line_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
             Box _debug_box = Box(GTK_ORIENTATION_VERTICAL);
 
             // main layout

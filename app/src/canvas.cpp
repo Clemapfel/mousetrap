@@ -4,10 +4,9 @@ namespace mousetrap
 {
     Canvas::Canvas()
     {
-        _scale_button.set_value(_scale);
-        _x_offset_button.set_value(_offset.x);
-        _y_offset_button.set_value(_offset.y);
-        _grid_visible_button.set_active(_grid_visible);
+        _background_visible_button.connect_signal_toggled([](CheckButton* button, Canvas* instance){
+            instance->set_background_visible(button->get_active());
+        }, this);
 
         _scale_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
             instance->set_scale(scale->get_value());
@@ -53,8 +52,59 @@ namespace mousetrap
             instance->set_brush_position({instance->_brush_position.x, scale->get_value()});
         }, this);
 
+        _line_visible_button.connect_signal_toggled([](CheckButton* button, Canvas* instance) {
+            instance->set_line_visible(button->get_active());
+        }, this);
+
+        _line_start_x_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
+            auto start = instance->_line_origin;
+            auto end = instance->_line_destination;
+            start.x = scale->get_value();
+            instance->set_line(start, end);
+        }, this);
+
+        _line_start_y_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
+            auto start = instance->_line_origin;
+            auto end = instance->_line_destination;
+            start.y = scale->get_value();
+            instance->set_line(start, end);
+        }, this);
+
+        _line_end_x_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
+            auto start = instance->_line_origin;
+            auto end = instance->_line_destination;
+            end.x = scale->get_value();
+            instance->set_line(start, end);
+        }, this);
+
+        _line_end_y_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
+            auto start = instance->_line_origin;
+            auto end = instance->_line_destination;
+            end.y = scale->get_value();
+            instance->set_line(start, end);
+        }, this);
+
+        _scale_button.set_value(50);//_scale);
+        _x_offset_button.set_value(_offset.x);
+        _y_offset_button.set_value(_offset.y);
+        _grid_visible_button.set_active(_grid_visible);
+        _background_visible_button.set_active(_background_visible);
+        _h_ruler_button.set_value(0.5 * active_state->get_layer_resolution().x);
+        _v_ruler_button.set_value(0.5 * active_state->get_layer_resolution().y);
+        _h_ruler_active_button.set_active(false);
+        _v_ruler_active_button.set_active(false);
+
+        _line_visible_button.set_visible(true);
+        _line_start_x_pos_button.set_value(25);//1);
+        _line_start_y_pos_button.set_value(25);//1);
+        _line_end_x_pos_button.set_value(26);//active_state->get_layer_resolution().x);
+        _line_end_y_pos_button.set_value(26);//active_state->get_layer_resolution().y);
+
         _brush_x_pos_button.set_value(0);
         _brush_y_pos_button.set_value(0);
+
+        _background_visible_box.push_back(&_background_visible_label);
+        _background_visible_box.push_back(&_background_visible_button);
 
         _transform_box.push_back(&_scale_label);
         _transform_box.push_back(&_scale_button);
@@ -76,18 +126,29 @@ namespace mousetrap
         _brush_box.push_back(&_brush_x_pos_button);
         _brush_box.push_back(&_brush_y_pos_button);
 
+        _line_box.push_back(&_line_label);
+        _line_box.push_back(&_line_visible_button);
+        _line_box.push_back(&_line_start_x_pos_button);
+        _line_box.push_back(&_line_start_y_pos_button);
+        _line_box.push_back(&_line_end_x_pos_button);
+        _line_box.push_back(&_line_end_y_pos_button);
+        _line_start_y_pos_button.set_margin_end(2 * state::margin_unit);
+
+        _debug_box.push_back(&_background_visible_box);
         _debug_box.push_back(&_transform_box);
         _debug_box.push_back(&_grid_box);
         _debug_box.push_back(&_ruler_box);
         _debug_box.push_back(&_brush_box);
+        _debug_box.push_back(&_line_box);
 
         _layer_overlay.set_child(*_transparency_tiling_layer);
         //_layer_overlay.add_overlay(*_layer_layer);
         //_layer_overlay.add_overlay(*_onionskin_layer);
-
-        _layer_overlay.add_overlay(*_brush_shape_layer);
+        //_layer_overlay.add_overlay(*_brush_shape_layer);
         _layer_overlay.add_overlay(*_grid_layer);
         //_layer_overlay.add_overlay(*_symmetry_ruler_layer);
+        _layer_overlay.add_overlay(*_line_tool_layer);
+        _layer_overlay.add_overlay(*_user_input_layer);
 
         _transparency_tiling_layer->operator Widget *()->set_expand(true);
         _layer_layer->operator Widget *()->set_expand(true);
@@ -116,6 +177,7 @@ namespace mousetrap
         _grid_layer->set_scale(_scale);
         _symmetry_ruler_layer->set_scale(_scale);
         _brush_shape_layer->set_scale(_scale);
+        _line_tool_layer->set_scale(_scale);
     }
 
     void Canvas::set_offset(float x, float y)
@@ -127,12 +189,19 @@ namespace mousetrap
         _grid_layer->set_offset(_offset);
         _symmetry_ruler_layer->set_offset(_offset);
         _brush_shape_layer->set_offset(_offset);
+        _line_tool_layer->set_offset(_offset);
     }
 
     void Canvas::set_grid_visible(bool b)
     {
         _grid_visible = b;
         _grid_layer->set_visible(_grid_visible);
+    }
+
+    void Canvas::set_background_visible(bool b)
+    {
+        _background_visible = b;
+        _transparency_tiling_layer->set_background_visible(_background_visible);
     }
 
     void Canvas::set_brush_outline_visible(bool b)
@@ -220,4 +289,16 @@ namespace mousetrap
         _layer_layer->on_image_flip_changed();
     }
 
+    void Canvas::set_line(Vector2i origin, Vector2i destination)
+    {
+        _line_origin = origin;
+        _line_destination = destination;
+        _line_tool_layer->set_line_position(_line_origin, _line_destination);
+    }
+
+    void Canvas::set_line_visible(bool b)
+    {
+        _line_visible = b;
+        _line_tool_layer->set_line_visible(_line_visible);
+    }
 }
