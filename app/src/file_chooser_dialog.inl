@@ -437,6 +437,8 @@ home_folder = <Alt>Home
         // return already consumed by GTK file explorer
         //if (keyval == GDK_KEY_Return and instance->_accept_button.get_can_respond_to_input())
         //   instance->_on_accept_pressed(instance);
+
+        return true;
     }
 
     template<FileChooserDialogMode M>

@@ -38,6 +38,12 @@ namespace mousetrap
         _area.queue_render();
     }
 
+    void Canvas::BrushShapeLayer::set_outline_color(RGBA color)
+    {
+        *_outline_color = color;
+        _area.queue_render();
+    }
+
     void Canvas::BrushShapeLayer::on_color_selection_changed()
     {
         if (not _area.get_is_realized())
@@ -96,6 +102,8 @@ namespace mousetrap
         instance->_brush_shape_task = new RenderTask(instance->_brush_shape);
         instance->_render_shape_task = new RenderTask(instance->_render_shape, instance->_outline_shader);
         instance->_render_shape_task->register_vec2("_texture_size", instance->_canvas_size);
+        instance->_render_shape_task->register_color("_outline_color_rgba", instance->_outline_color);
+        instance->_render_shape_task->register_int("_outline_visible", instance->_outline_visible);
 
         area->queue_render();
     }
@@ -136,9 +144,6 @@ namespace mousetrap
 
         float brush_width = (active_state->get_brush_size() / float(layer_resolution.x)) * canvas_width;
         float brush_height = (active_state->get_brush_size() / float(layer_resolution.y)) * canvas_height;
-
-        std::cout << _position.x << " " << _position.y << std::endl;
-        std::cout << brush_pos_x << " " << brush_pos_y << " " << brush_width << " " << brush_height << std::endl;
 
         _brush_shape->as_rectangle({brush_pos_x, brush_pos_y}, {brush_width, brush_height});
         _brush_shape->set_texture(_brush_texture);
@@ -186,16 +191,7 @@ namespace mousetrap
 
             glFlush();
         }
-    }
 
-    // TODO
-    void Canvas::BrushShapeLayer::recompile_shader()
-    {
-        _outline_shader->create_from_file(get_resource_path() + "shaders/brush_outline.frag", ShaderType::FRAGMENT);
-        _brush_shape_task = new RenderTask(_brush_shape);
-        _render_shape_task = new RenderTask(_render_shape, _outline_shader);
-        _render_shape_task->register_vec2("_texture_size", _canvas_size);
-        _area.queue_render();
+        return true;
     }
-    // TODO
 }

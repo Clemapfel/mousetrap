@@ -9,7 +9,7 @@ namespace mousetrap
     {
         _shape = BrushShape::CIRCLE;
         _name = "Circle";
-        _base_image.create(0, 0);
+        _base_image.create(1, 1);
         update_image();
     }
 
@@ -17,7 +17,7 @@ namespace mousetrap
     {
         _shape = BrushShape::SQUARE;
         _name = "Square";
-        _base_image.create(0, 0);
+        _base_image.create(1, 1);
         update_image();
     }
 
@@ -25,7 +25,7 @@ namespace mousetrap
     {
         _shape = BrushShape::ELLIPSE_HORIZONTAL;
         _name = "Horizontal Ellipse";
-        _base_image.create(0, 0);
+        _base_image.create(1, 1);
         update_image();
     }
 
@@ -33,7 +33,7 @@ namespace mousetrap
     {
         _shape = BrushShape::ELLIPSE_VERTICAL;
         _name = "Vertical Ellipse";
-        _base_image.create(0, 0);
+        _base_image.create(1, 1);
         update_image();
     }
 
@@ -41,7 +41,7 @@ namespace mousetrap
     {
         _shape = BrushShape::RECTANGLE_HORIZONTAL;
         _name = "Horizontal Rectangle";
-        _base_image.create(0, 0);
+        _base_image.create(1, 1);
         update_image();
     }
 
@@ -49,7 +49,7 @@ namespace mousetrap
     {
         _shape = BrushShape::RECTANGLE_VERTICAL;
         _name = "Vertical Rectangle";
-        _base_image.create(0, 0);
+        _base_image.create(1, 1);
         update_image();
     }
 
@@ -61,6 +61,13 @@ namespace mousetrap
         auto size = base_image.get_size();
         size.x = std::max(size.x, size.y);
         size.y = std::max(size.x, size.y);
+
+        if (size.x == 0)
+            size.x = 1;
+
+        if (size.y == 0)
+            size.y = 1;
+
         _size = size.x;
 
         _base_image.create(size.x, size.y, RGBA(0, 0, 0, 0));

@@ -116,6 +116,12 @@ namespace mousetrap
     /// \brief generate 1-pixel rasterized circle outline
     std::vector<Vector2i> generate_circle_points(size_t width, size_t height)
     {
+        if (width < 1)
+            width = 1;
+
+        if (height < 1)
+            height = 1;
+
         std::vector<Vector2i> out;
 
         // source: [1] https://stackoverflow.com/questions/15474122/is-there-a-midpoint-ellipse-algorithm
@@ -342,6 +348,12 @@ namespace mousetrap
 
     Image generate_rectangle_outline(size_t width, size_t height, HSVA color)
     {
+        if (width < 1)
+            width = 1;
+
+        if (height < 1)
+            height = 1;
+
         auto out = Image();
         out.create(width, height, RGBA(0, 0, 0, 0));
 
@@ -362,6 +374,12 @@ namespace mousetrap
 
     Image generate_rectangle_filled(size_t width, size_t height, HSVA color)
     {
+        if (width < 1)
+            width = 1;
+
+        if (height < 1)
+            height = 1;
+
         auto out = Image();
         out.create(width, height, color);
         return out;
@@ -369,6 +387,12 @@ namespace mousetrap
 
     Image generate_circle_outline(size_t width, size_t height, HSVA color)
     {
+        if (width < 1)
+            width = 1;
+
+        if (height < 1)
+            height = 1;
+
         const auto points = generate_circle_points(width, height);
         auto out = Image();
         out.create(width, height, RGBA(0, 0, 0, 0));
@@ -381,6 +405,12 @@ namespace mousetrap
 
     Image generate_circle_filled(size_t width, size_t height, HSVA color)
     {
+        if (width < 1)
+            width = 1;
+
+        if (height < 1)
+            height = 1;
+
         const auto points = generate_circle_points(width, height);
 
         // horizontal stripe decomposition: y -> x_left, x_right

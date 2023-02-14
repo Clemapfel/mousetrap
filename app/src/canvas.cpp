@@ -42,9 +42,7 @@ namespace mousetrap
         }, this);
 
         _brush_outline_button.connect_signal_toggled([](CheckButton* button, Canvas* instance){
-            // TODO
-            instance->_brush_shape_layer->recompile_shader();
-            //instance->set_brush_outline_visible(button->get_active());
+            instance->set_brush_outline_visible(button->get_active());
         }, this);
 
         _brush_x_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){

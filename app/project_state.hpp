@@ -169,8 +169,8 @@ namespace mousetrap
             float get_fps() const;
 
         private:
-            HSVA _primary_color = RGBA(1, 0, 1, 1).operator HSVA();
-            HSVA _secondary_color = RGBA(1, 1, 0, 1).operator HSVA();
+            HSVA _primary_color = RGBA(1, 1, 1, 1).operator HSVA();
+            HSVA _secondary_color = RGBA(0, 0, 0, 1).operator HSVA();
 
             Palette _palette;
             PaletteSortMode _palette_sort_mode = PaletteSortMode::NONE;

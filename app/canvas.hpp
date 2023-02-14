@@ -294,6 +294,7 @@ namespace mousetrap
 
                     void set_brush_position(Vector2i);
                     void set_brush_outline_visible(bool);
+                    void set_outline_color(RGBA);
 
                     void set_scale(float);
                     void set_offset(Vector2f);
@@ -301,10 +302,6 @@ namespace mousetrap
                     void on_layer_resolution_changed();
                     void on_color_selection_changed();
                     void on_brush_selection_changed();
-
-                    // TODO
-                    void recompile_shader();
-                    // TODO
 
                 private:
                     Canvas* _owner;
@@ -328,7 +325,9 @@ namespace mousetrap
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
                     Vector2i _position = {0, 0}; // gl coords
-                    bool* _outline_visible = new bool(true);
+                    gint* _outline_visible = new gint(true);
+                    RGBA* _outline_color = new RGBA(1, 1, 1, 0.5);
+
                     void reformat();
             };
 
