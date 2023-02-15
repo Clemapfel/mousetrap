@@ -84,6 +84,12 @@ namespace mousetrap
             instance->set_line(start, end);
         }, this);
 
+        _draw_button.connect_signal_clicked([](Button* button, Canvas* instance) {
+            instance->draw(instance->_line_tool_layer->draw());
+        }, this);
+
+        _draw_button.set_child(&_draw_button_label);
+
         _scale_button.set_value(50);//_scale);
         _x_offset_button.set_value(_offset.x);
         _y_offset_button.set_value(_offset.y);
@@ -103,6 +109,9 @@ namespace mousetrap
         _brush_x_pos_button.set_value(0);
         _brush_y_pos_button.set_value(0);
 
+        _draw_button.set_margin_horizontal(state::margin_unit);
+
+        _background_visible_box.push_back(&_draw_button);
         _background_visible_box.push_back(&_background_visible_label);
         _background_visible_box.push_back(&_background_visible_button);
 
@@ -142,7 +151,7 @@ namespace mousetrap
         _debug_box.push_back(&_line_box);
 
         _layer_overlay.set_child(*_transparency_tiling_layer);
-        //_layer_overlay.add_overlay(*_layer_layer);
+        _layer_overlay.add_overlay(*_layer_layer);
         //_layer_overlay.add_overlay(*_onionskin_layer);
         //_layer_overlay.add_overlay(*_brush_shape_layer);
         _layer_overlay.add_overlay(*_grid_layer);
@@ -300,5 +309,10 @@ namespace mousetrap
     {
         _line_visible = b;
         _line_tool_layer->set_line_visible(_line_visible);
+    }
+
+    void Canvas::draw(const ProjectState::DrawData& data)
+    {
+        active_state->draw_to_cell({active_state->get_current_layer_index(), active_state->get_current_frame_index()}, data);
     }
 }

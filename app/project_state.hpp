@@ -92,7 +92,17 @@ namespace mousetrap
 
             void copy_to_cell(CellPosition b, CellPosition a);
             void swap_cells(CellPosition a, CellPosition b);
-            void draw_to_cell(CellPosition, std::vector<std::pair<Vector2i, HSVA>>);
+
+            struct DrawDataSort
+            {
+                bool operator()(const std::pair<Vector2i, HSVA>& a, const std::pair<Vector2i, HSVA>& b) const noexcept
+                {
+                    return (a.first.x == b.first.x) ? a.first.y < b.first.y : a.first.x < b.first.x;
+                }
+            };
+            using DrawData = std::set<std::pair<Vector2i, HSVA>, DrawDataSort>;
+
+            void draw_to_cell(CellPosition, const DrawData&);
             void set_cell_is_key(CellPosition, bool);
 
             void set_layer_blend_mode(size_t, BlendMode);

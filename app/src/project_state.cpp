@@ -979,7 +979,7 @@ namespace mousetrap
         signal_onionskin_layer_count_changed();
     }
 
-    void ProjectState::draw_to_cell(Vector2ui cell_ij, std::vector<std::pair<Vector2i, HSVA>> data)
+    void ProjectState::draw_to_cell(Vector2ui cell_ij, const ProjectState::DrawData& data)
     {
         size_t layer_i = cell_ij.x;
         size_t frame_i = cell_ij.y;
@@ -987,7 +987,10 @@ namespace mousetrap
         auto* image = frame->get_image();
 
         for (auto& pair : data)
+        {
+            std::cout << pair.first.x << " " << pair.first.y << std::endl;
             image->set_pixel(pair.first.x, pair.first.y, pair.second);
+        }
 
         frame->update_texture();
         signal_layer_image_updated();

@@ -88,6 +88,8 @@ namespace mousetrap
             bool _line_visible;
             void set_line_visible(bool);
 
+            void draw(const ProjectState::DrawData&);
+
             // layers
 
             class TransparencyTilingLayer
@@ -359,6 +361,8 @@ namespace mousetrap
                     void set_line_position(Vector2i, Vector2i); // texture-space coords
                     void set_line_visible(bool);
 
+                    ProjectState::DrawData draw();
+
                 private:
                     Canvas* _owner;
 
@@ -434,6 +438,8 @@ namespace mousetrap
 
             CheckButton _background_visible_button;
             Label _background_visible_label = Label("Background Visible: ");
+            Button _draw_button;
+            Label _draw_button_label = Label("DRAW");
             Box _background_visible_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
             SpinButton _scale_button = SpinButton(1, 100, 0.1);

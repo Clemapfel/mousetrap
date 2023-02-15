@@ -3,6 +3,7 @@
 //
 
 #include <app/canvas.hpp>
+#include <app/algorithms.hpp>
 
 namespace mousetrap
 {
@@ -104,6 +105,9 @@ namespace mousetrap
         })
             shape->set_color(RGBA(0, 0, 0, 1));
 
+        // TODO
+        instance->_origin_anchor_shape->set_color(RGBA(1, 0, 1, 1));
+
         area->clear_render_tasks();
 
         area->add_render_task(instance->_origin_anchor_inner_outline_shape);
@@ -197,11 +201,16 @@ namespace mousetrap
         _origin_anchor_center_shape->as_point(destination);
         _line_shape->as_line(origin, destination);
 
-        auto angle_rad = std::atan2(origin.x - destination.x, origin.y - destination.y);
+        auto angle_rad = std::atan2(_destination_point.x - _origin_point.x, _destination_point.y - _origin_point.y);
         float offset_rad = degrees(90).as_radians();
 
-        x_eps *= 1;
-        y_eps *= 1;
+        std::cout << radians(angle_rad).as_degrees() << " " << radians(angle_rad - offset_rad).as_degrees() << std::endl;
+
+        if (std::fmod(radians(angle_rad).as_degrees(), 45) < 0.01)
+        {
+            x_eps *= 2;
+            y_eps *= 2;
+        }
 
         Vector2f left_start = {
             origin.x + x_eps * sin(angle_rad - offset_rad),
@@ -223,12 +232,41 @@ namespace mousetrap
             destination.y - y_eps * cos(angle_rad + offset_rad)
         };
 
-        _line_outline_shape->as_wireframe({
-                                                  {origin.x - x_eps, origin.y - y_eps},
-                                                  {origin.x + x_eps, origin.y - y_eps},
-                                                  {destination.}
-        })
+        _line_outline_shape->as_lines({
+              {left_start, left_end},
+              {right_start, right_end}
+        });
+
     }
 
+    ProjectState::DrawData Canvas::LineToolLayer::draw()
+    {
+        auto points = generate_line_points(_origin_point, _destination_point);
+        auto out = ProjectState::DrawData();
+        auto brush = active_state->get_current_brush()->get_image();
+
+        for (auto p : points)
+        {
+            for (int x = 0; x < brush.get_size().x; ++x)
+            {
+                for (int y = 0; y < brush.get_size().y; ++y)
+                {
+                    auto pos = Vector2i(
+                        p.x + x - 0.5 * brush.get_size().x,
+                        p.y + y - 0.5 * brush.get_size().y
+                    );
+
+                    if (brush.get_pixel(x, y).a == 0 or pos.x < 0 or pos.x >= active_state->get_layer_resolution().x or pos.y < 0 or pos.y >= active_state->get_layer_resolution().y)
+                        continue;
+
+                    auto color = active_state->get_primary_color();
+                    color.a = active_state->get_brush_opacity();
+                    out.insert(std::pair<Vector2i, HSVA>(pos, color));
+                }
+            }
+        }
+
+        return out;
+    }
 
 }
