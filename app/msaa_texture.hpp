@@ -35,8 +35,10 @@ namespace mousetrap
 
             GLNativeHandle framebuffer;
             GLNativeHandle textureColorBufferMultiSampled;
+            GLNativeHandle rbo;
             GLNativeHandle intermediateFBO;
             GLNativeHandle screenTexture;
+
             void realize();
             void render();
 
