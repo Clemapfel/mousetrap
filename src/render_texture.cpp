@@ -33,7 +33,7 @@ namespace mousetrap
         constexpr auto ATTACHMENT = GL_COLOR_ATTACHMENT5;
 
         glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer_handle);
-        glFramebufferTexture(GL_FRAMEBUFFER, ATTACHMENT, get_native_handle(), 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, ATTACHMENT, GL_TEXTURE_2D, get_native_handle(), 0);
         GLenum DrawBuffers[1] = {ATTACHMENT};
         glDrawBuffers(1, DrawBuffers);
     }

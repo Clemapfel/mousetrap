@@ -102,7 +102,7 @@ add_library(mousetrap SHARED
     src/label.inl
 
     include/texture.hpp
-    src/texture.inl
+        src/texture.cpp
 
     include/image.hpp
         src/image.cpp
@@ -369,7 +369,7 @@ add_library(app SHARED
 
     app/verbose_color_picker.hpp
     app/src/verbose_color_picker.cpp
-        app/app_signals.hpp app/open_uri.hpp app/detect_platform.hpp app/resize_canvas_dialog.hpp app/scale_canvas_dialog.hpp app/src/scale_canvas_dialog.cpp app/src/resize_canvas_dialog.cpp app/canvas_export.hpp app/src/canvas_export.cpp app/color_transform_dialog.hpp app/src/color_transform_dialog.cpp app/apply_scope.hpp app/src/image_transform_dialog.cpp app/src/canvas_transparency_layer.cpp app/src/canvas_layer_layer.cpp app/src/canvas_onionskin_layer.cpp app/src/canvas_grid_layer.cpp app/src/canvas_symmetry_ruler_layer.cpp app/src/canvas_brush_shape_layer.cpp app/src/canvas_user_input_layer.cpp app/src/canvas_wireframe_layer.cpp)
+        app/app_signals.hpp app/open_uri.hpp app/detect_platform.hpp app/resize_canvas_dialog.hpp app/scale_canvas_dialog.hpp app/src/scale_canvas_dialog.cpp app/src/resize_canvas_dialog.cpp app/canvas_export.hpp app/src/canvas_export.cpp app/color_transform_dialog.hpp app/src/color_transform_dialog.cpp app/apply_scope.hpp app/src/image_transform_dialog.cpp app/src/canvas_transparency_layer.cpp app/src/canvas_layer_layer.cpp app/src/canvas_onionskin_layer.cpp app/src/canvas_grid_layer.cpp app/src/canvas_symmetry_ruler_layer.cpp app/src/canvas_brush_shape_layer.cpp app/src/canvas_user_input_layer.cpp app/src/canvas_wireframe_layer.cpp app/msaa_texture.hpp app/src/msaa_texture.cpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

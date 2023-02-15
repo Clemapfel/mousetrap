@@ -31,11 +31,9 @@ void main()
     bool bottom_right = texture2D(_texture, vec2(pos.x + 1 * pixel_w, pos.y + 1 * pixel_h)).a > 0;
     bool bottom_left = texture2D(_texture, vec2(pos.x - 1 * pixel_w, pos.y + 1 * pixel_h)).a > 0;
 
-    if (!center)
-
-
-    if (!center)//(_outline_visible == 1) && !center && (top || bottom || left || right || top_left || top_right || bottom_right || bottom_left))
+    if ((_outline_visible == 1) && !center && (top || right || bottom || left || top_right || bottom_right || bottom_left || top_left))
         _fragment_color = _outline_color_rgba;
     else
         _fragment_color = texture2D(_texture, pos) * _vertex_color;
+
 }

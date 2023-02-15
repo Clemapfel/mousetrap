@@ -4,21 +4,22 @@
 //
 
 #include <iostream>
+#include <include/texture.hpp>
 
 namespace mousetrap
 {
-    inline Texture::Texture()
+    Texture::Texture()
     {
         glGenTextures(1, &_native_handle);
     }
 
-    inline Texture::~Texture()
+    Texture::~Texture()
     {
         if (_native_handle != 0)
             glDeleteTextures(1, &_native_handle);
     }
 
-    inline void Texture::create(size_t width, size_t height)
+    void Texture::create(size_t width, size_t height)
     {
         glActiveTexture(GL_TEXTURE0 + 0);
         glBindTexture(GL_TEXTURE_2D, _native_handle);
@@ -38,7 +39,7 @@ namespace mousetrap
         _size = {width, height};
     }
 
-    inline void Texture::create_from_file(const std::string& path)
+    void Texture::create_from_file(const std::string& path)
     {
         auto image = Image();
         image.create_from_file(path);
@@ -46,7 +47,7 @@ namespace mousetrap
         create_from_image(image);
     }
 
-    inline Texture::Texture(Texture&& other)
+    Texture::Texture(Texture&& other)
     {
         _native_handle = other._native_handle;
         _size = other._size;
@@ -56,7 +57,7 @@ namespace mousetrap
         other._size = {0, 0};
     }
 
-    inline Texture& Texture::operator=(Texture&& other)
+    Texture& Texture::operator=(Texture&& other)
     {
         _native_handle = other._native_handle;
         _size = other._size;
@@ -68,7 +69,7 @@ namespace mousetrap
         return *this;
     }
 
-    inline void Texture::create_from_image(const Image& image)
+    void Texture::create_from_image(const Image& image)
     {
         glActiveTexture(GL_TEXTURE0 + 0);
         glBindTexture(GL_TEXTURE_2D, _native_handle);
@@ -88,7 +89,7 @@ namespace mousetrap
         _size = image.get_size();
     }
 
-    inline void Texture::bind(size_t texture_unit) const
+    void Texture::bind(size_t texture_unit) const
     {
         glActiveTexture(GL_TEXTURE0 + texture_unit);
         glBindTexture(GL_TEXTURE_2D, _native_handle);
@@ -113,37 +114,48 @@ namespace mousetrap
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint) _wrap_mode);
         }
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) _scale_mode);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint) _scale_mode);
     }
 
-    inline void Texture::bind() const
+    void Texture::bind() const
     {
         bind(0);
     }
 
-    inline void Texture::unbind() const
+    void Texture::unbind() const
     {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    inline void Texture::set_wrap_mode(TextureWrapMode wrap_mode)
+    void Texture::set_wrap_mode(TextureWrapMode wrap_mode)
     {
         _wrap_mode = wrap_mode;
     }
 
-    inline TextureWrapMode Texture::get_wrap_mode()
+    TextureWrapMode Texture::get_wrap_mode()
     {
         return _wrap_mode;
     }
 
-    inline Vector2i Texture::get_size() const
+    Vector2i Texture::get_size() const
     {
         return _size;
     }
 
-    inline GLNativeHandle Texture::get_native_handle() const
+    GLNativeHandle Texture::get_native_handle() const
     {
         return _native_handle;
+    }
+
+    void Texture::set_scale_mode(TextureScaleMode mode)
+    {
+        _scale_mode = mode;
+    }
+
+    TextureScaleMode Texture::get_scale_mode()
+    {
+        return _scale_mode;
     }
 }

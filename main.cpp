@@ -41,6 +41,8 @@
 #include <app/color_transform_dialog.hpp>
 #include <app/image_transform_dialog.hpp>
 
+#include <app/msaa_texture.hpp>
+
 using namespace mousetrap;
 
 static void activate(GtkApplication* app, void*)
@@ -58,9 +60,6 @@ static void activate(GtkApplication* app, void*)
     active_state = project_states.emplace_back(new ProjectState({75, 50}));
 
     /*
-    state::color_picker = new ColorPicker();
-    state::canvas = new Canvas();
-    */
     state::frame_view = new FrameView();
     state::brush_options = new BrushOptions();
     state::color_preview = new ColorPreview();
@@ -226,17 +225,18 @@ static void activate(GtkApplication* app, void*)
     canvas_export->set_opacity(1);
 
     bubble_log_overlay.add_overlay(bubble_log);
-
+    */
     // MAIN
 
-    state::main_window->set_child(&bubble_log_overlay);
+    // TODO
+    auto* msaa_texture = new MSAATexture();
+    // TODO
+
+    state::main_window->set_child(*msaa_texture);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);
     state::main_window->grab_focus();
-    state::main_window->connect_signal_close([](Window* window, nullptr_t) -> bool {
-        return false;
-    }, nullptr);
 
     validate_keybindings_file(state::keybindings_file);
 }

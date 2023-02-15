@@ -22,6 +22,12 @@ namespace mousetrap
         STRETCH = GL_CLAMP_TO_EDGE
     };
 
+    enum class TextureScaleMode
+    {
+        NEAREST = GL_NEAREST,
+        LINEAR = GL_LINEAR
+    };
+
     class Texture : public TextureObject
     {
         public:
@@ -46,6 +52,9 @@ namespace mousetrap
             void set_wrap_mode(TextureWrapMode);
             TextureWrapMode get_wrap_mode();
 
+            void set_scale_mode(TextureScaleMode);
+            TextureScaleMode get_scale_mode();
+
             Vector2i get_size() const;
 
             GLNativeHandle get_native_handle() const;
@@ -53,8 +62,8 @@ namespace mousetrap
         private:
             GLNativeHandle _native_handle = 0;
             TextureWrapMode _wrap_mode = TextureWrapMode::STRETCH;
+            TextureScaleMode _scale_mode = TextureScaleMode::NEAREST;
+
             Vector2i _size;
     };
 }
-
-#include <src/texture.inl>

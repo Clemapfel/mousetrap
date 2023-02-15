@@ -95,6 +95,8 @@ namespace mousetrap
 
         instance->_render_shape = new Shape();
         instance->_render_texture = new RenderTexture();
+        instance->_render_texture->set_scale_mode(TextureScaleMode::LINEAR);
+
         instance->_render_shape->set_texture(instance->_render_texture);
 
         instance->reformat();
