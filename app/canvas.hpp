@@ -392,6 +392,7 @@ namespace mousetrap
                     Vector2f _canvas_size = {1, 1};
                     static void on_area_realize(Widget* widget, LineToolLayer* instance);
                     static void on_area_resize(GLArea*, int w, int h, LineToolLayer* instance);
+                    static bool on_area_render(GLArea*, GdkGLContext*, BrushShapeLayer* instance);
             };
 
             LineToolLayer* _line_tool_layer = new LineToolLayer(this);

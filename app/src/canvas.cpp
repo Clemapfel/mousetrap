@@ -150,14 +150,14 @@ namespace mousetrap
         _debug_box.push_back(&_brush_box);
         _debug_box.push_back(&_line_box);
 
-        _layer_overlay.set_child(*_transparency_tiling_layer);
-        _layer_overlay.add_overlay(*_layer_layer);
+        //_layer_overlay.set_child(*_transparency_tiling_layer);
+        //_layer_overlay.add_overlay(*_layer_layer);
         //_layer_overlay.add_overlay(*_onionskin_layer);
         //_layer_overlay.add_overlay(*_brush_shape_layer);
-        _layer_overlay.add_overlay(*_grid_layer);
+        //_layer_overlay.add_overlay(*_grid_layer);
         //_layer_overlay.add_overlay(*_symmetry_ruler_layer);
         _layer_overlay.add_overlay(*_line_tool_layer);
-        _layer_overlay.add_overlay(*_user_input_layer);
+        //_layer_overlay.add_overlay(*_user_input_layer);
 
         _transparency_tiling_layer->operator Widget *()->set_expand(true);
         _layer_layer->operator Widget *()->set_expand(true);

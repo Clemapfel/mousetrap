@@ -269,4 +269,9 @@ namespace mousetrap
         return out;
     }
 
+    bool Canvas::LineToolLayer::on_area_render(GLArea*, GdkGLContext*, BrushShapeLayer* instance)
+    {
+
+    }
+
 }

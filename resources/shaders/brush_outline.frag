@@ -15,7 +15,6 @@ uniform vec4 _outline_color_rgba;
 
 void main()
 {
-
     vec2 pos = vec2(_texture_coordinates.x, 1 - _texture_coordinates.y); // because of render texture
 
     float pixel_h = 1.f / _texture_size.x;
@@ -35,5 +34,5 @@ void main()
     if ((_outline_visible == 1) && !center && (top || bottom || left || right))
         _fragment_color = _outline_color_rgba;
     else
-        _fragment_color = texture2D(_texture, pos) * _vertex_color;
+        _fragment_color = vec4(1, 0, 1, 1); //texture2D(_texture, pos) * _vertex_color;
 }
