@@ -348,16 +348,17 @@ namespace mousetrap
 
             BrushShapeLayer* _brush_shape_layer = new BrushShapeLayer(this);
 
-            class LineToolLayer
+            class WireframeLayer
             {
                 public:
-                    LineToolLayer(Canvas*);
+                    WireframeLayer(Canvas*);
                     operator Widget*();
 
                     void on_layer_resolution_changed();
 
                     void set_scale(float);
                     void set_offset(Vector2f);
+
                     void set_line_position(Vector2i, Vector2i); // texture-space coords
                     void set_line_visible(bool);
 
@@ -369,17 +370,14 @@ namespace mousetrap
                     GLArea _area;
 
                     Shape* _origin_anchor_shape = nullptr;
-                    Shape* _origin_anchor_inner_outline_shape = nullptr;
-                    Shape* _origin_anchor_outer_outline_shape = nullptr;
-                    Shape* _origin_anchor_center_shape = nullptr;
-
                     Shape* _line_shape = nullptr;
-                    Shape* _line_outline_shape = nullptr;
-
                     Shape* _destination_anchor_shape = nullptr;
-                    Shape* _destination_anchor_inner_outline_shape = nullptr;
-                    Shape* _destination_anchor_outer_outline_shape = nullptr;
-                    Shape* _destination_anchor_center_shape = nullptr;
+                    std::vector<RenderTask> _render_tasks;
+
+                    Shader* _render_shader = nullptr;
+                    RenderTexture* _render_texture = nullptr;
+                    Shape* _render_shape = nullptr;
+                    RenderTask* _render_shape_task;
 
                     Vector2i _origin_point; // texture space coords
                     Vector2i _destination_point;
@@ -390,12 +388,12 @@ namespace mousetrap
                     void reformat();
 
                     Vector2f _canvas_size = {1, 1};
-                    static void on_area_realize(Widget* widget, LineToolLayer* instance);
-                    static void on_area_resize(GLArea*, int w, int h, LineToolLayer* instance);
-                    static bool on_area_render(GLArea*, GdkGLContext*, BrushShapeLayer* instance);
+                    static void on_area_realize(Widget* widget, WireframeLayer* instance);
+                    static void on_area_resize(GLArea*, int w, int h, WireframeLayer* instance);
+                    static bool on_area_render(GLArea*, GdkGLContext*, WireframeLayer* instance);
             };
 
-            LineToolLayer* _line_tool_layer = new LineToolLayer(this);
+            WireframeLayer* _line_tool_layer = new WireframeLayer(this);
 
             class UserInputLayer
             {
@@ -743,10 +741,10 @@ namespace mousetrap
 
             // LINES
 
-            class LineToolLayer : public CanvasLayer
+            class WireframeLayer : public CanvasLayer
             {
                 public:
-                    LineToolLayer(Canvas*);
+                    WireframeLayer(Canvas*);
 
                     operator Widget*() override;
                     void update() override;
@@ -766,13 +764,13 @@ namespace mousetrap
                     Shape* _line_shape;
                     Shape* _line_outline_shape;
 
-                    static void on_realize(Widget*, LineToolLayer* instance);
-                    static void on_resize(GLArea*, int, int, LineToolLayer* instance);
+                    static void on_realize(Widget*, WireframeLayer* instance);
+                    static void on_resize(GLArea*, int, int, WireframeLayer* instance);
 
                     Vector2f _canvas_size = Vector2f(1, 1);
             };
 
-            LineToolLayer _line_tool_layer = LineToolLayer(this);
+            WireframeLayer _line_tool_layer = WireframeLayer(this);
 
             // SELECTION
 
