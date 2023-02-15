@@ -51,11 +51,17 @@ namespace mousetrap
             return out;
         };
 
+        instance->_shader = new Shader();
         instance->_shape = new Shape();
         instance->_shape->as_wireframe(as_ellipse({0.5, 0.5}, 0.4, 0.4, 11));
         instance->_shape->set_color(RGBA(1, 0, 1, 1));
-        instance->_shape_task = new RenderTask(instance->_shape, nullptr, instance->_transform);
 
+        instance->_render_shader = new Shader();
+        instance->_render_shader->create_from_file(get_resource_path() + "shaders/msaa_render.frag", ShaderType::FRAGMENT);
+        instance->_render_shape = new Shape();
+        instance->_render_shape->as_rectangle({0, 0}, {1, 1});
+
+        instance->realize();
         area->queue_render();
     }
 
@@ -68,23 +74,66 @@ namespace mousetrap
     bool MSAATexture::on_area_render(GLArea* area, GdkGLContext*, MSAATexture* instance)
     {
         area->make_current();
+        instance->render();
+        return true;
+    }
 
+    void MSAATexture::realize()
+    {
+        glGenFramebuffers(1, &framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+        // create a multisampled color attachment texture
+        glGenTextures(1, &textureColorBufferMultiSampled);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, SCR_WIDTH, SCR_HEIGHT, GL_TRUE);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled, 0);
+
+        // configure second post-processing framebuffer
+        glGenFramebuffers(1, &intermediateFBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
+
+        // create a color attachment texture
+        glGenTextures(1, &screenTexture);
+        glBindTexture(GL_TEXTURE_2D, screenTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);	// we only need a color buffer
+    }
+
+    void MSAATexture::render()
+    {
         static GLNativeHandle before = [](){
             GLint before = 0;
             glGetIntegerv(GL_FRAMEBUFFER_BINDING, &before);
             return before;
         }();
 
-        glEnable(GL_BLEND);
-        set_current_blend_mode(BlendMode::NORMAL);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-        {
-            glClearColor(0, 0, 0, 0.6);
-            glClear(GL_COLOR_BUFFER_BIT);
-            instance->_shape_task->render();
-            glFlush();
-        }
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
 
-        return true;
+        _shape->render(*_shader, *_transform);
+
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
+        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glDisable(GL_DEPTH_TEST);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, screenTexture); // use the now resolved color attachment as the quad's texture
+
+        glBindFramebuffer(GL_FRAMEBUFFER, before);
+        _render_shape->render(*_render_shader, *_render_transform);
+        glFlush();
     }
 }
