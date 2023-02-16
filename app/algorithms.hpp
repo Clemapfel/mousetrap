@@ -15,6 +15,8 @@ namespace mousetrap
     /// \brief generate 1-pixel rasterized circle outline
     std::vector<Vector2i> generate_circle_points(size_t width, size_t height);
 
+    std::vector<Vector2i> generate_rectangle_points(Vector2i top_left, size_t width, size_t height);
+
     struct OutlineVertices
     {
         std::vector<std::pair<Vector2i, Vector2i>> top, right, bottom, left;

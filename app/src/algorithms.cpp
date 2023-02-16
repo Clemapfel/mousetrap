@@ -195,6 +195,25 @@ namespace mousetrap
         return out;
     }
 
+    std::vector<Vector2i> generate_rectangle_points(Vector2i top_left, size_t width, size_t height)
+    {
+        std::vector<Vector2i> out;
+
+        for (size_t x = top_left.x; x <= top_left.x + width; ++x)
+        {
+            out.emplace_back(x, top_left.y);
+            out.emplace_back(x, top_left.y + height);
+        }
+
+        for (size_t y = top_left.y + 1; y <= top_left.y + height - 1; ++y)
+        {
+            out.emplace_back(top_left.x, y);
+            out.emplace_back(top_left.x + width, y);
+        }
+
+        return out;
+    }
+
     /// \brief generate lines that will outline the non-0 area of an image, ordered by clockwise orientation
     OutlineVertices generate_outline_vertices(const Image& image)
     {

@@ -153,7 +153,7 @@ namespace mousetrap
         _debug_box.push_back(&_line_box);
 
         _layer_overlay.set_child(*_transparency_tiling_layer);
-        //_layer_overlay.add_overlay(*_layer_layer);
+        _layer_overlay.add_overlay(*_layer_layer);
         //_layer_overlay.add_overlay(*_onionskin_layer);
         //_layer_overlay.add_overlay(*_brush_shape_layer);
         _layer_overlay.add_overlay(*_grid_layer);

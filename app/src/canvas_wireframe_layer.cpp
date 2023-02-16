@@ -307,13 +307,15 @@ namespace mousetrap
             float cross_h = 0.5 * pixel_h;
 
             _rectangle_tool_shape.center_cross->as_lines({
-                 {center + Vector2f(-cross_w, 0), center + Vector2f(+cross_w, 0)},
-                 {center + Vector2f(0, -cross_h), center + Vector2f(0, +cross_h)}
+                {center + Vector2f(-cross_w, 0), center + Vector2f(+cross_w, 0)},
+                {center + Vector2f(0, -cross_h), center + Vector2f(0, +cross_h)}
             });
 
             _rectangle_tool_shape.center_cross_outline->as_lines({
+                {center + Vector2f(-(cross_w + x_eps), 0), center + Vector2f(+(cross_w + x_eps), 0)},
                 {center + Vector2f(-cross_w, y_eps), center + Vector2f(+cross_w, y_eps)},
                 {center + Vector2f(-cross_w, -y_eps), center + Vector2f(+cross_w, -y_eps)},
+                {center + Vector2f(0, -(cross_h + y_eps)), center + Vector2f(0, +(cross_h + y_eps))},
                 {center + Vector2f(+x_eps, -cross_h), center + Vector2f(+x_eps, +cross_h)},
                 {center + Vector2f(-x_eps, -cross_h), center + Vector2f(-x_eps, +cross_h)}
             });
@@ -354,15 +356,48 @@ namespace mousetrap
             auto points = generate_line_points(_line_start_point, _line_end_point);
             auto brush = active_state->get_current_brush()->get_image();
 
-            for (auto p:points)
+            for (auto p : points)
             {
                 for (int x = 0; x < brush.get_size().x; ++x)
                 {
                     for (int y = 0; y < brush.get_size().y; ++y)
                     {
                         auto pos = Vector2i(
-                                p.x + x - 0.5 * brush.get_size().x,
-                                p.y + y - 0.5 * brush.get_size().y
+                            p.x + x - 0.5 * brush.get_size().x,
+                            p.y + y - 0.5 * brush.get_size().y
+                        );
+
+                        if (brush.get_pixel(x, y).a == 0 or pos.x < 0 or pos.x >= active_state->get_layer_resolution().x or pos.y < 0 or pos.y >= active_state->get_layer_resolution().y)
+                            continue;
+
+                        auto color = active_state->get_primary_color();
+                        color.a = active_state->get_brush_opacity();
+                        out.insert(std::pair<Vector2i, HSVA>(pos, color));
+                    }
+                }
+            }
+        }
+        else if (_current_mode == RECTANGLE)
+        {
+            auto width = _rectangle_b_point.x - _rectangle_a_point.x;
+            auto height =_rectangle_b_point.y - _rectangle_a_point.y;
+            auto top_left = Vector2i(
+                std::min(_rectangle_a_point.x, _rectangle_a_point.x + width),
+                std::min(_rectangle_a_point.y, _rectangle_a_point.y + height)
+            );
+
+            auto brush = active_state->get_current_brush()->get_image();
+            auto points = generate_rectangle_points(top_left, abs(width), abs(height));
+
+            for (auto p : points)
+            {
+                for (int x = 0; x < brush.get_size().x; ++x)
+                {
+                    for (int y = 0; y < brush.get_size().y; ++y)
+                    {
+                        auto pos = Vector2i(
+                        p.x + x - 0.5 * brush.get_size().x,
+                        p.y + y - 0.5 * brush.get_size().y
                         );
 
                         if (brush.get_pixel(x, y).a == 0 or pos.x < 0 or pos.x >= active_state->get_layer_resolution().x or pos.y < 0 or pos.y >= active_state->get_layer_resolution().y)
