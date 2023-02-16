@@ -52,36 +52,38 @@ namespace mousetrap
             instance->set_brush_position({instance->_brush_position.x, scale->get_value()});
         }, this);
 
+        /*
         _line_visible_button.connect_signal_toggled([](CheckButton* button, Canvas* instance) {
-            instance->set_line_visible(button->get_active());
+            //instance->set_line_visible(button->get_active());
         }, this);
+         */
 
         _line_start_x_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
-            auto start = instance->_line_origin;
-            auto end = instance->_line_destination;
+            auto& start = instance->_origin;
+            auto& end = instance->_destination;
             start.x = scale->get_value();
-            instance->set_line(start, end);
+            instance->_wireframe_layer->set_as_rectangle(start, end);
         }, this);
 
         _line_start_y_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
-            auto start = instance->_line_origin;
-            auto end = instance->_line_destination;
+            auto& start = instance->_origin;
+            auto& end = instance->_destination;
             start.y = scale->get_value();
-            instance->set_line(start, end);
+            instance->_wireframe_layer->set_as_rectangle(start, end);
         }, this);
 
         _line_end_x_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
-            auto start = instance->_line_origin;
-            auto end = instance->_line_destination;
+            auto& start = instance->_origin;
+            auto& end = instance->_destination;
             end.x = scale->get_value();
-            instance->set_line(start, end);
+            instance->_wireframe_layer->set_as_rectangle(start, end);
         }, this);
 
         _line_end_y_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
-            auto start = instance->_line_origin;
-            auto end = instance->_line_destination;
+            auto& start = instance->_origin;
+            auto& end = instance->_destination;
             end.y = scale->get_value();
-            instance->set_line(start, end);
+            instance->_wireframe_layer->set_as_rectangle(start, end);
         }, this);
 
         _draw_button.connect_signal_clicked([](Button* button, Canvas* instance) {
@@ -296,18 +298,6 @@ namespace mousetrap
     void Canvas::on_image_flip_changed()
     {
         _layer_layer->on_image_flip_changed();
-    }
-
-    void Canvas::set_line(Vector2i origin, Vector2i destination)
-    {
-        _line_origin = origin;
-        _line_destination = destination;
-        _wireframe_layer->set_positions(_line_origin, _line_destination);
-    }
-
-    void Canvas::set_line_visible(bool b)
-    {
-        _line_visible = b;
     }
 
     void Canvas::draw(const ProjectState::DrawData& data)

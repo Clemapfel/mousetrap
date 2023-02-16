@@ -34,15 +34,25 @@ namespace mousetrap
         _area.queue_render();
     }
 
-    void Canvas::WireframeLayer::set_positions(Vector2i from, Vector2i to)
+    void Canvas::WireframeLayer::set_as_line(Vector2i from, Vector2i to)
     {
-        _origin_point = from;
-        _destination_point = to;
+        _current_mode = LINE;
+        _line_start_point = from;
+        _line_end_point = to;
 
         reformat();
         _area.queue_render();
     }
 
+    void Canvas::WireframeLayer::set_as_rectangle(Vector2i a, Vector2i b)
+    {
+        _current_mode = RECTANGLE;
+        _rectangle_a_point = a;
+        _rectangle_b_point = b;
+
+        reformat();
+        _area.queue_render();
+    }
 
     void Canvas::WireframeLayer::on_layer_resolution_changed()
     {
@@ -54,6 +64,8 @@ namespace mousetrap
     {
         auto* area = (GLArea*) widget;
         area->make_current();
+
+        // lines
 
         instance->_line_tool_shape = LineToolShape{
             new Shape(),
@@ -67,15 +79,58 @@ namespace mousetrap
         };
 
         instance->_line_tool_render_tasks.clear();
-        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.origin_anchor_inner_outline_shape);
-        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.origin_anchor_outer_outline_shape);
-        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.destination_anchor_inner_outline_shape);
-        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.destination_anchor_outer_outline_shape);
-        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.line_outline_shape);
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.origin_anchor_inner_outline);
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.origin_anchor_outer_outline);
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.destination_anchor_inner_outline);
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.destination_anchor_outer_outline);
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.line_outline);
 
         instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.destination_anchor_shape);
         instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.origin_anchor_shape);
         instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.line_shape);
+
+        // rectangle
+
+        instance->_rectangle_tool_shape = RectangleToolShape{
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape()
+        };
+
+        instance->_rectangle_tool_render_tasks.clear();
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_left_anchor_inner_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_left_anchor_outer_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_right_anchor_inner_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_right_anchor_outer_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_left_anchor_inner_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_left_anchor_outer_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_right_anchor_inner_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_right_anchor_outer_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.center_cross_outline);
+
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_left_anchor_shape);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_right_anchor_shape);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_left_anchor_shape);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_right_anchor_shape);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.center_cross);
+
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_inner_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_outer_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_shape);
 
         instance->reformat();
     }
@@ -94,41 +149,27 @@ namespace mousetrap
 
         auto layer_resolution = active_state->get_layer_resolution();
 
-        float width = layer_resolution.x / _canvas_size.x;
-        float height = layer_resolution.y / _canvas_size.y;
+        float canvas_width = layer_resolution.x / _canvas_size.x;
+        float canvas_height = layer_resolution.y / _canvas_size.y;
 
-        width *= _scale;
-        height *= _scale;
+        canvas_width *= _scale;
+        canvas_height *= _scale;
 
-        Vector2f center = {0.5, 0.5};
-        center += _offset;
+        Vector2f canvas_center = {0.5, 0.5};
+        canvas_center += _offset;
 
-        Vector2f top_left = center - Vector2f{0.5 * width, 0.5 * height};
-        float pixel_w = width / layer_resolution.x;
-        float pixel_h = height / layer_resolution.y;
-
-        Vector2f origin = {
-                top_left.x + pixel_w * _origin_point.x - 0.5 * pixel_w,
-                top_left.y + pixel_h * _origin_point.y - 0.5 * pixel_h
-        };
-
-        Vector2f destination = {
-                top_left.x + pixel_w * _destination_point.x - 0.5 * pixel_w,
-                top_left.y + pixel_h * _destination_point.y - 0.5 * pixel_h
-        };
+        Vector2f top_left = canvas_center - Vector2f{0.5 * canvas_width, 0.5 * canvas_height};
+        float pixel_w = canvas_width / layer_resolution.x;
+        float pixel_h = canvas_height / layer_resolution.y;
 
         float x_eps = 1.f / _canvas_size.x;
         float y_eps = 1.f / _canvas_size.y;
 
         const RGBA outline_color = RGBA(0, 0, 0, 1);
+        const RGBA anchor_color = HSVA(0, 0, 0.9, 1);
 
-        Vector2f anchor_radius = {
-                std::max<float>(state::margin_unit / _canvas_size.x, 0.5 * pixel_w),
-                std::max<float>(state::margin_unit / _canvas_size.y, 0.5 * pixel_h)
-        };
-
-        auto as_ellipse = [](Vector2f center, float x_radius, float y_radius, size_t n_vertices){
-
+        auto as_ellipse = [](Vector2f center, float x_radius, float y_radius, size_t n_vertices)
+        {
             const float step = 360.f / n_vertices;
 
             std::vector<Vector2f> out;
@@ -137,75 +178,200 @@ namespace mousetrap
             {
                 auto as_radians = angle * M_PI / 180.f;
                 out.emplace_back(
-                        center.x + cos(as_radians) * x_radius,
-                        center.y + sin(as_radians) * y_radius
+                center.x + cos(as_radians) * x_radius,
+                center.y + sin(as_radians) * y_radius
                 );
             }
 
             return out;
         };
 
-        std::vector<std::pair<Vector2f, Vector2f>> vertices;
+        Vector2f anchor_radius = {
+            std::max<float>(state::margin_unit / _canvas_size.x, 0.5 * pixel_w),
+            std::max<float>(state::margin_unit / _canvas_size.y, 0.5 * pixel_h)
+        };
+        size_t anchor_vertex_count = 4;
 
-        const size_t vertex_count = 16;
-        _line_tool_shape.origin_anchor_shape->as_wireframe(as_ellipse(origin, anchor_radius.x, anchor_radius.y, vertex_count));
-        _line_tool_shape.origin_anchor_inner_outline_shape->as_wireframe(as_ellipse(origin, anchor_radius.x - x_eps, anchor_radius.y - y_eps, vertex_count));
-        _line_tool_shape.origin_anchor_outer_outline_shape->as_wireframe(as_ellipse(origin, anchor_radius.x + x_eps, anchor_radius.y + y_eps, vertex_count));
-
-        _line_tool_shape.destination_anchor_shape->as_wireframe(as_ellipse(destination, anchor_radius.x, anchor_radius.y, vertex_count));
-        _line_tool_shape.destination_anchor_inner_outline_shape->as_wireframe(as_ellipse(destination, anchor_radius.x - x_eps, anchor_radius.y - y_eps, vertex_count));
-        _line_tool_shape.destination_anchor_outer_outline_shape->as_wireframe(as_ellipse(destination, anchor_radius.x + x_eps, anchor_radius.y + y_eps, vertex_count));
-
-        _line_tool_shape.line_shape->as_line(origin, destination);
-
-        for (auto* shape : {
-            _line_tool_shape.origin_anchor_inner_outline_shape,
-            _line_tool_shape.origin_anchor_outer_outline_shape,
-            _line_tool_shape.destination_anchor_inner_outline_shape,
-            _line_tool_shape.destination_anchor_outer_outline_shape,
-            _line_tool_shape.line_outline_shape
-        })
-            shape->set_color(outline_color);
-
-        auto angle = radians(std::atan2(_destination_point.x - _origin_point.x, _destination_point.y - _origin_point.y)).as_degrees();
-
-        if ((angle >= 360 - 45 and angle <= 360) or (angle >= 0 and angle <= 45) or (angle >= 180 - 45 and angle <= 180 + 45))
-            vertices = {
-                {origin + Vector2f(-x_eps, 0), destination + Vector2f(-x_eps, 0)},
-                {origin + Vector2f(+x_eps, 0), destination + Vector2f(+x_eps, 0)}
-            };
-        else
-            vertices = {
-                {origin + Vector2f(0, -y_eps), destination + Vector2f(0, -y_eps)},
-                {origin + Vector2f(0, +y_eps), destination + Vector2f(0, +y_eps)}
+        // lines
+        {
+            Vector2f origin = {
+                    top_left.x + pixel_w * _line_start_point.x - 0.5 * pixel_w,
+                    top_left.y + pixel_h * _line_start_point.y - 0.5 * pixel_h
             };
 
-        _line_tool_shape.line_outline_shape->as_lines(vertices);
+            Vector2f destination = {
+                    top_left.x + pixel_w * _line_end_point.x - 0.5 * pixel_w,
+                    top_left.y + pixel_h * _line_end_point.y - 0.5 * pixel_h
+            };
+            
+            std::vector<std::pair<Vector2f, Vector2f>> vertices;
+
+            _line_tool_shape.origin_anchor_shape->as_wireframe(as_ellipse(origin, anchor_radius.x, anchor_radius.y, anchor_vertex_count));
+            _line_tool_shape.origin_anchor_inner_outline->as_wireframe(as_ellipse(origin, anchor_radius.x - x_eps, anchor_radius.y - y_eps, anchor_vertex_count));
+            _line_tool_shape.origin_anchor_outer_outline->as_wireframe(as_ellipse(origin, anchor_radius.x + x_eps, anchor_radius.y + y_eps, anchor_vertex_count));
+
+            _line_tool_shape.destination_anchor_shape->as_wireframe(as_ellipse(destination, anchor_radius.x, anchor_radius.y, anchor_vertex_count));
+            _line_tool_shape.destination_anchor_inner_outline->as_wireframe(as_ellipse(destination, anchor_radius.x - x_eps, anchor_radius.y - y_eps, anchor_vertex_count));
+            _line_tool_shape.destination_anchor_outer_outline->as_wireframe(as_ellipse(destination, anchor_radius.x + x_eps, anchor_radius.y + y_eps, anchor_vertex_count));
+
+            _line_tool_shape.line_shape->as_line(origin, destination);
+
+            for (auto* shape:{
+                    _line_tool_shape.origin_anchor_inner_outline,
+                    _line_tool_shape.origin_anchor_outer_outline,
+                    _line_tool_shape.destination_anchor_inner_outline,
+                    _line_tool_shape.destination_anchor_outer_outline,
+                    _line_tool_shape.line_outline
+            })
+                shape->set_color(outline_color);
+
+            for (auto* shape : {
+                _line_tool_shape.origin_anchor_shape,
+                _line_tool_shape.destination_anchor_shape
+            })
+                shape->set_color(anchor_color);
+
+            auto angle = radians(std::atan2(_line_end_point.x - _line_start_point.x, _line_end_point.y - _line_start_point.y)).as_degrees();
+
+            if ((angle >= 360 - 45 and angle <= 360) or (angle >= 0 and angle <= 45) or (angle >= 180 - 45 and angle <= 180 + 45))
+                vertices = {
+                        {origin + Vector2f(-x_eps, 0), destination + Vector2f(-x_eps, 0)},
+                        {origin + Vector2f(+x_eps, 0), destination + Vector2f(+x_eps, 0)}
+                };
+            else
+                vertices = {
+                        {origin + Vector2f(0, -y_eps), destination + Vector2f(0, -y_eps)},
+                        {origin + Vector2f(0, +y_eps), destination + Vector2f(0, +y_eps)}
+                };
+
+            _line_tool_shape.line_outline->as_lines(vertices);
+        }
+
+        // rectangle
+        {
+            Vector2f a = {
+                top_left.x + pixel_w * _rectangle_a_point.x - 0.5 * pixel_w,
+                top_left.y + pixel_h * _rectangle_a_point.y - 0.5 * pixel_h
+            };
+
+            Vector2f b = {
+                top_left.x + pixel_w * _rectangle_b_point.x - 0.5 * pixel_w,
+                top_left.y + pixel_h * _rectangle_b_point.y - 0.5 * pixel_h
+            };
+
+            float width = b.x - a.x;
+            float height = b.y - a.y;
+
+            _rectangle_tool_shape.rectangle_shape->as_wireframe({
+                a,
+                a + Vector2f(width, 0),
+                a + Vector2f(width, height),
+                a + Vector2f(0, height)
+            });
+
+            _rectangle_tool_shape.rectangle_outer_outline->as_wireframe({
+                a + Vector2f(0 - x_eps, 0 - y_eps),
+                a + Vector2f(width + x_eps, 0 - y_eps),
+                a + Vector2f(width + x_eps, height + y_eps),
+                a + Vector2f(0 - x_eps, height + y_eps)
+            });
+
+            _rectangle_tool_shape.rectangle_inner_outline->as_wireframe({
+                a + Vector2f(0 + x_eps, 0 + y_eps),
+                a + Vector2f(width - x_eps, 0 + y_eps),
+                a + Vector2f(width - x_eps, height - y_eps),
+                a + Vector2f(0 + x_eps, height - y_eps)
+            });
+
+            Vector2f top_left_anchor = a;
+
+            _rectangle_tool_shape.top_left_anchor_shape->as_wireframe(as_ellipse(top_left_anchor, anchor_radius.x, anchor_radius.y, anchor_vertex_count));
+            _rectangle_tool_shape.top_left_anchor_inner_outline->as_wireframe(as_ellipse(top_left_anchor, anchor_radius.x - x_eps, anchor_radius.y - y_eps, anchor_vertex_count));
+            _rectangle_tool_shape.top_left_anchor_outer_outline->as_wireframe(as_ellipse(top_left_anchor, anchor_radius.x + x_eps, anchor_radius.y + y_eps, anchor_vertex_count));
+
+            _rectangle_tool_shape.top_right_anchor_shape->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width, 0), anchor_radius.x, anchor_radius.y, anchor_vertex_count));
+            _rectangle_tool_shape.top_right_anchor_inner_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width, 0), anchor_radius.x - x_eps, anchor_radius.y - y_eps, anchor_vertex_count));
+            _rectangle_tool_shape.top_right_anchor_outer_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width, 0), anchor_radius.x + x_eps, anchor_radius.y + y_eps, anchor_vertex_count));
+
+            _rectangle_tool_shape.bottom_left_anchor_shape->as_wireframe(as_ellipse(top_left_anchor + Vector2f(0, height), anchor_radius.x, anchor_radius.y, anchor_vertex_count));
+            _rectangle_tool_shape.bottom_left_anchor_inner_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(0, height), anchor_radius.x - x_eps, anchor_radius.y - y_eps, anchor_vertex_count));
+            _rectangle_tool_shape.bottom_left_anchor_outer_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(0, height), anchor_radius.x + x_eps, anchor_radius.y + y_eps, anchor_vertex_count));
+
+            _rectangle_tool_shape.bottom_right_anchor_shape->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width, height), anchor_radius.x, anchor_radius.y, anchor_vertex_count));
+            _rectangle_tool_shape.bottom_right_anchor_inner_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width, height), anchor_radius.x - x_eps, anchor_radius.y - y_eps, anchor_vertex_count));
+            _rectangle_tool_shape.bottom_right_anchor_outer_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width, height), anchor_radius.x + x_eps, anchor_radius.y + y_eps, anchor_vertex_count));
+
+            auto center = top_left_anchor + Vector2f(0.5 * width, 0.5 * height);
+
+            float cross_w = 0.5 * pixel_w;
+            float cross_h = 0.5 * pixel_h;
+
+            _rectangle_tool_shape.center_cross->as_lines({
+                 {center + Vector2f(-cross_w, 0), center + Vector2f(+cross_w, 0)},
+                 {center + Vector2f(0, -cross_h), center + Vector2f(0, +cross_h)}
+            });
+
+            _rectangle_tool_shape.center_cross_outline->as_lines({
+                {center + Vector2f(-cross_w, y_eps), center + Vector2f(+cross_w, y_eps)},
+                {center + Vector2f(-cross_w, -y_eps), center + Vector2f(+cross_w, -y_eps)},
+                {center + Vector2f(+x_eps, -cross_h), center + Vector2f(+x_eps, +cross_h)},
+                {center + Vector2f(-x_eps, -cross_h), center + Vector2f(-x_eps, +cross_h)}
+            });
+
+            for (auto* shape : {
+                _rectangle_tool_shape.rectangle_outer_outline,
+                _rectangle_tool_shape.rectangle_inner_outline,
+                _rectangle_tool_shape.top_left_anchor_inner_outline,
+                _rectangle_tool_shape.top_left_anchor_outer_outline,
+                _rectangle_tool_shape.top_right_anchor_inner_outline,
+                _rectangle_tool_shape.top_right_anchor_outer_outline,
+                _rectangle_tool_shape.bottom_left_anchor_inner_outline,
+                _rectangle_tool_shape.bottom_left_anchor_outer_outline,
+                _rectangle_tool_shape.bottom_right_anchor_inner_outline,
+                _rectangle_tool_shape.bottom_right_anchor_outer_outline,
+                _rectangle_tool_shape.center_cross_outline
+            })
+                shape->set_color(outline_color);
+
+            for (auto* shape : {
+                _rectangle_tool_shape.top_left_anchor_shape,
+                _rectangle_tool_shape.top_right_anchor_shape,
+                _rectangle_tool_shape.bottom_left_anchor_shape,
+                _rectangle_tool_shape.bottom_right_anchor_shape,
+                _rectangle_tool_shape.center_cross
+            })
+                shape->set_color(anchor_color);
+        }
+
     }
 
     ProjectState::DrawData Canvas::WireframeLayer::draw()
     {
-        auto points = generate_line_points(_origin_point, _destination_point);
         auto out = ProjectState::DrawData();
-        auto brush = active_state->get_current_brush()->get_image();
 
-        for (auto p : points)
+        if (_current_mode == LINE)
         {
-            for (int x = 0; x < brush.get_size().x; ++x)
+            auto points = generate_line_points(_line_start_point, _line_end_point);
+            auto brush = active_state->get_current_brush()->get_image();
+
+            for (auto p:points)
             {
-                for (int y = 0; y < brush.get_size().y; ++y)
+                for (int x = 0; x < brush.get_size().x; ++x)
                 {
-                    auto pos = Vector2i(
-                            p.x + x - 0.5 * brush.get_size().x,
-                            p.y + y - 0.5 * brush.get_size().y
-                    );
+                    for (int y = 0; y < brush.get_size().y; ++y)
+                    {
+                        auto pos = Vector2i(
+                                p.x + x - 0.5 * brush.get_size().x,
+                                p.y + y - 0.5 * brush.get_size().y
+                        );
 
-                    if (brush.get_pixel(x, y).a == 0 or pos.x < 0 or pos.x >= active_state->get_layer_resolution().x or pos.y < 0 or pos.y >= active_state->get_layer_resolution().y)
-                        continue;
+                        if (brush.get_pixel(x, y).a == 0 or pos.x < 0 or pos.x >= active_state->get_layer_resolution().x or pos.y < 0 or pos.y >= active_state->get_layer_resolution().y)
+                            continue;
 
-                    auto color = active_state->get_primary_color();
-                    color.a = active_state->get_brush_opacity();
-                    out.insert(std::pair<Vector2i, HSVA>(pos, color));
+                        auto color = active_state->get_primary_color();
+                        color.a = active_state->get_brush_opacity();
+                        out.insert(std::pair<Vector2i, HSVA>(pos, color));
+                    }
                 }
             }
         }
@@ -220,8 +386,16 @@ namespace mousetrap
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        for (auto& task : instance->_line_tool_render_tasks)
-            task.render();
+        if (instance->_current_mode == LINE)
+        {
+            for (auto& task: instance->_line_tool_render_tasks)
+                task.render();
+        }
+        else if (instance->_current_mode == RECTANGLE)
+        {
+            for (auto& task : instance->_rectangle_tool_render_tasks)
+                task.render();
+        }
 
         glFlush();
         return true;

@@ -81,12 +81,8 @@ namespace mousetrap
             bool _background_visible = true;
             void set_background_visible(bool);
 
-            Vector2i _line_origin = {0, 0};
-            Vector2i _line_destination = {0, 0};
-
-            void set_line(Vector2i origin, Vector2i destination);
-            bool _line_visible;
-            void set_line_visible(bool);
+            Vector2i _origin = {0, 0};
+            Vector2i _destination = {0, 0};
 
             void draw(const ProjectState::DrawData&);
 
@@ -358,35 +354,26 @@ namespace mousetrap
 
                     void set_scale(float);
                     void set_offset(Vector2f);
-                    void set_positions(Vector2i, Vector2i); // texture-space coords
+                    
+                    // all texture-space coords
+                    void set_as_line(Vector2i from, Vector2i to); 
+                    void set_as_rectangle(Vector2i a, Vector2i b);
 
                     ProjectState::DrawData draw();
 
                 private:
-                    Canvas* _owner;
-
-                    GLArea _area;
-
-                    struct LineToolShape
+                    enum Mode
                     {
-                        Shape* origin_anchor_shape = nullptr;
-                        Shape* origin_anchor_inner_outline_shape = nullptr;
-                        Shape* origin_anchor_outer_outline_shape = nullptr;
-
-                        Shape* line_shape = nullptr;
-                        Shape* line_outline_shape = nullptr;
-
-                        Shape* destination_anchor_shape = nullptr;
-                        Shape* destination_anchor_inner_outline_shape = nullptr;
-                        Shape* destination_anchor_outer_outline_shape = nullptr;
+                        LINE,
+                        CIRCLE,
+                        CIRCLE_FROM_CENTER,
+                        RECTANGLE,
+                        RECTANGLE_FROM_CENTER
                     };
-
-                    LineToolShape _line_tool_shape;
-                    std::vector<RenderTask> _line_tool_render_tasks;
-
-                    Vector2i _origin_point; // texture space coords
-                    Vector2i _destination_point;
-                    bool _visible = true;
+                    Mode _current_mode = RECTANGLE;
+                    
+                    Canvas* _owner;
+                    GLArea _area;
 
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
@@ -396,6 +383,60 @@ namespace mousetrap
                     static void on_area_realize(Widget* widget, WireframeLayer* instance);
                     static void on_area_resize(GLArea*, int w, int h, WireframeLayer* instance);
                     static bool on_area_render(GLArea*, GdkGLContext*, WireframeLayer* instance);
+                    
+                    // MODE: LINE
+
+                    struct LineToolShape
+                    {
+                        Shape* origin_anchor_shape = nullptr;
+                        Shape* origin_anchor_inner_outline = nullptr;
+                        Shape* origin_anchor_outer_outline = nullptr;
+
+                        Shape* line_shape = nullptr;
+                        Shape* line_outline = nullptr;
+
+                        Shape* destination_anchor_shape = nullptr;
+                        Shape* destination_anchor_inner_outline = nullptr;
+                        Shape* destination_anchor_outer_outline = nullptr;
+                    };
+
+                    LineToolShape _line_tool_shape;
+                    std::vector<RenderTask> _line_tool_render_tasks;
+                    Vector2i _line_start_point; // texture space coords
+                    Vector2i _line_end_point;
+                    
+                    // MODE: RECTANGLE
+                    
+                    struct RectangleToolShape
+                    {
+                        Shape* rectangle_shape = nullptr;
+                        Shape* rectangle_inner_outline = nullptr;
+                        Shape* rectangle_outer_outline = nullptr;
+
+                        Shape* top_left_anchor_shape = nullptr;
+                        Shape* top_left_anchor_inner_outline = nullptr;
+                        Shape* top_left_anchor_outer_outline = nullptr;
+
+                        Shape* top_right_anchor_shape = nullptr;
+                        Shape* top_right_anchor_inner_outline = nullptr;
+                        Shape* top_right_anchor_outer_outline = nullptr;
+
+                        Shape* bottom_left_anchor_shape = nullptr;
+                        Shape* bottom_left_anchor_inner_outline = nullptr;
+                        Shape* bottom_left_anchor_outer_outline = nullptr;
+
+                        Shape* bottom_right_anchor_shape = nullptr;
+                        Shape* bottom_right_anchor_inner_outline = nullptr;
+                        Shape* bottom_right_anchor_outer_outline = nullptr;
+
+                        Shape* center_cross = nullptr;
+                        Shape* center_cross_outline = nullptr;
+                    };
+
+                    RectangleToolShape _rectangle_tool_shape;
+                    std::vector<RenderTask> _rectangle_tool_render_tasks;
+                    Vector2i _rectangle_a_point;
+                    Vector2i _rectangle_b_point;
             };
 
             WireframeLayer* _wireframe_layer = new WireframeLayer(this);
@@ -720,11 +761,11 @@ class Canvas : public AppComponent
                 static inline float* _cursor_outline_time_s = new float(0);
 
                 Shape* _cursor_shape = nullptr;
-                Shape* _cursor_outline_shape_top = nullptr;
-                Shape* _cursor_outline_shape_right = nullptr;
-                Shape* _cursor_outline_shape_bottom = nullptr;
-                Shape* _cursor_outline_shape_left = nullptr;
-                Shape* _cursor_outline_outline_shape = nullptr;
+                Shape* _cursor_outline_top = nullptr;
+                Shape* _cursor_outline_right = nullptr;
+                Shape* _cursor_outline_bottom = nullptr;
+                Shape* _cursor_outline_left = nullptr;
+                Shape* _cursor_outline_outline = nullptr;
 
                 Vector2f _canvas_size = Vector2f(1, 1);
                 Vector2f _cursor_position = Vector2f(0, 0);
@@ -767,7 +808,7 @@ class Canvas : public AppComponent
                 Shape* _end_shape = nullptr;
 
                 Shape* _line_shape;
-                Shape* _line_outline_shape;
+                Shape* _line_outline;
 
                 static void on_realize(Widget*, LineToolLayer* instance);
                 static void on_resize(GLArea*, int, int, LineToolLayer* instance);
@@ -799,17 +840,17 @@ class Canvas : public AppComponent
                 Vector2f* _canvas_size = new Vector2f(1, 1);
                 Shader* _outline_shader;
 
-                Shape* _outline_shape_top = nullptr;
-                Shape* _outline_shape_right = nullptr;
-                Shape* _outline_shape_bottom = nullptr;
-                Shape* _outline_shape_left = nullptr;
-                Shape* _outline_outline_shape = nullptr;
+                Shape* _outline_top = nullptr;
+                Shape* _outline_right = nullptr;
+                Shape* _outline_bottom = nullptr;
+                Shape* _outline_left = nullptr;
+                Shape* _outline_outline = nullptr;
 
-                Vector2f _outline_shape_top_initial_position;
-                Vector2f _outline_shape_right_initial_position;
-                Vector2f _outline_shape_bottom_initial_position;
-                Vector2f _outline_shape_left_initial_position;
-                Vector2f _outline_outline_shape_initial_position;
+                Vector2f _outline_top_initial_position;
+                Vector2f _outline_right_initial_position;
+                Vector2f _outline_bottom_initial_position;
+                Vector2f _outline_left_initial_position;
+                Vector2f _outline_outline_initial_position;
 
                 void reschedule_render_tasks();
                 void reformat();
