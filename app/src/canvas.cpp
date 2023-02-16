@@ -302,13 +302,12 @@ namespace mousetrap
     {
         _line_origin = origin;
         _line_destination = destination;
-        _wireframe_layer->set_line_position(_line_origin, _line_destination);
+        _wireframe_layer->set_positions(_line_origin, _line_destination);
     }
 
     void Canvas::set_line_visible(bool b)
     {
         _line_visible = b;
-        _wireframe_layer->set_line_visible(_line_visible);
     }
 
     void Canvas::draw(const ProjectState::DrawData& data)

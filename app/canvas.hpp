@@ -358,8 +358,7 @@ namespace mousetrap
 
                     void set_scale(float);
                     void set_offset(Vector2f);
-                    void set_line_position(Vector2i, Vector2i); // texture-space coords
-                    void set_line_visible(bool);
+                    void set_positions(Vector2i, Vector2i); // texture-space coords
 
                     ProjectState::DrawData draw();
 
@@ -368,7 +367,22 @@ namespace mousetrap
 
                     GLArea _area;
 
-                    Shape* _line_tool_shape;
+                    struct LineToolShape
+                    {
+                        Shape* origin_anchor_shape = nullptr;
+                        Shape* origin_anchor_inner_outline_shape = nullptr;
+                        Shape* origin_anchor_outer_outline_shape = nullptr;
+
+                        Shape* line_shape = nullptr;
+                        Shape* line_outline_shape = nullptr;
+
+                        Shape* destination_anchor_shape = nullptr;
+                        Shape* destination_anchor_inner_outline_shape = nullptr;
+                        Shape* destination_anchor_outer_outline_shape = nullptr;
+                    };
+
+                    LineToolShape _line_tool_shape;
+                    std::vector<RenderTask> _line_tool_render_tasks;
 
                     Vector2i _origin_point; // texture space coords
                     Vector2i _destination_point;
@@ -381,6 +395,7 @@ namespace mousetrap
                     Vector2f _canvas_size = {1, 1};
                     static void on_area_realize(Widget* widget, WireframeLayer* instance);
                     static void on_area_resize(GLArea*, int w, int h, WireframeLayer* instance);
+                    static bool on_area_render(GLArea*, GdkGLContext*, WireframeLayer* instance);
             };
 
             WireframeLayer* _wireframe_layer = new WireframeLayer(this);

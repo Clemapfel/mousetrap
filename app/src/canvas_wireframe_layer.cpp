@@ -12,6 +12,7 @@ namespace mousetrap
     {
         _area.connect_signal_realize(on_area_realize, this);
         _area.connect_signal_resize(on_area_resize, this);
+        _area.connect_signal_render(on_area_render, this);
     }
 
     Canvas::WireframeLayer::operator Widget*()
@@ -33,28 +34,15 @@ namespace mousetrap
         _area.queue_render();
     }
 
-    void Canvas::WireframeLayer::set_line_position(Vector2i from, Vector2i to)
+    void Canvas::WireframeLayer::set_positions(Vector2i from, Vector2i to)
     {
         _origin_point = from;
         _destination_point = to;
+
         reformat();
         _area.queue_render();
     }
 
-    void Canvas::WireframeLayer::set_line_visible(bool b)
-    {
-        _visible = b;
-
-        if (not _area.get_is_realized())
-            return;
-
-        for (auto* shape : {
-            _line_tool_shape
-        })
-            shape->set_visible(_visible);
-
-        _area.queue_render();
-    }
 
     void Canvas::WireframeLayer::on_layer_resolution_changed()
     {
@@ -67,13 +55,29 @@ namespace mousetrap
         auto* area = (GLArea*) widget;
         area->make_current();
 
-        instance->_line_tool_shape = new Shape();
+        instance->_line_tool_shape = LineToolShape{
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape()
+        };
+
+        instance->_line_tool_render_tasks.clear();
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.origin_anchor_inner_outline_shape);
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.origin_anchor_outer_outline_shape);
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.destination_anchor_inner_outline_shape);
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.destination_anchor_outer_outline_shape);
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.line_outline_shape);
+
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.destination_anchor_shape);
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.origin_anchor_shape);
+        instance->_line_tool_render_tasks.emplace_back(instance->_line_tool_shape.line_shape);
+
         instance->reformat();
-
-
-        area->clear_render_tasks();
-        area->add_render_task(instance->_line_tool_shape);
-        area->queue_render();
     }
 
     void Canvas::WireframeLayer::on_area_resize(GLArea*, int w, int h, WireframeLayer* instance)
@@ -116,11 +120,12 @@ namespace mousetrap
         float x_eps = 1.f / _canvas_size.x;
         float y_eps = 1.f / _canvas_size.y;
 
+        const RGBA outline_color = RGBA(0, 0, 0, 1);
+
         Vector2f anchor_radius = {
                 std::max<float>(state::margin_unit / _canvas_size.x, 0.5 * pixel_w),
                 std::max<float>(state::margin_unit / _canvas_size.y, 0.5 * pixel_h)
         };
-        const size_t vertex_count = 16;
 
         auto as_ellipse = [](Vector2f center, float x_radius, float y_radius, size_t n_vertices){
 
@@ -142,21 +147,27 @@ namespace mousetrap
 
         std::vector<std::pair<Vector2f, Vector2f>> vertices;
 
+        const size_t vertex_count = 16;
+        _line_tool_shape.origin_anchor_shape->as_wireframe(as_ellipse(origin, anchor_radius.x, anchor_radius.y, vertex_count));
+        _line_tool_shape.origin_anchor_inner_outline_shape->as_wireframe(as_ellipse(origin, anchor_radius.x - x_eps, anchor_radius.y - y_eps, vertex_count));
+        _line_tool_shape.origin_anchor_outer_outline_shape->as_wireframe(as_ellipse(origin, anchor_radius.x + x_eps, anchor_radius.y + y_eps, vertex_count));
 
-        _origin_anchor_shape->as_wireframe(as_ellipse(origin, anchor_radius.x, anchor_radius.y, vertex_count));
-        _origin_anchor_inner_outline_shape->as_wireframe(as_ellipse(origin, anchor_radius.x - x_eps, anchor_radius.y - y_eps, vertex_count));
-        _origin_anchor_outer_outline_shape->as_wireframe(as_ellipse(origin, anchor_radius.x + x_eps, anchor_radius.y + y_eps, vertex_count));
+        _line_tool_shape.destination_anchor_shape->as_wireframe(as_ellipse(destination, anchor_radius.x, anchor_radius.y, vertex_count));
+        _line_tool_shape.destination_anchor_inner_outline_shape->as_wireframe(as_ellipse(destination, anchor_radius.x - x_eps, anchor_radius.y - y_eps, vertex_count));
+        _line_tool_shape.destination_anchor_outer_outline_shape->as_wireframe(as_ellipse(destination, anchor_radius.x + x_eps, anchor_radius.y + y_eps, vertex_count));
 
-        _destination_anchor_shape->as_wireframe(as_ellipse(destination, anchor_radius.x, anchor_radius.y, vertex_count));
-        _destination_anchor_inner_outline_shape->as_wireframe(as_ellipse(destination, anchor_radius.x - x_eps, anchor_radius.y - y_eps, vertex_count));
-        _destination_anchor_outer_outline_shape->as_wireframe(as_ellipse(destination, anchor_radius.x + x_eps, anchor_radius.y + y_eps, vertex_count));
+        _line_tool_shape.line_shape->as_line(origin, destination);
 
-        _origin_anchor_center_shape->as_point(origin);
-        _origin_anchor_center_shape->as_point(destination);
-        _line_shape->as_line(origin, destination);
+        for (auto* shape : {
+            _line_tool_shape.origin_anchor_inner_outline_shape,
+            _line_tool_shape.origin_anchor_outer_outline_shape,
+            _line_tool_shape.destination_anchor_inner_outline_shape,
+            _line_tool_shape.destination_anchor_outer_outline_shape,
+            _line_tool_shape.line_outline_shape
+        })
+            shape->set_color(outline_color);
 
         auto angle = radians(std::atan2(_destination_point.x - _origin_point.x, _destination_point.y - _origin_point.y)).as_degrees();
-
 
         if ((angle >= 360 - 45 and angle <= 360) or (angle >= 0 and angle <= 45) or (angle >= 180 - 45 and angle <= 180 + 45))
             vertices = {
@@ -169,7 +180,7 @@ namespace mousetrap
                 {origin + Vector2f(0, +y_eps), destination + Vector2f(0, +y_eps)}
             };
 
-        _line_outline_shape->as_lines(vertices);
+        _line_tool_shape.line_outline_shape->as_lines(vertices);
     }
 
     ProjectState::DrawData Canvas::WireframeLayer::draw()
@@ -200,6 +211,20 @@ namespace mousetrap
         }
 
         return out;
+    }
+
+    bool Canvas::WireframeLayer::on_area_render(GLArea* area, GdkGLContext*, WireframeLayer* instance)
+    {
+        area->make_current();
+
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        for (auto& task : instance->_line_tool_render_tasks)
+            task.render();
+
+        glFlush();
+        return true;
     }
 
 }
