@@ -17,7 +17,9 @@ namespace mousetrap
         private:
             GLArea _area;
 
-            Vector2f _canvas_size = {1, 1};
+            static inline const size_t _n_samples = 16;
+
+            Vector2f _canvas_size = {800, 800};
             static void on_area_realize(Widget* widget, MSAATexture* instance);
             static void on_area_resize(GLArea*, int w, int h, MSAATexture* instance);
             static bool on_area_render(GLArea*, GdkGLContext*, MSAATexture* instance);
@@ -33,16 +35,13 @@ namespace mousetrap
 
             ///
 
-            GLNativeHandle framebuffer;
-            GLNativeHandle textureColorBufferMultiSampled;
-            GLNativeHandle rbo;
-            GLNativeHandle intermediateFBO;
-            GLNativeHandle screenTexture;
+            GLNativeHandle framebuffer = 0;
+            GLNativeHandle textureColorBufferMultiSampled = 0;
+            GLNativeHandle rbo = 0;
+            GLNativeHandle intermediateFBO = 0;
+            GLNativeHandle screenTexture = 0;
 
             void realize();
             void render();
-
-            static inline const int SCR_WIDTH = 800;
-            static inline const int SCR_HEIGHT = 800;
     };
 }

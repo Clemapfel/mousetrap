@@ -67,7 +67,7 @@ namespace mousetrap
 
     void MSAATexture::on_area_resize(GLArea* area, int w, int h, MSAATexture* instance)
     {
-        instance->_canvas_size = {w, h};
+        instance->_canvas_size ={w, h};
         area->queue_render();
     }
 
@@ -90,14 +90,14 @@ namespace mousetrap
 
         glGenTextures(1, &textureColorBufferMultiSampled);
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled);
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, n_samples, GL_RGB, SCR_WIDTH, SCR_HEIGHT, GL_TRUE);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, n_samples, GL_RGB, _canvas_size.x, _canvas_size.y, GL_TRUE);
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled, 0);
         // create a (also multisampled) renderbuffer object for depth and stencil attachments
 
         glGenRenderbuffers(1, &rbo);
         glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, n_samples, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, n_samples, GL_DEPTH24_STENCIL8, _canvas_size.x, _canvas_size.y);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
@@ -112,7 +112,7 @@ namespace mousetrap
 
         glGenTextures(1, &screenTexture);
         glBindTexture(GL_TEXTURE_2D, screenTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _canvas_size.x, _canvas_size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);	// we only need a color buffer
@@ -146,7 +146,7 @@ namespace mousetrap
         // 2. now blit multisampled buffer(s) to normal colorbuffer of intermediate FBO. Image is stored in screenTexture
         glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
-        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, _canvas_size.x, _canvas_size.y, 0, 0, _canvas_size.x, _canvas_size.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
         // 3. now render quad with scene's visuals as its texture image
 

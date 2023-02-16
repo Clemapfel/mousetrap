@@ -8,11 +8,10 @@
 namespace mousetrap
 {
     Canvas::WireframeLayer::WireframeLayer(Canvas* canvas)
-        : _owner(canvas)
+            : _owner(canvas)
     {
         _area.connect_signal_realize(on_area_realize, this);
         _area.connect_signal_resize(on_area_resize, this);
-        _area.connect_signal_render(on_area_render, this);
     }
 
     Canvas::WireframeLayer::operator Widget*()
@@ -49,7 +48,10 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
-        std::cout << "[ERROR] In Canvas::WireframeLayer::set_line_visible: TODO" << std::endl;
+        for (auto* shape : {
+            _line_tool_shape
+        })
+            shape->set_visible(_visible);
 
         _area.queue_render();
     }
@@ -65,39 +67,18 @@ namespace mousetrap
         auto* area = (GLArea*) widget;
         area->make_current();
 
-        instance->_origin_anchor_shape = new Shape();
-        instance->_destination_anchor_shape = new Shape();
-        instance->_line_shape = new Shape();
-
-        instance->_render_tasks.clear();
-        instance->_render_tasks.emplace_back(instance->_origin_anchor_shape);
-        instance->_render_tasks.emplace_back(instance->_destination_anchor_shape);
-        instance->_render_tasks.emplace_back(instance->_line_shape);
-
-        instance->_render_shader = new Shader();
-        instance->_render_shader->create_from_file(get_resource_path() + "shaders/brush_outline.frag", ShaderType::FRAGMENT);
-
-        instance->_render_texture = new RenderTexture();
-        instance->_render_texture->create(1, 1);
-        instance->_render_texture->set_scale_mode(TextureScaleMode::LINEAR);
-
-        instance->_render_shape = new Shape();
-        instance->_render_shape->as_rectangle({0, 0}, {1, 1});
-        instance->_render_shape->set_texture(instance->_render_texture);
-
-        instance->_render_shape_task = new RenderTask(instance->_render_shape, instance->_render_shader);
-        instance->_render_shape_task->register_vec2("_texture_size", &instance->_canvas_size);
-        instance->_render_shape_task->register_color("_outline_color_rgba", new RGBA(0, 0, 0, 1));
-        instance->_render_shape_task->register_int("_outline_visible", new gint(1));
-
+        instance->_line_tool_shape = new Shape();
         instance->reformat();
+
+
+        area->clear_render_tasks();
+        area->add_render_task(instance->_line_tool_shape);
         area->queue_render();
     }
 
     void Canvas::WireframeLayer::on_area_resize(GLArea*, int w, int h, WireframeLayer* instance)
     {
         instance->_canvas_size = {w, h};
-        instance->_render_texture->create(w, h);
         instance->reformat();
         instance->_area.queue_render();
     }
@@ -123,21 +104,21 @@ namespace mousetrap
         float pixel_h = height / layer_resolution.y;
 
         Vector2f origin = {
-            top_left.x + pixel_w * _origin_point.x - 0.5 * pixel_w,
-            top_left.y + pixel_h * _origin_point.y - 0.5 * pixel_h
+                top_left.x + pixel_w * _origin_point.x - 0.5 * pixel_w,
+                top_left.y + pixel_h * _origin_point.y - 0.5 * pixel_h
         };
 
         Vector2f destination = {
-            top_left.x + pixel_w * _destination_point.x - 0.5 * pixel_w,
-            top_left.y + pixel_h * _destination_point.y - 0.5 * pixel_h
+                top_left.x + pixel_w * _destination_point.x - 0.5 * pixel_w,
+                top_left.y + pixel_h * _destination_point.y - 0.5 * pixel_h
         };
 
         float x_eps = 1.f / _canvas_size.x;
         float y_eps = 1.f / _canvas_size.y;
 
         Vector2f anchor_radius = {
-            std::max<float>(state::margin_unit / _canvas_size.x, 0.5 * pixel_w),
-            std::max<float>(state::margin_unit / _canvas_size.y, 0.5 * pixel_h)
+                std::max<float>(state::margin_unit / _canvas_size.x, 0.5 * pixel_w),
+                std::max<float>(state::margin_unit / _canvas_size.y, 0.5 * pixel_h)
         };
         const size_t vertex_count = 16;
 
@@ -151,18 +132,44 @@ namespace mousetrap
             {
                 auto as_radians = angle * M_PI / 180.f;
                 out.emplace_back(
-                    center.x + cos(as_radians) * x_radius,
-                    center.y + sin(as_radians) * y_radius
+                        center.x + cos(as_radians) * x_radius,
+                        center.y + sin(as_radians) * y_radius
                 );
             }
 
             return out;
         };
 
+        std::vector<std::pair<Vector2f, Vector2f>> vertices;
+
+
         _origin_anchor_shape->as_wireframe(as_ellipse(origin, anchor_radius.x, anchor_radius.y, vertex_count));
+        _origin_anchor_inner_outline_shape->as_wireframe(as_ellipse(origin, anchor_radius.x - x_eps, anchor_radius.y - y_eps, vertex_count));
+        _origin_anchor_outer_outline_shape->as_wireframe(as_ellipse(origin, anchor_radius.x + x_eps, anchor_radius.y + y_eps, vertex_count));
+
         _destination_anchor_shape->as_wireframe(as_ellipse(destination, anchor_radius.x, anchor_radius.y, vertex_count));
+        _destination_anchor_inner_outline_shape->as_wireframe(as_ellipse(destination, anchor_radius.x - x_eps, anchor_radius.y - y_eps, vertex_count));
+        _destination_anchor_outer_outline_shape->as_wireframe(as_ellipse(destination, anchor_radius.x + x_eps, anchor_radius.y + y_eps, vertex_count));
+
+        _origin_anchor_center_shape->as_point(origin);
+        _origin_anchor_center_shape->as_point(destination);
         _line_shape->as_line(origin, destination);
 
+        auto angle = radians(std::atan2(_destination_point.x - _origin_point.x, _destination_point.y - _origin_point.y)).as_degrees();
+
+
+        if ((angle >= 360 - 45 and angle <= 360) or (angle >= 0 and angle <= 45) or (angle >= 180 - 45 and angle <= 180 + 45))
+            vertices = {
+                {origin + Vector2f(-x_eps, 0), destination + Vector2f(-x_eps, 0)},
+                {origin + Vector2f(+x_eps, 0), destination + Vector2f(+x_eps, 0)}
+            };
+        else
+            vertices = {
+                {origin + Vector2f(0, -y_eps), destination + Vector2f(0, -y_eps)},
+                {origin + Vector2f(0, +y_eps), destination + Vector2f(0, +y_eps)}
+            };
+
+        _line_outline_shape->as_lines(vertices);
     }
 
     ProjectState::DrawData Canvas::WireframeLayer::draw()
@@ -178,8 +185,8 @@ namespace mousetrap
                 for (int y = 0; y < brush.get_size().y; ++y)
                 {
                     auto pos = Vector2i(
-                        p.x + x - 0.5 * brush.get_size().x,
-                        p.y + y - 0.5 * brush.get_size().y
+                            p.x + x - 0.5 * brush.get_size().x,
+                            p.y + y - 0.5 * brush.get_size().y
                     );
 
                     if (brush.get_pixel(x, y).a == 0 or pos.x < 0 or pos.x >= active_state->get_layer_resolution().x or pos.y < 0 or pos.y >= active_state->get_layer_resolution().y)
@@ -195,42 +202,4 @@ namespace mousetrap
         return out;
     }
 
-    bool Canvas::WireframeLayer::on_area_render(GLArea* area, GdkGLContext*, WireframeLayer* instance)
-    {
-        area->make_current();
-
-        static GLNativeHandle before = [](){
-            GLint before = 0;
-            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &before);
-            return before;
-        }();
-
-        glEnable(GL_BLEND);
-        set_current_blend_mode(BlendMode::NORMAL);
-
-        {
-            instance->_render_texture->bind_as_rendertarget();
-
-            glClearColor(0, 0, 0, 0);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            for (auto& task : instance->_render_tasks)
-                task.render();
-
-            glFlush();
-        }
-
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, before);
-
-            glClearColor(0, 0, 0, 0);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            instance->_render_shape_task->render();
-
-            glFlush();
-        }
-
-        return true;
-    }
 }

@@ -59,7 +59,6 @@ static void activate(GtkApplication* app, void*)
 
     active_state = project_states.emplace_back(new ProjectState({75, 50}));
 
-    /*
     state::frame_view = new FrameView();
     state::brush_options = new BrushOptions();
     state::color_preview = new ColorPreview();
@@ -225,14 +224,14 @@ static void activate(GtkApplication* app, void*)
     canvas_export->set_opacity(1);
 
     bubble_log_overlay.add_overlay(bubble_log);
-    */
     // MAIN
 
     // TODO
-    auto* msaa_texture = new MSAATexture();
+    //auto* msaa_texture = new MSAATexture();
+    //state::main_window->set_child(*msaa_texture);
     // TODO
 
-    state::main_window->set_child(*msaa_texture);
+    state::main_window->set_child(&bubble_log_overlay);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

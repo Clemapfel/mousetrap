@@ -85,7 +85,7 @@ namespace mousetrap
         }, this);
 
         _draw_button.connect_signal_clicked([](Button* button, Canvas* instance) {
-            instance->draw(instance->_line_tool_layer->draw());
+            instance->draw(instance->_wireframe_layer->draw());
         }, this);
 
         _draw_button.set_child(&_draw_button_label);
@@ -156,7 +156,7 @@ namespace mousetrap
         //_layer_overlay.add_overlay(*_brush_shape_layer);
         _layer_overlay.add_overlay(*_grid_layer);
         //_layer_overlay.add_overlay(*_symmetry_ruler_layer);
-        _layer_overlay.add_overlay(*_line_tool_layer);
+        _layer_overlay.add_overlay(*_wireframe_layer);
         //_layer_overlay.add_overlay(*_user_input_layer);
 
         _transparency_tiling_layer->operator Widget *()->set_expand(true);
@@ -186,7 +186,7 @@ namespace mousetrap
         _grid_layer->set_scale(_scale);
         _symmetry_ruler_layer->set_scale(_scale);
         _brush_shape_layer->set_scale(_scale);
-        _line_tool_layer->set_scale(_scale);
+        _wireframe_layer->set_scale(_scale);
     }
 
     void Canvas::set_offset(float x, float y)
@@ -198,7 +198,7 @@ namespace mousetrap
         _grid_layer->set_offset(_offset);
         _symmetry_ruler_layer->set_offset(_offset);
         _brush_shape_layer->set_offset(_offset);
-        _line_tool_layer->set_offset(_offset);
+        _wireframe_layer->set_offset(_offset);
     }
 
     void Canvas::set_grid_visible(bool b)
@@ -302,13 +302,13 @@ namespace mousetrap
     {
         _line_origin = origin;
         _line_destination = destination;
-        _line_tool_layer->set_line_position(_line_origin, _line_destination);
+        _wireframe_layer->set_line_position(_line_origin, _line_destination);
     }
 
     void Canvas::set_line_visible(bool b)
     {
         _line_visible = b;
-        _line_tool_layer->set_line_visible(_line_visible);
+        _wireframe_layer->set_line_visible(_line_visible);
     }
 
     void Canvas::draw(const ProjectState::DrawData& data)
