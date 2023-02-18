@@ -108,6 +108,21 @@ namespace mousetrap
             new Shape(),
             new Shape(),
             new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
+            new Shape(),
             new Shape()
         };
 
@@ -120,17 +135,34 @@ namespace mousetrap
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_left_anchor_outer_outline);
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_right_anchor_inner_outline);
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_right_anchor_outer_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_anchor_inner_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_anchor_outer_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_anchor_inner_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_anchor_outer_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.left_anchor_inner_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.left_anchor_outer_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.right_anchor_inner_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.right_anchor_outer_outline);
+
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.center_cross_outline);
 
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_left_anchor_shape);
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_right_anchor_shape);
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_left_anchor_shape);
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_right_anchor_shape);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.center_cross);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_anchor_shape);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_anchor_shape);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.left_anchor_shape);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.right_anchor_shape);
 
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.center_cross);
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_inner_outline);
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_outer_outline);
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_shape);
+
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.circle_inner_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.circle_outer_outline);
+        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.circle);
 
         instance->reformat();
     }
@@ -301,10 +333,30 @@ namespace mousetrap
             _rectangle_tool_shape.bottom_right_anchor_inner_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width, height), anchor_radius.x - x_eps, anchor_radius.y - y_eps, anchor_vertex_count));
             _rectangle_tool_shape.bottom_right_anchor_outer_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width, height), anchor_radius.x + x_eps, anchor_radius.y + y_eps, anchor_vertex_count));
 
+            _rectangle_tool_shape.top_anchor_shape->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width * 0.5, 0), anchor_radius.x, anchor_radius.y, anchor_vertex_count));
+            _rectangle_tool_shape.top_anchor_inner_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width * 0.5, 0), anchor_radius.x - x_eps, anchor_radius.y - y_eps, anchor_vertex_count));
+            _rectangle_tool_shape.top_anchor_outer_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width * 0.5, 0), anchor_radius.x + x_eps, anchor_radius.y + y_eps, anchor_vertex_count));
+
+            _rectangle_tool_shape.bottom_anchor_shape->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width * 0.5, height), anchor_radius.x, anchor_radius.y, anchor_vertex_count));
+            _rectangle_tool_shape.bottom_anchor_inner_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width * 0.5, height), anchor_radius.x - x_eps, anchor_radius.y - y_eps, anchor_vertex_count));
+            _rectangle_tool_shape.bottom_anchor_outer_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width * 0.5, height), anchor_radius.x + x_eps, anchor_radius.y + y_eps, anchor_vertex_count));
+
+            _rectangle_tool_shape.left_anchor_shape->as_wireframe(as_ellipse(top_left_anchor + Vector2f(0, height * 0.5), anchor_radius.x, anchor_radius.y, anchor_vertex_count));
+            _rectangle_tool_shape.left_anchor_inner_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(0, height * 0.5), anchor_radius.x - x_eps, anchor_radius.y - y_eps, anchor_vertex_count));
+            _rectangle_tool_shape.left_anchor_outer_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(0, height * 0.5), anchor_radius.x + x_eps, anchor_radius.y + y_eps, anchor_vertex_count));
+
+            _rectangle_tool_shape.right_anchor_shape->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width, height * 0.5), anchor_radius.x, anchor_radius.y, anchor_vertex_count));
+            _rectangle_tool_shape.right_anchor_inner_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width, height * 0.5), anchor_radius.x - x_eps, anchor_radius.y - y_eps, anchor_vertex_count));
+            _rectangle_tool_shape.right_anchor_outer_outline->as_wireframe(as_ellipse(top_left_anchor + Vector2f(width, height * 0.5), anchor_radius.x + x_eps, anchor_radius.y + y_eps, anchor_vertex_count));
+
             auto center = top_left_anchor + Vector2f(0.5 * width, 0.5 * height);
 
-            float cross_w = 0.5 * pixel_w;
-            float cross_h = 0.5 * pixel_h;
+            _rectangle_tool_shape.circle->as_wireframe(as_ellipse(center, 0.5 * width, 0.5 * height, 64));
+            _rectangle_tool_shape.circle_inner_outline->as_wireframe(as_ellipse(center, 0.5 * width - x_eps, 0.5 * height - y_eps, 64));
+            _rectangle_tool_shape.circle_outer_outline->as_wireframe(as_ellipse(center, 0.5 * width + x_eps, 0.5 * height + y_eps, 64));
+
+            float cross_w = anchor_radius.x;
+            float cross_h = anchor_radius.y;
 
             _rectangle_tool_shape.center_cross->as_lines({
                 {center + Vector2f(-cross_w, 0), center + Vector2f(+cross_w, 0)},
@@ -331,7 +383,17 @@ namespace mousetrap
                 _rectangle_tool_shape.bottom_left_anchor_outer_outline,
                 _rectangle_tool_shape.bottom_right_anchor_inner_outline,
                 _rectangle_tool_shape.bottom_right_anchor_outer_outline,
-                _rectangle_tool_shape.center_cross_outline
+                _rectangle_tool_shape.top_anchor_outer_outline,
+                _rectangle_tool_shape.bottom_anchor_outer_outline,
+                _rectangle_tool_shape.left_anchor_outer_outline,
+                _rectangle_tool_shape.right_anchor_outer_outline,
+                _rectangle_tool_shape.top_anchor_inner_outline,
+                _rectangle_tool_shape.bottom_anchor_inner_outline,
+                _rectangle_tool_shape.left_anchor_inner_outline,
+                _rectangle_tool_shape.right_anchor_inner_outline,
+                _rectangle_tool_shape.center_cross_outline,
+                _rectangle_tool_shape.circle_inner_outline,
+                _rectangle_tool_shape.circle_outer_outline
             })
                 shape->set_color(outline_color);
 
@@ -340,11 +402,14 @@ namespace mousetrap
                 _rectangle_tool_shape.top_right_anchor_shape,
                 _rectangle_tool_shape.bottom_left_anchor_shape,
                 _rectangle_tool_shape.bottom_right_anchor_shape,
+                _rectangle_tool_shape.top_anchor_shape,
+                _rectangle_tool_shape.bottom_anchor_shape,
+                _rectangle_tool_shape.left_anchor_shape,
+                _rectangle_tool_shape.right_anchor_shape,
                 _rectangle_tool_shape.center_cross
             })
                 shape->set_color(anchor_color);
         }
-
     }
 
     ProjectState::DrawData Canvas::WireframeLayer::draw()

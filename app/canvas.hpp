@@ -358,6 +358,7 @@ namespace mousetrap
                     // all texture-space coords
                     void set_as_line(Vector2i from, Vector2i to); 
                     void set_as_rectangle(Vector2i a, Vector2i b);
+                    void set_as_circle(Vector2i a, Vector2i b);
 
                     ProjectState::DrawData draw();
 
@@ -366,9 +367,7 @@ namespace mousetrap
                     {
                         LINE,
                         CIRCLE,
-                        CIRCLE_FROM_CENTER,
                         RECTANGLE,
-                        RECTANGLE_FROM_CENTER
                     };
                     Mode _current_mode = RECTANGLE;
                     
@@ -405,7 +404,7 @@ namespace mousetrap
                     Vector2i _line_start_point; // texture space coords
                     Vector2i _line_end_point;
                     
-                    // MODE: RECTANGLE
+                    // MODE: RECTANGLE / CIRCLE
                     
                     struct RectangleToolShape
                     {
@@ -429,8 +428,28 @@ namespace mousetrap
                         Shape* bottom_right_anchor_inner_outline = nullptr;
                         Shape* bottom_right_anchor_outer_outline = nullptr;
 
+                        Shape* top_anchor_shape = nullptr;
+                        Shape* top_anchor_inner_outline = nullptr;
+                        Shape* top_anchor_outer_outline = nullptr;
+
+                        Shape* bottom_anchor_shape = nullptr;
+                        Shape* bottom_anchor_inner_outline = nullptr;
+                        Shape* bottom_anchor_outer_outline = nullptr;
+
+                        Shape* left_anchor_shape = nullptr;
+                        Shape* left_anchor_inner_outline = nullptr;
+                        Shape* left_anchor_outer_outline = nullptr;
+
+                        Shape* right_anchor_shape = nullptr;
+                        Shape* right_anchor_inner_outline = nullptr;
+                        Shape* right_anchor_outer_outline = nullptr;
+
                         Shape* center_cross = nullptr;
                         Shape* center_cross_outline = nullptr;
+
+                        Shape* circle = nullptr;
+                        Shape* circle_inner_outline = nullptr;
+                        Shape* circle_outer_outline = nullptr;
                     };
 
                     RectangleToolShape _rectangle_tool_shape;

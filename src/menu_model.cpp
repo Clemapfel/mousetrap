@@ -37,9 +37,9 @@ namespace mousetrap
 
     void MenuModel::add_widget(Widget* widget)
     {
-        auto id = std::to_string(current_id).c_str();
-        auto* item = g_menu_item_new(id, id);
-        g_menu_item_set_attribute_value(item, "custom", g_variant_new_string(id));
+        auto id = std::to_string(current_id);
+        auto* item = g_menu_item_new(id.c_str(), id.c_str());
+        g_menu_item_set_attribute_value(item, "custom", g_variant_new_string(id.c_str()));
 
         g_menu_append_item(_native, item);
 
