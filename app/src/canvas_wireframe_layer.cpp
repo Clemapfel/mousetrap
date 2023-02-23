@@ -65,6 +65,11 @@ namespace mousetrap
         auto* area = (GLArea*) widget;
         area->make_current();
 
+        instance->_render_texture_shape = new Shape();
+        instance->_render_texture_shape->as_rectangle({0, 0}, {1, 1});
+        instance->_render_texture_shape->set_texture(&instance->_render_texture);
+        instance->_render_texture_task = new RenderTask(instance->_render_texture_shape);
+
         // lines
 
         instance->_line_tool_shape = LineToolShape{
@@ -167,9 +172,12 @@ namespace mousetrap
         instance->reformat();
     }
 
-    void Canvas::WireframeLayer::on_area_resize(GLArea*, int w, int h, WireframeLayer* instance)
+    void Canvas::WireframeLayer::on_area_resize(GLArea* area, int w, int h, WireframeLayer* instance)
     {
+        area->make_current();
+
         instance->_canvas_size = {w, h};
+        instance->_render_texture.create(instance->_canvas_size.x, instance->_canvas_size.y);
         instance->reformat();
         instance->_area.queue_render();
     }
@@ -483,6 +491,8 @@ namespace mousetrap
     {
         area->make_current();
 
+        instance->_render_texture.bind_as_rendertarget();
+
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -496,6 +506,13 @@ namespace mousetrap
             for (auto& task : instance->_rectangle_tool_render_tasks)
                 task.render();
         }
+
+        instance->_render_texture.unbind_as_rendertarget();
+
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        instance->_render_texture_task->render();
 
         glFlush();
         return true;

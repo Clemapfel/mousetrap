@@ -8,32 +8,32 @@
 
 namespace mousetrap
 {
-    class MSAATexture
+    class MultisampledRenderTexture : public TextureObject
     {
         public:
-            MSAATexture();
-            operator Widget*();
+            MultisampledRenderTexture(size_t n_samples = 8);
+            virtual ~MultisampledRenderTexture();
+
+            void bind() const override;
+            void unbind() const override;
+
+            void bind_as_rendertarget() const;
+            void unbind_as_rendertarget() const;
+
+            void create(size_t width, size_t height);
 
         private:
-            GLArea _area;
+            size_t _n_samples;
 
-            static inline const size_t _n_samples = 16;
+            size_t _width = 0;
+            size_t _height = 0;
 
-            Vector2f _canvas_size = {800, 800};
-            static void on_area_realize(Widget* widget, MSAATexture* instance);
-            static void on_area_resize(GLArea*, int w, int h, MSAATexture* instance);
-            static bool on_area_render(GLArea*, GdkGLContext*, MSAATexture* instance);
+            mutable GLint _before_buffer = 0;
 
             float _current_angle_dg = 0;
             GLTransform* _transform = new GLTransform();
             Shape* _shape;
             Shader* _shader;
-
-            GLTransform* _render_transform = new GLTransform();
-            Shader* _render_shader;
-            Shape* _render_shape;
-
-            ///
 
             GLNativeHandle framebuffer = 0;
             GLNativeHandle textureColorBufferMultiSampled = 0;
@@ -41,7 +41,6 @@ namespace mousetrap
             GLNativeHandle intermediateFBO = 0;
             GLNativeHandle screenTexture = 0;
 
-            void realize();
-            void render();
+            void free();
     };
 }

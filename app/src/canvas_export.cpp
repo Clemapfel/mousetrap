@@ -12,7 +12,7 @@ namespace mousetrap
     {
         _area.connect_signal_realize(on_area_realize, this);
         _area.connect_signal_resize(on_area_resize, this);
-        _area.connect_signal_render(on_area_render, this);
+        //_area.connect_signal_render(on_area_render, this);
         _area.set_size_request(active_state->get_layer_resolution());
         _area.set_align(GTK_ALIGN_CENTER);
 

@@ -9,6 +9,7 @@
 #include <app/app_component.hpp>
 #include <app/project_state.hpp>
 #include <app/app_signals.hpp>
+#include <app/msaa_texture.hpp>
 
 namespace mousetrap
 {
@@ -382,6 +383,10 @@ namespace mousetrap
                     static void on_area_realize(Widget* widget, WireframeLayer* instance);
                     static void on_area_resize(GLArea*, int w, int h, WireframeLayer* instance);
                     static bool on_area_render(GLArea*, GdkGLContext*, WireframeLayer* instance);
+
+                    MultisampledRenderTexture _render_texture;
+                    Shape* _render_texture_shape = nullptr;
+                    RenderTask* _render_texture_task = nullptr;
                     
                     // MODE: LINE
 
@@ -471,6 +476,8 @@ namespace mousetrap
 
                     GLArea _proxy;
                     Vector2f _canvas_size;
+
+                    Vector2i widget_space_pos_to_texture_space_pos(float x, float y);
 
                     ClickEventController _click_controller;
                     static void on_click_pressed(ClickEventController*, size_t n, double x, double y, UserInputLayer* instance);

@@ -82,7 +82,8 @@ namespace mousetrap
         _v_shapes.clear();
         while (_v_shapes.size() <= active_state->get_layer_resolution().x)
         {
-            auto* shape = _v_shapes.emplace_back(new Shape());
+            _v_shapes.emplace_back(new Shape());
+            auto* shape = _v_shapes.back();
             shape->set_color(color);
         }
 

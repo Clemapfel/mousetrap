@@ -227,8 +227,13 @@ static void activate(GtkApplication* app, void*)
     // MAIN
 
     // TODO
-    //auto* msaa_texture = new MSAATexture();
-    //state::main_window->set_child(*msaa_texture);
+    /*
+    auto* msaa_texture = new AntiAliasedGLArea();
+    msaa_texture->connect_signal_realize([](Widget*, nullptr_t){
+
+    }, nullptr);
+    state::main_window->set_child(*msaa_texture);
+     */
     // TODO
 
     state::main_window->set_child(&bubble_log_overlay);

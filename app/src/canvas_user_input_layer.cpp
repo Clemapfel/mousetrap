@@ -48,6 +48,26 @@ namespace mousetrap
         return &_proxy;
     }
 
+    Vector2i Canvas::UserInputLayer::widget_space_pos_to_texture_space_pos(float x, float y)
+    {
+        auto layer_resolution = active_state->get_layer_resolution();
+
+        float width = layer_resolution.x / _canvas_size.x;
+        float height = layer_resolution.y / _canvas_size.x;
+
+        width *= _owner->_scale;
+        height *= _owner->_scale;
+
+        Vector2f center = {0.5, 0.5};
+        center += _owner->_offset;
+
+        Vector2f top_left = center - Vector2f{0.5 * width, 0.5 * height};
+        float pixel_w = width / layer_resolution.x;
+        float pixel_h = height / layer_resolution.y;
+
+
+    }
+
     void Canvas::UserInputLayer::on_click_pressed(ClickEventController*, size_t n, double x, double y, UserInputLayer* instance)
     {
 
