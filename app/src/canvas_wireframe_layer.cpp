@@ -163,7 +163,7 @@ namespace mousetrap
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.center_cross);
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_inner_outline);
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_outer_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_shape);
+        //instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_shape);
 
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.circle_inner_outline);
         instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.circle_outer_outline);
@@ -302,11 +302,14 @@ namespace mousetrap
             float width = b.x - a.x;
             float height = b.y - a.y;
 
+            float x_thickness = x_eps * 10;
+            float y_thickness = y_eps * 10;
+
             _rectangle_tool_shape.rectangle_shape->as_rectangle_frame(
                 a,
                 {width, height},
-                x_eps * 4,
-                y_eps * 4
+                x_thickness,
+                y_thickness
             );
 
             _rectangle_tool_shape.rectangle_outer_outline->as_wireframe({
@@ -359,7 +362,15 @@ namespace mousetrap
 
             auto center = top_left_anchor + Vector2f(0.5 * width, 0.5 * height);
 
-            _rectangle_tool_shape.circle->as_wireframe(as_ellipse(center, 0.5 * width, 0.5 * height, 64));
+            _rectangle_tool_shape.circle->as_elliptic_ring(
+                center,
+                0.5 * width,
+                0.5 * height,
+                x_thickness,
+                y_thickness,
+                64
+            );
+
             _rectangle_tool_shape.circle_inner_outline->as_wireframe(as_ellipse(center, 0.5 * width - x_eps, 0.5 * height - y_eps, 64));
             _rectangle_tool_shape.circle_outer_outline->as_wireframe(as_ellipse(center, 0.5 * width + x_eps, 0.5 * height + y_eps, 64));
 

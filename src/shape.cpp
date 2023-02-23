@@ -402,6 +402,58 @@ namespace mousetrap
         initialize();
     }
 
+    void Shape::as_circular_ring(Vector2f center, float outer_radius, float thickness, size_t n_outer_vertices)
+    {
+        as_elliptic_ring(center, outer_radius, outer_radius, thickness, thickness, n_outer_vertices);
+    }
+
+    void Shape::as_elliptic_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices)
+    {
+        const float step = 360.f / n_outer_vertices;
+        _vertices.clear();
+
+        for (float angle = 0; angle < 360; angle += step)
+        {
+            auto as_radians = angle * M_PI / 180.f;
+            _vertices.emplace_back(
+            center.x + cos(as_radians) * x_radius,
+            center.y + sin(as_radians) * y_radius,
+            _color
+            );
+
+            _vertices.emplace_back(
+            center.x + cos(as_radians) * (x_radius - x_thickness),
+            center.y + sin(as_radians) * (y_radius - y_thickness),
+            _color
+            );
+        }
+
+        _render_type = GL_TRIANGLES;
+
+        _indices.clear();
+        for (size_t i = 0; i < n_outer_vertices - 1; ++i)
+        {
+            auto a = i * 2;
+            _indices.push_back(a);
+            _indices.push_back(a+2);
+            _indices.push_back(a+3);
+            _indices.push_back(a);
+            _indices.push_back(a+1);
+            _indices.push_back(a+3);
+        }
+
+        auto a = _vertices.size() - 2;
+        _indices.push_back(a);
+        _indices.push_back(0);
+        _indices.push_back(1);
+
+        _indices.push_back(a);
+        _indices.push_back(a+1);
+        _indices.push_back(1);
+
+        initialize();
+    }
+
     void Shape::as_line_strip(const std::vector<Vector2f>& positions)
     {
         _vertices.clear();
