@@ -45,7 +45,7 @@ add_library(mousetrap SHARED
     src/gl_common.inl
 
     include/shape.hpp
-    src/shape.inl
+        src/shape.cpp
 
     include/colors.hpp
     src/colors.inl

@@ -8,7 +8,7 @@
 namespace mousetrap
 {
     Canvas::WireframeLayer::WireframeLayer(Canvas* canvas)
-            : _owner(canvas)
+            : _owner(canvas), _render_texture(16)
     {
         _area.connect_signal_realize(on_area_realize, this);
         _area.connect_signal_resize(on_area_resize, this);
@@ -205,8 +205,8 @@ namespace mousetrap
         float x_eps = 1.f / _canvas_size.x;
         float y_eps = 1.f / _canvas_size.y;
 
-        const RGBA outline_color = RGBA(0, 0, 0, 1);
-        const RGBA anchor_color = HSVA(0, 0, 0.9, 1);
+        const RGBA outline_color = RGBA(0.1, 0.1, 0.1, 1);
+        const RGBA anchor_color = RGBA(0.9, 0.9, 0.9, 1);
 
         auto as_ellipse = [](Vector2f center, float x_radius, float y_radius, size_t n_vertices)
         {
@@ -302,12 +302,12 @@ namespace mousetrap
             float width = b.x - a.x;
             float height = b.y - a.y;
 
-            _rectangle_tool_shape.rectangle_shape->as_wireframe({
+            _rectangle_tool_shape.rectangle_shape->as_rectangle_frame(
                 a,
-                a + Vector2f(width, 0),
-                a + Vector2f(width, height),
-                a + Vector2f(0, height)
-            });
+                {width, height},
+                x_eps * 4,
+                y_eps * 4
+            );
 
             _rectangle_tool_shape.rectangle_outer_outline->as_wireframe({
                 a + Vector2f(0 - x_eps, 0 - y_eps),

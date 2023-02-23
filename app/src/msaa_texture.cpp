@@ -20,52 +20,43 @@ namespace mousetrap
         GLint before = 0;
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &before);
         
-        glGenFramebuffers(1, &framebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glGenFramebuffers(1, &_buffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, _buffer);
 
-        glGenTextures(1, &textureColorBufferMultiSampled);
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled);
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, _n_samples, GL_RGB, width, height, GL_TRUE);
+        glGenTextures(1, &_msaa_color_buffer_texture);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, _msaa_color_buffer_texture);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, _n_samples, GL_RGBA, width, height, GL_TRUE);
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, _msaa_color_buffer_texture, 0);
 
-        glGenRenderbuffers(1, &rbo);
-        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, _n_samples, GL_DEPTH24_STENCIL8, width, height);
-        glBindRenderbuffer(GL_RENDERBUFFER, 0);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-        
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         
-        glGenFramebuffers(1, &intermediateFBO);
-        glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
+        glGenFramebuffers(1, &_intermediate_buffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, _intermediate_buffer);
 
-        glGenTextures(1, &screenTexture);
-        glBindTexture(GL_TEXTURE_2D, screenTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glGenTextures(1, &_screen_texture);
+        glBindTexture(GL_TEXTURE_2D, _screen_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);	// we only need a color buffer
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _screen_texture, 0);	// we only need a color buffer
 
         glBindFramebuffer(GL_FRAMEBUFFER, before);
     }
 
     void MultisampledRenderTexture::free()
     {
-        if (framebuffer != 0)
-            glDeleteFramebuffers(1, &framebuffer);
+        if (_buffer != 0)
+            glDeleteFramebuffers(1, &_buffer);
 
-        if (textureColorBufferMultiSampled != 0)
-            glDeleteTextures(1, &textureColorBufferMultiSampled);
+        if (_msaa_color_buffer_texture != 0)
+            glDeleteTextures(1, &_msaa_color_buffer_texture);
 
-        if (rbo != 0)
-            glDeleteRenderbuffers(1, &rbo);
+        if (_intermediate_buffer != 0)
+            glDeleteFramebuffers(1, &_intermediate_buffer);
 
-        if (intermediateFBO != 0)
-            glDeleteFramebuffers(1, &intermediateFBO);
-
-        if (screenTexture != 0)
-            glDeleteTextures(1, &screenTexture);
+        if (_screen_texture != 0)
+            glDeleteTextures(1, &_screen_texture);
     }
 
     MultisampledRenderTexture::~MultisampledRenderTexture()
@@ -79,13 +70,13 @@ namespace mousetrap
             std::cerr << "[WARNING] In MultisampledRenderTexture::bind_as_rendertarget: Framebuffes uninitialized, call `MultisampledRenderTexture::create` first" << std::endl;
 
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_before_buffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, _buffer);
     }
 
     void MultisampledRenderTexture::unbind_as_rendertarget() const 
     {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, _buffer);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _intermediate_buffer);
         glBlitFramebuffer(0, 0, _width, _height, 0, 0, _width, _height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
         glBindFramebuffer(GL_FRAMEBUFFER, _before_buffer);
@@ -94,7 +85,7 @@ namespace mousetrap
     void MultisampledRenderTexture::bind() const 
     {
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, screenTexture);
+        glBindTexture(GL_TEXTURE_2D, _screen_texture);
     }
 
     void MultisampledRenderTexture::unbind() const 

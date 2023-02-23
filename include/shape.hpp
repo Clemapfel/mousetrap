@@ -37,6 +37,8 @@ namespace mousetrap
             void as_line_strip(const std::vector<Vector2f>&);
             void as_polygon(const std::vector<Vector2f>& positions); // bounding polygon
 
+            void as_rectangle_frame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width);
+
             void as_wireframe(const std::vector<Vector2f>&);         // bounding polygon
             void as_wireframe(const Shape&);
 
@@ -122,5 +124,3 @@ namespace mousetrap
             const TextureObject* _texture = nullptr;
     };
 }
-
-#include <src/shape.inl>

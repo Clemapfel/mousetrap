@@ -30,16 +30,10 @@ namespace mousetrap
 
             mutable GLint _before_buffer = 0;
 
-            float _current_angle_dg = 0;
-            GLTransform* _transform = new GLTransform();
-            Shape* _shape;
-            Shader* _shader;
-
-            GLNativeHandle framebuffer = 0;
-            GLNativeHandle textureColorBufferMultiSampled = 0;
-            GLNativeHandle rbo = 0;
-            GLNativeHandle intermediateFBO = 0;
-            GLNativeHandle screenTexture = 0;
+            GLNativeHandle _buffer = 0;
+            GLNativeHandle _msaa_color_buffer_texture = 0;
+            GLNativeHandle _intermediate_buffer = 0;
+            GLNativeHandle _screen_texture = 0;
 
             void free();
     };
