@@ -11,6 +11,37 @@
 #include <app/app_signals.hpp>
 #include <app/msaa_texture.hpp>
 
+/*
+ Symmetry:
+    x pos, y pos
+    x toggle, y toggle
+    x color, y color
+
+Background:
+    visible toggle
+
+Grid:
+    visible toggle
+    color set
+
+Selection:
+    toggle animated
+    toggle visible
+    color set
+
+Scale:
+    scale value
+    reset scale + offset
+
+Offset (Debug):
+    x pos, y pos
+
+User Input:
+    y scroll inverted
+    x scroll inverted
+    draw non-mouse button
+ */
+
 namespace mousetrap
 {
     namespace state::actions
