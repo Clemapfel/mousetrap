@@ -526,53 +526,6 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_frame(Vector2f top_left, Vector2f size, float x_width, float y_width)
-    {
-        _vertices.clear();
-        _indices.clear();
-
-        // hard-coded minimum vertex decomposition
-
-        auto push_vertex = [&](float x, float y) {
-            _vertices.emplace_back(x, y, _color);
-        };
-
-        float x = top_left.x;
-        float y = top_left.y;
-        float w = size.x;
-        float h = size.y;
-        float lx = x_width;
-        float ly = y_width;
-
-        // in order: left to right, top to bottom
-
-        push_vertex(x, y);         // 0
-        push_vertex(x+w-lx, y);     // 1
-        push_vertex(x+w, y);       // 2
-
-        push_vertex(x, y+ly);       // 3
-        push_vertex(x+lx, y+ly);     // 4
-        push_vertex(x+w-lx, y+ly);   // 5
-
-        push_vertex(x+lx, y+h-ly);   // 6
-        push_vertex(x+w-lx, y+h-ly); // 7
-        push_vertex(x+w, y+h-ly);   // 8
-
-        push_vertex(x, y+h);       // 9
-        push_vertex(x+lx, y+h);     // 10
-        push_vertex(x+w, y+h);     // 11
-
-        _indices = {
-                0, 1, 5, 0, 5, 3,
-                1, 2, 7, 2, 7, 8,
-                6, 11, 10, 6, 8, 11,
-                3, 9, 10, 3, 4, 10
-        };
-
-        _render_type = GL_TRIANGLES;
-        initialize();
-    }
-
     void Shape::set_vertex_color(size_t i, RGBA color)
     {
         _vertices.at(i).color = color;

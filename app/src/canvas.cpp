@@ -154,11 +154,12 @@ namespace mousetrap
 
         _layer_overlay.set_child(*_transparency_tiling_layer);
         _layer_overlay.add_overlay(*_layer_layer);
-        //_layer_overlay.add_overlay(*_onionskin_layer);
-        //_layer_overlay.add_overlay(*_brush_shape_layer);
+        _layer_overlay.add_overlay(*_onionskin_layer);
+        _layer_overlay.add_overlay(*_brush_shape_layer);
         _layer_overlay.add_overlay(*_grid_layer);
-        //_layer_overlay.add_overlay(*_symmetry_ruler_layer);
-        _layer_overlay.add_overlay(*_wireframe_layer);
+        _layer_overlay.add_overlay(*_selection_layer);
+        _layer_overlay.add_overlay(*_symmetry_ruler_layer);
+        //_layer_overlay.add_overlay(*_wireframe_layer);
         //_layer_overlay.add_overlay(*_user_input_layer);
 
         _transparency_tiling_layer->operator Widget *()->set_expand(true);
@@ -189,6 +190,7 @@ namespace mousetrap
         _symmetry_ruler_layer->set_scale(_scale);
         _brush_shape_layer->set_scale(_scale);
         _wireframe_layer->set_scale(_scale);
+        _selection_layer->set_scale(_scale);
     }
 
     void Canvas::set_offset(float x, float y)
@@ -201,6 +203,7 @@ namespace mousetrap
         _symmetry_ruler_layer->set_offset(_offset);
         _brush_shape_layer->set_offset(_offset);
         _wireframe_layer->set_offset(_offset);
+        _selection_layer->set_offset(_offset);
     }
 
     void Canvas::set_grid_visible(bool b)
@@ -241,7 +244,9 @@ namespace mousetrap
     }
 
     void Canvas::on_selection_changed()
-    {}
+    {
+        _selection_layer->on_selection_changed();
+    }
 
     void Canvas::on_onionskin_visibility_toggled()
     {

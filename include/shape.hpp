@@ -35,16 +35,12 @@ namespace mousetrap
             void as_line(Vector2f a, Vector2f b);
             void as_lines(const std::vector<std::pair<Vector2f, Vector2f>>&);
             void as_line_strip(const std::vector<Vector2f>&);
-            void as_polygon(const std::vector<Vector2f>& positions); // bounding polygon
-
+            void as_polygon(const std::vector<Vector2f>& positions);
             void as_rectangle_frame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width);
             void as_circular_ring(Vector2f center, float outer_radius, float thickness, size_t n_outer_vertices);
             void as_elliptic_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices);
-
-            void as_wireframe(const std::vector<Vector2f>&);         // bounding polygon
+            void as_wireframe(const std::vector<Vector2f>&);
             void as_wireframe(const Shape&);
-
-            void as_frame(Vector2f top_left, Vector2f size, float x_width, float y_width);
 
             void render(Shader& shader, GLTransform transform);
 

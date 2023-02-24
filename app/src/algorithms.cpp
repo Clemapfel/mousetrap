@@ -299,8 +299,8 @@ namespace mousetrap
             max_y = std::max(v.y, max_y);
         }
 
-        auto w = max_x - min_x;
-        auto h = max_y - min_y;
+        auto w = max_x - min_x + 1;
+        auto h = max_y - min_y + 1;
 
         static auto alpha_eps = state::settings_file->get_value_as<float>("global", "alpha_epsilon");
 

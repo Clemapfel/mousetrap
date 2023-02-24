@@ -9,6 +9,7 @@ out vec4 _fragment_color;
 uniform float _time_s;
 uniform int _direction;
 uniform vec2 _canvas_size;
+uniform int _animation_paused;
 
 void main()
 {
@@ -17,7 +18,7 @@ void main()
     float frequency;
 
     const float base_frequency = 21;
-    const float speed = 1;
+    float speed = _animation_paused == 1 ? 0 : 0.5;
 
     // left: top to bottom
     if (_direction == 1)
@@ -49,13 +50,13 @@ void main()
     }
 
     const vec3 color_a = vec3(1);
-    const vec3 color_b = vec3(1) - color_a;
+    const vec3 color_b = vec3(0.5, 0.5, 0.5);
 
     const bool clockwise = true;
     offset_factor *= clockwise ? -1 : 1;
 
     if (fract(coord * frequency + offset_factor * _time_s * speed) > 0.5)
-        _fragment_color = vec4(color_a, _vertex_color.a);
+        _fragment_color = vec4(color_a * _vertex_color.rgb, _vertex_color.a);
     else
-        _fragment_color = vec4(color_b, _vertex_color.a);
+        _fragment_color = vec4(color_b * _vertex_color.rgb, _vertex_color.a);
 }

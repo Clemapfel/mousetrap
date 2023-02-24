@@ -261,6 +261,7 @@ namespace mousetrap
 
                     void set_scale(float);
                     void set_offset(Vector2f);
+                    void set_color(HSVA);
 
                 private:
                     Canvas* _owner;
@@ -273,6 +274,7 @@ namespace mousetrap
 
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
+                    HSVA _color = RGBA(1, 1, 1, 1).operator HSVA();
 
                     size_t _h_position = 0.5 * active_state->get_layer_resolution().x;
                     size_t _v_position = 0.5 * active_state->get_layer_resolution().y;
@@ -464,6 +466,59 @@ namespace mousetrap
             };
 
             WireframeLayer* _wireframe_layer = new WireframeLayer(this);
+
+            class SelectionLayer
+            {
+                public:
+                    SelectionLayer(Canvas*);
+                    operator Widget*();
+
+                    void set_scale(float);
+                    void set_offset(Vector2f);
+                    void on_selection_changed();
+
+                    void set_animation_paused(bool);
+                    void set_color(HSVA);
+
+                private:
+                    Canvas* _owner;
+                    GLArea _area;
+
+                    static inline int* _outline_shader_right_flag = new int(1);
+                    static inline int* _outline_shader_top_flag = new int(2);
+                    static inline int* _outline_shader_left_flag = new int(3);
+                    static inline int* _outline_shader_bottom_flag = new int(4);
+                    static inline float* _outline_time_s = new float(0);
+                    static inline int* _animation_paused = new int(0);
+
+                    HSVA _color = RGBA(1, 1, 1, 1).operator HSVA();
+
+                    Vector2f* _canvas_size = new Vector2f(1, 1);
+                    Shader* _outline_shader;
+
+                    Shape* _outline_top = nullptr;
+                    Shape* _outline_right = nullptr;
+                    Shape* _outline_bottom = nullptr;
+                    Shape* _outline_left = nullptr;
+                    Shape* _outline_outline = nullptr;
+
+                    Vector2f _outline_top_initial_position;
+                    Vector2f _outline_right_initial_position;
+                    Vector2f _outline_bottom_initial_position;
+                    Vector2f _outline_left_initial_position;
+                    Vector2f _outline_outline_initial_position;
+
+                    void reschedule_render_tasks();
+
+                    float _scale = 1;
+                    Vector2f _offset = {0, 0};
+                    void reformat();
+
+                    static void on_realize(Widget*, SelectionLayer* instance);
+                    static void on_resize(GLArea*, int, int, SelectionLayer* instance);
+            };
+
+            SelectionLayer* _selection_layer = new SelectionLayer(this);
 
             class UserInputLayer
             {

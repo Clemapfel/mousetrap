@@ -77,11 +77,18 @@ namespace mousetrap
         Vector2f center = {0.5, 0.5};
         center += _offset;
 
+        auto align_to_pixelgrid = [&](Vector2f in)
+        {
+            in.x -= std::fmod(in.x, 1.f / _canvas_size->x);
+            in.y -= std::fmod(in.y, 1.f / _canvas_size->y);
+            return in;
+        };
+
         _shape->as_rectangle(
-            center + Vector2f{-0.5 * width, -0.5 * height},
-            center + Vector2f{+0.5 * width, -0.5 * height},
-            center + Vector2f{+0.5 * width, +0.5 * height},
-            center + Vector2f{-0.5 * width, +0.5 * height}
+            align_to_pixelgrid(center + Vector2f{-0.5 * width, -0.5 * height}),
+            align_to_pixelgrid(center + Vector2f{+0.5 * width, -0.5 * height}),
+            align_to_pixelgrid(center + Vector2f{+0.5 * width, +0.5 * height}),
+            align_to_pixelgrid(center + Vector2f{-0.5 * width, +0.5 * height})
         );
         _shape->set_visible(_visible);
     }

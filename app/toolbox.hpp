@@ -48,7 +48,7 @@ namespace mousetrap
         public:
             Toolbox();
             ~Toolbox();
-            operator Widget*();
+            operator Widget*() override;
 
         protected:
             void on_active_tool_changed() override;

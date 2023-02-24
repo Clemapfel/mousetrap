@@ -105,6 +105,24 @@ namespace mousetrap
         _area.queue_render();
     }
 
+    void Canvas::SymmetryRulerLayer::set_color(HSVA color)
+    {
+        _color = color;
+
+        if (not _area.get_is_realized())
+            return;
+
+        for (auto* shape : {
+        _v_anchor_top,
+        _v_anchor_bottom,
+        _v_ruler,
+        _h_anchor_left,
+        _h_anchor_right,
+        _h_ruler,
+        })
+            shape->set_color(_color);
+    }
+
     void Canvas::SymmetryRulerLayer::set_horizontal_symmetry_enabled(bool b) 
     {
         _h_enabled = b;
@@ -188,10 +206,17 @@ namespace mousetrap
         float x_eps = 1 / _canvas_size->x;
         float y_eps = 1 / _canvas_size->y;
 
+        auto align = [&](Vector2f in)
+        {
+            in.x -= std::fmod(in.x, 1.f / _canvas_size->x);
+            in.y -= std::fmod(in.y, 1.f / _canvas_size->y);
+            return in;
+        };
+
         Vector2f v = top_left + Vector2f(_v_position * pixel_w + (layer_resolution.x % 2 == 0 ? 0.5 * pixel_w : 0), 0);
 
         _v_ruler->as_line(
-        v, v + Vector2f(0, height)
+        (v), v + Vector2f(0, height)
         );
 
         _v_ruler_outline->as_lines({
@@ -243,5 +268,15 @@ namespace mousetrap
             {h.x + width + pixel_w, h.y + pixel_h}
         });
         _h_anchor_right_outline->as_wireframe(*_h_anchor_right);
+
+        for (auto* shape : {
+            _v_anchor_top,
+            _v_anchor_bottom,
+            _v_ruler,
+            _h_anchor_left,
+            _h_anchor_right,
+            _h_ruler,
+        })
+            shape->set_color(_color);
     }
 }
