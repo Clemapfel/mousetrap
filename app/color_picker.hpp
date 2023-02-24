@@ -24,7 +24,15 @@ namespace mousetrap
             void set_color(HSVA);
             HSVA get_color() const;
 
+            void set_signal_color_changed_blocked(bool);
+            template<typename Function_t, typename Args_t>
+            void connect_signal_color_changed(Function_t, Args_t);
+
         private:
+            bool _color_changed_blocked = false;
+            std::function<void(ColorPicker*)> _color_changed;
+            void on_color_changed();
+
             HSVA _color = HSVA(0.5, 0.5, 0.5, 1);
 
             static void on_render_area_realize(Widget*, ColorPicker* instance);
@@ -38,7 +46,7 @@ namespace mousetrap
 
             Vector2f align_to_pixelgrid(Vector2f);
 
-            AspectFrame _main = AspectFrame(1);
+            AspectFrame _aspect_frame = AspectFrame(1);
             GLArea _render_area;
 
             Shader* _hue_bar_shader;
@@ -76,6 +84,26 @@ namespace mousetrap
             void update_primary_color(double x, double y);
             void reformat();
 
+            SpinButton _h_spin_button = SpinButton(0, 1, 0.01);
+            SpinButton _s_spin_button = SpinButton(0, 1, 0.01);
+            SpinButton _v_spin_button = SpinButton(0, 1, 0.01);
+
+            Label _h_label = Label("H: ");
+            Label _s_label = Label("S: ");
+            Label _v_label = Label("V: ");
+
+            Box _spin_button_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
+
             Tooltip _tooltip;
     };
+
+    template <typename Function_t, typename Args_t>
+    void ColorPicker::connect_signal_color_changed(Function_t f_in, Args_t arg_in)
+    {
+        _color_changed = [f = f_in, arg = arg_in](ColorPicker* instance)
+        {
+            f(instance, instance->get_color(), arg);
+        };
+    }
 }

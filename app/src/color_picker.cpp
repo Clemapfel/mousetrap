@@ -15,11 +15,49 @@ namespace mousetrap
         _render_area.add_controller(&_render_area_motion_event_controller);
         _render_area.add_controller(&_render_area_button_event_controller);
 
-        _main.set_child(&_render_area);
-        _main.set_expand(true);
+        _h_spin_button.connect_signal_value_changed([](SpinButton* scale, ColorPicker* instance){
+            auto color = instance->_color;
+            color.h = scale->get_value();
+            instance->set_color(color);
+        }, this);
+
+        _s_spin_button.connect_signal_value_changed([](SpinButton* scale, ColorPicker* instance){
+            auto color = instance->_color;
+            color.s = scale->get_value();
+            instance->set_color(color);
+        }, this);
+
+        _v_spin_button.connect_signal_value_changed([](SpinButton* scale, ColorPicker* instance){
+            auto color = instance->_color;
+            color.v = scale->get_value();
+            instance->set_color(color);
+        }, this);
+
+        _spin_button_box.push_back(&_h_label);
+        _spin_button_box.push_back(&_h_spin_button);
+        _spin_button_box.push_back(&_s_label);
+        _spin_button_box.push_back(&_s_spin_button);
+        _spin_button_box.push_back(&_v_label);
+        _spin_button_box.push_back(&_v_spin_button);
+
+        _h_spin_button.set_margin_end(state::margin_unit);
+        _s_spin_button.set_margin_end(state::margin_unit);
+        _spin_button_box.set_margin(state::margin_unit);
+
+        _aspect_frame.set_child(&_render_area);
+        _aspect_frame.set_expand(true);
+        _aspect_frame.set_margin_top(state::margin_unit);
+
+        _main.set_homogeneous(false);
+        _spin_button_box.set_vexpand(false);
+
+        _main.push_back(&_aspect_frame);
+        _main.push_back(&_spin_button_box);
 
         _tooltip.create_from("color_picker", state::tooltips_file, state::keybindings_file);
         operator Widget*()->set_tooltip_widget(_tooltip);
+
+        set_color(_color);
     }
 
     ColorPicker::~ColorPicker()
@@ -223,7 +261,7 @@ namespace mousetrap
         for (auto* frame : {_hue_bar_frame, _hue_bar_cursor_frame, _hue_bar_cursor_window_frame, _hsv_shape_frame, _hsv_shape_cursor_frame, _hsv_shape_cursor_window_frame})
             frame->set_color(RGBA(0, 0, 0, 1));
 
-        _main.set_ratio(_hsv_shape->get_size().y / _hsv_shape->get_size().x);
+        _aspect_frame.set_ratio(_hsv_shape->get_size().y / _hsv_shape->get_size().x);
         _square_top_left = _hsv_shape->get_top_left();
         _square_size = _hsv_shape->get_size();
 
@@ -255,11 +293,27 @@ namespace mousetrap
         _hsv_shape_cursor_window->set_color(window_color);
         _current_color_hsva = window_color;
 
+        _h_spin_button.set_signal_value_changed_blocked(true);
+        _h_spin_button.set_value(_color.h);
+        _h_spin_button.set_signal_value_changed_blocked(false);
+
+        _s_spin_button.set_signal_value_changed_blocked(true);
+        _s_spin_button.set_value(_color.s);
+        _s_spin_button.set_signal_value_changed_blocked(false);
+
+        _v_spin_button.set_signal_value_changed_blocked(true);
+        _v_spin_button.set_value(_color.v);
+        _v_spin_button.set_signal_value_changed_blocked(false);
+
         _render_area.queue_render();
+
+        on_color_changed();
     }
 
     void ColorPicker::set_hue_bar_cursor(Vector2f pos)
     {
+        _render_area->make_current();
+
         float hue = (pos.y - _hue_bar_shape->get_top_left().y) / _hue_bar_shape->get_size().y;
         hue = glm::clamp<float>(hue, 0, 1);
         _current_color_hsva.h = 1 - hue;
@@ -282,6 +336,7 @@ namespace mousetrap
 
     void ColorPicker::set_hsv_shape_cursor(Vector2f pos)
     {
+
         //auto top_left = _hsv_shape->get_top_left();
         //auto size = _hsv_shape->get_size();
 
@@ -374,36 +429,46 @@ namespace mousetrap
 
     void ColorPicker::update_primary_color(double x, double y)
     {
+        auto color = _color;
+
         if (_hue_bar_active)
         {
             float hue = y / _canvas_size.y;
             hue = glm::clamp<float>(hue, 0, 1);
 
-            auto color = active_state->get_primary_color();
             color.h = 1 - (hue - _hue_bar_shape->get_top_left().y) / _hue_bar_shape->get_size().y;
 
-            active_state->set_primary_color(color);
-            active_state->set_preview_colors(color, active_state->get_preview_color_previous());
+            //active_state->set_primarycolor(color);
+            //active_state->set_previewcolors(color, active_state->get_previewcolor_previous());
         }
         else if (_hsv_shape_active)
         {
             float value = ((x / _canvas_size.x) - _hsv_shape->get_top_left().x) / _hsv_shape->get_size().x;
             float saturation = 1 - ((y / _canvas_size.y) - _hsv_shape->get_top_left().y / _hsv_shape->get_size().y);
 
-            auto color = active_state->get_primary_color();
             color.v = value;
             color.s = saturation;
 
             color.v = glm::clamp<float>(color.v, 0, 1);
             color.s = glm::clamp<float>(color.s, 0, 1);
 
-            active_state->set_primary_color(color);
-            active_state->set_preview_colors(color, active_state->get_preview_color_previous());
+            //active_state->set_primarycolor(color);
+            //active_state->set_previewcolors(color, active_state->get_previewcolor_previous());
         }
 
-        auto window_color = active_state->get_primary_color();
-        window_color.a = 1;
-        _hsv_shape_cursor_window->set_color(window_color);
-        _current_color_hsva = window_color;
+        set_color(color);
+    }
+
+    void ColorPicker::set_signal_color_changed_blocked(bool b)
+    {
+        _color_changed_blocked = b;
+    }
+
+    void ColorPicker::on_color_changed()
+    {
+        if (_color_changed_blocked or _color_changed == nullptr)
+            return;
+
+        _color_changed(this);
     }
 }

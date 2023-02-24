@@ -309,8 +309,10 @@ namespace mousetrap
         area.queue_render();
     };
 
-    void VerboseColorPicker::SliderRegion::on_gl_area_resize(GLArea*, int w, int h, SliderRegion* instance)
+    void VerboseColorPicker::SliderRegion::on_gl_area_resize(GLArea* area, int w, int h, SliderRegion* instance)
     {
+        area->make_current();
+
         instance->_canvas_size = {w, h};
         instance->set_value(instance->_value);
 
@@ -426,6 +428,8 @@ namespace mousetrap
 
         if (_gl_area.get_is_realized())
         {
+            _gl_area.make_current();
+
             Vector2f centroid = {value, 0.5};
 
             if (centroid.x < _cursor_shape->get_size().x * 0.5)

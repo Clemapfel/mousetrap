@@ -76,7 +76,11 @@ static void activate(GtkApplication* app, void*)
     state::image_transform_dialog = new ImageTransformDialog();
     state::canvas = new Canvas();
 
-    auto* temp_color_picker =  new ColorPicker();;
+    auto* temp_color_picker =  new ColorPicker();
+    temp_color_picker->connect_signal_color_changed([](ColorPicker* instance, HSVA color, std::nullptr_t){
+        //active_state->set_primary_color(color);
+        std::cout << color.operator std::string() << std::endl;
+    }, nullptr);
 
     Widget* layer_view = state::layer_view->operator Widget*();
     Widget* palette_view = state::palette_view->operator Widget*();
