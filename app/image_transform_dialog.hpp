@@ -65,6 +65,8 @@ namespace mousetrap
             Label _current_cell_when_selected_label = Label(apply_scope_to_string(ApplyScope::CURRENT_CELL));
             Label _everywhere_list_label = Label(apply_scope_to_string(ApplyScope::EVERYWHERE));
             Label _everywhere_when_selected_label = Label(apply_scope_to_string(ApplyScope::EVERYWHERE));
+            Label _selection_list_label = Label(apply_scope_to_string(ApplyScope::SELECTION));
+            Label _selection_when_selected_label = Label(apply_scope_to_string(ApplyScope::SELECTION));
 
             Label _accept_label = Label("Apply");
             Button _accept_button;

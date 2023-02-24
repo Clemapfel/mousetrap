@@ -10,6 +10,7 @@
 #include <app/project_state.hpp>
 #include <app/app_signals.hpp>
 #include <app/msaa_texture.hpp>
+#include <app/color_picker.hpp>
 
 /*
  Symmetry:
@@ -47,13 +48,19 @@ namespace mousetrap
     namespace state::actions
     {
         DECLARE_GLOBAL_ACTION(canvas, toggle_grid_visible)
-        DECLARE_GLOBAL_ACTION(canvas, open_grid_color_settings)
+        DECLARE_GLOBAL_ACTION(canvas, open_grid_color_picker)
 
         DECLARE_GLOBAL_ACTION(canvas, toggle_brush_outline_visible)
-        DECLARE_GLOBAL_ACTION(canvas, toggle_horizontal_mirror_visible)
-        DECLARE_GLOBAL_ACTION(canvas, toggle_vertical_mirror_visible)
+
+        DECLARE_GLOBAL_ACTION(canvas, toggle_horizontal_symmetry_active)
+        DECLARE_GLOBAL_ACTION(canvas, toggle_vertical_symmetry_active)
+        DECLARE_GLOBAL_ACTION(canvas, open_symmetry_color_picker)
 
         DECLARE_GLOBAL_ACTION(canvas, reset_transform)
+
+        DECLARE_GLOBAL_ACTION(canvas, toggle_x_scroll_inverted)
+        DECLARE_GLOBAL_ACTION(canvas, toggle_y_scroll_inverted)
+
     }
 
     struct Canvas : public AppComponent,
@@ -590,6 +597,29 @@ namespace mousetrap
             };
 
             UserInputLayer* _user_input_layer = new UserInputLayer(this);
+
+            class ControlBar
+            {
+                public:
+                    ControlBar(Canvas* owner);
+                    operator Widget*();
+
+                private:
+                    Canvas* _owner;
+
+                    ToggleButton _grid_visible_toggle_button;
+                    ColorPicker _grid_color_picker;
+
+                    ToggleButton _horizontal_symmetry_toggle_button;
+                    ToggleButton _vertical_symmetry_toggle_button;
+                    ColorPicker _symmetry_color_picker;
+
+                    Scale _scale_scale;
+                    Label _position_label;
+
+                    MenuButton _menu_button;
+                    Label _menu_button_label = Label("Canvas");
+            };
 
             // debug
 

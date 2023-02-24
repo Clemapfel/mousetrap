@@ -13,6 +13,7 @@ namespace mousetrap
         CURRENT_CELL,
         CURRENT_FRAME,
         CURRENT_LAYER,
+        SELECTION,
         EVERYWHERE
     };
 
@@ -24,6 +25,8 @@ namespace mousetrap
             return "Current Layer, All Frames";
         else if (scope == ApplyScope::CURRENT_FRAME)
             return "Current Frame, All Layers";
+        else if (scope == ApplyScope::SELECTION)
+            return "Selection Only";
         else if (scope == ApplyScope::EVERYWHERE)
             return "All Layers and Frames";
     }

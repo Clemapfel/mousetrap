@@ -170,7 +170,7 @@ namespace mousetrap
 
         auto canvas_grid_section = MenuModel();
         canvas_grid_section.add_action("Hide / Show Grid", canvas_toggle_grid_visible.get_id());
-        canvas_grid_section.add_action("Grid Color...", canvas_open_grid_color_settings.get_id());
+        canvas_grid_section.add_action("Grid Color...", canvas_open_grid_color_picker.get_id());
         canvas_submenu.add_section("Grid", &canvas_grid_section);
 
         auto canvas_brush_section = MenuModel();

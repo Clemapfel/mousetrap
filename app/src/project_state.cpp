@@ -775,6 +775,10 @@ namespace mousetrap
                 }
             }
         }
+        else if (scope == ApplyScope::SELECTION)
+        {
+            std::cerr << "[ERROR] In ProjectState::apply_color_transform: TODO SELECTION" << std::endl;
+        }
 
         signal_layer_image_updated();
     }
@@ -848,6 +852,10 @@ namespace mousetrap
                     frame->update_texture();
                 }
             }
+        }
+        else if (scope == ApplyScope::SELECTION)
+        {
+            std::cerr << "[ERROR] In ProjectState::color_invert: TODO SELECTION" << std::endl;
         }
 
         signal_layer_image_updated();
@@ -1109,6 +1117,10 @@ namespace mousetrap
                     frame->update_texture();
                 }
             }
+        }
+        else if (scope == ApplyScope::SELECTION)
+        {
+            std::cerr << "[ERROR] In ProjectState::apply_image_flip: TODO SELECTION" << std::endl;
         }
 
         signal_layer_image_updated();

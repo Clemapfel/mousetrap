@@ -96,6 +96,10 @@ namespace mousetrap
             active_state->set_image_flip_apply_scope(CURRENT_CELL);
         }, this);
 
+        _apply_to_dropdown.push_back(&_selection_list_label, &_selection_when_selected_label, [](ImageTransformDialog* instance){
+            active_state->set_image_flip_apply_scope(SELECTION);
+        }, this);
+
         _apply_to_dropdown.set_margin_horizontal(state::margin_unit);
 
         _accept_button.set_child(&_accept_label);

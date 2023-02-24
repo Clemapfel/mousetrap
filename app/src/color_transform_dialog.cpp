@@ -128,6 +128,10 @@ namespace mousetrap
             active_state->set_color_offset_apply_scope(CURRENT_CELL);
         }, this);
 
+        _apply_to_dropdown.push_back(&_selection_list_label, &_selection_when_selected_label, [](ColorTransformDialog* instance){
+            active_state->set_color_offset_apply_scope(SELECTION);
+        }, this);
+
         _apply_to_dropdown.set_margin_horizontal(state::margin_unit);
 
         for (auto* label : {
