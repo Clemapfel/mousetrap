@@ -312,7 +312,7 @@ namespace mousetrap
 
     void ColorPicker::set_hue_bar_cursor(Vector2f pos)
     {
-        _render_area->make_current();
+        _render_area.make_current();
 
         float hue = (pos.y - _hue_bar_shape->get_top_left().y) / _hue_bar_shape->get_size().y;
         hue = glm::clamp<float>(hue, 0, 1);
