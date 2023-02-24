@@ -1,7 +1,4 @@
 #include <app/color_picker.hpp>
-#include <app/color_preview.hpp>
-#include <app/color_swapper.hpp>
-#include <app/verbose_color_picker.hpp>
 
 namespace mousetrap
 {
@@ -230,18 +227,20 @@ namespace mousetrap
         _square_top_left = _hsv_shape->get_top_left();
         _square_size = _hsv_shape->get_size();
 
-        update();
+        set_color(_color);
 
         _render_area.queue_render();
     }
 
-    void ColorPicker::update()
+    HSVA ColorPicker::get_color() const
     {
-        update(active_state->get_primary_color());
+        return _color;
     }
 
-    void ColorPicker::update(HSVA color)
+    void ColorPicker::set_color(HSVA color)
     {
+        _color = color;
+
         if (not _render_area.get_is_realized())
             return;
 
@@ -371,8 +370,6 @@ namespace mousetrap
             instance->_render_area.set_cursor(GtkCursorType::CELL);
         else
             instance->_render_area.set_cursor(GtkCursorType::DEFAULT);
-
-        active_state->set_preview_colors(active_state->get_primary_color(), active_state->get_primary_color());
     }
 
     void ColorPicker::update_primary_color(double x, double y)

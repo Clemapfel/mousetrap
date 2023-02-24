@@ -4,7 +4,6 @@
 #include <app/brush_options.hpp>
 #include <app/bubble_log_area.hpp>
 #include <app/canvas.hpp>
-#include <app/color_picker.hpp>
 #include <app/color_preview.hpp>
 #include <app/color_swapper.hpp>
 #include <app/config_files.hpp>
@@ -1196,9 +1195,6 @@ namespace mousetrap
     {
         if (state::verbose_color_picker)
             state::verbose_color_picker->signal_color_selection_changed();
-
-        if (state::color_picker)
-            state::color_picker->signal_color_selection_changed();
 
         if (state::color_swapper)
             state::color_swapper->signal_color_selection_changed();

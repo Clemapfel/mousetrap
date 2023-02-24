@@ -13,19 +13,19 @@
 
 namespace mousetrap
 {
-    class ColorPicker : public AppComponent, public signals::ColorSelectionChanged
+    class ColorPicker : public AppComponent
     {
         public:
             ColorPicker();
             ~ColorPicker();
 
             operator Widget*() override;
-            void update() override;
+
+            void set_color(HSVA);
+            HSVA get_color() const;
 
         private:
-            void update(HSVA Color);
-
-            void register_undo_task(HSVA color_to_switch_to);
+            HSVA _color = HSVA(0.5, 0.5, 0.5, 1);
 
             static void on_render_area_realize(Widget*, ColorPicker* instance);
             static void on_render_area_resize(GLArea*, int, int , ColorPicker* instance);
@@ -78,9 +78,4 @@ namespace mousetrap
 
             Tooltip _tooltip;
     };
-
-    namespace state
-    {
-        inline ColorPicker* color_picker = nullptr;
-    }
 }

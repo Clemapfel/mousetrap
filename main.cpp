@@ -76,10 +76,12 @@ static void activate(GtkApplication* app, void*)
     state::image_transform_dialog = new ImageTransformDialog();
     state::canvas = new Canvas();
 
+    auto* temp_color_picker =  new ColorPicker();;
+
     Widget* layer_view = state::layer_view->operator Widget*();
     Widget* palette_view = state::palette_view->operator Widget*();
     Widget* color_swapper = state::color_swapper->operator Widget*();
-    Widget* color_picker = new SeparatorLine(); //state::color_picker->operator Widget*();
+    Widget* color_picker = *temp_color_picker;
     Widget* verbose_color_picker = state::verbose_color_picker->operator Widget*();
     Widget* canvas = state::canvas->operator Widget*();
     Widget* toolbox = state::toolbox->operator Widget*();
