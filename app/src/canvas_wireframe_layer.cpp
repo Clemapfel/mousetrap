@@ -8,7 +8,7 @@
 namespace mousetrap
 {
     Canvas::WireframeLayer::WireframeLayer(Canvas* canvas)
-            : _owner(canvas), _render_texture(16)
+            : _owner(canvas), _render_texture(8)
     {
         _area.connect_signal_realize(on_area_realize, this);
         _area.connect_signal_resize(on_area_resize, this);
@@ -34,22 +34,16 @@ namespace mousetrap
         _area.queue_render();
     }
 
-    void Canvas::WireframeLayer::set_as_line(Vector2i from, Vector2i to)
+    void Canvas::WireframeLayer::set_a(Vector2i pixel_pos)
     {
-        _current_mode = LINE;
-        _line_start_point = from;
-        _line_end_point = to;
-
+        _a = pixel_pos;
         reformat();
         _area.queue_render();
     }
 
-    void Canvas::WireframeLayer::set_as_rectangle(Vector2i a, Vector2i b)
+    void Canvas::WireframeLayer::set_b(Vector2i pixel_pos)
     {
-        _current_mode = RECTANGLE;
-        _rectangle_a_point = a;
-        _rectangle_b_point = b;
-
+        _b = pixel_pos;
         reformat();
         _area.queue_render();
     }
@@ -66,9 +60,11 @@ namespace mousetrap
         area->make_current();
 
         instance->_render_texture_shape = new Shape();
+        instance->_render_shader = new Shader();
+        instance->_render_shader->create_from_file(get_resource_path() + "shaders/msaa_postfx.frag", ShaderType::FRAGMENT);
         instance->_render_texture_shape->as_rectangle({0, 0}, {1, 1});
         instance->_render_texture_shape->set_texture(&instance->_render_texture);
-        instance->_render_texture_task = new RenderTask(instance->_render_texture_shape);
+        instance->_render_texture_task = new RenderTask(instance->_render_texture_shape, instance->_render_shader);
 
         // lines
 
@@ -132,42 +128,60 @@ namespace mousetrap
         };
 
         instance->_rectangle_tool_render_tasks.clear();
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_left_anchor_inner_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_left_anchor_outer_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_right_anchor_inner_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_right_anchor_outer_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_left_anchor_inner_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_left_anchor_outer_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_right_anchor_inner_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_right_anchor_outer_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_anchor_inner_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_anchor_outer_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_anchor_inner_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_anchor_outer_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.left_anchor_inner_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.left_anchor_outer_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.right_anchor_inner_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.right_anchor_outer_outline);
+        instance->_circle_tool_render_tasks.clear();
 
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.center_cross_outline);
+        for (auto* shape : {
+            instance->_rectangle_tool_shape.circle_inner_outline,
+            instance->_rectangle_tool_shape.circle_outer_outline,
+        })
+        {
+            instance->_circle_tool_render_tasks.emplace_back(shape);
+        }
+        
+        for (auto* shape :  {
+            instance->_rectangle_tool_shape.top_left_anchor_inner_outline,
+            instance->_rectangle_tool_shape.top_left_anchor_outer_outline,
+            instance->_rectangle_tool_shape.top_right_anchor_inner_outline,
+            instance->_rectangle_tool_shape.top_right_anchor_outer_outline,
+            instance->_rectangle_tool_shape.bottom_left_anchor_inner_outline,
+            instance->_rectangle_tool_shape.bottom_left_anchor_outer_outline,
+            instance->_rectangle_tool_shape.bottom_right_anchor_inner_outline,
+            instance->_rectangle_tool_shape.bottom_right_anchor_outer_outline,
+            instance->_rectangle_tool_shape.top_anchor_inner_outline,
+            instance->_rectangle_tool_shape.top_anchor_outer_outline,
+            instance->_rectangle_tool_shape.bottom_anchor_inner_outline,
+            instance->_rectangle_tool_shape.bottom_anchor_outer_outline,
+            instance->_rectangle_tool_shape.left_anchor_inner_outline,
+            instance->_rectangle_tool_shape.left_anchor_outer_outline,
+            instance->_rectangle_tool_shape.right_anchor_inner_outline,
+            instance->_rectangle_tool_shape.right_anchor_outer_outline,
+            instance->_rectangle_tool_shape.center_cross_outline,
+            instance->_rectangle_tool_shape.bottom_left_anchor_shape,
+            instance->_rectangle_tool_shape.top_right_anchor_shape,
+            instance->_rectangle_tool_shape.top_left_anchor_shape,
+            instance->_rectangle_tool_shape.bottom_right_anchor_shape,
+            instance->_rectangle_tool_shape.top_anchor_shape,
+            instance->_rectangle_tool_shape.bottom_anchor_shape,
+            instance->_rectangle_tool_shape.left_anchor_shape,
+            instance->_rectangle_tool_shape.right_anchor_shape,
+            instance->_rectangle_tool_shape.center_cross,
+            instance->_rectangle_tool_shape.rectangle_inner_outline,
+            instance->_rectangle_tool_shape.rectangle_outer_outline,
+            instance->_rectangle_tool_shape.rectangle_shape,
+        })
+        {
+            instance->_rectangle_tool_render_tasks.emplace_back(shape);
+            instance->_circle_tool_render_tasks.emplace_back(shape);
+        }
 
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_left_anchor_shape);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_right_anchor_shape);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_left_anchor_shape);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_right_anchor_shape);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.top_anchor_shape);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.bottom_anchor_shape);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.left_anchor_shape);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.right_anchor_shape);
-
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.center_cross);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_inner_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_outer_outline);
-        //instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.rectangle_shape);
-
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.circle_inner_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.circle_outer_outline);
-        instance->_rectangle_tool_render_tasks.emplace_back(instance->_rectangle_tool_shape.circle);
+        for (auto* shape : {
+            instance->_rectangle_tool_shape.circle_inner_outline,
+            instance->_rectangle_tool_shape.circle_outer_outline,
+            instance->_rectangle_tool_shape.circle
+        })
+        {
+            instance->_circle_tool_render_tasks.emplace_back(shape);
+        }
 
         instance->reformat();
     }
@@ -232,16 +246,26 @@ namespace mousetrap
         };
         size_t anchor_vertex_count = 4;
 
+        Vector2f top_left_point = {
+            std::min(_a.x, _b.x),
+            std::min(_a.y, _b.y)
+        };
+
+        Vector2f bottom_right_point = {
+            std::max(_a.x, _b.x),
+            std::max(_a.y, _b.y)
+        };
+
         // lines
         {
             Vector2f origin = {
-                    top_left.x + pixel_w * _line_start_point.x - 0.5 * pixel_w,
-                    top_left.y + pixel_h * _line_start_point.y - 0.5 * pixel_h
+                top_left.x + pixel_w * top_left_point.x - 0.5 * pixel_w,
+                top_left.y + pixel_h * top_left_point.y - 0.5 * pixel_h
             };
 
             Vector2f destination = {
-                    top_left.x + pixel_w * _line_end_point.x - 0.5 * pixel_w,
-                    top_left.y + pixel_h * _line_end_point.y - 0.5 * pixel_h
+                    top_left.x + pixel_w * bottom_right_point.x - 0.5 * pixel_w,
+                    top_left.y + pixel_h * bottom_right_point.y - 0.5 * pixel_h
             };
             
             std::vector<std::pair<Vector2f, Vector2f>> vertices;
@@ -271,7 +295,10 @@ namespace mousetrap
             })
                 shape->set_color(anchor_color);
 
-            auto angle = radians(std::atan2(_line_end_point.x - _line_start_point.x, _line_end_point.y - _line_start_point.y)).as_degrees();
+            auto angle = radians(std::atan2(
+                                 top_left_point.x - top_left_point.x,
+                                 _b.y - _b.y)
+            ).as_degrees();
 
             if ((angle >= 360 - 45 and angle <= 360) or (angle >= 0 and angle <= 45) or (angle >= 180 - 45 and angle <= 180 + 45))
                 vertices = {
@@ -290,13 +317,13 @@ namespace mousetrap
         // rectangle
         {
             Vector2f a = {
-                top_left.x + pixel_w * _rectangle_a_point.x - 0.5 * pixel_w,
-                top_left.y + pixel_h * _rectangle_a_point.y - 0.5 * pixel_h
+                top_left.x + pixel_w * top_left_point.x - 0.5 * pixel_w,
+                top_left.y + pixel_h * top_left_point.y - 0.5 * pixel_h
             };
 
             Vector2f b = {
-                top_left.x + pixel_w * _rectangle_b_point.x - 0.5 * pixel_w,
-                top_left.y + pixel_h * _rectangle_b_point.y - 0.5 * pixel_h
+                top_left.x + pixel_w * bottom_right_point.x - 0.5 * pixel_w,
+                top_left.y + pixel_h * bottom_right_point.y - 0.5 * pixel_h
             };
 
             float width = b.x - a.x;
@@ -305,12 +332,12 @@ namespace mousetrap
             float x_thickness = x_eps * 10;
             float y_thickness = y_eps * 10;
 
-            _rectangle_tool_shape.rectangle_shape->as_rectangle_frame(
+            _rectangle_tool_shape.rectangle_shape->as_wireframe({
                 a,
-                {width, height},
-                x_thickness,
-                y_thickness
-            );
+                a + Vector2f(width, 0),
+                a + Vector2f(width, height),
+                a + Vector2f(0, height)
+            });
 
             _rectangle_tool_shape.rectangle_outer_outline->as_wireframe({
                 a + Vector2f(0 - x_eps, 0 - y_eps),
@@ -362,15 +389,7 @@ namespace mousetrap
 
             auto center = top_left_anchor + Vector2f(0.5 * width, 0.5 * height);
 
-            _rectangle_tool_shape.circle->as_elliptic_ring(
-                center,
-                0.5 * width,
-                0.5 * height,
-                x_thickness,
-                y_thickness,
-                64
-            );
-
+            _rectangle_tool_shape.circle->as_wireframe(as_ellipse(center, 0.5 * width, 0.5 * height, 64));
             _rectangle_tool_shape.circle_inner_outline->as_wireframe(as_ellipse(center, 0.5 * width - x_eps, 0.5 * height - y_eps, 64));
             _rectangle_tool_shape.circle_outer_outline->as_wireframe(as_ellipse(center, 0.5 * width + x_eps, 0.5 * height + y_eps, 64));
 
@@ -435,9 +454,15 @@ namespace mousetrap
     {
         auto out = ProjectState::DrawData();
 
-        if (_current_mode == LINE)
+        // TODO
+        _render_shader->create_from_file(get_resource_path() + "shaders/msaa_postfx.frag", ShaderType::FRAGMENT);
+        _area.queue_render();
+        return out;
+        // TODO
+
+        if (_line_visible)
         {
-            auto points = generate_line_points(_line_start_point, _line_end_point);
+            auto points = generate_line_points(_a, _b);
             auto brush = active_state->get_current_brush()->get_image();
 
             for (auto p : points)
@@ -461,13 +486,14 @@ namespace mousetrap
                 }
             }
         }
-        else if (_current_mode == RECTANGLE)
+
+        if (_rectangle_visible)
         {
-            auto width = _rectangle_b_point.x - _rectangle_a_point.x;
-            auto height =_rectangle_b_point.y - _rectangle_a_point.y;
+            auto width = abs(_a.x - _b.x);
+            auto height = abs(_a.y - _b.y);
             auto top_left = Vector2i(
-                std::min(_rectangle_a_point.x, _rectangle_a_point.x + width),
-                std::min(_rectangle_a_point.y, _rectangle_a_point.y + height)
+                std::min(_a.x, _b.x + width),
+                std::min(_a.y, _b.y + height)
             );
 
             auto brush = active_state->get_current_brush()->get_image();
@@ -495,6 +521,42 @@ namespace mousetrap
             }
         }
 
+        if (_circle_visible)
+        {
+            auto width = _a.x - _b.x;
+            auto height = _a.y - _b.y;
+
+            auto top_left = Vector2i(
+                std::min(_a.x, _b.x + width),
+                std::min(_a.y, _b.y + height)
+            );
+
+            auto brush = active_state->get_current_brush()->get_image();
+            auto points = generate_circle_points(abs(width), abs(height));
+
+            for (auto p : points)
+            {
+                p += _a;
+                for (int x = 0; x < brush.get_size().x; ++x)
+                {
+                    for (int y = 0; y < brush.get_size().y; ++y)
+                    {
+                        auto pos = Vector2i(
+                            p.x + x - 0.5 * brush.get_size().x,
+                            p.y + y - 0.5 * brush.get_size().y
+                        );
+
+                        if (brush.get_pixel(x, y).a == 0 or pos.x < 0 or pos.x >= active_state->get_layer_resolution().x or pos.y < 0 or pos.y >= active_state->get_layer_resolution().y)
+                            continue;
+
+                        auto color = active_state->get_primary_color();
+                        color.a = active_state->get_brush_opacity();
+                        out.insert(std::pair<Vector2i, HSVA>(pos, color));
+                    }
+                }
+            }
+        }
+
         return out;
     }
 
@@ -507,12 +569,18 @@ namespace mousetrap
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (instance->_current_mode == LINE)
+        if (instance->_line_visible)
         {
             for (auto& task: instance->_line_tool_render_tasks)
                 task.render();
         }
-        else if (instance->_current_mode == RECTANGLE)
+
+        if (instance->_circle_visible)
+        {
+            for (auto& task : instance->_circle_tool_render_tasks)
+                task.render();
+        }
+        else if (instance->_rectangle_visible) // else if sic, render tasks overlap
         {
             for (auto& task : instance->_rectangle_tool_render_tasks)
                 task.render();
@@ -529,4 +597,26 @@ namespace mousetrap
         return true;
     }
 
+    void Canvas::WireframeLayer::set_line_visible(bool b)
+    {
+        _line_visible = b;
+        _area.queue_render();
+    }
+
+    void Canvas::WireframeLayer::set_rectangle_visible(bool b)
+    {
+        _rectangle_visible = b;
+        _area.queue_render();
+    }
+
+    void Canvas::WireframeLayer::set_circle_visible(bool b)
+    {
+        _circle_visible = b;
+        _area.queue_render();
+    }
+
+    void Canvas::WireframeLayer::update_visibility_from_cursor_pos(Vector2i pixel_pos)
+    {
+        std::cerr << "[ERROR] In Canvas::WireframeLayer::update_visibility_from_cursor_pos: TODO" << std::endl;
+    }
 }

@@ -62,28 +62,32 @@ namespace mousetrap
             auto& start = instance->_origin;
             auto& end = instance->_destination;
             start.x = scale->get_value();
-            instance->_wireframe_layer->set_as_rectangle(start, end);
+            instance->_wireframe_layer->set_a(start);
+            instance->_wireframe_layer->set_b(end);
         }, this);
 
         _line_start_y_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
             auto& start = instance->_origin;
             auto& end = instance->_destination;
             start.y = scale->get_value();
-            instance->_wireframe_layer->set_as_rectangle(start, end);
+            instance->_wireframe_layer->set_a(start);
+            instance->_wireframe_layer->set_b(end);
         }, this);
 
         _line_end_x_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
             auto& start = instance->_origin;
             auto& end = instance->_destination;
             end.x = scale->get_value();
-            instance->_wireframe_layer->set_as_rectangle(start, end);
+            instance->_wireframe_layer->set_a(start);
+            instance->_wireframe_layer->set_b(end);
         }, this);
 
         _line_end_y_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
             auto& start = instance->_origin;
             auto& end = instance->_destination;
             end.y = scale->get_value();
-            instance->_wireframe_layer->set_as_rectangle(start, end);
+            instance->_wireframe_layer->set_a(start);
+            instance->_wireframe_layer->set_b(end);
         }, this);
 
         _draw_button.connect_signal_clicked([](Button* button, Canvas* instance) {
@@ -92,7 +96,7 @@ namespace mousetrap
 
         _draw_button.set_child(&_draw_button_label);
 
-        _scale_button.set_value(50);//_scale);
+        _scale_button.set_value(50);
         _x_offset_button.set_value(_offset.x);
         _y_offset_button.set_value(_offset.y);
         _grid_visible_button.set_active(_grid_visible);
@@ -153,13 +157,13 @@ namespace mousetrap
         _debug_box.push_back(&_line_box);
 
         _layer_overlay.set_child(*_transparency_tiling_layer);
-        _layer_overlay.add_overlay(*_layer_layer);
-        _layer_overlay.add_overlay(*_onionskin_layer);
-        _layer_overlay.add_overlay(*_brush_shape_layer);
-        _layer_overlay.add_overlay(*_grid_layer);
-        _layer_overlay.add_overlay(*_selection_layer);
-        _layer_overlay.add_overlay(*_symmetry_ruler_layer);
-        //_layer_overlay.add_overlay(*_wireframe_layer);
+        //_layer_overlay.add_overlay(*_layer_layer);
+        //_layer_overlay.add_overlay(*_onionskin_layer);
+        //_layer_overlay.add_overlay(*_brush_shape_layer);
+        //_layer_overlay.add_overlay(*_grid_layer);
+        //_layer_overlay.add_overlay(*_selection_layer);
+        //_layer_overlay.add_overlay(*_symmetry_ruler_layer);
+        _layer_overlay.add_overlay(*_wireframe_layer);
         //_layer_overlay.add_overlay(*_user_input_layer);
 
         _transparency_tiling_layer->operator Widget *()->set_expand(true);
@@ -171,6 +175,7 @@ namespace mousetrap
         _debug_box.set_vexpand(false);
 
         _main.push_back(&_layer_overlay);
+        _main.push_back(_control_bar);
         _main.push_back(&_debug_box);
         _main.set_expand(true);
     }

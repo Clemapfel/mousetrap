@@ -395,25 +395,28 @@ namespace mousetrap
 
                     void set_scale(float);
                     void set_offset(Vector2f);
-                    
-                    // all texture-space coords
-                    void set_as_line(Vector2i from, Vector2i to); 
-                    void set_as_rectangle(Vector2i a, Vector2i b);
-                    void set_as_circle(Vector2i a, Vector2i b);
+
+                    void set_a(Vector2i pixel_pos);
+                    void set_b(Vector2i pixel_pos);
+
+                    void set_line_visible(bool);
+                    void set_rectangle_visible(bool);
+                    void set_circle_visible(bool);
+
+                    void update_visibility_from_cursor_pos(Vector2i pixel_pos);
 
                     ProjectState::DrawData draw();
 
                 private:
-                    enum Mode
-                    {
-                        LINE,
-                        CIRCLE,
-                        RECTANGLE,
-                    };
-                    Mode _current_mode = RECTANGLE;
-                    
                     Canvas* _owner;
                     GLArea _area;
+
+                    Vector2i _a = {0, 0};
+                    Vector2i _b = active_state->get_layer_resolution();
+
+                    bool _line_visible = true;
+                    bool _rectangle_visible = true;
+                    bool _circle_visible = true;
 
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
@@ -427,6 +430,7 @@ namespace mousetrap
                     MultisampledRenderTexture _render_texture;
                     Shape* _render_texture_shape = nullptr;
                     RenderTask* _render_texture_task = nullptr;
+                    Shader* _render_shader = nullptr;
                     
                     // MODE: LINE
 
@@ -446,9 +450,7 @@ namespace mousetrap
 
                     LineToolShape _line_tool_shape;
                     std::vector<RenderTask> _line_tool_render_tasks;
-                    Vector2i _line_start_point; // texture space coords
-                    Vector2i _line_end_point;
-                    
+
                     // MODE: RECTANGLE / CIRCLE
                     
                     struct RectangleToolShape
@@ -499,8 +501,7 @@ namespace mousetrap
 
                     RectangleToolShape _rectangle_tool_shape;
                     std::vector<RenderTask> _rectangle_tool_render_tasks;
-                    Vector2i _rectangle_a_point;
-                    Vector2i _rectangle_b_point;
+                    std::vector<RenderTask> _circle_tool_render_tasks;
             };
 
             WireframeLayer* _wireframe_layer = new WireframeLayer(this);
@@ -608,18 +609,27 @@ namespace mousetrap
                     Canvas* _owner;
 
                     ToggleButton _grid_visible_toggle_button;
-                    ColorPicker _grid_color_picker;
+                    ImageDisplay _grid_visible_icon = ImageDisplay(get_resource_path() + "icons/canvas_grid.png");
+
+                    ToggleButton _background_visible_buton;
+                    ImageDisplay _background_visible_icon = ImageDisplay(get_resource_path() + "icons/canvas_background.png");
 
                     ToggleButton _horizontal_symmetry_toggle_button;
-                    ToggleButton _vertical_symmetry_toggle_button;
-                    ColorPicker _symmetry_color_picker;
+                    ImageDisplay _horizontal_symmetry_icon = ImageDisplay(get_resource_path() + "icons/canvas_horizontal_symmetry.png");
 
-                    Scale _scale_scale;
+                    ToggleButton _vertical_symmetry_toggle_button;
+                    ImageDisplay _vertical_symmetry_icon = ImageDisplay(get_resource_path() + "icons/canvas_vertical_symmetry.png");
+
+                    Scale _scale_scale = Scale(1, 128, 0.1);
                     Label _position_label;
 
                     MenuButton _menu_button;
                     Label _menu_button_label = Label("Canvas");
+
+                    Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
             };
+
+            ControlBar _control_bar = ControlBar(this);
 
             // debug
 
