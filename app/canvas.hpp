@@ -51,7 +51,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(canvas, open_grid_color_picker)
 
         DECLARE_GLOBAL_ACTION(canvas, toggle_brush_outline_visible)
-
+        DECLARE_GLOBAL_ACTION(canvas, toggle_background_visible)
         DECLARE_GLOBAL_ACTION(canvas, toggle_horizontal_symmetry_active)
         DECLARE_GLOBAL_ACTION(canvas, toggle_vertical_symmetry_active)
         DECLARE_GLOBAL_ACTION(canvas, open_symmetry_color_picker)
@@ -628,6 +628,7 @@ namespace mousetrap
                     void set_background_visible(bool);
                     void set_horizontal_symmetry_active(bool);
                     void set_vertical_symmetry_active(bool);
+                    void set_brush_outline_visible(bool);
 
                     void set_cursor_position(Vector2i);
                     void set_cursor_in_bounds(bool);
@@ -647,6 +648,9 @@ namespace mousetrap
 
                     ToggleButton _vertical_symmetry_toggle_button;
                     ImageDisplay _vertical_symmetry_icon = ImageDisplay(get_resource_path() + "icons/canvas_vertical_symmetry.png");
+
+                    ToggleButton _brush_outline_visible_toggle_button;
+                    ImageDisplay _brush_outline_visible_icon = ImageDisplay(get_resource_path() + "icons/canvas_brush_outline_visible.png");
 
                     SpinButton _scale_scale = SpinButton(1, 99, 0.1);
 

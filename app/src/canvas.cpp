@@ -1,4 +1,5 @@
 #include <app/canvas.hpp>
+#include <app/add_shortcut_action.hpp>
 
 namespace mousetrap
 {
@@ -143,13 +144,17 @@ namespace mousetrap
         _debug_box.push_back(&_brush_box);
         _debug_box.push_back(&_line_box);
 
-        _layer_overlay.set_child(*_transparency_tiling_layer);
+        auto* sep = new SeparatorLine();
+        sep->set_expand(true);
+
+        _layer_overlay.set_child(sep);
+        _layer_overlay.add_overlay(*_transparency_tiling_layer);
         //_layer_overlay.add_overlay(*_layer_layer);
         //_layer_overlay.add_overlay(*_onionskin_layer);
         _layer_overlay.add_overlay(*_brush_shape_layer);
         _layer_overlay.add_overlay(*_grid_layer);
         //_layer_overlay.add_overlay(*_selection_layer);
-        //_layer_overlay.add_overlay(*_symmetry_ruler_layer);
+        _layer_overlay.add_overlay(*_symmetry_ruler_layer);
         _layer_overlay.add_overlay(*_wireframe_layer);
         _layer_overlay.add_overlay(*_user_input_layer);
 
@@ -169,6 +174,64 @@ namespace mousetrap
         _main.push_back(_control_bar);
         _main.push_back(&_debug_box);
         _main.set_expand(true);
+
+        using namespace state::actions;
+        canvas_toggle_grid_visible.set_stateful_function([](bool){
+            auto next = not state::canvas->_grid_visible;
+            state::canvas->set_grid_visible(next);
+            return next;
+        });
+
+        canvas_toggle_brush_outline_visible.set_stateful_function([](bool) {
+           auto next = not state::canvas->_brush_outline_visible;
+           state::canvas->set_brush_outline_visible(next);
+           return next;
+        });
+
+        canvas_toggle_horizontal_symmetry_active.set_stateful_function([](bool) {
+            auto next = not state::canvas->_horizontal_symmetry_active;
+            state::canvas->set_horizontal_symmetry_active(next);
+            return next;
+        });
+
+        canvas_toggle_vertical_symmetry_active.set_stateful_function([](bool) {
+            auto next = not state::canvas->_vertical_symmetry_active;
+            state::canvas->set_vertical_symmetry_active(next);
+            return next;
+        });
+
+        canvas_toggle_background_visible.set_stateful_function([](bool){
+           auto next = not state::canvas->_background_visible;
+           state::canvas->set_background_visible(next);
+           return next;
+        });
+
+        canvas_reset_transform.set_function([](){
+           state::canvas->set_scale(1);
+           state::canvas->set_offset(0, 0);
+        });
+
+        for (auto* action : {
+            &canvas_toggle_grid_visible,
+            &canvas_open_grid_color_picker,
+            &canvas_toggle_brush_outline_visible,
+            &canvas_toggle_horizontal_symmetry_active,
+            &canvas_toggle_vertical_symmetry_active,
+            &canvas_open_symmetry_color_picker,
+            &canvas_reset_transform,
+            &canvas_toggle_background_visible
+        })
+            state::add_shortcut_action(*action);
+
+        set_scale(_scale);
+        set_offset(_offset.x, _offset.y);
+        set_grid_visible(_grid_visible);
+        set_brush_outline_visible(_brush_outline_visible);
+        set_background_visible(_background_visible);
+        set_horizontal_symmetry_active(_horizontal_symmetry_active);
+        set_vertical_symmetry_active(_vertical_symmetry_active);
+        set_cursor_position(_cursor_position);
+        set_cursor_in_bounds(_cursor_in_bounds);
     }
 
     Canvas::operator Widget*()
@@ -209,6 +272,7 @@ namespace mousetrap
         _grid_visible = b;
         _grid_layer->set_visible(_grid_visible);
         _control_bar.set_grid_visible(b);
+        state::actions::canvas_toggle_grid_visible.set_state(b);
     }
 
     void Canvas::set_background_visible(bool b)
@@ -216,6 +280,7 @@ namespace mousetrap
         _background_visible = b;
         _transparency_tiling_layer->set_background_visible(_background_visible);
         _control_bar.set_background_visible(b);
+        state::actions::canvas_toggle_background_visible.set_state(b);
     }
 
     void Canvas::set_horizontal_symmetry_active(bool b)
@@ -223,6 +288,7 @@ namespace mousetrap
         _horizontal_symmetry_active = b;
         _symmetry_ruler_layer->set_horizontal_symmetry_active(b);
         _control_bar.set_horizontal_symmetry_active(b);
+        state::actions::canvas_toggle_horizontal_symmetry_active.set_state(b);
     }
 
     void Canvas::set_vertical_symmetry_active(bool b)
@@ -230,12 +296,14 @@ namespace mousetrap
         _vertical_symmetry_active = b;
         _symmetry_ruler_layer->set_vertical_symmetry_active(b);
         _control_bar.set_vertical_symmetry_active(b);
+        state::actions::canvas_toggle_vertical_symmetry_active.set_state(b);
     }
 
     void Canvas::set_brush_outline_visible(bool b)
     {
         _brush_outline_visible = b;
         _brush_shape_layer->set_brush_outline_visible(_brush_outline_visible);
+        state::actions::canvas_toggle_brush_outline_visible.set_state(b);
     }
 
     void Canvas::on_brush_selection_changed()

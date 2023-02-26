@@ -20,6 +20,8 @@ namespace mousetrap
 
         using namespace state::actions;
 
+        Initial values and menu item name should be synchronized with tooltips file
+
         // FILE
 
         auto file_submenu = MenuModel();
@@ -169,17 +171,18 @@ namespace mousetrap
         canvas_submenu.add_section("Transform", &canvas_transform_section);
 
         auto canvas_grid_section = MenuModel();
-        canvas_grid_section.add_action("Hide / Show Grid", canvas_toggle_grid_visible.get_id());
+        canvas_grid_section.add_stateful_action("Grid Visible", canvas_toggle_grid_visible.get_id(), true);
         canvas_grid_section.add_action("Grid Color...", canvas_open_grid_color_picker.get_id());
         canvas_submenu.add_section("Grid", &canvas_grid_section);
 
         auto canvas_brush_section = MenuModel();
-        canvas_brush_section.add_action("Hide / Show Brush Outline", canvas_toggle_brush_outline_visible.get_id());
+        canvas_brush_section.add_stateful_action("Brush Outline Visible", canvas_toggle_brush_outline_visible.get_id(), true);
         canvas_submenu.add_section("Brush", &canvas_brush_section);
 
         auto canvas_mirror_section = MenuModel();
-        canvas_mirror_section.add_action("Enable / Disable Horizontal Symmetry", canvas_toggle_brush_outline_visible.get_id());
-        canvas_mirror_section.add_action("Enable / Disable Vertical Symmetry", canvas_toggle_brush_outline_visible.get_id());
+        canvas_mirror_section.add_stateful_action("Horizontal Symmetry Enabled", canvas_toggle_brush_outline_visible.get_id(), false);
+        canvas_mirror_section.add_stateful_action("Vertical Symmetry Enabled", canvas_toggle_brush_outline_visible.get_id(), false);
+        canvas_mirror_section.add_action("Symmetry Ruler Color...", canvas_toggle_brush_outline_visible.get_id(), false);
         canvas_submenu.add_section("Symmetry", &canvas_mirror_section);
 
         auto canvas_perspective_section = MenuModel();

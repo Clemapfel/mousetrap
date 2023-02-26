@@ -47,8 +47,6 @@ using namespace mousetrap;
 
 static void activate(GtkApplication* app, void*)
 {
-    state::initialize_config_files();
-
     state::main_window = new Window(GTK_WINDOW(gtk_application_window_new(app)));
     gtk_initialize_opengl(GTK_WINDOW(state::main_window->operator GtkWidget*()));
     state::app->add_window(state::main_window);
@@ -260,6 +258,8 @@ static void startup(GApplication*)
 
 int main()
 {
+    state::initialize_config_files();
+
     state::app = new Application();
     state::app->connect_signal("activate", activate);
     state::app->connect_signal("startup", startup);

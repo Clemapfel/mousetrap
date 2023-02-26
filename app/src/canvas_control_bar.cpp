@@ -31,6 +31,11 @@ namespace mousetrap
             instance->_owner->set_vertical_symmetry_active(button->get_active());
         }, this);
 
+        _brush_outline_visible_toggle_button.set_child(&_brush_outline_visible_icon);
+        _brush_outline_visible_toggle_button.connect_signal_toggled([](ToggleButton* button, ControlBar* instance){
+            instance->_owner->set_brush_outline_visible(button->get_active());
+        }, this);
+
         _scale_scale.connect_signal_value_changed([](SpinButton* scale, ControlBar* instance) {
             instance->_owner->set_scale(scale->get_value());
         }, this);
@@ -39,7 +44,8 @@ namespace mousetrap
             &_grid_visible_icon,
             &_background_visible_icon,
             &_horizontal_symmetry_icon,
-            &_vertical_symmetry_icon
+            &_vertical_symmetry_icon,
+            &_brush_outline_visible_icon
         })
         {
             icon->set_size_request(icon->get_size());
@@ -58,9 +64,8 @@ namespace mousetrap
         _position_label.set_text("");
 
         _main.push_back(&_position_label);
-        insert_spacer();
         _main.push_back(&_scale_scale);
-        insert_spacer();
+        _main.push_back(&_brush_outline_visible_toggle_button);
         _main.push_back(&_grid_visible_toggle_button);
         _main.push_back(&_background_visible_toggle_button);
         _main.push_back(&_horizontal_symmetry_toggle_button);
@@ -70,6 +75,7 @@ namespace mousetrap
         set_horizontal_symmetry_active(_owner->_horizontal_symmetry_active);
         set_vertical_symmetry_active(_owner->_vertical_symmetry_active);
         set_cursor_in_bounds(_position_visible);
+        set_brush_outline_visible(_owner->_brush_outline_visible);
     }
 
     Canvas::ControlBar::operator Widget*()
@@ -82,6 +88,7 @@ namespace mousetrap
         _grid_visible_toggle_button.set_signal_toggled_blocked(true);
         _grid_visible_toggle_button.set_active(b);
         _grid_visible_toggle_button.set_signal_toggled_blocked(false);
+        state::actions::canvas_toggle_grid_visible.set_state(b);
     }
 
     void Canvas::ControlBar::set_background_visible(bool b)
@@ -103,6 +110,13 @@ namespace mousetrap
         _vertical_symmetry_toggle_button.set_signal_toggled_blocked(true);
         _vertical_symmetry_toggle_button.set_active(b);
         _vertical_symmetry_toggle_button.set_signal_toggled_blocked(false);
+    }
+
+    void Canvas::ControlBar::set_brush_outline_visible(bool b)
+    {
+        _brush_outline_visible_toggle_button.set_signal_toggled_blocked(true);
+        _brush_outline_visible_toggle_button.set_active(b);
+        _brush_outline_visible_toggle_button.set_signal_toggled_blocked(false);
     }
 
     void Canvas::ControlBar::set_cursor_position(Vector2i xy)
