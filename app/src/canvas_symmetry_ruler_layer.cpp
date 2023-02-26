@@ -61,9 +61,9 @@ namespace mousetrap
 
         instance->on_layer_resolution_changed();
         instance->set_horizontal_symmetry_pixel_position(instance->_h_position);
-        instance->set_horizontal_symmetry_enabled(instance->_h_enabled);
+        instance->set_horizontal_symmetry_active(instance->_h_enabled);
         instance->set_vertical_symmetry_pixel_position(instance->_v_position);
-        instance->set_vertical_symmetry_enabled(instance->_v_enabled);
+        instance->set_vertical_symmetry_active(instance->_v_enabled);
         
         area->clear_render_tasks();
         
@@ -123,7 +123,7 @@ namespace mousetrap
             shape->set_color(_color);
     }
 
-    void Canvas::SymmetryRulerLayer::set_horizontal_symmetry_enabled(bool b) 
+    void Canvas::SymmetryRulerLayer::set_horizontal_symmetry_active(bool b)
     {
         _h_enabled = b;
         
@@ -140,7 +140,7 @@ namespace mousetrap
         _area.queue_render();
     }
 
-    void Canvas::SymmetryRulerLayer::set_vertical_symmetry_enabled(bool b)
+    void Canvas::SymmetryRulerLayer::set_vertical_symmetry_active(bool b)
     {
         _v_enabled = b;
 

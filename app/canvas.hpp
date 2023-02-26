@@ -120,6 +120,12 @@ namespace mousetrap
             bool _background_visible = true;
             void set_background_visible(bool);
 
+            bool _horizontal_symmetry_active = false;
+            void set_horizontal_symmetry_active(bool);
+
+            bool _vertical_symmetry_active = false;
+            void set_vertical_symmetry_active(bool);
+
             Vector2i _origin = {0, 0};
             Vector2i _destination = {0, 0};
 
@@ -294,8 +300,8 @@ namespace mousetrap
                     void set_horizontal_symmetry_pixel_position(size_t px);
                     void set_vertical_symmetry_pixel_position(size_t px);
 
-                    void set_horizontal_symmetry_enabled(bool);
-                    void set_vertical_symmetry_enabled(bool);
+                    void set_horizontal_symmetry_active(bool);
+                    void set_vertical_symmetry_active(bool);
 
                     void set_scale(float);
                     void set_offset(Vector2f);
@@ -605,13 +611,21 @@ namespace mousetrap
                     ControlBar(Canvas* owner);
                     operator Widget*();
 
+                    void set_grid_visible(bool);
+                    void set_background_visible(bool);
+                    void set_horizontal_symmetry_active(bool);
+                    void set_vertical_symmetry_active(bool);
+
+                    void set_cursor_position(Vector2i);
+                    void set_scale(float);
+
                 private:
                     Canvas* _owner;
 
                     ToggleButton _grid_visible_toggle_button;
                     ImageDisplay _grid_visible_icon = ImageDisplay(get_resource_path() + "icons/canvas_grid.png");
 
-                    ToggleButton _background_visible_buton;
+                    ToggleButton _background_visible_toggle_button;
                     ImageDisplay _background_visible_icon = ImageDisplay(get_resource_path() + "icons/canvas_background.png");
 
                     ToggleButton _horizontal_symmetry_toggle_button;
@@ -620,7 +634,7 @@ namespace mousetrap
                     ToggleButton _vertical_symmetry_toggle_button;
                     ImageDisplay _vertical_symmetry_icon = ImageDisplay(get_resource_path() + "icons/canvas_vertical_symmetry.png");
 
-                    Scale _scale_scale = Scale(1, 128, 0.1);
+                    SpinButton _scale_scale = SpinButton(1, 99, 0.1);
                     Label _position_label;
 
                     MenuButton _menu_button;

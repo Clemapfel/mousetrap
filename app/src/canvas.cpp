@@ -29,7 +29,7 @@ namespace mousetrap
         }, this);
 
         _h_ruler_active_button.connect_signal_toggled([](CheckButton* button, Canvas* instance){
-            instance->_symmetry_ruler_layer->set_horizontal_symmetry_enabled(button->get_active());
+            instance->_symmetry_ruler_layer->set_horizontal_symmetry_active(button->get_active());
         }, this);
 
         _v_ruler_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
@@ -37,7 +37,7 @@ namespace mousetrap
         }, this);
 
         _v_ruler_active_button.connect_signal_toggled([](CheckButton* button, Canvas* instance){
-            instance->_symmetry_ruler_layer->set_vertical_symmetry_enabled(button->get_active());
+            instance->_symmetry_ruler_layer->set_vertical_symmetry_active(button->get_active());
         }, this);
 
         _brush_outline_button.connect_signal_toggled([](CheckButton* button, Canvas* instance){
@@ -160,7 +160,7 @@ namespace mousetrap
         //_layer_overlay.add_overlay(*_layer_layer);
         //_layer_overlay.add_overlay(*_onionskin_layer);
         //_layer_overlay.add_overlay(*_brush_shape_layer);
-        //_layer_overlay.add_overlay(*_grid_layer);
+        _layer_overlay.add_overlay(*_grid_layer);
         //_layer_overlay.add_overlay(*_selection_layer);
         //_layer_overlay.add_overlay(*_symmetry_ruler_layer);
         _layer_overlay.add_overlay(*_wireframe_layer);
@@ -173,6 +173,8 @@ namespace mousetrap
 
         _main.set_homogeneous(false);
         _debug_box.set_vexpand(false);
+
+        _control_bar.operator Widget*()->set_vexpand(false);
 
         _main.push_back(&_layer_overlay);
         _main.push_back(_control_bar);
@@ -196,6 +198,7 @@ namespace mousetrap
         _brush_shape_layer->set_scale(_scale);
         _wireframe_layer->set_scale(_scale);
         _selection_layer->set_scale(_scale);
+        _control_bar.set_scale(_scale);
     }
 
     void Canvas::set_offset(float x, float y)
@@ -215,12 +218,28 @@ namespace mousetrap
     {
         _grid_visible = b;
         _grid_layer->set_visible(_grid_visible);
+        _control_bar.set_grid_visible(b);
     }
 
     void Canvas::set_background_visible(bool b)
     {
         _background_visible = b;
         _transparency_tiling_layer->set_background_visible(_background_visible);
+        _control_bar.set_background_visible(b);
+    }
+
+    void Canvas::set_horizontal_symmetry_active(bool b)
+    {
+        _horizontal_symmetry_active = b;
+        _symmetry_ruler_layer->set_horizontal_symmetry_active(b);
+        _control_bar.set_horizontal_symmetry_active(b);
+    }
+
+    void Canvas::set_vertical_symmetry_active(bool b)
+    {
+        _vertical_symmetry_active = b;
+        _symmetry_ruler_layer->set_vertical_symmetry_active(b);
+        _control_bar.set_vertical_symmetry_active(b);
     }
 
     void Canvas::set_brush_outline_visible(bool b)

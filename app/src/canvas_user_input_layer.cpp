@@ -64,8 +64,6 @@ namespace mousetrap
         Vector2f top_left = center - Vector2f{0.5 * width, 0.5 * height};
         float pixel_w = width / layer_resolution.x;
         float pixel_h = height / layer_resolution.y;
-
-
     }
 
     void Canvas::UserInputLayer::on_click_pressed(ClickEventController*, size_t n, double x, double y, UserInputLayer* instance)
