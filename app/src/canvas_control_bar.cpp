@@ -55,6 +55,8 @@ namespace mousetrap
             _main.push_back(&sep);
         };
 
+        _position_label.set_text("");
+
         _main.push_back(&_position_label);
         insert_spacer();
         _main.push_back(&_scale_scale);
@@ -67,6 +69,7 @@ namespace mousetrap
         set_scale(_owner->_scale);
         set_horizontal_symmetry_active(_owner->_horizontal_symmetry_active);
         set_vertical_symmetry_active(_owner->_vertical_symmetry_active);
+        set_cursor_in_bounds(_position_visible);
     }
 
     Canvas::ControlBar::operator Widget*()
@@ -105,8 +108,14 @@ namespace mousetrap
     void Canvas::ControlBar::set_cursor_position(Vector2i xy)
     {
         std::stringstream str;
-        str << "[" << xy.x << " | " << xy.y << "]";
-        _position_label.set_text(str.str());
+        str << "<tt>[" << xy.x << " | " << xy.y << "]</tt>";
+        //_position_label.set_text(str.str());
+    }
+
+    void Canvas::ControlBar::set_cursor_in_bounds(bool b)
+    {
+        _position_visible = b;
+        _position_label.set_opacity(_position_visible ? 1 : 0);
     }
 
     void Canvas::ControlBar::set_scale(float scale)

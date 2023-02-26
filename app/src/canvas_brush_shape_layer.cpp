@@ -19,10 +19,21 @@ namespace mousetrap
         return &_area;
     }
 
-    void Canvas::BrushShapeLayer::set_brush_position(Vector2i pos)
+    void Canvas::BrushShapeLayer::set_cursor_position(Vector2i pos)
     {
         _position = pos;
         reformat();
+        _area.queue_render();
+    }
+
+    void Canvas::BrushShapeLayer::set_cursor_in_bounds(bool b)
+    {
+        _visible = b;
+
+        if (not _area.get_is_realized())
+            return;
+
+        _render_shape->set_visible(_visible);
         _area.queue_render();
     }
 
@@ -107,6 +118,7 @@ namespace mousetrap
         instance->_render_shape_task->register_color("_outline_color_rgba", instance->_outline_color);
         instance->_render_shape_task->register_int("_outline_visible", instance->_outline_visible);
 
+        instance->_render_shape->set_visible(instance->_visible);
         area->queue_render();
     }
 
@@ -196,4 +208,6 @@ namespace mousetrap
 
         return true;
     }
+
+
 }

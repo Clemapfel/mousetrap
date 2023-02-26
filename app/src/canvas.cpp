@@ -44,14 +44,6 @@ namespace mousetrap
             instance->set_brush_outline_visible(button->get_active());
         }, this);
 
-        _brush_x_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
-            instance->set_brush_position({scale->get_value(), instance->_brush_position.y});
-        }, this);
-
-        _brush_y_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
-            instance->set_brush_position({instance->_brush_position.x, scale->get_value()});
-        }, this);
-
         /*
         _line_visible_button.connect_signal_toggled([](CheckButton* button, Canvas* instance) {
             //instance->set_line_visible(button->get_active());
@@ -112,9 +104,6 @@ namespace mousetrap
         _line_end_x_pos_button.set_value(26);//active_state->get_layer_resolution().x);
         _line_end_y_pos_button.set_value(26);//active_state->get_layer_resolution().y);
 
-        _brush_x_pos_button.set_value(0);
-        _brush_y_pos_button.set_value(0);
-
         _draw_button.set_margin_horizontal(state::margin_unit);
 
         _background_visible_box.push_back(&_draw_button);
@@ -138,8 +127,6 @@ namespace mousetrap
 
         _brush_box.push_back(&_brush_label);
         _brush_box.push_back(&_brush_outline_button);
-        _brush_box.push_back(&_brush_x_pos_button);
-        _brush_box.push_back(&_brush_y_pos_button);
 
         _line_box.push_back(&_line_label);
         _line_box.push_back(&_line_visible_button);
@@ -159,22 +146,24 @@ namespace mousetrap
         _layer_overlay.set_child(*_transparency_tiling_layer);
         //_layer_overlay.add_overlay(*_layer_layer);
         //_layer_overlay.add_overlay(*_onionskin_layer);
-        //_layer_overlay.add_overlay(*_brush_shape_layer);
+        _layer_overlay.add_overlay(*_brush_shape_layer);
         _layer_overlay.add_overlay(*_grid_layer);
         //_layer_overlay.add_overlay(*_selection_layer);
         //_layer_overlay.add_overlay(*_symmetry_ruler_layer);
         _layer_overlay.add_overlay(*_wireframe_layer);
-        //_layer_overlay.add_overlay(*_user_input_layer);
+        _layer_overlay.add_overlay(*_user_input_layer);
 
         _transparency_tiling_layer->operator Widget *()->set_expand(true);
         _layer_layer->operator Widget *()->set_expand(true);
         _onionskin_layer->operator Widget*()->set_expand(true);
         _grid_layer->operator Widget*()->set_expand(true);
+        _wireframe_layer->operator Widget*()->set_expand(true);
+        _user_input_layer->operator Widget*()->set_expand(true);
 
         _main.set_homogeneous(false);
         _debug_box.set_vexpand(false);
 
-        _control_bar.operator Widget*()->set_vexpand(false);
+        _control_bar.operator Widget*()-> set_vexpand(false);
 
         _main.push_back(&_layer_overlay);
         _main.push_back(_control_bar);
@@ -198,6 +187,7 @@ namespace mousetrap
         _brush_shape_layer->set_scale(_scale);
         _wireframe_layer->set_scale(_scale);
         _selection_layer->set_scale(_scale);
+        _user_input_layer->set_scale(_scale);
         _control_bar.set_scale(_scale);
     }
 
@@ -246,12 +236,6 @@ namespace mousetrap
     {
         _brush_outline_visible = b;
         _brush_shape_layer->set_brush_outline_visible(_brush_outline_visible);
-    }
-
-    void Canvas::set_brush_position(Vector2i pos)
-    {
-        _brush_position = pos;
-        _brush_shape_layer->set_brush_position(_brush_position);
     }
 
     void Canvas::on_brush_selection_changed()
@@ -332,5 +316,19 @@ namespace mousetrap
     void Canvas::draw(const ProjectState::DrawData& data)
     {
         active_state->draw_to_cell({active_state->get_current_layer_index(), active_state->get_current_frame_index()}, data);
+    }
+
+    void Canvas::set_cursor_position(Vector2i xy)
+    {
+        _cursor_position = xy;
+        _control_bar.set_cursor_position(_cursor_position);
+        _brush_shape_layer->set_cursor_position(_cursor_position);
+    }
+
+    void Canvas::set_cursor_in_bounds(bool b)
+    {
+        _cursor_in_bounds = b;
+        _control_bar.set_cursor_in_bounds(b);
+        _brush_shape_layer->set_cursor_in_bounds(b);
     }
 }

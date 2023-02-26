@@ -10,11 +10,8 @@ namespace mousetrap
     Canvas::UserInputLayer::UserInputLayer(Canvas* canvas)
         : _owner(canvas)
     {
-        _proxy.set_expand(true);
-        _proxy.set_opacity(0);
-        _proxy.connect_signal_resize([](GLArea*, int w, int h, UserInputLayer* instance){
-            instance->_canvas_size = {w, h};
-        }, this);
+        _proxy.set_opacity(1 / 255.f);
+        _proxy.connect_signal_resize(on_area_resize, this);
 
         _click_controller.connect_signal_click_pressed(on_click_pressed, this);
         _click_controller.connect_signal_click_released(on_click_released, this);
@@ -48,47 +45,85 @@ namespace mousetrap
         return &_proxy;
     }
 
-    Vector2i Canvas::UserInputLayer::widget_space_pos_to_texture_space_pos(float x, float y)
+    void Canvas::UserInputLayer::on_area_resize(GLArea*, int x, int y, UserInputLayer* instance)
     {
+        instance->_canvas_size = {x, y};
+        instance->update_cursor_pos();
+    }
+
+    void Canvas::UserInputLayer::set_scale(float scale)
+    {
+        if (_scale == scale)
+            return;
+
+        _scale = scale;
+        update_cursor_pos();
+    }
+
+    void Canvas::UserInputLayer::set_offset(Vector2f offset)
+    {
+        if (_offset == offset)
+            return;
+
+        _offset = {offset.x / _canvas_size.x, offset.y / _canvas_size.y};
+        update_cursor_pos();
+    }
+
+    void Canvas::UserInputLayer::update_cursor_pos()
+    {
+        auto x = _widget_space_pos.x;
+        auto y = _widget_space_pos.y;
+
         auto layer_resolution = active_state->get_layer_resolution();
 
         float width = layer_resolution.x / _canvas_size.x;
-        float height = layer_resolution.y / _canvas_size.x;
+        float height = layer_resolution.y / _canvas_size.y;
 
-        width *= _owner->_scale;
-        height *= _owner->_scale;
+        width *= _scale;
+        height *= _scale;
 
         Vector2f center = {0.5, 0.5};
-        center += _owner->_offset;
+        center += _offset;
 
         Vector2f top_left = center - Vector2f{0.5 * width, 0.5 * height};
         float pixel_w = width / layer_resolution.x;
         float pixel_h = height / layer_resolution.y;
+
+        Vector2f cursor_pos = Vector2f(x / _canvas_size.x, y / _canvas_size.y);
+        _owner->set_cursor_position(Vector2i(
+            ((cursor_pos.x - top_left.x) / pixel_w),
+            ((cursor_pos.y - top_left.y) / pixel_h)
+        ));
     }
 
     void Canvas::UserInputLayer::on_click_pressed(ClickEventController*, size_t n, double x, double y, UserInputLayer* instance)
     {
-
+        instance->_widget_space_pos = {x, y};
+        instance->update_cursor_pos();
     }
 
     void Canvas::UserInputLayer::on_click_released(ClickEventController*, size_t n, double x, double y, UserInputLayer* instance)
     {
-
+        instance->_widget_space_pos = {x, y};
+        instance->update_cursor_pos();
     }
 
     void Canvas::UserInputLayer::on_motion_enter(MotionEventController*, double x, double y, UserInputLayer* instance)
     {
-
+        instance->_owner->set_cursor_in_bounds(true);
+        instance->_widget_space_pos = {x, y};
+        instance->update_cursor_pos();
     }
 
     void Canvas::UserInputLayer::on_motion_leave(MotionEventController*, UserInputLayer* instance)
     {
-
+        instance->_owner->set_cursor_in_bounds(false);
     }
 
     void Canvas::UserInputLayer::on_motion(MotionEventController*, double x, double y, UserInputLayer* instance)
     {
-
+        instance->_widget_space_pos = {x, y};
+        instance->update_cursor_pos();
     }
 
     bool Canvas::UserInputLayer::on_key_pressed(KeyEventController* controller, guint keyval, guint keycode, GdkModifierType state, UserInputLayer* instance)

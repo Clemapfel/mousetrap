@@ -114,9 +114,6 @@ namespace mousetrap
             bool _brush_outline_visible = true;
             void set_brush_outline_visible(bool);
 
-            Vector2i _brush_position = {0, 0}; // texture-space coords
-            void set_brush_position(Vector2i);
-
             bool _background_visible = true;
             void set_background_visible(bool);
 
@@ -125,6 +122,12 @@ namespace mousetrap
 
             bool _vertical_symmetry_active = false;
             void set_vertical_symmetry_active(bool);
+
+            Vector2i _cursor_position = {0, 0};
+            void set_cursor_position(Vector2i);
+
+            bool _cursor_in_bounds = false;
+            void set_cursor_in_bounds(bool);
 
             Vector2i _origin = {0, 0};
             Vector2i _destination = {0, 0};
@@ -350,12 +353,13 @@ namespace mousetrap
                     BrushShapeLayer(Canvas*);
                     operator Widget*();
 
-                    void set_brush_position(Vector2i);
                     void set_brush_outline_visible(bool);
                     void set_outline_color(RGBA);
 
                     void set_scale(float);
                     void set_offset(Vector2f);
+                    void set_cursor_position(Vector2i);
+                    void set_cursor_in_bounds(bool);
 
                     void on_layer_resolution_changed();
                     void on_color_selection_changed();
@@ -383,6 +387,7 @@ namespace mousetrap
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
                     Vector2i _position = {0, 0}; // gl coords
+                    bool _visible = true;
                     gint* _outline_visible = new gint(true);
                     RGBA* _outline_color = new RGBA(1, 1, 1, 0.5);
 
@@ -571,13 +576,21 @@ namespace mousetrap
                     UserInputLayer(Canvas*);
                     operator Widget*();
 
+                    void set_scale(float);
+                    void set_offset(Vector2f);
+
                 private:
                     Canvas* _owner;
 
                     GLArea _proxy;
-                    Vector2f _canvas_size;
 
-                    Vector2i widget_space_pos_to_texture_space_pos(float x, float y);
+                    float _scale = 1;
+                    Vector2f _offset = {0, 0};
+                    Vector2f _canvas_size = {1, 1};
+                    static void on_area_resize(GLArea*, int, int, UserInputLayer*);
+
+                    Vector2f _widget_space_pos = {0, 0};
+                    void update_cursor_pos();
 
                     ClickEventController _click_controller;
                     static void on_click_pressed(ClickEventController*, size_t n, double x, double y, UserInputLayer* instance);
@@ -617,6 +630,7 @@ namespace mousetrap
                     void set_vertical_symmetry_active(bool);
 
                     void set_cursor_position(Vector2i);
+                    void set_cursor_in_bounds(bool);
                     void set_scale(float);
 
                 private:
@@ -635,6 +649,8 @@ namespace mousetrap
                     ImageDisplay _vertical_symmetry_icon = ImageDisplay(get_resource_path() + "icons/canvas_vertical_symmetry.png");
 
                     SpinButton _scale_scale = SpinButton(1, 99, 0.1);
+
+                    bool _position_visible = true;
                     Label _position_label;
 
                     MenuButton _menu_button;
@@ -673,9 +689,7 @@ namespace mousetrap
             Box _ruler_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
             CheckButton _brush_outline_button;
-            SpinButton _brush_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);
-            SpinButton _brush_y_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().y + 100, 1);
-            Label _brush_label = Label("Brush (xy): ");
+           Label _brush_label = Label("Brush Outline: ");
             Box _brush_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
             CheckButton _line_visible_button;
