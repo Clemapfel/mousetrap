@@ -72,6 +72,8 @@ namespace mousetrap
 
     void Canvas::UserInputLayer::update_cursor_pos()
     {
+        _owner->set_widget_cursor_position(_widget_space_pos);
+
         auto x = _widget_space_pos.x;
         auto y = _widget_space_pos.y;
 

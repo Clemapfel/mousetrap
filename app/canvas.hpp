@@ -129,6 +129,9 @@ namespace mousetrap
             bool _cursor_in_bounds = false;
             void set_cursor_in_bounds(bool);
 
+            Vector2f _widget_cursor_position = {0, 0};
+            void set_widget_cursor_position(Vector2f);
+
             Vector2i _origin = {0, 0};
             Vector2i _destination = {0, 0};
 
@@ -409,7 +412,7 @@ namespace mousetrap
 
                     void set_scale(float);
                     void set_offset(Vector2f);
-                    void set_cursor_position(Vector2i);
+                    void set_widget_cursor_position(Vector2f);
 
                     void set_a(Vector2i pixel_pos);
                     void set_b(Vector2i pixel_pos);
@@ -429,14 +432,15 @@ namespace mousetrap
                     Vector2i _a = {0, 0};
                     Vector2i _b = active_state->get_layer_resolution();
 
-                    bool _line_visible = true;
-                    bool _rectangle_visible = true;
+                    bool _line_visible = false;
+                    bool _rectangle_visible = false;
                     bool _circle_visible = true;
 
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
-                    Vector2i _cursor_position = {0, 0};
+                    Vector2f _widget_cursor_position = {0, 0};
                     void reformat();
+                    void update_highlighting();
 
                     Vector2f _canvas_size = {1, 1};
                     static void on_area_realize(Widget* widget, WireframeLayer* instance);
@@ -670,36 +674,10 @@ namespace mousetrap
 
             ControlBar _control_bar = ControlBar(this);
 
-            // debug
-
-            CheckButton _background_visible_button;
-            Label _background_visible_label = Label("Background Visible: ");
-            Button _draw_button;
-            Label _draw_button_label = Label("DRAW");
-            Box _background_visible_box = Box(GTK_ORIENTATION_HORIZONTAL);
-
-            SpinButton _scale_button = SpinButton(1, 100, 0.1);
-            Label _scale_label = Label("Scale: ");
-
             SpinButton _x_offset_button = SpinButton(-1000, +1000, 1);
             SpinButton _y_offset_button = SpinButton(-1000, +1000, 1);
             Label _offset_label = Label("Offset (xy):");
             Box _transform_box = Box(GTK_ORIENTATION_HORIZONTAL);
-
-            CheckButton _grid_visible_button;
-            Label _grid_visible_label = Label("Grid: ");
-            Box _grid_box = Box(GTK_ORIENTATION_HORIZONTAL);
-
-            CheckButton _h_ruler_active_button;
-            SpinButton _h_ruler_button = SpinButton(0, active_state->get_layer_resolution().x - 1, 1);
-            CheckButton _v_ruler_active_button;
-            SpinButton _v_ruler_button = SpinButton(0, active_state->get_layer_resolution().y - 1, 1);
-            Label _ruler_label = Label("Symmetry (hv): ");
-            Box _ruler_box = Box(GTK_ORIENTATION_HORIZONTAL);
-
-            CheckButton _brush_outline_button;
-           Label _brush_label = Label("Brush Outline: ");
-            Box _brush_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
             CheckButton _line_visible_button;
             SpinButton _line_start_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);

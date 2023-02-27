@@ -5,14 +5,6 @@ namespace mousetrap
 {
     Canvas::Canvas()
     {
-        _background_visible_button.connect_signal_toggled([](CheckButton* button, Canvas* instance){
-            instance->set_background_visible(button->get_active());
-        }, this);
-
-        _scale_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
-            instance->set_scale(scale->get_value());
-        }, this);
-
         _x_offset_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
             instance->set_offset(scale->get_value(), instance->_offset.y);
         }, this);
@@ -20,36 +12,6 @@ namespace mousetrap
         _y_offset_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
             instance->set_offset(instance->_offset.x, scale->get_value());
         }, this);
-
-        _grid_visible_button.connect_signal_toggled([](CheckButton* button, Canvas* instance){
-            instance->set_grid_visible(button->get_active());
-        }, this);
-
-        _h_ruler_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
-            instance->_symmetry_ruler_layer->set_horizontal_symmetry_pixel_position(scale->get_value());
-        }, this);
-
-        _h_ruler_active_button.connect_signal_toggled([](CheckButton* button, Canvas* instance){
-            instance->_symmetry_ruler_layer->set_horizontal_symmetry_active(button->get_active());
-        }, this);
-
-        _v_ruler_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
-            instance->_symmetry_ruler_layer->set_vertical_symmetry_pixel_position(scale->get_value());
-        }, this);
-
-        _v_ruler_active_button.connect_signal_toggled([](CheckButton* button, Canvas* instance){
-            instance->_symmetry_ruler_layer->set_vertical_symmetry_active(button->get_active());
-        }, this);
-
-        _brush_outline_button.connect_signal_toggled([](CheckButton* button, Canvas* instance){
-            instance->set_brush_outline_visible(button->get_active());
-        }, this);
-
-        /*
-        _line_visible_button.connect_signal_toggled([](CheckButton* button, Canvas* instance) {
-            //instance->set_line_visible(button->get_active());
-        }, this);
-         */
 
         _line_start_x_pos_button.connect_signal_value_changed([](SpinButton* scale, Canvas* instance){
             auto& start = instance->_origin;
@@ -83,21 +45,8 @@ namespace mousetrap
             instance->_wireframe_layer->set_b(end);
         }, this);
 
-        _draw_button.connect_signal_clicked([](Button* button, Canvas* instance) {
-            instance->draw(instance->_wireframe_layer->draw());
-        }, this);
-
-        _draw_button.set_child(&_draw_button_label);
-
-        _scale_button.set_value(50);
         _x_offset_button.set_value(_offset.x);
         _y_offset_button.set_value(_offset.y);
-        _grid_visible_button.set_active(_grid_visible);
-        _background_visible_button.set_active(_background_visible);
-        _h_ruler_button.set_value(0.5 * active_state->get_layer_resolution().x);
-        _v_ruler_button.set_value(0.5 * active_state->get_layer_resolution().y);
-        _h_ruler_active_button.set_active(false);
-        _v_ruler_active_button.set_active(false);
 
         _line_visible_button.set_visible(true);
         _line_start_x_pos_button.set_value(25);//1);
@@ -105,29 +54,9 @@ namespace mousetrap
         _line_end_x_pos_button.set_value(26);//active_state->get_layer_resolution().x);
         _line_end_y_pos_button.set_value(26);//active_state->get_layer_resolution().y);
 
-        _draw_button.set_margin_horizontal(state::margin_unit);
-
-        _background_visible_box.push_back(&_draw_button);
-        _background_visible_box.push_back(&_background_visible_label);
-        _background_visible_box.push_back(&_background_visible_button);
-
-        _transform_box.push_back(&_scale_label);
-        _transform_box.push_back(&_scale_button);
         _transform_box.push_back(&_offset_label);
         _transform_box.push_back(&_x_offset_button);
         _transform_box.push_back(&_y_offset_button);
-
-        _grid_box.push_back(&_grid_visible_label);
-        _grid_box.push_back(&_grid_visible_button);
-
-        _ruler_box.push_back(&_ruler_label);
-        _ruler_box.push_back(&_h_ruler_active_button);
-        _ruler_box.push_back(&_h_ruler_button);
-        _ruler_box.push_back(&_v_ruler_active_button);
-        _ruler_box.push_back(&_v_ruler_button);
-
-        _brush_box.push_back(&_brush_label);
-        _brush_box.push_back(&_brush_outline_button);
 
         _line_box.push_back(&_line_label);
         _line_box.push_back(&_line_visible_button);
@@ -137,11 +66,7 @@ namespace mousetrap
         _line_box.push_back(&_line_end_y_pos_button);
         _line_start_y_pos_button.set_margin_end(2 * state::margin_unit);
 
-        _debug_box.push_back(&_background_visible_box);
         _debug_box.push_back(&_transform_box);
-        _debug_box.push_back(&_grid_box);
-        _debug_box.push_back(&_ruler_box);
-        _debug_box.push_back(&_brush_box);
         _debug_box.push_back(&_line_box);
 
         auto* sep = new SeparatorLine();
@@ -354,9 +279,6 @@ namespace mousetrap
 
     void Canvas::on_layer_resolution_changed()
     {
-        _h_ruler_button.set_upper_limit(active_state->get_layer_resolution().x - 1);
-        _v_ruler_button.set_upper_limit(active_state->get_layer_resolution().y - 1);
-
         _transparency_tiling_layer->on_layer_resolution_changed();
         _layer_layer->on_layer_resolution_changed();
         _onionskin_layer->on_layer_resolution_changed();
@@ -391,7 +313,6 @@ namespace mousetrap
         _cursor_position = xy;
         _control_bar.set_cursor_position(_cursor_position);
         _brush_shape_layer->set_cursor_position(_cursor_position);
-        _wireframe_layer->set_cursor_position(_cursor_position);
         _symmetry_ruler_layer->set_cursor_position(_cursor_position);
     }
 
@@ -400,5 +321,11 @@ namespace mousetrap
         _cursor_in_bounds = b;
         _control_bar.set_cursor_in_bounds(b);
         _brush_shape_layer->set_cursor_in_bounds(b);
+    }
+
+    void Canvas::set_widget_cursor_position(Vector2f pos)
+    {
+        _widget_cursor_position = pos;
+        _wireframe_layer->set_widget_cursor_position(_widget_cursor_position);
     }
 }

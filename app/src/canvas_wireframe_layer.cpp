@@ -27,9 +27,10 @@ namespace mousetrap
         _area.queue_render();
     }
 
-    void Canvas::WireframeLayer::set_cursor_position(Vector2i xy)
+    void Canvas::WireframeLayer::set_widget_cursor_position(Vector2f xy)
     {
-
+        _widget_cursor_position = xy;
+        update_highlighting();
     }
 
     void Canvas::WireframeLayer::set_offset(Vector2f offset)
@@ -144,6 +145,7 @@ namespace mousetrap
         }
         
         for (auto* shape :  {
+            /*
             instance->_rectangle_tool_shape.top_left_anchor_inner_outline,
             instance->_rectangle_tool_shape.top_left_anchor_outer_outline,
             instance->_rectangle_tool_shape.top_right_anchor_inner_outline,
@@ -161,6 +163,7 @@ namespace mousetrap
             instance->_rectangle_tool_shape.right_anchor_inner_outline,
             instance->_rectangle_tool_shape.right_anchor_outer_outline,
             instance->_rectangle_tool_shape.center_cross_outline,
+             */
             instance->_rectangle_tool_shape.bottom_left_anchor_shape,
             instance->_rectangle_tool_shape.top_right_anchor_shape,
             instance->_rectangle_tool_shape.top_left_anchor_shape,
@@ -170,8 +173,8 @@ namespace mousetrap
             instance->_rectangle_tool_shape.left_anchor_shape,
             instance->_rectangle_tool_shape.right_anchor_shape,
             instance->_rectangle_tool_shape.center_cross,
-            instance->_rectangle_tool_shape.rectangle_inner_outline,
-            instance->_rectangle_tool_shape.rectangle_outer_outline,
+            //instance->_rectangle_tool_shape.rectangle_inner_outline,
+            //instance->_rectangle_tool_shape.rectangle_outer_outline,
             instance->_rectangle_tool_shape.rectangle_shape,
         })
         {
@@ -180,8 +183,8 @@ namespace mousetrap
         }
 
         for (auto* shape : {
-            instance->_rectangle_tool_shape.circle_inner_outline,
-            instance->_rectangle_tool_shape.circle_outer_outline,
+            //instance->_rectangle_tool_shape.circle_inner_outline,
+            //instance->_rectangle_tool_shape.circle_outer_outline,
             instance->_rectangle_tool_shape.circle
         })
         {
@@ -453,6 +456,51 @@ namespace mousetrap
             })
                 shape->set_color(anchor_color);
         }
+
+        update_highlighting();
+    }
+
+    void Canvas::WireframeLayer::update_highlighting()
+    {
+        if (not _area.get_is_realized())
+            return;
+
+        auto highlight_color = state::settings_file->get_value_as<HSVA>("canvas", "wireframe_layer_highlight_color");
+        auto non_highlight_color = state::settings_file->get_value_as<HSVA>("canvas", "wireframe_layer_non_highlight_color");
+
+        auto cursor_position = Vector2f{
+            _widget_cursor_position.x / _canvas_size.x,
+            _widget_cursor_position.y / _canvas_size.y
+        };
+
+        auto update = [&](Shape* shape){
+
+            auto top_left = shape->get_top_left();
+            auto size = shape->get_size();
+
+            if (is_point_in_rectangle(cursor_position, Rectangle{top_left, size}))
+                shape->set_color(highlight_color);
+            else
+                shape->set_color(non_highlight_color);
+        };
+
+        for (auto* shape : {
+            _line_tool_shape.origin_anchor_shape,
+            _line_tool_shape.destination_anchor_shape,
+            _rectangle_tool_shape.top_left_anchor_shape,
+            _rectangle_tool_shape.top_right_anchor_shape,
+            _rectangle_tool_shape.right_anchor_shape,
+            _rectangle_tool_shape.bottom_right_anchor_shape,
+            _rectangle_tool_shape.bottom_anchor_shape,
+            _rectangle_tool_shape.bottom_left_anchor_shape,
+            _rectangle_tool_shape.left_anchor_shape,
+            _rectangle_tool_shape.top_left_anchor_shape,
+            _rectangle_tool_shape.top_anchor_shape,
+            _rectangle_tool_shape.center_cross
+        })
+            update(shape);
+
+        _area.queue_render();
     }
 
     ProjectState::DrawData Canvas::WireframeLayer::draw()

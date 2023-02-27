@@ -9,6 +9,7 @@ uniform sampler2D _texture;
 
 void main()
 {
-    vec2 pos = vec2(1 - _texture_coordinates.x, _texture_coordinates.y);
-    _fragment_color = texture2D(_texture, _texture_coordinates) * _vertex_color;
+    vec2 pos = _texture_coordinates.xy;
+    pos.y = 1 - pos.y;
+    _fragment_color = texture2D(_texture, pos) * _vertex_color;
 }

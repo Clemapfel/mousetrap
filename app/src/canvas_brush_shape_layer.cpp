@@ -161,6 +161,9 @@ namespace mousetrap
         float brush_pos_x = top_left.x + _position.x * pixel_w - 0.5 * brush_width + (brush_resolution % 2 == 1 ? 0.5 * pixel_w : pixel_w);
         float brush_pos_y = top_left.y + _position.y * pixel_h - 0.5 * brush_height + (brush_resolution % 2 == 1 ? 0.5 * pixel_h : pixel_h);
 
+        brush_pos_x -= _offset.x / _canvas_size->x;
+        brush_pos_y -= _offset.y / _canvas_size->y;
+
         _brush_shape->as_rectangle({brush_pos_x, brush_pos_y}, {brush_width, brush_height});
         _brush_shape->set_texture(_brush_texture);
 
