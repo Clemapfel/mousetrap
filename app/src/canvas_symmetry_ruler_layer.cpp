@@ -279,4 +279,8 @@ namespace mousetrap
         })
             shape->set_color(_color);
     }
+
+    void Canvas::SymmetryRulerLayer::set_cursor_position(Vector2i)
+    {
+    }
 }

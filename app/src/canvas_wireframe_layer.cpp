@@ -27,6 +27,11 @@ namespace mousetrap
         _area.queue_render();
     }
 
+    void Canvas::WireframeLayer::set_cursor_position(Vector2i xy)
+    {
+
+    }
+
     void Canvas::WireframeLayer::set_offset(Vector2f offset)
     {
         _offset = {offset.x / _canvas_size.x, offset.y / _canvas_size.y};

@@ -310,6 +310,8 @@ namespace mousetrap
                     void set_offset(Vector2f);
                     void set_color(HSVA);
 
+                    void set_cursor_position(Vector2i);
+
                 private:
                     Canvas* _owner;
 
@@ -321,6 +323,7 @@ namespace mousetrap
 
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
+                    Vector2i _cursor_position = {0, 0};
                     HSVA _color = RGBA(1, 1, 1, 1).operator HSVA();
 
                     size_t _h_position = 0.5 * active_state->get_layer_resolution().x;
@@ -406,6 +409,7 @@ namespace mousetrap
 
                     void set_scale(float);
                     void set_offset(Vector2f);
+                    void set_cursor_position(Vector2i);
 
                     void set_a(Vector2i pixel_pos);
                     void set_b(Vector2i pixel_pos);
@@ -431,6 +435,7 @@ namespace mousetrap
 
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
+                    Vector2i _cursor_position = {0, 0};
                     void reformat();
 
                     Vector2f _canvas_size = {1, 1};

@@ -294,11 +294,15 @@ namespace mousetrap
         settings_section.add_submenu("Preview Size...", &preview_size_submenu);
         _menu.add_section("Settings", &settings_section);
 
+        auto tooltip = [](const std::string& value) {
+            return state::tooltips_file->get_value_as<std::string>("brush_options", value);
+        };
+
         auto brush_section = MenuModel();
-        brush_section.add_action("Add Brush...", brush_options_add_brush.get_id());
-        brush_section.add_action("Remove Current Brush", brush_options_remove_brush.get_id());
-        brush_section.add_action("Load Default Brushes", brush_options_load_default_brushes.get_id());
-        _menu.add_section("Manage Brushes", &brush_section);
+        brush_section.add_action(tooltip("add_brush"), brush_options_add_brush.get_id());
+        brush_section.add_action(tooltip("remove_brush"), brush_options_remove_brush.get_id());
+        brush_section.add_action(tooltip("load_default_brushes"), brush_options_load_default_brushes.get_id());
+        _menu.add_section(tooltip("open_default_brush_directory"), &brush_section);
 
         _menu_button.set_child(&_menu_button_label);
         _menu_button_popover.refresh_widgets();

@@ -149,11 +149,11 @@ namespace mousetrap
 
         _layer_overlay.set_child(sep);
         _layer_overlay.add_overlay(*_transparency_tiling_layer);
-        //_layer_overlay.add_overlay(*_layer_layer);
-        //_layer_overlay.add_overlay(*_onionskin_layer);
+        _layer_overlay.add_overlay(*_layer_layer);
+        _layer_overlay.add_overlay(*_onionskin_layer);
         _layer_overlay.add_overlay(*_brush_shape_layer);
         _layer_overlay.add_overlay(*_grid_layer);
-        //_layer_overlay.add_overlay(*_selection_layer);
+        _layer_overlay.add_overlay(*_selection_layer);
         _layer_overlay.add_overlay(*_symmetry_ruler_layer);
         _layer_overlay.add_overlay(*_wireframe_layer);
         _layer_overlay.add_overlay(*_user_input_layer);
@@ -391,6 +391,8 @@ namespace mousetrap
         _cursor_position = xy;
         _control_bar.set_cursor_position(_cursor_position);
         _brush_shape_layer->set_cursor_position(_cursor_position);
+        _wireframe_layer->set_cursor_position(_cursor_position);
+        _symmetry_ruler_layer->set_cursor_position(_cursor_position);
     }
 
     void Canvas::set_cursor_in_bounds(bool b)

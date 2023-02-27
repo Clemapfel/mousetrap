@@ -76,6 +76,18 @@ namespace mousetrap
         set_vertical_symmetry_active(_owner->_vertical_symmetry_active);
         set_cursor_in_bounds(_position_visible);
         set_brush_outline_visible(_owner->_brush_outline_visible);
+
+        auto tooltip = [](const std::string& value) {
+            return state::tooltips_file->get_value("canvas", value);
+        };
+
+        _position_label.set_tooltip_text(tooltip("position_label"));
+        _scale_scale.set_tooltip_text(tooltip("scale_scale"));
+        _brush_outline_visible_toggle_button.set_tooltip_text(tooltip("toggle_brush_outline_visible"));
+        _grid_visible_toggle_button.set_tooltip_text(tooltip("toggle_grid_visible"));
+        _background_visible_toggle_button.set_tooltip_text(tooltip("toggle_background_visible"));
+        _horizontal_symmetry_toggle_button.set_tooltip_text(tooltip("toggle_horizontal_symmetry_active"));
+        _vertical_symmetry_toggle_button.set_tooltip_text(tooltip("toggle_vertical_symmetry_active"));
     }
 
     Canvas::ControlBar::operator Widget*()

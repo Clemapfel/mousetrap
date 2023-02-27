@@ -166,50 +166,50 @@ namespace mousetrap
         auto canvas_submenu = MenuModel();
 
         auto canvas_submenu_size_section = MenuModel();
-        canvas_submenu_size_section.add_action("Resize Canvas...", resize_canvas_dialog_open.get_id());
-        canvas_submenu_size_section.add_action("Scale Image...", scale_canvas_dialog_open.get_id());
+        canvas_submenu_size_section.add_action(tooltip("resize_canvas_dialog", "open"), resize_canvas_dialog_open.get_id());
+        canvas_submenu_size_section.add_action(tooltip("scale_canvas_dialog", "open"), scale_canvas_dialog_open.get_id());
         canvas_submenu.add_section("Size", &canvas_submenu_size_section);
 
         auto canvas_transform_section = MenuModel();
-        canvas_transform_section.add_action("Flip...", image_transform_dialog_open.get_id());
-        canvas_transform_section.add_action("Rotate +90°", image_transform_dialog_rotate_clockwise.get_id());
-        canvas_transform_section.add_action("Rotate -90°", image_transform_dialog_rotate_counterclockwise.get_id());
+        canvas_transform_section.add_action(tooltip("image_transform_dialog", "open"), image_transform_dialog_open.get_id());
+        canvas_transform_section.add_action(tooltip("image_transform_dialog", "rotate_clockwise"), image_transform_dialog_rotate_clockwise.get_id());
+        canvas_transform_section.add_action(tooltip("image_transform_dialog", "rotate_counterclockwise"), image_transform_dialog_rotate_counterclockwise.get_id());
         canvas_submenu.add_section("Transform", &canvas_transform_section);
 
         auto canvas_grid_section = MenuModel();
-        canvas_grid_section.add_stateful_action("Grid Visible", canvas_toggle_grid_visible.get_id(), initial_state("canvas", "grid_visible"));
-        canvas_grid_section.add_action("Grid Color...", canvas_open_grid_color_picker.get_id());
+        canvas_grid_section.add_stateful_action(tooltip("canvas", "toggle_grid_visible"), canvas_toggle_grid_visible.get_id(), initial_state("canvas", "grid_visible"));
+        canvas_grid_section.add_action(tooltip("canvas", "open_grid_color_picker"), canvas_open_grid_color_picker.get_id());
         canvas_submenu.add_section("Grid", &canvas_grid_section);
 
         auto canvas_brush_section = MenuModel();
-        canvas_brush_section.add_stateful_action("Brush Outline Visible", canvas_toggle_brush_outline_visible.get_id(), initial_state("canvas", "brush_outline_visible"));
+        canvas_brush_section.add_stateful_action(tooltip("canvas", "toggle_brush_outline_visible"), canvas_toggle_brush_outline_visible.get_id(), initial_state("canvas", "brush_outline_visible"));
         canvas_submenu.add_section("Brush", &canvas_brush_section);
 
         auto canvas_mirror_section = MenuModel();
-        canvas_mirror_section.add_stateful_action("Horizontal Symmetry Enabled", canvas_toggle_brush_outline_visible.get_id(), initial_state("canvas", "horizontal_symmetry_active"));
-        canvas_mirror_section.add_stateful_action("Vertical Symmetry Enabled", canvas_toggle_brush_outline_visible.get_id(), initial_state("canvas", "vertical_symmetry_active"));
-        canvas_mirror_section.add_action("Symmetry Ruler Color...", canvas_toggle_brush_outline_visible.get_id(), false);
+        canvas_mirror_section.add_stateful_action(tooltip("canvas", "toggle_horizontal_symmetry_active"), canvas_toggle_horizontal_symmetry_active.get_id(), initial_state("canvas", "horizontal_symmetry_active"));
+        canvas_mirror_section.add_stateful_action(tooltip("canvas", "toggle_vertical_symmetry_active"), canvas_toggle_vertical_symmetry_active.get_id(), initial_state("canvas", "vertical_symmetry_active"));
+        canvas_mirror_section.add_action(tooltip("canvas", "open_symmetry_color_picker"), canvas_open_symmetry_color_picker.get_id(), false);
         canvas_submenu.add_section("Symmetry", &canvas_mirror_section);
 
         auto canvas_background_section = MenuModel();
-        canvas_background_section.add_stateful_action("Background Visible", canvas_toggle_background_visible.get_id(), initial_state("canvas", "background_visible"));
+        canvas_background_section.add_stateful_action(tooltip("canvas", "toggle_background_visible"), canvas_toggle_background_visible.get_id(), initial_state("canvas", "background_visible"));
         canvas_submenu.add_section("Background", &canvas_background_section);
 
         auto canvas_perspective_section = MenuModel();
-        canvas_perspective_section.add_action("Reset View", canvas_reset_transform.get_id());
+        canvas_perspective_section.add_action(tooltip("canvas", "reset_transform"), canvas_reset_transform.get_id());
         canvas_submenu.add_section("View", &canvas_perspective_section);
 
         // BRUSHES
 
         auto brushes_submenu = MenuModel();
         auto brush_add_section = MenuModel();
-        brush_add_section.add_action("Add Brush...", brush_options_add_brush.get_id());
-        brush_add_section.add_action("Remove Current Brush", brush_options_remove_brush.get_id());
+        brush_add_section.add_action(tooltip("brush_options", "add_brush"), brush_options_add_brush.get_id());
+        brush_add_section.add_action(tooltip("brush_options", "remove_brush"), brush_options_remove_brush.get_id());
         brushes_submenu.add_section("Add / Remove", &brush_add_section);
 
         auto brush_default_section = MenuModel();
-        brush_default_section.add_action("Load Default Brushes", brush_options_load_default_brushes.get_id());
-        brush_default_section.add_action("Manage Default Brushes...", brush_options_open_default_brush_directory.get_id());
+        brush_default_section.add_action(tooltip("brush_options", "load_default_brushes"), brush_options_load_default_brushes.get_id());
+        brush_default_section.add_action(tooltip("brush_options", "open_default_brush_directory"), brush_options_open_default_brush_directory.get_id());
         brushes_submenu.add_section("Defaults", &brush_default_section);
 
         // SETTINGS

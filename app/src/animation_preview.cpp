@@ -49,11 +49,11 @@ namespace mousetrap
             state::add_shortcut_action(*action);
 
         auto playback_section = MenuModel();
-        playback_section.add_stateful_action("Start / Stop Playback", animation_preview_toggle_playback_active.get_id(), _playback_active);
+        playback_section.add_stateful_action(state::tooltips_file->get_value("animation_preview", "toggle_playback_active"), animation_preview_toggle_playback_active.get_id(), _playback_active);
         _menu.add_section("Playback", &playback_section);
 
         auto settings_section = MenuModel();
-        settings_section.add_stateful_action("Toggle Background Visible", animation_preview_toggle_background_visible.get_id(), _background_visible);
+        settings_section.add_stateful_action(state::tooltips_file->get_value("animation_preview", "toggle_background_visible"), animation_preview_toggle_background_visible.get_id(), _background_visible);
 
         _fps_spin_button.set_value(_fps);
         _fps_spin_button.connect_signal_value_changed([](SpinButton* scale, AnimationPreview* instance){
@@ -64,6 +64,7 @@ namespace mousetrap
         _fps_box.push_back(&_fps_spacer);
         _fps_box.push_back(&_fps_spin_button);
         _fps_box.set_tooltip_text(state::tooltips_file->get_value("animation_preview", "fps_setting"));
+        _fps_box.set_margin_horizontal(state::margin_unit);
 
         auto fps_submenu = MenuModel();
         fps_submenu.add_widget(&_fps_box);
@@ -78,6 +79,7 @@ namespace mousetrap
         _scale_factor_box.push_back(&_scale_factor_spacer);
         _scale_factor_box.push_back(&_scale_factor_spin_button);
         _scale_factor_box.set_tooltip_text(state::tooltips_file->get_value("animation_preview", "scale_factor_setting"));
+        _scale_factor_box.set_margin_horizontal(state::margin_unit);
 
         auto scale_factor_submenu = MenuModel();
         scale_factor_submenu.add_widget(&_scale_factor_box);

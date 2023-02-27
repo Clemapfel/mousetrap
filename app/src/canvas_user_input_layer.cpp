@@ -38,6 +38,7 @@ namespace mousetrap
         _proxy.add_controller(&_drag_controller);
 
         _proxy.set_focusable(true);
+        _proxy.set_cursor(GtkCursorType::CELL);
     }
 
     Canvas::UserInputLayer::operator Widget*()
