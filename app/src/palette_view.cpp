@@ -159,24 +159,28 @@ namespace mousetrap
 
         using namespace state::actions;
 
-        settings_section.add_stateful_action("Toggle Palette Locked", palette_view_toggle_palette_locked.get_id(), active_state->get_palette_editing_enabled());
+        auto tooltip = [](const std::string& value) {
+            return state::tooltips_file->get_value_as<std::string>("palette_view", value);
+        };
+
+        settings_section.add_stateful_action(tooltip("toggle_palette_locked"), palette_view_toggle_palette_locked.get_id(), active_state->get_palette_editing_enabled());
         settings_section.add_submenu("Preview Size...", &preview_size_submenu);
         _menu.add_section("Settings", &settings_section);
 
         auto load_save_submenu = MenuModel();
-        load_save_submenu.add_action("Load...", palette_view_load.get_id());
-        load_save_submenu.add_action("Load Default", palette_view_load_default.get_id());
-        load_save_submenu.add_action("Save", palette_view_save.get_id());
-        load_save_submenu.add_action("Save As...", palette_view_save_as.get_id());
-        load_save_submenu.add_action("Save As Default", palette_view_save_as_default.get_id());
+        load_save_submenu.add_action(tooltip("load"), palette_view_load.get_id());
+        load_save_submenu.add_action(tooltip("load_default"), palette_view_load_default.get_id());
+        load_save_submenu.add_action(tooltip("save"), palette_view_save.get_id());
+        load_save_submenu.add_action(tooltip("save_as"), palette_view_save_as.get_id());
+        load_save_submenu.add_action(tooltip("save_as_default"), palette_view_save_as_default.get_id());
         _menu.add_section("Load / Save", &load_save_submenu);
 
         auto sort_by_section = MenuModel();
         auto sort_by_submenu = MenuModel();
-        sort_by_submenu.add_action("None", palette_view_sort_by_default.get_id());
-        sort_by_submenu.add_action("Hue", palette_view_sort_by_hue.get_id());
-        sort_by_submenu.add_action("Saturation", palette_view_sort_by_saturation.get_id());
-        sort_by_submenu.add_action("Value", palette_view_sort_by_value.get_id());
+        sort_by_submenu.add_action(tooltip("sort_by_default"), palette_view_sort_by_default.get_id());
+        sort_by_submenu.add_action(tooltip("sort_by_hue"), palette_view_sort_by_hue.get_id());
+        sort_by_submenu.add_action(tooltip("sort_by_saturation"), palette_view_sort_by_saturation.get_id());
+        sort_by_submenu.add_action(tooltip("sort_by_value"), palette_view_sort_by_value.get_id());
         sort_by_section.add_submenu("Sort By...", &sort_by_submenu);
         _menu.add_section("Sorting", &sort_by_section);
 

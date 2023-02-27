@@ -108,19 +108,19 @@ namespace mousetrap
             Vector2f _offset = {0, 0}; // widget-space coords
             void set_offset(float, float);
 
-            bool _grid_visible = true;
+            bool _grid_visible = state::settings_file->get_value_as<bool>("canvas", "grid_visible");
             void set_grid_visible(bool);
 
-            bool _brush_outline_visible = true;
+            bool _brush_outline_visible = state::settings_file->get_value_as<bool>("canvas", "brush_outline_visible");
             void set_brush_outline_visible(bool);
 
-            bool _background_visible = true;
+            bool _background_visible = state::settings_file->get_value_as<bool>("canvas", "background_visible");
             void set_background_visible(bool);
 
-            bool _horizontal_symmetry_active = false;
+            bool _horizontal_symmetry_active = state::settings_file->get_value_as<bool>("canvas", "horizontal_symmetry_active");
             void set_horizontal_symmetry_active(bool);
 
-            bool _vertical_symmetry_active = false;
+            bool _vertical_symmetry_active = state::settings_file->get_value_as<bool>("canvas", "vertical_symmetry_active");
             void set_vertical_symmetry_active(bool);
 
             Vector2i _cursor_position = {0, 0};

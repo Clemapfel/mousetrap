@@ -20,38 +20,44 @@ namespace mousetrap
 
         using namespace state::actions;
 
-        Initial values and menu item name should be synchronized with tooltips file
+        auto initial_state = [](const std::string& group, const std::string& value) {
+            return state::settings_file->get_value_as<bool>(group, value);
+        };
+
+        auto tooltip = [](const std::string& group, const std::string& value) {
+            return state::tooltips_file->get_value_as<std::string>(group, value);
+        };
 
         // FILE
 
         auto file_submenu = MenuModel();
 
         auto file_submenu_save_section = MenuModel();
-        file_submenu_save_section.add_action("New", save_file_new_state.get_id());
-        file_submenu_save_section.add_action("Open...", save_file_open_load_dialog.get_id());
-        file_submenu_save_section.add_action("Save", save_file_save_state_to_file.get_id());
-        file_submenu_save_section.add_action("Save As...", save_file_open_save_dialog.get_id());
-        file_submenu_save_section.add_action("Restore from Backup...", save_file_open_restore_from_backup_dialog.get_id());
+        file_submenu_save_section.add_action(tooltip("save_file", "new_state"), save_file_new_state.get_id());
+        file_submenu_save_section.add_action(tooltip("save_file", "open_load_dialog"), save_file_open_load_dialog.get_id());
+        file_submenu_save_section.add_action(tooltip("save_file", "save_state_to_file"), save_file_save_state_to_file.get_id());
+        file_submenu_save_section.add_action(tooltip("save_file", "open_save_dialog"), save_file_open_save_dialog.get_id());
+        file_submenu_save_section.add_action(tooltip("save_file", "open_restore_from_backup_dialog"), save_file_open_restore_from_backup_dialog.get_id());
         file_submenu.add_section("Load / Save", &file_submenu_save_section);
 
         auto file_submenu_import_section = MenuModel();
-        file_submenu_import_section.add_action("Import...", save_file_import_from_image.get_id());
-        file_submenu_import_section.add_action("Export As...", save_file_export_as_image.get_id());
-        file_submenu_import_section.add_action("Export As Spritesheet...", save_file_export_as_spritesheet.get_id());
-        file_submenu_import_section.add_action("Export Spritesheet Metadata...", save_file_export_metadata.get_id());
+        file_submenu_import_section.add_action(tooltip("save_file", "import_from_image"), save_file_import_from_image.get_id());
+        file_submenu_import_section.add_action(tooltip("save_file", "export_as_image"), save_file_export_as_image.get_id());
+        file_submenu_import_section.add_action(tooltip("save_file", "export_as_spritesheet"), save_file_export_as_spritesheet.get_id());
+        file_submenu_import_section.add_action(tooltip("save_file", "export_metadata"), save_file_export_metadata.get_id());
         file_submenu.add_section("Import / Export", &file_submenu_import_section);
 
         auto file_submenu_close_section = MenuModel();
-        file_submenu_close_section.add_action("Exit", save_file_safe_exit.get_id());
+        file_submenu_close_section.add_action(tooltip("save_file", "safe_exit"), save_file_safe_exit.get_id());
 
         // SELECTION
 
         auto selection_submenu = MenuModel();
         auto selection_section = MenuModel();
 
-        selection_section.add_action("Invert", selection_invert.get_id());
-        selection_section.add_action("Select All", selection_select_all.get_id());
-        selection_section.add_action("Select Color...", selection_open_select_color_dialog.get_id());
+        selection_section.add_action(tooltip("selection", "invert"), selection_invert.get_id());
+        selection_section.add_action(tooltip("selection", "select_all"), selection_select_all.get_id());
+        selection_section.add_action(tooltip("selection", "open_select_color_dialog"), selection_open_select_color_dialog.get_id());
         selection_submenu.add_section("Selection", &selection_section);
 
         // COLORS
@@ -59,10 +65,10 @@ namespace mousetrap
         auto colors_submenu = MenuModel();
 
         auto color_submenu_transform_section = MenuModel();
-        color_submenu_transform_section.add_action("Invert", color_transform_dialog_invert.get_id());
-        color_submenu_transform_section.add_action("Component Offset...", color_transform_dialog_open.get_id());
-        color_submenu_transform_section.add_action("Replace...", "TODO");
-        color_submenu_transform_section.add_action("Palette Shift...", "TODO");
+        color_submenu_transform_section.add_action(tooltip("color_transform_dialog", "invert"), color_transform_dialog_invert.get_id());
+        color_submenu_transform_section.add_action(tooltip("color_transform_dialog", "open"), color_transform_dialog_open.get_id());
+        color_submenu_transform_section.add_action("Replace... (TODO)", "TODO");
+        color_submenu_transform_section.add_action("Palette Shift... (TODO)", "TODO");
         colors_submenu.add_section("Transform", &color_submenu_transform_section);
 
         auto palette_editing_section = MenuModel();
@@ -70,11 +76,11 @@ namespace mousetrap
         colors_submenu.add_section("Palette Editing", &palette_editing_section);
 
         auto color_palette_section = MenuModel();
-        color_palette_section.add_action("Load...", palette_view_load.get_id());
-        color_palette_section.add_action("Load Default", palette_view_load_default.get_id());
-        color_palette_section.add_action("Save", palette_view_save.get_id());
-        color_palette_section.add_action("Save As...", palette_view_save_as.get_id());
-        color_palette_section.add_action("Save As Default", palette_view_save_as_default.get_id());
+        color_palette_section.add_action(tooltip("palette_view", "load"), palette_view_load.get_id());
+        color_palette_section.add_action(tooltip("palette_view", "load_default"), palette_view_load_default.get_id());
+        color_palette_section.add_action(tooltip("palette_view", "save"), palette_view_save.get_id());
+        color_palette_section.add_action(tooltip("palette_view", "save_as"), palette_view_save_as.get_id());
+        color_palette_section.add_action(tooltip("palette_view", "save_as_default"), palette_view_save_as_default.get_id());
         colors_submenu.add_section("Palette Load / Save", &color_palette_section);
 
         // LAYERS
@@ -82,31 +88,31 @@ namespace mousetrap
         auto layer_submenu = MenuModel();
 
         auto layer_submenu_create_section = MenuModel();
-        layer_submenu_create_section.add_action("New Layer", layer_view_layer_new_above_current.get_id());
-        layer_submenu_create_section.add_action("New Layer Below", layer_view_layer_new_below_current.get_id());
-        layer_submenu_create_section.add_action("New Layer From Visible", layer_view_layer_create_from_visible.get_id());
-        layer_submenu_create_section.add_action("Duplicate Layer", layer_view_layer_duplicate.get_id());
-        layer_submenu_create_section.add_action("Delete Layer", layer_view_layer_delete.get_id());
+        layer_submenu_create_section.add_action(tooltip("layer_view", "layer_new_above_current"), layer_view_layer_new_above_current.get_id());
+        layer_submenu_create_section.add_action(tooltip("layer_view", "layer_new_below_current"), layer_view_layer_new_below_current.get_id());
+        layer_submenu_create_section.add_action(tooltip("layer_view", "layer_create_from_visible"), layer_view_layer_create_from_visible.get_id());
+        layer_submenu_create_section.add_action(tooltip("layer_view", "layer_duplicate"), layer_view_layer_duplicate.get_id());
+        layer_submenu_create_section.add_action(tooltip("layer_view", "layer_delete"), layer_view_layer_delete.get_id());
         layer_submenu.add_section("Create / Delete", &layer_submenu_create_section);
 
         auto layer_submenu_merge_section = MenuModel();
-        layer_submenu_merge_section.add_action("Merge Down", layer_view_layer_merge_down.get_id());
-        layer_submenu_merge_section.add_action("Flatten All", layer_view_layer_flatten_all.get_id());
+        layer_submenu_merge_section.add_action(tooltip("layer_view", "layer_merge_down"), layer_view_layer_merge_down.get_id());
+        layer_submenu_merge_section.add_action(tooltip("layer_view", "layer_flatten_all"), layer_view_layer_flatten_all.get_id());
         layer_submenu.add_section("Merge", &layer_submenu_merge_section);
 
         auto layer_move_section = MenuModel();
-        layer_move_section.add_action("Move Layer Down", layer_view_layer_move_down.get_id());
-        layer_move_section.add_action("Move Layer Up", layer_view_layer_move_up.get_id());
+        layer_move_section.add_action(tooltip("layer_view", "layer_move_down"), layer_view_layer_move_down.get_id());
+        layer_move_section.add_action(tooltip("layer_view", "layer_move_up"), layer_view_layer_move_up.get_id());
         layer_submenu.add_section("Layer Position", &layer_move_section);
 
         auto layer_property_section = MenuModel();
-        layer_property_section.add_stateful_action("Toggle Layer Visible", layer_view_toggle_layer_visible.get_id(), true);
-        layer_property_section.add_stateful_action("Toggle Layer Locked", layer_view_toggle_layer_locked.get_id(), true);
+        layer_property_section.add_stateful_action(tooltip("layer_view", "toggle_layer_visible"), layer_view_toggle_layer_visible.get_id(), true);
+        layer_property_section.add_stateful_action(tooltip("layer_view", "toggle_layer_locked"), layer_view_toggle_layer_locked.get_id(), true);
         layer_submenu.add_section("Layer Properties", &layer_property_section);
 
         auto layer_show_section = MenuModel();
-        layer_show_section.add_action("Hide All Other Layers", layer_view_hide_all_other_layers.get_id());
-        layer_show_section.add_action("Show All Other Layers", layer_view_show_all_other_layers.get_id());
+        layer_show_section.add_action(tooltip("layer_view", "hide_all_other_layers"), layer_view_hide_all_other_layers.get_id());
+        layer_show_section.add_action(tooltip("layer_view", "show_all_other_layers"), layer_view_show_all_other_layers.get_id());
         layer_submenu.add_section("Hide / Show", &layer_show_section);
 
         // FRAMES
@@ -114,45 +120,45 @@ namespace mousetrap
         auto frame_submenu = MenuModel();
 
         auto frame_create_section = MenuModel();
-        frame_create_section.add_action("New Frame", frame_view_frame_new_right_of_current.get_id());
-        frame_create_section.add_action("New Frame Before", frame_view_frame_new_left_of_current.get_id());
-        frame_create_section.add_action("Delete Frame", frame_view_frame_delete.get_id());
+        frame_create_section.add_action(tooltip("frame_view", "frame_new_right_of_current"), frame_view_frame_new_right_of_current.get_id());
+        frame_create_section.add_action(tooltip("frame_view", "frame_new_left_of_current"), frame_view_frame_new_left_of_current.get_id());
+        frame_create_section.add_action(tooltip("frame_view", "frame_delete"), frame_view_frame_delete.get_id());
         frame_submenu.add_section("Create / Delete", &frame_create_section);
 
         auto frame_move_section = MenuModel();
-        frame_move_section.add_action("Move Frame Left", frame_view_frame_move_left.get_id());
-        frame_move_section.add_action("Move Frame Right", frame_view_frame_move_right.get_id());
+        frame_move_section.add_action(tooltip("frame_view", "frame_move_left"), frame_view_frame_move_left.get_id());
+        frame_move_section.add_action(tooltip("frame_view", "frame_move_right"), frame_view_frame_move_right.get_id());
         frame_submenu.add_section("Frame Position", &frame_move_section);
 
         auto frame_navigation_section = MenuModel();
-        frame_navigation_section.add_action("Play / Pause Playback", frame_view_toggle_playback_active.get_id());
-        frame_navigation_section.add_action("Select Previous", frame_view_go_to_previous_frame.get_id());
-        frame_navigation_section.add_action("Select Next", frame_view_go_to_next_frame.get_id());
-        frame_navigation_section.add_action("Jump to Start", frame_view_jump_to_start.get_id());
-        frame_navigation_section.add_action("Jump to End", frame_view_jump_to_end.get_id());
+        frame_navigation_section.add_action(tooltip("frame_view", "toggle_playback_active"), frame_view_toggle_playback_active.get_id());
+        frame_navigation_section.add_action(tooltip("frame_view", "go_to_previous_frame"), frame_view_go_to_previous_frame.get_id());
+        frame_navigation_section.add_action(tooltip("frame_view", "go_to_next_frame"), frame_view_go_to_next_frame.get_id());
+        frame_navigation_section.add_action(tooltip("frame_view", "jump_to_start"), frame_view_jump_to_start.get_id());
+        frame_navigation_section.add_action(tooltip("frame_view", "jump_to_end"), frame_view_jump_to_end.get_id());
         frame_submenu.add_section("Playback / Navigation", &frame_navigation_section);
 
         auto cells_section = MenuModel();
 
         auto copy_to_cell_section = MenuModel();
-        copy_to_cell_section.add_action("Copy to Cell Above", frame_view_copy_to_cell_above.get_id());
-        copy_to_cell_section.add_action("Copy to Cell Below", frame_view_copy_to_cell_below.get_id());
-        copy_to_cell_section.add_action("Copy to Cell Before", frame_view_copy_to_cell_before.get_id());
-        copy_to_cell_section.add_action("Copy to Cell After", frame_view_copy_to_cell_after.get_id());
+        copy_to_cell_section.add_action(tooltip("frame_view", "copy_to_cell_above"), frame_view_copy_to_cell_above.get_id());
+        copy_to_cell_section.add_action(tooltip("frame_view", "copy_to_cell_below"), frame_view_copy_to_cell_below.get_id());
+        copy_to_cell_section.add_action(tooltip("frame_view", "copy_to_cell_before"), frame_view_copy_to_cell_before.get_id());
+        copy_to_cell_section.add_action(tooltip("frame_view", "copy_to_cell_after"), frame_view_copy_to_cell_after.get_id());
         cells_section.add_submenu("Copy Cells", &copy_to_cell_section);
 
         auto swap_with_cell_section = MenuModel();
-        swap_with_cell_section.add_action("Swap with Cell Above", frame_view_swap_with_cell_above.get_id());
-        swap_with_cell_section.add_action("Swap with Cell Below", frame_view_swap_with_cell_below.get_id());
-        swap_with_cell_section.add_action("Swap with Cell Before", frame_view_swap_with_cell_before.get_id());
-        swap_with_cell_section.add_action("Swap with Cell After", frame_view_swap_with_cell_after.get_id());
+        swap_with_cell_section.add_action(tooltip("frame_view", "swap_with_cell_above"), frame_view_swap_with_cell_above.get_id());
+        swap_with_cell_section.add_action(tooltip("frame_view", "swap_with_cell_below"), frame_view_swap_with_cell_below.get_id());
+        swap_with_cell_section.add_action(tooltip("frame_view", "swap_with_cell_before"), frame_view_swap_with_cell_before.get_id());
+        swap_with_cell_section.add_action(tooltip("frame_view", "swap_with_cell_after"), frame_view_swap_with_cell_after.get_id());
         cells_section.add_submenu("Swap Cells", &swap_with_cell_section);
 
         frame_submenu.add_section("Cells", &cells_section);
 
         auto frame_other_section = MenuModel();
-        frame_other_section.add_stateful_action("Toggle Keyframe", frame_view_toggle_current_frame_is_keyframe.get_id(), false);
-        frame_other_section.add_stateful_action("Toggle Onionskin Visible", frame_view_toggle_onionskin_visible.get_id(), false);
+        frame_other_section.add_stateful_action(tooltip("frame_view", "toggle_current_frame_is_keyframe"), frame_view_toggle_current_frame_is_keyframe.get_id(), false);
+        frame_other_section.add_stateful_action(tooltip("frame_view", "toggle_onionskin_visible"), frame_view_toggle_onionskin_visible.get_id(), initial_state("frame_view", "onionskin_visible"));
         frame_submenu.add_section("Other", &frame_other_section);
 
         // CANVAS
@@ -171,19 +177,23 @@ namespace mousetrap
         canvas_submenu.add_section("Transform", &canvas_transform_section);
 
         auto canvas_grid_section = MenuModel();
-        canvas_grid_section.add_stateful_action("Grid Visible", canvas_toggle_grid_visible.get_id(), true);
+        canvas_grid_section.add_stateful_action("Grid Visible", canvas_toggle_grid_visible.get_id(), initial_state("canvas", "grid_visible"));
         canvas_grid_section.add_action("Grid Color...", canvas_open_grid_color_picker.get_id());
         canvas_submenu.add_section("Grid", &canvas_grid_section);
 
         auto canvas_brush_section = MenuModel();
-        canvas_brush_section.add_stateful_action("Brush Outline Visible", canvas_toggle_brush_outline_visible.get_id(), true);
+        canvas_brush_section.add_stateful_action("Brush Outline Visible", canvas_toggle_brush_outline_visible.get_id(), initial_state("canvas", "brush_outline_visible"));
         canvas_submenu.add_section("Brush", &canvas_brush_section);
 
         auto canvas_mirror_section = MenuModel();
-        canvas_mirror_section.add_stateful_action("Horizontal Symmetry Enabled", canvas_toggle_brush_outline_visible.get_id(), false);
-        canvas_mirror_section.add_stateful_action("Vertical Symmetry Enabled", canvas_toggle_brush_outline_visible.get_id(), false);
+        canvas_mirror_section.add_stateful_action("Horizontal Symmetry Enabled", canvas_toggle_brush_outline_visible.get_id(), initial_state("canvas", "horizontal_symmetry_active"));
+        canvas_mirror_section.add_stateful_action("Vertical Symmetry Enabled", canvas_toggle_brush_outline_visible.get_id(), initial_state("canvas", "vertical_symmetry_active"));
         canvas_mirror_section.add_action("Symmetry Ruler Color...", canvas_toggle_brush_outline_visible.get_id(), false);
         canvas_submenu.add_section("Symmetry", &canvas_mirror_section);
+
+        auto canvas_background_section = MenuModel();
+        canvas_background_section.add_stateful_action("Background Visible", canvas_toggle_background_visible.get_id(), initial_state("canvas", "background_visible"));
+        canvas_submenu.add_section("Background", &canvas_background_section);
 
         auto canvas_perspective_section = MenuModel();
         canvas_perspective_section.add_action("Reset View", canvas_reset_transform.get_id());

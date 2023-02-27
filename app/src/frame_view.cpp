@@ -630,7 +630,7 @@ namespace mousetrap
         auto frame_delete_tooltip = state::tooltips_file->get_value("frame_view", "frame_delete");
         _frame_delete_button.set_tooltip_text(frame_delete_tooltip);
 
-        auto frame_make_keyframe_inbetween_tooltip = state::tooltips_file->get_value("frame_view", "frame_make_keyframe_inbetween");
+        auto frame_make_keyframe_inbetween_tooltip = state::tooltips_file->get_value("frame_view", "toggle_current_frame_is_keyframe");
         _frame_is_keyframe_toggle_button.set_tooltip_text(frame_make_keyframe_inbetween_tooltip);
 
         auto copy_to_cell_above_tooltip = state::tooltips_file->get_value("frame_view", "copy_to_cell_above");

@@ -473,7 +473,7 @@ namespace mousetrap
         add_tooltip(_layer_move_down_button, "layer_move_down");
         add_tooltip(_layer_delete_button, "layer_delete");
         add_tooltip(_layer_duplicate_button, "layer_duplicate");
-        add_tooltip(_layer_create_button, "layer_create");
+        add_tooltip(_layer_create_button, "layer_new_above_current");
         add_tooltip(_layer_merge_down_button, "layer_merge_down");
         add_tooltip(_layer_flatten_all_button, "layer_flatten_all");
 
@@ -484,7 +484,7 @@ namespace mousetrap
         _tooltip.create_from("layer_view", state::tooltips_file, state::keybindings_file);
         _header_menu_button.set_tooltip_widget(_tooltip);
 
-        auto layer_create_tooltip = state::tooltips_file->get_value("layer_view", "layer_create");
+        auto layer_create_tooltip = state::tooltips_file->get_value("layer_view", "layer_new_above_current");
         _layer_create_button.set_tooltip_text(layer_create_tooltip);
 
         auto layer_delete_tooltip = state::tooltips_file->get_value("layer_view", "layer_delete");
@@ -505,8 +505,8 @@ namespace mousetrap
         auto layer_move_down_tooltip = state::tooltips_file->get_value("layer_view", "layer_move_down");
         _layer_move_down_button.set_tooltip_text(layer_move_down_tooltip);
 
-        auto set_layer_visible_tooltip = state::tooltips_file->get_value("layer_view", "set_layer_visible");
-        auto set_layer_locked_tooltip = state::tooltips_file->get_value("layer_view", "set_layer_locked");
+        auto set_layer_visible_tooltip = state::tooltips_file->get_value("layer_view", "toggle_layer_visible");
+        auto set_layer_locked_tooltip = state::tooltips_file->get_value("layer_view", "toggle_layer_locked");
         auto layer_create_from_visible_tooltip = state::tooltips_file->get_value("layer_view", "layer_create_from_visible");
 
         _preview_size_spin_button.set_margin_start(state::margin_unit);
@@ -524,6 +524,10 @@ namespace mousetrap
         _preview_size_box.push_back(&_preview_size_spin_button);
         _preview_size_box.set_margin(state::margin_unit);
 
+        auto tooltip = [](const std::string& value) {
+            return state::tooltips_file->get_value_as<std::string>("layer_view", value);
+        };
+
         auto settings_section = MenuModel();
         auto preview_size_submenu = MenuModel();
         preview_size_submenu.add_widget(&_preview_size_box);
@@ -532,8 +536,8 @@ namespace mousetrap
         _menu.add_section("Settings", &settings_section);
 
         auto create_section = MenuModel();
-        create_section.add_action("New Layer Above Current", layer_view_layer_new_above_current.get_id());
-        create_section.add_action("New Layer Below Current", layer_view_layer_new_below_current.get_id());
+        create_section.add_action(tooltip("layer_new_above_current"), layer_view_layer_new_above_current.get_id());
+        create_section.add_action(tooltip("layer_new_below_current"), layer_view_layer_new_below_current.get_id());
         create_section.add_action(layer_delete_tooltip, layer_view_layer_delete.get_id());
         create_section.add_action(layer_duplicate_tooltip, layer_view_layer_duplicate.get_id());
         _menu.add_section("Create / Delete", &create_section);

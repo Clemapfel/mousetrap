@@ -270,7 +270,7 @@ namespace mousetrap
     void Canvas::set_grid_visible(bool b)
     {
         _grid_visible = b;
-        _grid_layer->set_visible(_grid_visible);
+        _grid_layer->set_visible(b);
         _control_bar.set_grid_visible(b);
         state::actions::canvas_toggle_grid_visible.set_state(b);
     }
@@ -278,7 +278,7 @@ namespace mousetrap
     void Canvas::set_background_visible(bool b)
     {
         _background_visible = b;
-        _transparency_tiling_layer->set_background_visible(_background_visible);
+        _transparency_tiling_layer->set_background_visible(b);
         _control_bar.set_background_visible(b);
         state::actions::canvas_toggle_background_visible.set_state(b);
     }
