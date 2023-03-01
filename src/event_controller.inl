@@ -104,4 +104,14 @@ namespace mousetrap
         gtk_gesture_drag_get_offset(GTK_GESTURE_DRAG(_native), &x, &y);
         return Vector2f(x, y);
     }
+
+    inline ZoomEventController::ZoomEventController()
+        : EventController(GTK_EVENT_CONTROLLER(gtk_gesture_zoom_new())),
+            HasScaleChangedSignal<ZoomEventController>(this)
+    {}
+
+    inline float ZoomEventController::get_scale_delta()
+    {
+        return gtk_gesture_zoom_get_scale_delta(GTK_GESTURE_ZOOM(_native));
+    }
 }

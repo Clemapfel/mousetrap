@@ -597,7 +597,12 @@ namespace mousetrap
                     Vector2f _canvas_size = {1, 1};
                     static void on_area_resize(GLArea*, int, int, UserInputLayer*);
 
+                    bool should_trigger(const std::string& trigger, guint keyval);
                     bool _scroll_scale_active = false;
+                    bool _lock_axis_movement = false;
+
+                    float _scale_backup = 1;
+                    size_t _n_frames_since_pinch = 0;
 
                     Vector2f _widget_space_pos = {0, 0};
                     void update_cursor_pos();
@@ -624,6 +629,9 @@ namespace mousetrap
                     static void on_drag_begin(DragEventController*, double x, double y, UserInputLayer* instance);
                     static void on_drag_update(DragEventController*, double x, double y, UserInputLayer* instance);
                     static void on_drag_end(DragEventController*, double x, double y, UserInputLayer* instance);
+
+                    ZoomEventController _zoom_controller;
+                    static void on_scale_changed(ZoomEventController*, double distance, UserInputLayer* instance);
 
                     ShortcutController _shortcut_controller;
             };

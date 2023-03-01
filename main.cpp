@@ -230,7 +230,6 @@ static void activate(GtkApplication* app, void*)
     bubble_log_overlay.add_overlay(bubble_log);
     // MAIN
 
-
     state::main_window->set_child(&bubble_log_overlay);
     state::main_window->show();
     state::main_window->present();

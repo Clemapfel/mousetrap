@@ -1004,6 +1004,41 @@ namespace mousetrap
             void* _on_close_data;
     };
 
+    template<typename Owner_t>
+    class HasScaleChangedSignal
+    {
+        public:
+            template<typename T>
+            using on_scale_changed_function_t = void(Owner_t*, double, T);
+
+            template<typename Function_t, typename T>
+            void connect_signal_scale_changed(Function_t, T);
+
+            void set_signal_scale_changed_blocked(bool b) {
+                _blocked = b;
+            }
+
+            void emit_signal_scale_changed(double scale)
+            {
+                if (_on_scale_changed_f != nullptr and not _blocked)
+                    _on_scale_changed_f(_instance, scale, _on_scale_changed_data);
+            };
+
+        protected:
+            HasScaleChangedSignal(Owner_t* instance)
+                : _instance(instance)
+            {}
+
+        private:
+            Owner_t* _instance;
+
+            static void on_scale_changed_wrapper(Widget*, gdouble, HasScaleChangedSignal<Owner_t>* instance);
+
+            bool _blocked = false;
+            std::function<on_scale_changed_function_t<void*>> _on_scale_changed_f;
+            void* _on_scale_changed_data;
+    };
+
 }
 
 // ###
@@ -1700,5 +1735,25 @@ namespace mousetrap
             return self->_on_close_f(self->_instance, self->_on_close_data);
 
         return true;
+    }
+
+    // ###
+
+    template<typename Owner_t>
+    template<typename Function_t, typename T>
+    void HasScaleChangedSignal<Owner_t>::connect_signal_scale_changed(Function_t function, T data)
+    {
+        auto temp = std::function<on_scale_changed_function_t<T>>(function);
+        _on_scale_changed_f = std::function<on_scale_changed_function_t<void*>>(*((std::function<on_scale_changed_function_t<void*>>*) &temp));
+        _on_scale_changed_data = data;
+
+        _instance->connect_signal("scale-changed", on_scale_changed_wrapper, this);
+    }
+
+    template<typename Owner_t>
+    void HasScaleChangedSignal<Owner_t>::on_scale_changed_wrapper(Widget*, gdouble value, HasScaleChangedSignal<Owner_t>* self)
+    {
+        if (self->_on_scale_changed_f != nullptr and not self->_blocked)
+            self->_on_scale_changed_f(self->_instance, value, self->_on_scale_changed_data);
     }
 }

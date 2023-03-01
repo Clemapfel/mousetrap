@@ -173,8 +173,8 @@ namespace mousetrap
             instance->_rectangle_tool_shape.left_anchor_shape,
             instance->_rectangle_tool_shape.right_anchor_shape,
             instance->_rectangle_tool_shape.center_cross,
-            //instance->_rectangle_tool_shape.rectangle_inner_outline,
-            //instance->_rectangle_tool_shape.rectangle_outer_outline,
+            instance->_rectangle_tool_shape.rectangle_inner_outline,
+            instance->_rectangle_tool_shape.rectangle_outer_outline,
             instance->_rectangle_tool_shape.rectangle_shape,
         })
         {
@@ -183,8 +183,8 @@ namespace mousetrap
         }
 
         for (auto* shape : {
-            //instance->_rectangle_tool_shape.circle_inner_outline,
-            //instance->_rectangle_tool_shape.circle_outer_outline,
+            instance->_rectangle_tool_shape.circle_inner_outline,
+            instance->_rectangle_tool_shape.circle_outer_outline,
             instance->_rectangle_tool_shape.circle
         })
         {

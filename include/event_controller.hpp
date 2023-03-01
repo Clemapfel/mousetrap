@@ -89,6 +89,16 @@ namespace mousetrap
             Vector2f get_start_position();
             Vector2f get_current_offset();
     };
+
+    // handles pinch zoom
+    class ZoomEventController : public EventController,
+        public HasScaleChangedSignal<ZoomEventController>
+    {
+        public:
+            ZoomEventController();
+
+            float get_scale_delta();
+    };
 }
 
 #include <src/event_controller.inl>

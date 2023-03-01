@@ -97,7 +97,7 @@ namespace mousetrap
 
         _main.push_back(&_layer_overlay);
         _main.push_back(_control_bar);
-        _main.push_back(&_debug_box);
+        //_main.push_back(&_debug_box);
         _main.set_expand(true);
 
         using namespace state::actions;
