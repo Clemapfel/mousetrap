@@ -147,6 +147,15 @@ namespace mousetrap
     void Canvas::UserInputLayer::on_scroll(ScrollEventController*, double x, double y, UserInputLayer* instance)
     {
 
+        if (instance->_scroll_scale_active)
+        {
+            bool inverted = state::settings_file->get_value_as<bool>("canvas", "scroll_inverted");
+            float sensitivity = state::settings_file->get_value_as<float>("canvas", "scroll_sensitivity");
+
+            auto scale = instance->_owner->_scale;
+            scale += (inverted ? -1.f : 1) * y * sensitivity;
+            instance->_owner->set_scale(scale);
+        }
     }
 
     void Canvas::UserInputLayer::on_scroll_end(ScrollEventController*, UserInputLayer* instance)

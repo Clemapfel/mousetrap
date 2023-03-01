@@ -590,13 +590,14 @@ namespace mousetrap
 
                 private:
                     Canvas* _owner;
-
                     GLArea _proxy;
 
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
                     Vector2f _canvas_size = {1, 1};
                     static void on_area_resize(GLArea*, int, int, UserInputLayer*);
+
+                    bool _scroll_scale_active = false;
 
                     Vector2f _widget_space_pos = {0, 0};
                     void update_cursor_pos();
@@ -623,6 +624,8 @@ namespace mousetrap
                     static void on_drag_begin(DragEventController*, double x, double y, UserInputLayer* instance);
                     static void on_drag_update(DragEventController*, double x, double y, UserInputLayer* instance);
                     static void on_drag_end(DragEventController*, double x, double y, UserInputLayer* instance);
+
+                    ShortcutController _shortcut_controller;
             };
 
             UserInputLayer* _user_input_layer = new UserInputLayer(this);

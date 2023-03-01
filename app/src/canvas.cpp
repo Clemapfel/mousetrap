@@ -166,6 +166,12 @@ namespace mousetrap
 
     void Canvas::set_scale(float scale)
     {
+        if (_scale == scale)
+            return;
+
+        if (scale < 1)
+            scale = 1;
+
         _scale = scale;
         _transparency_tiling_layer->set_scale(_scale);
         _layer_layer->set_scale(_scale);
