@@ -46,6 +46,62 @@ namespace mousetrap
             }
         }
 
+        std::vector<std::string> valid = {"<Shift>", "<Control>", "<Alt>"};
+        auto scroll_scale_active = std::string(gtk_shortcut_trigger_to_string(gtk_shortcut_trigger_parse_string(file->get_value("canvas", "scroll_scale_active").c_str())));
+        bool scroll_scale_active_okay = false;
+
+        auto lock_axis_movement = std::string(gtk_shortcut_trigger_to_string(gtk_shortcut_trigger_parse_string(file->get_value("canvas", "lock_axis_movement").c_str())));
+        bool lock_axis_movement_okay = false;
+
+        for (auto& v : valid)
+        {
+            if (scroll_scale_active == v)
+                scroll_scale_active_okay = true;
+
+            if (lock_axis_movement == v)
+                lock_axis_movement_okay = true;
+        }
+
+        if (not scroll_scale_active_okay)
+        {
+            std::stringstream message;
+            std::stringstream sanitized;
+            sanitized << "<b>Invalid Keybinding detected</b>\n";
+            message << "Key `canvas.scroll_scale_active has to be exactly one of `<Shift>`, `<Control>` or `<Alt>`, but it is set to `"
+                    << scroll_scale_active << "`" << std::endl;
+
+            for (auto c : message.str())
+            {
+                if (c == '<')
+                    sanitized << "&lt;";
+                else if (c == '>')
+                    sanitized << "&gt;";
+                else
+                    sanitized << c;
+            }
+            state::bubble_log->send_message(sanitized.str(), InfoMessageType::ERROR);
+        }
+
+        if (not lock_axis_movement_okay)
+        {
+            std::stringstream message;
+            std::stringstream sanitized;
+            sanitized << "<b>Invalid Keybinding detected</b>\n";
+            message << "Key `canvas.lock_axis_movement has to be exactly one of `<Shift>`, `<Control>` or `<Alt>`, but it is set to `"
+                    << lock_axis_movement_okay << "`" << std::endl;
+
+            for (auto c : message.str())
+            {
+                if (c == '<')
+                    sanitized << "&lt;";
+                else if (c == '>')
+                    sanitized << "&gt;";
+                else
+                    sanitized << c;
+            }
+            state::bubble_log->send_message(sanitized.str(), InfoMessageType::ERROR);
+        }
+
         if (not conflict)
             return;
 
