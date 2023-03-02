@@ -743,11 +743,6 @@ namespace mousetrap
 
             ControlBar _control_bar = ControlBar(this);
 
-            SpinButton _x_offset_button = SpinButton(-1000, +1000, 1);
-            SpinButton _y_offset_button = SpinButton(-1000, +1000, 1);
-            Label _offset_label = Label("Offset (xy):");
-            Box _transform_box = Box(GTK_ORIENTATION_HORIZONTAL);
-
             CheckButton _line_visible_button;
             SpinButton _line_start_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);
             SpinButton _line_start_y_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().y + 100, 1);
@@ -760,7 +755,17 @@ namespace mousetrap
 
             // main layout
 
-            Box _main = Box(GTK_ORIENTATION_VERTICAL);
+            Adjustment _x_offset_scrollbar_adjustment;
+            Scrollbar _x_offset_scrollbar = Scrollbar(_x_offset_scrollbar_adjustment, GTK_ORIENTATION_HORIZONTAL);
+
+            Adjustment _y_offset_scrollbar_adjustment;
+            Scrollbar _y_offset_scrollbar = Scrollbar(_y_offset_scrollbar_adjustment, GTK_ORIENTATION_VERTICAL);
+
+            Button _reset_view_button;
+            Box _y_scrollbar_and_reset_button_box = Box(GTK_ORIENTATION_VERTICAL);
+            Box _x_scrollbar_and_canvas_box = Box(GTK_ORIENTATION_VERTICAL);
+
+            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
             Overlay _layer_overlay;
 
     };
