@@ -81,7 +81,7 @@ namespace mousetrap
         //_layer_overlay.add_overlay(*_selection_layer);
         //_layer_overlay.add_overlay(*_symmetry_ruler_layer);
         //_layer_overlay.add_overlay(*_wireframe_layer);
-        //_layer_overlay.add_overlay(*_user_input_layer);
+        _layer_overlay.add_overlay(*_user_input_layer);
 
         _transparency_tiling_layer->operator Widget *()->set_expand(true);
         _layer_layer->operator Widget *()->set_expand(true);
@@ -333,5 +333,6 @@ namespace mousetrap
     {
         _widget_cursor_position = pos;
         _wireframe_layer->set_widget_cursor_position(_widget_cursor_position);
+        _layer_layer->set_origin(pos);
     }
 }

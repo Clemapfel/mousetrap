@@ -187,6 +187,7 @@ namespace mousetrap
 
                     void set_scale(float);
                     void set_offset(Vector2f);
+                    void set_origin(Vector2f);
 
                 private:
                     Canvas* _owner;
@@ -221,6 +222,9 @@ namespace mousetrap
 
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
+                    Vector2f _origin = {0.5, 0.5};
+                    GLTransform* _transform = new GLTransform();
+                    void update_transform();
                     void reformat();
             };
 
