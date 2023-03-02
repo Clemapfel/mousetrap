@@ -200,14 +200,6 @@ namespace mousetrap
         };
 
         auto selection = active_state->get_selection();
-
-        // TODO
-        selection.clear();
-        for (size_t x = 0; x < layer_resolution.x; x += 2)
-            for (size_t y = 0; y < layer_resolution.y; y += 2)
-                selection.insert({x, y});
-        // TODO
-
         auto vertices = generate_outline_vertices(selection);
 
         _outline_top->as_lines(convert_vertex_coordinates(vertices.top));

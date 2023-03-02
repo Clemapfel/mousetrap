@@ -712,6 +712,7 @@ namespace mousetrap
         _menu_button.set_child(&_menu_button_label);
         _menu_button.set_tooltip_widget(_tooltip);
         _menu_button.set_popover(&_popover_menu);
+        _menu_button.set_popover_position(GTK_POS_TOP);
 
         // Layout
 

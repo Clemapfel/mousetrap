@@ -60,7 +60,6 @@ namespace mousetrap
 
         DECLARE_GLOBAL_ACTION(canvas, toggle_x_scroll_inverted)
         DECLARE_GLOBAL_ACTION(canvas, toggle_y_scroll_inverted)
-
     }
 
     struct Canvas : public AppComponent,

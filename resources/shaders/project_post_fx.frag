@@ -46,6 +46,11 @@ float flip(float coord)
     return 1 - coord;
 }
 
+float round_to_component(float value, int n)
+{
+    return round(value * float(n)) / n;
+}
+
 void main()
 {
     vec2 pos = vec2(
@@ -72,5 +77,10 @@ void main()
     as_rgb.z = clamp(as_rgb.z + _b_offset, 0, 1);
 
     float a = color.a == 0 ? color.a : clamp(color.a + _a_offset, 0, 1);
+
+    //as_rgb.r = round_to_component(as_rgb.r, 1);
+    //as_rgb.g = round_to_component(as_rgb.g, 1);
+    //as_rgb.b = round_to_component(as_rgb.b, 2);
+
     _fragment_color = vec4(as_rgb.rgb, a * _vertex_color.a);
 }
