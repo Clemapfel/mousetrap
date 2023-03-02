@@ -31,6 +31,10 @@ namespace mousetrap
             instance->_owner->set_vertical_symmetry_active(button->get_active());
         }, this);
 
+        _symmetry_control_menu_popover.set_child(*_symmetry_control_menu);
+        _symmetry_control_menu_button.set_popover(&_symmetry_control_menu_popover);
+        _symmetry_control_menu_button.set_size_request(_vertical_symmetry_icon.get_size());
+
         _brush_outline_visible_toggle_button.set_child(&_brush_outline_visible_icon);
         _brush_outline_visible_toggle_button.connect_signal_toggled([](ToggleButton* button, ControlBar* instance){
             instance->_owner->set_brush_outline_visible(button->get_active());
@@ -70,6 +74,7 @@ namespace mousetrap
         _main.push_back(&_background_visible_toggle_button);
         _main.push_back(&_horizontal_symmetry_toggle_button);
         _main.push_back(&_vertical_symmetry_toggle_button);
+        _main.push_back(&_symmetry_control_menu_button);
 
         set_scale(_owner->_scale);
         set_horizontal_symmetry_active(_owner->_horizontal_symmetry_active);
@@ -115,6 +120,8 @@ namespace mousetrap
         _horizontal_symmetry_toggle_button.set_signal_toggled_blocked(true);
         _horizontal_symmetry_toggle_button.set_active(b);
         _horizontal_symmetry_toggle_button.set_signal_toggled_blocked(false);
+
+        _symmetry_control_menu->set_horizontal_symmetry_active(b);
     }
 
     void Canvas::ControlBar::set_vertical_symmetry_active(bool b)
@@ -122,6 +129,18 @@ namespace mousetrap
         _vertical_symmetry_toggle_button.set_signal_toggled_blocked(true);
         _vertical_symmetry_toggle_button.set_active(b);
         _vertical_symmetry_toggle_button.set_signal_toggled_blocked(false);
+
+        _symmetry_control_menu->set_vertical_symmetry_active(b);
+    }
+
+    void Canvas::ControlBar::set_horizontal_symmetry_pixel_position(size_t px)
+    {
+        _symmetry_control_menu->set_horizontal_symmetry_pixel_position(px);
+    }
+
+    void Canvas::ControlBar::set_vertical_symmetry_pixel_position(size_t px)
+    {
+        _symmetry_control_menu->set_vertical_symmetry_pixel_position(px);
     }
 
     void Canvas::ControlBar::set_brush_outline_visible(bool b)
@@ -149,5 +168,111 @@ namespace mousetrap
         _scale_scale.set_signal_value_changed_blocked(true);
         _scale_scale.set_value(scale);
         _scale_scale.set_signal_value_changed_blocked(false);
+    }
+
+    void Canvas::ControlBar::on_layer_resolution_changed()
+    {
+        _symmetry_control_menu->on_layer_resolution_changed();
+    }
+
+    Canvas::ControlBar::SymmetryControlMenu::SymmetryControlMenu(ControlBar* owner)
+        : _owner(owner)
+    {
+        _h_spin_button.connect_signal_value_changed([](SpinButton* scale, SymmetryControlMenu* instance){
+            instance->_owner->_owner->set_horizontal_symmetry_pixel_position(scale->get_value());
+        }, this);
+
+        _h_center_button.connect_signal_clicked([](Button* button, SymmetryControlMenu* instance) {
+            instance->_owner->_owner->set_horizontal_symmetry_pixel_position(active_state->get_layer_resolution().x / 2);
+        }, this);
+
+        _h_check_button.connect_signal_toggled([](CheckButton* button, SymmetryControlMenu* instance){
+            instance->_owner->_owner->set_horizontal_symmetry_active(button->get_active());
+        }, this);
+
+        _v_spin_button.connect_signal_value_changed([](SpinButton* scale, SymmetryControlMenu* instance){
+            instance->_owner->_owner->set_vertical_symmetry_pixel_position(scale->get_value());
+        }, this);
+
+        _v_center_button.connect_signal_clicked([](Button* button, SymmetryControlMenu* instance) {
+            instance->_owner->_owner->set_vertical_symmetry_pixel_position(active_state->get_layer_resolution().x / 2);
+        }, this);
+
+        _v_check_button.connect_signal_toggled([](CheckButton* button, SymmetryControlMenu* instance){
+            instance->_owner->_owner->set_vertical_symmetry_active(button->get_active());
+        }, this);
+
+
+        _h_center_button.set_child(&_h_center_button_label);
+        _v_center_button.set_child(&_v_center_button_label);
+
+        _h_check_button_box.push_back(&_h_enabled_label);
+        _h_check_button_box.push_back(&_h_check_button);
+        _h_button_box.push_back(&_h_position_label);
+        _h_button_box.push_back(&_h_spin_button);
+        _h_button_box.push_back(&_h_center_button);
+
+        _v_check_button_box.push_back(&_v_enabled_label);
+        _v_check_button_box.push_back(&_v_check_button);
+        _v_button_box.push_back(&_v_position_label);
+        _v_button_box.push_back(&_v_spin_button);
+        _v_button_box.push_back(&_v_center_button);
+
+        _main.push_back(&_title_label);
+        _main.push_back(&_h_label);
+        _main.push_back(&_h_check_button_box);
+        _main.push_back(&_h_button_box);
+        _main.push_back(&_v_label);
+        _main.push_back(&_v_check_button_box);
+        _main.push_back(&_v_button_box);
+
+        on_layer_resolution_changed();
+        set_horizontal_symmetry_active(_owner->_owner->_horizontal_symmetry_active);
+        set_vertical_symmetry_active(_owner->_owner->_vertical_symmetry_active);
+        set_horizontal_symmetry_pixel_position(active_state->get_layer_resolution().x / 2);
+        set_vertical_symmetry_pixel_position(active_state->get_layer_resolution().y / 2);
+    }
+
+    Canvas::ControlBar::SymmetryControlMenu::operator Widget*()
+    {
+        return &_main;
+    }
+
+    void Canvas::ControlBar::SymmetryControlMenu::set_horizontal_symmetry_active(bool b)
+    {
+        _h_check_button.set_signal_toggled_blocked(true);
+        _h_check_button.set_active(b);
+        _h_spin_button.set_can_respond_to_input(b);
+        _h_center_button.set_can_respond_to_input(b);
+        _h_check_button.set_signal_toggled_blocked(false);
+    }
+
+    void Canvas::ControlBar::SymmetryControlMenu::set_vertical_symmetry_active(bool b)
+    {
+        _v_check_button.set_signal_toggled_blocked(true);
+        _v_check_button.set_active(b);
+        _v_spin_button.set_can_respond_to_input(b);
+        _v_center_button.set_can_respond_to_input(b);
+        _v_check_button.set_signal_toggled_blocked(false);
+    }
+
+    void Canvas::ControlBar::SymmetryControlMenu::set_vertical_symmetry_pixel_position(size_t px)
+    {
+        _v_spin_button.set_signal_value_changed_blocked(true);
+        _v_spin_button.set_value(px);
+        _v_spin_button.set_signal_value_changed_blocked(false);
+    }
+
+    void Canvas::ControlBar::SymmetryControlMenu::set_horizontal_symmetry_pixel_position(size_t px)
+    {
+        _h_spin_button.set_signal_value_changed_blocked(true);
+        _h_spin_button.set_value(px);
+        _h_spin_button.set_signal_value_changed_blocked(false);
+    }
+
+    void Canvas::ControlBar::SymmetryControlMenu::on_layer_resolution_changed()
+    {
+        _h_spin_button.set_upper_limit(active_state->get_layer_resolution().x - 1);
+        _v_spin_button.set_upper_limit(active_state->get_layer_resolution().y - 1);
     }
 }

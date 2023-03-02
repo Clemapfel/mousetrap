@@ -86,16 +86,16 @@ namespace mousetrap
         if (_offset == offset)
             return;
 
-        _offset = {offset.x / _canvas_size.x, offset.y / _canvas_size.y};
+        _offset = {offset.x, offset.y};
         update_cursor_pos();
     }
 
     void Canvas::UserInputLayer::update_cursor_pos()
     {
-        _owner->set_widget_cursor_position(_widget_space_pos);
+        _owner->set_widget_cursor_position(_absolute_widget_space_pos);
 
-        auto x = _widget_space_pos.x;
-        auto y = _widget_space_pos.y;
+        auto x = _absolute_widget_space_pos.x;
+        auto y = _absolute_widget_space_pos.y;
 
         auto layer_resolution = active_state->get_layer_resolution();
 
@@ -121,20 +121,20 @@ namespace mousetrap
 
     void Canvas::UserInputLayer::on_click_pressed(ClickEventController*, size_t n, double x, double y, UserInputLayer* instance)
     {
-        instance->_widget_space_pos = {x, y};
+        instance->_absolute_widget_space_pos = {x, y};
         instance->update_cursor_pos();
     }
 
     void Canvas::UserInputLayer::on_click_released(ClickEventController*, size_t n, double x, double y, UserInputLayer* instance)
     {
-        instance->_widget_space_pos = {x, y};
+        instance->_absolute_widget_space_pos = {x, y};
         instance->update_cursor_pos();
     }
 
     void Canvas::UserInputLayer::on_motion_enter(MotionEventController*, double x, double y, UserInputLayer* instance)
     {
         instance->_owner->set_cursor_in_bounds(true);
-        instance->_widget_space_pos = {x, y};
+        instance->_absolute_widget_space_pos = {x, y};
         instance->update_cursor_pos();
     }
 
@@ -145,7 +145,8 @@ namespace mousetrap
 
     void Canvas::UserInputLayer::on_motion(MotionEventController*, double x, double y, UserInputLayer* instance)
     {
-        instance->_widget_space_pos = {x, y};
+        instance->_absolute_widget_space_pos = {x, y};
+        instance->_normalized_widget_space_pos = {x / instance->_canvas_size.x, y / instance->_canvas_size.y};
         instance->update_cursor_pos();
     }
 
@@ -233,8 +234,8 @@ namespace mousetrap
         bool y_speed = state::settings_file->get_value_as<float>("canvas", "offset_y_speed");
 
         instance->_owner->set_offset(
-            instance->_owner->_offset.x + (x_inverted ? -1 : 1) * x * x_speed,
-            instance->_owner->_offset.y + (y_inverted ? -1 : 1) * y * y_speed
+            ((instance->_owner->_offset.x * instance->_canvas_size.x) + (x_inverted ? -1 : 1) * x * x_speed) / instance->_canvas_size.x,
+            ((instance->_owner->_offset.y * instance->_canvas_size.y) + (y_inverted ? -1 : 1) * y * y_speed) / instance->_canvas_size.y
         );
     }
 

@@ -8,7 +8,7 @@
 namespace mousetrap
 {
     Canvas::LayerLayer::LayerLayer(Canvas* owner)
-        : _owner(owner)
+    : _owner(owner)
     {
         _area.connect_signal_realize(on_area_realize, this);
         _area.connect_signal_resize(on_area_resize, this);
@@ -67,7 +67,7 @@ namespace mousetrap
             else if (layer_i == active_state->get_current_layer_index())
                 should_apply_flip = true;
 
-            auto task = RenderTask(_layer_shapes.at(layer_i), _post_fx_shader, _transform, active_state->get_layer(layer_i)->get_blend_mode());
+            auto task = RenderTask(_layer_shapes.at(layer_i), _post_fx_shader, nullptr, active_state->get_layer(layer_i)->get_blend_mode());
 
             task.register_int("_apply_color_offset", should_apply_color_offset ? yes : no);
             task.register_int("_apply_flip", should_apply_flip ? yes : no);
@@ -98,32 +98,15 @@ namespace mousetrap
     void Canvas::LayerLayer::set_scale(float scale)
     {
         _scale = scale;
-        update_transform();
+        reformat();
         _area.queue_render();
     }
 
     void Canvas::LayerLayer::set_offset(Vector2f offset)
     {
-        _offset = {offset.x / _canvas_size->x, offset.y / _canvas_size->y};
-        update_transform();
+        _offset = {offset.x, offset.y};
+        reformat();
         _area.queue_render();
-    }
-
-    void Canvas::LayerLayer::set_origin(Vector2f origin)
-    {
-        _origin = {origin.x / _canvas_size->x, origin.y / _canvas_size->y};
-        update_transform();
-        //_area.queue_render();
-    }
-
-    void Canvas::LayerLayer::update_transform()
-    {
-        auto offset = to_gl_position(_offset);
-        auto origin = to_gl_position(_origin);
-
-        _transform->reset();
-        _transform->translate(offset);
-        _transform->scale(_scale, _scale);
     }
 
     void Canvas::LayerLayer::reformat()
@@ -133,22 +116,19 @@ namespace mousetrap
 
         float width = active_state->get_layer_resolution().x / _canvas_size->x;
         float height = active_state->get_layer_resolution().y / _canvas_size->y;
-        Vector2f center = {0.5, 0.5};
 
-        auto align_to_pixelgrid = [&](Vector2f in)
-        {
-            in.x -= std::fmod(in.x, 1.f / _canvas_size->x);
-            in.y -= std::fmod(in.y, 1.f / _canvas_size->y);
-            return in;
-        };
+        width *= _scale;
+        height *= _scale;
+
+        Vector2f center = {0.5, 0.5};
+        center += _offset;
 
         for (auto* shape : _layer_shapes)
             shape->as_rectangle(
-                align_to_pixelgrid(center + Vector2f{-0.5 * width, -0.5 * height}),
-                align_to_pixelgrid(center + Vector2f{+0.5 * width, -0.5 * height}),
-                align_to_pixelgrid(center + Vector2f{+0.5 * width, +0.5 * height}),
-                align_to_pixelgrid(center + Vector2f{-0.5 * width, +0.5 * height})
-            );
+            center + Vector2f{-0.5 * width, -0.5 * height},
+            center + Vector2f{+0.5 * width, -0.5 * height},
+            center + Vector2f{+0.5 * width, +0.5 * height},
+            center + Vector2f{-0.5 * width, +0.5 * height});
     }
 
     void Canvas::LayerLayer::on_layer_image_updated()

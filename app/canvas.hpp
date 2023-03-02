@@ -122,6 +122,12 @@ namespace mousetrap
             bool _vertical_symmetry_active = state::settings_file->get_value_as<bool>("canvas", "vertical_symmetry_active");
             void set_vertical_symmetry_active(bool);
 
+            size_t _horizontal_symmetry_pixel_position = active_state->get_layer_resolution().x / 2;
+            void set_horizontal_symmetry_pixel_position(size_t);
+
+            size_t _vertical_symmetry_pixel_position = active_state->get_layer_resolution().y / 2;
+            void set_vertical_symmetry_pixel_position(size_t);
+
             Vector2i _cursor_position = {0, 0};
             void set_cursor_position(Vector2i);
 
@@ -187,7 +193,6 @@ namespace mousetrap
 
                     void set_scale(float);
                     void set_offset(Vector2f);
-                    void set_origin(Vector2f);
 
                 private:
                     Canvas* _owner;
@@ -222,9 +227,6 @@ namespace mousetrap
 
                     float _scale = 1;
                     Vector2f _offset = {0, 0};
-                    Vector2f _origin = {0.5, 0.5};
-                    GLTransform* _transform = new GLTransform();
-                    void update_transform();
                     void reformat();
             };
 
@@ -607,7 +609,8 @@ namespace mousetrap
                     float _scale_backup = 1;
                     size_t _n_frames_since_pinch = 0;
 
-                    Vector2f _widget_space_pos = {0, 0};
+                    Vector2f _absolute_widget_space_pos = {0, 0};
+                    Vector2f _normalized_widget_space_pos = {0, 0};
                     void update_cursor_pos();
 
                     ClickEventController _click_controller;
@@ -649,9 +652,14 @@ namespace mousetrap
 
                     void set_grid_visible(bool);
                     void set_background_visible(bool);
+                    void set_brush_outline_visible(bool);
+
+                    void on_layer_resolution_changed();
+
                     void set_horizontal_symmetry_active(bool);
                     void set_vertical_symmetry_active(bool);
-                    void set_brush_outline_visible(bool);
+                    void set_horizontal_symmetry_pixel_position(size_t px);
+                    void set_vertical_symmetry_pixel_position(size_t px);
 
                     void set_cursor_position(Vector2i);
                     void set_cursor_in_bounds(bool);
@@ -671,6 +679,53 @@ namespace mousetrap
 
                     ToggleButton _vertical_symmetry_toggle_button;
                     ImageDisplay _vertical_symmetry_icon = ImageDisplay(get_resource_path() + "icons/canvas_vertical_symmetry.png");
+
+                    MenuButton _symmetry_control_menu_button;
+                    Popover _symmetry_control_menu_popover;
+
+                    class SymmetryControlMenu
+                    {
+                        public:
+                            SymmetryControlMenu(ControlBar*);
+                            operator Widget*();
+
+                            void on_layer_resolution_changed();
+
+                            void set_horizontal_symmetry_active(bool);
+                            void set_vertical_symmetry_active(bool);
+                            void set_horizontal_symmetry_pixel_position(size_t px);
+                            void set_vertical_symmetry_pixel_position(size_t px);
+
+                        private:
+                            ControlBar* _owner;
+                            Box _main = Box(GTK_ORIENTATION_VERTICAL);
+
+                            Label _title_label = Label("<b>Symmetry</b>");
+
+                            Label _h_label = Label("Horizontal\t\t<tt>&#9135;</tt>");
+                            Label _h_enabled_label = Label("Enabled: ");
+                            Label _h_position_label = Label("Position (px):");
+                            Box _h_check_button_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                            CheckButton _h_check_button;
+                            SpinButton _h_spin_button = SpinButton(1, 1, 1);
+                            Button _h_center_button;
+                            Box _h_button_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                            Label _h_center_button_label = Label("center");
+                            Box _h_box = Box(GTK_ORIENTATION_VERTICAL);
+
+                            Label _v_label = Label("Vertical\t\t<tt>&#65372;</tt>");
+                            Label _v_enabled_label = Label("Enabled: ");
+                            Label _v_position_label = Label("Position (px):");
+                            Box _v_check_button_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                            CheckButton _v_check_button;
+                            SpinButton _v_spin_button = SpinButton(1, 1, 1);
+                            Button _v_center_button;
+                            Box _v_button_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                            Label _v_center_button_label = Label("center");
+                            Box _v_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                    };
+
+                    SymmetryControlMenu* _symmetry_control_menu = new SymmetryControlMenu(this);
 
                     ToggleButton _brush_outline_visible_toggle_button;
                     ImageDisplay _brush_outline_visible_icon = ImageDisplay(get_resource_path() + "icons/canvas_brush_outline_visible.png");

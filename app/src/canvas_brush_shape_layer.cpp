@@ -84,7 +84,7 @@ namespace mousetrap
 
     void Canvas::BrushShapeLayer::set_offset(Vector2f offset)
     {
-        _offset = {offset.x / _canvas_size->x, offset.y / _canvas_size->y};
+        _offset = {offset.x, offset.y};
         reformat();
         _area.queue_render();
     }

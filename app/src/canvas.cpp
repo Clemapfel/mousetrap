@@ -73,13 +73,13 @@ namespace mousetrap
         sep->set_expand(true);
 
         _layer_overlay.set_child(sep);
-        //_layer_overlay.add_overlay(*_transparency_tiling_layer);
+        _layer_overlay.add_overlay(*_transparency_tiling_layer);
         _layer_overlay.add_overlay(*_layer_layer);
-        //_layer_overlay.add_overlay(*_onionskin_layer);
-        //_layer_overlay.add_overlay(*_brush_shape_layer);
-        //_layer_overlay.add_overlay(*_grid_layer);
-        //_layer_overlay.add_overlay(*_selection_layer);
-        //_layer_overlay.add_overlay(*_symmetry_ruler_layer);
+        _layer_overlay.add_overlay(*_onionskin_layer);
+        _layer_overlay.add_overlay(*_brush_shape_layer);
+        _layer_overlay.add_overlay(*_grid_layer);
+        _layer_overlay.add_overlay(*_selection_layer);
+        _layer_overlay.add_overlay(*_symmetry_ruler_layer);
         //_layer_overlay.add_overlay(*_wireframe_layer);
         _layer_overlay.add_overlay(*_user_input_layer);
 
@@ -230,6 +230,20 @@ namespace mousetrap
         state::actions::canvas_toggle_vertical_symmetry_active.set_state(b);
     }
 
+    void Canvas::set_horizontal_symmetry_pixel_position(size_t px)
+    {
+        _horizontal_symmetry_pixel_position = px;
+        _symmetry_ruler_layer->set_horizontal_symmetry_pixel_position(px);
+        _control_bar.set_horizontal_symmetry_pixel_position(px);
+    }
+
+    void Canvas::set_vertical_symmetry_pixel_position(size_t px)
+    {
+        _vertical_symmetry_pixel_position = px;
+        _symmetry_ruler_layer->set_vertical_symmetry_pixel_position(px);
+        _control_bar.set_vertical_symmetry_pixel_position(px);
+    }
+
     void Canvas::set_brush_outline_visible(bool b)
     {
         _brush_outline_visible = b;
@@ -291,6 +305,7 @@ namespace mousetrap
         _grid_layer->on_layer_resolution_changed();
         _symmetry_ruler_layer->on_layer_resolution_changed();
         _brush_shape_layer->on_layer_resolution_changed();
+        _control_bar.on_layer_resolution_changed();
     }
 
     void Canvas::on_layer_frame_selection_changed()
@@ -333,6 +348,5 @@ namespace mousetrap
     {
         _widget_cursor_position = pos;
         _wireframe_layer->set_widget_cursor_position(_widget_cursor_position);
-        _layer_layer->set_origin(pos);
     }
 }
