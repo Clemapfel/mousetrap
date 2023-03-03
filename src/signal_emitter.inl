@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <iostream>
+
 namespace mousetrap
 {
     inline void SignalEmitter::set_signal_blocked(const std::string& signal_id, bool b)

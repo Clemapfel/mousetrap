@@ -113,10 +113,10 @@ add_library(mousetrap SHARED
     src/pixel_buffer.inl
 
     include/scrollbar.hpp
-    src/scrollbar.inl
+        src/scrollbar.cpp
 
     include/adjustment.hpp
-    src/adjustment.inl
+        src/adjustment.cpp
 
     include/flow_box.hpp
     src/flow_box.inl

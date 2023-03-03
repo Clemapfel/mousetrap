@@ -69,6 +69,7 @@ namespace mousetrap
     void Canvas::UserInputLayer::on_area_resize(GLArea*, int x, int y, UserInputLayer* instance)
     {
         instance->_canvas_size = {x, y};
+        instance->_owner->set_canvas_size({x, y});
         instance->update_cursor_pos();
     }
 

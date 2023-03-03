@@ -37,6 +37,7 @@ namespace mousetrap
             instance->_wireframe_layer->set_b(end);
         }, this);
 
+        /*
         _x_offset_scrollbar_adjustment.connect_signal_value_changed([](Adjustment* adjustment, Canvas* instance){
             instance->set_offset(adjustment->get_value(), instance->_offset.y);
         }, this);
@@ -44,6 +45,7 @@ namespace mousetrap
         _y_offset_scrollbar_adjustment.connect_signal_value_changed([](Adjustment* adjustment, Canvas* instance){
             instance->set_offset(instance->_offset.x, adjustment->get_value());
         }, this);
+         */
 
         _line_visible_button.set_visible(true);
         _line_start_x_pos_button.set_value(25);//1);
@@ -82,29 +84,26 @@ namespace mousetrap
         _wireframe_layer->operator Widget*()->set_expand(true);
         _user_input_layer->operator Widget*()->set_expand(true);
 
-        float corner_size = _y_offset_scrollbar.get_preferred_size().natural_size.x;
-        _y_offset_scrollbar.set_vexpand(true);
-        _y_offset_scrollbar.set_margin_vertical(corner_size);
+        float corner_size = _y_offset_scrollbar->get_preferred_size().natural_size.x;
+        _y_offset_scrollbar->set_vexpand(true);
+        _x_offset_scrollbar->set_hexpand(true);
+        _y_offset_scrollbar->set_margin_bottom(corner_size);
 
         _reset_view_button.set_expand(false);
         _reset_view_button.set_size_request({corner_size, corner_size});
 
-        _x_offset_scrollbar.set_hexpand(true);
-        _x_offset_scrollbar.set_margin_end(corner_size);
-
-        _y_scrollbar_and_reset_button_box.push_back(&_y_offset_scrollbar);
+        _y_scrollbar_and_reset_button_box.push_back(_y_offset_scrollbar);
         _y_scrollbar_and_reset_button_box.set_homogeneous(false);
 
-        _x_scrollbar_and_canvas_box.push_back(&_x_offset_scrollbar);
         _x_scrollbar_and_canvas_box.push_back(&_layer_overlay);
+        _x_scrollbar_and_canvas_box.push_back(_x_offset_scrollbar);
         _x_scrollbar_and_canvas_box.set_homogeneous(false);
 
         _main.set_homogeneous(false);
-        _main.push_back(&_y_scrollbar_and_reset_button_box);
         _main.push_back(&_x_scrollbar_and_canvas_box);
+        _main.push_back(&_y_scrollbar_and_reset_button_box);
 
         _control_bar.operator Widget*()-> set_vexpand(false);
-
         _main.set_expand(true);
 
         using namespace state::actions;
@@ -155,6 +154,8 @@ namespace mousetrap
         })
             state::add_shortcut_action(*action);
 
+        update_adjustment_bounds();
+
         set_scale(_scale);
         set_offset(_offset.x, _offset.y);
         set_grid_visible(_grid_visible);
@@ -179,15 +180,8 @@ namespace mousetrap
         if (scale < 1)
             scale = 1;
 
-        _x_offset_scrollbar_adjustment.set_lower(-1);
-        _x_offset_scrollbar_adjustment.set_upper(+1);
-        _x_offset_scrollbar_adjustment.set_page_size(2);
-
-        _y_offset_scrollbar_adjustment.set_lower(-1);
-        _y_offset_scrollbar_adjustment.set_upper(+1);
-        _y_offset_scrollbar_adjustment.set_page_size(2);
-
         _scale = scale;
+
         _transparency_tiling_layer->set_scale(_scale);
         _layer_layer->set_scale(_scale);
         _onionskin_layer->set_scale(_scale);
@@ -204,14 +198,6 @@ namespace mousetrap
     {
         _offset = {x, y};
 
-        _x_offset_scrollbar_adjustment.set_signal_value_changed_blocked(true);
-        _x_offset_scrollbar_adjustment.set_value(x);
-        _x_offset_scrollbar_adjustment.set_signal_value_changed_blocked(false);
-
-        _y_offset_scrollbar_adjustment.set_signal_value_changed_blocked(true);
-        _y_offset_scrollbar_adjustment.set_value(y);
-        _y_offset_scrollbar_adjustment.set_signal_value_changed_blocked(false);
-
         _transparency_tiling_layer->set_offset(_offset);
         _layer_layer->set_offset(_offset);
         _onionskin_layer->set_offset(_offset);
@@ -220,6 +206,11 @@ namespace mousetrap
         _brush_shape_layer->set_offset(_offset);
         _wireframe_layer->set_offset(_offset);
         _selection_layer->set_offset(_offset);
+    }
+
+    void Canvas::set_canvas_size(Vector2f size)
+    {
+        _canvas_size = size;
     }
 
     void Canvas::set_grid_visible(bool b)
@@ -372,5 +363,34 @@ namespace mousetrap
     {
         _widget_cursor_position = pos;
         _wireframe_layer->set_widget_cursor_position(_widget_cursor_position);
+    }
+
+    void Canvas::update_adjustment_bounds()
+    {
+        auto layer_resolution = active_state->get_layer_resolution();
+
+        float width = layer_resolution.x / _canvas_size.x;
+        float height = layer_resolution.y / _canvas_size.y;
+
+        width *= _scale;
+        height *= _scale;
+
+        Vector2f center = {0.5, 0.5};
+        center += _offset;
+
+        Vector2f top_left = center - Vector2f{0.5 * width, 0.5 * height};
+        float pixel_w = width / layer_resolution.x;
+        float pixel_h = height / layer_resolution.y;
+
+        auto x_adjustment = _x_offset_scrollbar->get_adjustment();
+        x_adjustment.set_signal_value_changed_blocked(true);
+        x_adjustment.set_lower(0 - width);
+        x_adjustment.set_upper(1 + width);
+        x_adjustment.set_page_size(width);
+        x_adjustment.set_page_increment(1);
+        x_adjustment.set_step_increment((1 + 2 * width) / pixel_w);
+        x_adjustment.set_value(top_left.x);
+        x_adjustment.set_signal_value_changed_blocked(false);
+
     }
 }

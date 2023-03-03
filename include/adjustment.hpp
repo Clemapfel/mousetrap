@@ -6,6 +6,8 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <include/signal_emitter.hpp>
+#include <include/signal_component.hpp>
 
 namespace mousetrap
 {
@@ -15,19 +17,9 @@ namespace mousetrap
             Adjustment();
             Adjustment(GtkAdjustment*);
             Adjustment(float current, float lower, float upper, float increment, float page_size = 0, float page_increment = 0);
-            virtual ~Adjustment();
-
-            Adjustment(const Adjustment&);
-            Adjustment(Adjustment&&);
-
-            Adjustment& operator=(const Adjustment&);
-            Adjustment& operator=(Adjustment&&);
 
             operator GtkAdjustment*();
             operator GObject*() override;
-
-            void clamp_page(float lower, float upper);
-            void configure(float current, float lower, float upper, float increment, float page_size, float page_increment);
 
             float get_lower() const;
             float get_upper() const;
@@ -49,5 +41,3 @@ namespace mousetrap
             GtkAdjustment* _native;
     };
 }
-
-#include <src/adjustment.inl>

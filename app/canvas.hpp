@@ -107,6 +107,9 @@ namespace mousetrap
             Vector2f _offset = {0, 0}; // widget-space coords
             void set_offset(float, float);
 
+            Vector2f _canvas_size = {1, 1};
+            void set_canvas_size(Vector2f);
+
             bool _grid_visible = state::settings_file->get_value_as<bool>("canvas", "grid_visible");
             void set_grid_visible(bool);
 
@@ -754,16 +757,13 @@ namespace mousetrap
             Box _debug_box = Box(GTK_ORIENTATION_VERTICAL);
 
             // main layout
-
-            Adjustment _x_offset_scrollbar_adjustment;
-            Scrollbar _x_offset_scrollbar = Scrollbar(_x_offset_scrollbar_adjustment, GTK_ORIENTATION_HORIZONTAL);
-
-            Adjustment _y_offset_scrollbar_adjustment;
-            Scrollbar _y_offset_scrollbar = Scrollbar(_y_offset_scrollbar_adjustment, GTK_ORIENTATION_VERTICAL);
+            Scrollbar* _x_offset_scrollbar = new Scrollbar(GTK_ORIENTATION_HORIZONTAL);
+            Scrollbar* _y_offset_scrollbar = new Scrollbar(GTK_ORIENTATION_VERTICAL);
 
             Button _reset_view_button;
             Box _y_scrollbar_and_reset_button_box = Box(GTK_ORIENTATION_VERTICAL);
             Box _x_scrollbar_and_canvas_box = Box(GTK_ORIENTATION_VERTICAL);
+            void update_adjustment_bounds();
 
             Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
             Overlay _layer_overlay;
