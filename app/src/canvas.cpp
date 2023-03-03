@@ -170,9 +170,6 @@ namespace mousetrap
 
     void Canvas::set_scale(float scale)
     {
-        if (_scale == scale)
-            return;
-
         if (scale < 1)
             scale = 1;
 
@@ -193,17 +190,17 @@ namespace mousetrap
 
     void Canvas::set_offset(float x, float y)
     {
-        _offset = {x, y};
-
         auto& x_adjustment = *_x_offset_adjustment;
         x_adjustment.set_signal_value_changed_blocked(true);
         x_adjustment.set_value(x);
         x_adjustment.set_signal_value_changed_blocked(false);
 
         auto& y_adjustment = *_y_offset_adjustment;
-        x_adjustment.set_signal_value_changed_blocked(true);
+        y_adjustment.set_signal_value_changed_blocked(true);
         y_adjustment.set_value(y);
-        x_adjustment.set_signal_value_changed_blocked(false);
+        y_adjustment.set_signal_value_changed_blocked(false);
+
+        _offset = {x_adjustment.get_value(), y_adjustment.get_value()};
 
         _transparency_tiling_layer->set_offset(_offset);
         _layer_layer->set_offset(_offset);
@@ -383,35 +380,36 @@ namespace mousetrap
         height *= _scale;
 
         Vector2f center = {0.5, 0.5};
-        center += _offset;
 
         Vector2f top_left = center - Vector2f{0.5 * width, 0.5 * height};
         float pixel_w = width / layer_resolution.x;
         float pixel_h = height / layer_resolution.y;
 
+        float overscroll = state::settings_file->get_value_as<float>("canvas", "offset_overscroll_fraction");
+
         if (_x_offset_scrollbar->get_is_realized())
         {
             auto& x_adjustment = *_x_offset_adjustment;
             x_adjustment.set_signal_value_changed_blocked(true);
-            x_adjustment.set_lower(0 - width);
-            x_adjustment.set_upper(1 + width);
+            x_adjustment.set_lower(0 - top_left.x - width * overscroll);
+            x_adjustment.set_upper(1 - top_left.x + width * overscroll);
             x_adjustment.set_page_size(width);
             x_adjustment.set_page_increment(0);
             x_adjustment.set_step_increment((1 + 2 * width) / pixel_w);
-            x_adjustment.set_value(top_left.x);
+            x_adjustment.set_value(_offset.x);
             x_adjustment.set_signal_value_changed_blocked(false);
-a        }
+        }
 
         if (_y_offset_scrollbar->get_is_realized())
         {
             auto& y_adjustment = *_y_offset_adjustment;
             y_adjustment.set_signal_value_changed_blocked(true);
-            y_adjustment.set_lower(0 - height);
-            y_adjustment.set_upper(1 + height);
-            y_adjustment.set_page_size(width);
+            y_adjustment.set_lower(0 - top_left.y - height * overscroll);
+            y_adjustment.set_upper(1 - top_left.y + height * overscroll);
+            y_adjustment.set_page_size(height);
             y_adjustment.set_page_increment(0);
             y_adjustment.set_step_increment((1 + 2 * height) / pixel_h);
-            y_adjustment.set_value(top_left.y);
+            y_adjustment.set_value(_offset.y);
             y_adjustment.set_signal_value_changed_blocked(false);
         }
     }

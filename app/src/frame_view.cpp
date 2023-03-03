@@ -380,7 +380,7 @@ namespace mousetrap
         frame_view_frame_move_right.set_function([]()
         {
             auto current = active_state->get_current_frame_index();
-            if (current >= active_state->get_n_layers() - 1)
+            if (current >= active_state->get_n_frames() - 1)
                 return;
 
             active_state->swap_frames(current, current+1);

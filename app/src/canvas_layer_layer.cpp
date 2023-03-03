@@ -104,6 +104,8 @@ namespace mousetrap
 
     void Canvas::LayerLayer::set_offset(Vector2f offset)
     {
+        if (_offset == offset)
+            return;
         _offset = {offset.x, offset.y};
         reformat();
         _area.queue_render();

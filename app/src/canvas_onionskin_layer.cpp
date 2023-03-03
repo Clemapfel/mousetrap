@@ -71,6 +71,9 @@ namespace mousetrap
 
     void Canvas::OnionskinLayer::set_offset(Vector2f offset)
     {
+        if (_offset == offset)
+            return;
+
         _offset = offset;
         reformat();
         _area.queue_render();
@@ -96,7 +99,7 @@ namespace mousetrap
         for (size_t i = 0; i < active_state->get_n_frames(); ++i)
         {
             auto* shape = _frame_shapes.emplace_back(new Shape());
-            shape->set_texture(active_state->get_cell_texture(active_state->get_current_frame_index(), i));
+            shape->set_texture(active_state->get_cell_texture(active_state->get_current_layer_index(), i));
             shape->set_visible(active_state->get_onionskin_visible());
         }
 

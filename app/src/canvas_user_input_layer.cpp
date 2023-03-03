@@ -66,9 +66,13 @@ namespace mousetrap
         return &_proxy;
     }
 
-    void Canvas::UserInputLayer::on_area_resize(GLArea*, int x, int y, UserInputLayer* instance)
+    void Canvas::UserInputLayer::on_area_resize(GLArea* area, int x, int y, UserInputLayer* instance)
     {
         instance->_canvas_size = {x, y};
+
+        if (not area->get_is_realized())
+            return;
+
         instance->_owner->set_canvas_size({x, y});
         instance->update_cursor_pos();
     }
@@ -137,6 +141,13 @@ namespace mousetrap
         instance->_owner->set_cursor_in_bounds(true);
         instance->_absolute_widget_space_pos = {x, y};
         instance->update_cursor_pos();
+
+        static bool once = true;
+        if (once)
+        {
+            instance->_owner->update_adjustment_bounds();
+            once = false;
+        }
     }
 
     void Canvas::UserInputLayer::on_motion_leave(MotionEventController*, UserInputLayer* instance)
@@ -265,6 +276,6 @@ namespace mousetrap
         if (distance < 1)
             distance = -1 - (1 - distance);
         
-        instance->_owner->set_scale(instance->_owner->_scale + distance * state::settings_file->get_value_as<float>("canvas", "scale_step"));
+        instance->_owner->set_scale(instance->_owner->_scale + distance * state::settings_file->get_value_as<float>("canvas", "pinch_scale_step"));
     }
 }
