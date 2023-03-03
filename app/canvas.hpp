@@ -757,6 +757,8 @@ namespace mousetrap
             Box _debug_box = Box(GTK_ORIENTATION_VERTICAL);
 
             // main layout
+            Adjustment* _x_offset_adjustment = new Adjustment();
+            Adjustment* _y_offset_adjustment = new Adjustment();
             Scrollbar* _x_offset_scrollbar = new Scrollbar(GTK_ORIENTATION_HORIZONTAL);
             Scrollbar* _y_offset_scrollbar = new Scrollbar(GTK_ORIENTATION_VERTICAL);
 

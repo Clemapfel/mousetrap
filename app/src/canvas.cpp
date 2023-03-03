@@ -37,15 +37,16 @@ namespace mousetrap
             instance->_wireframe_layer->set_b(end);
         }, this);
 
-        /*
-        _x_offset_scrollbar_adjustment.connect_signal_value_changed([](Adjustment* adjustment, Canvas* instance){
+        _x_offset_scrollbar->set_adjustment(*_x_offset_adjustment);
+        _y_offset_scrollbar->set_adjustment(*_y_offset_adjustment);
+
+        _x_offset_adjustment->connect_signal_value_changed([](Adjustment* adjustment, Canvas* instance){
             instance->set_offset(adjustment->get_value(), instance->_offset.y);
         }, this);
 
-        _y_offset_scrollbar_adjustment.connect_signal_value_changed([](Adjustment* adjustment, Canvas* instance){
+        _y_offset_adjustment->connect_signal_value_changed([](Adjustment* adjustment, Canvas* instance){
             instance->set_offset(instance->_offset.x, adjustment->get_value());
         }, this);
-         */
 
         _line_visible_button.set_visible(true);
         _line_start_x_pos_button.set_value(25);//1);
@@ -88,9 +89,6 @@ namespace mousetrap
         _y_offset_scrollbar->set_vexpand(true);
         _x_offset_scrollbar->set_hexpand(true);
         _y_offset_scrollbar->set_margin_bottom(corner_size);
-
-        _reset_view_button.set_expand(false);
-        _reset_view_button.set_size_request({corner_size, corner_size});
 
         _y_scrollbar_and_reset_button_box.push_back(_y_offset_scrollbar);
         _y_scrollbar_and_reset_button_box.set_homogeneous(false);
@@ -154,8 +152,6 @@ namespace mousetrap
         })
             state::add_shortcut_action(*action);
 
-        update_adjustment_bounds();
-
         set_scale(_scale);
         set_offset(_offset.x, _offset.y);
         set_grid_visible(_grid_visible);
@@ -181,6 +177,7 @@ namespace mousetrap
             scale = 1;
 
         _scale = scale;
+        update_adjustment_bounds();
 
         _transparency_tiling_layer->set_scale(_scale);
         _layer_layer->set_scale(_scale);
@@ -197,6 +194,16 @@ namespace mousetrap
     void Canvas::set_offset(float x, float y)
     {
         _offset = {x, y};
+
+        auto& x_adjustment = *_x_offset_adjustment;
+        x_adjustment.set_signal_value_changed_blocked(true);
+        x_adjustment.set_value(x);
+        x_adjustment.set_signal_value_changed_blocked(false);
+
+        auto& y_adjustment = *_y_offset_adjustment;
+        x_adjustment.set_signal_value_changed_blocked(true);
+        y_adjustment.set_value(y);
+        x_adjustment.set_signal_value_changed_blocked(false);
 
         _transparency_tiling_layer->set_offset(_offset);
         _layer_layer->set_offset(_offset);
@@ -382,15 +389,30 @@ namespace mousetrap
         float pixel_w = width / layer_resolution.x;
         float pixel_h = height / layer_resolution.y;
 
-        auto x_adjustment = _x_offset_scrollbar->get_adjustment();
-        x_adjustment.set_signal_value_changed_blocked(true);
-        x_adjustment.set_lower(0 - width);
-        x_adjustment.set_upper(1 + width);
-        x_adjustment.set_page_size(width);
-        x_adjustment.set_page_increment(1);
-        x_adjustment.set_step_increment((1 + 2 * width) / pixel_w);
-        x_adjustment.set_value(top_left.x);
-        x_adjustment.set_signal_value_changed_blocked(false);
+        if (_x_offset_scrollbar->get_is_realized())
+        {
+            auto& x_adjustment = *_x_offset_adjustment;
+            x_adjustment.set_signal_value_changed_blocked(true);
+            x_adjustment.set_lower(0 - width);
+            x_adjustment.set_upper(1 + width);
+            x_adjustment.set_page_size(width);
+            x_adjustment.set_page_increment(0);
+            x_adjustment.set_step_increment((1 + 2 * width) / pixel_w);
+            x_adjustment.set_value(top_left.x);
+            x_adjustment.set_signal_value_changed_blocked(false);
+a        }
 
+        if (_y_offset_scrollbar->get_is_realized())
+        {
+            auto& y_adjustment = *_y_offset_adjustment;
+            y_adjustment.set_signal_value_changed_blocked(true);
+            y_adjustment.set_lower(0 - height);
+            y_adjustment.set_upper(1 + height);
+            y_adjustment.set_page_size(width);
+            y_adjustment.set_page_increment(0);
+            y_adjustment.set_step_increment((1 + 2 * height) / pixel_h);
+            y_adjustment.set_value(top_left.y);
+            y_adjustment.set_signal_value_changed_blocked(false);
+        }
     }
 }
