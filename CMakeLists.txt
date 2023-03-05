@@ -17,6 +17,8 @@ if (NOT GTK_FOUND)
     message(FATAL_ERROR "Missing Dependency: unable to locate gtk4")
 endif()
 
+message(WARNING ${GTK_VERSION})
+
 # GLM
 include(CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX("glm/glm.hpp" GLM_FOUND)

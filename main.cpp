@@ -237,9 +237,9 @@ static void activate(GtkApplication* app, void*)
     button->connect_signal_clicked([](Button*, auto){
 
         auto* clipboard = new Clipboard(state::main_window);
-        clipboard->get_string([](Clipboard*, const std::string& str, int* i){
-            std::cout << *i << " " << str << std::endl;
-        }, new int(12));
+        clipboard->get_image([](Clipboard*, const Image&, auto){
+
+        }, nullptr);
 
         /*
         auto* clipboard = gtk_widget_get_clipboard(state::main_window->operator GtkWidget*());
