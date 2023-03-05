@@ -69,13 +69,15 @@ namespace mousetrap
 
         if (error != nullptr)
         {
-            std::cerr << "[ERROR] In Clipboard::get_string_callback: " << error->message << std::endl;
+            std::cerr << "[ERROR] In Clipboard::get_image_callback: " << error->message << std::endl;
             return;
         }
 
-
         Clipboard* instance = (Clipboard*) data;
-
+        auto image = Image();
+        image.create_from_texture(texture);
+        std::cout << image.save_to_file(get_resource_path() + "temp.png") << std::endl;
+        exit(0);
 
         //auto* pixbuf = gdk_pixbuf_new_from_stream(stream, nullptr, error);
         //auto image = Image(pixbuf);

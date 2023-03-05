@@ -111,6 +111,37 @@ namespace mousetrap
         return true;
     }
 
+    void Image::create_from_texture(GdkTexture* texture)
+    {
+        auto size = Vector2ui(gdk_texture_get_width(texture), gdk_texture_get_height(texture));
+
+        // FORMAT: ARGB32, c.f. https://docs.gtk.org/gdk4/method.Texture.download.html
+
+        auto* surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,gdk_texture_get_width(texture), gdk_texture_get_height(texture));
+        gdk_texture_download(texture,cairo_image_surface_get_data(surface),cairo_image_surface_get_stride(surface));
+
+        auto* data = cairo_image_surface_get_data(surface);
+
+        auto format = cairo_image_surface_get_format(surface);
+
+        create(size.x, size.y);
+        for (size_t i = 0; i < size.x * size.y * 4; i = i + 4)
+        {
+            guchar b = data[i+0];
+            guchar g = data[i+1];
+            guchar r = data[i+2];
+            guchar a = data[i+3];
+
+            _data[i+0] = float(r) / 255.f;
+            _data[i+1] = float(g) / 255.f;
+            _data[i+2] = float(b) / 255.f;
+            _data[i+3] = float(a) / 255.f;
+        }
+
+        cairo_surface_mark_dirty(surface);
+        g_free(surface);
+    }
+
     GdkPixbuf* Image::to_pixbuf() const
     {
         auto* out = gdk_pixbuf_new(GDK_COLORSPACE_RGB, true, 8, _size.x, _size.y);
