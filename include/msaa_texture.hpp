@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <mousetrap.hpp>
+#include "mousetrap.hpp"
 
 namespace mousetrap
 {

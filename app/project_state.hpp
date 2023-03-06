@@ -73,6 +73,9 @@ namespace mousetrap
             const Layer::Frame* get_frame(size_t layer_i, size_t frame_i) const;
             size_t get_n_frames() const;
 
+            void overwrite_cell_image(CellPosition, const Image&);
+            CellPosition get_current_cell_position() const;
+
             /// \@brief get texture, takes keyframing into account
             const Texture* get_cell_texture(size_t layer_i, size_t frame_i);
 
@@ -89,6 +92,9 @@ namespace mousetrap
             void duplicate_frame(int after, size_t from_frame_i);
             void delete_frame(size_t);
             void new_frame_from(int after, const std::set<size_t>& from_layer_is, bool delete_froms = true);
+
+            Vector2i get_cell_offset(CellPosition) const;
+            void set_cell_offset(CellPosition, Vector2i);
 
             void copy_to_cell(CellPosition b, CellPosition a);
             void swap_cells(CellPosition a, CellPosition b);

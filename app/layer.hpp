@@ -14,6 +14,8 @@ namespace mousetrap
         public:
             class Frame
             {
+                friend class Layer;
+
                 public:
                     Frame();
                     Frame(Vector2i size);
@@ -25,18 +27,30 @@ namespace mousetrap
 
                     ~Frame();
 
-                    Image* get_image();
-                    const Image* get_image() const;
+                    RGBA get_pixel(size_t x, size_t y) const;
+                    void set_pixel(size_t x, size_t y, RGBA);
+
+                    void overwrite_image(const Image&);
+                    void set_size(Vector2ui);
+
+                    Vector2ui get_image_size() const;
+
                     const Texture* get_texture() const;
                     void update_texture();
 
                     bool get_is_keyframe() const;
                     void set_is_keyframe(bool);
 
+                    void set_offset(Vector2i);
+                    Vector2i get_offset() const;
+
                 private:
                     Image* _image = nullptr;
                     Texture* _texture = nullptr;
                     bool _is_keyframe = true;
+
+                    Vector2i _offset = {0, 0};
+                    Vector2ui _size = {0, 0};
             };
 
             Layer(const std::string& name, Vector2ui size, size_t n_frames);

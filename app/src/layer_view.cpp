@@ -159,7 +159,7 @@ namespace mousetrap
             active_state->set_layer_name(instance->_layer_i, entry->get_text());
         }, this);
 
-        _opacity_level_bar.set_value(float(rand()) / RAND_MAX);
+        _opacity_level_bar.set_value(rand() / float(RAND_MAX));
         _opacity_level_bar.set_opacity(0.5);
         _opacity_level_bar.set_inverted(true);
         _opacity_level_bar.set_margin_vertical(state::margin_unit * 0.5);

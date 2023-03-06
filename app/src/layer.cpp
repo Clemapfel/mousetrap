@@ -1,15 +1,17 @@
 #include <app/layer.hpp>
 #include <app/algorithms.hpp>
+#include <app/project_state.hpp>
 
 namespace mousetrap
 {
     Layer::Frame::Frame()
-        : _image(new Image()), _texture(new Texture())
+        : _image(new Image()), _texture(new Texture()), _size(0, 0)
     {}
 
     Layer::Frame::Frame(Vector2i size)
-        : Frame::Frame()
+        : Frame()
     {
+        _size = size;
         _image->create(size.x, size.y, RGBA(0, 0, 0, 0));
         _texture->create_from_image(*_image);
     }
@@ -92,14 +94,33 @@ namespace mousetrap
         delete _texture;
     }
 
-    Image* Layer::Frame::get_image()
+    RGBA Layer::Frame::get_pixel(size_t x, size_t y) const
     {
-        return _image;
+        auto coords = Vector2i(x + _offset.x, y + _offset.y);
+        if (not (coords.x < 0 or coords.y < 0 or coords.x >= _image->get_size().x or coords.y >= _image->get_size().y))
+            return _image->get_pixel(coords.x, coords.y);
+        else
+            return RGBA(0, 0, 0, 0);
     }
 
-    const Image* Layer::Frame::get_image() const
+    void Layer::Frame::set_pixel(size_t x, size_t y, RGBA color)
     {
-        return _image;
+        _image->set_pixel(x - _offset.x, y - _offset.y, color);
+    }
+
+    void Layer::Frame::overwrite_image(const Image& image)
+    {
+        *_image = image;
+    }
+
+    void Layer::Frame::set_size(Vector2ui size)
+    {
+        _size = size;
+    }
+
+    Vector2ui Layer::Frame::get_image_size() const
+    {
+        return _image->get_size();
     }
 
     const Texture* Layer::Frame::get_texture() const
@@ -117,9 +138,32 @@ namespace mousetrap
         _is_keyframe = b;
     }
 
+    void Layer::Frame::set_offset(Vector2i offset)
+    {
+        _offset = offset;
+    }
+
+    Vector2i Layer::Frame::get_offset() const
+    {
+        return _offset;
+    }
+
     void Layer::Frame::update_texture()
     {
-        _texture->create_from_image(*_image);
+        auto image = Image();
+        image.create(_size.x, _size.y, RGBA(0, 0, 0, 0));
+
+        for (int x = 0; x < _size.x; ++x)
+        {
+            for (int y = 0; y < _size.y; ++y)
+            {
+                auto coords = Vector2i(x + _offset.x, y + _offset.y);
+                if (not (coords.x < 0 or coords.y < 0 or coords.x >= _image->get_size().x or coords.y >= _image->get_size().y))
+                    image.set_pixel(x, y, get_pixel(coords.x, coords.y));
+            }
+        }
+
+        _texture->create_from_image(image);
     }
 
     Layer::Layer(const std::string& name, Vector2ui size, size_t n_frames)
@@ -164,15 +208,15 @@ namespace mousetrap
         _opacity = other._opacity;
         _blend_mode = other._blend_mode;
 
-        auto size = other._frames.at(0)->get_image()->get_size();
-
         _frames.clear();
         for (size_t i = 0; i < other._frames.size(); ++i)
         {
+            auto size = other._frames.at(i)->_image->get_size();
+
             _frames.emplace_back(new Frame(size));
             for (size_t x = 0; x < size.x; ++x)
                 for (size_t y = 0; y < size.y; ++y)
-                    _frames.back()->get_image()->set_pixel(x, y, other._frames.at(i)->get_image()->get_pixel(x, y));
+                    _frames.back()->_image->set_pixel(x, y, other._frames.at(i)->_image->get_pixel(x, y));
 
             _frames.back()->update_texture();
             _frames.back()->set_is_keyframe(other._frames.at(i)->get_is_keyframe());
@@ -187,15 +231,15 @@ namespace mousetrap
         _opacity = other._opacity;
         _blend_mode = other._blend_mode;
 
-        auto size = other._frames.at(0)->get_image()->get_size();
-
         _frames.clear();
         for (size_t i = 0; i < other._frames.size(); ++i)
         {
+            auto size = other._frames.at(i)->_image->get_size();
+
             _frames.emplace_back(new Frame(size));
             for (size_t x = 0; x < size.x; ++x)
                 for (size_t y = 0; y < size.y; ++y)
-                    _frames.back()->get_image()->set_pixel(x, y, other._frames.at(i)->get_image()->get_pixel(x, y));
+                    _frames.back()->_image->set_pixel(x, y, other._frames.at(i)->_image->get_pixel(x, y));
 
             _frames.back()->update_texture();
             _frames.back()->set_is_keyframe(other._frames.at(i)->get_is_keyframe());

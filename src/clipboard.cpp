@@ -2,8 +2,8 @@
 // Created by clem on 3/3/23.
 //
 
-#include <app/clipboard.hpp>
-#include <include/get_resource_path.hpp>
+#include "include/clipboard.hpp"
+#include "include/get_resource_path.hpp"
 
 namespace mousetrap
 {
@@ -36,17 +36,16 @@ namespace mousetrap
         GError* error = nullptr;
         auto* text = gdk_clipboard_read_text_finish(GDK_CLIPBOARD(clipboard), result, &error);
 
-        if (error != nullptr)
-        {
-            std::cerr << "[ERROR] In Clipboard::get_string_callback: " << error->message << std::endl;
-            return;
-        }
-
         Clipboard* instance = (Clipboard*) data;
-        auto str = std::string(text != nullptr ? text : "");
+        std::string str;
+
+        if (error == nullptr)
+            str = std::string(text);
+        else
+            g_error_free(error);
 
         if (instance->get_string_f != nullptr)
-            instance->get_string_f(instance, text);
+            instance->get_string_f(instance, str);
     }
 
     bool Clipboard::contains_image() const
@@ -67,22 +66,15 @@ namespace mousetrap
         GError* error = nullptr;
         auto* texture = gdk_clipboard_read_texture_finish(GDK_CLIPBOARD(clipboard), result, &error);
 
-        if (error != nullptr)
-        {
-            std::cerr << "[ERROR] In Clipboard::get_image_callback: " << error->message << std::endl;
-            return;
-        }
-
         Clipboard* instance = (Clipboard*) data;
         auto image = Image();
-        image.create_from_texture(texture);
-        std::cout << image.save_to_file(get_resource_path() + "temp.png") << std::endl;
-        exit(0);
 
-        //auto* pixbuf = gdk_pixbuf_new_from_stream(stream, nullptr, error);
-        //auto image = Image(pixbuf);
+        if (error == nullptr)
+            image.create_from_texture(texture);
+        else
+            g_error_free(error);
 
-        //if (instance->get_image_f != nullptr)
-          //  instance->get_image_f(instance, image);
+        if (instance->get_image_f != nullptr)
+            instance->get_image_f(instance, image);
     }
 }

@@ -140,6 +140,57 @@ namespace mousetrap
            state::canvas->set_offset(0, 0);
         });
 
+        canvas_copy_to_clipboard.set_function([](){
+            std::cerr << "[ERROR] In canvas_copy_to_clipboard: TODO" << std::endl;
+        });
+
+        canvas_paste_clipboard.set_function([]()
+        {
+            static Clipboard* clipboard = nullptr;
+            delete clipboard;
+            clipboard = new Clipboard(state::main_window);
+
+            if (clipboard->contains_image()) {
+                clipboard->get_image([](Clipboard*, const Image& image, auto){
+                    active_state->overwrite_cell_image(active_state->get_current_cell_position(), image);
+                }, nullptr);
+            }
+        });
+
+        canvas_move_float_up.set_function([]()
+        {
+            auto position = active_state->get_current_cell_position();
+            auto offset = active_state->get_cell_offset(position);
+            offset.y += 1;
+            active_state->set_cell_offset(position, offset);
+        });
+
+        canvas_move_float_right.set_function([]()
+        {
+            auto position = active_state->get_current_cell_position();
+            auto offset = active_state->get_cell_offset(position);
+            offset.x -= 1;
+            active_state->set_cell_offset(position, offset);
+        });
+
+        canvas_move_float_down.set_function([]()
+        {
+            auto position = active_state->get_current_cell_position();
+            auto offset = active_state->get_cell_offset(position);
+            offset.y -= 1;
+            active_state->set_cell_offset(position, offset);
+        });
+
+        canvas_move_float_left.set_function([]()
+        {
+            auto position = active_state->get_current_cell_position();
+            auto offset = active_state->get_cell_offset(position);
+            offset.x += 1;
+            active_state->set_cell_offset(position, offset);
+        });
+
+        // move float actions are triggered by userinput layer, not shortcut controller
+
         for (auto* action : {
             &canvas_toggle_grid_visible,
             &canvas_open_grid_color_picker,
@@ -148,7 +199,9 @@ namespace mousetrap
             &canvas_toggle_vertical_symmetry_active,
             &canvas_open_symmetry_color_picker,
             &canvas_reset_transform,
-            &canvas_toggle_background_visible
+            &canvas_toggle_background_visible,
+            &canvas_paste_clipboard,
+            &canvas_copy_to_clipboard
         })
             state::add_shortcut_action(*action);
 

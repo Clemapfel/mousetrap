@@ -27,7 +27,7 @@ namespace mousetrap
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     GL_RGBA32F,
+                     GL_RGBA16F,
                      width,
                      height,
                      0,

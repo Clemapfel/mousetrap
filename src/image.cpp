@@ -119,10 +119,7 @@ namespace mousetrap
 
         auto* surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,gdk_texture_get_width(texture), gdk_texture_get_height(texture));
         gdk_texture_download(texture,cairo_image_surface_get_data(surface),cairo_image_surface_get_stride(surface));
-
         auto* data = cairo_image_surface_get_data(surface);
-
-        auto format = cairo_image_surface_get_format(surface);
 
         create(size.x, size.y);
         for (size_t i = 0; i < size.x * size.y * 4; i = i + 4)
@@ -153,7 +150,7 @@ namespace mousetrap
         return out;
     }
 
-    bool Image::save_to_file(const std::string& path)
+    bool Image::save_to_file(const std::string& path) const
     {
         if (_size.x == 0 and _size.y == 0)
         {
@@ -286,7 +283,7 @@ namespace mousetrap
         );
     }
 
-    Image Image::as_cropped(int offset_x, int offset_y, size_t size_x, size_t size_y)
+    Image Image::as_cropped(int offset_x, int offset_y, size_t size_x, size_t size_y) const
     {
         auto out = Image();
         out.create(size_x, size_y);
@@ -307,7 +304,7 @@ namespace mousetrap
         return out;
     }
 
-    Image Image::as_scaled(size_t size_x, size_t size_y, GdkInterpType interpolation_type)
+    Image Image::as_scaled(size_t size_x, size_t size_y, GdkInterpType interpolation_type) const
     {
         if (int(size_x) == _size.x and int(size_y) == _size.y)
             return *this;
@@ -330,7 +327,7 @@ namespace mousetrap
         return out;
     }
 
-    Image Image::as_flipped(bool flip_horizontally, bool flip_vertically)
+    Image Image::as_flipped(bool flip_horizontally, bool flip_vertically) const
     {
         auto out = Image();
         out.create(_size.x, _size.y);

@@ -26,7 +26,7 @@ namespace mousetrap
             void create_from_pixbuf(GdkPixbuf*);
             void create_from_texture(GdkTexture*);
 
-            bool save_to_file(const std::string&);
+            bool save_to_file(const std::string&) const;
 
             void* data() const;
             /// \returns <number of pixels> * <number of components>
@@ -37,9 +37,9 @@ namespace mousetrap
             GdkPixbuf* to_pixbuf() const;
             Vector2ui get_size() const;
 
-            Image as_scaled(size_t size_x, size_t size_y, GdkInterpType type);
-            Image as_cropped(int offset_x, int offset_y, size_t new_width, size_t new_height);
-            Image as_flipped(bool flip_horizontally, bool flip_vertically);
+            Image as_scaled(size_t size_x, size_t size_y, GdkInterpType type) const;
+            Image as_cropped(int offset_x, int offset_y, size_t new_width, size_t new_height) const;
+            Image as_flipped(bool flip_horizontally, bool flip_vertically) const;
 
             void set_pixel(size_t, size_t, RGBA);
             void set_pixel(size_t, size_t, HSVA);

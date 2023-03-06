@@ -40,9 +40,6 @@
 #include <app/canvas_export.hpp>
 #include <app/color_transform_dialog.hpp>
 #include <app/image_transform_dialog.hpp>
-#include <app/clipboard.hpp>
-
-#include <app/msaa_texture.hpp>
 
 using namespace mousetrap;
 
@@ -231,27 +228,7 @@ static void activate(GtkApplication* app, void*)
     bubble_log_overlay.add_overlay(bubble_log);
     // MAIN
 
-    //state::main_window->set_child(&bubble_log_overlay);
-
-    auto* button = new Button();
-    button->connect_signal_clicked([](Button*, auto){
-
-        auto* clipboard = new Clipboard(state::main_window);
-        clipboard->get_image([](Clipboard*, const Image&, auto){
-
-        }, nullptr);
-
-        /*
-        auto* clipboard = gtk_widget_get_clipboard(state::main_window->operator GtkWidget*());
-        gdk_clipboard_set_text(clipboard, "test_text");
-        auto* formats = gdk_clipboard_get_formats(clipboard);
-
-        std::cout << gdk_content_formats_contain_gtype(formats, G_TYPE_STRING) << std::endl;
-        gdk_clipboard_read_text_async(clipboard, nullptr, temp, (gpointer) nullptr);
-        */
-     }, nullptr);
-    state::main_window->set_child(button);
-
+    state::main_window->set_child(&bubble_log_overlay);
     state::main_window->show();
     state::main_window->present();
     state::main_window->set_focusable(true);

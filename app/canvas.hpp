@@ -9,7 +9,7 @@
 #include <app/app_component.hpp>
 #include <app/project_state.hpp>
 #include <app/app_signals.hpp>
-#include <app/msaa_texture.hpp>
+#include "include/msaa_texture.hpp"
 #include <app/color_picker.hpp>
 
 /*
@@ -57,9 +57,16 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(canvas, open_symmetry_color_picker)
 
         DECLARE_GLOBAL_ACTION(canvas, reset_transform)
-
         DECLARE_GLOBAL_ACTION(canvas, toggle_x_scroll_inverted)
         DECLARE_GLOBAL_ACTION(canvas, toggle_y_scroll_inverted)
+
+        DECLARE_GLOBAL_ACTION(canvas, copy_to_clipboard)
+        DECLARE_GLOBAL_ACTION(canvas, paste_clipboard)
+
+        DECLARE_GLOBAL_ACTION(canvas, move_float_up)
+        DECLARE_GLOBAL_ACTION(canvas, move_float_right)
+        DECLARE_GLOBAL_ACTION(canvas, move_float_down)
+        DECLARE_GLOBAL_ACTION(canvas, move_float_left)
     }
 
     struct Canvas : public AppComponent,

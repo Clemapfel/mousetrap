@@ -81,3 +81,5 @@
 #include <include/string_compression.hpp>
 #include <include/link_button.hpp>
 #include <include/render_texture.hpp>
+#include <include/msaa_texture.hpp>
+#include <include/clipboard.hpp>

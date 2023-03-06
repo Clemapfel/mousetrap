@@ -101,7 +101,11 @@ namespace mousetrap
             image.create_from_file(get_resource_path() + "example_animation/0" + std::to_string(i) + ".png");
 
             auto* frame = _layers.at(0)->get_frame(i);
-            *(frame->get_image()) = image;
+
+            for (size_t x = 0; x < image.get_size().x; ++x)
+                for (size_t y = 0; y < image.get_size().y; ++y)
+                    frame->set_pixel(x, y, image.get_pixel(x, y));
+
             frame->update_texture();
         }
 
@@ -353,8 +357,8 @@ namespace mousetrap
 
         for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
         {
-            auto* from = duplicate_from.get_frame(frame_i)->get_image();
-            auto* to = new_layer->get_frame(frame_i)->get_image();
+            auto* from = duplicate_from.get_frame(frame_i);
+            auto* to = new_layer->get_frame(frame_i);
 
             for (size_t x = 0; x < _layer_resolution.x; ++x)
                 for (size_t y = 0; y < _layer_resolution.y; ++y)
@@ -402,8 +406,8 @@ namespace mousetrap
             {
                 for (size_t y = 0; y < _layer_resolution.y; ++y)
                 {
-                    a_frame->get_image()->set_pixel(x, y, b_frame->get_image()->get_pixel(x, y));
-                    b_frame->get_image()->set_pixel(x, y, a_copy.get_frame(i)->get_image()->get_pixel(x, y));
+                    a_frame->set_pixel(x, y, b_frame->get_pixel(x, y));
+                    b_frame->set_pixel(x, y, a_copy.get_frame(i)->get_pixel(x, y));
                 }
             }
 
@@ -459,7 +463,7 @@ namespace mousetrap
 
             for (size_t x = 0; x < _layer_resolution.x; ++x)
                 for (size_t y = 0; y < _layer_resolution.y; ++y)
-                    new_frame->get_image()->set_pixel(x, y, image.get_pixel(x, y));
+                    new_frame->set_pixel(x, y, image.get_pixel(x, y));
 
             new_frame->update_texture();
         }
@@ -522,15 +526,18 @@ namespace mousetrap
             auto* a_frame = _layers.at(layer_i)->get_frame(a);
             auto* b_frame = _layers.at(layer_i)->get_frame(b);
 
-            Image a_img = Image(*a_frame->get_image());
-            Image b_img = Image(*b_frame->get_image());
+            auto a_frame_img = Image();
+            a_frame_img.create(_layer_resolution.x, _layer_resolution.y);
+            for (size_t x = 0; x < _layer_resolution.x; ++x)
+                for (size_t y = 0; y < _layer_resolution.y; ++y)
+                    a_frame_img.set_pixel(x, y, a_frame->get_pixel(x, y));
 
             for (size_t x = 0; x < _layer_resolution.x; ++x)
             {
                 for (size_t y = 0; y < _layer_resolution.y; ++y)
                 {
-                    a_frame->get_image()->set_pixel(x, y, b_img.get_pixel(x, y));
-                    b_frame->get_image()->set_pixel(x, y, a_img.get_pixel(x, y));
+                    a_frame->set_pixel(x, y, b_frame->get_pixel(x, y));
+                    b_frame->set_pixel(x, y, a_frame_img.get_pixel(x, y));
                 }
             }
 
@@ -546,12 +553,18 @@ namespace mousetrap
         for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
         {
             auto* layer = _layers.at(layer_i);
-            Image image = Image(*layer->get_frame(duplicate_from)->get_image());
+            Image image = Image();
+            image.create(_layer_resolution.x, _layer_resolution.y);
+
+            for (size_t x = 0; x < _layer_resolution.x; ++x)
+                for (size_t y = 0; y < _layer_resolution.y; ++y)
+                    image.set_pixel(x, y, layer->get_frame(duplicate_from)->get_pixel(x, y));
+
             auto* inserted = layer->add_frame(_layer_resolution, after + 1);
 
             for (size_t x = 0; x < _layer_resolution.x; ++x)
                 for (size_t y = 0; y < _layer_resolution.y; ++y)
-                    inserted->get_image()->set_pixel(x, y, image.get_pixel(x, y));
+                    inserted->set_pixel(x, y, image.get_pixel(x, y));
 
             inserted->update_texture();
         }
@@ -576,6 +589,32 @@ namespace mousetrap
     void ProjectState::new_frame_from(int after, const std::set<size_t>& from_layer_is, bool delete_froms)
     {
         std::cerr << "In ProjectState::new_frame_from: TODO" << std::endl;
+    }
+
+    Vector2i ProjectState::get_cell_offset(CellPosition position) const
+    {
+        return _layers.at(position.x)->get_frame(position.y)->get_offset();
+    }
+
+    void ProjectState::set_cell_offset(CellPosition position, Vector2i offset)
+    {
+        auto* frame = _layers.at(position.x)->get_frame(position.y);
+        frame->set_offset(offset);
+        frame->update_texture();
+        signal_layer_image_updated();
+    }
+
+    CellPosition ProjectState::get_current_cell_position() const
+    {
+        return CellPosition{_current_layer_i, _current_frame_i};
+    }
+
+    void ProjectState::overwrite_cell_image(CellPosition position, const Image& image)
+    {
+        auto* frame = _layers.at(position.x)->get_frame(position.y);
+        frame->overwrite_image(image);
+        frame->update_texture();
+        signal_layer_image_updated();
     }
 
     void ProjectState::set_layer_visible(size_t i, bool b)
@@ -633,8 +672,16 @@ namespace mousetrap
             for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
             {
                 auto* frame = _layers.at(layer_i)->get_frame(frame_i);
-                auto* image = frame->get_image();
-                *image = image->as_cropped(offset.x, offset.y, new_size.x, new_size.y);
+                auto image = Image();
+                image.create(_layer_resolution.x, _layer_resolution.y);
+
+                for (size_t x = 0; x < _layer_resolution.x; ++x)
+                    for (size_t y = 0; y < _layer_resolution.y; ++y)
+                        image.set_pixel(x, y, frame->get_pixel(x, y));
+
+                image = image.as_cropped(offset.x, offset.y, new_size.x, new_size.y);
+                frame->overwrite_image(image);
+                frame->set_size(image.get_size());
                 frame->update_texture();
             }
         }
@@ -650,8 +697,17 @@ namespace mousetrap
             for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
             {
                 auto* frame = _layers.at(layer_i)->get_frame(frame_i);
-                auto* image = frame->get_image();
-                *image = image->as_scaled(new_size.x, new_size.y, interpolation_type);
+
+                auto image = Image();
+                image.create(_layer_resolution.x, _layer_resolution.y);
+
+                for (size_t x = 0; x < _layer_resolution.x; ++x)
+                    for (size_t y = 0; y < _layer_resolution.y; ++y)
+                        image.set_pixel(x, y, frame->get_pixel(x, y));
+                image = image.as_scaled(new_size.x, new_size.y, interpolation_type);
+
+                frame->overwrite_image(image);
+                frame->set_size(image.get_size());
                 frame->update_texture();
             }
         }
@@ -716,13 +772,13 @@ namespace mousetrap
     {
         auto& offset = _color_offset;
 
-        auto apply_to_image = [&](Image* image)
+        auto apply_to_frame = [&](Layer::Frame* frame)
         {
-            for (size_t y = 0; y < image->get_size().y; ++y)
+            for (size_t y = 0; y < _layer_resolution.x; ++y)
             {
-                for (size_t x = 0; x < image->get_size().x; ++x)
+                for (size_t x = 0; x < _layer_resolution.y; ++x)
                 {
-                    auto as_hsva = image->get_pixel(x, y).operator HSVA();
+                    auto as_hsva = frame->get_pixel(x, y).operator HSVA();
                     as_hsva.h = glm::fract<float>(as_hsva.h + offset.at(0));
                     as_hsva.s = glm::clamp<float>(as_hsva.s + offset.at(1), 0, 1);
                     as_hsva.v = glm::clamp<float>(as_hsva.v + offset.at(2), 0, 1);
@@ -733,7 +789,7 @@ namespace mousetrap
                     as_rgba.b = glm::clamp<float>(as_rgba.b + offset.at(5), 0, 1);
                     as_rgba.a = glm::clamp<float>(as_rgba.a + offset.at(6), 0, 1);
 
-                    image->set_pixel(x, y, as_rgba);
+                    frame->set_pixel(x, y, as_rgba);
                 }
             }
         };
@@ -742,7 +798,7 @@ namespace mousetrap
         if (scope == CURRENT_CELL)
         {
             auto* frame = _layers.at(_current_layer_i)->get_frame(_current_frame_i);
-            apply_to_image(frame->get_image());
+            apply_to_frame(frame);
             frame->update_texture();
         }
         else if (scope == CURRENT_LAYER)
@@ -750,7 +806,7 @@ namespace mousetrap
             for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
             {
                 auto* frame = _layers.at(_current_layer_i)->get_frame(frame_i);
-                apply_to_image(frame->get_image());
+                apply_to_frame(frame);
                 frame->update_texture();
             }
         }
@@ -759,7 +815,7 @@ namespace mousetrap
             for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
             {
                 auto* frame = _layers.at(layer_i)->get_frame(_current_frame_i);
-                apply_to_image(frame->get_image());
+                apply_to_frame(frame);
                 frame->update_texture();
             }
         }
@@ -770,7 +826,7 @@ namespace mousetrap
                 for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
                 {
                     auto* frame = _layers.at(layer_i)->get_frame(frame_i);
-                    apply_to_image(frame->get_image());
+                    apply_to_frame(frame);
                     frame->update_texture();
                 }
             }
@@ -801,18 +857,18 @@ namespace mousetrap
 
     void ProjectState::color_invert(ApplyScope scope)
     {
-        auto apply_to_image = [&](Image* image)
+        auto apply_to_frame = [&](Layer::Frame* frame)
         {
-            for (size_t y = 0; y < image->get_size().y; ++y)
+            for (size_t y = 0; y < _layer_resolution.y; ++y)
             {
-                for (size_t x = 0; x < image->get_size().x; ++x)
+                for (size_t x = 0; x < _layer_resolution.x; ++x)
                 {
-                    auto as_rgba = image->get_pixel(x, y);
+                    auto as_rgba = frame->get_pixel(x, y);
                     as_rgba.r = 1 - as_rgba.r;
                     as_rgba.g = 1 - as_rgba.g;
                     as_rgba.b = 1 - as_rgba.b;
 
-                    image->set_pixel(x, y, as_rgba);
+                    frame->set_pixel(x, y, as_rgba);
                 }
             }
         };
@@ -820,7 +876,7 @@ namespace mousetrap
         if (scope == CURRENT_CELL)
         {
             auto* frame = _layers.at(_current_layer_i)->get_frame(_current_frame_i);
-            apply_to_image(frame->get_image());
+            apply_to_frame(frame);
             frame->update_texture();
         }
         else if (scope == CURRENT_LAYER)
@@ -828,7 +884,7 @@ namespace mousetrap
             for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
             {
                 auto* frame = _layers.at(_current_layer_i)->get_frame(frame_i);
-                apply_to_image(frame->get_image());
+                apply_to_frame(frame);
                 frame->update_texture();
             }
         }
@@ -837,7 +893,7 @@ namespace mousetrap
             for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
             {
                 auto* frame = _layers.at(layer_i)->get_frame(_current_frame_i);
-                apply_to_image(frame->get_image());
+                apply_to_frame(frame);
                 frame->update_texture();
             }
         }
@@ -848,7 +904,7 @@ namespace mousetrap
                 for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
                 {
                     auto* frame = _layers.at(layer_i)->get_frame(frame_i);
-                    apply_to_image(frame->get_image());
+                    apply_to_frame(frame);
                     frame->update_texture();
                 }
             }
@@ -991,13 +1047,9 @@ namespace mousetrap
         size_t layer_i = cell_ij.x;
         size_t frame_i = cell_ij.y;
         auto* frame = _layers.at(layer_i)->get_frame(frame_i);
-        auto* image = frame->get_image();
 
         for (auto& pair : data)
-        {
-            std::cout << pair.first.x << " " << pair.first.y << std::endl;
-            image->set_pixel(pair.first.x, pair.first.y, pair.second);
-        }
+            frame->set_pixel(pair.first.x, pair.first.y, pair.second);
 
         frame->update_texture();
         signal_layer_image_updated();
@@ -1010,7 +1062,7 @@ namespace mousetrap
 
         for (size_t x = 0; x < _layer_resolution.x; ++x)
             for (size_t y = 0; y < _layer_resolution.y; ++y)
-                to->get_image()->set_pixel(x, y, from->get_image()->get_pixel(x, y));
+                to->set_pixel(x, y, from->get_pixel(x, y));
 
         to->update_texture();
 
@@ -1022,15 +1074,27 @@ namespace mousetrap
         auto* a_frame = _layers.at(a.x)->get_frame(a.y);
         auto* b_frame = _layers.at(b.x)->get_frame(b.y);
 
-        Image a_img = Image(*a_frame->get_image());
-        Image b_img = Image(*b_frame->get_image());
+        Image a_img;
+        Image b_img;
+
+        a_img.create(_layer_resolution.x, _layer_resolution.y);
+        b_img.create(_layer_resolution.x, _layer_resolution.y);
 
         for (size_t x = 0; x < _layer_resolution.x; ++x)
         {
             for (size_t y = 0; y < _layer_resolution.y; ++y)
             {
-                a_frame->get_image()->set_pixel(x, y, b_img.get_pixel(x, y));
-                b_frame->get_image()->set_pixel(x, y, a_img.get_pixel(x, y));
+                a_img.set_pixel(x, y, a_frame->get_pixel(x, y));
+                b_img.set_pixel(x, y, b_frame->get_pixel(x, y));
+            }
+        }
+
+        for (size_t x = 0; x < _layer_resolution.x; ++x)
+        {
+            for (size_t y = 0; y < _layer_resolution.y; ++y)
+            {
+                a_frame->set_pixel(x, y, b_img.get_pixel(x, y));
+                b_frame->set_pixel(x, y, a_img.get_pixel(x, y));
             }
         }
 
@@ -1076,16 +1140,22 @@ namespace mousetrap
 
     void ProjectState::apply_image_flip()
     {
-        auto apply_to_image = [&](Image* image)
+        auto apply_to_frame = [&](Layer::Frame* frame)
         {
-            *image = image->as_flipped(_image_flip.flip_horizontally, _image_flip.flip_vertically);
+            auto image = Image();
+            image.create(_layer_resolution.x, _layer_resolution.y);
+            image = image.as_flipped(_image_flip.flip_horizontally, _image_flip.flip_vertically);
+
+            for (size_t x = 0; x < _layer_resolution.x; ++x)
+                for (size_t y = 0; y < _layer_resolution.y; ++y)
+                    frame->set_pixel(x, y, image.get_pixel(x, y));
         };
 
         auto& scope = _image_flip_apply_scope;
         if (scope == CURRENT_CELL)
         {
             auto* frame = _layers.at(_current_layer_i)->get_frame(_current_frame_i);
-            apply_to_image(frame->get_image());
+            apply_to_frame(frame);
             frame->update_texture();
         }
         else if (scope == CURRENT_LAYER)
@@ -1093,7 +1163,7 @@ namespace mousetrap
             for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
             {
                 auto* frame = _layers.at(_current_layer_i)->get_frame(frame_i);
-                apply_to_image(frame->get_image());
+                apply_to_frame(frame);
                 frame->update_texture();
             }
         }
@@ -1102,7 +1172,7 @@ namespace mousetrap
             for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
             {
                 auto* frame = _layers.at(layer_i)->get_frame(_current_frame_i);
-                apply_to_image(frame->get_image());
+                apply_to_frame(frame);
                 frame->update_texture();
             }
         }
@@ -1113,7 +1183,7 @@ namespace mousetrap
                 for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
                 {
                     auto* frame = _layers.at(layer_i)->get_frame(frame_i);
-                    apply_to_image(frame->get_image());
+                    apply_to_frame(frame);
                     frame->update_texture();
                 }
             }
@@ -1145,8 +1215,18 @@ namespace mousetrap
             for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
             {
                 auto* frame = _layers.at(layer_i)->get_frame(frame_i);
-                auto* image = frame->get_image();
-                *image = rotate(image);
+                auto image = Image();
+                image.create(_layer_resolution.x, _layer_resolution.y);
+
+                for (size_t x = 0; x < _layer_resolution.x; ++x)
+                    for (size_t y = 0; y < _layer_resolution.y; ++y)
+                        image.set_pixel(x, y, frame->get_pixel(x, y));
+
+                image = rotate(&image);
+
+                for (size_t x = 0; x < _layer_resolution.x; ++x)
+                    for (size_t y = 0; y < _layer_resolution.y; ++y)
+                        frame->set_pixel(x, y, image.get_pixel(x, y));
 
                 frame->update_texture();
             }
@@ -1158,7 +1238,7 @@ namespace mousetrap
 
     void ProjectState::rotate_counterclockwise()
     {
-        auto apply_to_image  = [](Image* image)
+        auto apply_to_frame  = [](Image* image)
         {
             auto out = Image();
             out.create(image->get_size().y, image->get_size().x);
@@ -1170,12 +1250,36 @@ namespace mousetrap
             *image = out;
         };
 
+        auto rotate = [](Image* image)
+        {
+            auto out = Image();
+            out.create(image->get_size().y, image->get_size().x);
+
+            for(size_t x = 0; x < image->get_size().x; x++)
+                for(size_t y = 0; y < image->get_size().y; y++)
+                    out.set_pixel(y, x, image->get_pixel(image->get_size().x - 1 - x, y));
+
+            return out;
+        };
+
         for (size_t layer_i = 0; layer_i < _layers.size(); ++layer_i)
         {
             for (size_t frame_i = 0; frame_i < _n_frames; ++frame_i)
             {
                 auto* frame = _layers.at(layer_i)->get_frame(frame_i);
-                apply_to_image(frame->get_image());
+                auto image = Image();
+                image.create(_layer_resolution.x, _layer_resolution.y);
+
+                for (size_t x = 0; x < _layer_resolution.x; ++x)
+                    for (size_t y = 0; y < _layer_resolution.y; ++y)
+                        image.set_pixel(x, y, frame->get_pixel(x, y));
+
+                image = rotate(&image);
+
+                for (size_t x = 0; x < _layer_resolution.x; ++x)
+                    for (size_t y = 0; y < _layer_resolution.y; ++y)
+                        frame->set_pixel(x, y, image.get_pixel(x, y));
+
                 frame->update_texture();
             }
         }

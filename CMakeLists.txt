@@ -17,8 +17,6 @@ if (NOT GTK_FOUND)
     message(FATAL_ERROR "Missing Dependency: unable to locate gtk4")
 endif()
 
-message(WARNING ${GTK_VERSION})
-
 # GLM
 include(CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX("glm/glm.hpp" GLM_FOUND)
@@ -266,6 +264,12 @@ add_library(mousetrap SHARED
 
     include/render_texture.hpp
     src/render_texture.cpp
+
+    include/msaa_texture.hpp
+    src/msaa_texture.cpp
+
+    include/clipboard.hpp
+    src/clipboard.cpp
 )
 
 set_target_properties(mousetrap PROPERTIES
@@ -370,7 +374,7 @@ add_library(app SHARED
 
     app/verbose_color_picker.hpp
     app/src/verbose_color_picker.cpp
-        app/app_signals.hpp app/open_uri.hpp app/detect_platform.hpp app/resize_canvas_dialog.hpp app/scale_canvas_dialog.hpp app/src/scale_canvas_dialog.cpp app/src/resize_canvas_dialog.cpp app/canvas_export.hpp app/src/canvas_export.cpp app/color_transform_dialog.hpp app/src/color_transform_dialog.cpp app/apply_scope.hpp app/src/image_transform_dialog.cpp app/src/canvas_transparency_layer.cpp app/src/canvas_layer_layer.cpp app/src/canvas_onionskin_layer.cpp app/src/canvas_grid_layer.cpp app/src/canvas_symmetry_ruler_layer.cpp app/src/canvas_brush_shape_layer.cpp app/src/canvas_user_input_layer.cpp app/src/canvas_wireframe_layer.cpp app/msaa_texture.hpp app/src/msaa_texture.cpp app/src/msaa_texture.cpp app/src/canvas_selection_layer.cpp app/src/canvas_control_bar.cpp app/clipboard.hpp app/src/clipboard.cpp)
+        app/app_signals.hpp app/open_uri.hpp app/detect_platform.hpp app/resize_canvas_dialog.hpp app/scale_canvas_dialog.hpp app/src/scale_canvas_dialog.cpp app/src/resize_canvas_dialog.cpp app/canvas_export.hpp app/src/canvas_export.cpp app/color_transform_dialog.hpp app/src/color_transform_dialog.cpp app/apply_scope.hpp app/src/image_transform_dialog.cpp app/src/canvas_transparency_layer.cpp app/src/canvas_layer_layer.cpp app/src/canvas_onionskin_layer.cpp app/src/canvas_grid_layer.cpp app/src/canvas_symmetry_ruler_layer.cpp app/src/canvas_brush_shape_layer.cpp app/src/canvas_user_input_layer.cpp app/src/canvas_wireframe_layer.cpp  app/src/canvas_selection_layer.cpp app/src/canvas_control_bar.cpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

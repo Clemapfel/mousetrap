@@ -23,6 +23,7 @@ namespace mousetrap
 
         _key_controller.connect_signal_key_pressed(on_key_pressed, this);
         _key_controller.connect_signal_key_released(on_key_released, this);
+        _key_controller.set_propagation_phase(GTK_PHASE_CAPTURE);
 
         _scroll_controller.connect_signal_scroll_begin(on_scroll_begin, this);
         _scroll_controller.connect_signal_scroll(on_scroll, this);
@@ -167,6 +168,8 @@ namespace mousetrap
         auto* trigger = gtk_shortcut_trigger_parse_string(id.c_str());
         auto normalized = std::string(gtk_shortcut_trigger_to_string(trigger));
 
+        g_object_unref(trigger);
+
         bool shift_pressed = false;
         bool alt_pressed = false;
         bool control_pressed = false;
@@ -207,7 +210,26 @@ namespace mousetrap
         if (instance->should_trigger(state::keybindings_file->get_value("canvas", "lock_axis_movement"), keyval))
             instance->_lock_axis_movement = true;
 
-        return true;
+        auto was_pressed = [&](const std::string& value){
+            auto* trigger = gtk_shortcut_trigger_parse_string(state::keybindings_file->get_value("canvas", value).c_str());
+            bool out = gtk_shortcut_trigger_trigger(trigger, instance->_key_controller.get_current_event(), false);
+            g_object_unref(trigger);
+            return out;
+        };
+
+        if (was_pressed("move_float_up"))
+           state::actions::canvas_move_float_up.activate();
+
+        if (was_pressed("move_float_right"))
+            state::actions::canvas_move_float_right.activate();
+
+        if (was_pressed("move_float_down"))
+            state::actions::canvas_move_float_down.activate();
+
+        if (was_pressed("move_float_left"))
+            state::actions::canvas_move_float_left.activate();
+
+        return false;
     }
 
     bool Canvas::UserInputLayer::on_key_released(KeyEventController* controller, guint keyval, guint keycode, GdkModifierType state, UserInputLayer* instance)
@@ -218,7 +240,7 @@ namespace mousetrap
         if (instance->should_trigger(state::keybindings_file->get_value("canvas", "lock_axis_movement"), keyval))
             instance->_lock_axis_movement = false;
 
-        return true;
+        return false;
     }
 
     void Canvas::UserInputLayer::on_scroll_begin(ScrollEventController*, UserInputLayer* instance)
