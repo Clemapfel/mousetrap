@@ -26,7 +26,7 @@ namespace mousetrap
     OutlineVertices generate_outline_vertices(const Image& image);
 
     /// \brief generate lines that will outline the area described by the set of coordinates, ordered by clockwise orientation
-    OutlineVertices generate_outline_vertices(const Vector2Set<int>& set);
+    OutlineVertices generate_outline_vertices(const Vector2iSet& set);
 
     Image generate_rectangle_outline(size_t width, size_t height, HSVA color = HSVA(0, 1, 0, 1));
     Image generate_rectangle_filled(size_t width, size_t height, HSVA color = HSVA(0, 1, 0, 1));

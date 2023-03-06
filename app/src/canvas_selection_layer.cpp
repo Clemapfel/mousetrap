@@ -202,7 +202,7 @@ namespace mousetrap
             return out;
         };
 
-        auto selection = active_state->get_selection();
+        const Vector2iSet& selection = active_state->get_selection();
         auto vertices = generate_outline_vertices(selection);
 
         _outline_top->as_lines(convert_vertex_coordinates(vertices.top));

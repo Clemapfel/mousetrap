@@ -120,10 +120,20 @@ namespace mousetrap
 
     template<typename T>
     using Vector2Set = std::set<Vector2<T>, Vector2Compare<T>>;
+    using Vector2fSet = Vector2Set<float>;
+    using Vector2iSet = Vector2Set<int64_t>;
+    using Vector2uiSet = Vector2Set<size_t>;
 
     template<typename T>
     using Vector3Set = std::set<Vector3<T>, Vector3Compare<T>>;
+    using Vector3fSet = Vector3Set<float>;
+    using Vector3iSet = Vector3Set<int64_t>;
+    using Vector3uiSet = Vector3Set<size_t>;
 
     template<typename T>
     using Vector4Set = std::set<Vector4<T>, Vector4Compare<T>>;
+    using Vector4fSet = Vector4Set<float>;
+    using Vector4iSet = Vector4Set<int64_t>;
+    using Vector4uiSet = Vector4Set<size_t>;
+
 }

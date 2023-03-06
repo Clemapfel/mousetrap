@@ -987,12 +987,12 @@ namespace mousetrap
         return _palette_editing_enabled;
     }
 
-    const Vector2Set<int>& ProjectState::get_selection() const
+    const Vector2iSet& ProjectState::get_selection() const
     {
         return _selection;
     }
 
-    void ProjectState::set_selection(Vector2Set<int> selection)
+    void ProjectState::set_selection(Vector2iSet selection)
     {
         _selection = selection;
 

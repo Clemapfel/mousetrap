@@ -168,8 +168,8 @@ namespace mousetrap
             bool get_palette_editing_enabled() const;
             void set_palette_editing_enabled(bool b);
 
-            void set_selection(Vector2Set<int>);
-            const Vector2Set<int>& get_selection() const;
+            void set_selection(Vector2iSet);
+            const Vector2iSet& get_selection() const;
             void select_all();
 
             void set_playback_active(bool);
@@ -205,7 +205,7 @@ namespace mousetrap
             size_t _brush_size = 1;
             float _brush_opacity = 1;
 
-            Vector2Set<int> _selection;
+            Vector2iSet _selection;
 
             Vector2ui _layer_resolution;
             std::deque<Layer*> _layers;

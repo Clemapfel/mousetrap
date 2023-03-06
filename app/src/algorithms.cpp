@@ -282,14 +282,14 @@ namespace mousetrap
     }
 
     /// \brief generate lines that will outline the area described by the set of coordinates, ordered by clockwise orientation
-    OutlineVertices generate_outline_vertices(const Vector2Set<int>& set)
+    OutlineVertices generate_outline_vertices(const Vector2iSet& set)
     {
         OutlineVertices out;
 
-        int min_x = std::numeric_limits<int>::max();
-        int min_y = std::numeric_limits<int>::max();
-        int max_x = std::numeric_limits<int>::min();
-        int max_y = std::numeric_limits<int>::min();
+        auto min_x = std::numeric_limits<int64_t>::max();
+        auto min_y = std::numeric_limits<int64_t>::max();
+        auto max_x = std::numeric_limits<int64_t>::min();
+        auto max_y = std::numeric_limits<int64_t>::min();
 
         for (auto& v : set)
         {
