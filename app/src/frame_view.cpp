@@ -869,6 +869,8 @@ namespace mousetrap
         _frame_column_list_view_window.set_child(&_frame_colum_list_view_window_box);
         _main.push_back(_control_bar);
         _main.push_back(&_frame_column_list_view_window);
+
+        _main.set_homogeneous(false);
     }
 
     FrameView::operator Widget*()

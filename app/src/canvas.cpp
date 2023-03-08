@@ -97,12 +97,15 @@ namespace mousetrap
         _x_scrollbar_and_canvas_box.push_back(_x_offset_scrollbar);
         _x_scrollbar_and_canvas_box.set_homogeneous(false);
 
-        _main.set_homogeneous(false);
-        _main.push_back(&_x_scrollbar_and_canvas_box);
-        _main.push_back(&_y_scrollbar_and_reset_button_box);
+        _canvas_and_scrollbars_box.set_homogeneous(false);
+        _canvas_and_scrollbars_box.push_back(&_x_scrollbar_and_canvas_box);
+        _canvas_and_scrollbars_box.push_back(&_y_scrollbar_and_reset_button_box);
+        _canvas_and_scrollbars_box.set_expand(true);
+
+        _main.push_back(&_canvas_and_scrollbars_box);
+        _main.push_back(_control_bar);
 
         _control_bar.operator Widget*()-> set_vexpand(false);
-        _main.set_expand(true);
 
         using namespace state::actions;
         canvas_toggle_grid_visible.set_stateful_function([](bool){
@@ -239,6 +242,8 @@ namespace mousetrap
         _selection_layer->set_scale(_scale);
         _user_input_layer->set_scale(_scale);
         _control_bar.set_scale(_scale);
+
+        state::actions::canvas_reset_transform.set_enabled(_offset.x != 0 or _offset.y != 0 or _scale != 1);
     }
 
     void Canvas::set_offset(float x, float y)
@@ -263,6 +268,8 @@ namespace mousetrap
         _brush_shape_layer->set_offset(_offset);
         _wireframe_layer->set_offset(_offset);
         _selection_layer->set_offset(_offset);
+
+        state::actions::canvas_reset_transform.set_enabled(_offset.x != 0 or _offset.y != 0 or _scale != 1);
     }
 
     void Canvas::set_canvas_size(Vector2f size)

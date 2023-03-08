@@ -678,11 +678,33 @@ namespace mousetrap
                 private:
                     Canvas* _owner;
 
+                    Button _reset_view_button;
+                    ImageDisplay _reset_view_icon = ImageDisplay(get_resource_path() + "icons/canvas_reset_view.png");
+
+                    SeparatorLine _view_spacer;
+
+                    ToggleButton _brush_outline_visible_toggle_button;
+                    ImageDisplay _brush_outline_visible_icon = ImageDisplay(get_resource_path() + "icons/canvas_brush_outline_visible.png");
+
+                    SpinButton _scale_scale = SpinButton(1, 99, 0.1);
+
+                    Box _view_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
                     ToggleButton _grid_visible_toggle_button;
                     ImageDisplay _grid_visible_icon = ImageDisplay(get_resource_path() + "icons/canvas_grid.png");
 
                     ToggleButton _background_visible_toggle_button;
                     ImageDisplay _background_visible_icon = ImageDisplay(get_resource_path() + "icons/canvas_background.png");
+
+                    Box _visibility_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
+                    Button _flip_horizontally_button;
+                    ImageDisplay _flip_horizontally_icon = ImageDisplay(get_resource_path() + "icons/canvas_flip_horizontally.png");
+
+                    Button _flip_vertically_button;
+                    ImageDisplay _flip_vertically_icon = ImageDisplay(get_resource_path() + "icons/canvas_flip_vertically.png");
+
+                    Box _flip_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
                     ToggleButton _horizontal_symmetry_toggle_button;
                     ImageDisplay _horizontal_symmetry_icon = ImageDisplay(get_resource_path() + "icons/canvas_horizontal_symmetry.png");
@@ -692,6 +714,8 @@ namespace mousetrap
 
                     MenuButton _symmetry_control_menu_button;
                     Popover _symmetry_control_menu_popover;
+
+                    Box _symmetry_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
                     class SymmetryControlMenu
                     {
@@ -737,18 +761,14 @@ namespace mousetrap
 
                     SymmetryControlMenu* _symmetry_control_menu = new SymmetryControlMenu(this);
 
-                    ToggleButton _brush_outline_visible_toggle_button;
-                    ImageDisplay _brush_outline_visible_icon = ImageDisplay(get_resource_path() + "icons/canvas_brush_outline_visible.png");
-
-                    SpinButton _scale_scale = SpinButton(1, 99, 0.1);
-
                     bool _position_visible = true;
                     Label _position_label;
 
                     MenuButton _menu_button;
                     Label _menu_button_label = Label("Canvas");
 
-                    Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+                    Box _scrolled_window_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                    ScrolledWindow _scrolled_window;
             };
 
             ControlBar _control_bar = ControlBar(this);
@@ -774,7 +794,8 @@ namespace mousetrap
             Box _x_scrollbar_and_canvas_box = Box(GTK_ORIENTATION_VERTICAL);
             void update_adjustment_bounds();
 
-            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+            Box _canvas_and_scrollbars_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
             Overlay _layer_overlay;
 
     };

@@ -31,7 +31,7 @@ namespace mousetrap
             void set_child(Widget*);
 
             void set_revealed(bool b);
-            bool get_revealed();
+            bool get_revealed() const;
             void set_transition_type(TransitionType);
 
         private:

@@ -1144,6 +1144,11 @@ namespace mousetrap
         {
             auto image = Image();
             image.create(_layer_resolution.x, _layer_resolution.y);
+
+            for (size_t x = 0; x < _layer_resolution.x; ++x)
+                for (size_t y = 0; y < _layer_resolution.y; ++y)
+                    image.set_pixel(x, y, frame->get_pixel(x, y));
+
             image = image.as_flipped(_image_flip.flip_horizontally, _image_flip.flip_vertically);
 
             for (size_t x = 0; x < _layer_resolution.x; ++x)
@@ -1194,6 +1199,10 @@ namespace mousetrap
         }
 
         signal_layer_image_updated();
+
+        _image_flip.flip_horizontally = false;
+        _image_flip.flip_vertically = false;
+        signal_image_flip_changed();
     }
 
     void ProjectState::rotate_clockwise()

@@ -33,7 +33,7 @@ namespace mousetrap
         gtk_widget_set_vexpand(child, v);
     }
 
-    inline bool Revealer::get_revealed()
+    inline bool Revealer::get_revealed() const
     {
         return gtk_revealer_get_reveal_child(get_native());
     }

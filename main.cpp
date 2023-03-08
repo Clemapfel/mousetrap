@@ -40,6 +40,7 @@
 #include <app/canvas_export.hpp>
 #include <app/color_transform_dialog.hpp>
 #include <app/image_transform_dialog.hpp>
+#include <app/log_box.hpp>
 
 using namespace mousetrap;
 
@@ -71,6 +72,7 @@ static void activate(GtkApplication* app, void*)
     state::color_transform_dialog = new ColorTransformDialog();
     state::image_transform_dialog = new ImageTransformDialog();
     state::canvas = new Canvas();
+    state::log_box = new LogBox();
 
     auto* temp_color_picker =  new ColorPicker();
     temp_color_picker->connect_signal_color_changed([](ColorPicker* instance, HSVA color, std::nullptr_t){
@@ -92,7 +94,7 @@ static void activate(GtkApplication* app, void*)
     Widget* animation_preview = state::animation_preview->operator Widget*();
     Widget* resize_canvas_dialog = state::resize_canvas_dialog->operator Widget*();
     Widget* canvas_export = state::canvas_export->operator Widget*();
-
+    Widget* log_box = state::log_box->operator Widget*();
     toolbox->set_vexpand(false);
 
     canvas->set_size_request({500, 0});
@@ -198,11 +200,22 @@ static void activate(GtkApplication* app, void*)
     main_paned.set_start_child(&left_and_center_and_frame_view_paned);
     main_paned.set_end_child(&right_column_paned);
 
+    auto main_logbox = Box(GTK_ORIENTATION_VERTICAL);
+    main_logbox.push_back(&main_paned);
+
+    auto main_logbox_spacer = SeparatorLine();
+    main_logbox_spacer.set_size_request({0, 3 * state::margin_unit / 10});
+    main_logbox_spacer.set_hexpand(false);
+
+    main_logbox.push_back(&main_logbox_spacer);
+    main_logbox.push_back(log_box);
+    main_logbox.set_homogeneous(false);
+
     auto main = Box(GTK_ORIENTATION_VERTICAL);
     auto main_spacer_top = SeparatorLine();
-    main_spacer_top.set_size_request({0, state::margin_unit / 5});
+    main_spacer_top.set_size_request({0, 3 * state::margin_unit / 10});
     main.push_back(&main_spacer_top);
-    main.push_back(&main_paned);
+    main.push_back(&main_logbox);
 
     left_column_paned.set_end_child_shrinkable(false);
     left_column_paned.set_position(10e6); // as low as possible

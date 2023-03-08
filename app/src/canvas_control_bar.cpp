@@ -44,12 +44,32 @@ namespace mousetrap
             instance->_owner->set_scale(scale->get_value());
         }, this);
 
+        _reset_view_button.set_action(state::actions::canvas_reset_transform);
+        _reset_view_button.set_child(&_reset_view_icon);
+
+        _flip_horizontally_button.set_child(&_flip_horizontally_icon);
+        _flip_horizontally_button.connect_signal_clicked([](Button* button, auto){
+            active_state->set_image_flip_apply_scope(ApplyScope::CURRENT_CELL);
+            active_state->set_image_flip(true, false);
+            active_state->apply_image_flip();
+        }, this);
+
+        _flip_vertically_button.set_child(&_flip_vertically_icon);
+        _flip_vertically_button.connect_signal_clicked([](Button* button, auto){
+            active_state->set_image_flip_apply_scope(ApplyScope::CURRENT_CELL);
+            active_state->set_image_flip(false, true);
+            active_state->apply_image_flip();
+        }, this);
+
         for (auto* icon : {
             &_grid_visible_icon,
             &_background_visible_icon,
             &_horizontal_symmetry_icon,
             &_vertical_symmetry_icon,
-            &_brush_outline_visible_icon
+            &_brush_outline_visible_icon,
+            &_reset_view_icon,
+            &_flip_horizontally_icon,
+            &_flip_vertically_icon
         })
         {
             icon->set_size_request(icon->get_size());
@@ -62,19 +82,49 @@ namespace mousetrap
             auto sep = SeparatorLine();
             (&sep)->set_opacity(0);
             (&sep)->set_expand(true);
-            _main.push_back(&sep);
+            _scrolled_window_box.push_back(&sep);
         };
 
         _position_label.set_text("");
 
-        _main.push_back(&_position_label);
-        _main.push_back(&_scale_scale);
-        _main.push_back(&_brush_outline_visible_toggle_button);
-        _main.push_back(&_grid_visible_toggle_button);
-        _main.push_back(&_background_visible_toggle_button);
-        _main.push_back(&_horizontal_symmetry_toggle_button);
-        _main.push_back(&_vertical_symmetry_toggle_button);
-        _main.push_back(&_symmetry_control_menu_button);
+        _visibility_box.push_back(&_brush_outline_visible_toggle_button);
+        _visibility_box.push_back(&_grid_visible_toggle_button);
+        _visibility_box.push_back(&_background_visible_toggle_button);
+
+        _flip_box.push_back(&_flip_vertically_button);
+        _flip_box.push_back(&_flip_horizontally_button);
+
+        _view_box.push_back(&_reset_view_button);
+        _view_box.push_back(&_scale_scale);
+
+        _symmetry_box.push_back(&_horizontal_symmetry_toggle_button);
+        _symmetry_box.push_back(&_vertical_symmetry_toggle_button);
+        _symmetry_box.push_back(&_symmetry_control_menu_button);
+
+        _symmetry_box.set_halign(GTK_ALIGN_END);
+        _symmetry_box.set_hexpand(false);
+
+        float spacer_size = _reset_view_button.get_preferred_size().natural_size.x;
+        _view_spacer.set_size_request({spacer_size, 0});
+
+        auto add_spacer = [&](){
+            auto* spacer = new SeparatorLine();
+            spacer->set_hexpand(false);
+            spacer->set_size_request({spacer_size, 0});
+            _scrolled_window_box.push_back(spacer);
+        };
+
+        _scrolled_window_box.push_back(&_view_box);
+        _scrolled_window_box.push_back(&_view_spacer);
+        _scrolled_window_box.push_back(&_visibility_box);
+        add_spacer();
+        _scrolled_window_box.push_back(&_flip_box);
+        add_spacer();
+        _scrolled_window_box.push_back(&_symmetry_box);
+
+        _scrolled_window.set_child(&_scrolled_window_box);
+        _scrolled_window.set_policy(GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
+        _scrolled_window.set_propagate_natural_height(true);
 
         set_scale(_owner->_scale);
         set_horizontal_symmetry_active(_owner->_horizontal_symmetry_active);
@@ -97,7 +147,7 @@ namespace mousetrap
 
     Canvas::ControlBar::operator Widget*()
     {
-        return &_main;
+        return &_scrolled_window;
     }
 
     void Canvas::ControlBar::set_grid_visible(bool b)
