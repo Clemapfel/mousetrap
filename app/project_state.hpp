@@ -42,6 +42,12 @@ namespace mousetrap
         public:
             ProjectState(Vector2i layer_resolution);
 
+            void set_cursor_position(Vector2i);
+            Vector2i get_cursor_position() const;
+
+            void set_save_path(const std::string&);
+            const std::string& get_save_path() const;
+
             const Brush* get_current_brush() const;
             void set_current_brush(size_t);
             size_t get_current_brush_index() const;
@@ -229,6 +235,9 @@ namespace mousetrap
             flip_state _image_flip;
             ApplyScope _image_flip_apply_scope = ApplyScope::EVERYWHERE;
 
+            Vector2i _cursor_position = {0, 0};
+            std::string _save_path = get_resource_path() + "/backups";
+
             void signal_brush_selection_changed();
             void signal_brush_set_updated();
             void signal_color_selection_changed();
@@ -248,6 +257,8 @@ namespace mousetrap
             void signal_playback_fps_changed();
             void signal_color_offset_changed();
             void signal_image_flip_changed();
+            void signal_save_path_changed();
+            void signal_cursor_position_changed();
     };
 
     inline std::vector<ProjectState*> project_states = {};

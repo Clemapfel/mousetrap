@@ -25,6 +25,7 @@
 #include <app/canvas_export.hpp>
 #include <app/scale_canvas_dialog.hpp>
 #include <app/resize_canvas_dialog.hpp>
+#include <app/log_box.hpp>
 
 namespace mousetrap
 {
@@ -113,6 +114,8 @@ namespace mousetrap
             for (size_t y = 0; y < _layer_resolution.y; ++y)
                 _selection.insert({x, y});
 
+
+        set_save_path(get_resource_path() + "backups/" + std::tmpnam(nullptr));
 
         /*
 
@@ -1301,6 +1304,28 @@ namespace mousetrap
         signal_layer_image_updated();
     }
 
+    void ProjectState::set_cursor_position(Vector2i position)
+    {
+        _cursor_position = position;
+        signal_cursor_position_changed();
+    }
+
+    Vector2i ProjectState::get_cursor_position() const
+    {
+        return _cursor_position;
+    }
+
+    void ProjectState::set_save_path(const std::string& path)
+    {
+        _save_path = path;
+        signal_save_path_changed();
+    }
+
+    const std::string& ProjectState::get_save_path() const
+    {
+        return _save_path;
+    }
+
     void ProjectState::signal_brush_selection_changed()
     {
         if (state::brush_options)
@@ -1511,5 +1536,20 @@ namespace mousetrap
 
         if (state::animation_preview)
             state::animation_preview->signal_image_flip_changed();
+    }
+
+    void ProjectState::signal_save_path_changed()
+    {
+        if (state::log_box)
+            state::log_box->signal_save_path_changed();
+    }
+
+    void ProjectState::signal_cursor_position_changed()
+    {
+        if (state::canvas)
+            state::canvas->signal_cursor_position_changed();
+
+        if (state::log_box)
+            state::log_box->signal_cursor_position_changed();
     }
 }

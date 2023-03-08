@@ -119,7 +119,7 @@ namespace mousetrap
         float pixel_h = height / layer_resolution.y;
 
         Vector2f cursor_pos = Vector2f(x / _canvas_size.x, y / _canvas_size.y);
-        _owner->set_cursor_position(Vector2i(
+        active_state->set_cursor_position(Vector2i(
             ((cursor_pos.x - top_left.x) / pixel_w),
             ((cursor_pos.y - top_left.y) / pixel_h)
         ));
@@ -154,6 +154,7 @@ namespace mousetrap
     void Canvas::UserInputLayer::on_motion_leave(MotionEventController*, UserInputLayer* instance)
     {
         instance->_owner->set_cursor_in_bounds(false);
+        active_state->set_cursor_position(*active_state->get_selection().begin());
     }
 
     void Canvas::UserInputLayer::on_motion(MotionEventController*, double x, double y, UserInputLayer* instance)

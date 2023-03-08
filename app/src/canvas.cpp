@@ -408,6 +408,11 @@ namespace mousetrap
         active_state->draw_to_cell({active_state->get_current_layer_index(), active_state->get_current_frame_index()}, data);
     }
 
+    void Canvas::on_cursor_position_changed()
+    {
+        set_cursor_position(active_state->get_cursor_position());
+    }
+
     void Canvas::set_cursor_position(Vector2i xy)
     {
         _cursor_position = xy;

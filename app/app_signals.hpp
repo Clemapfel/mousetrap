@@ -58,5 +58,5 @@ namespace mousetrap::signals
     DECLARE_APP_SIGNAL_COMPONENT(ActiveToolChanged, active_tool_changed)
 
     DECLARE_APP_SIGNAL_COMPONENT(CursorPositionChanged, cursor_position_changed)
-
+    DECLARE_APP_SIGNAL_COMPONENT(SavePathChanged, save_path_changed)
 };

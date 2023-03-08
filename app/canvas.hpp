@@ -82,7 +82,8 @@ namespace mousetrap
             public signals::LayerPropertiesChanged,
             public signals::LayerResolutionChanged,
             public signals::ColorOffsetChanged,
-            public signals::ImageFlipChanged
+            public signals::ImageFlipChanged,
+            public signals::CursorPositionChanged
     {
         public:
             Canvas();
@@ -104,6 +105,8 @@ namespace mousetrap
 
             void on_color_offset_changed() override;
             void on_image_flip_changed() override;
+
+            void on_cursor_position_changed() override;
 
         private:
             // global properties
