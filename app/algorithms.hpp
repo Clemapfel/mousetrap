@@ -6,6 +6,7 @@
 #pragma once
 
 #include <mousetrap.hpp>
+#include <app/layer.hpp>
 
 namespace mousetrap
 {
@@ -38,4 +39,5 @@ namespace mousetrap
     [[nodiscard]] Image flip_image_horizontally(const Image&);
     [[nodiscard]] Image flip_image_vertically(const Image&);
 
+    std::vector<Vector2i> generate_bucket_fill_points(Vector2i origin, HSVA color, const Layer::Frame* frame, float eps = 1.f/(pow(2, 8)));
 }

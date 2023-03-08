@@ -192,6 +192,25 @@ namespace mousetrap
             active_state->set_cell_offset(position, offset);
         });
 
+        canvas_apply_bucket_fill.set_function([]()
+        {
+            auto points = generate_bucket_fill_points(
+                active_state->get_cursor_position(),
+                active_state->get_primary_color(),
+                active_state->get_frame(
+                    active_state->get_current_layer_index(),
+                    active_state->get_current_frame_index()
+                ),
+                active_state->get_bucket_fill_eps()
+            );
+
+            auto to_draw = ProjectState::DrawData();
+            for (auto& p : points)
+                to_draw.insert({p, active_state->get_primary_color()});
+
+            active_state->draw_to_cell(active_state->get_current_cell_position(), to_draw);
+        });
+
         // move float actions are triggered by userinput layer, not shortcut controller
 
         for (auto* action : {
@@ -204,7 +223,8 @@ namespace mousetrap
             &canvas_reset_transform,
             &canvas_toggle_background_visible,
             &canvas_paste_clipboard,
-            &canvas_copy_to_clipboard
+            &canvas_copy_to_clipboard,
+            &canvas_apply_bucket_fill
         })
             state::add_shortcut_action(*action);
 

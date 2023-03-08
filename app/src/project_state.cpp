@@ -115,7 +115,7 @@ namespace mousetrap
                 _selection.insert({x, y});
 
 
-        set_save_path(get_resource_path() + "backups/" + std::tmpnam(nullptr));
+        set_save_path(std::tmpnam(nullptr));
 
         /*
 
@@ -254,6 +254,16 @@ namespace mousetrap
         _brush_size = v;
         _brushes.at(_current_brush_i).set_size(_brush_size);
         signal_brush_selection_changed();
+    }
+
+    float ProjectState::get_bucket_fill_eps() const
+    {
+        return _bucket_fill_eps;
+    }
+
+    void ProjectState::set_bucket_fill_eps(float eps)
+    {
+        _bucket_fill_eps = eps;
     }
 
     size_t ProjectState::get_brush_size() const

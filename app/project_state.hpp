@@ -55,6 +55,9 @@ namespace mousetrap
             const Brush* get_brush(size_t) const;
             const std::deque<Brush>& get_brushes() const;
 
+            void set_bucket_fill_eps(float);
+            float get_bucket_fill_eps() const;
+
             void remove_brush(size_t);
             void add_brush(Brush);
             void load_default_brushes();
@@ -210,6 +213,7 @@ namespace mousetrap
             size_t _current_brush_i = 0;
             size_t _brush_size = 1;
             float _brush_opacity = 1;
+            float _bucket_fill_eps = 1 / 256.f;
 
             Vector2iSet _selection;
 

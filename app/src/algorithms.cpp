@@ -529,5 +529,15 @@ namespace mousetrap
         return out;
     }
 
+    std::vector<Vector2i> generate_bucket_fill_points(Vector2i origin, HSVA color, const Layer::Frame* frame, float eps)
+    {
+        std::vector<Vector2i> out;
+
+        for (size_t x = 0; x < frame->get_size().x; ++x)
+            for (size_t y = 0; y < frame->get_size().y; ++y)
+                out.emplace_back(x, y);
+
+        return out;
+    }
 
 }

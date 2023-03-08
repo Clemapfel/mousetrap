@@ -118,6 +118,11 @@ namespace mousetrap
         _size = size;
     }
 
+    Vector2ui Layer::Frame::get_size() const
+    {
+        return _size;
+    }
+
     Vector2ui Layer::Frame::get_image_size() const
     {
         return _image->get_size();

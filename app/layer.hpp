@@ -32,6 +32,7 @@ namespace mousetrap
 
                     void overwrite_image(const Image&);
                     void set_size(Vector2ui);
+                    Vector2ui get_size() const;
 
                     Vector2ui get_image_size() const;
 
