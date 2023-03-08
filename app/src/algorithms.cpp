@@ -563,10 +563,17 @@ namespace mousetrap
         int y_left = origin.y - 1;
         int y_right = origin.y + 1;
 
+        size_t n_tested = 0;
+
         auto test_point = [&](int x, int y)
         {
             if (x < 0 or y < 0 or x >= size.x or y >= size.y)
                 return;
+
+            if (points.find({x, y}) != points.end())
+                return;
+
+            n_tested += 1;
 
             auto distance = dist({x, y});
             if (distance < eps)
@@ -591,6 +598,7 @@ namespace mousetrap
                 add:
                     points.insert({x, y});
                     added = true;
+                    std::cout << "add" << std::endl;
             }
         };
 
@@ -622,6 +630,8 @@ namespace mousetrap
         out.reserve(points.size());
         for (auto& p : points)
             out.push_back(p);
+
+        std::cout << n_tested << " / " << out.size() << std::endl;
 
         return out;
     }
