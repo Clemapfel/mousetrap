@@ -34,7 +34,7 @@ namespace mousetrap
         explicit operator HSVA() const;
 
         float to_grayscale() const;
-        explicit operator std::string();
+        explicit operator std::string() const;
 
         bool operator==(const RGBA& other);
         bool operator!=(const RGBA& other);
@@ -60,7 +60,7 @@ namespace mousetrap
         operator RGBA() const;
 
         float to_grayscale() const;
-        explicit operator std::string();
+        explicit operator std::string() const;
 
         bool operator==(const HSVA& other);
         bool operator!=(const HSVA& other);

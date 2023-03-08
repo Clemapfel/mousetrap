@@ -12,6 +12,7 @@ namespace mousetrap
         _main.set_margin(state::margin_unit * 0.5);
         _main.push_back(&_current_save_path_label);
         _main.push_back(&_spacer);
+        _main.push_back(&_current_color_label);
         _main.push_back(&_cursor_position_label);
 
         _spacer.set_opacity(0);
@@ -19,6 +20,14 @@ namespace mousetrap
 
         _current_save_path_label.set_halign(GTK_ALIGN_START);
         _cursor_position_label.set_halign(GTK_ALIGN_END);
+        _current_color_label.set_halign(GTK_ALIGN_END);
+
+        for (auto* label : {
+            &_current_save_path_label,
+            &_cursor_position_label,
+            &_current_color_label
+        })
+            label->set_margin_end(state::margin_unit);
 
         on_cursor_position_changed();
         on_save_path_changed();
@@ -27,11 +36,32 @@ namespace mousetrap
     void LogBox::on_cursor_position_changed()
     {
         set_cursor_position(active_state->get_cursor_position());
+        update_current_color();
+    }
+
+    void LogBox::on_layer_image_updated()
+    {
+        update_current_color();
+    }
+
+    void LogBox::on_layer_frame_selection_changed()
+    {
+        update_current_color();
     }
 
     void LogBox::on_save_path_changed()
     {
         set_save_path(active_state->get_save_path());
+    }
+
+    void LogBox::update_current_color()
+    {
+        auto pos = active_state->get_cursor_position();
+        auto frame = active_state->get_frame(
+            active_state->get_current_layer_index(),
+            active_state->get_current_frame_index()
+        );
+        _current_color_label.set_text(frame->get_pixel(pos.x, pos.y).operator HSVA().operator std::string());
     }
 
     void LogBox::set_cursor_position(Vector2i position)

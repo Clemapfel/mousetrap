@@ -1423,6 +1423,9 @@ namespace mousetrap
 
         if (state::animation_preview)
             state::animation_preview->signal_layer_frame_selection_changed();
+
+        if (state::log_box)
+            state::log_box->signal_layer_frame_selection_changed();
     }
 
     void ProjectState::signal_layer_image_updated()
@@ -1441,6 +1444,9 @@ namespace mousetrap
 
         if (state::canvas_export)
             state::canvas_export->signal_layer_image_updated();
+
+        if (state::log_box)
+            state::log_box->signal_layer_image_updated();
     }
 
     void ProjectState::signal_layer_count_changed()

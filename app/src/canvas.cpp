@@ -192,11 +192,19 @@ namespace mousetrap
             active_state->set_cell_offset(position, offset);
         });
 
+        canvas_apply_eyedropper.set_function([]()
+        {
+            auto cell_pos = active_state->get_current_cell_position();
+            auto cursor_pos = active_state->get_cursor_position();
+
+            auto color = active_state->get_frame(cell_pos.x, cell_pos.y)->get_pixel(cursor_pos.x, cursor_pos.y);
+            active_state->set_primary_color(color.operator HSVA());
+        });
+
         canvas_apply_bucket_fill.set_function([]()
         {
             auto points = generate_bucket_fill_points(
                 active_state->get_cursor_position(),
-                active_state->get_primary_color(),
                 active_state->get_frame(
                     active_state->get_current_layer_index(),
                     active_state->get_current_frame_index()
@@ -224,7 +232,8 @@ namespace mousetrap
             &canvas_toggle_background_visible,
             &canvas_paste_clipboard,
             &canvas_copy_to_clipboard,
-            &canvas_apply_bucket_fill
+            &canvas_apply_bucket_fill,
+            &canvas_apply_eyedropper
         })
             state::add_shortcut_action(*action);
 

@@ -10,7 +10,7 @@
 
 namespace mousetrap
 {
-    inline RGBA::operator std::string()
+    inline RGBA::operator std::string() const
     {
         std::stringstream out;
         out << "RGBA(" << r << ", " << g << ", " << b << ", " << a << ")";
@@ -63,7 +63,7 @@ namespace mousetrap
         return HSVA(rgba_to_hsva(this->operator glm::vec4()));
     }
 
-    inline HSVA::operator std::string()
+    inline HSVA::operator std::string() const
     {
         auto str = std::stringstream();
         str << "HSVA(" << h << ", " << s << ", " << v << ", " << a << ")";
