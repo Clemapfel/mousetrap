@@ -72,6 +72,7 @@ namespace mousetrap
         _layer_overlay.add_overlay(*_layer_layer);
         _layer_overlay.add_overlay(*_onionskin_layer);
         _layer_overlay.add_overlay(*_brush_shape_layer);
+        _layer_overlay.add_overlay(*_gradient_layer);
         _layer_overlay.add_overlay(*_grid_layer);
         _layer_overlay.add_overlay(*_selection_layer);
         _layer_overlay.add_overlay(*_symmetry_ruler_layer);
@@ -277,6 +278,7 @@ namespace mousetrap
         _brush_shape_layer->set_scale(_scale);
         _wireframe_layer->set_scale(_scale);
         _selection_layer->set_scale(_scale);
+        _gradient_layer->set_scale(_scale);
         _user_input_layer->set_scale(_scale);
         _control_bar.set_scale(_scale);
 
@@ -305,6 +307,7 @@ namespace mousetrap
         _brush_shape_layer->set_offset(_offset);
         _wireframe_layer->set_offset(_offset);
         _selection_layer->set_offset(_offset);
+        _gradient_layer->set_offset(_offset);
         _user_input_layer->set_offset(_offset);
 
         state::actions::canvas_reset_transform.set_enabled(_offset.x != 0 or _offset.y != 0 or _scale != 1);
@@ -423,6 +426,7 @@ namespace mousetrap
         _symmetry_ruler_layer->on_layer_resolution_changed();
         _brush_shape_layer->on_layer_resolution_changed();
         _control_bar.on_layer_resolution_changed();
+        _gradient_layer->on_layer_resolution_changed();
     }
 
     void Canvas::on_layer_frame_selection_changed()

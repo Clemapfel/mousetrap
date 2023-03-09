@@ -32,6 +32,8 @@ namespace mousetrap
     {
         constexpr auto ATTACHMENT = GL_COLOR_ATTACHMENT5;
 
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_before_buffer);
+
         glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer_handle);
         glFramebufferTexture2D(GL_FRAMEBUFFER, ATTACHMENT, GL_TEXTURE_2D, get_native_handle(), 0);
         GLenum DrawBuffers[1] = {ATTACHMENT};
@@ -40,6 +42,6 @@ namespace mousetrap
 
     void RenderTexture::unbind_as_rendertarget() const
     {
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //glBindFramebuffer(GL_FRAMEBUFFER, _before_buffer);
     }
 }

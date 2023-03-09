@@ -25,6 +25,7 @@ namespace mousetrap
 
         protected:
             GLNativeHandle _framebuffer_handle;
+            mutable GLint _before_buffer = 0;
     };
 }
 

@@ -433,11 +433,42 @@ namespace mousetrap
                     void set_scale(float);
                     void set_offset(Vector2f);
 
+                    // TODO
+                    void recompile_shader();
+                    // TODO
+
                 private:
                     Canvas* _owner;
-                    GLArea* _area;
+                    GLArea _area;
 
+                    float _scale;
+                    Vector2f _offset;
+
+                    static inline Shader* _shader = nullptr;
+                    Shape* _shader_shape = nullptr;
+                    RenderTask* _shader_task = nullptr;
+
+                    RGBA* _origin_color_rgba = new RGBA(0, 0, 0, 1);
+                    RGBA* _destination_color_rgba = new RGBA(1, 1, 1, 1);
+                    static inline const int DITHER_MODE_NONE = 0;
+                    gint* _dither_mode = new int(DITHER_MODE_NONE);
+                    Vector2f* _origin_point = new Vector2f(0, 1);
+                    Vector2f* _destination_point = new Vector2f(0, -1);
+                    gint* _is_circular = new int(0);
+
+                    RenderTexture* _render_texture = nullptr;
+                    Shape* _render_shape = nullptr;
+                    RenderTask* _render_task = nullptr;
+
+                    void reformat();
+
+                    Vector2f _canvas_size = {1, 1};
+                    static void on_area_realize(Widget* widget, GradientLayer* instance);
+                    static void on_area_resize(GLArea*, int w, int h, GradientLayer* instance);
+                    static bool on_area_render(GLArea*, GdkGLContext*, GradientLayer* instance);
             };
+
+            GradientLayer* _gradient_layer = new GradientLayer(this);
 
             class WireframeLayer
             {
