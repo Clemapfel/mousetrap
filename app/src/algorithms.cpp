@@ -529,109 +529,87 @@ namespace mousetrap
         return out;
     }
 
-    std::vector<Vector2i> generate_bucket_fill_points(Vector2i origin, const Layer::Frame* frame, float eps)
+    std::vector<Vector2i> generate_bucket_fill_points(Vector2i origin, const Layer::Frame* frame, float eps, bool respect_alpha)
     {
         auto size = frame->get_size();
         if (origin.x < 0 or origin.y < 0 or origin.x >= size.x or origin.y >= size.y)
             return {};
 
-        Vector2iSet points = {origin};
+        size_t n_tested = 0;
 
         const auto origin_color = frame->get_pixel(origin.x, origin.y).operator HSVA();
         auto dist = [&](Vector2i coord) -> float
         {
-            auto color = frame->get_pixel(coord.x, coord.y).operator HSVA();
-
-            //if (color.a == 0 and origin_color.a != 0)
-              //  return std::numeric_limits<float>::max();
-            if (origin_color.a == 0)
-                return color.a;
-
-            return (
-                abs(color.h - origin_color.h) +
-                abs(color.s - origin_color.s) +
-                abs(color.v - origin_color.v)
-            ) / 3.f;
-        };
-
-        bool added = true;
-
-        int n = 1;
-
-        int x_left = origin.x - 1;
-        int x_right = origin.x + 1;
-        int y_left = origin.y - 1;
-        int y_right = origin.y + 1;
-
-        size_t n_tested = 0;
-
-        auto test_point = [&](int x, int y)
-        {
-            if (x < 0 or y < 0 or x >= size.x or y >= size.y)
-                return;
-
-            if (points.find({x, y}) != points.end())
-                return;
+            if (coord.x == origin.x and coord.y == origin.y)
+                return 0;
 
             n_tested += 1;
 
-            auto distance = dist({x, y});
-            if (distance < eps)
+            auto color = frame->get_pixel(coord.x, coord.y).operator HSVA();
+
+            if (origin_color.a == 0)
+                return color.a;
+
+            if (respect_alpha)
             {
-                std::vector<Vector2i> neighbors = {
-                    {x - 1, y - 1},
-                    {x + 0, y - 1},
-                    {x + 1, y - 1},
-                    {x - 1, y + 0},
-                    {x + 1, y + 0},
-                    {x - 1, y + 1},
-                    {x + 0, y + 1},
-                    {x + 1, y + 1},
-                };
-
-                for (auto& n : neighbors)
-                    if (points.find(n) != points.end())
-                        goto add;
-
-                return;
-
-                add:
-                    points.insert({x, y});
-                    added = true;
-                    std::cout << "add" << std::endl;
+                return (
+                    abs(color.h - origin_color.h) +
+                    abs(color.s - origin_color.s) +
+                    abs(color.v - origin_color.v) +
+                    abs(color.a - origin_color.a)
+                ) / 4.f;
+            }
+            else
+            {
+                return (
+                    abs(color.h - origin_color.h) +
+                    abs(color.s - origin_color.s) +
+                    abs(color.v - origin_color.v)
+                ) / 3.f;
             }
         };
 
-        while (added)
-        {
-            added = false;
+        Vector2iSet points = {};
+        Vector2iSet tested = {};
 
-            for (int x = x_left; x <= x_right; ++x)
+        std::function<void(Vector2i)> test_point = [&](Vector2i coord) -> void {
+
+            int x = coord.x;
+            int y = coord.y;
+
+            if ((x < 0 or y < 0 or x >= size.x or y == size.y) or (tested.find(coord) != tested.end()) or (points.find(coord) != points.end()))
+                return;
+
+            auto distance = dist(coord);
+            if (distance >= eps)
             {
-                test_point(x, y_left);
-                test_point(x, y_right);
+                tested.insert(coord);
+                return;
             }
 
-            for (int y = y_left; y <= y_right; ++y)
-            {
-                test_point(x_left, y);
-                test_point(x_right, y);
-            }
+            points.insert(coord);
 
-            n = n + 1;
-            int offset = (n - 1) / 2;
-            x_left = origin.x - offset;
-            x_right = origin.x + offset;
-            y_left = origin.y - offset;
-            y_right = origin.y + offset;
-        }
+            std::vector<Vector2i> neighbors = {
+                {x - 1, y - 1},
+                {x + 0, y - 1},
+                {x + 1, y - 1},
+                {x - 1, y + 0},
+                {x + 1, y + 0},
+                {x - 1, y + 1},
+                {x + 0, y + 1},
+                {x + 1, y + 1},
+            };
+
+            for (auto& p : neighbors)
+                test_point(p);
+        };
+
+        test_point(origin);
 
         std::vector<Vector2i> out;
         out.reserve(points.size());
         for (auto& p : points)
             out.push_back(p);
-
-        std::cout << n_tested << " / " << out.size() << std::endl;
 
         return out;
     }

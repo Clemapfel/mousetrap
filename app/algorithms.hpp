@@ -39,5 +39,5 @@ namespace mousetrap
     [[nodiscard]] Image flip_image_horizontally(const Image&);
     [[nodiscard]] Image flip_image_vertically(const Image&);
 
-    std::vector<Vector2i> generate_bucket_fill_points(Vector2i origin, const Layer::Frame* frame, float eps = 1.f/(pow(2, 8)));
+    std::vector<Vector2i> generate_bucket_fill_points(Vector2i origin, const Layer::Frame* frame, float eps = 1.f/(pow(2, 8)), bool respect_alpha = true);
 }

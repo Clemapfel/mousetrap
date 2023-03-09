@@ -203,18 +203,26 @@ namespace mousetrap
 
         canvas_apply_bucket_fill.set_function([]()
         {
-            auto points = generate_bucket_fill_points(
-                active_state->get_cursor_position(),
-                active_state->get_frame(
-                    active_state->get_current_layer_index(),
-                    active_state->get_current_frame_index()
-                ),
-                active_state->get_bucket_fill_eps()
+            const auto* frame = active_state->get_frame(
+                active_state->get_current_layer_index(),
+                active_state->get_current_frame_index()
             );
 
+            auto pos = active_state->get_cursor_position();
+
+            auto current = frame->get_pixel(pos.x, pos.y).operator HSVA();
+            auto next = active_state->get_primary_color();
+            float eps = 1 / 1000.f; // TODO
+
+            if (frame->get_pixel(pos.x, pos.y).a != 0 and abs(current.h - next.h) < eps and abs(current.s - next.s) < eps and abs(current.v - next.v) < eps and abs(current.a - next.a) < eps)
+                return;
+
+            auto points = generate_bucket_fill_points(pos, frame, active_state->get_bucket_fill_eps());
+
             auto to_draw = ProjectState::DrawData();
+            auto primary = active_state->get_primary_color();
             for (auto& p : points)
-                to_draw.insert({p, active_state->get_primary_color()});
+                to_draw.insert({p, primary});
 
             active_state->draw_to_cell(active_state->get_current_cell_position(), to_draw);
         });
@@ -297,6 +305,7 @@ namespace mousetrap
         _brush_shape_layer->set_offset(_offset);
         _wireframe_layer->set_offset(_offset);
         _selection_layer->set_offset(_offset);
+        _user_input_layer->set_offset(_offset);
 
         state::actions::canvas_reset_transform.set_enabled(_offset.x != 0 or _offset.y != 0 or _scale != 1);
     }
