@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <app/project_state.hpp>
+#include <app/app_signals.hpp>
 
 namespace mousetrap
 {
@@ -14,4 +14,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(selection, invert);
         DECLARE_GLOBAL_ACTION(selection, open_select_color_dialog);
     }
+
+    class Selection
+    {};
 }

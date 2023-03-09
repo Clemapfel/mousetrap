@@ -423,6 +423,22 @@ namespace mousetrap
 
             BrushShapeLayer* _brush_shape_layer = new BrushShapeLayer(this);
 
+            class GradientLayer
+            {
+                public:
+                    GradientLayer(Canvas*);
+                    operator Widget*();
+
+                    void on_layer_resolution_changed();
+                    void set_scale(float);
+                    void set_offset(Vector2f);
+
+                private:
+                    Canvas* _owner;
+                    GLArea* _area;
+
+            };
+
             class WireframeLayer
             {
                 public:

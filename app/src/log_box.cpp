@@ -61,7 +61,17 @@ namespace mousetrap
             active_state->get_current_layer_index(),
             active_state->get_current_frame_index()
         );
-        _current_color_label.set_text(frame->get_pixel(pos.x, pos.y).operator HSVA().operator std::string());
+
+        auto color = frame->get_pixel(pos.x, pos.y).operator HSVA();
+        std::stringstream str;
+
+        str << "HSVA(";
+        str << int(color.h * 1000) / 1000.f << ", ";
+        str << int(color.s * 1000) / 1000.f << ", ";
+        str << int(color.v * 1000) / 1000.f << ", ";
+        str << int(color.a * 1000) / 1000.f << ")";
+
+        _current_color_label.set_text(str.str());
     }
 
     void LogBox::set_cursor_position(Vector2i position)
