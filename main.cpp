@@ -241,6 +241,17 @@ static void activate(GtkApplication* app, void*)
     bubble_log_overlay.add_overlay(bubble_log);
     // MAIN
 
+    // TODO
+    auto selection = Selection();
+    auto all = Vector2iSet();
+    for (size_t x = 0; x < 10; ++x)
+        for (size_t y = 0; y < 10; ++y)
+            all.insert({x, y});
+
+    selection.create_from(all);
+    //exit(0);
+    // TODO
+
     state::main_window->set_child(&bubble_log_overlay);
     state::main_window->show();
     state::main_window->present();

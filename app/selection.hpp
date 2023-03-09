@@ -16,5 +16,16 @@ namespace mousetrap
     }
 
     class Selection
-    {};
+    {
+        public:
+            Selection();
+
+            void create_from(const Vector2iSet&);
+            bool at(Vector2i);
+
+        private:
+            // x coords -> (y_min, y_max)
+            std::map<int, std::pair<int, int>> _data;
+    };
+
 }
