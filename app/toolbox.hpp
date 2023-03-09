@@ -16,6 +16,8 @@ namespace mousetrap
 {
     namespace state::actions
     {
+        DECLARE_GLOBAL_ACTION(toolbox, select_move_selection);
+
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_neighborhood_select);
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_rectangle_replace);
         DECLARE_GLOBAL_ACTION(toolbox, select_marquee_rectangle_add);

@@ -66,10 +66,10 @@ namespace mousetrap
         std::stringstream str;
 
         str << "HSVA(";
-        str << int(color.h * 1000) / 1000.f << ", ";
-        str << int(color.s * 1000) / 1000.f << ", ";
-        str << int(color.v * 1000) / 1000.f << ", ";
-        str << int(color.a * 1000) / 1000.f << ")";
+        str << "<tt>" << int(color.h * 1000) / 1000.f << "</tt>, ";
+        str << "<tt>" << int(color.s * 1000) / 1000.f << "</tt>, ";
+        str << "<tt>" << int(color.v * 1000) / 1000.f << "</tt>, ";
+        str << "<tt>" << int(color.a * 1000) / 1000.f << "</tt>)";
 
         _current_color_label.set_text(str.str());
     }

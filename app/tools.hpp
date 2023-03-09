@@ -9,6 +9,8 @@ namespace mousetrap
 {
     enum ToolID
     {
+        MOVE_SELECTION = -1,
+
         MARQUEE_NEIGHBORHODD_SELECT = 0,
 
         MARQUEE_RECTANGLE_REPLACE = 1,
@@ -46,7 +48,8 @@ namespace mousetrap
 
     inline std::string tool_id_to_string(ToolID id)
     {
-        if (id == MARQUEE_NEIGHBORHODD_SELECT) return "marquee_neighborhood_select";
+        if (id == MOVE_SELECTION) return "move_selection";
+        else if (id == MARQUEE_NEIGHBORHODD_SELECT) return "marquee_neighborhood_select";
         else if (id == MARQUEE_RECTANGLE) return "marquee_rectangle_replace";
         else if (id == MARQUEE_RECTANGLE_ADD) return "marquee_rectangle_add";
         else if (id == MARQUEE_RECTANGLE_SUBTRACT) return "marquee_rectangle_subtract";
@@ -72,7 +75,8 @@ namespace mousetrap
 
     inline ToolID string_to_tool_id(std::string id)
     {
-        if (id == "marquee_neighborhood_select") return MARQUEE_NEIGHBORHODD_SELECT;
+        if (id == "move_selection") return MOVE_SELECTION;
+        else if (id == "marquee_neighborhood_select") return MARQUEE_NEIGHBORHODD_SELECT;
         else if (id == "marquee_rectangle_replace") return MARQUEE_RECTANGLE;
         else if (id == "marquee_rectangle_add") return MARQUEE_RECTANGLE_ADD;
         else if (id == "marquee_rectangle_subtract") return MARQUEE_RECTANGLE_SUBTRACT;

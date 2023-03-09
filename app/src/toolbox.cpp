@@ -90,6 +90,7 @@ namespace mousetrap
     Toolbox::Toolbox()
     {
         for (auto id : {
+            MOVE_SELECTION,
             MARQUEE_NEIGHBORHODD_SELECT,
             MARQUEE_RECTANGLE,
             MARQUEE_RECTANGLE_ADD,
@@ -205,6 +206,7 @@ namespace mousetrap
             &_outline_shapes_popover, "shapes_outline", {RECTANGLE_OUTLINE, CIRCLE_OUTLINE, POLYGON_OUTLINE}, this
         );
 
+        _list_view.push_back(*_id_to_icons.at(MOVE_SELECTION));
         _list_view.push_back(*_id_to_icons.at(MARQUEE_NEIGHBORHODD_SELECT));
         _list_view.push_back(_marquee_rectangle_popover);
         _list_view.push_back(_marquee_circle_popover);
@@ -234,35 +236,36 @@ namespace mousetrap
         }, this);
 
         _id_to_listview_positions = {
-                {MARQUEE_NEIGHBORHODD_SELECT, 0},
+                {MOVE_SELECTION, 0},
+                {MARQUEE_NEIGHBORHODD_SELECT, 1},
 
-                {MARQUEE_RECTANGLE_REPLACE, 1},
-                {MARQUEE_RECTANGLE_ADD, 1},
-                {MARQUEE_RECTANGLE_SUBTRACT, 1},
+                {MARQUEE_RECTANGLE_REPLACE, 2},
+                {MARQUEE_RECTANGLE_ADD, 2},
+                {MARQUEE_RECTANGLE_SUBTRACT, 2},
 
-                {MARQUEE_CIRCLE_REPLACE, 2},
-                {MARQUEE_CIRCLE_ADD, 2},
-                {MARQUEE_CIRCLE_SUBTRACT, 2},
+                {MARQUEE_CIRCLE_REPLACE, 3},
+                {MARQUEE_CIRCLE_ADD, 3},
+                {MARQUEE_CIRCLE_SUBTRACT, 3},
 
-                {MARQUEE_POLYGON_REPLACE, 3},
-                {MARQUEE_POLYGON_ADD, 3},
-                {MARQUEE_POLYGON_SUBTRACT, 3},
+                {MARQUEE_POLYGON_REPLACE, 4},
+                {MARQUEE_POLYGON_ADD, 4},
+                {MARQUEE_POLYGON_SUBTRACT, 4},
 
-                {BRUSH, 4},
-                {ERASER, 5},
-                {BUCKET_FILL, 6},
-                {COLOR_SELECT, 7},
-                {LINE, 8},
+                {BRUSH, 5},
+                {ERASER, 6},
+                {BUCKET_FILL, 7},
+                {COLOR_SELECT, 8},
+                {LINE, 9},
 
-                {RECTANGLE_OUTLINE, 9},
-                {CIRCLE_OUTLINE, 9},
-                {POLYGON_OUTLINE, 9},
+                {RECTANGLE_OUTLINE, 10},
+                {CIRCLE_OUTLINE, 10},
+                {POLYGON_OUTLINE, 10},
 
-                {CIRCLE_FILL, 10},
-                {RECTANGLE_FILL, 10},
-                {POLYGON_FILL, 10},
+                {CIRCLE_FILL, 11},
+                {RECTANGLE_FILL, 11},
+                {POLYGON_FILL, 11},
 
-                {GRADIENT, 11}
+                {GRADIENT, 12}
         };
 
         _main_spacer_left.set_expand(true);
@@ -292,6 +295,7 @@ namespace mousetrap
 
         using namespace state::actions;
         for (auto* action : {
+                &toolbox_select_move_selection,
                 &toolbox_select_marquee_neighborhood_select,
                 &toolbox_select_marquee_rectangle_replace,
                 &toolbox_select_marquee_rectangle_add,
