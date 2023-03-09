@@ -70,6 +70,7 @@ namespace mousetrap
 
         DECLARE_GLOBAL_ACTION(canvas, apply_bucket_fill);
         DECLARE_GLOBAL_ACTION(canvas, apply_eyedropper);
+        DECLARE_GLOBAL_ACTION(canvas, apply_gradient);
     }
 
     struct Canvas : public AppComponent,

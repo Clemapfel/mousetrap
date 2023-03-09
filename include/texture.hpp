@@ -40,6 +40,8 @@ namespace mousetrap
             Texture(Texture&&);
             Texture& operator=(Texture&&);
 
+            [[nodiscard]] Image download() const;
+
             void bind(size_t texture_unit) const;
 
             void bind() const override;

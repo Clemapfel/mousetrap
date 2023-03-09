@@ -18,6 +18,23 @@ namespace mousetrap
         set_offset(_owner->_offset);
         set_scale(_owner->_scale);
 
+        state::actions::canvas_apply_gradient.set_function([]()
+        {
+            auto* self = state::canvas->_gradient_layer;
+            if (not self->_area.get_is_realized())
+                return;
+
+            auto image = self->_render_texture->download();
+            auto draw_data = ProjectState::DrawData();
+
+            for (size_t x = 0; x < image.get_size().x; ++x)
+                for (size_t y = 0; y < image.get_size().y; ++y)
+                    draw_data.insert({{x, y}, image.get_pixel(x, y).operator HSVA()});
+            active_state->draw_to_cell(active_state->get_current_cell_position(), draw_data);
+
+        });
+        state::add_shortcut_action(state::actions::canvas_apply_gradient);
+
         // TODO
         auto* debug_action = new Action("global.debug_action");
         debug_action->set_function([](){
