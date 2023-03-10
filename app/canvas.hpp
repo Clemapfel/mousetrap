@@ -439,7 +439,7 @@ namespace mousetrap
 
                     using ShapeMode = int;
                     static inline const ShapeMode LINEAR = 0;
-                    static inline const ShapeMode CIRCULAR = 0;
+                    static inline const ShapeMode CIRCULAR = 1;
                     void set_shape_mode(ShapeMode);
 
                     using DitherMode = int;
@@ -471,6 +471,7 @@ namespace mousetrap
                     Vector2f* _origin_point = new Vector2f(0, 1);
                     Vector2f* _destination_point = new Vector2f(0, -1);
                     gint* _is_circular = new int(0);
+                    Vector2f* _canvas_size = new Vector2f(1, 1);
 
                     RenderTexture* _render_texture = nullptr;
                     Shape* _render_shape = nullptr;
@@ -478,7 +479,6 @@ namespace mousetrap
 
                     void reformat();
 
-                    Vector2f _canvas_size = {1, 1};
                     static void on_area_realize(Widget* widget, GradientLayer* instance);
                     static void on_area_resize(GLArea*, int w, int h, GradientLayer* instance);
                     static bool on_area_render(GLArea*, GdkGLContext*, GradientLayer* instance);

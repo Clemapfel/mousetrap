@@ -6,15 +6,6 @@ in vec3 _vertex_position;
 
 out vec4 _fragment_color;
 
-uniform vec4 _origin_color_rgba;
-uniform vec4 _destination_color_rgba;
-
-uniform vec2 _origin_point;
-uniform vec2 _destination_point;
-
-uniform int _dither_mode;
-uniform int _is_circular;
-
 #define DITHER_NONE 0
 #define DITHER_2x2 1
 #define DITHER_4x4 2
@@ -165,9 +156,80 @@ vec3 dither8x8(vec2 position, vec3 color)
     return color * dither8x8(position, luma(color));
 }
 
+uniform vec4 _origin_color_rgba;
+uniform vec4 _destination_color_rgba;
+
+uniform vec2 _origin_point;
+uniform vec2 _destination_point;
+
+uniform int _dither_mode;
+uniform int _is_circular;
+uniform int _clamp_overhang;
+
+uniform vec2 _canvas_size;
+
+float atan2(in float y, in float x)
+{
+    bool s = (abs(x) > abs(y));
+    return mix(3.14159 / 2.0 - atan(x,y), atan(y,x), s);
+}
+
+float angle_rad(vec2 a, vec2 b)
+{
+    return atan2(a.x - b.x, a.y - b.y);
+}
+
+vec2 rotate(vec2 point, vec2 origin, float angle_rad)
+{
+    float s = sin(angle_rad);
+    float c = cos(angle_rad);
+    point -= origin;
+    point *= mat2(c, -s, s, c);
+    point += origin;
+
+    return point;
+}
+
+float project(float lower, float upper, float value)
+{
+    return value * abs(upper - lower) + min(lower, upper);
+}
+
 void main()
 {
-    vec3 color = vec3(_texture_coordinates.x);
+    vec2 pos = _vertex_position.xy;
+    pos.x *= (_canvas_size.x / _canvas_size.y);
+
+    if (distance(pos, _origin_point) < 0.01)
+    {
+        _fragment_color = vec4(1, 1, 1, 1);
+        return;
+    }
+
+    if (distance(pos, _destination_point) < 0.01)
+    {
+        _fragment_color = vec4(0, 1, 1, 1);
+        return;
+    }
+
+    vec3 color;
+
+    if (_is_circular == 1)
+    {
+        float point_distance = distance(_origin_point, _destination_point);
+        float pos_distance = distance(pos, _origin_point);
+
+        if (_clamp_overhang == 1)
+            pos_distance = clamp(pos_distance, 0, point_distance);
+
+        float mix_factor = pos_distance / point_distance;
+        color = mix(_origin_color_rgba, _destination_color_rgba, mix_factor).xyz;
+    }
+    else
+    {
+        pos = rotate(pos, vec2(0, 0), angle_rad(_origin_point, _destination_point));
+
+    }
 
     if (_dither_mode == DITHER_NONE)
         _fragment_color = vec4(color, 1);

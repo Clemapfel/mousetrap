@@ -63,13 +63,13 @@ namespace mousetrap
 
     void Canvas::GradientLayer::set_origin_point(Vector2f pos)
     {
-        *_origin_point = pos;
+        *_origin_point = to_gl_position(pos);
         _area.queue_render();
     }
 
     void Canvas::GradientLayer::set_destination_point(Vector2f pos)
     {
-        *_destination_point = pos;
+        *_destination_point = to_gl_position(pos);
         _area.queue_render();
     }
 
@@ -120,6 +120,7 @@ namespace mousetrap
         instance->_render_texture = new RenderTexture();
 
         instance->on_layer_resolution_changed();
+        instance->on_color_selection_changed();
         instance->reformat();
 
         instance->_render_shape->set_texture(instance->_render_texture);
@@ -132,11 +133,12 @@ namespace mousetrap
         instance->_shader_task->register_vec2("_origin_point", instance->_origin_point);
         instance->_shader_task->register_vec2("_destination_point", instance->_destination_point);
         instance->_shader_task->register_int("_is_circular", instance->_is_circular);
+        instance->_shader_task->register_vec2("_canvas_size", instance->_canvas_size);
     }
 
     void Canvas::GradientLayer::on_area_resize(GLArea*, int w, int h, GradientLayer* instance)
     {
-        instance->_canvas_size = {w, h};
+        *instance->_canvas_size = {w, h};
         instance->reformat();
     }
 
@@ -155,7 +157,7 @@ namespace mousetrap
         set_current_blend_mode(BlendMode::NORMAL);
 
         {
-            instance->_render_texture->bind_as_rendertarget();
+            //instance->_render_texture->bind_as_rendertarget();
 
             glClearColor(0, 0, 0, 0);
             glClear(GL_COLOR_BUFFER_BIT);
@@ -163,6 +165,8 @@ namespace mousetrap
             instance->_shader_task->render();
             glFlush();
         }
+
+        return true;
 
         {
             glBindFramebuffer(GL_FRAMEBUFFER, before);
@@ -186,8 +190,8 @@ namespace mousetrap
 
         auto layer_resolution = active_state->get_layer_resolution();
 
-        float width = layer_resolution.x / _canvas_size.x;
-        float height = layer_resolution.y / _canvas_size.y;
+        float width = layer_resolution.x / _canvas_size->x;
+        float height = layer_resolution.y / _canvas_size->y;
 
         width *= _scale;
         height *= _scale;

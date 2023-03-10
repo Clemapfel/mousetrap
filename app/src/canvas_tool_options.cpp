@@ -29,13 +29,12 @@ namespace mousetrap
     Canvas::ToolOptions::ToolOptions(Canvas* owner)
         : _owner(owner)
     {
-        for (auto* button : {
-            &_origin_x_pos_button,
-            &_origin_y_pos_button,
-            &_destination_x_pos_button,
-            &_destination_y_pos_button
-        })
-            button->set_value(0);
+        Vector2f size = active_state->get_layer_resolution();
+        _origin_x_pos_button.set_value(0.1 * size.x);
+        _origin_y_pos_button.set_value(0.1 * size.y);
+
+        _destination_x_pos_button.set_value(0.9 * size.x);
+        _destination_y_pos_button.set_value(0.9 * size.y);
 
         _origin_x_pos_button.connect_signal_value_changed([](SpinButton*, ToolOptions* instance){
             instance->update_shader_anchors();
@@ -52,6 +51,8 @@ namespace mousetrap
         _destination_y_pos_button.connect_signal_value_changed([](SpinButton*, ToolOptions* instance){
             instance->update_shader_anchors();
         }, this);
+
+        update_shader_anchors();
 
         _dithering_mode_dropdown.push_back(
             &_dithering_none_list_label, 
@@ -137,7 +138,7 @@ namespace mousetrap
 
         for (auto* label : {
             &_circular_mode_list_label,
-            &_circular_mode_selected_label,ad
+            &_circular_mode_selected_label,
             &_linear_mode_selected_label,
             &_linear_mode_list_label
         })
@@ -160,6 +161,7 @@ namespace mousetrap
         _revealer_box.push_back(&_shader_box);
         _revealer.set_child(&_revealer_box);
         _revealer.set_transition_type(TransitionType::SWING_TOP_TO_BOTTOM);
+
     }
 
     Canvas::ToolOptions::operator Widget*()

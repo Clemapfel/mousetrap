@@ -74,7 +74,7 @@ namespace mousetrap
         _layer_overlay.add_overlay(*_brush_shape_layer);
         _layer_overlay.add_overlay(*_gradient_layer);
         _layer_overlay.add_overlay(*_grid_layer);
-        _layer_overlay.add_overlay(*_selection_layer);
+        //_layer_overlay.add_overlay(*_selection_layer);
         _layer_overlay.add_overlay(*_symmetry_ruler_layer);
         //_layer_overlay.add_overlay(*_wireframe_layer);
         _layer_overlay.add_overlay(*_user_input_layer);
@@ -383,6 +383,7 @@ namespace mousetrap
     void Canvas::on_color_selection_changed()
     {
         _brush_shape_layer->on_color_selection_changed();
+        _gradient_layer->on_color_selection_changed();
     }
 
     void Canvas::on_selection_changed()
