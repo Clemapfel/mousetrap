@@ -10,7 +10,7 @@ out vec4 _fragment_color;
 #define DITHER_2x2 1
 #define DITHER_4x4 2
 #define DITHER_8x8 3
-
+#define PI 104348.f / 33215.f
 // source: https://github.com/hughsk/glsl-dither
 
 float luma(vec3 color)
@@ -171,7 +171,7 @@ uniform vec2 _canvas_size;
 float atan2(in float y, in float x)
 {
     bool s = (abs(x) > abs(y));
-    return mix(3.14159 / 2.0 - atan(x,y), atan(y,x), s);
+    return mix(PI / 2.0 - atan(x,y), atan(y,x), s);
 }
 
 float angle_rad(vec2 a, vec2 b)
@@ -227,8 +227,19 @@ void main()
     }
     else
     {
-        pos = rotate(pos, vec2(0, 0), angle_rad(_origin_point, _destination_point));
+        float x0 = pos.x;
+        float x1 = _origin_point.x;
+        float x2 = _destination_point.x;
+        float y0 = pos.y;
+        float y1 = _origin_point.y;
+        float y2 = _destination_point.y;
 
+        float angle = angle_rad(_origin_point, _destination_point);
+        float length = abs((x2 - x1) * (y1 - y0) - (x1 - x0)*(y2 - y1)) / sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
+        vec2 translated = vec2(x0, y0) + vec2(cos(angle), sin(angle)) * length;
+
+        float mix_factor = distance(translated, _origin_point) / distance(_origin_point, _destination_point);
+        color = mix(_origin_color_rgba, _destination_color_rgba, mix_factor).xyz;
     }
 
     if (_dither_mode == DITHER_NONE)
