@@ -195,6 +195,11 @@ float project(float lower, float upper, float value)
     return value * abs(upper - lower) + min(lower, upper);
 }
 
+float signed_distance(vec2 a, vec2 b)
+{
+    return ((a.x - b.x) + (a.y - b.y)) / 2;
+}
+
 void main()
 {
     vec2 pos = _vertex_position.xy;
@@ -234,11 +239,28 @@ void main()
         float y1 = _origin_point.y;
         float y2 = _destination_point.y;
 
-        float angle = angle_rad(_origin_point, _destination_point);
+        float slope = (y2 - y1) / (x2 - x1);
+        float intercept = y1 - slope * x1;
+
+        if (abs(pos.y - (pos.x * slope + intercept)) < 0.005)
+        {
+            _fragment_color = vec4(1, 0, 1, 1);
+            return;
+        }
+
+        float angle = 2*PI - angle_rad(_origin_point, _destination_point);
+
+        if (pos.x * slope + intercept < pos.y)
+            angle -= PI;
+
         float length = abs((x2 - x1) * (y1 - y0) - (x1 - x0)*(y2 - y1)) / sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
         vec2 translated = vec2(x0, y0) + vec2(cos(angle), sin(angle)) * length;
 
-        float mix_factor = distance(translated, _origin_point) / distance(_origin_point, _destination_point);
+        float pos_distance = distance(translated, _origin_point);
+        float point_distance = distance(_origin_point, _destination_point);
+        float mix_factor = pos_distance / point_distance;
+
+        mix_factor = mix_factor > 0.5 ? 1 : 0;
         color = mix(_origin_color_rgba, _destination_color_rgba, mix_factor).xyz;
     }
 
