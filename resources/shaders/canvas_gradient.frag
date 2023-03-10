@@ -164,7 +164,7 @@ uniform vec2 _destination_point;
 
 uniform int _dither_mode;
 uniform int _is_circular;
-uniform int _do_not_clamp_overhang;
+uniform int _clamp;
 
 uniform vec2 _canvas_size;
 
@@ -195,40 +195,35 @@ float project(float lower, float upper, float value)
     return value * abs(upper - lower) + min(lower, upper);
 }
 
-float signed_distance(vec2 a, vec2 b)
-{
-    return ((a.x - b.x) + (a.y - b.y)) / 2;
-}
-
 void main()
 {
     vec2 pos = _vertex_position.xy;
     pos.x *= (_canvas_size.x / _canvas_size.y);
 
+    vec4 color;
+
     if (distance(pos, _origin_point) < 0.01)
     {
-        _fragment_color = vec4(1, 1, 1, 1);
+        _fragment_color = vec4(0, 0, 0, 1);
         return;
     }
 
     if (distance(pos, _destination_point) < 0.01)
     {
-        _fragment_color = vec4(0, 1, 1, 1);
+        _fragment_color = vec4(0, 0, 0, 1);
         return;
     }
-
-    vec3 color;
 
     if (_is_circular == 1)
     {
         float point_distance = distance(_origin_point, _destination_point);
         float pos_distance = distance(pos, _origin_point);
 
-        if (_do_not_clamp_overhang != 1)
+        if (_clamp == 1)
             pos_distance = clamp(pos_distance, 0, point_distance);
 
         float mix_factor = pos_distance / point_distance;
-        color = mix(_origin_color_rgba, _destination_color_rgba, mix_factor).xyz;
+        color = mix(_origin_color_rgba, _destination_color_rgba, mix_factor);
     }
     else
     {
@@ -239,37 +234,40 @@ void main()
         float y1 = _origin_point.y;
         float y2 = _destination_point.y;
 
-        float slope = (y2 - y1) / (x2 - x1);
-        float intercept = y1 - slope * x1;
-
-        if (abs(pos.y - (pos.x * slope + intercept)) < 0.005)
+        if (x1 == x2)
         {
-            _fragment_color = vec4(1, 0, 1, 1);
-            return;
+            discard;
         }
 
         float angle = 2*PI - angle_rad(_origin_point, _destination_point);
+
         float length = ((x2 - x1) * (y1 - y0) - (x1 - x0)*(y2 - y1)) / sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
         vec2 translated = vec2(x0, y0) + vec2(cos(angle), sin(angle)) * length;
 
         float pos_distance = distance(translated, _origin_point);
-        float point_distance = distance(_origin_point, _destination_point)  * sign(_origin_point.x - translated.x);
+
+        float sign = sign(translated.x - _origin_point.x);
+
+        if (_destination_point.x < _origin_point.x)
+            sign = -1 * sign;
+
+        float point_distance = distance(_origin_point, _destination_point) * sign;
         float mix_factor = pos_distance / point_distance;
 
-        if (_do_not_clamp_overhang != 1)
+        if (_clamp == 1)
             mix_factor = clamp(mix_factor, 0, 1);
 
-        color = mix(_origin_color_rgba, _destination_color_rgba, mix_factor).xyz;
+        color = mix(_origin_color_rgba, _destination_color_rgba, mix_factor);
     }
 
     if (_dither_mode == DITHER_NONE)
-        _fragment_color = vec4(color, 1);
+        _fragment_color = color;
     else if (_dither_mode == DITHER_2x2)
-        _fragment_color = vec4(dither2x2(gl_FragCoord.xy, color), 1);
+        _fragment_color = vec4(dither2x2(gl_FragCoord.xy, color.rgb), 1);
     else if (_dither_mode == DITHER_4x4)
-        _fragment_color = vec4(dither4x4(gl_FragCoord.xy, color), 1);
+        _fragment_color = vec4(dither4x4(gl_FragCoord.xy, color.rgb), 1);
     else if (_dither_mode == DITHER_8x8)
-        _fragment_color = vec4(dither8x8(gl_FragCoord.xy, color), 1);
+        _fragment_color = vec4(dither8x8(gl_FragCoord.xy, color.rgb), 1);
     else
         discard;
 }

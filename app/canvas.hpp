@@ -436,6 +436,7 @@ namespace mousetrap
                     void on_color_selection_changed();
                     void set_origin_point(Vector2f);
                     void set_destination_point(Vector2f);
+                    void set_clamp(bool);
 
                     using ShapeMode = int;
                     static inline const ShapeMode LINEAR = 0;
@@ -471,6 +472,7 @@ namespace mousetrap
                     Vector2f* _origin_point = new Vector2f(0, 1);
                     Vector2f* _destination_point = new Vector2f(0, -1);
                     gint* _is_circular = new int(0);
+                    gint* _clamp = new int(0);
                     Vector2f* _canvas_size = new Vector2f(1, 1);
 
                     RenderTexture* _render_texture = nullptr;
@@ -891,6 +893,9 @@ namespace mousetrap
 
                     Label _linear_mode_selected_label = Label("Linear");
                     Label _linear_mode_list_label = Label("Linear");
+
+                    CheckButton _clamp_overhang_button;
+                    Label _clamp_label = Label("Clamp:");
             };
 
             ToolOptions _tool_options = ToolOptions(this);
