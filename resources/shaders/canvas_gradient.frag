@@ -223,9 +223,7 @@ void main()
     {
         float point_distance = distance(_origin_point, _destination_point);
         float pos_distance = distance(pos, _origin_point);
-
-        if (_clamp_overhang == 1)
-            pos_distance = clamp(pos_distance, 0, point_distance);
+        pos_distance = clamp(pos_distance, 0, point_distance);
 
         float mix_factor = pos_distance / point_distance;
         color = mix(_origin_color_rgba, _destination_color_rgba, mix_factor).xyz;
@@ -250,8 +248,10 @@ void main()
 
         float angle = 2*PI - angle_rad(_origin_point, _destination_point);
 
-        if (pos.x * slope + intercept < pos.y)
+        if (_origin_point.x < _destination_point.x && pos.x * slope + intercept < pos.y)
             angle -= PI;
+        else if (_origin_point.x > _destination_point.x && pos.x * slope + intercept > pos.y)
+            angle += PI;
 
         float length = abs((x2 - x1) * (y1 - y0) - (x1 - x0)*(y2 - y1)) / sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
         vec2 translated = vec2(x0, y0) + vec2(cos(angle), sin(angle)) * length;
@@ -260,7 +260,10 @@ void main()
         float point_distance = distance(_origin_point, _destination_point);
         float mix_factor = pos_distance / point_distance;
 
-        mix_factor = mix_factor > 0.5 ? 1 : 0;
+        if (_origin_point.x == _destination_point.x)
+            mix_factor = abs(_origin_point.y - pos.y) / point_distance;
+
+        //mix_factor = mix_factor > 0.5 ? 1 : 0;
         color = mix(_origin_color_rgba, _destination_color_rgba, mix_factor).xyz;
     }
 
