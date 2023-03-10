@@ -433,6 +433,21 @@ namespace mousetrap
                     void on_layer_resolution_changed();
                     void set_scale(float);
                     void set_offset(Vector2f);
+                    void on_color_selection_changed();
+                    void set_origin_point(Vector2f);
+                    void set_destination_point(Vector2f);
+
+                    using ShapeMode = int;
+                    static inline const ShapeMode LINEAR = 0;
+                    static inline const ShapeMode CIRCULAR = 0;
+                    void set_shape_mode(ShapeMode);
+
+                    using DitherMode = int;
+                    static inline const DitherMode DITHER_NONE = 0;
+                    static inline const DitherMode DITHER_2x2 = 1;
+                    static inline const DitherMode DITHER_4x4 = 2;
+                    static inline const DitherMode DITHER_8x8 = 3;
+                    void set_dither_mode(DitherMode);
 
                     // TODO
                     void recompile_shader();
@@ -451,8 +466,8 @@ namespace mousetrap
 
                     RGBA* _origin_color_rgba = new RGBA(0, 0, 0, 1);
                     RGBA* _destination_color_rgba = new RGBA(1, 1, 1, 1);
-                    static inline const int DITHER_MODE_NONE = 0;
-                    gint* _dither_mode = new int(DITHER_MODE_NONE);
+
+                    gint* _dither_mode = new int(DITHER_4x4);
                     Vector2f* _origin_point = new Vector2f(0, 1);
                     Vector2f* _destination_point = new Vector2f(0, -1);
                     gint* _is_circular = new int(0);
@@ -826,6 +841,59 @@ namespace mousetrap
             };
 
             ControlBar _control_bar = ControlBar(this);
+
+            class ToolOptions
+            {
+                public:
+                    ToolOptions(Canvas*);
+                    operator Widget*();
+
+                    void on_active_tool_changed();
+
+                private:
+                    Canvas* _owner;
+
+                    Revealer _revealer;
+                    Box _revealer_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
+                    // Shader
+
+                    void update_shader_anchors();
+
+                    Box _shader_box = Box(GTK_ORIENTATION_HORIZONTAL);
+
+                    Label _origin_label = Label("Origin (xy):");
+                    SpinButton _origin_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);
+                    SpinButton _origin_y_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().y + 100, 1);
+
+                    Label _destination_label = Label("Dest (xy):");
+                    SpinButton _destination_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);
+                    SpinButton _destination_y_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().y + 100, 1);
+
+                    Label _dithering_label = Label("Dithering: ");
+                    DropDown _dithering_mode_dropdown;
+                    Label _dithering_none_selected_label = Label("None");
+                    Label _dithering_none_list_label = Label("None");
+
+                    Label _dithering_2x2_selected_label = Label("2x2");
+                    Label _dithering_2x2_list_label = Label("2x2");
+
+                    Label _dithering_4x4_selected_label = Label("4x4");
+                    Label _dithering_4x4_list_label = Label("4x4");
+
+                    Label _dithering_8x8_selected_label = Label("8x8");
+                    Label _dithering_8x8_list_label = Label("8x8");
+
+                    Label _mode_label = Label("Shape:");
+                    DropDown _mode_dropdown;
+                    Label _circular_mode_selected_label = Label("Circular");
+                    Label _circular_mode_list_label = Label("Circular");
+
+                    Label _linear_mode_selected_label = Label("Linear");
+                    Label _linear_mode_list_label = Label("Linear");
+            };
+
+            ToolOptions _tool_options = ToolOptions(this);
 
             CheckButton _line_visible_button;
             SpinButton _line_start_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);

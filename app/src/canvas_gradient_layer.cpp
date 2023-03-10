@@ -61,6 +61,18 @@ namespace mousetrap
         reformat();
     }
 
+    void Canvas::GradientLayer::set_origin_point(Vector2f pos)
+    {
+        *_origin_point = pos;
+        _area.queue_render();
+    }
+
+    void Canvas::GradientLayer::set_destination_point(Vector2f pos)
+    {
+        *_destination_point = pos;
+        _area.queue_render();
+    }
+
     void Canvas::GradientLayer::on_layer_resolution_changed()
     {
         if (not _area.get_is_realized())
@@ -68,6 +80,25 @@ namespace mousetrap
 
         auto size = active_state->get_layer_resolution();
         _render_texture->create(size.x, size.y);
+        _area.queue_render();
+    }
+
+    void Canvas::GradientLayer::on_color_selection_changed()
+    {
+        *_origin_color_rgba = active_state->get_primary_color();
+        *_destination_color_rgba = active_state->get_secondary_color();
+        _area.queue_render();
+    }
+
+    void Canvas::GradientLayer::set_dither_mode(DitherMode mode)
+    {
+        *_dither_mode = mode;
+        _area.queue_render();
+    }
+
+    void Canvas::GradientLayer::set_shape_mode(ShapeMode mode)
+    {
+        *_is_circular = mode;
         _area.queue_render();
     }
 
@@ -169,6 +200,7 @@ namespace mousetrap
 
         _area.queue_render();
     }
+
 
     // TODO
     void Canvas::GradientLayer::recompile_shader()

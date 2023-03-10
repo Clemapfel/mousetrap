@@ -105,6 +105,7 @@ namespace mousetrap
 
         _main.push_back(&_canvas_and_scrollbars_box);
         _main.push_back(_control_bar);
+        _main.push_back(_tool_options);
 
         _control_bar.operator Widget*()-> set_vexpand(false);
 
