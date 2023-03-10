@@ -164,7 +164,7 @@ uniform vec2 _destination_point;
 
 uniform int _dither_mode;
 uniform int _is_circular;
-uniform int _clamp_overhang;
+uniform int _do_not_clamp_overhang;
 
 uniform vec2 _canvas_size;
 
@@ -223,7 +223,9 @@ void main()
     {
         float point_distance = distance(_origin_point, _destination_point);
         float pos_distance = distance(pos, _origin_point);
-        pos_distance = clamp(pos_distance, 0, point_distance);
+
+        if (_do_not_clamp_overhang != 1)
+            pos_distance = clamp(pos_distance, 0, point_distance);
 
         float mix_factor = pos_distance / point_distance;
         color = mix(_origin_color_rgba, _destination_color_rgba, mix_factor).xyz;
@@ -247,23 +249,16 @@ void main()
         }
 
         float angle = 2*PI - angle_rad(_origin_point, _destination_point);
-
-        if (_origin_point.x < _destination_point.x && pos.x * slope + intercept < pos.y)
-            angle -= PI;
-        else if (_origin_point.x > _destination_point.x && pos.x * slope + intercept > pos.y)
-            angle += PI;
-
-        float length = abs((x2 - x1) * (y1 - y0) - (x1 - x0)*(y2 - y1)) / sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
+        float length = ((x2 - x1) * (y1 - y0) - (x1 - x0)*(y2 - y1)) / sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
         vec2 translated = vec2(x0, y0) + vec2(cos(angle), sin(angle)) * length;
 
         float pos_distance = distance(translated, _origin_point);
-        float point_distance = distance(_origin_point, _destination_point);
+        float point_distance = distance(_origin_point, _destination_point)  * sign(_origin_point.x - translated.x);
         float mix_factor = pos_distance / point_distance;
 
-        if (_origin_point.x == _destination_point.x)
-            mix_factor = abs(_origin_point.y - pos.y) / point_distance;
+        if (_do_not_clamp_overhang != 1)
+            mix_factor = clamp(mix_factor, 0, 1);
 
-        //mix_factor = mix_factor > 0.5 ? 1 : 0;
         color = mix(_origin_color_rgba, _destination_color_rgba, mix_factor).xyz;
     }
 
