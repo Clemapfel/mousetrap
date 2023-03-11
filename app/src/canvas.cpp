@@ -103,9 +103,9 @@ namespace mousetrap
         _canvas_and_scrollbars_box.push_back(&_y_scrollbar_and_reset_button_box);
         _canvas_and_scrollbars_box.set_expand(true);
 
+        _main.push_back(_tool_options);
         _main.push_back(&_canvas_and_scrollbars_box);
         _main.push_back(_control_bar);
-        _main.push_back(_tool_options);
 
         _control_bar.operator Widget*()-> set_vexpand(false);
 
@@ -378,7 +378,9 @@ namespace mousetrap
     }
 
     void Canvas::on_active_tool_changed()
-    {}
+    {
+        _tool_options.on_active_tool_changed();
+    }
 
     void Canvas::on_color_selection_changed()
     {
@@ -389,6 +391,11 @@ namespace mousetrap
     void Canvas::on_selection_changed()
     {
         _selection_layer->on_selection_changed();
+    }
+
+    void Canvas::on_selection_mode_changed()
+    {
+        std::cerr << "[ERROR] In Canvas::on_selection_mode_changed: TODO" << std::endl;
     }
 
     void Canvas::on_onionskin_visibility_toggled()

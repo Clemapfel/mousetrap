@@ -79,6 +79,7 @@ namespace mousetrap
             public signals::LayerFrameSelectionChanged,
             public signals::ColorSelectionChanged,
             public signals::SelectionChanged,
+            public signals::SelectionModeChanged,
             public signals::OnionskinVisibilityToggled,
             public signals::OnionskinLayerCountChanged,
             public signals::LayerImageUpdated,
@@ -98,6 +99,7 @@ namespace mousetrap
             void on_active_tool_changed() override;
             void on_color_selection_changed() override;
             void on_selection_changed() override;
+            void on_selection_mode_changed() override;
             void on_onionskin_visibility_toggled() override;
             void on_onionskin_layer_count_changed() override;
 
@@ -785,6 +787,7 @@ namespace mousetrap
 
                     MenuButton _symmetry_control_menu_button;
                     Popover _symmetry_control_menu_popover;
+                    Label _symmetry_control_label = Label("Symmetry");
 
                     Box _symmetry_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
@@ -855,47 +858,87 @@ namespace mousetrap
                 private:
                     Canvas* _owner;
 
-                    Revealer _revealer;
-                    Box _revealer_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                    Revealer _main_revealer;
+                    Overlay _main;
 
-                    // Shader
+                    // Gradient
 
-                    void update_shader_anchors();
+                    class GradientOptions
+                    {
+                        public:
+                            GradientOptions(Canvas*);
+                            operator Widget*();
 
-                    Box _shader_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                        private:
+                            Canvas* _owner;
 
-                    Label _origin_label = Label("Origin (xy):");
-                    SpinButton _origin_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);
-                    SpinButton _origin_y_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().y + 100, 1);
+                            void update_shader_anchors();
 
-                    Label _destination_label = Label("Dest (xy):");
-                    SpinButton _destination_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);
-                    SpinButton _destination_y_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().y + 100, 1);
+                            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
 
-                    Label _dithering_label = Label("Dithering: ");
-                    DropDown _dithering_mode_dropdown;
-                    Label _dithering_none_selected_label = Label("None");
-                    Label _dithering_none_list_label = Label("None");
+                            Label _origin_label = Label("Origin (xy):");
+                            SpinButton _origin_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);
+                            SpinButton _origin_y_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().y + 100, 1);
 
-                    Label _dithering_2x2_selected_label = Label("2x2");
-                    Label _dithering_2x2_list_label = Label("2x2");
+                            Label _destination_label = Label("Dest (xy):");
+                            SpinButton _destination_x_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().x + 100, 1);
+                            SpinButton _destination_y_pos_button = SpinButton(0 - 100, active_state->get_layer_resolution().y + 100, 1);
 
-                    Label _dithering_4x4_selected_label = Label("4x4");
-                    Label _dithering_4x4_list_label = Label("4x4");
+                            Label _dithering_label = Label("Dithering: ");
+                            DropDown _dithering_mode_dropdown;
+                            Label _dithering_none_selected_label = Label("None");
+                            Label _dithering_none_list_label = Label("None");
 
-                    Label _dithering_8x8_selected_label = Label("8x8");
-                    Label _dithering_8x8_list_label = Label("8x8");
+                            Label _dithering_2x2_selected_label = Label("2x2");
+                            Label _dithering_2x2_list_label = Label("2x2");
 
-                    Label _mode_label = Label("Shape:");
-                    DropDown _mode_dropdown;
-                    Label _circular_mode_selected_label = Label("Circular");
-                    Label _circular_mode_list_label = Label("Circular");
+                            Label _dithering_4x4_selected_label = Label("4x4");
+                            Label _dithering_4x4_list_label = Label("4x4");
 
-                    Label _linear_mode_selected_label = Label("Linear");
-                    Label _linear_mode_list_label = Label("Linear");
+                            Label _dithering_8x8_selected_label = Label("8x8");
+                            Label _dithering_8x8_list_label = Label("8x8");
 
-                    CheckButton _clamp_overhang_button;
-                    Label _clamp_label = Label("Clamp:");
+                            Label _mode_label = Label("Shape:");
+                            DropDown _mode_dropdown;
+                            Label _circular_mode_selected_label = Label("Circular");
+                            Label _circular_mode_list_label = Label("Circular");
+
+                            Label _linear_mode_selected_label = Label("Linear");
+                            Label _linear_mode_list_label = Label("Linear");
+
+                            CheckButton _clamp_button;
+                            Label _clamp_label = Label("Clamp:");
+                    };
+
+                    GradientOptions _gradient_options;
+                    Revealer _gradient_revealer;
+
+                    // SELECTION
+
+                    class SelectionOptions
+                    {
+                        public:
+                            SelectionOptions(Canvas* owner);
+                            operator Widget*();
+
+                        private:
+                            Canvas* _owner;
+                            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+
+                            Label _mode_label = Label("Mode: ");
+                            DropDown _mode_dropdown;
+
+                            Label _replace_list_label = Label("Replace");
+                            Label _replace_selected_label = Label("Replace");
+                            Label _add_list_label = Label("Add");
+                            Label _add_selected_label = Label("Add");
+                            Label _subtract_list_label = Label("Subtract");
+                            Label _subtract_selected_label = Label("Subtract");
+                    };
+
+                    SelectionOptions _selection_options;
+                    Revealer _selection_revealer;
+
             };
 
             ToolOptions _tool_options = ToolOptions(this);

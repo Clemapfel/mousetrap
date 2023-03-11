@@ -32,17 +32,36 @@ namespace mousetrap
         }
 
         _data.clear();
-        for (int x = x_min; x <= x_max; ++x)
+        for (int y = y_min; y <= y_max; ++y)
         {
-            for (int y = y_min; y <= y_max; ++y)
+            std::vector<std::pair<int, int>>* vec;
+            if (_data.find(y) == _data.end())
+                vec = &_data.insert({y, {}}).first->second;
+
+            vec->push_back({x_min, x_min});
+            for (int x = x_min; x <= x_max; ++x)
             {
                 auto it = set.find({x, y});
                 if (it == set.end())
-                    continue;
+                {
+                    if (vec->back().second == x)
+                        vec->push_back({});
+                }
+                else
+                {
+                }
+
             }
         }
 
         for (auto& pair : _data)
-            std::cout << "x: " << pair.first << " -> [" << pair.second.first << " | " << pair.second.second << "]" << std::endl;
+        {
+            std::cout << "x: " << pair.first << " -> {";
+            for (auto& range : pair.second)
+            {
+                std::cout << "[" << range.first << " | " << range.second << "], ";
+            }
+            std::cout << "}\n";
+        }
     }
 }

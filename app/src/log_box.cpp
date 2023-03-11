@@ -31,6 +31,14 @@ namespace mousetrap
 
         on_cursor_position_changed();
         on_save_path_changed();
+
+        auto tooltip = [](const std::string& value) {
+            return state::tooltips_file->get_value("log_box", value);
+        };
+
+        _current_save_path_label.set_tooltip_text(tooltip("current_save_path"));
+        _current_color_label.set_tooltip_text(tooltip("current_color"));
+        _cursor_position_label.set_tooltip_text(tooltip("cursor_position"));
     }
 
     void LogBox::on_cursor_position_changed()
@@ -62,7 +70,22 @@ namespace mousetrap
             active_state->get_current_frame_index()
         );
 
-        auto color = frame->get_pixel(pos.x, pos.y).operator HSVA();
+        auto color_rgba = frame->get_pixel(pos.x, pos.y);
+
+        if (pos.x < 0 or pos.y < 0 or pos.x >= frame->get_size().x or pos.y >= frame->get_size().y)
+        {
+            _current_color_label.set_visible(false);
+            return;
+        }
+        else
+            _current_color_label.set_visible(true);
+
+        HSVA color;
+        if (color_rgba.a == 0)
+            color = HSVA(0, 0, 0, 0);
+        else
+            color = color_rgba.operator HSVA();
+
         std::stringstream str;
 
         str << "HSVA(";

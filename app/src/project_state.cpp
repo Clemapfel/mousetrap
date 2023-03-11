@@ -1012,6 +1012,17 @@ namespace mousetrap
         signal_selection_changed();
     }
 
+    void ProjectState::set_selection_mode(SelectionMode mode)
+    {
+        _selection_mode = mode;
+        signal_selection_mode_changed();
+    }
+
+    SelectionMode ProjectState::get_selection_mode() const
+    {
+        return _selection_mode;
+    }
+
     void ProjectState::select_all()
     {
         _selection.clear();
@@ -1390,6 +1401,12 @@ namespace mousetrap
     {
         if (state::canvas)
             state::canvas->signal_selection_changed();
+    }
+
+    void ProjectState::signal_selection_mode_changed()
+    {
+        if (state::canvas)
+            state::canvas->signal_selection_mode_changed();
     }
 
     void ProjectState::signal_onionskin_visibility_toggled()

@@ -17,6 +17,7 @@
 #include <app/brush.hpp>
 #include <app/tools.hpp>
 #include <app/apply_scope.hpp>
+#include <app/selection.hpp>
 
 namespace mousetrap
 {
@@ -180,6 +181,8 @@ namespace mousetrap
             void set_selection(Vector2iSet);
             const Vector2iSet& get_selection() const;
             void select_all();
+            void set_selection_mode(SelectionMode mode);
+            SelectionMode get_selection_mode() const;
 
             void set_playback_active(bool);
             bool get_playback_active() const;
@@ -216,6 +219,7 @@ namespace mousetrap
             float _bucket_fill_eps = 1 / 256.f;
 
             Vector2iSet _selection;
+            SelectionMode _selection_mode = SelectionMode::REPLACE;
 
             Vector2ui _layer_resolution;
             std::deque<Layer*> _layers;
@@ -249,6 +253,7 @@ namespace mousetrap
             void signal_palette_sort_mode_changed();
             void signal_palette_editing_toggled();
             void signal_selection_changed();
+            void signal_selection_mode_changed();
             void signal_onionskin_visibility_toggled();
             void signal_onionskin_layer_count_changed();
             void signal_layer_frame_selection_changed();

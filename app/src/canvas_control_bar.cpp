@@ -34,6 +34,7 @@ namespace mousetrap
         _symmetry_control_menu_popover.set_child(*_symmetry_control_menu);
         _symmetry_control_menu_button.set_popover(&_symmetry_control_menu_popover);
         _symmetry_control_menu_button.set_size_request(_vertical_symmetry_icon.get_size());
+        _symmetry_control_menu_button.set_child(&_symmetry_control_label);
 
         _brush_outline_visible_toggle_button.set_child(&_brush_outline_visible_icon);
         _brush_outline_visible_toggle_button.connect_signal_toggled([](ToggleButton* button, ControlBar* instance){
@@ -143,6 +144,9 @@ namespace mousetrap
         _background_visible_toggle_button.set_tooltip_text(tooltip("toggle_background_visible"));
         _horizontal_symmetry_toggle_button.set_tooltip_text(tooltip("toggle_horizontal_symmetry_active"));
         _vertical_symmetry_toggle_button.set_tooltip_text(tooltip("toggle_vertical_symmetry_active"));
+        _flip_horizontally_button.set_tooltip_text(tooltip("flip_horizontally"));
+        _flip_vertically_button.set_tooltip_text(tooltip("flip_vertically"));
+        _symmetry_control_menu_button.set_tooltip_text(tooltip("symmetry_control_menu"));
     }
 
     Canvas::ControlBar::operator Widget*()

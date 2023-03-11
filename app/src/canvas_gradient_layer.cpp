@@ -102,6 +102,12 @@ namespace mousetrap
         _area.queue_render();
     }
 
+    void Canvas::GradientLayer::set_clamp(bool b)
+    {
+        *_clamp = b ? int(1) : int(0);
+        _area.queue_render();
+    }
+
     void Canvas::GradientLayer::on_area_realize(Widget* widget, GradientLayer* instance)
     {
         auto* area = (GLArea*) widget;

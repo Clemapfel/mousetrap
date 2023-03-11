@@ -15,6 +15,13 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(selection, open_select_color_dialog);
     }
 
+    enum class SelectionMode
+    {
+        REPLACE,
+        ADD,
+        SUBTRACT
+    };
+
     class Selection
     {
         public:
@@ -25,7 +32,8 @@ namespace mousetrap
 
         private:
             // x coords -> (y_min, y_max)
-            std::map<int, std::pair<int, int>> _data;
+            using Data_t = std::map<int, std::vector<std::pair<int, int>>>;
+            Data_t _data;
     };
 
 }
