@@ -144,6 +144,7 @@ namespace mousetrap
         float y_eps = 1.f / _canvas_size->y;
 
         const auto& outline_vertices = active_state->get_selection().get_outline_vertices();
+        std::vector<std::pair<Vector2f, Vector2f>> outline_outline;
 
         auto convert_vertices = [&](Shape* shape, const std::vector<std::pair<Vector2f, Vector2f>>& vertices){
 
@@ -162,6 +163,31 @@ namespace mousetrap
                     top_left.y + pair.second.y * pixel_h
                 };
                 converted.push_back(to_push);
+
+                if (to_push.first.y == to_push.second.y)
+                {
+                    outline_outline.push_back({
+                        to_push.first + Vector2f(0, -y_eps),
+                        to_push.second + Vector2f(0, -y_eps)
+                    });
+
+                    outline_outline.push_back({
+                        to_push.first + Vector2f(0, +y_eps),
+                        to_push.second + Vector2f(0, +y_eps)
+                    });
+                }
+                else
+                {
+                    outline_outline.push_back({
+                        to_push.first + Vector2f(-x_eps, 0),
+                        to_push.second + Vector2f(-x_eps, 0)
+                    });
+
+                    outline_outline.push_back({
+                        to_push.first + Vector2f(+x_eps, 0),
+                        to_push.second + Vector2f(+x_eps, 0)
+                    });
+                }
             }
 
             shape->as_lines(converted);
@@ -171,97 +197,9 @@ namespace mousetrap
         convert_vertices(_outline_top_to_bottom, outline_vertices.top_to_bottom);
         convert_vertices(_outline_right_to_left, outline_vertices.right_to_left);
         convert_vertices(_outline_bottom_to_top, outline_vertices.bottom_to_top);
-
-        reschedule_render_tasks();
-
-        /*
-        std::vector<std::pair<Vector2f, Vector2f>> outline_outline;
-        auto convert_vertex_coordinates = [&](const std::vector<std::pair<Vector2i, Vector2i>>& in) {
-
-            std::vector<std::pair<Vector2f, Vector2f>> out;
-
-            for (size_t i = 0; i < in.size(); ++i)
-            {
-                auto v = in.at(i);
-                auto to_push = std::pair<Vector2f, Vector2f>{
-                {
-                    top_left.x + v.first.x * pixel_w,
-                    top_left.y + v.first.y * pixel_h
-                    },
-                    {
-                        top_left.x + v.second.x * pixel_w,
-                        top_left.y + v.second.y * pixel_h
-                    }
-                };
-
-                out.push_back(to_push);
-
-                auto a = to_push.first;
-                auto b = to_push.second;
-
-                if (a.x == b.x)
-                {
-                    Vector2f top = a.y < b.y ? a : b;
-                    Vector2f bottom = a.y < b.y ? b : a;
-
-                    outline_outline.emplace_back(
-                        Vector2f{a.x - x_eps, top.y},
-                        Vector2f{a.x - x_eps, bottom.y}
-                    );
-
-                    outline_outline.emplace_back(
-                        Vector2f{a.x + x_eps, top.y},
-                        Vector2f{a.x + x_eps, bottom.y}
-                    );
-                }
-                else if (a.y == b.y)
-                {
-                    Vector2f left = a.x < b.x ? a : b;
-                    Vector2f right = a.x < b.x ? b : a;
-
-                    outline_outline.emplace_back(
-                        Vector2f{left.x, a.y - y_eps},
-                        Vector2f{right.x, a.y - y_eps}
-                    );
-
-                    outline_outline.emplace_back(
-                        Vector2f{left.x, a.y + y_eps},
-                        Vector2f{right.x, a.y + y_eps}
-                    );
-                }
-            }
-
-            return out;
-        };
-
-        const Vector2iSet& selection = active_state->get_selection();
-        auto vertices = generate_outline_vertices(selection);
-
-        _outline_top->as_lines(convert_vertex_coordinates(vertices.top));
-        _outline_right->as_lines(convert_vertex_coordinates(vertices.right));
-        _outline_bottom->as_lines(convert_vertex_coordinates(vertices.bottom));
-        _outline_left->as_lines(convert_vertex_coordinates(vertices.left));
-
-        for (auto* shape : {
-            _outline_top,
-            _outline_right,
-            _outline_bottom,
-            _outline_left
-        })
-            shape->set_color(_color);
-
         _outline_outline->as_lines(outline_outline);
         _outline_outline->set_color(RGBA(0, 0, 0, 0.5));
-
-        _outline_top_initial_position = _outline_top->get_top_left();
-        _outline_right_initial_position = _outline_right->get_top_left();
-        _outline_bottom_initial_position = _outline_bottom->get_top_left();
-        _outline_left_initial_position = _outline_left->get_top_left();
-        _outline_outline_initial_position = _outline_outline->get_top_left();
-
         reschedule_render_tasks();
-        _area.queue_render();
-         */
     }
 
     void Canvas::SelectionLayer::set_animation_paused(bool b)
