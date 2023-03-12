@@ -10,7 +10,7 @@ namespace mousetrap
     Selection::Selection()
     {}
 
-    bool Selection::at(Vector2i xy)
+    bool Selection::at(Vector2i xy) const
     {
          auto it = _data.find(xy.y);
          if (it == _data.end())
@@ -73,6 +73,22 @@ namespace mousetrap
         _data.clear();
         for (int y = top_left.y; y < top_left.y + size.y; ++y)
             _data.insert({y, {{top_left.x, top_left.x + size.x}}});
+
+        _outline_vertices.left_to_right = {
+            {{top_left.x, top_left.y}, {top_left.x + size.x, top_left.y}}
+        };
+
+        _outline_vertices.right_to_left = {
+            {{top_left.x + size.x, top_left.y + size.y}, {top_left.x, top_left.y + size.y}}
+        };
+
+        _outline_vertices.bottom_to_top = {
+            {{top_left.x, top_left.y}, {top_left.x, top_left.y + size.y}}
+        };
+
+        _outline_vertices.top_to_bottom = {
+            {{top_left.x + size.x, top_left.y}, {top_left.x + size.x, top_left.y + size.y}}
+        };
     }
 
     void Selection::apply_offset(Vector2i offset)
@@ -103,5 +119,10 @@ namespace mousetrap
             out << "}\n";
         }
         return out.str();
+    }
+
+    const Selection::OutlineVertices& Selection::get_outline_vertices() const
+    {
+        return _outline_vertices;
     }
 }

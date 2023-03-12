@@ -506,9 +506,9 @@ namespace mousetrap
         _area.queue_render();
     }
 
-    ProjectState::DrawData Canvas::WireframeLayer::draw()
+    DrawData Canvas::WireframeLayer::draw()
     {
-        auto out = ProjectState::DrawData();
+        auto out = DrawData();
 
         // TODO
         _render_shader->create_from_file(get_resource_path() + "shaders/msaa_postfx.frag", ShaderType::FRAGMENT);

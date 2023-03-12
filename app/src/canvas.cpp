@@ -221,7 +221,7 @@ namespace mousetrap
 
             auto points = generate_bucket_fill_points(pos, frame, active_state->get_bucket_fill_eps());
 
-            auto to_draw = ProjectState::DrawData();
+            auto to_draw = DrawData();
             auto primary = active_state->get_primary_color();
             for (auto& p : points)
                 to_draw.insert({p, primary});
@@ -454,7 +454,7 @@ namespace mousetrap
         _layer_layer->on_image_flip_changed();
     }
 
-    void Canvas::draw(const ProjectState::DrawData& data)
+    void Canvas::draw(const DrawData& data)
     {
         active_state->draw_to_cell({active_state->get_current_layer_index(), active_state->get_current_frame_index()}, data);
     }

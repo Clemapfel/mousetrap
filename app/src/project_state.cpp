@@ -1057,7 +1057,7 @@ namespace mousetrap
         signal_onionskin_layer_count_changed();
     }
 
-    void ProjectState::draw_to_cell(Vector2ui cell_ij, const ProjectState::DrawData& data)
+    void ProjectState::draw_to_cell(Vector2ui cell_ij, const DrawData& data)
     {
         size_t layer_i = cell_ij.x;
         size_t frame_i = cell_ij.y;

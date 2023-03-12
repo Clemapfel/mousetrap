@@ -159,7 +159,7 @@ namespace mousetrap
             Vector2i _origin = {0, 0};
             Vector2i _destination = {0, 0};
 
-            void draw(const ProjectState::DrawData&);
+            void draw(const DrawData&);
 
             // layers
 
@@ -511,7 +511,7 @@ namespace mousetrap
 
                     void update_visibility_from_cursor_pos(Vector2i pixel_pos);
 
-                    ProjectState::DrawData draw();
+                    DrawData draw();
 
                 private:
                     Canvas* _owner;
@@ -643,10 +643,10 @@ namespace mousetrap
                     Vector2f* _canvas_size = new Vector2f(1, 1);
                     Shader* _outline_shader;
 
-                    Shape* _outline_top = nullptr;
-                    Shape* _outline_right = nullptr;
-                    Shape* _outline_bottom = nullptr;
-                    Shape* _outline_left = nullptr;
+                    Shape* _outline_left_to_right = nullptr;
+                    Shape* _outline_top_to_bottom = nullptr;
+                    Shape* _outline_right_to_left = nullptr;
+                    Shape* _outline_bottom_to_top = nullptr;
                     Shape* _outline_outline = nullptr;
 
                     Vector2f _outline_top_initial_position;

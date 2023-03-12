@@ -41,22 +41,22 @@ namespace mousetrap
         auto tasks = std::vector<RenderTask>();
 
         {
-            auto& task = tasks.emplace_back(_outline_top, _outline_shader);
+            auto& task = tasks.emplace_back(_outline_left_to_right, _outline_shader);
             task.register_int("_direction", _outline_shader_top_flag);
         }
 
         {
-            auto& task = tasks.emplace_back(_outline_right, _outline_shader);
+            auto& task = tasks.emplace_back(_outline_top_to_bottom, _outline_shader);
             task.register_int("_direction", _outline_shader_right_flag);
         }
 
         {
-            auto& task = tasks.emplace_back(_outline_bottom, _outline_shader);
+            auto& task = tasks.emplace_back(_outline_right_to_left, _outline_shader);
             task.register_int("_direction", _outline_shader_bottom_flag);
         }
 
         {
-            auto& task = tasks.emplace_back(_outline_left, _outline_shader);
+            auto& task = tasks.emplace_back(_outline_bottom_to_top, _outline_shader);
             task.register_int("_direction", _outline_shader_left_flag);
         }
 
@@ -79,10 +79,10 @@ namespace mousetrap
         instance->_outline_shader = new Shader();
         instance->_outline_shader->create_from_file(get_resource_path() + "shaders/dotted_outline.frag", ShaderType::FRAGMENT);
 
-        instance->_outline_top = new Shape();
-        instance->_outline_right = new Shape();
-        instance->_outline_bottom = new Shape();
-        instance->_outline_left = new Shape();
+        instance->_outline_left_to_right = new Shape();
+        instance->_outline_top_to_bottom = new Shape();
+        instance->_outline_right_to_left = new Shape();
+        instance->_outline_bottom_to_top = new Shape();
 
         instance->_outline_outline = new Shape();
 
@@ -125,7 +125,6 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
-        /*
         auto layer_resolution = active_state->get_layer_resolution();
 
         float canvas_width = layer_resolution.x / _canvas_size->x;
@@ -144,6 +143,38 @@ namespace mousetrap
         float x_eps = 1.f / _canvas_size->x;
         float y_eps = 1.f / _canvas_size->y;
 
+        const auto& outline_vertices = active_state->get_selection().get_outline_vertices();
+
+        auto convert_vertices = [&](Shape* shape, const std::vector<std::pair<Vector2f, Vector2f>>& vertices){
+
+            std::vector<std::pair<Vector2f, Vector2f>> converted;
+            converted.reserve(vertices.size());
+
+            for (const auto& pair : vertices)
+            {
+                auto to_push = std::pair<Vector2f, Vector2f>();
+                to_push.first = {
+                    top_left.x + pair.first.x * pixel_w,
+                    top_left.y + pair.first.y * pixel_h
+                };
+                to_push.second = {
+                    top_left.x + pair.second.x * pixel_w,
+                    top_left.y + pair.second.y * pixel_h
+                };
+                converted.push_back(to_push);
+            }
+
+            shape->as_lines(converted);
+        };
+
+        convert_vertices(_outline_left_to_right, outline_vertices.left_to_right);
+        convert_vertices(_outline_top_to_bottom, outline_vertices.top_to_bottom);
+        convert_vertices(_outline_right_to_left, outline_vertices.right_to_left);
+        convert_vertices(_outline_bottom_to_top, outline_vertices.bottom_to_top);
+
+        reschedule_render_tasks();
+
+        /*
         std::vector<std::pair<Vector2f, Vector2f>> outline_outline;
         auto convert_vertex_coordinates = [&](const std::vector<std::pair<Vector2i, Vector2i>>& in) {
 
@@ -246,9 +277,9 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
-        _outline_top->set_color(color);
-        _outline_right->set_color(color);
-        _outline_bottom->set_color(color);
-        _outline_left->set_color(color);
+        _outline_left_to_right->set_color(color);
+        _outline_top_to_bottom->set_color(color);
+        _outline_right_to_left->set_color(color);
+        _outline_bottom_to_top->set_color(color);
     }
 }

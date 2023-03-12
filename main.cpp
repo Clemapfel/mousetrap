@@ -272,7 +272,7 @@ int main()
     std::cout << "----" << std::endl;
     selection.apply_offset({-1, 2});
     std::cout << selection.operator std::string() << std::endl;
-    exit(0);
+    //exit(0);
     // TODO
 
     state::initialize_config_files();

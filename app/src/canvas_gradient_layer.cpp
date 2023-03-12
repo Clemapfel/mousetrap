@@ -25,7 +25,7 @@ namespace mousetrap
                 return;
 
             auto image = self->_render_texture->download();
-            auto draw_data = ProjectState::DrawData();
+            auto draw_data = DrawData();
 
             for (size_t x = 0; x < image.get_size().x; ++x)
                 for (size_t y = 0; y < image.get_size().y; ++y)
