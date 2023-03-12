@@ -178,9 +178,10 @@ namespace mousetrap
             bool get_palette_editing_enabled() const;
             void set_palette_editing_enabled(bool b);
 
-            void set_selection(Vector2iSet);
-            const Vector2iSet& get_selection() const;
+            void set_selection(const Vector2iSet&);
+            const Selection& get_selection() const;
             void select_all();
+
             void set_selection_mode(SelectionMode mode);
             SelectionMode get_selection_mode() const;
 
@@ -218,7 +219,7 @@ namespace mousetrap
             float _brush_opacity = 1;
             float _bucket_fill_eps = 1 / 256.f;
 
-            Vector2iSet _selection;
+            Selection _selection;
             SelectionMode _selection_mode = SelectionMode::REPLACE;
 
             Vector2ui _layer_resolution;

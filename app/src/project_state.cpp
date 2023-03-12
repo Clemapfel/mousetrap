@@ -110,11 +110,7 @@ namespace mousetrap
             frame->update_texture();
         }
 
-        for (size_t x = 0; x < _layer_resolution.x; ++x)
-            for (size_t y = 0; y < _layer_resolution.y; ++y)
-                _selection.insert({x, y});
-
-
+        select_all();
         set_save_path(std::tmpnam(nullptr));
 
         /*
@@ -1000,16 +996,21 @@ namespace mousetrap
         return _palette_editing_enabled;
     }
 
-    const Vector2iSet& ProjectState::get_selection() const
+    const Selection& ProjectState::get_selection() const
     {
         return _selection;
     }
 
-    void ProjectState::set_selection(Vector2iSet selection)
+    void ProjectState::set_selection(const Vector2iSet& selection)
     {
-        _selection = selection;
+        _selection.create_from(selection);
 
         signal_selection_changed();
+    }
+
+    void ProjectState::select_all()
+    {
+        _selection.create_from_rectangle({0, 0}, _layer_resolution);
     }
 
     void ProjectState::set_selection_mode(SelectionMode mode)
@@ -1021,16 +1022,6 @@ namespace mousetrap
     SelectionMode ProjectState::get_selection_mode() const
     {
         return _selection_mode;
-    }
-
-    void ProjectState::select_all()
-    {
-        _selection.clear();
-        for (size_t x = 0; x < _layer_resolution.x; ++x)
-            for (size_t y = 0; y < _layer_resolution.y; ++y)
-                _selection.insert({x, y});
-
-        signal_selection_changed();
     }
 
     bool ProjectState::get_playback_active() const

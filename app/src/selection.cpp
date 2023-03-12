@@ -74,4 +74,34 @@ namespace mousetrap
         for (int y = top_left.y; y < top_left.y + size.y; ++y)
             _data.insert({y, {{top_left.x, top_left.x + size.x}}});
     }
+
+    void Selection::apply_offset(Vector2i offset)
+    {
+        std::map<int, std::vector<std::pair<int, int>>> new_data;
+        for (auto& pair : _data)
+        {
+            auto to_push = std::pair<int, std::vector<std::pair<int, int>>>();
+            to_push.first = pair.first + offset.y;
+
+            for (auto& range : pair.second)
+                to_push.second.push_back({range.first + offset.x, range.second + offset.x});
+
+            new_data.insert(to_push);
+        }
+
+        _data = std::move(new_data);
+    }
+
+    Selection::operator std::string()
+    {
+        std::stringstream out;
+        for (auto& pair : _data)
+        {
+            out << pair.first << ": {";
+            for (auto& range : pair.second)
+                out << "[" << range.first << " | " << range.second << "] ";
+            out << "}\n";
+        }
+        return out.str();
+    }
 }

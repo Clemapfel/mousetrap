@@ -72,9 +72,9 @@ namespace mousetrap
         _layer_overlay.add_overlay(*_layer_layer);
         _layer_overlay.add_overlay(*_onionskin_layer);
         _layer_overlay.add_overlay(*_brush_shape_layer);
-        _layer_overlay.add_overlay(*_gradient_layer);
+        //_layer_overlay.add_overlay(*_gradient_layer);
         _layer_overlay.add_overlay(*_grid_layer);
-        //_layer_overlay.add_overlay(*_selection_layer);
+        _layer_overlay.add_overlay(*_selection_layer);
         _layer_overlay.add_overlay(*_symmetry_ruler_layer);
         //_layer_overlay.add_overlay(*_wireframe_layer);
         _layer_overlay.add_overlay(*_user_input_layer);

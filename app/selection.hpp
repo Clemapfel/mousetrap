@@ -27,13 +27,17 @@ namespace mousetrap
         public:
             Selection();
 
+            /// @brief create from set of points
             void create_from(const Vector2iSet&);
             void create_from_rectangle(Vector2i top_left, Vector2i size);
 
             bool at(Vector2i);
+            void apply_offset(Vector2i);
+
+            operator std::string();
 
         private:
-            // y coords -> (x_min, x_max)
+            // y -> {(x_min, x_max), ...}
             std::map<int, std::vector<std::pair<int, int>>> _data;
     };
 

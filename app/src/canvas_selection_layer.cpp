@@ -125,6 +125,7 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
+        /*
         auto layer_resolution = active_state->get_layer_resolution();
 
         float canvas_width = layer_resolution.x / _canvas_size->x;
@@ -229,6 +230,7 @@ namespace mousetrap
 
         reschedule_render_tasks();
         _area.queue_render();
+         */
     }
 
     void Canvas::SelectionLayer::set_animation_paused(bool b)

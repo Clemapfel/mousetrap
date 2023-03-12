@@ -268,7 +268,10 @@ int main()
     };
 
     selection.create_from(all);
-    std::cout << selection.at({1, 1}) << " " << selection.at({1, 3}) << " " << selection.at({3, 3}) << std::endl;
+    std::cout << selection.operator std::string() << std::endl;
+    std::cout << "----" << std::endl;
+    selection.apply_offset({-1, 2});
+    std::cout << selection.operator std::string() << std::endl;
     exit(0);
     // TODO
 
