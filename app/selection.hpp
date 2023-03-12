@@ -51,6 +51,11 @@ namespace mousetrap
 
             // y -> {(x_min, x_max), ...}
             std::map<int, std::vector<std::pair<int, int>>> _data;
+
+            int _x_min = 0;
+            int _x_max = 0;
+            int _y_min = 0;
+            int _y_max = 0;
     };
 
 }

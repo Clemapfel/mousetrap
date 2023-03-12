@@ -171,6 +171,7 @@ namespace mousetrap
             void set_palette_editing_enabled(bool b);
 
             void set_selection(const Vector2iSet&);
+            void move_selection(Vector2i offset_px);
             const Selection& get_selection() const;
             void select_all();
 

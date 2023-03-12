@@ -110,7 +110,17 @@ namespace mousetrap
             frame->update_texture();
         }
 
-        select_all();
+        //select_all();
+        // TODO
+        Vector2iSet selection;
+        for (int x = 0; x < _layer_resolution.x; ++x)
+            for (int y = 0; y < _layer_resolution.y; ++y)
+               if (std::abs(x - y) % 7 == 0)
+                   selection.insert({x, y});
+
+        set_selection(selection);
+        // TODO
+
         set_save_path(std::tmpnam(nullptr));
 
         /*
@@ -1004,8 +1014,13 @@ namespace mousetrap
     void ProjectState::set_selection(const Vector2iSet& selection)
     {
         _selection.create_from(selection);
-
         signal_selection_changed();
+    }
+
+    void ProjectState::move_selection(Vector2i offset_px)
+    {
+       _selection.apply_offset(offset_px);
+       signal_selection_changed();
     }
 
     void ProjectState::select_all()
