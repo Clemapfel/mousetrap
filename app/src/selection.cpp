@@ -46,6 +46,8 @@ namespace mousetrap
         }
 
         _data.clear();
+        _outline_vertices = OutlineVertices();
+
         for (int y = _y_min; y <= _y_max; ++y)
         {
             std::vector<std::pair<int, int>> vec = {};
@@ -165,7 +167,7 @@ namespace mousetrap
         _data = std::move(new_data);
     }
 
-    Selection::operator std::string()
+    Selection::operator std::string() const
     {
         std::stringstream out;
         for (auto& pair : _data)
@@ -183,8 +185,30 @@ namespace mousetrap
         return _outline_vertices;
     }
 
-    void Selection::invert()
+    Selection::operator Vector2iSet() const
     {
-        std::cerr << "[ERROR] In Selection::invert: TODO" << std::endl;
+        Vector2iSet out;
+        for (const auto& pair : _data)
+        {
+            auto y = pair.first;
+            for (auto& range : pair.second)
+                for (int x = range.first; x <= range.second; ++x)
+                    out.insert({x, y});
+        }
+
+        return out;
+    }
+
+    void Selection::invert(int x_min, int y_min, int x_max, int y_max)
+    {
+         // TODO optimize this
+
+         auto set = Vector2iSet();
+         for (int x = x_min; x < x_max; ++x)
+             for (int y = y_min; y < y_max; ++y)
+                 if (not at({x, y}))
+                     set.insert({x, y});
+
+        create_from(set);
     }
 }

@@ -115,7 +115,7 @@ namespace mousetrap
         Vector2iSet selection;
         for (int x = 0; x < _layer_resolution.x; ++x)
             for (int y = 0; y < _layer_resolution.y; ++y)
-               if (x % 2 == 0)
+               if (x > 0.25 * _layer_resolution.x and x < 0.75 * _layer_resolution.x and y > 0.25 * _layer_resolution.y and y < 0.75 * _layer_resolution.y and rand() / float(RAND_MAX) > 0.6)
                    selection.insert({x, y});
 
         set_selection(selection);
@@ -1031,7 +1031,7 @@ namespace mousetrap
 
     void ProjectState::invert_selection()
     {
-        _selection.invert();
+        _selection.invert(0, 0, _layer_resolution.x, _layer_resolution.y);
         signal_selection_changed();
     }
 

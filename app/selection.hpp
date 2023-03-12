@@ -27,9 +27,10 @@ namespace mousetrap
 
             bool at(Vector2i) const;
             void apply_offset(Vector2i);
-            void invert();
+            void invert(int x_min, int y_min, int x_max, int y_max);
 
-            operator std::string();
+            operator std::string() const;
+            explicit operator Vector2iSet() const;
 
             using OutlineVertices = struct
             {
