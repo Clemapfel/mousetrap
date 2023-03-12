@@ -28,12 +28,13 @@ namespace mousetrap
             Selection();
 
             void create_from(const Vector2iSet&);
+            void create_from_rectangle(Vector2i top_left, Vector2i size);
+
             bool at(Vector2i);
 
         private:
-            // x coords -> (y_min, y_max)
-            using Data_t = std::map<int, std::vector<std::pair<int, int>>>;
-            Data_t _data;
+            // y coords -> (x_min, x_max)
+            std::map<int, std::vector<std::pair<int, int>>> _data;
     };
 
 }

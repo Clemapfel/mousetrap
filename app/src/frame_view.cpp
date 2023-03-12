@@ -588,7 +588,6 @@ namespace mousetrap
             active_state->set_cell_is_key({active_state->get_current_layer_index(), active_state->get_current_frame_index()}, button->get_active());
         }, this);
 
-
         // Tooltips
 
         auto toggle_onionskin_visible_tooltip = state::tooltips_file->get_value("frame_view", "toggle_onionskin_visible");
@@ -721,6 +720,7 @@ namespace mousetrap
 
         auto button_width = _play_pause_button.get_preferred_size().natural_size.x;
         _menu_button.set_size_request({4 * button_width, 0});
+        _menu_button.set_vexpand(false);
 
         {
             auto separator = SeparatorLine();
@@ -792,9 +792,11 @@ namespace mousetrap
 
         _scrolled_window.set_child(&_button_box);
         _scrolled_window.set_hexpand(true);
+        _scrolled_window.set_vexpand(false);
 
         _main.push_back(&_menu_button);
         _main.push_back(&_scrolled_window);
+        _main.set_homogeneous(false);
     }
 
     void FrameView::ControlBar::set_onionskin_visible(bool b)

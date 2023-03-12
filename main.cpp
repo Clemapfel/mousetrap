@@ -241,17 +241,6 @@ static void activate(GtkApplication* app, void*)
     bubble_log_overlay.add_overlay(bubble_log);
     // MAIN
 
-    // TODO
-    auto selection = Selection();
-    auto all = Vector2iSet();
-    for (size_t x = 0; x < 10; ++x)
-        for (size_t y = 0; y < 10; ++y)
-            all.insert({x, y});
-
-    selection.create_from(all);
-    //exit(0);
-    // TODO
-
     state::main_window->set_child(&bubble_log_overlay);
     state::main_window->show();
     state::main_window->present();
@@ -270,6 +259,19 @@ static void startup(GApplication*)
 
 int main()
 {
+    // TODO
+    auto selection = Selection();
+    Vector2iSet all = {
+        {0, 0}, {1, 0}, {2, 0}, {5, 0},
+        {1, 1}, {2, 1},
+        {0, 3}, {1, 3}, {2, 3}, {4, 3}
+    };
+
+    selection.create_from(all);
+    std::cout << selection.at({1, 1}) << " " << selection.at({1, 3}) << " " << selection.at({3, 3}) << std::endl;
+    exit(0);
+    // TODO
+
     state::initialize_config_files();
 
     state::app = new Application();

@@ -3,11 +3,25 @@
 //
 
 #include <app/selection.hpp>
+#include <app/algorithms.hpp>
 
 namespace mousetrap
 {
     Selection::Selection()
     {}
+
+    bool Selection::at(Vector2i xy)
+    {
+         auto it = _data.find(xy.y);
+         if (it == _data.end())
+             return false;
+
+         for (auto& pair : it->second)
+             if (pair.first <= xy.x and pair.second >= xy.x)
+                 return true;
+
+         return false;
+    }
 
     void Selection::create_from(const Vector2iSet& set)
     {
@@ -34,34 +48,30 @@ namespace mousetrap
         _data.clear();
         for (int y = y_min; y <= y_max; ++y)
         {
-            std::vector<std::pair<int, int>>* vec;
-            if (_data.find(y) == _data.end())
-                vec = &_data.insert({y, {}}).first->second;
-
-            vec->push_back({x_min, x_min});
+            std::vector<std::pair<int, int>> vec = {};
             for (int x = x_min; x <= x_max; ++x)
             {
                 auto it = set.find({x, y});
                 if (it == set.end())
-                {
-                    if (vec->back().second == x)
-                        vec->push_back({});
-                }
+                    continue;
+
+                if (vec.empty())
+                    vec.push_back({x, x});
+                else if (x == vec.back().second + 1)
+                    vec.back().second += 1;
                 else
-                {
-                }
-
+                    vec.push_back({x, x});
             }
-        }
 
-        for (auto& pair : _data)
-        {
-            std::cout << "x: " << pair.first << " -> {";
-            for (auto& range : pair.second)
-            {
-                std::cout << "[" << range.first << " | " << range.second << "], ";
-            }
-            std::cout << "}\n";
+            if (not vec.empty())
+                _data[y] = vec;
         }
+    }
+
+    void Selection::create_from_rectangle(Vector2i top_left, Vector2i size)
+    {
+        _data.clear();
+        for (int y = top_left.y; y < top_left.y + size.y; ++y)
+            _data.insert({y, {{top_left.x, top_left.x + size.x}}});
     }
 }

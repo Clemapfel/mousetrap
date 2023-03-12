@@ -72,10 +72,10 @@ namespace mousetrap
     {
         bool operator()(const Vector2<T>& a, const Vector2<T>& b) const
         {
-            if (a.y == b.y)
-                return a.x < b.x;
-            else
+            if (a.x == b.x)
                 return a.y < b.y;
+            else
+                return a.x < b.x;
         }
     };
 
