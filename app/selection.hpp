@@ -9,13 +9,6 @@
 
 namespace mousetrap
 {
-    namespace state::actions
-    {
-        DECLARE_GLOBAL_ACTION(selection, select_all);
-        DECLARE_GLOBAL_ACTION(selection, invert);
-        DECLARE_GLOBAL_ACTION(selection, open_select_color_dialog);
-    }
-
     enum class SelectionMode
     {
         REPLACE,
@@ -34,6 +27,7 @@ namespace mousetrap
 
             bool at(Vector2i) const;
             void apply_offset(Vector2i);
+            void invert();
 
             operator std::string();
 

@@ -174,6 +174,7 @@ namespace mousetrap
             void move_selection(Vector2i offset_px);
             const Selection& get_selection() const;
             void select_all();
+            void invert_selection();
 
             void set_selection_mode(SelectionMode mode);
             SelectionMode get_selection_mode() const;

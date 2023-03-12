@@ -67,7 +67,7 @@ namespace mousetrap
                 _data[y] = vec;
         }
 
-        for (int y = _y_min; y < _y_max; ++y)
+        for (int y = _y_min; y <= _y_max; ++y)
         {
             auto it = _data.find(y);
             if (it == _data.end())
@@ -78,7 +78,7 @@ namespace mousetrap
                 int x1 = range.first;
                 int x2 = range.second;
                 _outline_vertices.bottom_to_top.push_back({{x1, y}, {x1, y+1}});
-                _outline_vertices.top_to_bottom.push_back({{x2, y}, {x2, y-1}});
+                _outline_vertices.top_to_bottom.push_back({{x2+1, y}, {x2+1, y+1}});
             }
         }
 
@@ -104,7 +104,7 @@ namespace mousetrap
                 data_by_x[x] = vec;
         }
 
-        for (int x = _x_min; x < _x_max; ++x)
+        for (int x = _x_min; x <= _x_max; ++x)
         {
             auto it = data_by_x.find(x);
             if (it == data_by_x.end())
@@ -115,7 +115,7 @@ namespace mousetrap
                 int y1 = range.first;
                 int y2 = range.second;
                 _outline_vertices.left_to_right.push_back({{x, y1}, {x+1, y1}});
-                _outline_vertices.right_to_left.push_back({{x, y2}, {x-1, y2}});
+                _outline_vertices.right_to_left.push_back({{x, y2+1}, {x+1, y2+1}});
             }
         }
     }
@@ -181,5 +181,10 @@ namespace mousetrap
     const Selection::OutlineVertices& Selection::get_outline_vertices() const
     {
         return _outline_vertices;
+    }
+
+    void Selection::invert()
+    {
+        std::cerr << "[ERROR] In Selection::invert: TODO" << std::endl;
     }
 }

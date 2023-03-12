@@ -115,7 +115,7 @@ namespace mousetrap
         Vector2iSet selection;
         for (int x = 0; x < _layer_resolution.x; ++x)
             for (int y = 0; y < _layer_resolution.y; ++y)
-               if (std::abs(x - y) % 7 == 0)
+               if (x % 2 == 0)
                    selection.insert({x, y});
 
         set_selection(selection);
@@ -1026,6 +1026,13 @@ namespace mousetrap
     void ProjectState::select_all()
     {
         _selection.create_from_rectangle({0, 0}, _layer_resolution);
+        signal_selection_changed();
+    }
+
+    void ProjectState::invert_selection()
+    {
+        _selection.invert();
+        signal_selection_changed();
     }
 
     void ProjectState::set_selection_mode(SelectionMode mode)

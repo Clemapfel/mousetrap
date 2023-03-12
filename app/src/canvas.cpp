@@ -229,6 +229,14 @@ namespace mousetrap
             active_state->draw_to_cell(active_state->get_current_cell_position(), to_draw);
         });
 
+        canvas_select_all.set_function([](){
+            active_state->select_all();
+        });
+
+        canvas_invert_selection.set_function([](){
+            active_state->invert_selection();
+        });
+
         // move float actions are triggered by userinput layer, not shortcut controller
 
         for (auto* action : {
@@ -243,7 +251,9 @@ namespace mousetrap
             &canvas_paste_clipboard,
             &canvas_copy_to_clipboard,
             &canvas_apply_bucket_fill,
-            &canvas_apply_eyedropper
+            &canvas_apply_eyedropper,
+            &canvas_select_all,
+            &canvas_invert_selection
         })
             state::add_shortcut_action(*action);
 

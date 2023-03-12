@@ -55,11 +55,12 @@ namespace mousetrap
         auto selection_submenu = MenuModel();
         auto selection_section = MenuModel();
 
-        selection_section.add_action(tooltip("selection", "invert"), selection_invert.get_id());
+        /*
+        selection_section.add_action(tooltip("canvas", "invert"), selection_invert.get_id());
         selection_section.add_action(tooltip("selection", "select_all"), selection_select_all.get_id());
         selection_section.add_action(tooltip("selection", "open_select_color_dialog"), selection_open_select_color_dialog.get_id());
         selection_submenu.add_section("Selection", &selection_section);
-
+        */
         // COLORS
 
         auto colors_submenu = MenuModel();
