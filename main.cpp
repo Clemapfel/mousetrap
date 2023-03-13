@@ -259,22 +259,6 @@ static void startup(GApplication*)
 
 int main()
 {
-    // TODO
-    auto selection = Selection();
-    Vector2iSet all = {
-        {0, 0}, {1, 0}, {2, 0}, {5, 0},
-        {1, 1}, {2, 1},
-        {0, 3}, {1, 3}, {2, 3}, {4, 3}
-    };
-
-    selection.create_from(all);
-    std::cout << selection.operator std::string() << std::endl;
-    std::cout << "----" << std::endl;
-    selection.apply_offset({-1, 2});
-    std::cout << selection.operator std::string() << std::endl;
-    //exit(0);
-    // TODO
-
     state::initialize_config_files();
 
     state::app = new Application();

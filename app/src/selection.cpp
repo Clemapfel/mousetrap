@@ -201,8 +201,6 @@ namespace mousetrap
 
     void Selection::invert(int x_min, int y_min, int x_max, int y_max)
     {
-         // TODO optimize this
-
          auto set = Vector2iSet();
          for (int x = x_min; x < x_max; ++x)
              for (int y = y_min; y < y_max; ++y)
@@ -211,4 +209,55 @@ namespace mousetrap
 
         create_from(set);
     }
+
+    void Selection::add(const Selection& other)
+    {
+        auto x_min = std::min(this->_x_min, other._x_min);
+        auto y_min = std::min(this->_y_min, other._y_min);
+        auto x_max = std::max(this->_x_max, other._x_max);
+        auto y_max = std::max(this->_y_max, other._y_max);
+
+        auto& this_data = _data;
+        const auto& other_data = other._data;
+
+        for (int y = y_min; y <= y_max; ++y)
+        {
+            auto this_it = this_data.find(y);
+            auto other_it = other_data.find(y);
+
+            if (this_it == this_data.end() and other_it != other_data.end())
+                this_data.insert({y, other_it->second});
+            else if (other_it == other_data.end())
+                continue;
+            else
+
+        }
+    }
+
+    /*
+    Selection::Iterator::Iterator(Selection* owner, typename Selection::Data_t::iterator it)
+        : _owner(owner), _it(it)
+    {}
+
+    Selection::Iterator::operator Vector2i()
+    {
+        return {_it->second.at(_current_i).first + _current_offset, _it->first};
+    }
+
+    bool Selection::Iterator::operator==(const Iterator& other)
+    {
+        return _it == other._it and _current_i == other._current_i and _current_offset == other._current_offset;
+    }
+
+    bool Selection::Iterator::operator!=(const Iterator& other)
+    {
+        return not ((*this) == other);
+    }
+
+    Selection::Iterator& Selection::Iterator::operator++()
+    {
+        //if (_it->second.at_current_i())
+        return *this;
+    }
+     */
 }
