@@ -98,9 +98,9 @@ namespace mousetrap
         _view_box.push_back(&_reset_view_button);
         _view_box.push_back(&_scale_scale);
 
+        _symmetry_box.push_back(&_symmetry_control_menu_button);
         _symmetry_box.push_back(&_horizontal_symmetry_toggle_button);
         _symmetry_box.push_back(&_vertical_symmetry_toggle_button);
-        _symmetry_box.push_back(&_symmetry_control_menu_button);
 
         _symmetry_box.set_halign(GTK_ALIGN_END);
         _symmetry_box.set_hexpand(false);

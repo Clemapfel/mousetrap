@@ -202,10 +202,15 @@ namespace mousetrap
         reschedule_render_tasks();
     }
 
-    void Canvas::SelectionLayer::set_animation_paused(bool b)
+    void Canvas::SelectionLayer::set_animated(bool b)
     {
-        *_animation_paused = b ? 1 : 0;
+        *_animation_paused = not b;
         _area.queue_render();
+    }
+
+    bool Canvas::SelectionLayer::get_animated() const
+    {
+        return not *_animation_paused;
     }
 
     void Canvas::SelectionLayer::set_color(HSVA color)

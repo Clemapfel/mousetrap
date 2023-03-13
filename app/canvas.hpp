@@ -74,7 +74,10 @@ namespace mousetrap
 
         DECLARE_GLOBAL_ACTION(canvas, select_all);
         DECLARE_GLOBAL_ACTION(canvas, invert_selection);
-
+        DECLARE_GLOBAL_ACTION(canvas, selection_mode_replace);
+        DECLARE_GLOBAL_ACTION(canvas, selection_mode_add);
+        DECLARE_GLOBAL_ACTION(canvas, selection_mode_subtract);
+        DECLARE_GLOBAL_ACTION(canvas, selection_outline_animated);
     }
 
     struct Canvas : public AppComponent,
@@ -628,7 +631,9 @@ namespace mousetrap
                     void set_offset(Vector2f);
                     void on_selection_changed();
 
-                    void set_animation_paused(bool);
+                    bool get_animated() const;
+                    void set_animated(bool);
+
                     void set_color(HSVA);
 
                 private:

@@ -32,9 +32,6 @@ namespace mousetrap
             void subtract(const Selection&);
             void add(const Selection&);
 
-            operator std::string() const;
-            explicit operator Vector2iSet() const;
-
             using OutlineVertices = struct
             {
                 std::vector<std::pair<Vector2f, Vector2f>> left_to_right;
@@ -44,40 +41,16 @@ namespace mousetrap
             };
             const OutlineVertices& get_outline_vertices() const;
 
-            //auto begin();
-            //auto end();
-
         private:
             void generate_outline_vertices();
             OutlineVertices _outline_vertices;
 
             // y -> {(x_min, x_max), ...}
-            using Data_t = std::map<int, std::vector<std::pair<int, int>>>;
-            Data_t _data;
-
+            Vector2iSet _data;
             int _x_min = 0;
             int _x_max = 0;
             int _y_min = 0;
             int _y_max = 0;
-
-            /*
-            struct Iterator
-            {
-                public:
-                    Iterator(Selection*, Data_t::iterator);
-                    operator Vector2i();
-
-                    Iterator& operator ++();
-                    Iterator& operator ++(int);
-                    bool operator==(const Iterator& other);
-
-
-                private:
-                    Selection* _owner;
-                    Data_t::iterator _it;
-                    size_t current_i = 0;
-            };
-             */
     };
 
 }

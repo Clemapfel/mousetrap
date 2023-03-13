@@ -237,6 +237,37 @@ namespace mousetrap
             active_state->invert_selection();
         });
 
+        canvas_selection_mode_replace.set_function([](){
+           active_state->set_selection_mode(SelectionMode::REPLACE);
+
+           state::actions::canvas_selection_mode_replace.set_state(true);
+           state::actions::canvas_selection_mode_add.set_state(false);
+           state::actions::canvas_selection_mode_subtract.set_state(false);
+       });
+
+        canvas_selection_mode_add.set_function([]() {
+            active_state->set_selection_mode(SelectionMode::ADD);
+
+            state::actions::canvas_selection_mode_replace.set_state(false);
+            state::actions::canvas_selection_mode_add.set_state(true);
+            state::actions::canvas_selection_mode_subtract.set_state(false);
+
+        } );
+
+        canvas_selection_mode_subtract.set_function([]() {
+            active_state->set_selection_mode(SelectionMode::SUBTRACT);
+
+            state::actions::canvas_selection_mode_replace.set_state(false);
+            state::actions::canvas_selection_mode_add.set_state(false);
+            state::actions::canvas_selection_mode_subtract.set_state(true);
+        });
+
+        canvas_selection_outline_animated.set_stateful_function([](bool in) -> bool{
+            auto next = not state::canvas->_selection_layer->get_animated();
+            state::canvas->_selection_layer->set_animated(next);
+            return next;
+        }, true);
+
         // move float actions are triggered by userinput layer, not shortcut controller
 
         for (auto* action : {
@@ -253,7 +284,11 @@ namespace mousetrap
             &canvas_apply_bucket_fill,
             &canvas_apply_eyedropper,
             &canvas_select_all,
-            &canvas_invert_selection
+            &canvas_invert_selection,
+            &canvas_selection_mode_replace,
+            &canvas_selection_mode_add,
+            &canvas_selection_mode_subtract,
+            &canvas_selection_outline_animated
         })
             state::add_shortcut_action(*action);
 
