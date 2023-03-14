@@ -16,4 +16,3 @@ namespace mousetrap
     };
 }
 
-#include <src/separator_line.inl>

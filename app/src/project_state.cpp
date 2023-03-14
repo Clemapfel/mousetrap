@@ -42,7 +42,7 @@ namespace mousetrap
         out.emplace_back().as_rectangle_horizontal();
         out.emplace_back().as_rectangle_vertical();
 
-        auto files = get_all_files_in_directory(path, false, false);
+        auto files = FileSystem::get_all_files_in_directory(path, false, false);
         std::sort(files.begin(), files.end(), [](FileDescriptor& a, FileDescriptor& b) -> bool {
             return a.get_name() < b.get_name();
         });
@@ -1533,6 +1533,9 @@ namespace mousetrap
 
         if (state::resize_canvas_dialog)
             state::resize_canvas_dialog->signal_layer_resolution_changed();
+
+        if (state::log_box)
+            state::log_box->signal_layer_resolution_changed();
     }
 
     void ProjectState::signal_layer_properties_changed()

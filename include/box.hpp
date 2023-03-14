@@ -30,5 +30,3 @@ namespace mousetrap
             size_t get_n_items();
     };
 }
-
-#include <src/box.inl>

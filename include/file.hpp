@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include <string>
+#include <vector>
 #include <future>
 
 namespace mousetrap
@@ -124,5 +125,3 @@ namespace mousetrap
         );
     };
 }
-
-#include <src/file.inl>

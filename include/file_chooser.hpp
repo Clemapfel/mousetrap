@@ -33,10 +33,7 @@ namespace mousetrap
             GtkFileFilter* _native;
     };
 
-    class FileChooser : public WidgetImplementation<GtkFileChooserWidget>//,
-        //public HasFileSelectionChangedSignal<FileChooser>,
-        //public HasFileActivatedSignal<FileChooser>
-        //public HasActivateSignal<FileChooser>
+    class FileChooser : public WidgetImplementation<GtkFileChooserWidget>
     {
         public:
             FileChooser(FileChooserAction = FileChooserAction::SELECT_FILE);
@@ -79,5 +76,3 @@ namespace mousetrap
            std::unordered_map<ChoiceID, choice_option> _choice_options;
     };
 }
-
-#include <src/file_chooser.inl>

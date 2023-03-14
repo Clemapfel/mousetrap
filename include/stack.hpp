@@ -47,4 +47,3 @@ namespace mousetrap
     };
 }
 
-#include <src/stack.inl>

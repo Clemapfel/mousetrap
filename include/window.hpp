@@ -42,4 +42,3 @@ namespace mousetrap
     };
 }
 
-#include <src/window.inl>

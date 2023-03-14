@@ -42,63 +42,63 @@ add_library(mousetrap SHARED
     include/get_resource_path.hpp
 
     include/gl_common.hpp
-    src/gl_common.inl
+        src/gl_common.cpp
 
     include/shape.hpp
         src/shape.cpp
 
     include/colors.hpp
-    src/colors.inl
+        src/colors.cpp
 
     include/shader.hpp
-    src/shader.inl
+        src/shader.cpp
 
     include/gl_area.hpp
-    src/gl_area.inl
+        src/gl_area.cpp
 
     include/gl_transform.hpp
-    src/transform.inl
+        src/transform.cpp
 
     include/widget.hpp
-    src/widget.inl
+        src/widget.cpp
 
     include/angle.hpp
-    src/angle.inl
+        src/angle.cpp
 
     include/gtk_common.hpp
-    src/gtk_common.inl
+        src/gtk_common.cpp
 
     include/geometry.hpp
-    src/geometry.inl
+        src/geometry.cpp
 
     include/vector.hpp
 
     include/render_task.hpp
-    src/render_task.inl
+        src/render_task.cpp
 
     include/scale.hpp
-    src/scale.inl
+        src/scale.cpp
 
     include/spin_button.hpp
-    src/spin_button.inl
+        src/spin_button.cpp
 
     include/entry.hpp
-    src/entry.inl
+        src/entry.cpp
 
     include/button.hpp
-    src/button.inl
+        src/button.cpp
 
     include/box.hpp
-    src/box.inl
+        src/box.cpp
 
     include/overlay.hpp
-    src/overlay.inl
+        src/overlay.cpp
 
     include/toggle_button.hpp
-    src/toggle_button.inl
+        src/toggle_button.cpp
 
     include/label.hpp
-    src/label.inl
+        src/label.cpp
 
     include/texture.hpp
         src/texture.cpp
@@ -107,10 +107,7 @@ add_library(mousetrap SHARED
         src/image.cpp
 
     include/frame.hpp
-    src/frame.inl
-
-    include/pixel_buffer.hpp
-    src/pixel_buffer.inl
+        src/frame.cpp
 
     include/scrollbar.hpp
         src/scrollbar.cpp
@@ -119,43 +116,43 @@ add_library(mousetrap SHARED
         src/adjustment.cpp
 
     include/flow_box.hpp
-    src/flow_box.inl
+        src/flow_box.cpp
 
     include/stack.hpp
-    src/stack.inl
+        src/stack.cpp
 
     include/scrolled_window.hpp
-    src/scrolled_window.inl
+        src/scrolled_window.cpp
 
     include/stack.hpp
-    src/stack.inl
+        src/stack.cpp
 
     include/time.hpp
-    src/time.inl
+        src/time.cpp
 
     include/window.hpp
-    src/window.inl
+        src/window.cpp
 
     include/application.hpp
-    src/application.inl
+        src/application.cpp
 
     include/aspect_frame.hpp
-    src/aspect_frame.inl
+        src/aspect_frame.cpp
 
     include/signal_emitter.hpp
-    src/signal_emitter.inl
+        src/signal_emitter.cpp
 
     include/image_display.hpp
-    src/image_display.inl
+        src/image_display.cpp
 
     include/event_controller.hpp
-    src/event_controller.inl
+        src/event_controller.cpp
 
     include/separator_line.hpp
-    src/separator_line.inl
+        src/separator_line.cpp
 
     include/menu_button.hpp
-    src/menu_button.inl
+        src/menu_button.cpp
 
     include/menu_model.hpp
         src/menu_model.cpp
@@ -167,28 +164,28 @@ add_library(mousetrap SHARED
     src/column_view.cpp
 
     include/popover.hpp
-    src/popover.inl
+        src/popover.cpp
 
     include/texture_object.hpp
 
     include/revealer.hpp
-    src/revealer.inl
+        src/revealer.cpp
 
     include/detachable_box.hpp
-    src/detachable_box.inl
+        src/detachable_box.cpp
 
     include/expander.hpp
-    src/expander.inl
+        src/expander.cpp
 
     include/paned.hpp
-    src/paned.inl
+        src/paned.cpp
 
     include/dropdown.hpp
     src/dropdown.inl
     src/dropdown.cpp
 
     include/check_button.hpp
-    src/check_button.inl
+        src/check_button.cpp
 
     include/signal_component.hpp
 
@@ -202,57 +199,55 @@ add_library(mousetrap SHARED
     src/blend_mode.cpp
 
     include/viewport.hpp
-    src/viewport.inl
+        src/viewport.cpp
 
     include/center_box.hpp
     src/center_box.inl
 
     include/selection_model.hpp
-    src/selection_model.inl
+        src/selection_model.cpp
 
     include/dialog.hpp
-    src/dialog.inl
+        src/dialog.cpp
 
     include/popover_menu.hpp
-    src/popover_menu.inl
+        src/popover_menu.cpp
 
     include/popover_menu_bar.hpp
-    src/popover_menu_bar.inl
+        src/popover_menu_bar.cpp
 
     include/action_map.hpp
-    src/action_map.inl
+        src/action_map.cpp
 
     include/shortcut_controller.hpp
-    src/shortcut_controller.inl
+        src/shortcut_controller.cpp
 
     include/file_chooser.hpp
-    src/file_chooser.inl
+        src/file_chooser.cpp
 
     include/file.hpp
-    src/file.inl
+        src/file.cpp
 
     include/key_file.hpp
-    src/key_file.inl
+        src/key_file.cpp
 
     include/switch.hpp
-    src/switch.inl
+        src/switch.cpp
 
     include/info_message.hpp
-    src/info_message.inl
+        src/info_message.cpp
 
     include/fixed.hpp
-    src/fixed.inl
+        src/fixed.cpp
 
     include/frame_clock.hpp
-    src/frame_clock.inl
+        src/frame_clock.cpp
 
     include/shortcut_viewer.hpp
-    src/shortcut_viewer.inl
-
-    include/subimage.hpp
+        src/shortcut_viewer.cpp
 
     include/level_bar.hpp
-    src/level_bar.inl
+        src/level_bar.cpp
 
     include/string_compression.hpp
 
@@ -260,7 +255,7 @@ add_library(mousetrap SHARED
     src/action.cpp
 
     include/link_button.hpp
-    src/link_button.inl
+        src/link_button.cpp
 
     include/render_texture.hpp
     src/render_texture.cpp

@@ -30,5 +30,3 @@ namespace mousetrap
             std::vector<RenderTask> _render_tasks;
     };
 }
-
-#include <src/gl_area.inl>

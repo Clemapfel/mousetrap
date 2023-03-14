@@ -49,5 +49,3 @@ namespace mousetrap
             void set_max_width_chars(size_t n_chars);
     };
 }
-
-#include <src/label.inl>

@@ -21,5 +21,3 @@ namespace mousetrap
             void set_action(Action&);
     };
 }
-
-#include <src/button.inl>

@@ -52,6 +52,7 @@ namespace mousetrap
     gboolean CanvasExport::on_area_render(GLArea* area, GdkGLContext* context, CanvasExport* instance)
     {
        // noop
+       return true;
     }
 
     void CanvasExport::set_frame(size_t i)

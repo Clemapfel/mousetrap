@@ -39,5 +39,3 @@ namespace mousetrap
             void clear();
     };
 }
-
-#include <src/flow_box.inl>

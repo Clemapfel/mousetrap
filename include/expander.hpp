@@ -23,5 +23,3 @@ namespace mousetrap
             void set_expanded(bool);
     };
 }
-
-#include <src/expander.inl>

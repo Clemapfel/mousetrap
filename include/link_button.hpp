@@ -20,5 +20,3 @@ namespace mousetrap
             bool get_visited() const;
     };
 }
-
-#include <src/link_button.inl>

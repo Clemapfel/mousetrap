@@ -21,5 +21,3 @@ namespace mousetrap
             void set_label_align(float x_align);
     };
 }
-
-#include <src/frame.inl>

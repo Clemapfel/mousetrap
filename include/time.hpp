@@ -46,7 +46,6 @@ namespace mousetrap
             std::chrono::duration<int64_t, std::nano> _ns; // in nanoseconds
     };
 
-
     Time minutes(double);
     Time seconds(double);
     Time milliseconds(double);
@@ -68,4 +67,4 @@ namespace mousetrap
     std::string get_timestamp_now();
 }
 
-#include <src/time.inl>
+

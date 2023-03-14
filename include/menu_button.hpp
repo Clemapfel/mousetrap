@@ -33,5 +33,3 @@ namespace mousetrap
             void set_model(MenuModel*);
     };
 }
-
-#include <src/menu_button.inl>

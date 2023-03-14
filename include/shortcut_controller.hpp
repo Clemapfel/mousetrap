@@ -44,4 +44,3 @@ namespace mousetrap
     };
 }
 
-#include <src/shortcut_controller.inl>

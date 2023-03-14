@@ -6,6 +6,7 @@
 #pragma once
 
 #include <include/widget.hpp>
+#include <include/action.hpp>
 
 namespace mousetrap
 {
@@ -25,4 +26,3 @@ namespace mousetrap
     };
 }
 
-#include <src/toggle_button.inl>

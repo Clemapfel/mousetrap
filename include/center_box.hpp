@@ -21,5 +21,3 @@ namespace mousetrap
             void set_baseline_position(GtkBaselinePosition);
     };
 }
-
-#include <src/center_box.inl>

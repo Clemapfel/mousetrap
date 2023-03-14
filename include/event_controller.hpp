@@ -7,6 +7,7 @@
 
 #include <include/signal_emitter.hpp>
 #include <include/signal_component.hpp>
+#include <include/vector.hpp>
 
 #include <functional>
 
@@ -100,5 +101,3 @@ namespace mousetrap
             float get_scale_delta();
     };
 }
-
-#include <src/event_controller.inl>

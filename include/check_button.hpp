@@ -22,5 +22,3 @@ namespace mousetrap
             void set_is_inconsistent(bool b);
     };
 }
-
-#include <src/check_button.inl>

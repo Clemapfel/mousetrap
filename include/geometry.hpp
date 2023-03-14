@@ -7,6 +7,7 @@
 
 #include <include/gl_common.hpp>
 
+#include <vector>
 #include <unordered_set>
 
 namespace mousetrap
@@ -38,5 +39,3 @@ namespace mousetrap
     bool intersecting(Line first, Line second, Vector2f* intersect = nullptr);
     bool intersecting(Line line, Rectangle rectangle, std::vector<Vector2f>* intersections = nullptr);
 }
-
-#include <src/geometry.inl>

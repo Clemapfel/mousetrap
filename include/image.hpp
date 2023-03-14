@@ -6,6 +6,7 @@
 #pragma once
 
 #include <include/colors.hpp>
+#include <include/vector.hpp>
 #include <gtk/gtk.h>
 #include <vector>
 

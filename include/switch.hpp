@@ -34,4 +34,4 @@ namespace mousetrap
     };
 }
 
-#include <src/switch.inl>
+

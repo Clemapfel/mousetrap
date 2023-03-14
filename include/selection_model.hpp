@@ -46,4 +46,3 @@ namespace mousetrap
     };
 }
 
-#include <src/selection_model.inl>

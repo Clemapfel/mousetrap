@@ -9,28 +9,32 @@ namespace mousetrap
 {
     LogBox::LogBox()
     {
-        _main.set_margin(state::margin_unit * 0.5);
         _main.push_back(&_current_save_path_label);
         _main.push_back(&_spacer);
         _main.push_back(&_current_color_label);
+        _main.push_back(&_current_resolution_label);
         _main.push_back(&_cursor_position_label);
 
-        _spacer.set_opacity(0);
-        _spacer.set_hexpand(true);
+        _main.set_margin(state::margin_unit * 0.5);
 
-        _current_save_path_label.set_halign(GTK_ALIGN_START);
-        _cursor_position_label.set_halign(GTK_ALIGN_END);
-        _current_color_label.set_halign(GTK_ALIGN_END);
+        _spacer.set_opacity(0);
+        _spacer.set_vexpand(false);
+        _spacer.set_hexpand(true);
 
         for (auto* label : {
             &_current_save_path_label,
             &_cursor_position_label,
-            &_current_color_label
+            &_current_color_label,
+            &_current_resolution_label
         })
-            label->set_margin_end(state::margin_unit);
+        {
+            label->set_margin_horizontal(state::margin_unit);
+            label->set_valign(GTK_ALIGN_CENTER);
+        }
 
         on_cursor_position_changed();
         on_save_path_changed();
+        on_layer_resolution_changed();
 
         auto tooltip = [](const std::string& value) {
             return state::tooltips_file->get_value("log_box", value);
@@ -39,6 +43,7 @@ namespace mousetrap
         _current_save_path_label.set_tooltip_text(tooltip("current_save_path"));
         _current_color_label.set_tooltip_text(tooltip("current_color"));
         _cursor_position_label.set_tooltip_text(tooltip("cursor_position"));
+        _current_resolution_label.set_tooltip_text(tooltip("current_resolution"));
     }
 
     void LogBox::on_cursor_position_changed()
@@ -74,11 +79,9 @@ namespace mousetrap
 
         if (pos.x < 0 or pos.y < 0 or pos.x >= frame->get_size().x or pos.y >= frame->get_size().y)
         {
-            _current_color_label.set_visible(false);
+            _current_color_label.set_text("HSVA(<tt>?</tt>, <tt>?</tt>, <tt>?</tt>, <tt>?</tt>)");
             return;
         }
-        else
-            _current_color_label.set_visible(true);
 
         HSVA color;
         if (color_rgba.a == 0)
@@ -106,8 +109,6 @@ namespace mousetrap
         auto y_value = abs(position.y);
 
         std::stringstream str;
-        //str << "(" << "<tt>" << x_sign << (x_value < 10 ? "0" : "") << x_value << "</tt>"
-        //    << " " << "<tt>" << y_sign << (y_value < 10 ? "0" : "") << y_value << "</tt>)";
 
         str << "( " << "<tt>" << x_value << "</tt>"
             << " | " << "<tt>" << y_value << "</tt> )";
@@ -152,5 +153,17 @@ namespace mousetrap
     LogBox::operator Widget*()
     {
         return &_main;
+    }
+
+    void LogBox::on_layer_resolution_changed()
+    {
+        set_layer_resolution(active_state->get_layer_resolution());
+    }
+
+    void LogBox::set_layer_resolution(Vector2ui size)
+    {
+        std::stringstream str;
+        str << "[<tt>" << size.x << "</tt>, <tt>" << size.y << "</tt>]";
+        _current_resolution_label.set_text(str.str());
     }
 }

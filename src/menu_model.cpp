@@ -6,6 +6,8 @@
 #include <include/get_resource_path.hpp>
 #include <include/menu_model.hpp>
 
+#include <iostream>
+
 namespace mousetrap
 {
     MenuModel::MenuModel()

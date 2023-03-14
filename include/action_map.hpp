@@ -26,5 +26,3 @@ namespace mousetrap
             std::unordered_map<ActionID, Action> _actions;
     };
 }
-
-#include <src/action_map.inl>

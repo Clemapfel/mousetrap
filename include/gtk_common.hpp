@@ -44,6 +44,3 @@ extern "C"
         VERTICAL_RESIZE = ROW_RESIZE,
     };
 }
-
-
-#include <src/gtk_common.inl>

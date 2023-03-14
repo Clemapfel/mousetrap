@@ -10,6 +10,7 @@
 #include <include/signal_emitter.hpp>
 #include <include/menu_model.hpp>
 #include <include/action_map.hpp>
+#include <include/window.hpp>
 
 #include <string>
 
@@ -33,5 +34,3 @@ namespace mousetrap
             GtkApplication* _native;
     };
 }
-
-#include <src/application.inl>

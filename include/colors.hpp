@@ -78,5 +78,3 @@ namespace mousetrap
 
     static inline const RGBA YELLOW = RGBA(1, 232 / 255.f, 15 / 255.f, 1);
 }
-
-#include <src/colors.inl>

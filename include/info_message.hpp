@@ -67,4 +67,17 @@ namespace mousetrap
     };
 }
 
-#include <src/info_message.inl>
+namespace mousetrap
+{
+    template<typename Function_t, typename Data_t>
+    void InfoMessage::connect_signal_hide(Function_t f_in, Data_t data_in)
+    {
+        _on_hide_f = [f = f_in, data = data_in, instance = this](){
+
+            if (instance->_on_hide_blocked)
+                return;
+
+            f(instance, data);
+        };
+    }
+}

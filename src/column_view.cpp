@@ -4,6 +4,7 @@
 //
 
 #include <include/column_view.hpp>
+#include <iostream>
 
 namespace mousetrap::detail
 {

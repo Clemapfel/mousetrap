@@ -21,5 +21,3 @@ namespace mousetrap
             void set_has_frame(bool);
     };
 }
-
-#include <src/entry.inl>

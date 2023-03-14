@@ -39,5 +39,3 @@ namespace mousetrap
             float _rads;
     };
 }
-
-#include <src/angle.inl>

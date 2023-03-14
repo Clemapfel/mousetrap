@@ -22,5 +22,3 @@ namespace mousetrap
             void remove_child();
     };
 }
-
-#include <src/aspect_frame.inl>

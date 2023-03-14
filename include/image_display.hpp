@@ -24,5 +24,3 @@ namespace mousetrap
             Vector2ui _size;
     };
 }
-
-#include <src/image_display.inl>

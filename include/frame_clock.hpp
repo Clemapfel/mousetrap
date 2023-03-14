@@ -7,6 +7,8 @@
 
 #include <gtk/gtk.h>
 #include <include/time.hpp>
+#include <include/signal_emitter.hpp>
+#include <include/signal_component.hpp>
 
 namespace mousetrap
 {
@@ -33,5 +35,3 @@ namespace mousetrap
             GdkFrameClock* _native = nullptr;
     };
 }
-
-#include <src/frame_clock.inl>

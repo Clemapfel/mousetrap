@@ -62,5 +62,3 @@ namespace mousetrap
             GKeyFile* _native;
     };
 }
-
-#include <src/key_file.inl>

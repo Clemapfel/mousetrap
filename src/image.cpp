@@ -4,6 +4,7 @@
 //
 
 #include <include/image.hpp>
+#include <iostream>
 
 namespace mousetrap
 {

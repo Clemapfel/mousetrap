@@ -42,5 +42,3 @@ namespace mousetrap
             static gboolean on_window_close(GtkWindow*, DetachableBox* instance);
     };
 }
-
-#include <src/detachable_box.inl>

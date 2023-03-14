@@ -29,9 +29,7 @@
 #include <include/label.hpp>
 #include <include/texture.hpp>
 #include <include/image.hpp>
-#include <include/subimage.hpp>
 #include <include/frame.hpp>
-#include <include/pixel_buffer.hpp>
 #include <include/scrollbar.hpp>
 #include <include/adjustment.hpp>
 #include <include/flow_box.hpp>

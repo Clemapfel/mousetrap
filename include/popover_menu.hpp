@@ -27,4 +27,3 @@ namespace mousetrap
     };
 }
 
-#include <src/popover_menu.inl>

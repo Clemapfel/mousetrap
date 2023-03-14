@@ -28,5 +28,3 @@ namespace mousetrap
     Vector2f to_gl_distance(Vector2f);
     Vector2f from_gl_distance(Vector2f);
 }
-
-#include <src/gl_common.inl>

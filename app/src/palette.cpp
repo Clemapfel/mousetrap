@@ -1,5 +1,6 @@
 #include <app/palette.hpp>
 #include <include/key_file.hpp>
+#include <iostream>
 
 namespace mousetrap
 {

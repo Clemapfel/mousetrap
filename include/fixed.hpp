@@ -21,5 +21,3 @@ namespace mousetrap
             Vector2f get_child_position(Widget*);
     };
 }
-
-#include <src/fixed.inl>

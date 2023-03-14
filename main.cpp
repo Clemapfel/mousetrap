@@ -117,7 +117,7 @@ static void activate(GtkApplication* app, void*)
     };
 
     show_color_picker_click_ec->connect_signal_click_pressed(show_color_picker, color_picker_window);
-    color_preview->add_controller(show_color_picker_click_ec);
+    //color_preview->add_controller(show_color_picker_click_ec);
 
     float color_picker_width = 25 * state::margin_unit;
     float color_swapper_height = 8 * state::margin_unit;
@@ -148,16 +148,16 @@ static void activate(GtkApplication* app, void*)
     preview_swapper_box.push_back(color_swapper);
     preview_swapper_box.push_back(color_preview);
 
-    color_preview_frame.set_start_child(&preview_swapper_box);
-
     auto color_preview_frame_buffer = SeparatorLine();
     color_preview_frame_buffer.set_expand(false);
     color_preview_frame_buffer.set_size_request({1, 1});
     color_preview_frame_buffer.set_opacity(0);
+
     color_preview_frame.set_end_child(&color_preview_frame_buffer);
+    color_preview_frame.set_start_child(verbose_color_picker);
 
     left_column_paned_bottom.push_back(&color_preview_frame);
-    left_column_paned_bottom.push_back(verbose_color_picker);
+    left_column_paned_bottom.push_back(&preview_swapper_box);
 
     auto left_column_paned = Paned(GTK_ORIENTATION_VERTICAL);
     left_column_paned.set_start_child(&left_column_paned_top);
@@ -191,8 +191,12 @@ static void activate(GtkApplication* app, void*)
 
     auto right_column_paned = Paned(GTK_ORIENTATION_VERTICAL);
     right_column_paned.set_start_child(&right_column_paned_top);
-    right_column_paned.set_end_child(layer_view);
 
+    auto layer_view_paned = Paned(GTK_ORIENTATION_VERTICAL);
+    layer_view_paned.set_start_child(layer_view);
+    layer_view_paned.set_start_child_shrinkable(false);
+
+    right_column_paned.set_end_child(&layer_view_paned);
     right_column_paned.set_position(-10e6); // fully extend layer view
 
     auto main_paned = Paned(GTK_ORIENTATION_HORIZONTAL);
@@ -200,12 +204,11 @@ static void activate(GtkApplication* app, void*)
     main_paned.set_start_child(&left_and_center_and_frame_view_paned);
     main_paned.set_end_child(&right_column_paned);
 
-    auto main_logbox = Paned(GTK_ORIENTATION_VERTICAL);
-    main_logbox.set_start_child(&main_paned);
-    //main_logbox.set_end_child(log_box);
-    main_logbox.set_end_child_resizable(false);
-    main_logbox.set_start_child_shrinkable(false);
-    log_box->set_vexpand(false);
+    auto main_logbox = Box(GTK_ORIENTATION_VERTICAL);
+    main_logbox.push_back(&main_paned);
+    main_logbox.push_back(log_box);
+    //main_logbox.set_end_child_resizable(false);
+    //main_logbox.set_start_child_shrinkable(false);
     //main_logbox.set_has_wide_handle(false);
 
     auto main = Box(GTK_ORIENTATION_VERTICAL);
@@ -235,7 +238,7 @@ static void activate(GtkApplication* app, void*)
     canvas_export->set_can_respond_to_input(false);
     canvas_export->set_opacity(1);
 
-    bubble_log_overlay.add_overlay(bubble_log);
+    //bubble_log_overlay.add_overlay(bubble_log);
     // MAIN
 
     state::main_window->set_child(&bubble_log_overlay);
