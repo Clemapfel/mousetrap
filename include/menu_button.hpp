@@ -8,78 +8,30 @@
 #include <include/widget.hpp>
 #include <include/menu_model.hpp>
 #include <include/popover.hpp>
+#include <include/popover_menu.hpp>
 
 namespace mousetrap
 {
-    class MenuButton : public Widget
+    class MenuButton : public WidgetImplementation<GtkMenuButton>
     {
         public:
             MenuButton();
 
-            operator GtkWidget*();
             void set_child(Widget*);
-            void set_model(MenuModel*);
 
             void set_popover_position(GtkPositionType);
             void set_popover(Popover*);
+            void set_popover(PopoverMenu*);
 
             void set_always_show_arrow(bool);
+            void set_has_frame(bool);
 
             void popup();
             void popdown();
 
         private:
-            GtkMenuButton* _native;
+            void set_model(MenuModel*);
     };
 }
 
-//#include <src/menu_button.inl>
-
-namespace mousetrap
-{
-    MenuButton::MenuButton()
-    {
-        _native = GTK_MENU_BUTTON(gtk_menu_button_new());
-        gtk_menu_button_set_always_show_arrow(_native, true);
-    }
-
-    MenuButton::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
-
-    void MenuButton::set_child(Widget* widget)
-    {
-        gtk_menu_button_set_child(_native, widget->operator GtkWidget*());
-    }
-
-    void MenuButton::set_model(MenuModel* model)
-    {
-        gtk_menu_button_set_menu_model(_native, model->operator GMenuModel*());
-    }
-
-    void MenuButton::set_popover_position(GtkPositionType type)
-    {
-        gtk_popover_set_position(gtk_menu_button_get_popover(_native), type);
-    }
-
-    void MenuButton::set_popover(Popover* popover)
-    {
-        gtk_menu_button_set_popover(_native, popover->operator GtkWidget*());
-    }
-
-    void MenuButton::popup()
-    {
-        gtk_menu_button_popup(_native);
-    }
-
-    void MenuButton::popdown()
-    {
-        gtk_menu_button_popdown(_native);
-    }
-
-    void MenuButton::set_always_show_arrow(bool b)
-    {
-        gtk_menu_button_set_always_show_arrow(_native, b);
-    }
-}
+#include <src/menu_button.inl>

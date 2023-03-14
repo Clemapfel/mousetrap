@@ -11,12 +11,10 @@
 
 namespace mousetrap
 {
-    class GLArea : public Widget
+    class GLArea : public WidgetImplementation<GtkGLArea>, public HasRenderSignal<GLArea>, public HasResizeSignal<GLArea>
     {
         public:
             GLArea();
-
-            operator GtkWidget*() override;
 
             void add_render_task(Shape*, Shader* = nullptr, GLTransform* = nullptr);
             void add_render_task(RenderTask);
@@ -26,13 +24,9 @@ namespace mousetrap
             void make_current();
 
         private:
-            void on_resize(GtkGLArea* area, gint width, gint height);
-            gboolean on_render(GtkGLArea*, GdkGLContext*);
+            static void on_resize(GLArea* area, gint width, gint height, void*);
+            static gboolean on_render(GLArea*, GdkGLContext*, void*);
 
-            static gboolean on_render_wrapper(void* area, void* context, void* instance);
-            static void on_resize_wrapper(GtkGLArea* area, gint width, gint height, void* instance);
-
-            GtkGLArea* _native;
             std::vector<RenderTask> _render_tasks;
     };
 }

@@ -12,12 +12,10 @@ namespace mousetrap
 {
     using StackID = size_t;
 
-    class Stack : public Widget
+    class Stack : public WidgetImplementation<GtkStack>
     {
         public:
             Stack();
-
-            operator GtkWidget*() override;
 
             StackID add_child(Widget*, const std::string& title);
             void remove_child(StackID);
@@ -34,28 +32,18 @@ namespace mousetrap
         private:
             size_t _current_id = 0;
             std::map<StackID, Widget*> _id_to_widget;
-
-            GtkStack* _native;
     };
 
-    class StackSidebar : public Widget
+    class StackSidebar : public WidgetImplementation<GtkStackSidebar>
     {
         public:
             StackSidebar(Stack*);
-            operator GtkWidget*() override;
-
-        private:
-            GtkStackSidebar* _native;
     };
 
-    class StackSwitcher : public Widget
+    class StackSwitcher : public WidgetImplementation<GtkStackSwitcher>
     {
         public:
             StackSwitcher(Stack*);
-            operator GtkWidget*() override;
-
-        private:
-            GtkStackSwitcher* _native;
     };
 }
 

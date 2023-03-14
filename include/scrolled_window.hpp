@@ -6,31 +6,35 @@
 #pragma once
 
 #include <include/widget.hpp>
+#include <include/adjustment.hpp>
 
 namespace mousetrap
 {
-    class ScrolledWindow : public Widget
+    class ScrolledWindow : public WidgetImplementation<GtkScrolledWindow>
     {
         public:
             ScrolledWindow();
-
-            operator GtkWidget*() override;
 
             void set_min_content_width(float);
             void set_min_content_height(float);
             void set_max_content_width(float);
             void set_max_content_height(float);
 
+            void set_propagate_natural_height(bool);
+            void set_propagate_natural_width(bool);
+
             void set_policy(GtkPolicyType horizontal, GtkPolicyType vertical);
             void set_placement(GtkCornerType content_relative_to_scrollbars);
             void set_has_frame(bool);
 
+            void set_hadjustment(Adjustment&);
+            Adjustment get_hadjustment();
+            void set_vadjustment(Adjustment&);
+            Adjustment get_vadjustment();
+
             void set_kinetic_scrolling_enabled(bool);
 
             void set_child(Widget*);
-
-        private:
-            GtkScrolledWindow* _native;
     };
 }
 

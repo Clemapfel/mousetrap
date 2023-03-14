@@ -7,50 +7,38 @@
 
 #include <gdk/gdk.h>
 #include <include/widget.hpp>
-#include <include/shortcut_map.hpp>
 
 namespace mousetrap
 {
-    class Window : public Widget, public ShortcutMap
+    class Window : public WidgetImplementation<GtkWindow>, public HasCloseSignal<Window>
     {
         public:
             Window();
             Window(GtkWindow*);
 
-            operator GtkWidget*() override;
-
             void set_maximized(bool);
             void set_fullscreen(bool);
 
             void present();
+            void set_show_menubar(bool);
+            void close();
 
             void set_child(Widget*);
             void remove_child();
 
             void set_focused_widget(Widget*);
+            void set_hide_on_close(bool);
+            void set_destroy_with_parent(bool);
 
-            void register_global_shortcut(ShortcutMap*, const std::string& shortcut_id, std::function<void(void*)>, void*);
-            void unregister_global_shortcut(const std::string& shortcut_id);
+            void set_title(const std::string&);
 
-        private:
-            GtkWindow* _native;
-            using ShortcutID = std::string;
+            // https://docs.gtk.org/gtk4/property.Settings.gtk-decoration-layout.html
+            void set_titlebar_layout(const char*);
+            void set_titlebar_widget(Widget*);
 
-            struct GlobalShortcut
-            {
-                ShortcutID id;
-                GtkShortcutTrigger* trigger;
-                std::function<void(void*)> action;
-                void* argument;
-                bool shift = false;
-                bool control = false;
-                bool alt = false;
-            };
-
-            static inline std::vector<GlobalShortcut> _global_shortcuts;
-
-            static gboolean on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void*);
-            static inline KeyEventController* _global_shortcut_controller = nullptr;
+            void set_modal(bool);
+            void set_transient_for(Window* partner);
+            void set_decorated(bool);
     };
 }
 

@@ -25,18 +25,22 @@ namespace mousetrap
             Shape();
             ~Shape();
 
+            void as_point(Vector2f);
+            void as_points(const std::vector<Vector2f>&);
             void as_triangle(Vector2f a, Vector2f b, Vector2f c);
             void as_rectangle(Vector2f top_left, Vector2f size);
             void as_rectangle(Vector2f, Vector2f, Vector2f, Vector2f);
             void as_circle(Vector2f center, float radius, size_t n_outer_vertices);
+            void as_ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices);
             void as_line(Vector2f a, Vector2f b);
-            void as_line_strip(std::vector<Vector2f>);
-            void as_polygon(std::vector<Vector2f> positions); // bounding polygon
-
-            void as_wireframe(std::vector<Vector2f>);         // bounding polygon
+            void as_lines(const std::vector<std::pair<Vector2f, Vector2f>>&);
+            void as_line_strip(const std::vector<Vector2f>&);
+            void as_polygon(const std::vector<Vector2f>& positions);
+            void as_rectangle_frame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width);
+            void as_circular_ring(Vector2f center, float outer_radius, float thickness, size_t n_outer_vertices);
+            void as_elliptic_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices);
+            void as_wireframe(const std::vector<Vector2f>&);
             void as_wireframe(const Shape&);
-
-            void as_frame(Vector2f top_left, Vector2f size, float x_width, float y_width);
 
             void render(Shader& shader, GLTransform transform);
 
@@ -53,9 +57,11 @@ namespace mousetrap
 
             void set_color(RGBA);
 
+            void set_visible(bool);
+            bool get_visible() const;
+
             Rectangle get_bounding_box() const;
             Vector2f get_size() const;
-            void set_size(Vector2f);
 
             void set_centroid(Vector2f);
             Vector2f get_centroid() const;
@@ -65,8 +71,8 @@ namespace mousetrap
 
             void rotate(Angle);
 
-            void set_texture(TextureObject*);
-            TextureObject* get_texture();
+            void set_texture(const TextureObject*);
+            const TextureObject* get_texture();
 
         protected:
             struct Vertex
@@ -81,6 +87,7 @@ namespace mousetrap
             };
 
             RGBA _color = RGBA(1, 1, 1, 1);
+            bool _visible = true;
 
             std::vector<Vertex> _vertices;
             std::vector<int> _indices;
@@ -112,8 +119,6 @@ namespace mousetrap
             GLNativeHandle _vertex_array_id = 0,
                     _vertex_buffer_id = 0;
 
-            TextureObject* _texture = nullptr;
+            const TextureObject* _texture = nullptr;
     };
 }
-
-#include <src/shape.inl>

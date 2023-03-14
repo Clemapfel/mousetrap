@@ -3,35 +3,31 @@
 // Created on 9/16/22 by clem (mail@clemens-cords.com)
 //
 
+#include "include/check_button.hpp"
+
 namespace mousetrap
 {
-    CheckButton::CheckButton()
+    inline CheckButton::CheckButton()
+        : WidgetImplementation<GtkCheckButton>(GTK_CHECK_BUTTON(gtk_check_button_new())), HasToggledSignal<CheckButton>(this)
+    {}
+
+    inline bool CheckButton::get_active()
     {
-        _native = GTK_CHECK_BUTTON(gtk_check_button_new());
+        return gtk_check_button_get_active(get_native());
     }
 
-    CheckButton::operator GtkWidget*()
+    inline void CheckButton::set_active(bool b)
     {
-        return GTK_WIDGET(_native);
+        gtk_check_button_set_active(get_native(), b);
     }
 
-    bool CheckButton::get_is_checked()
+    inline bool CheckButton::get_is_inconsistent()
     {
-        return gtk_check_button_get_active(_native);
+        return gtk_check_button_get_inconsistent(get_native());
     }
 
-    void CheckButton::set_is_checked(bool b)
+    inline void CheckButton::set_is_inconsistent(bool b)
     {
-        gtk_check_button_set_active(_native, b);
-    }
-
-    bool CheckButton::get_is_inconsistent()
-    {
-        return gtk_check_button_get_inconsistent(_native);
-    }
-
-    void CheckButton::set_is_inconsistent(bool b)
-    {
-        gtk_check_button_set_inconsistent(_native, b);
+        gtk_check_button_set_inconsistent(get_native(), b);
     }
 }

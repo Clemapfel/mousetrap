@@ -5,33 +5,56 @@
 
 namespace mousetrap
 {
-    SpinButton::SpinButton(float min, float max, float step)
+    inline SpinButton::SpinButton(float min, float max, float step)
+        : WidgetImplementation<GtkSpinButton>(GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(min, max, step))),
+          HasValueChangedSignal<SpinButton>(this)
+    {}
+
+    inline void SpinButton::set_value(float value)
     {
-        _native = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(min, max, step));
+        gtk_spin_button_set_value(get_native(), value);
     }
 
-    SpinButton::operator GtkWidget*()
+    inline float SpinButton::get_value()
     {
-        return GTK_WIDGET(_native);
+        return gtk_spin_button_get_value(get_native());
     }
 
-    void SpinButton::set_value(float value)
+    inline void SpinButton::set_digits(size_t n)
     {
-        gtk_spin_button_set_value(_native, value);
+        gtk_spin_button_set_digits(get_native(), n);
     }
 
-    float SpinButton::get_value()
+    inline void SpinButton::set_wrap(bool b)
     {
-        return gtk_spin_button_get_value(_native);
+        gtk_spin_button_set_wrap(get_native(), b);
     }
 
-    void SpinButton::set_digits(size_t n)
+    inline void SpinButton::set_lower_limit(float v)
     {
-        gtk_spin_button_set_digits(_native, n);
+        double min, max;
+        gtk_spin_button_get_range(get_native(), &min, &max);
+        gtk_spin_button_set_range(get_native(), v, max);
     }
 
-    void SpinButton::set_wrap(bool b)
+    inline float SpinButton::get_lower_limit()
     {
-        gtk_spin_button_set_wrap(_native, b);
+        double min, max;
+        gtk_spin_button_get_range(get_native(), &min, &max);
+        return min;
+    }
+
+    inline void SpinButton::set_upper_limit(float v)
+    {
+        double min, max;
+        gtk_spin_button_get_range(get_native(), &min, &max);
+        gtk_spin_button_set_range(get_native(), min, v);
+    }
+
+    inline float SpinButton::get_upper_limit()
+    {
+        double min, max;
+        gtk_spin_button_get_range(get_native(), &min, &max);
+        return max;
     }
 }

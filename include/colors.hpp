@@ -34,7 +34,7 @@ namespace mousetrap
         explicit operator HSVA() const;
 
         float to_grayscale() const;
-        explicit operator std::string();
+        explicit operator std::string() const;
 
         bool operator==(const RGBA& other);
         bool operator!=(const RGBA& other);
@@ -60,7 +60,7 @@ namespace mousetrap
         operator RGBA() const;
 
         float to_grayscale() const;
-        explicit operator std::string();
+        explicit operator std::string() const;
 
         bool operator==(const HSVA& other);
         bool operator!=(const HSVA& other);
@@ -70,6 +70,11 @@ namespace mousetrap
     glm::vec4 hsva_to_rgba(glm::vec4);
 
     RGBA html_code_to_rgba(const std::string& code);
+
+    RGBA quantize(RGBA in, size_t n_values_per_component);
+    HSVA quantize(HSVA in, size_t n_values_per_component);
+    RGBA invert(RGBA in);
+    HSVA invert(HSVA in);
 
     static inline const RGBA YELLOW = RGBA(1, 232 / 255.f, 15 / 255.f, 1);
 }

@@ -9,6 +9,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 namespace mousetrap
 {
@@ -20,6 +21,8 @@ namespace mousetrap
 
             template<typename Function_t>
             void connect_signal(const std::string& signal_id, Function_t*, void* data = nullptr);
+
+            std::vector<std::string> get_all_signal_names();
 
             virtual operator GObject*() = 0;
 

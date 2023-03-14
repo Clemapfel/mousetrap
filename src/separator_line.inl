@@ -5,13 +5,12 @@
 
 namespace mousetrap
 {
-    SeparatorLine::SeparatorLine(GtkOrientation orientation)
+    inline SeparatorLine::SeparatorLine(GtkOrientation orientation)
+        : WidgetImplementation<GtkSeparator>(GTK_SEPARATOR(gtk_separator_new(orientation)))
     {
-        _native = GTK_SEPARATOR(gtk_separator_new(orientation));
-    }
-
-    SeparatorLine::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
+        if (orientation == GTK_ORIENTATION_HORIZONTAL)
+            set_hexpand(true);
+        else
+            set_vexpand(true);
     }
 }

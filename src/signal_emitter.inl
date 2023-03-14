@@ -5,9 +5,11 @@
 
 #pragma once
 
+#include <iostream>
+
 namespace mousetrap
 {
-    void SignalEmitter::set_signal_blocked(const std::string& signal_id, bool b)
+    inline void SignalEmitter::set_signal_blocked(const std::string& signal_id, bool b)
     {
         auto it = _signal_handlers.find(signal_id);
 
@@ -36,7 +38,7 @@ namespace mousetrap
         }
     }
 
-    void SignalEmitter::set_all_signals_blocked(bool b)
+    inline void SignalEmitter::set_all_signals_blocked(bool b)
     {
         for (auto& pair: _signal_handlers)
             set_signal_blocked(pair.first, b);
@@ -47,5 +49,17 @@ namespace mousetrap
     {
         auto handler_id = g_signal_connect(operator GObject*(), signal_id.c_str(), G_CALLBACK(function), data);
         _signal_handlers.insert_or_assign(signal_id, SignalHandler{handler_id});
+    }
+
+    inline std::vector<std::string>SignalEmitter::get_all_signal_names()
+    {
+        std::vector<std::string> out;
+        guint n;
+        auto* ids = g_signal_list_ids(gtk_file_chooser_get_type(), &n);
+        for (size_t i = 0; i < n; ++i)
+            out.emplace_back(g_signal_name(ids[i]));
+
+        g_free(ids);
+        return out;
     }
 }

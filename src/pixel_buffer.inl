@@ -5,7 +5,7 @@
 
 namespace mousetrap
 {
-    PixelBuffer::PixelBuffer(size_t width, size_t height)
+    inline PixelBuffer::PixelBuffer(size_t width, size_t height)
             : _size(width, height)
     {
         glGenBuffers(1, &_native_handle);
@@ -29,17 +29,17 @@ namespace mousetrap
         unbind();
     }
 
-    PixelBuffer::~PixelBuffer()
+    inline PixelBuffer::~PixelBuffer()
     {
         glDeleteBuffers(1, &_native_handle);
     }
 
-    float* PixelBuffer::get_data()
+    inline float* PixelBuffer::get_data()
     {
         return _cache;
     }
 
-    void PixelBuffer::bind() const
+    inline void PixelBuffer::bind() const
     {
         if (_bound)
             return;
@@ -57,30 +57,30 @@ namespace mousetrap
         _bound = true;
     }
 
-    void PixelBuffer::unbind() const
+    inline void PixelBuffer::unbind() const
     {
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
         _bound = false;
     }
 
-    void PixelBuffer::flush() const
+    inline void PixelBuffer::flush() const
     {
         bind();
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
         unbind();
     }
 
-    Vector2ui PixelBuffer::get_size() const
+    inline Vector2ui PixelBuffer::get_size() const
     {
         return _size;
     }
 
-    size_t PixelBuffer::to_linear_index(size_t x, size_t y)
+    inline size_t PixelBuffer::to_linear_index(size_t x, size_t y)
     {
         return y * (_size.x * 4) + (x * 4);
     }
 
-    void PixelBuffer::set_pixel(size_t x, size_t y, RGBA color)
+    inline void PixelBuffer::set_pixel(size_t x, size_t y, RGBA color)
     {
         auto i = to_linear_index(x, y);
         if (i >= _size.x * _size.y * 4)
@@ -95,7 +95,7 @@ namespace mousetrap
         _cache[i+3] = color.a;
     }
 
-    void PixelBuffer::set_pixel(size_t i, RGBA color)
+    inline void PixelBuffer::set_pixel(size_t i, RGBA color)
     {
         if (i >= _size.x * _size.y * 4)
         {
@@ -109,7 +109,7 @@ namespace mousetrap
         _cache[i+3] = color.a;
     }
 
-    RGBA PixelBuffer::get_pixel(size_t x, size_t y)
+    inline RGBA PixelBuffer::get_pixel(size_t x, size_t y)
     {
         auto i = to_linear_index(x, y);
 

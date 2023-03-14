@@ -9,11 +9,10 @@
 
 namespace mousetrap
 {
-    class Expander : public Widget
+    class Expander : public WidgetImplementation<GtkExpander>, public HasActivateSignal<Expander>
     {
         public:
             Expander(const std::string&);
-            operator GtkWidget*() override;
 
             void set_child(Widget*);
 
@@ -22,48 +21,7 @@ namespace mousetrap
 
             bool get_expanded();
             void set_expanded(bool);
-
-        private:
-            GtkExpander* _native;
     };
 }
 
-// ###
-
-namespace mousetrap
-{
-    Expander::Expander(const std::string& title)
-    {
-        _native = GTK_EXPANDER(gtk_expander_new(title.c_str()));
-    }
-
-    Expander::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_native);
-    }
-
-    void Expander::set_child(Widget* widget)
-    {
-        gtk_expander_set_child(_native, widget->operator GtkWidget*());
-    }
-
-    bool Expander::get_expanded()
-    {
-        gtk_expander_get_expanded(_native);
-    }
-
-    void Expander::set_expanded(bool b)
-    {
-        gtk_expander_set_expanded(_native, b);
-    }
-
-    void Expander::set_label_widget(Widget* widget)
-    {
-        gtk_expander_set_label_widget(_native, widget->operator GtkWidget*());
-    }
-
-    void Expander::set_resize_toplevel(bool b)
-    {
-        gtk_expander_set_resize_toplevel(_native, b);
-    }
-}
+#include <src/expander.inl>

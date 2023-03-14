@@ -12,7 +12,7 @@
 
 #include <include/vector.hpp>
 
-static inline bool GL_INITIALIZED = false;
+inline bool GL_INITIALIZED = false;
 using GLNativeHandle = GLuint;
 
 namespace mousetrap

@@ -7,29 +7,24 @@
 
 namespace mousetrap
 {
-    Revealer::Revealer(TransitionType type)
+    inline Revealer::Revealer(TransitionType type)
+        : WidgetImplementation(GTK_REVEALER(gtk_revealer_new()))
     {
-        _native = GTK_REVEALER(gtk_revealer_new());
-        gtk_revealer_set_reveal_child(_native, true);
+        gtk_revealer_set_reveal_child(get_native(), true);
         set_transition_type(type);
     }
 
-    Revealer::operator GtkWidget*()
+    inline void Revealer::set_child(Widget* widget)
     {
-        return GTK_WIDGET(_native);
+        gtk_revealer_set_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 
-    void Revealer::set_child(Widget* widget)
+    inline void Revealer::set_revealed(bool b)
     {
-        gtk_revealer_set_child(_native, widget->operator GtkWidget*());
-    }
-
-    void Revealer::set_revealed(bool b)
-    {
-        gtk_revealer_set_reveal_child(_native, b);
+        gtk_revealer_set_reveal_child(get_native(), b);
 
         // trigger parent container reorder
-        auto* child = gtk_revealer_get_child(_native);
+        auto* child = gtk_revealer_get_child(get_native());
         auto h = gtk_widget_get_hexpand(child);
         auto v = gtk_widget_get_vexpand(child);
         gtk_widget_set_hexpand(child, not h);
@@ -38,13 +33,13 @@ namespace mousetrap
         gtk_widget_set_vexpand(child, v);
     }
 
-    bool Revealer::get_revealed()
+    inline bool Revealer::get_revealed() const
     {
-        gtk_revealer_get_reveal_child(_native);
+        return gtk_revealer_get_reveal_child(get_native());
     }
 
-    void Revealer::set_transition_type(TransitionType type)
+    inline void Revealer::set_transition_type(TransitionType type)
     {
-        gtk_revealer_set_transition_type(_native, (GtkRevealerTransitionType) type);
+        gtk_revealer_set_transition_type(get_native(), (GtkRevealerTransitionType) type);
     }
 }

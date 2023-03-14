@@ -6,7 +6,7 @@
 #include <include/gl_common.hpp>
 #include <iostream>
 
-bool gtk_initialize_opengl(GtkWindow* window)
+inline bool gtk_initialize_opengl(GtkWindow* window)
 {
     bool failed = false;
     auto *gdk_window = gtk_widget_get_display(GTK_WIDGET(window));
@@ -30,28 +30,24 @@ bool gtk_initialize_opengl(GtkWindow* window)
 
     gdk_gl_context_make_current(context);
 
-    glewExperimental = GL_TRUE;
+    glewExperimental = GL_FALSE;
     GLenum glewError = glewInit();
-    if (glewError != GLEW_OK)
+    if (glewError != GLEW_NO_ERROR)
     {
-        failed = true;
-        std::cerr << "[ERROR] In glewInit: " << glewGetErrorString(glewError) << std::endl;
+        std::cerr << "[WARNING] In glewInit: Unable to initialize glew " << "(" << glewError << ") ";
+
+        if (glewError == GLEW_ERROR_NO_GL_VERSION)
+            std::cerr << "Missing GL version" << std::endl;
+        else if (glewError == GLEW_ERROR_GL_VERSION_10_ONLY)
+            std::cerr << "Need at least OpenGL 1.1" << std::endl;
+        else if (glewError == GLEW_ERROR_GLX_VERSION_11_ONLY)
+            std::cerr << "Need at least GLX 1.2" << std::endl;
+        else if (glewError == GLEW_ERROR_NO_GLX_DISPLAY)
+            std::cerr << "Need GLX Display for GLX support. Are you on Wayland?" << std::endl;
     }
 
-    GL_INITIALIZED = not failed;
+    GL_INITIALIZED = true;
     return not failed;
 }
 
-/*
-void gtk_widget_get_size(GtkWidget* widget, int* w, int* h)
-{
-    GtkAllocation* allocation = new GtkAllocation();
-    gtk_widget_get_allocation(widget, allocation);
 
-    if (w != nullptr)
-        *w = allocation->width;
-
-    if (h != nullptr)
-        *h = allocation->height;
-}
-*/

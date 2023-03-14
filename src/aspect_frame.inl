@@ -5,38 +5,32 @@
 
 namespace mousetrap
 {
-    void AspectFrame::set_child(Widget* child)
+    inline void AspectFrame::set_child(Widget* child)
     {
-        gtk_aspect_frame_set_child(_native, child->operator GtkWidget*());
+        gtk_aspect_frame_set_child(get_native(), child == nullptr ? nullptr : child->operator GtkWidget*());
     }
 
-    void AspectFrame::remove_child()
+    inline void AspectFrame::remove_child()
     {
-        gtk_aspect_frame_set_child(_native, nullptr);
+        gtk_aspect_frame_set_child(get_native(), nullptr);
     }
 
-    AspectFrame::operator GtkWidget*()
+    inline AspectFrame::AspectFrame(float ratio, float x_align, float y_align, bool obey_child)
+        : WidgetImplementation<GtkAspectFrame>(GTK_ASPECT_FRAME(gtk_aspect_frame_new(x_align, y_align, ratio, obey_child)))
+    {}
+
+    inline void AspectFrame::set_ratio(float new_ratio)
     {
-        return GTK_WIDGET(_native);
+        gtk_aspect_frame_set_ratio(get_native(), new_ratio);
     }
 
-    AspectFrame::AspectFrame(float ratio, float x_align, float y_align, bool obey_child)
+    inline void AspectFrame::set_child_xalign(float x)
     {
-        _native = GTK_ASPECT_FRAME(gtk_aspect_frame_new(x_align, y_align, ratio, obey_child));
+        gtk_aspect_frame_set_xalign(get_native(), x);
     }
 
-    void AspectFrame::set_ratio(float new_ratio)
+    inline void AspectFrame::set_child_yalign(float x)
     {
-        gtk_aspect_frame_set_ratio(_native, new_ratio);
-    }
-
-    void AspectFrame::set_child_xalign(float x)
-    {
-        gtk_aspect_frame_set_xalign(_native, x);
-    }
-
-    void AspectFrame::set_child_yalign(float x)
-    {
-        gtk_aspect_frame_set_yalign(_native, x);
+        gtk_aspect_frame_set_yalign(get_native(), x);
     }
 }

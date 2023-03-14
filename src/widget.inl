@@ -4,22 +4,80 @@
 //
 
 #include <iostream>
+#include <sstream>
 
 namespace mousetrap
 {
-    Widget::operator GObject*()
+    inline Widget::operator GObject*()
     {
         return G_OBJECT(operator GtkWidget*());
     }
 
-    Vector2f Widget::get_size_request()
+    inline Widget::operator GtkWidget*() const
+    {
+        return GTK_WIDGET(_native);
+    }
+
+    template<typename T>
+    Widget::Widget(T* in)
+        : HasRealizeSignal<Widget>(this), HasMapSignal<Widget>(this), HasShowSignal<Widget>(this)
+    {
+        _native = g_object_ref(GTK_WIDGET(in));
+    }
+
+    template<typename T>
+    WidgetImplementation<T>::WidgetImplementation(T* in)
+        : Widget(in)
+    {
+        if (not GTK_IS_WIDGET(in))
+            throw std::invalid_argument("[FATAL] In WidgetImplementation::WidgetImplementation(T*): Object is not a widget.");
+    }
+
+    template<typename T>
+    WidgetImplementation<T>::operator T*() const
+    {
+        return (T*) Widget::operator GtkWidget*();
+    }
+
+    template<typename T>
+    T* WidgetImplementation<T>::get_native() const
+    {
+        return (T*) Widget::operator GtkWidget*();
+    }
+
+    template<typename GObject_t>
+    void Widget::add_reference(GObject_t* ref)
+    {
+        if (not G_IS_OBJECT(ref))
+            throw std::invalid_argument("[FATAL] In Widget::add_reference: Attempting to increase the reference count on an object that does not support it.");
+
+        _refs.push_back(g_object_ref(G_OBJECT(ref)));
+    }
+
+    inline void Widget::override_native(GtkWidget* new_native)
+    {
+        auto* old_native = _native;
+        _native = g_object_ref(new_native);
+        g_object_unref(old_native);
+    }
+
+    inline Widget::~Widget()
+    {
+        if (gtk_widget_get_parent(_native) == nullptr)
+            g_object_unref(_native);
+
+        for (auto* ref : _refs)
+            g_object_unref(ref);
+    }
+
+    inline Vector2f Widget::get_size_request()
     {
         int w, h;
-        gtk_widget_get_size_request(this->operator GtkWidget*(), &w, &h);
+        gtk_widget_get_size_request(operator GtkWidget*(), &w, &h);
         return Vector2f(w, h);
     }
 
-    void Widget::set_margin(float value)
+    inline void Widget::set_margin(float value)
     {
         set_margin_bottom(value);
         set_margin_top(value);
@@ -27,77 +85,89 @@ namespace mousetrap
         set_margin_end(value);
     }
 
-    void Widget::set_margin_bottom(float value)
+    inline void Widget::set_margin_horizontal(float value)
     {
-        gtk_widget_set_margin_bottom(this->operator GtkWidget*(), value);
+        set_margin_start(value);
+        set_margin_end(value);
     }
 
-    void Widget::set_margin_top(float value)
+    inline void Widget::set_margin_vertical(float value)
     {
-        gtk_widget_set_margin_top(this->operator GtkWidget*(), value);
+        set_margin_top(value);
+        set_margin_bottom(value);
     }
 
-    void Widget::set_margin_start(float value)
+    inline void Widget::set_margin_bottom(float value)
     {
-        gtk_widget_set_margin_start(this->operator GtkWidget*(), value);
+        gtk_widget_set_margin_bottom(operator GtkWidget*(), value);
     }
 
-    void Widget::set_margin_end(float value)
+    inline void Widget::set_margin_top(float value)
     {
-        gtk_widget_set_margin_end(this->operator GtkWidget*(), value);
+        gtk_widget_set_margin_top(operator GtkWidget*(), value);
     }
 
-    void Widget::set_hexpand(bool should_expand)
+    inline void Widget::set_margin_start(float value)
     {
-        gtk_widget_set_hexpand(this->operator GtkWidget*(), should_expand == TRUE);
+        gtk_widget_set_margin_start(operator GtkWidget*(), value);
     }
 
-    void Widget::set_vexpand(bool should_expand)
+    inline void Widget::set_margin_end(float value)
     {
-        gtk_widget_set_vexpand(this->operator GtkWidget*(), should_expand == TRUE);
+        gtk_widget_set_margin_end(operator GtkWidget*(), value);
     }
 
-    void Widget::set_expand(bool both)
+    inline void Widget::set_hexpand(bool should_expand)
     {
-        gtk_widget_set_hexpand(this->operator GtkWidget*(), both == TRUE);
-        gtk_widget_set_vexpand(this->operator GtkWidget*(), both == TRUE);
+        gtk_widget_set_hexpand(operator GtkWidget*(), should_expand == TRUE);
     }
 
-    void Widget::set_halign(GtkAlign alignment)
+    inline void Widget::set_vexpand(bool should_expand)
     {
-        gtk_widget_set_halign(this->operator GtkWidget*(), alignment);
+        gtk_widget_set_vexpand(operator GtkWidget*(), should_expand == TRUE);
     }
 
-    void Widget::set_valign(GtkAlign alignment)
+    inline void Widget::set_expand(bool both)
     {
-        gtk_widget_set_valign(this->operator GtkWidget*(), alignment);
+        gtk_widget_set_hexpand(operator GtkWidget*(), both == TRUE);
+        gtk_widget_set_vexpand(operator GtkWidget*(), both == TRUE);
     }
 
-    void Widget::set_align(GtkAlign both)
+    inline void Widget::set_halign(GtkAlign alignment)
     {
-        gtk_widget_set_halign(this->operator GtkWidget*(), both);
-        gtk_widget_set_valign(this->operator GtkWidget*(), both);
+        gtk_widget_set_halign(operator GtkWidget*(), alignment);
     }
 
-    void Widget::set_size_request(Vector2f size)
+    inline void Widget::set_valign(GtkAlign alignment)
     {
-        gtk_widget_set_size_request(this->operator GtkWidget*(), size.x, size.y);
+        gtk_widget_set_valign(operator GtkWidget*(), alignment);
     }
 
-    void Widget::set_opacity(float value)
+    inline void Widget::set_align(GtkAlign both)
     {
-        gtk_widget_set_opacity(this->operator GtkWidget*(), value);
+        gtk_widget_set_halign(operator GtkWidget*(), both);
+        gtk_widget_set_valign(operator GtkWidget*(), both);
     }
 
-    float Widget::get_opacity()
+    inline void Widget::set_size_request(Vector2f size)
     {
-        return gtk_widget_get_opacity(this->operator GtkWidget*());
+        gtk_widget_set_size_request(operator GtkWidget*(), size.x, size.y);
     }
 
-    Vector2f Widget::get_size()
+    inline void Widget::set_opacity(float value)
+    {
+        gtk_widget_set_opacity(operator GtkWidget*(), value);
+    }
+
+    inline float Widget::get_opacity()
+    {
+        return gtk_widget_get_opacity(operator GtkWidget*());
+    }
+
+    inline Vector2f Widget::get_size()
     {
         GtkAllocation* allocation = new GtkAllocation();
-        gtk_widget_get_allocation(this->operator GtkWidget*(), allocation);
+        gtk_widget_get_allocation(operator GtkWidget*(), allocation);
 
         Vector2f out = Vector2f{allocation->width, allocation->height};
         delete allocation;
@@ -105,126 +175,229 @@ namespace mousetrap
         return out;
     }
 
-    void Widget::set_tooltip_text(const std::string& text)
+    inline bool Widget::operator==(const Widget& other) const
     {
-        gtk_widget_set_tooltip_markup(this->operator GtkWidget*(), text.c_str());
+        return this->_native == other._native;
     }
 
-    void Widget::set_visible(bool b)
+    inline bool Widget::operator!=(const Widget& other) const
     {
-        gtk_widget_set_visible(this->operator GtkWidget*(), b);
+        return not (*this == other);
     }
 
-    bool Widget::get_visible()
+    inline void Widget::set_tooltip_text(const std::string& text)
     {
-        return gtk_widget_get_visible(this->operator GtkWidget*());
+        gtk_widget_set_tooltip_markup(operator GtkWidget*(), text.c_str());
     }
 
-    void Widget::show()
+    inline void Widget::set_visible(bool b)
     {
-        gtk_widget_show(this->operator GtkWidget*());
+        gtk_widget_set_visible(operator GtkWidget*(), b);
     }
 
-    void Widget::set_cursor(GtkCursorType cursor)
+    inline bool Widget::get_visible()
+    {
+        return gtk_widget_get_visible(operator GtkWidget*());
+    }
+
+    inline void Widget::show()
+    {
+        gtk_widget_show(operator GtkWidget*());
+    }
+
+    inline void Widget::hide()
+    {
+        gtk_widget_hide(operator GtkWidget*());
+    }
+
+    inline void Widget::set_cursor(GtkCursorType cursor)
     {
         switch (cursor)
         {
             case GtkCursorType::NONE:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "none");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "none");
 
             case GtkCursorType::DEFAULT:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "default");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "default");
 
             case GtkCursorType::HELP:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "help");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "help");
 
             case GtkCursorType::POINTER:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "pointer");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "pointer");
 
             case GtkCursorType::CONTEXT_MENU:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "context-menu");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "context-menu");
 
             case GtkCursorType::PROGRESS:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "progress");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "progress");
 
             case GtkCursorType::WAIT:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "wait");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "wait");
 
             case GtkCursorType::CELL:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "cell");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "cell");
 
             case GtkCursorType::CROSSHAIR:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "crosshair");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "crosshair");
 
             case GtkCursorType::TEXT:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "text");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "text");
 
             case GtkCursorType::MOVE:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "move");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "move");
 
             case GtkCursorType::NOT_ALLOWED:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "not-allowed");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "not-allowed");
 
             case GtkCursorType::GRAB:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "grab");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "grab");
 
             case GtkCursorType::GRABBING:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "grabbing");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "grabbing");
 
             case GtkCursorType::ALL_SCROLL:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "all-scroll");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "all-scroll");
 
             case GtkCursorType::ZOOM_IN:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "zoom-in");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "zoom-in");
 
             case GtkCursorType::ZOOM_OUT:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "zoom-out");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "zoom-out");
 
             case GtkCursorType::COLUMN_RESIZE:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "col-resize");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "col-resize");
 
             case GtkCursorType::ROW_RESIZE:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "row-resize");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "row-resize");
 
             case GtkCursorType::NORTH_RESIZE:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "n-resize");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "n-resize");
 
             case GtkCursorType::NORTH_EAST_RESIZE:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "ne-resize");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "ne-resize");
 
             case GtkCursorType::EAST_RESIZE:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "e-resize");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "e-resize");
 
             case GtkCursorType::SOUTH_EAST_RESIZE:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "se-resize");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "se-resize");
 
             case GtkCursorType::SOUTH_RESIZE:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "s-resize");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "s-resize");
 
             case GtkCursorType::SOUTH_WEST_RESIZE:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "sw-resize");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "sw-resize");
 
             case GtkCursorType::WEST_RESIZE:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "w-resize");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "w-resize");
 
             case GtkCursorType::NORTH_WEST_RESIZE:
-                return gtk_widget_set_cursor_from_name(this->operator GtkWidget*(), "nw-resize");
+                return gtk_widget_set_cursor_from_name(operator GtkWidget*(), "nw-resize");
           }
     }
 
-    void Widget::add_controller(EventController* controller)
+    inline void Widget::add_controller(EventController* controller)
     {
-        gtk_widget_add_controller(this->operator GtkWidget*(), controller->operator GtkEventController*());
-        gtk_widget_set_focusable(this->operator GtkWidget*(), true);
+        gtk_widget_add_controller(operator GtkWidget*(), controller->operator GtkEventController*());
+        gtk_widget_set_focusable(operator GtkWidget*(), true);
     }
 
-    void Widget::set_focusable(bool b)
+    inline void Widget::set_focusable(bool b)
     {
-        gtk_widget_set_focusable(this->operator GtkWidget*(), b);
+        gtk_widget_set_focusable(operator GtkWidget*(), b);
     }
 
-    void Widget::grab_focus()
+    inline void Widget::set_focus_on_click(bool b)
     {
-        gtk_widget_grab_focus(this->operator GtkWidget*());
+        gtk_widget_set_focus_on_click(operator GtkWidget*(), b);
     }
+
+    inline bool Widget::get_has_focus()
+    {
+        return gtk_widget_has_focus(operator GtkWidget*());
+    }
+
+    inline void Widget::grab_focus()
+    {
+        gtk_widget_grab_focus(operator GtkWidget*());
+    }
+
+    inline bool Widget::get_is_realized()
+    {
+        return gtk_widget_get_realized(operator GtkWidget*());
+    }
+
+    inline Widget::preferred_size Widget::get_preferred_size()
+    {
+        auto min = gtk_requisition_new();
+        auto nat = gtk_requisition_new();
+        gtk_widget_get_preferred_size(operator GtkWidget*(), min, nat);
+
+        return Widget::preferred_size{{min->width, min->height}, {nat->width, nat->height}};
+    }
+
+    inline void Widget::unparent()
+    {
+        if (gtk_widget_get_parent(operator GtkWidget*()) != nullptr)
+            gtk_widget_unparent(operator GtkWidget*());
+    }
+
+    inline void Widget::set_can_respond_to_input(bool b)
+    {
+        gtk_widget_set_sensitive(operator GtkWidget*(), b);
+    }
+
+    inline bool Widget::get_can_respond_to_input() const
+    {
+        return gtk_widget_is_sensitive(operator GtkWidget*());
+    }
+
+    inline void Widget::set_tooltip_widget(Widget* widget)
+    {
+        _tooltip_widget = widget;
+        gtk_widget_set_has_tooltip(operator GtkWidget*(), true);
+        g_signal_connect(operator GtkWidget*(), "query-tooltip", G_CALLBACK(on_query_tooltip), this);
+    }
+
+    inline gboolean Widget::on_query_tooltip(GtkWidget*, gint x, gint y, gboolean, GtkTooltip* tooltip, Widget* instance)
+    {
+        if (instance->_tooltip_widget == nullptr)
+            return false;
+
+        gtk_tooltip_set_custom(tooltip, instance->_tooltip_widget->operator GtkWidget*());
+        return true;
+    }
+
+    inline void Widget::beep()
+    {
+        if (gtk_widget_get_parent(operator GtkWidget*()) != nullptr)
+            gtk_widget_error_bell(operator GtkWidget*());
+    }
+
+    template<typename Function_t, typename Arg_t>
+    inline void Widget::add_tick_callback(Function_t f_in, Arg_t arg_in)
+    {
+        _tick_callback_f = [f = f_in, arg = arg_in](GdkFrameClock* clock) -> bool{
+            return f(FrameClock(clock), arg);
+        };
+
+        gtk_widget_add_tick_callback(
+            _native,
+            (GtkTickCallback) G_CALLBACK(tick_callback_wrapper),
+            this,
+            (GDestroyNotify) G_CALLBACK(tick_callback_destroy_notify)
+        );
+    }
+
+    inline gboolean Widget::tick_callback_wrapper(GtkWidget*, GdkFrameClock* clock, Widget* instance)
+    {
+        if (instance->_tick_callback_f)
+            return instance->_tick_callback_f(clock);
+        else
+            return true;
+    }
+
+    inline void Widget::tick_callback_destroy_notify(void*)
+    {}
 }

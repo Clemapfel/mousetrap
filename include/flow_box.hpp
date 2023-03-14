@@ -6,15 +6,15 @@
 #pragma once
 
 #include <include/widget.hpp>
+#include <include/signal_component.hpp>
 
 namespace mousetrap
 {
-    class FlowBox : public Widget
+    class FlowBox : public WidgetImplementation<GtkFlowBox>,
+            public HasChildActivatedSignal<FlowBox>
     {
         public:
             FlowBox(GtkOrientation = GTK_ORIENTATION_VERTICAL);
-
-            operator GtkWidget*() override;
 
             void set_orientation(GtkOrientation);
             void set_activate_on_single_click(bool);
@@ -28,8 +28,8 @@ namespace mousetrap
             void set_selection_mode(GtkSelectionMode);
             void set_homogeneous(bool);
 
-            GtkFlowBoxChild* get_child_at_index(size_t i);
-            GtkFlowBoxChild* get_child_at_pos(int x, int y);
+            void select(size_t i);
+            void unselect_all();
 
             void push_back(Widget*);
             void push_front(Widget*);
@@ -37,9 +37,6 @@ namespace mousetrap
             void remove(Widget*);
 
             void clear();
-
-        private:
-            GtkFlowBox* _native;
     };
 }
 

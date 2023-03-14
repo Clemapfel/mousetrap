@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 project(mousetrap VERSION 0.1.0 LANGUAGES CXX)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0") # TODO
 set(CMAKE_CXX_STANDARD 20)
 
 ### DEPENDENCIES ###
@@ -21,8 +21,11 @@ endif()
 include(CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX("glm/glm.hpp" GLM_FOUND)
 if(NOT GLM_FOUND)
-    message(FATAL_ERROR "Missing Dependency: glm headers were not detected")
+    message(WARNING "Missing Dependency: glm headers were not detected")
 endif()
+
+# Boost
+find_package(Boost REQUIRED COMPONENTS system iostreams system)
 
 ### CONFIGURE ###
 
@@ -42,7 +45,7 @@ add_library(mousetrap SHARED
     src/gl_common.inl
 
     include/shape.hpp
-    src/shape.inl
+        src/shape.cpp
 
     include/colors.hpp
     src/colors.inl
@@ -79,9 +82,6 @@ add_library(mousetrap SHARED
     include/spin_button.hpp
     src/spin_button.inl
 
-    include/range.hpp
-    src/range.inl
-
     include/entry.hpp
     src/entry.inl
 
@@ -101,10 +101,10 @@ add_library(mousetrap SHARED
     src/label.inl
 
     include/texture.hpp
-    src/texture.inl
+        src/texture.cpp
 
     include/image.hpp
-    src/image.inl
+        src/image.cpp
 
     include/frame.hpp
     src/frame.inl
@@ -113,10 +113,10 @@ add_library(mousetrap SHARED
     src/pixel_buffer.inl
 
     include/scrollbar.hpp
-    src/scrollbar.inl
+        src/scrollbar.cpp
 
     include/adjustment.hpp
-    src/adjustment.inl
+        src/adjustment.cpp
 
     include/flow_box.hpp
     src/flow_box.inl
@@ -126,6 +126,9 @@ add_library(mousetrap SHARED
 
     include/scrolled_window.hpp
     src/scrolled_window.inl
+
+    include/stack.hpp
+    src/stack.inl
 
     include/time.hpp
     src/time.inl
@@ -146,22 +149,22 @@ add_library(mousetrap SHARED
     src/image_display.inl
 
     include/event_controller.hpp
+    src/event_controller.inl
 
     include/separator_line.hpp
     src/separator_line.inl
 
     include/menu_button.hpp
+    src/menu_button.inl
 
     include/menu_model.hpp
-
-    include/shortcuts.hpp
-    include/shortcut_map.hpp
+        src/menu_model.cpp
 
     include/list_view.hpp
-    src/list_view.inl
+    src/list_view.cpp
 
     include/column_view.hpp
-    src/column_view.inl
+    src/column_view.cpp
 
     include/popover.hpp
     src/popover.inl
@@ -173,7 +176,101 @@ add_library(mousetrap SHARED
 
     include/detachable_box.hpp
     src/detachable_box.inl
-        include/expander.hpp include/paned.hpp app/layer.hpp include/dropdown.hpp src/dropdown.inl include/check_button.hpp src/check_button.inl)
+
+    include/expander.hpp
+    src/expander.inl
+
+    include/paned.hpp
+    src/paned.inl
+
+    include/dropdown.hpp
+    src/dropdown.inl
+    src/dropdown.cpp
+
+    include/check_button.hpp
+    src/check_button.inl
+
+    include/signal_component.hpp
+
+    include/grid_view.hpp
+    src/grid_view.cpp
+
+    include/reorderable_list.hpp
+    src/reorderable_list.cpp
+
+    include/blend_mode.hpp
+    src/blend_mode.cpp
+
+    include/viewport.hpp
+    src/viewport.inl
+
+    include/center_box.hpp
+    src/center_box.inl
+
+    include/selection_model.hpp
+    src/selection_model.inl
+
+    include/dialog.hpp
+    src/dialog.inl
+
+    include/popover_menu.hpp
+    src/popover_menu.inl
+
+    include/popover_menu_bar.hpp
+    src/popover_menu_bar.inl
+
+    include/action_map.hpp
+    src/action_map.inl
+
+    include/shortcut_controller.hpp
+    src/shortcut_controller.inl
+
+    include/file_chooser.hpp
+    src/file_chooser.inl
+
+    include/file.hpp
+    src/file.inl
+
+    include/key_file.hpp
+    src/key_file.inl
+
+    include/switch.hpp
+    src/switch.inl
+
+    include/info_message.hpp
+    src/info_message.inl
+
+    include/fixed.hpp
+    src/fixed.inl
+
+    include/frame_clock.hpp
+    src/frame_clock.inl
+
+    include/shortcut_viewer.hpp
+    src/shortcut_viewer.inl
+
+    include/subimage.hpp
+
+    include/level_bar.hpp
+    src/level_bar.inl
+
+    include/string_compression.hpp
+
+    include/action.hpp
+    src/action.cpp
+
+    include/link_button.hpp
+    src/link_button.inl
+
+    include/render_texture.hpp
+    src/render_texture.cpp
+
+    include/msaa_texture.hpp
+    src/msaa_texture.cpp
+
+    include/clipboard.hpp
+    src/clipboard.cpp
+)
 
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
@@ -189,21 +286,95 @@ target_link_libraries(mousetrap PUBLIC
     ${OpenGL}
     ${GLEW}
     ${GTK_LIBRARIES}
+    ${Boost_LIBRARIES}
 )
 
 ### EXECUTABLE ###
 
-add_library(app STATIC
-    app/global_state.hpp
-    app/color_picker.hpp
-    app/palette.hpp
-    app/primary_secondary_color_swapper.hpp
-    app/verbose_color_picker.hpp
-    app/tools.hpp
-    app/toolbox.hpp
+add_library(app SHARED
+
+    app/add_shortcut_action.hpp
+    app/src/add_shortcut_action.cpp
+
+    app/algorithms.hpp
+    app/src/algorithms.cpp
+
+    app/animation_preview.hpp
+    app/src/animation_preview.cpp
+
+    app/app_component.hpp
+
+    app/brush.hpp
+    app/src/brush.cpp
+
     app/brush_options.hpp
-    app/widget_container.hpp
-        app/canvas.hpp app/layer_view.hpp)
+    app/src/brush_options.cpp
+
+    app/bubble_log_area.hpp
+    app/src/bubble_log_area.cpp
+
+    app/canvas.hpp
+    app/src/canvas.cpp
+
+    app/color_picker.hpp
+    app/src/color_picker.cpp
+
+    app/color_preview.hpp
+    app/src/color_preview.cpp
+
+    app/color_swapper.hpp
+    app/src/color_swapper.cpp
+
+    app/file_chooser_dialog.hpp
+    app/src/file_chooser_dialog.inl
+
+    app/frame_view.hpp
+    app/src/frame_view.cpp
+
+        app/project_state.hpp
+        app/src/project_state.cpp
+
+        app/image_transform_dialog.hpp
+    app/src/image_transform.cpp
+
+    app/layer.hpp
+    app/src/layer.cpp
+
+    app/layer_view.hpp
+    app/src/layer_view.cpp
+
+    app/menubar.hpp
+    app/src/menubar.cpp
+
+    app/palette.hpp
+    app/src/palette.cpp
+
+    app/palette_view.hpp
+    app/src/palette_view.cpp
+
+    app/save_file.hpp
+    app/src/save_file.cpp
+
+    app/selection.hpp
+    app/src/selection.cpp
+
+    app/config_files.hpp
+    app/src/config_files.cpp
+
+    app/shortcut_information.hpp
+    app/src/shortcut_information.cpp
+
+    app/toolbox.hpp
+    app/src/toolbox.cpp
+
+    app/tools.hpp
+
+    app/tooltip.hpp
+    app/src/tooltip.cpp
+
+    app/verbose_color_picker.hpp
+    app/src/verbose_color_picker.cpp
+        app/app_signals.hpp app/open_uri.hpp app/detect_platform.hpp app/resize_canvas_dialog.hpp app/scale_canvas_dialog.hpp app/src/scale_canvas_dialog.cpp app/src/resize_canvas_dialog.cpp app/canvas_export.hpp app/src/canvas_export.cpp app/color_transform_dialog.hpp app/src/color_transform_dialog.cpp app/apply_scope.hpp app/src/image_transform_dialog.cpp app/src/canvas_transparency_layer.cpp app/src/canvas_layer_layer.cpp app/src/canvas_onionskin_layer.cpp app/src/canvas_grid_layer.cpp app/src/canvas_symmetry_ruler_layer.cpp app/src/canvas_brush_shape_layer.cpp app/src/canvas_user_input_layer.cpp app/src/canvas_wireframe_layer.cpp  app/src/canvas_selection_layer.cpp app/src/canvas_control_bar.cpp app/log_box.hpp app/src/log_box.cpp app/src/canvas_gradient_layer.cpp app/src/canvas_tool_options.cpp app/draw_data.hpp)
 
 target_link_libraries(app PRIVATE mousetrap)
 set_target_properties(app PROPERTIES

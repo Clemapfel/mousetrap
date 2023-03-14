@@ -22,22 +22,40 @@ namespace mousetrap
         STRETCH = GL_CLAMP_TO_EDGE
     };
 
+    enum class TextureScaleMode
+    {
+        NEAREST = GL_NEAREST,
+        LINEAR = GL_LINEAR
+    };
+
     class Texture : public TextureObject
     {
         public:
             Texture(); // should be called while gl context is bound
-            ~Texture();
+            virtual ~Texture();
+
+            Texture(const Texture&) = delete;
+            Texture& operator=(const Texture&) = delete;
+
+            Texture(Texture&&);
+            Texture& operator=(Texture&&);
+
+            [[nodiscard]] Image download() const;
 
             void bind(size_t texture_unit) const;
 
             void bind() const override;
             void unbind() const override;
 
+            void create(size_t width, size_t height);
             void create_from_file(const std::string& path);
             void create_from_image(const Image&);
 
             void set_wrap_mode(TextureWrapMode);
             TextureWrapMode get_wrap_mode();
+
+            void set_scale_mode(TextureScaleMode);
+            TextureScaleMode get_scale_mode();
 
             Vector2i get_size() const;
 
@@ -46,9 +64,8 @@ namespace mousetrap
         private:
             GLNativeHandle _native_handle = 0;
             TextureWrapMode _wrap_mode = TextureWrapMode::STRETCH;
+            TextureScaleMode _scale_mode = TextureScaleMode::NEAREST;
 
             Vector2i _size;
     };
 }
-
-#include <src/texture.inl>

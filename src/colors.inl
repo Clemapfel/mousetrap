@@ -10,7 +10,7 @@
 
 namespace mousetrap
 {
-    RGBA::operator std::string()
+    inline RGBA::operator std::string() const
     {
         std::stringstream out;
         out << "RGBA(" << r << ", " << g << ", " << b << ", " << a << ")";
@@ -18,25 +18,25 @@ namespace mousetrap
         return out.str();
     }
 
-    RGBA::RGBA(float r, float g, float b, float a)
+    inline RGBA::RGBA(float r, float g, float b, float a)
             : r(r), g(g), b(b), a(a)
     {}
 
-    RGBA::RGBA(glm::vec4 vec)
+    inline RGBA::RGBA(glm::vec4 vec)
             : r(vec[0]), g(vec[1]), b(vec[2]), a(vec[3])
     {}
 
-    float RGBA::to_grayscale() const
+    inline float RGBA::to_grayscale() const
     {
         return (r + g + b) / 3;
     }
 
-    RGBA::operator glm::vec4() const
+    inline RGBA::operator glm::vec4() const
     {
         return glm::vec4(r, g, b, a);
     }
 
-    RGBA::RGBA(HSVA hsva)
+    inline RGBA::RGBA(HSVA hsva)
     {
         auto out = hsva_to_rgba(hsva.operator glm::vec4());
         r = out[0];
@@ -45,47 +45,50 @@ namespace mousetrap
         a = out[4];
     }
 
-    bool RGBA::operator==(const RGBA& other)
+    inline bool RGBA::operator==(const RGBA& other)
     {
-        return r == other.r and g == other.g and b == other.b and a == other.a;
+        return int(r * 256) == int(other.r == 256) and
+            int(g * 256) == int(other.g == 256) and
+            int(b * 256) == int(other.b == 256) and
+            int(a * 256) == int(other.a == 256);
     }
 
-    bool RGBA::operator!=(const RGBA& other)
+    inline bool RGBA::operator!=(const RGBA& other)
     {
         return not (*this == other);
     }
 
-    RGBA::operator HSVA() const
+    inline RGBA::operator HSVA() const
     {
         return HSVA(rgba_to_hsva(this->operator glm::vec4()));
     }
 
-    HSVA::operator std::string()
+    inline HSVA::operator std::string() const
     {
         auto str = std::stringstream();
         str << "HSVA(" << h << ", " << s << ", " << v << ", " << a << ")";
         return str.str();
     }
 
-    HSVA::HSVA(float r, float g, float b, float a)
-            : h(r), s(g), v(b), a(a)
+    inline HSVA::HSVA(float h, float s, float v, float a)
+            : h(h), s(s), v(v), a(a)
     {}
 
-    HSVA::HSVA(glm::vec4 vec)
+    inline HSVA::HSVA(glm::vec4 vec)
             : h(vec[0]), s(vec[1]), v(vec[2]), a(vec[3])
     {}
 
-    float HSVA::to_grayscale() const
+    inline float HSVA::to_grayscale() const
     {
         return s;
     }
 
-    HSVA::operator glm::vec4() const
+    inline HSVA::operator glm::vec4() const
     {
         return glm::vec4(h, s, v, a);
     }
 
-    HSVA::HSVA(RGBA rgba)
+    inline HSVA::HSVA(RGBA rgba)
     {
         auto out = rgba_to_hsva(rgba.operator glm::vec4());
         h = out[0];
@@ -94,22 +97,25 @@ namespace mousetrap
         a = out[3];
     }
 
-    HSVA::operator RGBA() const
+    inline HSVA::operator RGBA() const
     {
         return RGBA(hsva_to_rgba(this->operator glm::vec4()));
     }
 
-    bool HSVA::operator==(const HSVA& other)
+    inline bool HSVA::operator==(const HSVA& other)
     {
-        return h == other.h and s == other.s and v == other.v and a == other.a;
+        return int(h * 256) == int(other.h == 256) and
+            int(s * 256) == int(other.s == 256) and
+            int(v * 256) == int(other.v == 256) and
+            int(a * 256) == int(other.a == 256);
     }
 
-    bool HSVA::operator!=(const HSVA& other)
+    inline bool HSVA::operator!=(const HSVA& other)
     {
         return not (*this == other);
     }
 
-    glm::vec4 rgba_to_hsva(glm::vec4 in)
+    inline glm::vec4 rgba_to_hsva(glm::vec4 in)
     {
         const float r = in.r;
         const float g = in.g;
@@ -126,11 +132,12 @@ namespace mousetrap
 
         auto delta = max - min;
 
-        if (max == r)
+        if (delta == 0)
+            h = 0;
+        else if (max == r)
             h = 60 * (fmod(((g - b) / delta), 6));
         else if (max == g)
             h = 60 * (((b - r) / delta) + 2);
-
         else if (max == b)
             h = 60 * (((r - g) / delta) + 4);
 
@@ -147,7 +154,7 @@ namespace mousetrap
         return glm::vec4(h / 360.f, s, v, a);
     }
 
-    glm::vec4 hsva_to_rgba(glm::vec4 in)
+    inline glm::vec4 hsva_to_rgba(glm::vec4 in)
     {
         const float h = in[0] * 360;
         const float s = in[1];
@@ -194,7 +201,7 @@ namespace mousetrap
         return glm::vec4(rgb.r, rgb.g, rgb.b, a);
     }
 
-    glm::vec4 rgba_to_cmyk(glm::vec4 in)
+    inline glm::vec4 rgba_to_cmyk(glm::vec4 in)
     {
         float r = in[0];
         float g = in[1];
@@ -208,7 +215,7 @@ namespace mousetrap
         return glm::vec4(c - k, m - k, y - k, k);
     }
 
-    glm::vec4 cmyk_to_rgba(glm::vec4 in)
+    inline glm::vec4 cmyk_to_rgba(glm::vec4 in)
     {
         float c = in[0];
         float y = in[1];
@@ -224,17 +231,17 @@ namespace mousetrap
 
     }
 
-    glm::vec4 hsva_to_cmyk(glm::vec4 in)
+    inline glm::vec4 hsva_to_cmyk(glm::vec4 in)
     {
         return rgba_to_cmyk(hsva_to_rgba(in));
     }
 
-    glm::vec4 cmyk_to_hsva(glm::vec4 in)
+    inline glm::vec4 cmyk_to_hsva(glm::vec4 in)
     {
         return rgba_to_hsva(cmyk_to_rgba(in));
     }
 
-    RGBA html_code_to_rgba(const std::string& code)
+    inline RGBA html_code_to_rgba(const std::string& code)
     {
         static auto hex_char_to_int = [](char c) -> uint8_t
         {
@@ -311,7 +318,7 @@ namespace mousetrap
         return out;
     }
 
-    std::string rgba_to_html_code(RGBA in, bool show_alpha = true)
+    inline std::string rgba_to_html_code(RGBA in, bool show_alpha = true)
     {
         in.r = glm::clamp<float>(in.r, 0.f, 1.f);
         in.g = glm::clamp<float>(in.g, 0.f, 1.f);
@@ -328,5 +335,42 @@ namespace mousetrap
             str << std::hex << int(std::round(in.a * 255));
 
         return str.str();
+    }
+
+    inline void quantize(RGBA&, size_t n_values_per_component)
+    {
+        std::cerr << "[ERROR] In Color::quantize: TODO" << std::endl;
+    }
+
+    inline RGBA quantize(RGBA in, size_t n_values_per_component)
+    {
+        RGBA out;
+        out.r = (int(in.r * n_values_per_component) / float(n_values_per_component));
+        out.g = (int(in.g * n_values_per_component) / float(n_values_per_component));
+        out.b = (int(in.b * n_values_per_component) / float(n_values_per_component));
+        out.a = (int(in.a * n_values_per_component) / float(n_values_per_component));
+
+        return out;
+    }
+
+    inline HSVA quantize(HSVA in, size_t n_values_per_component)
+    {
+        HSVA out;
+        out.h = (int(in.h * n_values_per_component) / float(n_values_per_component));
+        out.s = (int(in.s * n_values_per_component) / float(n_values_per_component));
+        out.v = (int(in.v * n_values_per_component) / float(n_values_per_component));
+        out.a = (int(in.a * n_values_per_component) / float(n_values_per_component));
+
+        return out;
+    }
+
+    inline RGBA invert(RGBA in)
+    {
+        return RGBA(1 - in.r, 1 - in.g, 1 - in.b, in.a);
+    }
+
+    inline HSVA invert(HSVA in)
+    {
+        return HSVA(1 - in.h, in.s, 1 - in.v, in.a);
     }
 }

@@ -27,6 +27,7 @@ namespace mousetrap
             void set_rotation(Angle);
             void translate(Vector2f gl_offset);
             void scale(float x, float y);
+            void reset();
 
             glm::mat4x4 transform;
     };

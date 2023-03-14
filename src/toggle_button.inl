@@ -7,38 +7,37 @@
 
 namespace mousetrap
 {
-    ToggleButton::ToggleButton()
+    inline ToggleButton::ToggleButton()
+        : WidgetImplementation<GtkToggleButton>(GTK_TOGGLE_BUTTON(gtk_toggle_button_new())), HasToggledSignal(this)
+    {}
+
+    inline bool ToggleButton::get_active() const
     {
-        _native = GTK_TOGGLE_BUTTON(gtk_toggle_button_new());
+        return gtk_toggle_button_get_active(get_native()) == TRUE;
     }
 
-    bool ToggleButton::get_active() const
+    inline void ToggleButton::set_active(bool b)
     {
-        return gtk_toggle_button_get_active(_native) == TRUE;
+        gtk_toggle_button_set_active(get_native(), b ? TRUE : FALSE);
     }
 
-    void ToggleButton::set_active(bool b)
+    inline void ToggleButton::set_action(Action& stateful_action)
     {
-        gtk_toggle_button_set_active(_native, b ? TRUE : FALSE);
+        gtk_actionable_set_action_name(GTK_ACTIONABLE(get_native()), ("app." + stateful_action.get_id()).c_str());
     }
 
-    void ToggleButton::set_label(const std::string& str)
+    inline void ToggleButton::set_label(const std::string& str)
     {
-        gtk_button_set_label(GTK_BUTTON(_native), str.c_str());
+        gtk_button_set_label(GTK_BUTTON(get_native()), str.c_str());
     }
 
-    ToggleButton::operator GtkWidget*()
+    inline void ToggleButton::set_child(Widget* widget)
     {
-        return GTK_WIDGET(_native);
+        gtk_button_set_child(GTK_BUTTON(get_native()), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 
-    void ToggleButton::set_child(Widget* widget)
+    inline void ToggleButton::set_has_frame(bool b)
     {
-        gtk_button_set_child(GTK_BUTTON(_native), widget->operator GtkWidget*());
-    }
-
-    void ToggleButton::set_has_frame(bool b)
-    {
-        gtk_button_set_has_frame(GTK_BUTTON(_native), b);
+        gtk_button_set_has_frame(GTK_BUTTON(get_native()), b);
     }
 }

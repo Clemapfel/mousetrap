@@ -9,53 +9,44 @@
 
 namespace mousetrap
 {
-    template<typename InitializeFunction_t>
-    Application::Application(InitializeFunction_t* initialize, void* data)
+    inline Application::Application()
     {
-        _native = gtk_application_new(nullptr, G_APPLICATION_FLAGS_NONE);
-        g_signal_connect(_native, "activate", G_CALLBACK(initialize), data);
+        _native = gtk_application_new(nullptr, G_APPLICATION_DEFAULT_FLAGS);
+        _native = g_object_ref(_native);
     }
 
-    Application::~Application()
+    inline Application::~Application()
     {
         g_object_unref(_native);
     }
 
-    int Application::run()
+    inline int Application::run()
     {
         return g_application_run(G_APPLICATION(_native), 0, nullptr);
     }
 
-    Application::operator GObject*()
+    inline Application::operator GObject*()
     {
         return G_OBJECT(_native);
     }
 
-    void Application::action_wrapper(GSimpleAction*, GVariant*, std::pair<ActionSignature, void*>* data)
+    inline Application::operator GtkApplication*()
     {
-        (*data->first)(data->second);
+        return _native;
     }
 
-    void Application::add_action(const std::string& id, ActionSignature f, void* user_data)
+    inline Application::operator GActionMap*()
     {
-        auto* action = g_simple_action_new(id.c_str(), nullptr);
-        g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(action_wrapper), (void*) (new std::pair<ActionSignature, void*>(f, user_data)));
-        g_action_map_add_action(G_ACTION_MAP(_native), G_ACTION(action));
+        return G_ACTION_MAP(_native);
     }
 
-    void Application::activate_action(const std::string& id)
+    inline void Application::set_menubar(MenuModel* model)
     {
-        auto* action = g_action_map_lookup_action(G_ACTION_MAP(_native), id.c_str());
-        if (action == nullptr)
-        {
-            std::cerr << "[ERROR] In Application::trigger_action: No action with id \"" << id << "\"." << std::endl;
-            return;
-        }
-        g_action_activate(action, nullptr);
+        gtk_application_set_menubar(_native, model->operator GMenuModel*());
     }
 
-    GAction* Application::get_action(const std::string& id)
+    inline void Application::add_window(Window* window)
     {
-        return g_action_map_lookup_action(G_ACTION_MAP(_native), id.c_str());
+        gtk_application_add_window(_native, window->operator  GtkWindow*());
     }
 }

@@ -5,13 +5,16 @@
 
 namespace mousetrap
 {
-    gboolean DetachableBox::on_window_close(GtkWindow*, DetachableBox* instance)
+    inline gboolean DetachableBox::on_window_close(GtkWindow*, DetachableBox* instance)
     {
         instance->attach();
         return false;
     }
 
-    DetachableBox::DetachableBox(const std::string& window_title)
+    inline DetachableBox::DetachableBox(const std::string& window_title)
+        : WidgetImplementation<GtkRevealer>(GTK_REVEALER(gtk_revealer_new())),
+          HasAttachSignal<DetachableBox>(this),
+          HasDetachSignal<DetachableBox>(this)
     {
         _titlebar_title = GTK_LABEL(gtk_label_new(window_title.c_str()));
         gtk_label_set_ellipsize(_titlebar_title, PANGO_ELLIPSIZE_START);
@@ -29,34 +32,31 @@ namespace mousetrap
 
         g_signal_connect(_window, "close-request", G_CALLBACK(on_window_close), this);
 
-        _anchor = GTK_REVEALER(gtk_revealer_new());
+        _anchor = get_native();
         gtk_revealer_set_transition_type(_anchor, GTK_REVEALER_TRANSITION_TYPE_CROSSFADE);
 
         _window_revealer = GTK_REVEALER(gtk_revealer_new());
         gtk_revealer_set_transition_type(_window_revealer, GTK_REVEALER_TRANSITION_TYPE_CROSSFADE);
         gtk_window_set_child(_window, GTK_WIDGET(_window_revealer));
+
+        add_reference(_window);
+        add_reference(_window_revealer);
+        add_reference(_titlebar);
+        add_reference(_titlebar_title);
     }
 
-    DetachableBox::~DetachableBox()
+    inline DetachableBox::~DetachableBox()
     {
-        if (_child != nullptr)
-            g_object_unref(_child);
-
-        g_object_unref(_window);
+        g_object_unref(_child);
     }
 
-    DetachableBox::operator GtkWidget*()
-    {
-        return GTK_WIDGET(_anchor);
-    }
-
-    void DetachableBox::set_child(Widget* child)
+    inline void DetachableBox::set_child(Widget* child)
     {
         if (_child != nullptr)
             g_object_unref(_child);
 
         _child = child->operator GtkWidget*();
-        _child = g_object_ref(_child);
+        g_object_ref(_child);
 
         if (_attached)
             attach();
@@ -64,7 +64,7 @@ namespace mousetrap
             detach();
     }
 
-    void DetachableBox::attach()
+    inline void DetachableBox::attach()
     {
         _attached = true;
 
@@ -77,11 +77,10 @@ namespace mousetrap
         gtk_revealer_set_child(_anchor, _child);
         gtk_revealer_set_reveal_child(_anchor, true);
 
-        if (_on_attach != nullptr)
-            _on_attach(_on_attach_data);
+        emit_signal_attach();
     }
 
-    void DetachableBox::detach()
+    inline void DetachableBox::detach()
     {
         _attached = false;
 
@@ -95,32 +94,19 @@ namespace mousetrap
         gtk_revealer_set_child(_window_revealer, GTK_WIDGET(_child));
         gtk_revealer_set_reveal_child(_window_revealer, true);
 
-        if (_on_detach != nullptr)
-            _on_detach(_on_detach_data);
+        emit_signal_detach();
     }
 
-    bool DetachableBox::get_child_attached()
+    inline bool DetachableBox::get_child_attached()
     {
         return _attached;
     }
 
-    void DetachableBox::set_child_attached(bool b)
+    inline void DetachableBox::set_child_attached(bool b)
     {
         if (_attached and not b)
             detach();
         else if (not _attached and b)
             attach();
-    }
-
-    void DetachableBox::connect_attach(OnAttachSignature f, void* data)
-    {
-        _on_attach = f;
-        _on_attach_data = data;
-    }
-
-    void DetachableBox::connect_detach(OnDetachSignature f, void* data)
-    {
-        _on_detach = f;
-        _on_detach_data = data;
     }
 }

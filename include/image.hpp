@@ -14,17 +14,32 @@ namespace mousetrap
     class Image
     {
         public:
+            Image() = default;
+
+            Image(const Image&);
+            Image(Image&&);
+            Image& operator=(const Image&);
+            Image& operator=(Image&&);
+
             void create(size_t width, size_t height, RGBA default_color = RGBA(0, 0, 0, 1));
-            void create_from_file(const std::string&);
+            bool create_from_file(const std::string&);
             void create_from_pixbuf(GdkPixbuf*);
+            void create_from_texture(GdkTexture*);
+
+            bool save_to_file(const std::string&) const;
 
             void* data() const;
+            /// \returns <number of pixels> * <number of components>
             size_t get_data_size() const;
 
-            GdkPixbuf* to_pixbuf() const;
-            Vector2i get_size() const;
+            size_t get_n_pixels() const;
 
-            void scale(size_t factor);
+            GdkPixbuf* to_pixbuf() const;
+            Vector2ui get_size() const;
+
+            Image as_scaled(size_t size_x, size_t size_y, GdkInterpType type) const;
+            Image as_cropped(int offset_x, int offset_y, size_t new_width, size_t new_height) const;
+            Image as_flipped(bool flip_horizontally, bool flip_vertically) const;
 
             void set_pixel(size_t, size_t, RGBA);
             void set_pixel(size_t, size_t, HSVA);
@@ -36,10 +51,8 @@ namespace mousetrap
 
         private:
             Vector2i _size;
-            std::vector<float> _data; // rgba 32f bpc
+            std::vector<float> _data; // rgba 32f per component
 
             size_t to_linear_index(size_t, size_t) const;
     };
 }
-
-#include <src/image.inl>

@@ -5,121 +5,94 @@
 
 #pragma once
 
-#include <include/texture.hpp>
+#include <mousetrap.hpp>
 
 namespace mousetrap
 {
-    enum BlendMode
+    class Layer
     {
-        NORMAL,     // alpha blending
-        ADD,        // src + dest
-        SUBTRACT,   // src - dest
-        MULTIPLY,   // src * dest
-        MIN,        // min(src, dest)
-        MAX         // max(src, dest)
+        public:
+            class Frame
+            {
+                friend class Layer;
+
+                public:
+                    Frame();
+                    Frame(Vector2i size);
+
+                    Frame(const Frame&);
+                    Frame(Frame&&);
+                    Frame& operator=(const Frame&);
+                    Frame& operator=(Frame&&);
+
+                    ~Frame();
+
+                    RGBA get_pixel(size_t x, size_t y) const;
+                    void set_pixel(size_t x, size_t y, RGBA);
+
+                    void overwrite_image(const Image&);
+                    void set_size(Vector2ui);
+                    Vector2ui get_size() const;
+
+                    Vector2ui get_image_size() const;
+
+                    const Texture* get_texture() const;
+                    void update_texture();
+
+                    bool get_is_keyframe() const;
+                    void set_is_keyframe(bool);
+
+                    void set_offset(Vector2i);
+                    Vector2i get_offset() const;
+
+                private:
+                    Image* _image = nullptr;
+                    Texture* _texture = nullptr;
+                    bool _is_keyframe = true;
+
+                    Vector2i _offset = {0, 0};
+                    Vector2ui _size = {0, 0};
+            };
+
+            Layer(const std::string& name, Vector2ui size, size_t n_frames);
+
+            Layer(const Layer&);
+            Layer& operator=(const Layer&);
+
+            Layer(Layer&&) = delete;
+            Layer& operator=(Layer&&) = delete;
+
+            Layer::Frame* add_frame(Vector2ui resolution, size_t);
+            void delete_frame(size_t);
+
+            Layer::Frame* get_frame(size_t index);
+            const Layer::Frame* get_frame(size_t index) const;
+
+            size_t get_n_frames() const;
+
+            std::string get_name() const;
+            void set_name(const std::string&);
+
+            bool get_is_locked() const;
+            bool get_is_visible() const;
+
+            void set_is_locked(bool);
+            void set_is_visible(bool);
+
+            float get_opacity() const;
+            void set_opacity(float);
+
+            BlendMode get_blend_mode() const;
+            void set_blend_mode(BlendMode);
+
+        private:
+            std::deque<Frame*> _frames;
+
+            std::string _name;
+
+            bool _is_locked = false;
+            bool _is_visible = true;
+            float _opacity = 1;
+            BlendMode _blend_mode = NORMAL;
     };
-
-    void set_blend_mode(BlendMode);
-
-    struct Layer
-    {
-        static inline size_t _current_id = 0;
-        Layer(const std::string& name = "");
-
-        std::string name;
-        TextureObject* texture;
-        bool is_locked = false;
-        bool is_visible = true;
-        float opacity = 1;
-        BlendMode blend_mode = NORMAL;
-    };
-    
-    namespace state
-    {
-        std::deque<Layer*> layers;
-        Vector2ui layer_resolution;
-        
-        void add_layer(RGBA);
-        void add_layer(const Image&);
-    }
-}
-
-/// ###
-
-namespace mousetrap
-{
-    Layer::Layer(const std::string& name_in)
-    {
-        if (name_in.empty())
-            name = "Layer_#" + std::to_string(_current_id++);
-
-        texture = new Texture();
-    }
-
-    void set_blend_mode(BlendMode mode)
-    {
-        glEnable(GL_BLEND);
-
-        if (mode == NORMAL)
-        {
-            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-        }
-        else if (mode == SUBTRACT)
-        {
-            glBlendEquationSeparate(GL_FUNC_REVERSE_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT);
-            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
-        }
-        else if (mode == ADD)
-        {
-            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
-        }
-        else if (mode == MULTIPLY)
-        {
-            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-            glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
-        }
-        else if (mode == MIN)
-        {
-            glBlendEquationSeparate(GL_MIN, GL_MIN);
-            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
-        }
-        else if (mode == MAX)
-        {
-            glBlendEquationSeparate(GL_MAX, GL_MAX);
-            glBlendFuncSeparate(GL_SRC_COLOR, GL_DST_COLOR, GL_SRC_ALPHA, GL_DST_ALPHA);
-        }
-    }
-
-    void state::add_layer(RGBA color)
-    {
-        auto image = Image();
-        image.create(state::layer_resolution.x, state::layer_resolution.y, color);
-        add_layer(image);
-    }
-
-    void state::add_layer(const Image& image)
-    {
-        state::layers.emplace_back(new Layer());
-
-        float width = state::layer_resolution.x;
-        float height = state::layer_resolution.y;
-
-        auto image_size = Vector2ui(image.get_size().x, image.get_size().y);
-
-        if (image_size == state::layer_resolution)
-            ((Texture*) state::layers.back()->texture)->create_from_image(image);
-        else
-        {
-            auto image_padded = Image();
-            image_padded.create(state::layer_resolution.x, state::layer_resolution.y, RGBA(0, 0, 0, 0));
-
-            for (size_t x = 0.5 * (image_size.x - state::layer_resolution.x); x < image_size.x and x < state::layer_resolution.x; ++x)
-                for (size_t y = 0.5 * (image_size.y - state::layer_resolution.y); y < image_size.y and x < state::layer_resolution.y; ++y)
-                    image_padded.set_pixel(x, y, image.get_pixel(x, y));
-
-            ((Texture*) state::layers.back()->texture)->create_from_image(image);
-        }
-    }
 }

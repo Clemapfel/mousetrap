@@ -1,424 +1,181 @@
-// 
-// Copyright 2022 Clemens Cords
-// Created on 8/15/22 by clem (mail@clemens-cords.com)
+//
+// Copyright (c) Clemens Cords (mail@clemens-cords.com), created 1/21/23
 //
 
 #pragma once
 
-#include <include/widget.hpp>
-#include <include/colors.hpp>
-#include <include/flow_box.hpp>
-#include <include/scrolled_window.hpp>
-#include <include/overlay.hpp>
-#include <include/image.hpp>
-#include <include/image_display.hpp>
-#include <include/menu_button.hpp>
-
-#include <vector>
-
-#include <app/global_state.hpp>
+#include <app/app_component.hpp>
+#include <app/palette.hpp>
+#include <app/project_state.hpp>
+#include <app/tooltip.hpp>
+#include <app/app_signals.hpp>
+#include <app/file_chooser_dialog.hpp>
 
 namespace mousetrap
 {
-    enum class PaletteSortMode
+    namespace state::actions
     {
-        NONE,
-        BY_HUE,
-        BY_VALUE,
-        BY_SATURATION
-    };
+        DECLARE_GLOBAL_ACTION(palette_view, load_default);
+        DECLARE_GLOBAL_ACTION(palette_view, save);
+        DECLARE_GLOBAL_ACTION(palette_view, save_as_default);
+        DECLARE_GLOBAL_ACTION(palette_view, load);
+        DECLARE_GLOBAL_ACTION(palette_view, save_as);
 
-    class PaletteView : public Widget
+        DECLARE_GLOBAL_ACTION(palette_view, sort_by_default);
+        DECLARE_GLOBAL_ACTION(palette_view, sort_by_hue);
+        DECLARE_GLOBAL_ACTION(palette_view, sort_by_saturation);
+        DECLARE_GLOBAL_ACTION(palette_view, sort_by_value);
+
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_0);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_1);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_2);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_3);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_4);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_5);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_6);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_7);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_8);
+        DECLARE_GLOBAL_ACTION(palette_view, select_color_9);
+
+        DECLARE_GLOBAL_ACTION(palette_view, toggle_palette_locked);
+    }
+
+    class PaletteView : public AppComponent,
+            public signals::ColorSelectionChanged,
+            public signals::PaletteUpdated,
+            public signals::PaletteSortModeChanged,
+            public signals::PaletteEditingToggled
     {
         public:
             PaletteView();
-            virtual ~PaletteView();
+            ~PaletteView();
+            operator Widget*() override;
 
-            operator GtkWidget*() override;
-            void update() override;
-
-            void set_tile_size(size_t);
-            void select_color(HSVA);
-
-            void set_selection_frame_color(RGBA);
-            void set_sort_mode(PaletteSortMode);
+            void set_preview_size(size_t);
+            size_t get_preview_size() const;
 
         private:
-            static inline size_t _tile_size = 32 + 16;
-            static inline RGBA _selection_frame_color = mousetrap::YELLOW;
+            void on_color_selection_changed();
+            void on_palette_updated();
+            void on_palette_sort_mode_changed();
+            void on_palette_editing_toggled();
 
-            static void on_child_activated(GtkFlowBox* self, GtkFlowBoxChild* child, PaletteView* instance);
+            size_t _preview_size = state::settings_file->get_value_as<size_t>("palette_view", "color_preview_size");
 
-            static gboolean on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state, void* instance);
-            KeyEventController* _key_event_controller;
-
-            size_t _selected_index = 0;
-            void select(size_t);
-            void select_none();
-
-            std::string _selected_palette_id = "";
-            PaletteSortMode _sort_mode = PaletteSortMode::NONE;
-
-            FlowBox* _box;
-            ScrolledWindow* _scrolled_window;
-            Label* _menu_button_label;
-            Box* _main;
-
-            struct ColorTile
+            class ColorTile
             {
-                ColorTile() = default;
+                public:
+                    ColorTile(PaletteView* owner, HSVA color);
+                    ~ColorTile();
+                    operator Widget*();
 
-                HSVA _color;
-                ImageDisplay* _color_tile = nullptr;
-                ImageDisplay* _selection_frame = nullptr;
-                Overlay* _overlay = nullptr;
+                    void set_color(HSVA color);
+                    void set_size(size_t);
+                    HSVA get_color();
+                    void set_selected(bool);
+
+                private:
+
+                    PaletteView* _owner;
+                    HSVA _color;
+
+                    GLArea _color_area;
+                    GLArea _selection_frame_area;
+
+                    Shape* _color_shape = nullptr;
+                    Shape* _frame_shape = nullptr;
+
+                    bool _selected = false;
+                    static inline Texture* is_selected_overlay_texture = nullptr;
+                    Shape* _is_selected_shape = nullptr;
+
+                    static void on_color_area_realize(Widget* widget, ColorTile* instance);
+                    static void on_selection_frame_realize(Widget* widget, ColorTile* instance);
+
+                    AspectFrame _aspect_frame = AspectFrame(1, 1);
+                    Overlay _overlay;
             };
 
-            std::vector<ColorTile*> _tiles;
-
-            MenuModel* _menu;
-            static void on_menu_load_default(void* data);
-            static void on_menu_load(void* data);
-            static void on_menu_save_as(void* data);
-            static void on_menu_save_as_default(void* data);
-            
-            MenuModel* _sort_submenu;
-            static void on_menu_sort_by_default(void* data);
-            static void on_menu_sort_by_hue(void* data);
-            static void on_menu_sort_by_saturation(void* data);
-            static void on_menu_sort_by_value(void* data);
-
-            MenuButton* _menu_button;
-    };
-}
-
-// ###
-
-namespace mousetrap
-{
-    PaletteView::operator GtkWidget*()
-    {
-        return _main->operator GtkWidget*();
-    }
-
-    PaletteView::PaletteView()
-    {
-        _box = new FlowBox();
-        _box->connect_signal("child-activated", on_child_activated, this);
-        _box->set_selection_mode(GTK_SELECTION_SINGLE);
-        _box->set_column_spacing(0);
-        _box->set_row_spacing(0);
-
-        _scrolled_window = new ScrolledWindow();
-        _scrolled_window->set_policy(GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-        _scrolled_window->set_placement(GTK_CORNER_BOTTOM_RIGHT);
-        _scrolled_window->set_kinetic_scrolling_enabled(false);
-        _scrolled_window->set_child(_box);
-        _scrolled_window->set_size_request({_tile_size, 1});
-        _scrolled_window->set_vexpand(true);
-
-        _menu_button = new MenuButton();
-        _menu_button_label = new Label("");
-        _menu_button->set_child(_menu_button_label);
-        _menu_button->set_vexpand(false);
-
-        state::app->add_action("palette_view.load", on_menu_load, this);
-        state::app->add_action("palette_view.load_default", on_menu_load_default, this);
-
-        state::app->add_action("palette_view.save_as", on_menu_save_as, this);
-        state::app->add_action("palette_view.save_as_default", on_menu_save_as_default, this);
-
-        state::app->add_action("palette_view.sort_by_default", on_menu_sort_by_default, this);
-        state::app->add_action("palette_view.sort_by_hue", on_menu_sort_by_hue, this);
-        state::app->add_action("palette_view.sort_by_saturation", on_menu_sort_by_saturation, this);
-        state::app->add_action("palette_view.sort_by_value", on_menu_sort_by_value, this);
-
-        _menu = new MenuModel();
-        _menu->add_action("Load...", "app.palette_view.load");
-        _menu->add_action("Load Default", "app.palette_view.load_default");
-        _menu->add_action("Save As...", "app.palette_view.save_as");
-        _menu->add_action("Save As Default", "app.palette_view.save_as_default");
-
-        _sort_submenu = new MenuModel();
-        _sort_submenu->add_action("None", "app.palette_view.sort_by_default");
-        _sort_submenu->add_action("Hue", "app.palette_view.sort_by_hue");
-        _sort_submenu->add_action("Saturation", "app.palette_view.sort_by_saturation");
-        _sort_submenu->add_action("Value", "app.palette_view.sort_by_saturation");
-
-        _menu->add_submenu("Sort By...", _sort_submenu);
-        _menu_button->set_model(_menu);
-        _menu_button->set_popover_position(GTK_POS_RIGHT);
-
-        _main = new Box(GTK_ORIENTATION_VERTICAL);
-        _main->push_back(_menu_button);
-        _main->push_back(_scrolled_window);
-
-        _key_event_controller = new KeyEventController();
-        _key_event_controller->connect_key_pressed(on_key_pressed, this);
-        _main->add_controller(_key_event_controller);
-
-        update();
-    }
-
-    PaletteView::~PaletteView()
-    {
-        for (auto* tile : _tiles)
-            delete tile;
-    }
-
-    void PaletteView::update()
-    {
-        for (auto* tile : _tiles)
-            delete tile;
-        
-        _tiles.clear();
-        _box->clear();
-
-        auto color_image = Image();
-        color_image.create(_tile_size, _tile_size, RGBA(0, 0, 0, 0));
-
-        auto selection_frame = Image();
-        selection_frame.create(_tile_size, _tile_size, RGBA(0, 0, 0, 0));
-
-        for (size_t i = 0; i < _tile_size - 0; ++i)
-        {
-            selection_frame.set_pixel(i, 0, RGBA(0, 0, 0, 1));
-            selection_frame.set_pixel(0, i, RGBA(0, 0, 0, 1));
-            selection_frame.set_pixel(i, _tile_size - 1, RGBA(0, 0, 0, 1));
-            selection_frame.set_pixel(_tile_size - 1, i, RGBA(0, 0, 0, 1));
-
-            color_image.set_pixel(i, 0, RGBA(0, 0, 0, 1));
-            color_image.set_pixel(0, i, RGBA(0, 0, 0, 1));
-            color_image.set_pixel(i, _tile_size - 1, RGBA(0, 0, 0, 1));
-            color_image.set_pixel(_tile_size - 1, i, RGBA(0, 0, 0, 1));
-        }
-
-        for (size_t i = 1; i < _tile_size - 1; ++i)
-        {
-            selection_frame.set_pixel(i, 1, _selection_frame_color);
-            selection_frame.set_pixel(1, i, _selection_frame_color);
-            selection_frame.set_pixel(i, _tile_size - 2, _selection_frame_color);
-            selection_frame.set_pixel(_tile_size - 2, i, _selection_frame_color);
-        }
-
-        for (size_t i = 2; i < _tile_size - 2; ++i)
-        {
-            selection_frame.set_pixel(i, 2, RGBA(0, 0, 0, 1));
-            selection_frame.set_pixel(2, i, RGBA(0, 0, 0, 1));
-            selection_frame.set_pixel(i, _tile_size-3, RGBA(0, 0, 0, 1));
-            selection_frame.set_pixel(_tile_size-3, i, RGBA(0, 0, 0, 1));
-        }
-
-        for (size_t i = 3; _tile_size >= 16 and i < _tile_size - 3; ++i)
-        {
-            selection_frame.set_pixel(i, 3, RGBA(0, 0, 0, 1));
-            selection_frame.set_pixel(3, i, RGBA(0, 0, 0, 1));
-            selection_frame.set_pixel(i, _tile_size-4, RGBA(0, 0, 0, 1));
-            selection_frame.set_pixel(_tile_size-4, i, RGBA(0, 0, 0, 1));
-        }
-
-        std::vector<HSVA> palette;
-
-        if (_sort_mode == PaletteSortMode::NONE)
-            palette = state::palettes.at(state::active_palette_id).get_colors();
-        else if (_sort_mode == PaletteSortMode::BY_HUE)
-            palette = state::palettes.at(state::active_palette_id).get_colors_by_hue();
-        else if (_sort_mode == PaletteSortMode::BY_SATURATION)
-            palette = state::palettes.at(state::active_palette_id).get_colors_by_saturation();
-        else if (_sort_mode == PaletteSortMode::BY_VALUE)
-            palette = state::palettes.at(state::active_palette_id).get_colors_by_value();
-
-        if (palette.empty())
-        {
-            std::cerr << "[ERROR] In PaletteView::update: Palette with id \"" << state::active_palette_id
-                      << "\" does not have any colors." << std::endl;
-
-            palette = {HSVA(0, 0, 0, 1)};
-        }
-
-        for (auto& color : palette)
-        {
-            auto as_rgba = color.operator RGBA();
-
-            for (size_t x = 1; x < _tile_size - 1; ++x)
-                for (size_t y = 1; y < _tile_size - 1; ++y)
-                    color_image.set_pixel(x, y, as_rgba);
-
-            _tiles.push_back(new ColorTile());
-            auto& tile = _tiles.back();
-
-            tile->_color = color;
-            tile->_color_tile = new ImageDisplay(color_image);
-            tile->_selection_frame = new ImageDisplay(selection_frame);
-            tile->_selection_frame->set_visible(false);
-
-            tile->_overlay = new Overlay();
-            tile->_overlay->set_child(tile->_color_tile);
-            tile->_overlay->add_overlay(tile->_selection_frame);
-            tile->_overlay->set_size_request({_tile_size, _tile_size});
-        }
-
-        for (auto& tile : _tiles)
-            _box->push_back(tile->_overlay);
-
-        _box->set_homogeneous(false);
-
-        select(_selected_index);
-        _selected_palette_id = state::active_palette_id;
-
-        _box->show();
-        _main->set_tooltip_text(state::shortcut_map->generate_control_tooltip("palette_view",
-              "Select Primary Color from Palette"
-        ));
-        _main->set_cursor(GtkCursorType::POINTER);
-    }
-
-    void PaletteView::set_tile_size(size_t size)
-    {
-        if (size == 0)
-        {
-            std::cerr << "[WARNING] In PaletteView::set_tile_size: Ignoring size request of 0x0" << std::endl;
-            return;
-        }
-
-        if (size != _tile_size)
-        {
-            _tile_size = size;
-            update();
-        }
-    }
-
-    void PaletteView::select(size_t i)
-    {
-        if (i >= _tiles.size())
-        {
-            std::cerr << "[ERROR] In PaletteView::select: index " << i << " out of range for a view with " << _tiles.size() << " tiles" << std::endl;
-            return;
-        }
-
-        _tiles.at(_selected_index)->_selection_frame->set_visible(false);
-        _tiles.at(i)->_selection_frame->set_visible(true);
-
-        _box->set_all_signals_blocked(true);
-        gtk_widget_activate(GTK_WIDGET(_box->get_child_at_index(i)));
-        _box->set_all_signals_blocked(false);
-        _selected_index = i;
-
-        state::primary_color = _tiles.at(i)->_color;
-        state::color_picker->update();
-        state::primary_secondary_color_swapper->update();
-        state::verbose_color_picker->update();
-    }
-
-    void PaletteView::select_none()
-    {
-        _tiles.at(_selected_index)->_selection_frame->set_visible(false);
-    }
-
-    void PaletteView::on_child_activated(GtkFlowBox* self, GtkFlowBoxChild* child, PaletteView* instance)
-    {
-        instance->select(gtk_flow_box_child_get_index(child));
-    }
-
-    void PaletteView::select_color(HSVA color)
-    {
-        for (size_t i = 0; i < _tiles.size(); ++i)
-        {
-            if (_tiles.at(i)->_color == color)
+            class PaletteControlBar
             {
-                select(i);
-                return;
-            }
-        }
+                public:
+                    PaletteControlBar(PaletteView* owner);
+                    operator Widget*();
 
-        select_none();
+                    void set_palette_editing_enabled(bool);
+
+                private:
+                    PaletteView* _owner;
+
+                    Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
+
+                    ImageDisplay _palette_locked_icon = ImageDisplay(get_resource_path() + "icons/palette_locked.png");
+                    ImageDisplay _palette_not_locked_icon = ImageDisplay(get_resource_path() + "icons/palette_not_locked.png");
+                    ToggleButton _palette_locked_button;
+                    static void on_palette_locked_button_toggled(ToggleButton*, PaletteControlBar* instance);
+
+                    Box _preview_size_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                    Label _preview_size_label = Label("Preview Size (px): ");
+                    SeparatorLine _preview_size_spacer;
+                    SpinButton _preview_size_scale = SpinButton(2, 512, 1);
+                    static void on_preview_size_scale_value_changed(SpinButton*, PaletteControlBar* instance);
+
+                    Label _menu_button_label = Label("Palette");
+                    MenuButton _menu_button;
+                    MenuModel _menu;
+            };
+
+            PaletteControlBar _palette_control_bar = PaletteControlBar(this);
+
+            class PaletteFileSelectOpen
+            {
+                public:
+                    PaletteFileSelectOpen(PaletteView*);
+                    void show();
+
+                private:
+                    PaletteView* _owner;
+                    OpenFileDialog _dialog;
+            };
+            PaletteFileSelectOpen _palette_file_select_open = PaletteFileSelectOpen(this);
+
+            class PaletteFileSelectSave
+            {
+                public:
+                    PaletteFileSelectSave(PaletteView*);
+                    void show();
+
+                private:
+                    PaletteView* _owner;
+                    SaveAsFileDialog _dialog;
+            };
+
+            std::string _palette_file_save_path = "";
+            void save_palette_to_file(const std::string& path);
+            PaletteFileSelectSave _palette_file_select_save = PaletteFileSelectSave(this);
+
+            std::vector<ColorTile*> _color_tiles;
+            GridView _color_tile_view = GridView(GTK_SELECTION_SINGLE);
+            static void on_color_tile_view_selection_model_selection_changed(SelectionModel*, size_t child_i, size_t n_items, PaletteView* instance);
+            ScrolledWindow _scrolled_window;
+
+            size_t _selected_i = 0;
+            Box _palette_view_box = Box(GTK_ORIENTATION_HORIZONTAL);
+            Box _main = Box(GTK_ORIENTATION_VERTICAL);
+
+            static bool colors_equal(HSVA a, HSVA b);
+
+            Tooltip _tooltip;
+    };
+
+    namespace state
+    {
+        inline PaletteView* palette_view = nullptr;
     }
 
-    void PaletteView::set_selection_frame_color(RGBA color)
+    namespace state::actions::detail
     {
-        _selection_frame_color = color;
-        update();
-    }
-
-    void PaletteView::set_sort_mode(PaletteSortMode mode)
-    {
-        _sort_mode = mode;
-        update();
-    }
-
-    gboolean PaletteView::on_key_pressed(GtkEventControllerKey* self, guint keyval, guint keycode, GdkModifierType state,
-                                void* data)
-    {
-        PaletteView* instance = reinterpret_cast<PaletteView*>(data);
-
-        GdkEvent* event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(self));
-
-        if (state::shortcut_map->should_trigger(event, "palette_view.select_color_0"))
-            instance->select(0);
-        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_1"))
-            instance->select(1);
-        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_2"))
-            instance->select(2);
-        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_3"))
-            instance->select(3);
-        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_4"))
-            instance->select(4);
-        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_5"))
-            instance->select(5);
-        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_6"))
-            instance->select(6);
-        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_7"))
-            instance->select(7);
-        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_8"))
-            instance->select(8);
-        else if (state::shortcut_map->should_trigger(event, "palette_view.select_color_9"))
-            instance->select(9);
-
-        if (state::shortcut_map->should_trigger(event, "palette_view.increase_tile_size"))
-            instance->set_tile_size(instance->_tile_size + 8);
-        else if (state::shortcut_map->should_trigger(event, "palette_view.decrease_tile_size"))
-            instance->set_tile_size(instance->_tile_size - 8);
-
-        return false;
-    }
-
-    void PaletteView::on_menu_load_default(void* data) 
-    {
-        std::cerr << "In PaletteView::on_menu_load_default: TODO" << std::endl;
-    }
-    
-    void PaletteView::on_menu_load(void* data)
-    {
-        std::cerr << "In PaletteView::on_menu_load: TODO" << std::endl;
-    }
-
-    void PaletteView::on_menu_save_as(void* data)
-    {
-        std::cerr << "In PaletteView::on_menu_save_as: TODO" << std::endl;
-    }
-
-    void PaletteView::on_menu_save_as_default(void* data)
-    {
-        std::cerr << "In PaletteView::on_menu_save_as_default: TODO" << std::endl;
-    }
-
-    void PaletteView::on_menu_sort_by_default(void* data)
-    {
-        ((PaletteView*) data)->set_sort_mode(PaletteSortMode::NONE);
-    }
-
-    void PaletteView::on_menu_sort_by_hue(void* data)
-    {
-        ((PaletteView*) data)->set_sort_mode(PaletteSortMode::BY_HUE);
-    }
-
-    void PaletteView::on_menu_sort_by_saturation(void* data)
-    {
-        ((PaletteView*) data)->set_sort_mode(PaletteSortMode::BY_SATURATION);
-    }
-
-    void PaletteView::on_menu_sort_by_value(void* data)
-    {
-        ((PaletteView*) data)->set_sort_mode(PaletteSortMode::BY_VALUE);
+        inline std::vector<std::vector<HSVA>> palette_view_load_undo_backup = {};
+        inline std::vector<HSVA> palette_view_load_redo_palette = {};
     }
 }

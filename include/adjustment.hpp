@@ -6,19 +6,20 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <include/signal_emitter.hpp>
+#include <include/signal_component.hpp>
 
 namespace mousetrap
 {
-    class Adjustment
+    class Adjustment : public SignalEmitter, public HasValueChangedSignal<Adjustment>
     {
         public:
+            Adjustment();
             Adjustment(GtkAdjustment*);
             Adjustment(float current, float lower, float upper, float increment, float page_size = 0, float page_increment = 0);
 
-            operator Adjustment*();
-
-            void clamp_page(float lower, float upper);
-            void configure(float current, float lower, float upper, float increment, float page_size, float page_increment);
+            operator GtkAdjustment*();
+            operator GObject*() override;
 
             float get_lower() const;
             float get_upper() const;
@@ -32,6 +33,7 @@ namespace mousetrap
             void set_lower(float);
             void set_upper(float);
             void set_value(float);
+            void set_step_increment(float);
             void set_page_increment(float);
             void set_page_size(float);
 
@@ -39,5 +41,3 @@ namespace mousetrap
             GtkAdjustment* _native;
     };
 }
-
-#include <src/adjustment.inl>

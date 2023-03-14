@@ -3,42 +3,27 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
+#include "include/button.hpp"
+
 namespace mousetrap
 {
-    Button::Button()
+    inline Button::Button()
+            : WidgetImplementation<GtkButton>(GTK_BUTTON(gtk_button_new())),
+              HasClickedSignal<Button>(this)
+    {}
+
+    inline void Button::set_has_frame(bool b)
     {
-        _native = GTK_BUTTON(gtk_button_new());
+        gtk_button_set_has_frame(get_native(), b);
     }
 
-    Button::operator GtkWidget*()
+    inline void Button::set_child(Widget* widget)
     {
-        return GTK_WIDGET(_native);
+        gtk_button_set_child(get_native(), widget == nullptr ? nullptr : widget->operator GtkWidget*());
     }
 
-    void Button::set_label(const std::string& text)
+    inline void Button::set_action(Action& action)
     {
-        gtk_button_set_label(_native, text.c_str());
-    }
-
-    void Button::set_icon(const std::string& path)
-    {
-        GError* error = nullptr;
-        auto* pixbuf = gdk_pixbuf_new_from_file(path.c_str(), &error);
-
-        if (error)
-            std::cerr << "[WARNING] In Button::set_icon: Unable to load image at " << path << ":\n" << error->message << std::endl;
-
-        _icon = GTK_IMAGE(gtk_image_new_from_pixbuf(pixbuf));
-        gtk_button_set_child(_native, GTK_WIDGET(_icon));
-    }
-
-    void Button::set_has_frame(bool b)
-    {
-        gtk_button_set_has_frame(_native, b);
-    }
-
-    void Button::set_child(Widget* widget)
-    {
-        gtk_button_set_child(_native, widget->operator GtkWidget*());
+        gtk_actionable_set_action_name(GTK_ACTIONABLE(get_native()), ("app."+ action.get_id()).c_str());
     }
 }

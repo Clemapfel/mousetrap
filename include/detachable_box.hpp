@@ -7,16 +7,18 @@
 
 #include <include/box.hpp>
 #include <include/revealer.hpp>
+#include <include/signal_component.hpp>
 
 namespace mousetrap
 {
     /// \brief box container, call detach() to move child widget into new window. attach() or closing of window moves child back to box
-    class DetachableBox : public Widget
+    class DetachableBox : public WidgetImplementation<GtkRevealer>,
+        public HasAttachSignal<DetachableBox>,
+        public HasDetachSignal<DetachableBox>
     {
         public:
             DetachableBox(const std::string& detached_window_title = "");
             virtual ~DetachableBox();
-            operator GtkWidget*();
 
             void detach();
             void attach();
@@ -25,12 +27,6 @@ namespace mousetrap
             void set_child_attached(bool);
 
             void set_child(Widget*);
-
-            using OnAttachSignature = void(*)(void*);
-            void connect_attach(OnAttachSignature , void*);
-
-            using OnDetachSignature = void(*)(void*);
-            void connect_detach(OnDetachSignature, void*);
 
         private:
             bool _attached = true;
@@ -42,12 +38,6 @@ namespace mousetrap
 
             GtkRevealer* _anchor;
             GtkWidget* _child = nullptr;
-
-            OnAttachSignature _on_attach = nullptr;
-            void* _on_attach_data;
-
-            OnDetachSignature _on_detach = nullptr;
-            void* _on_detach_data;
 
             static gboolean on_window_close(GtkWindow*, DetachableBox* instance);
     };

@@ -9,20 +9,20 @@
 #include <vector>
 
 #include <include/widget.hpp>
+#include <include/selection_model.hpp>
 
 namespace mousetrap
 {
     namespace detail { struct _TreeListViewItem; }
 
-    class TreeListView : public Widget
+    class TreeListView : public WidgetImplementation<GtkListView>,
+        public HasListItemActivateSignal<TreeListView>
     {
         public:
             using Iterator = detail::_TreeListViewItem*;
 
             TreeListView(GtkOrientation = GTK_ORIENTATION_VERTICAL, GtkSelectionMode = GTK_SELECTION_NONE);
             TreeListView(GtkSelectionMode);
-
-            operator GtkWidget*() override;
 
             Iterator push_back(Widget* widget, Iterator = nullptr);
             Iterator push_front(Widget* widget, Iterator = nullptr);
@@ -31,15 +31,17 @@ namespace mousetrap
             Iterator move_item_to(size_t old_position, size_t new_position, Iterator old_it, Iterator new_it);
 
             void remove(size_t, Iterator = nullptr);
+            void clear(Iterator = nullptr);
 
             Widget* get_widget_at(size_t i, Iterator = nullptr);
             void set_widget_at(size_t i, Widget*, Iterator = nullptr);
 
             void set_enable_rubberband_selection(bool);
             void set_show_separators(bool);
-            void set_select_on_hover(bool);
+            void set_single_click_activate(bool);
 
-            GtkSelectionModel* get_selection_model();
+            SelectionModel* get_selection_model();
+            size_t get_n_items() const;
 
         private:
             static void on_list_item_factory_setup(GtkSignalListItemFactory* self, void* object, void*);
@@ -56,12 +58,10 @@ namespace mousetrap
             GListStore* _root;
             GtkTreeListModel* _tree_list_model;
 
-            GtkSelectionModel* _selection_model;
+            SelectionModel* _selection_model;
             GtkSelectionMode _selection_mode;
             GtkOrientation _orientation;
     };
 
     using ListView = TreeListView;
 }
-
-#include <src/list_view.inl>
