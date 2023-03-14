@@ -60,6 +60,65 @@ namespace mousetrap
         _proxy.set_focusable(true);
         _proxy.set_focus_on_click(true);
         _proxy.set_cursor(GtkCursorType::CELL);
+
+        _proxy.add_tick_callback([](FrameClock, UserInputLayer* instance) -> bool
+        {
+            auto current_tool = active_state->get_current_tool();
+            if (instance->_mouse_button_pressed and (current_tool == ToolID::BRUSH or current_tool == ToolID::ERASER)) {
+
+                auto points = generate_line_points(instance->_previous_cursor_pos, active_state->get_cursor_position());
+                auto brush = active_state->get_current_brush()->get_image();
+                auto out = DrawData();
+
+                for (auto p : points)
+                {
+                    for (int x = 0; x < brush.get_size().x; ++x)
+                    {
+                        for (int y = 0; y < brush.get_size().y; ++y)
+                        {
+                            auto pos = Vector2i(
+                                p.x + x - 0.5 * brush.get_size().x + 1,
+                                p.y + y - 0.5 * brush.get_size().y + 1
+                            );
+
+                            if (brush.get_pixel(x, y).a == 0 or pos.x < 0 or pos.x >= active_state->get_layer_resolution().x or pos.y < 0 or pos.y >= active_state->get_layer_resolution().y)
+                                continue;
+
+                            if (instance->_stroke_points.find(pos) != instance->_stroke_points.end())
+                                continue;
+
+                            instance->_stroke_points.insert(pos);
+
+                            auto current = active_state->get_current_cell()->get_pixel(pos.x, pos.y);
+                            if (current_tool == ToolID::BRUSH)
+                            {
+                                RGBA left = active_state->get_primary_color();
+                                left.a = active_state->get_brush_opacity();
+                                RGBA right = current;
+
+                                auto mixed = glm::mix(Vector3f(left.r, left.g, left.b), Vector3f(right.r, right.g, right.b), 1 -  left.a);
+
+                                out.insert(std::pair<Vector2i, HSVA>(pos, RGBA(mixed.r, mixed.g, mixed.b, right.a + left.a)));
+                            }
+                            else if (current_tool == ToolID::ERASER)
+                            {
+                                current.a -= active_state->get_brush_opacity();
+
+                                if (current.a <= 0)
+                                    current = RGBA(0, 0, 0, 0);
+
+                                out.insert(std::pair<Vector2i, HSVA>(pos, current));
+                            }
+                        }
+                    }
+                }
+
+                active_state->draw_to_cell(active_state->get_current_cell_position(), out);
+            }
+
+            instance->_previous_cursor_pos = active_state->get_cursor_position();
+            return true;
+        }, this);
     }
 
     Canvas::UserInputLayer::operator Widget*()
@@ -130,12 +189,33 @@ namespace mousetrap
     {
         instance->_absolute_widget_space_pos = {x, y};
         instance->update_cursor_pos();
+        instance->_mouse_button_pressed = true;
+
+
+        switch (active_state->get_current_tool())
+        {
+            case ToolID::BRUSH:
+                // handled in tick callback
+                return;
+            case ToolID::ERASER:
+                // handled in tick callback
+                return;
+            case ToolID::BUCKET_FILL:
+                state::actions::canvas_apply_bucket_fill.activate();
+                return;
+            case ToolID::COLOR_SELECT:
+                state::actions::canvas_apply_color_select.activate();
+                return;
+        }
+
     }
 
     void Canvas::UserInputLayer::on_click_released(ClickEventController*, size_t n, double x, double y, UserInputLayer* instance)
     {
         instance->_absolute_widget_space_pos = {x, y};
         instance->update_cursor_pos();
+        instance->_mouse_button_pressed = false;
+        instance->_stroke_points.clear();
     }
 
     void Canvas::UserInputLayer::on_motion_enter(MotionEventController*, double x, double y, UserInputLayer* instance)

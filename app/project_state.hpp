@@ -71,8 +71,8 @@ namespace mousetrap
             size_t get_brush_size() const;
             void set_brush_size(size_t);
 
-            ToolID get_active_tool() const;
-            void set_active_tool(ToolID);
+            ToolID get_current_tool() const;
+            void set_current_tool(ToolID);
 
             const Layer* get_current_layer() const;
             size_t get_current_layer_index() const;
@@ -86,6 +86,7 @@ namespace mousetrap
 
             void overwrite_cell_image(CellPosition, const Image&);
             CellPosition get_current_cell_position() const;
+            const Layer::Frame* get_current_cell() const;
 
             /// \@brief get texture, takes keyframing into account
             const Texture* get_cell_texture(size_t layer_i, size_t frame_i);

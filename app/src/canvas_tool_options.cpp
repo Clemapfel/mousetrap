@@ -8,34 +8,20 @@ namespace mousetrap
 {
     Canvas::ToolOptions::ToolOptions(Canvas* owner)
         : _owner(owner),
-          _gradient_options(owner),
-          _selection_options(owner)
+          _gradient_options(owner)
     {
         _gradient_revealer.set_child(_gradient_options);
-        _selection_revealer.set_child(_selection_options);
 
         _main.set_child(&_gradient_revealer);
-        _main.add_overlay(&_selection_revealer);
-
         _main_revealer.set_child(&_main);
     }
 
     void Canvas::ToolOptions::on_active_tool_changed()
     {
-        auto current_tool = active_state->get_active_tool();
+        auto current_tool = active_state->get_current_tool();
 
         bool gradient = current_tool == ToolID::GRADIENT;
         _gradient_revealer.set_revealed(gradient);
-
-        bool selection =
-            current_tool == ToolID::MARQUEE_NEIGHBORHODD_SELECT or
-            current_tool == ToolID::MARQUEE_RECTANGLE or
-            current_tool == ToolID::MARQUEE_CIRCLE or
-            current_tool == ToolID::MARQUEE_POLYGON;
-
-        _selection_revealer.set_revealed(selection);
-
-        _main_revealer.set_revealed(gradient or selection);
         _main_revealer.set_transition_type(TransitionType::SWING_TOP_TO_BOTTOM);
     }
 
@@ -205,19 +191,6 @@ namespace mousetrap
     }
 
     Canvas::ToolOptions::GradientOptions::operator Widget*()
-    {
-        return &_main;
-    }
-
-    Canvas::ToolOptions::SelectionOptions::SelectionOptions(Canvas* owner)
-        : _owner(owner)
-    {
-
-        _main.push_back(&_mode_label);
-        _main.push_back(&_mode_dropdown);
-    }
-
-    Canvas::ToolOptions::SelectionOptions::operator Widget*()
     {
         return &_main;
     }

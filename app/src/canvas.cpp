@@ -103,7 +103,7 @@ namespace mousetrap
         _canvas_and_scrollbars_box.push_back(&_y_scrollbar_and_reset_button_box);
         _canvas_and_scrollbars_box.set_expand(true);
 
-        _main.push_back(_tool_options);
+        //_main.push_back(_tool_options);
         _main.push_back(&_canvas_and_scrollbars_box);
         _main.push_back(_control_bar);
 
@@ -194,7 +194,7 @@ namespace mousetrap
             active_state->set_cell_offset(position, offset);
         });
 
-        canvas_apply_eyedropper.set_function([]()
+        canvas_apply_color_select.set_function([]()
         {
             auto cell_pos = active_state->get_current_cell_position();
             auto cursor_pos = active_state->get_cursor_position();
@@ -289,7 +289,7 @@ namespace mousetrap
             &canvas_paste_clipboard,
             &canvas_copy_to_clipboard,
             &canvas_apply_bucket_fill,
-            &canvas_apply_eyedropper,
+            &canvas_apply_color_select,
             &canvas_select_all,
             &canvas_invert_selection,
             &canvas_selection_mode_replace,
@@ -433,6 +433,7 @@ namespace mousetrap
     void Canvas::on_active_tool_changed()
     {
         _tool_options.on_active_tool_changed();
+        _brush_shape_layer->on_active_tool_changed();
     }
 
     void Canvas::on_color_selection_changed()
