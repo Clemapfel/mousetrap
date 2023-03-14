@@ -158,7 +158,6 @@ namespace mousetrap
         area->add_render_task(instance->_hsv_shape_cursor_window_frame);
 
         instance->reformat();
-        instance->update();
 
         area->queue_render();
     }

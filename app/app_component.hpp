@@ -11,9 +11,7 @@ namespace mousetrap
 {
     struct AppComponent
     {
-        virtual void update() {};
         virtual operator Widget*() = 0;
-
         operator GtkWidget*();
     };
 }

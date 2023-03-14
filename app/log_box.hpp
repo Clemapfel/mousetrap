@@ -16,7 +16,7 @@ namespace mousetrap
     {
         public:
             LogBox();
-            operator Widget*();
+            operator Widget*() override;
 
         protected:
             void on_cursor_position_changed() override;

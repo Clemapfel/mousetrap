@@ -16,7 +16,6 @@ namespace mousetrap
         public:
             BubbleLogArea();
             operator Widget*() override;
-            void update() override {};
 
             void send_message(const std::string&, InfoMessageType type = InfoMessageType::INFO);
             void set_has_close_button(bool);

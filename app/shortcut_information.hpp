@@ -16,8 +16,7 @@ namespace mousetrap
             ShortcutInformation();
             ~ShortcutInformation();
 
-            operator Widget*();
-            void update() override;
+            operator Widget*() override;
 
             void set_title(const std::string&);
             void add_shortcut(const std::string& accelerator, const std::string& description);
@@ -26,6 +25,8 @@ namespace mousetrap
             size_t get_n_shortcuts();
 
         private:
+            void update();
+
             std::string _title;
             ShortcutGroupDisplay* _shortcuts = nullptr;
 

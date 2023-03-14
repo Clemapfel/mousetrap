@@ -10,13 +10,4 @@
 
 namespace mousetrap
 {
-    KeyFile export_state_to_file()
-    {
-
-    }
-
-    void import_state_from_file(KeyFile& in)
-    {
-
-    }
 }

@@ -9,7 +9,7 @@ namespace mousetrap
         glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer_handle);
     }
 
-    RenderTexture::~RenderTexture() noexcept
+    RenderTexture::~RenderTexture()
     {
         if (_framebuffer_handle != 0)
             glDeleteFramebuffers(1, &_framebuffer_handle);

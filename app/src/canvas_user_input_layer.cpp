@@ -209,6 +209,8 @@ namespace mousetrap
             case ToolID::MARQUEE_NEIGHBORHODD_SELECT:
                 state::actions::canvas_apply_marquee_neighborhood_select.activate();
                 return;
+            default:
+                return;
         }
 
     }

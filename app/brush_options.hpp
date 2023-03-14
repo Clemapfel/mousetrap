@@ -36,7 +36,7 @@ namespace mousetrap
         public:
             BrushOptions();
 
-            operator Widget*();
+            operator Widget*() override;
 
             size_t get_preview_size() const;
             void set_preview_size(size_t);

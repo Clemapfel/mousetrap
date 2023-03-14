@@ -52,6 +52,8 @@ namespace mousetrap
         else if (id == POLYGON_OUTLINE) return "polygon_outline";
         else if (id == POLYGON_FILL) return "polygon_fill";
         else if (id == GRADIENT) return "gradient";
+        else
+            return "brush"; // unreachable
     }
 
     inline ToolID string_to_tool_id(std::string id)
@@ -73,6 +75,8 @@ namespace mousetrap
         else if (id == "polygon_outline") return POLYGON_OUTLINE;
         else if (id == "polygon_fill") return POLYGON_FILL;
         else if (id == "gradient") return GRADIENT;
+        else
+            return BRUSH; // unreachable
     }
 
     enum class SelectionMode

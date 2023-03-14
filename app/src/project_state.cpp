@@ -111,7 +111,7 @@ namespace mousetrap
         }
 
         select_all();
-        set_save_path(std::tmpnam(nullptr));
+        set_save_path("temp/TODO");
 
         /*
 

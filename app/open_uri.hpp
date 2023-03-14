@@ -17,11 +17,13 @@ namespace mousetrap::state
         {
             try
             {
-                if (CURRENT_PLATFORM == LINUX)
+                std::string current = CURRENT_PLATFORM;
+
+                if (current == LINUX)
                     std::system(("xdg-open " + uri).c_str());
-                else if (CURRENT_PLATFORM == MAC)
+                else if (current == MAC)
                     std::system(("open " + uri).c_str());
-                else if (CURRENT_PLATFORM == WINDOWS)
+                else if (current == WINDOWS)
                     std::system(("start " + uri).c_str());
 
             } catch (...)

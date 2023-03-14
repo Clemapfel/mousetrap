@@ -161,7 +161,7 @@ namespace mousetrap
         auto* as_pixbuf = to_pixbuf();
         GError* error = nullptr;
 
-        gdk_pixbuf_save(as_pixbuf, path.c_str(), "png", &error);
+        gdk_pixbuf_save(as_pixbuf, path.c_str(), "png", &error, NULL);
         if (error != nullptr)
         {
             std::cerr << "[ERROR] In Image::save_to_file: " << error->message << std::endl;

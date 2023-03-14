@@ -22,7 +22,7 @@ namespace mousetrap
             operator Widget*() override;
 
         private:
-            void on_color_selection_changed();
+            void on_color_selection_changed() override;
 
             void update(HSVA current, HSVA previous);
             static inline const float _previous_to_color_current_width_ratio = 0.15;

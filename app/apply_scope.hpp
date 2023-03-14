@@ -29,5 +29,7 @@ namespace mousetrap
             return "Selection Only";
         else if (scope == ApplyScope::EVERYWHERE)
             return "All Layers and Frames";
+        else
+            return ""; // unreachable
     }
 }

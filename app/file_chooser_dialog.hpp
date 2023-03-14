@@ -19,10 +19,10 @@ namespace mousetrap
             FilePreview();
 
             operator Widget*() override;
-            void update();
             void update_from(FileDescriptor*);
 
         private:
+            void update();
             size_t preview_icon_pixel_size_factor = state::settings_file->get_value_as<float>("file_chooser_dialog.file_preview", "preview_icon_pixel_size_factor");
 
             FileDescriptor* _file;

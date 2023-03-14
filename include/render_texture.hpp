@@ -12,7 +12,7 @@ namespace mousetrap
     {
         public:
             RenderTexture();
-            virtual ~RenderTexture();
+            ~RenderTexture();
 
             RenderTexture(const RenderTexture&) = delete;
             RenderTexture& operator=(const RenderTexture&) = delete;

@@ -55,10 +55,10 @@ namespace mousetrap
             size_t get_preview_size() const;
 
         private:
-            void on_color_selection_changed();
-            void on_palette_updated();
-            void on_palette_sort_mode_changed();
-            void on_palette_editing_toggled();
+            void on_color_selection_changed() override;
+            void on_palette_updated() override;
+            void on_palette_sort_mode_changed() override;
+            void on_palette_editing_toggled() override;
 
             size_t _preview_size = state::settings_file->get_value_as<size_t>("palette_view", "color_preview_size");
 

@@ -21,7 +21,7 @@ namespace mousetrap
         gtk_window_set_hide_on_close(GTK_WINDOW(get_native()), true);
     }
 
-    inline Dialog::~Dialog() noexcept
+    inline Dialog::~Dialog()
     {}
 
     inline void Dialog::close()
