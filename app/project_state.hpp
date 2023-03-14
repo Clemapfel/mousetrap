@@ -214,7 +214,7 @@ namespace mousetrap
             size_t _current_brush_i = 0;
             size_t _brush_size = 1;
             float _brush_opacity = 1;
-            float _bucket_fill_eps = 1 / 256.f;
+            float _bucket_fill_eps = 1 / 255.f;
 
             Selection _selection;
             SelectionMode _selection_mode = SelectionMode::REPLACE;

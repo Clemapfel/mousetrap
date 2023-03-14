@@ -508,7 +508,6 @@ namespace mousetrap
 
     DrawData Canvas::WireframeLayer::draw()
     {
-
         // TODO
         _render_shader->create_from_file(get_resource_path() + "shaders/msaa_postfx.frag", ShaderType::FRAGMENT);
         _area.queue_render();

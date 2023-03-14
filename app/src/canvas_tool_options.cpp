@@ -46,8 +46,6 @@ namespace mousetrap
 
         _owner->_gradient_layer->set_origin_point(origin);
         _owner->_gradient_layer->set_destination_point(destination);
-
-        std::cout << "(" << origin.x << " | " << origin.y << ") -> (" << destination.x << " | " << destination.y << ")" << std::endl;
     }
 
     Canvas::ToolOptions::GradientOptions::GradientOptions(Canvas* owner)

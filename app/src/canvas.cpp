@@ -237,12 +237,7 @@ namespace mousetrap
             );
 
             auto pos = active_state->get_cursor_position();
-            auto current = frame->get_pixel(pos.x, pos.y).operator HSVA();
-            auto next = active_state->get_primary_color();
-            float eps = active_state->get_bucket_fill_eps();
-
-            if (frame->get_pixel(pos.x, pos.y).a != 0 and abs(current.h - next.h) < eps and abs(current.s - next.s) < eps and abs(current.v - next.v) < eps and abs(current.a - next.a) < eps)
-                return;
+            float eps = 1 / 100.f; //active_state->get_bucket_fill_eps();
 
             auto points = generate_bucket_fill_points(pos, frame, active_state->get_bucket_fill_eps());
             Vector2iSet selection;
@@ -473,7 +468,7 @@ namespace mousetrap
 
     void Canvas::on_selection_mode_changed()
     {
-        std::cerr << "[ERROR] In Canvas::on_selection_mode_changed: TODO" << std::endl;
+        // noop
     }
 
     void Canvas::on_onionskin_visibility_toggled()
