@@ -9,13 +9,6 @@
 
 namespace mousetrap
 {
-    enum class SelectionMode
-    {
-        REPLACE,
-        ADD,
-        SUBTRACT
-    };
-
     class Selection
     {
         public:

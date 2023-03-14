@@ -200,16 +200,13 @@ static void activate(GtkApplication* app, void*)
     main_paned.set_start_child(&left_and_center_and_frame_view_paned);
     main_paned.set_end_child(&right_column_paned);
 
-    auto main_logbox = Box(GTK_ORIENTATION_VERTICAL);
-    main_logbox.push_back(&main_paned);
-
-    auto main_logbox_spacer = SeparatorLine();
-    main_logbox_spacer.set_size_request({0, 3 * state::margin_unit / 10});
-    main_logbox_spacer.set_hexpand(false);
-
-    main_logbox.push_back(&main_logbox_spacer);
-    main_logbox.push_back(log_box);
-    main_logbox.set_homogeneous(false);
+    auto main_logbox = Paned(GTK_ORIENTATION_VERTICAL);
+    main_logbox.set_start_child(&main_paned);
+    main_logbox.set_end_child(log_box);
+    main_logbox.set_end_child_resizable(false);
+    main_logbox.set_start_child_shrinkable(false);
+    log_box->set_vexpand(false);
+    //main_logbox.set_has_wide_handle(false);
 
     auto main = Box(GTK_ORIENTATION_VERTICAL);
     auto main_spacer_top = SeparatorLine();

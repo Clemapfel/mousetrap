@@ -78,6 +78,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(canvas, selection_mode_add);
         DECLARE_GLOBAL_ACTION(canvas, selection_mode_subtract);
         DECLARE_GLOBAL_ACTION(canvas, selection_outline_animated);
+        DECLARE_GLOBAL_ACTION(canvas, toggle_allow_drawing_outside_selection);
     }
 
     struct Canvas : public AppComponent,
@@ -100,6 +101,8 @@ namespace mousetrap
         public:
             Canvas();
             operator Widget*() override;
+
+            Widget* get_control_bar();
 
         protected:
             void on_brush_selection_changed() override;
@@ -788,6 +791,22 @@ namespace mousetrap
 
                     Box _flip_box = Box(GTK_ORIENTATION_HORIZONTAL);
 
+                    Box _selection_box = Box(GTK_ORIENTATION_HORIZONTAL);
+                    ToggleButton _allow_draw_outside_selection_button;
+                    ImageDisplay _allow_draw_outside_selection_icon = ImageDisplay(get_resource_path() + "icons/canvas_allow_draw_outside_selection.png");
+
+                    Button _invert_selection_button;
+                    ImageDisplay _invert_selection_icon = ImageDisplay(get_resource_path() + "icons/canvas_invert_selection.png");
+
+                    DropDown _mode_dropdown;
+
+                    Label _replace_list_label = Label("Replace");
+                    Label _replace_selected_label = Label("Replace");
+                    Label _add_list_label = Label("Add");
+                    Label _add_selected_label = Label("Add");
+                    Label _subtract_list_label = Label("Subtract");
+                    Label _subtract_selected_label = Label("Subtract");
+
                     ToggleButton _horizontal_symmetry_toggle_button;
                     ImageDisplay _horizontal_symmetry_icon = ImageDisplay(get_resource_path() + "icons/canvas_horizontal_symmetry.png");
 
@@ -921,33 +940,6 @@ namespace mousetrap
 
                     GradientOptions _gradient_options;
                     Revealer _gradient_revealer;
-
-                    // SELECTION
-
-                    class SelectionOptions
-                    {
-                        public:
-                            SelectionOptions(Canvas* owner);
-                            operator Widget*();
-
-                        private:
-                            Canvas* _owner;
-                            Box _main = Box(GTK_ORIENTATION_HORIZONTAL);
-
-                            Label _mode_label = Label("Mode: ");
-                            DropDown _mode_dropdown;
-
-                            Label _replace_list_label = Label("Replace");
-                            Label _replace_selected_label = Label("Replace");
-                            Label _add_list_label = Label("Add");
-                            Label _add_selected_label = Label("Add");
-                            Label _subtract_list_label = Label("Subtract");
-                            Label _subtract_selected_label = Label("Subtract");
-                    };
-
-                    SelectionOptions _selection_options;
-                    Revealer _selection_revealer;
-
             };
 
             ToolOptions _tool_options = ToolOptions(this);

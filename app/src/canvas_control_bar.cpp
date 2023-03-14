@@ -70,7 +70,9 @@ namespace mousetrap
             &_brush_outline_visible_icon,
             &_reset_view_icon,
             &_flip_horizontally_icon,
-            &_flip_vertically_icon
+            &_flip_vertically_icon,
+            &_invert_selection_icon,
+            &_allow_draw_outside_selection_icon
         })
         {
             icon->set_size_request(icon->get_size());
@@ -88,19 +90,70 @@ namespace mousetrap
 
         _position_label.set_text("");
 
-        _visibility_box.push_back(&_brush_outline_visible_toggle_button);
+        //_visibility_box.push_back(&_brush_outline_visible_toggle_button);
         _visibility_box.push_back(&_grid_visible_toggle_button);
         _visibility_box.push_back(&_background_visible_toggle_button);
 
         _flip_box.push_back(&_flip_vertically_button);
         _flip_box.push_back(&_flip_horizontally_button);
 
+        _mode_dropdown.push_back(&_replace_list_label, &_replace_selected_label, [](auto){
+            active_state->set_selection_mode(SelectionMode::REPLACE);
+        }, this);
+
+        _mode_dropdown.push_back(&_add_list_label, &_add_selected_label, [](auto){
+            active_state->set_selection_mode(SelectionMode::ADD);
+        }, this);
+
+        _mode_dropdown.push_back(&_subtract_list_label, &_subtract_selected_label, [](auto){
+            active_state->set_selection_mode(SelectionMode::SUBTRACT);
+        }, this);
+
+
+        float selected_label_max_width = 0;
+        for (auto* label : {
+            &_replace_list_label,
+            &_replace_selected_label,
+            &_add_list_label,
+            &_add_selected_label,
+            &_subtract_list_label,
+            &_subtract_selected_label
+        })
+        {
+            float size = label->get_preferred_size().natural_size.x;
+            if (size > selected_label_max_width)
+                selected_label_max_width = size;
+        }
+
+        for (auto* label : {
+            &_replace_list_label,
+            &_replace_selected_label,
+            &_add_list_label,
+            &_add_selected_label,
+            &_subtract_list_label,
+            &_subtract_selected_label
+        })
+            label->set_size_request({selected_label_max_width, 0});
+
+        _allow_draw_outside_selection_button.set_active(active_state->get_allow_draw_outside_selection());
+        _allow_draw_outside_selection_button.connect_signal_toggled([](ToggleButton* button, auto){
+            active_state->set_allow_draw_outside_selection(button->get_active());
+            state::actions::canvas_toggle_allow_drawing_outside_selection.set_state(button->get_active());
+        }, this);
+        _allow_draw_outside_selection_button.set_child(&_allow_draw_outside_selection_icon);
+
+        _invert_selection_button.set_action(state::actions::canvas_invert_selection);
+        _invert_selection_button.set_child(&_invert_selection_icon);
+        _selection_box.push_back(&_invert_selection_button);
+        _selection_box.push_back(&_allow_draw_outside_selection_button);
+        _selection_box.push_back(&_mode_dropdown);
+
         _view_box.push_back(&_reset_view_button);
         _view_box.push_back(&_scale_scale);
 
-        _symmetry_box.push_back(&_symmetry_control_menu_button);
         _symmetry_box.push_back(&_horizontal_symmetry_toggle_button);
         _symmetry_box.push_back(&_vertical_symmetry_toggle_button);
+        _symmetry_box.push_back(&_symmetry_control_menu_button);
 
         _symmetry_box.set_halign(GTK_ALIGN_END);
         _symmetry_box.set_hexpand(false);
@@ -120,6 +173,8 @@ namespace mousetrap
         _scrolled_window_box.push_back(&_visibility_box);
         add_spacer();
         _scrolled_window_box.push_back(&_flip_box);
+        add_spacer();
+        _scrolled_window_box.push_back(&_selection_box);
         add_spacer();
         _scrolled_window_box.push_back(&_symmetry_box);
 
@@ -147,6 +202,16 @@ namespace mousetrap
         _flip_horizontally_button.set_tooltip_text(tooltip("flip_horizontally"));
         _flip_vertically_button.set_tooltip_text(tooltip("flip_vertically"));
         _symmetry_control_menu_button.set_tooltip_text(tooltip("symmetry_control_menu"));
+        _reset_view_button.set_tooltip_text(tooltip("reset_transform"));
+
+        _invert_selection_button.set_tooltip_text(tooltip("invert_selection"));
+        _allow_draw_outside_selection_button.set_tooltip_text(tooltip("allow_draw_outside_selection"));
+        _replace_list_label.set_tooltip_text(tooltip("selection_mode_replace_verbose"));
+        _add_list_label.set_tooltip_text(tooltip("selection_mode_add_verbose"));
+        _subtract_list_label.set_tooltip_text(tooltip("selection_mode_subtract_verbose"));
+        _replace_selected_label.set_tooltip_text(tooltip("selection_mode_replace_verbose"));
+        _add_selected_label.set_tooltip_text(tooltip("selection_mode_add_verbose"));
+        _subtract_selected_label.set_tooltip_text(tooltip("selection_mode_subtract_verbose"));
     }
 
     Canvas::ControlBar::operator Widget*()

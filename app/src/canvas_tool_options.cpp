@@ -212,17 +212,6 @@ namespace mousetrap
     Canvas::ToolOptions::SelectionOptions::SelectionOptions(Canvas* owner)
         : _owner(owner)
     {
-        _mode_dropdown.push_back(&_replace_list_label, &_replace_selected_label, [](auto){
-            active_state->set_selection_mode(SelectionMode::REPLACE);
-        }, this);
-
-        _mode_dropdown.push_back(&_add_list_label, &_add_selected_label, [](auto){
-            active_state->set_selection_mode(SelectionMode::ADD);
-        }, this);
-
-        _mode_dropdown.push_back(&_subtract_list_label, &_subtract_selected_label, [](auto){
-            active_state->set_selection_mode(SelectionMode::SUBTRACT);
-        }, this);
 
         _main.push_back(&_mode_label);
         _main.push_back(&_mode_dropdown);

@@ -1035,6 +1035,16 @@ namespace mousetrap
         signal_selection_changed();
     }
 
+    void ProjectState::set_allow_draw_outside_selection(bool b)
+    {
+        _allow_draw_outside_selection = b;
+    }
+
+    bool ProjectState::get_allow_draw_outside_selection() const
+    {
+        return _allow_draw_outside_selection;
+    }
+
     void ProjectState::set_selection_mode(SelectionMode mode)
     {
         _selection_mode = mode;

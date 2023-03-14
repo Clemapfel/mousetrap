@@ -308,29 +308,29 @@ namespace mousetrap
         using namespace state::actions;
 
         frame_view_jump_to_start.set_function([](){
-           active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), 0);
+           active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), 0);
         });
 
         frame_view_jump_to_end.set_function([](){
-            active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), active_state->get_n_frames() - 1);
+            active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), active_state->get_n_frames() - 1);
         });
 
         frame_view_go_to_previous_frame.set_function([]()
         {
             auto current = active_state->get_current_frame_index();
             if (current == 0)
-                active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), active_state->get_n_frames() - 1);
+                active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), active_state->get_n_frames() - 1);
             else
-                active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), current - 1);
+                active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), current - 1);
         });
 
         frame_view_go_to_next_frame.set_function([]()
         {
             auto current = active_state->get_current_frame_index();
             if (current == active_state->get_n_frames() - 1)
-                active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), 0);
+                active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), 0);
             else
-                active_state->set_current_layer_and_frame(active_state->get_current_frame_index(), current + 1);
+                active_state->set_current_layer_and_frame(active_state->get_current_layer_index(), current + 1);
         });
 
         frame_view_toggle_onionskin_visible.set_stateful_function([](bool)

@@ -175,6 +175,8 @@ namespace mousetrap
             const Selection& get_selection() const;
             void select_all();
             void invert_selection();
+            bool get_allow_draw_outside_selection() const;
+            void set_allow_draw_outside_selection(bool);
 
             void set_selection_mode(SelectionMode mode);
             SelectionMode get_selection_mode() const;
@@ -215,6 +217,7 @@ namespace mousetrap
 
             Selection _selection;
             SelectionMode _selection_mode = SelectionMode::REPLACE;
+            bool _allow_draw_outside_selection = false;
 
             Vector2ui _layer_resolution;
             std::deque<Layer*> _layers;

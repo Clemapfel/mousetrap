@@ -64,13 +64,14 @@ namespace mousetrap
         selection_mode_submenu.add_action(tooltip("canvas", "selection_mode_add"), canvas_selection_mode_add.get_id());
         selection_mode_submenu.add_action(tooltip("canvas", "selection_mode_subtract"), canvas_selection_mode_subtract.get_id());
 
+        auto selection_settings_section = MenuModel();
+        selection_settings_section.add_stateful_action(tooltip("canvas", "selection_outline_animated"), canvas_selection_outline_animated.get_id(), true);
+        selection_settings_section.add_stateful_action(tooltip("canvas", "allow_drawing_outside_selection"), canvas_toggle_allow_drawing_outside_selection.get_id(), false);
+        selection_section.add_section("Settings", &selection_settings_section);
+
         auto selection_mode_section = MenuModel();
         selection_mode_section.add_submenu(tooltip("canvas", "selection_mode_submenu"), &selection_mode_submenu);
         selection_section.add_section("Mode", &selection_mode_section);
-
-        auto selection_settings_section = MenuModel();
-        selection_settings_section.add_stateful_action(tooltip("canvas", "selection_outline_animated"), canvas_selection_outline_animated.get_id(), true);
-        selection_section.add_section("Settings", &selection_settings_section);
 
         selection_submenu.add_section("Selection", &selection_section);
 

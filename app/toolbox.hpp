@@ -117,15 +117,6 @@ namespace mousetrap
             ToolIcon _outline_shapes_icon = ToolIcon("shapes_outline", this);
             ClickForPopover _outline_shapes_popover;
 
-            ToolIcon _marquee_rectangle_icon = ToolIcon("marquee_rectangle", this);
-            ClickForPopover _marquee_rectangle_popover;
-
-            ToolIcon _marquee_circle_icon = ToolIcon("marquee_circle", this);
-            ClickForPopover _marquee_circle_popover;
-
-            ToolIcon _marquee_polygon_icon = ToolIcon("marquee_polygon", this);
-            ClickForPopover _marquee_polygon_popover;
-
             ListView _list_view = ListView(GTK_ORIENTATION_HORIZONTAL, GTK_SELECTION_SINGLE);
 
             ScrolledWindow _scrolled_window;

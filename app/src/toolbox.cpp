@@ -93,14 +93,8 @@ namespace mousetrap
             MOVE_SELECTION,
             MARQUEE_NEIGHBORHODD_SELECT,
             MARQUEE_RECTANGLE,
-            MARQUEE_RECTANGLE_ADD,
-            MARQUEE_RECTANGLE_SUBTRACT,
             MARQUEE_CIRCLE,
-            MARQUEE_CIRCLE_ADD,
-            MARQUEE_CIRCLE_SUBTRACT,
             MARQUEE_POLYGON,
-            MARQUEE_POLYGON_ADD,
-            MARQUEE_POLYGON_SUBTRACT,
             BRUSH,
             ERASER,
             COLOR_SELECT,
@@ -128,18 +122,6 @@ namespace mousetrap
         _outline_shapes_popover.get_label_box().push_back(_outline_shapes_icon);
         for (auto id : {ToolID::RECTANGLE_OUTLINE, ToolID::CIRCLE_OUTLINE, ToolID::POLYGON_OUTLINE})
             _outline_shapes_popover.get_popover_box().push_back(_id_to_icons.at(id)->operator Widget*());
-
-        _marquee_rectangle_popover.get_label_box().push_back(_marquee_rectangle_icon);
-        for (auto id : {ToolID::MARQUEE_RECTANGLE_ADD, ToolID::MARQUEE_RECTANGLE_REPLACE, ToolID::MARQUEE_RECTANGLE_SUBTRACT})
-            _marquee_rectangle_popover.get_popover_box().push_back(_id_to_icons.at(id)->operator Widget*());
-
-        _marquee_circle_popover.get_label_box().push_back(_marquee_circle_icon);
-        for (auto id : {ToolID::MARQUEE_CIRCLE_ADD, ToolID::MARQUEE_CIRCLE_REPLACE, ToolID::MARQUEE_CIRCLE_SUBTRACT})
-            _marquee_circle_popover.get_popover_box().push_back(_id_to_icons.at(id)->operator Widget*());
-
-        _marquee_polygon_popover.get_label_box().push_back(_marquee_polygon_icon);
-        for (auto id : {ToolID::MARQUEE_POLYGON_ADD, ToolID::MARQUEE_POLYGON_REPLACE, ToolID::MARQUEE_POLYGON_SUBTRACT})
-            _marquee_polygon_popover.get_popover_box().push_back(_id_to_icons.at(id)->operator Widget*());
 
         auto add_tooltip = [](ToolIcon* to, ToolID id_in, Toolbox* instance)
         {
@@ -178,27 +160,6 @@ namespace mousetrap
         };
 
         add_compound_tooltip(
-            &_marquee_rectangle_popover,
-            "marquee_rectangle",
-            {MARQUEE_RECTANGLE_REPLACE, MARQUEE_RECTANGLE_ADD, MARQUEE_RECTANGLE_SUBTRACT},
-            this
-        );
-
-        add_compound_tooltip(
-                &_marquee_circle_popover,
-                "marquee_circle",
-                {MARQUEE_CIRCLE_REPLACE, MARQUEE_CIRCLE_ADD, MARQUEE_CIRCLE_SUBTRACT},
-                this
-        );
-
-        add_compound_tooltip(
-                &_marquee_polygon_popover,
-                "marquee_polygon",
-                {MARQUEE_POLYGON_REPLACE, MARQUEE_POLYGON_ADD, MARQUEE_POLYGON_SUBTRACT},
-                this
-        );
-
-        add_compound_tooltip(
             &_filled_shapes_popover, "shapes_fill", {RECTANGLE_FILL, CIRCLE_FILL, POLYGON_FILL}, this
         );
 
@@ -208,9 +169,9 @@ namespace mousetrap
 
         _list_view.push_back(*_id_to_icons.at(MOVE_SELECTION));
         _list_view.push_back(*_id_to_icons.at(MARQUEE_NEIGHBORHODD_SELECT));
-        _list_view.push_back(_marquee_rectangle_popover);
-        _list_view.push_back(_marquee_circle_popover);
-        _list_view.push_back(_marquee_polygon_popover);
+        _list_view.push_back(*_id_to_icons.at(MARQUEE_RECTANGLE));
+        _list_view.push_back(*_id_to_icons.at(MARQUEE_CIRCLE));
+        _list_view.push_back(*_id_to_icons.at(MARQUEE_POLYGON));
         _list_view.push_back(*_id_to_icons.at(BRUSH));
         _list_view.push_back(*_id_to_icons.at(ERASER));
         _list_view.push_back(*_id_to_icons.at(BUCKET_FILL));
@@ -239,17 +200,9 @@ namespace mousetrap
                 {MOVE_SELECTION, 0},
                 {MARQUEE_NEIGHBORHODD_SELECT, 1},
 
-                {MARQUEE_RECTANGLE_REPLACE, 2},
-                {MARQUEE_RECTANGLE_ADD, 2},
-                {MARQUEE_RECTANGLE_SUBTRACT, 2},
-
-                {MARQUEE_CIRCLE_REPLACE, 3},
-                {MARQUEE_CIRCLE_ADD, 3},
-                {MARQUEE_CIRCLE_SUBTRACT, 3},
-
-                {MARQUEE_POLYGON_REPLACE, 4},
-                {MARQUEE_POLYGON_ADD, 4},
-                {MARQUEE_POLYGON_SUBTRACT, 4},
+                {MARQUEE_RECTANGLE, 2},
+                {MARQUEE_CIRCLE, 3},
+                {MARQUEE_POLYGON, 4},
 
                 {BRUSH, 5},
                 {ERASER, 6},
@@ -286,10 +239,7 @@ namespace mousetrap
 
         for (auto* icon : {
             &_filled_shapes_icon,
-            &_outline_shapes_icon,
-            &_marquee_rectangle_icon,
-            &_marquee_circle_icon,
-            &_marquee_polygon_icon
+            &_outline_shapes_icon
         })
             icon->set_has_popover_indicator_visible(true);
 
@@ -344,27 +294,6 @@ namespace mousetrap
             auto& icon = pair.second;
             icon->set_selection_indicator_visible(selected);
         }
-
-        auto marquee_rectangle_selected = id == MARQUEE_RECTANGLE_REPLACE or
-            id == MARQUEE_RECTANGLE_ADD or
-            id == MARQUEE_RECTANGLE_SUBTRACT;
-
-        _marquee_rectangle_icon.set_child_selection_indicator_visible(marquee_rectangle_selected);
-        _marquee_rectangle_icon.set_has_popover_indicator_visible(not marquee_rectangle_selected);
-
-        auto marquee_circle_selected = id == MARQUEE_CIRCLE_REPLACE or
-                id == MARQUEE_CIRCLE_ADD or
-                id == MARQUEE_CIRCLE_SUBTRACT;
-
-        _marquee_circle_icon.set_child_selection_indicator_visible(marquee_circle_selected);
-        _marquee_circle_icon.set_has_popover_indicator_visible(not marquee_circle_selected);
-
-        auto marquee_polygon_selected = id == MARQUEE_POLYGON_REPLACE or
-                id == MARQUEE_POLYGON_ADD or
-                id == MARQUEE_POLYGON_SUBTRACT;
-
-        _marquee_polygon_icon.set_child_selection_indicator_visible(marquee_polygon_selected);
-        _marquee_polygon_icon.set_has_popover_indicator_visible(not marquee_polygon_selected);
 
         auto shapes_fill_selected = id == CIRCLE_FILL or
                 id == RECTANGLE_FILL or

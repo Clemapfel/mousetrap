@@ -268,6 +268,13 @@ namespace mousetrap
             return next;
         }, true);
 
+        canvas_toggle_allow_drawing_outside_selection.set_stateful_function([](bool) -> bool{
+            auto next = not active_state->get_allow_draw_outside_selection();
+            active_state->set_allow_draw_outside_selection(next);
+            return next;
+        }, false);
+        canvas_toggle_allow_drawing_outside_selection.set_state(active_state->get_allow_draw_outside_selection());
+
         // move float actions are triggered by userinput layer, not shortcut controller
 
         for (auto* action : {
@@ -288,7 +295,8 @@ namespace mousetrap
             &canvas_selection_mode_replace,
             &canvas_selection_mode_add,
             &canvas_selection_mode_subtract,
-            &canvas_selection_outline_animated
+            &canvas_selection_outline_animated,
+            &canvas_toggle_allow_drawing_outside_selection
         })
             state::add_shortcut_action(*action);
 
@@ -573,5 +581,10 @@ namespace mousetrap
             y_adjustment.set_value(_offset.y);
             y_adjustment.set_signal_value_changed_blocked(false);
         }
+    }
+
+    Widget* Canvas::get_control_bar()
+    {
+        return _control_bar.operator Widget *();
     }
 }
