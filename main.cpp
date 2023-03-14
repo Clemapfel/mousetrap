@@ -202,7 +202,7 @@ static void activate(GtkApplication* app, void*)
 
     auto main_logbox = Paned(GTK_ORIENTATION_VERTICAL);
     main_logbox.set_start_child(&main_paned);
-    main_logbox.set_end_child(log_box);
+    //main_logbox.set_end_child(log_box);
     main_logbox.set_end_child_resizable(false);
     main_logbox.set_start_child_shrinkable(false);
     log_box->set_vexpand(false);

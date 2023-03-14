@@ -111,7 +111,7 @@ namespace mousetrap
         {
             auto* inserted = _id_to_icons.insert({id, new ToolIcon(tool_id_to_string(id), this)}).first->second;
             inserted->set_on_click([id = id](){
-                active_state->set_active_tool(id);
+                active_state->set_current_tool(id);
             });
         }
 
@@ -190,7 +190,7 @@ namespace mousetrap
                 std::cout << tool_id_to_string(pair.first) << std::endl;
                 if (pair.second == i)
                 {
-                    active_state->set_active_tool(pair.first);
+                    active_state->set_current_tool(pair.first);
                     return;
                 }
             }
@@ -275,7 +275,7 @@ namespace mousetrap
                 which << (char) action->get_id().at(i);
 
             action->set_function([id = std::string(which.str())](){
-                active_state->set_active_tool(string_to_tool_id(id));
+                active_state->set_current_tool(string_to_tool_id(id));
             });
             state::add_shortcut_action(*action);
         }
@@ -316,7 +316,7 @@ namespace mousetrap
 
     void Toolbox::on_active_tool_changed()
     {
-        select(active_state->get_active_tool());
+        select(active_state->get_current_tool());
     }
 
     Toolbox::~Toolbox()

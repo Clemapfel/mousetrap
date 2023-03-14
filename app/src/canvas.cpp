@@ -103,7 +103,7 @@ namespace mousetrap
         _canvas_and_scrollbars_box.push_back(&_y_scrollbar_and_reset_button_box);
         _canvas_and_scrollbars_box.set_expand(true);
 
-        _main.push_back(_tool_options);
+        //_main.push_back(_tool_options);
         _main.push_back(&_canvas_and_scrollbars_box);
         _main.push_back(_control_bar);
 
@@ -194,7 +194,7 @@ namespace mousetrap
             active_state->set_cell_offset(position, offset);
         });
 
-        canvas_apply_eyedropper.set_function([]()
+        canvas_apply_color_select.set_function([]()
         {
             auto cell_pos = active_state->get_current_cell_position();
             auto cursor_pos = active_state->get_cursor_position();
@@ -214,7 +214,7 @@ namespace mousetrap
 
             auto current = frame->get_pixel(pos.x, pos.y).operator HSVA();
             auto next = active_state->get_primary_color();
-            float eps = 1 / 1000.f; // TODO
+            float eps = active_state->get_bucket_fill_eps();
 
             if (frame->get_pixel(pos.x, pos.y).a != 0 and abs(current.h - next.h) < eps and abs(current.s - next.s) < eps and abs(current.v - next.v) < eps and abs(current.a - next.a) < eps)
                 return;
@@ -227,6 +227,24 @@ namespace mousetrap
                 to_draw.insert({p, primary});
 
             active_state->draw_to_cell(active_state->get_current_cell_position(), to_draw);
+        });
+
+        canvas_apply_marquee_neighborhood_select.set_function([](){
+
+            const auto* frame = active_state->get_frame(
+                active_state->get_current_layer_index(),
+                active_state->get_current_frame_index()
+            );
+
+            auto pos = active_state->get_cursor_position();
+            float eps = 1 / 100.f; //active_state->get_bucket_fill_eps();
+
+            auto points = generate_bucket_fill_points(pos, frame, active_state->get_bucket_fill_eps());
+            Vector2iSet selection;
+            for (auto& point : points)
+                selection.insert(point);
+
+            active_state->add_selection(selection);
         });
 
         canvas_select_all.set_function([](){
@@ -289,7 +307,8 @@ namespace mousetrap
             &canvas_paste_clipboard,
             &canvas_copy_to_clipboard,
             &canvas_apply_bucket_fill,
-            &canvas_apply_eyedropper,
+            &canvas_apply_color_select,
+            &canvas_apply_marquee_neighborhood_select,
             &canvas_select_all,
             &canvas_invert_selection,
             &canvas_selection_mode_replace,
@@ -433,6 +452,7 @@ namespace mousetrap
     void Canvas::on_active_tool_changed()
     {
         _tool_options.on_active_tool_changed();
+        _brush_shape_layer->on_active_tool_changed();
     }
 
     void Canvas::on_color_selection_changed()
@@ -448,7 +468,7 @@ namespace mousetrap
 
     void Canvas::on_selection_mode_changed()
     {
-        std::cerr << "[ERROR] In Canvas::on_selection_mode_changed: TODO" << std::endl;
+        // noop
     }
 
     void Canvas::on_onionskin_visibility_toggled()

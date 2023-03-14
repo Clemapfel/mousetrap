@@ -96,18 +96,50 @@ namespace mousetrap
         create_from(set);
     }
 
-    void Selection::add(const Selection& other)
+    void Selection::add(const Vector2iSet& other)
     {
-        for (auto pos : other._data)
+        auto before = _data.size();
+        auto add = other.size();
+
+        for (auto pos : other)
+        {
+            if (pos.x < _x_min)
+                _x_min = pos.x;
+
+            if (pos.y < _y_min)
+                _y_min = pos.y;
+
+            if (pos.x > _x_max)
+                _x_max = pos.x;
+
+            if (pos.y > _y_max)
+                _y_max = pos.y;
+
             _data.insert(pos);
+        }
 
         generate_outline_vertices();
     }
 
-    void Selection::subtract(const Selection& other)
+    void Selection::subtract(const Vector2iSet& other)
     {
-        for (auto pos : other._data)
+        for (auto pos : other)
             _data.erase(pos);
+
+        for (auto& pos : _data)
+        {
+            if (pos.x < _x_min)
+                _x_min = pos.x;
+
+            if (pos.y < _y_min)
+                _y_min = pos.y;
+
+            if (pos.x > _x_max)
+                _x_max = pos.x;
+
+            if (pos.y > _y_max)
+                _y_max = pos.y;
+        }
 
         generate_outline_vertices();
     }
@@ -189,5 +221,10 @@ namespace mousetrap
                 _outline_vertices.top_to_bottom.push_back({{x2+1, y}, {x2+1, y+1}});
             }
         }
+    }
+
+    size_t Selection::size() const
+    {
+        return _data.size();
     }
 }

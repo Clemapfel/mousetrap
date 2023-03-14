@@ -205,7 +205,7 @@ namespace mousetrap
         _reset_view_button.set_tooltip_text(tooltip("reset_transform"));
 
         _invert_selection_button.set_tooltip_text(tooltip("invert_selection"));
-        _allow_draw_outside_selection_button.set_tooltip_text(tooltip("allow_draw_outside_selection"));
+        _allow_draw_outside_selection_button.set_tooltip_text(tooltip("allow_drawing_outside_selection"));
         _replace_list_label.set_tooltip_text(tooltip("selection_mode_replace_verbose"));
         _add_list_label.set_tooltip_text(tooltip("selection_mode_add_verbose"));
         _subtract_list_label.set_tooltip_text(tooltip("selection_mode_subtract_verbose"));

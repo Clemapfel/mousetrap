@@ -110,17 +110,7 @@ namespace mousetrap
             frame->update_texture();
         }
 
-        //select_all();
-        // TODO
-        Vector2iSet selection;
-        for (int x = 0; x < _layer_resolution.x; ++x)
-            for (int y = 0; y < _layer_resolution.y; ++y)
-               if (x > 0.25 * _layer_resolution.x and x < 0.75 * _layer_resolution.x and y > 0.25 * _layer_resolution.y and y < 0.75 * _layer_resolution.y and rand() / float(RAND_MAX) > 0.6)
-                   selection.insert({x, y});
-
-        set_selection(selection);
-        // TODO
-
+        select_all();
         set_save_path(std::tmpnam(nullptr));
 
         /*
@@ -277,12 +267,12 @@ namespace mousetrap
         return _brush_size;
     }
 
-    ToolID ProjectState::get_active_tool() const
+    ToolID ProjectState::get_current_tool() const
     {
         return _active_tool;
     }
 
-    void ProjectState::set_active_tool(ToolID id)
+    void ProjectState::set_current_tool(ToolID id)
     {
         _active_tool = id;
         signal_active_tool_changed();
@@ -626,6 +616,11 @@ namespace mousetrap
     CellPosition ProjectState::get_current_cell_position() const
     {
         return CellPosition{_current_layer_i, _current_frame_i};
+    }
+
+    const Layer::Frame* ProjectState::get_current_cell() const
+    {
+        return _layers.at(_current_layer_i)->get_frame(_current_frame_i);
     }
 
     void ProjectState::overwrite_cell_image(CellPosition position, const Image& image)
@@ -1011,9 +1006,18 @@ namespace mousetrap
         return _selection;
     }
 
-    void ProjectState::set_selection(const Vector2iSet& selection)
+    void ProjectState::add_selection(const Vector2iSet& selection)
     {
-        _selection.create_from(selection);
+        if (_selection_mode == SelectionMode::SUBTRACT)
+            _selection.subtract(selection);
+        else
+        {
+            if (_selection.size() == 0 or _selection_mode == SelectionMode::REPLACE)
+                _selection.create_from(selection);
+            else if (_selection_mode == SelectionMode::ADD)
+                _selection.add(selection);
+        }
+
         signal_selection_changed();
     }
 

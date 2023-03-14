@@ -60,8 +60,15 @@ namespace mousetrap
         if (not _area.get_is_realized())
             return;
 
-        auto color = active_state->get_primary_color();
-        _brush_shape->set_color(HSVA(color.h, color.s, color.v, active_state->get_brush_opacity()));
+        auto tool = active_state->get_current_tool();
+        if (tool == ToolID::BRUSH)
+        {
+            auto color = active_state->get_primary_color();
+            _brush_shape->set_color(HSVA(color.h, color.s, color.v, active_state->get_brush_opacity()));
+        }
+        else if (tool == ToolID::ERASER)
+            _brush_shape->set_color(RGBA(1, 1, 1, active_state->get_brush_opacity()));
+
         _area.queue_render();
     }
 
@@ -90,6 +97,11 @@ namespace mousetrap
         _offset = {offset.x, offset.y};
         reformat();
         _area.queue_render();
+    }
+
+    void Canvas::BrushShapeLayer::on_active_tool_changed()
+    {
+        on_color_selection_changed();
     }
 
     void Canvas::BrushShapeLayer::on_area_realize(Widget* widget, BrushShapeLayer* instance)
@@ -169,12 +181,23 @@ namespace mousetrap
 
         _render_shape->as_rectangle({0, 0}, {1, 1});
         _render_shape->set_texture(_render_texture);
+
+        on_color_selection_changed();
     }
 
     bool Canvas::BrushShapeLayer::on_area_render(GLArea* area, GdkGLContext* context, BrushShapeLayer* instance)
     {
         area->make_current();
         gdk_gl_context_make_current(context);
+
+        auto active_tool = active_state->get_current_tool();
+        if (not (active_tool == ToolID::BRUSH or active_tool == ToolID::ERASER))
+        {
+            glClearColor(0, 0, 0, 0);
+            glClear(GL_COLOR_BUFFER_BIT);
+            glFlush();
+            return true;
+        }
 
         static GLNativeHandle before = [](){
             GLint before = 0;
