@@ -1006,9 +1006,18 @@ namespace mousetrap
         return _selection;
     }
 
-    void ProjectState::set_selection(const Vector2iSet& selection)
+    void ProjectState::add_selection(const Vector2iSet& selection)
     {
-        _selection.create_from(selection);
+        if (_selection_mode == SelectionMode::SUBTRACT)
+            _selection.subtract(selection);
+        else
+        {
+            if (_selection.size() == 0 or _selection_mode == SelectionMode::REPLACE)
+                _selection.create_from(selection);
+            else if (_selection_mode == SelectionMode::ADD)
+                _selection.add(selection);
+        }
+
         signal_selection_changed();
     }
 

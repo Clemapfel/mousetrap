@@ -71,6 +71,7 @@ namespace mousetrap
         DECLARE_GLOBAL_ACTION(canvas, apply_bucket_fill);
         DECLARE_GLOBAL_ACTION(canvas, apply_color_select);
         DECLARE_GLOBAL_ACTION(canvas, apply_gradient);
+        DECLARE_GLOBAL_ACTION(canvas, apply_marquee_neighborhood_select);
 
         DECLARE_GLOBAL_ACTION(canvas, select_all);
         DECLARE_GLOBAL_ACTION(canvas, invert_selection);

@@ -22,8 +22,10 @@ namespace mousetrap
             void apply_offset(Vector2i);
             void invert(int x_min, int y_min, int x_max, int y_max);
 
-            void subtract(const Selection&);
-            void add(const Selection&);
+            void subtract(const Vector2iSet&);
+            void add(const Vector2iSet&);
+
+            size_t size() const;
 
             using OutlineVertices = struct
             {

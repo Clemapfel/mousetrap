@@ -214,7 +214,7 @@ namespace mousetrap
 
             auto current = frame->get_pixel(pos.x, pos.y).operator HSVA();
             auto next = active_state->get_primary_color();
-            float eps = 1 / 1000.f; // TODO
+            float eps = active_state->get_bucket_fill_eps();
 
             if (frame->get_pixel(pos.x, pos.y).a != 0 and abs(current.h - next.h) < eps and abs(current.s - next.s) < eps and abs(current.v - next.v) < eps and abs(current.a - next.a) < eps)
                 return;
@@ -227,6 +227,29 @@ namespace mousetrap
                 to_draw.insert({p, primary});
 
             active_state->draw_to_cell(active_state->get_current_cell_position(), to_draw);
+        });
+
+        canvas_apply_marquee_neighborhood_select.set_function([](){
+
+            const auto* frame = active_state->get_frame(
+                active_state->get_current_layer_index(),
+                active_state->get_current_frame_index()
+            );
+
+            auto pos = active_state->get_cursor_position();
+            auto current = frame->get_pixel(pos.x, pos.y).operator HSVA();
+            auto next = active_state->get_primary_color();
+            float eps = active_state->get_bucket_fill_eps();
+
+            if (frame->get_pixel(pos.x, pos.y).a != 0 and abs(current.h - next.h) < eps and abs(current.s - next.s) < eps and abs(current.v - next.v) < eps and abs(current.a - next.a) < eps)
+                return;
+
+            auto points = generate_bucket_fill_points(pos, frame, active_state->get_bucket_fill_eps());
+            Vector2iSet selection;
+            for (auto& point : points)
+                selection.insert(point);
+
+            active_state->add_selection(selection);
         });
 
         canvas_select_all.set_function([](){
@@ -290,6 +313,7 @@ namespace mousetrap
             &canvas_copy_to_clipboard,
             &canvas_apply_bucket_fill,
             &canvas_apply_color_select,
+            &canvas_apply_marquee_neighborhood_select,
             &canvas_select_all,
             &canvas_invert_selection,
             &canvas_selection_mode_replace,

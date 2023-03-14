@@ -206,6 +206,9 @@ namespace mousetrap
             case ToolID::COLOR_SELECT:
                 state::actions::canvas_apply_color_select.activate();
                 return;
+            case ToolID::MARQUEE_NEIGHBORHODD_SELECT:
+                state::actions::canvas_apply_marquee_neighborhood_select.activate();
+                return;
         }
 
     }
