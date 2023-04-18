@@ -33,7 +33,7 @@ if (${MOUSETRAP_BUILD_DOCUMENTATION})
             "${PROJECT_DOCUMENTATION_DIR}/Doxyfile"
             @ONLY
         )
-        add_custom_target(build_docs
+        add_custom_target(mousetrap_docs
             COMMAND doxygen
             WORKING_DIRECTORY "${PROJECT_DOCUMENTATION_DIR}"
         )
