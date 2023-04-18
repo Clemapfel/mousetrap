@@ -1,17 +1,35 @@
 cmake_minimum_required(VERSION 3.12)
 
 #
-#   Variables:
+# MOUSETRAP: GUI Library
 #
-#   MOUSETRAP_BUILD_TEST : boolean, whether all executables in /test should be build
-#   MOUSETRAP_BUILD_DOCUMENTATION: boolean, whether doxygen should be added as a build target
+# Dependencies:
+#   GTK4
+#   OpenGL
+#   GLEW
+#   GLM (OpenGL Math)
+#
+# Variables:
+#   MOUSETRAP_BUILD_TESTS: boolean
+#       Whether to build tests
+#
+#   MOUSETRAP_BUILD_DOCUMENTATION: boolean
+#       Whether to build the documentation.
+#       Additional Dependencies:
+#           Doxygen
+#
+#   MOUSETRAP_BUILD_JULIA_BINDING: boolean
+#       Whether to generate the Julia Binding
+#       Additional Dependencies:
+#           Julia
+#           JLxcc
 #
 
 ### PROJECT ###
 
 project(mousetrap
     VERSION 0.1.0
-    DESCRIPTION "TODO"
+    DESCRIPTION "TODO" # TODO
     LANGUAGES CXX
 )
 
@@ -25,9 +43,12 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 option(MOUSETRAP_BUILD_DOCUMENTATION OFF)
 if (${MOUSETRAP_BUILD_DOCUMENTATION})
+
     find_package(Doxygen REQUIRED)
     set(PROJECT_DOCUMENTATION_DIR "${CMAKE_SOURCE_DIR}/docs")
-    if (DOXYGEN_FOUND AND EXISTS "${PROJECT_DOCUMENTATION_DIR}")
+    if (NOT EXISTS "${PROJECT_DOCUMENTATION_DIR}")
+        message(WARNING "Directory mousetrap/docs is missing, unable to build documentation.")
+    else()
         configure_file(
             "${PROJECT_DOCUMENTATION_DIR}/Doxyfile.in"
             "${PROJECT_DOCUMENTATION_DIR}/Doxyfile"
@@ -42,13 +63,8 @@ endif()
 
 ### DEPENDENCIES ###
 
-# OpenGL
 find_library(OpenGL REQUIRED NAMES GL)
-
-# GLEW
 find_library(GLEW REQUIRED NAMES GLEW)
-
-# SFML (audio)
 find_package(SFML COMPONENTS audio REQUIRED)
 
 # GTK4
@@ -302,21 +318,25 @@ set_target_properties(mousetrap PROPERTIES
 
 option(MOUSETRAP_BUILD_TESTS ON)
 if(MOUSETRAP_BUILD_TESTS)
-    set(TEST_PREFIX "mousetrap_test_")
-    function(declare_test name)
-        add_executable(
-            "${TEST_PREFIX}${name}"
-            "${CMAKE_SOURCE_DIR}/test/${name}.cpp"
-        )
-        target_link_libraries("${TEST_PREFIX}${name}" PRIVATE mousetrap)
-        add_test(NAME "${TEST_PREFIX}${name}" COMMAND "${TEST_PREFIX}${name}")
-    endfunction()
+    if (NOT EXISTS "${CMAKE_SOURCE_DIR}/test")
+        message(WARNING "Directory mousetrap/test is missing, unable to build tests.")
+    else()
+        set(TEST_PREFIX "mousetrap_test_")
+        function(declare_test name)
+            add_executable(
+                "${TEST_PREFIX}${name}"
+                "${CMAKE_SOURCE_DIR}/test/${name}.cpp"
+            )
+            target_link_libraries("${TEST_PREFIX}${name}" PRIVATE mousetrap)
+            add_test(NAME "${TEST_PREFIX}${name}" COMMAND "${TEST_PREFIX}${name}")
+        endfunction()
 
-    declare_test(debug)
-    declare_test(main)
+        declare_test(debug)
+        declare_test(main)
+    endif()
 endif()
 
-### INSTALL ###
+### INSTALL MOUSETRAP ###
 
 include("${CMAKE_SOURCE_DIR}/cmake/install-rules.cmake")
 
@@ -328,3 +348,36 @@ set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+
+### JULIA BINDING ###
+
+option(MOUSETRAP_BUILD_JULIA_BINDING OFF)
+if (MOUSETRAP_BUILD_JULIA_BINDING)
+
+    find_package(JlCxx REQUIRED)
+    get_target_property(JlCxx_location JlCxx::cxxwrap_julia LOCATION)
+    get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
+
+    add_library(mousetrap_julia_binding SHARED
+        julia_binding/julia_binding.cpp
+        julia_binding/julia_interface.cpp
+    )
+
+    target_link_libraries(mousetrap_julia_binding PUBLIC
+        "$<BUILD_INTERFACE:mousetrap>"
+        JlCxx::cxxwrap_julia
+    )
+
+    set(JULIA_BINDING_DIRECTORY "${CMAKE_SOURCE_DIR}/julia_binding")
+
+    set_target_properties(mousetrap_julia_binding PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${JULIA_BINDING_DIRECTORY}"
+    )
+
+    add_custom_target(mousetra_julia_binding_test
+        COMMAND julia mousetrap.jl
+        WORKING_DIRECTORY "${JULIA_BINDING_DIRECTORY}"
+        DEPENDS mousetrap_julia_binding
+    )
+endif()
+

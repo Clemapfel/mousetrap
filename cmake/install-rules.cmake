@@ -8,7 +8,8 @@ install(
 
 install(
     FILES mousetrap.hpp
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mousetrap"
+)
 
 install(
     TARGETS mousetrap
