@@ -1,5 +1,4 @@
 set(package mousetrap)
-
 include(GNUInstallDirs)
 
 install(
@@ -10,7 +9,7 @@ install(
 install(
     TARGETS mousetrap
     EXPORT mousetrap
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}
+    LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}"
 )
 
 include(CMakePackageConfigHelpers)

@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.12)
 
+#
+#   Variables:
+#
+#   MOUSETRAP_BUILD_TEST : boolean, whether all executables in /test should be build
+#   MOUSETRAP_BUILD_DOCUMENTATION: boolean, whether doxygen should be added as a build target
+#
+
+### PROJECT ###
+
 project(mousetrap
     VERSION 0.1.0
     DESCRIPTION "TODO"
@@ -14,9 +23,8 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 ### DOCUMENTATION ###
 
-option(BUILD_DOCUMENTATION OFF)
-
-if (${BUILD_DOCUMENTATION})
+option(MOUSETRAP_BUILD_DOCUMENTATION OFF)
+if (${MOUSETRAP_BUILD_DOCUMENTATION})
     find_package(Doxygen REQUIRED)
     set(PROJECT_DOCUMENTATION_DIR "${CMAKE_SOURCE_DIR}/docs")
     if (DOXYGEN_FOUND AND EXISTS "${PROJECT_DOCUMENTATION_DIR}")
@@ -290,7 +298,33 @@ set_target_properties(mousetrap PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )
 
+### TEST ###
+
+option(MOUSETRAP_BUILD_TESTS ON)
+if(MOUSETRAP_BUILD_TESTS)
+    set(TEST_PREFIX "mousetrap_test_")
+    function(declare_test name)
+        add_executable(
+            "${TEST_PREFIX}${name}"
+            "${CMAKE_SOURCE_DIR}/test/${name}.cpp"
+        )
+        target_link_libraries("${TEST_PREFIX}${name}" PRIVATE mousetrap)
+        add_test(NAME "${TEST_PREFIX}${name}" COMMAND "${TEST_PREFIX}${name}")
+    endfunction()
+
+    declare_test(debug)
+    declare_test(main)
+endif()
 
 ### INSTALL ###
 
 include("${CMAKE_SOURCE_DIR}/cmake/install-rules.cmake")
+
+include(CPack)
+set(CPACK_PACKAGE_VENDOR "Clemens Cords")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_DESCRIPTION}")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
