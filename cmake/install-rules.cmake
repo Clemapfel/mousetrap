@@ -1,14 +1,16 @@
 set(package mousetrap)
 include(GNUInstallDirs)
 
+
+
 install(
-    DIRECTORY include
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mousetrap"
+    DIRECTORY mousetrap/include # TODO
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
 install(
-    FILES mousetrap.hpp
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mousetrap"
+    FILES mousetrap.hpp # TODO
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
 install(

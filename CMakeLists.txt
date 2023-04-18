@@ -289,7 +289,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/action.cpp
 )
 
-add_library(mousetrap SHAREDc
+add_library(mousetrap SHARED
     ${MOUSETRAP_HEADER_FILES}
     ${MOUSETRAP_SOURCE_FILES}
 )
