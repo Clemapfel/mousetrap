@@ -3,13 +3,17 @@ include(GNUInstallDirs)
 
 install(
     DIRECTORY include
-    INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/mousetrap"
 )
+
+install(
+    FILES mousetrap.hpp
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 install(
     TARGETS mousetrap
     EXPORT mousetrap
-    LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}"
 )
 
 include(CMakePackageConfigHelpers)
