@@ -32,17 +32,22 @@ namespace mousetrap
         return gtk_button_get_has_frame(get_native());
     }
 
-    void Button::set_child(Widget* widget)
+    void Button::set_child(const Widget& widget)
     {
-        WARN_IF_SELF_INSERTION(Button::push_back, this, widget);
+        _child = &widget;
+        WARN_IF_SELF_INSERTION(Button::push_back, this, _child);
+        gtk_button_set_child(get_native(), widget.operator GtkWidget*());
+    }
 
-        _child = widget;
-        gtk_button_set_child(get_native(), _child == nullptr ? nullptr : _child->operator GtkWidget*());
+    void Button::remove_child()
+    {
+        _child = nullptr;
+        gtk_button_set_child(get_native(), nullptr);
     }
 
     Widget* Button::get_child() const
     {
-        return _child;
+        return const_cast<Widget*>(_child);
     }
 
     void Button::set_action(const Action& action)

@@ -14,7 +14,7 @@ class SoundTest : public Widget
         SoundBuffer _buffer;
         Sound _playback;
 
-        ToggleButton _play_button;
+        Button _play_button;
         Label _play_button_label = Label("&#9654;");
 
         Scale _pitch_scale = Scale(0, 2, 0.01, Orientation::VERTICAL);
@@ -66,11 +66,8 @@ class SoundTest : public Widget
             }
 
             _play_button.set_child(_play_button_label);
-            _play_button.connect_signal_toggled([](ToggleButton* button, SoundTest* instance){
-                if (button->get_active())
-                    instance->_playback.play();
-                else
-                    instance->_playback.pause();
+            _play_button.connect_signal_clicked([](Button* button, SoundTest* instance){
+                instance->_playback.play();
             }, this);
 
             for (auto* box : {
@@ -84,10 +81,6 @@ class SoundTest : public Widget
             _main.push_back(_looping_box);
             _main.push_back(_volume_box);
             _main.push_back(_pitch_box);
-
-            _playback.connect_signal_play([](Sound*){
-               std::cout << "play" << std::endl;
-            });
         }
 
         operator NativeWidget() const override

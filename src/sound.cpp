@@ -28,8 +28,7 @@ namespace mousetrap
             auto* self = (SoundInternal*) g_object_new(sound_internal_get_type(), nullptr);
             sound_internal_init(self);
             self->native = new sf::Sound();
-
-            NEW_SIGNAL_FOR_TYPE("play", sound_internal);
+            NEW_SIGNAL("play", self);
             return self;
         }
     }

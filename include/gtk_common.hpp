@@ -131,5 +131,5 @@ namespace mousetrap::detail
             return self;\
         }
 
-    #define NEW_SIGNAL_FOR_TYPE(id, snake_case) g_signal_newv(#id, snake_case##_get_type(), (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS), NULL, NULL, NULL, NULL, G_TYPE_NONE, 0, NULL);
+    #define NEW_SIGNAL(id, instance) g_signal_newv(id, G_TYPE_FROM_INSTANCE(instance), (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS), NULL, NULL, NULL, NULL, G_TYPE_NONE, 0, NULL);
 }

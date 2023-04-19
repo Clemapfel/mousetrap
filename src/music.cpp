@@ -29,7 +29,7 @@ namespace mousetrap
             music_internal_init(self);
             self->native = new sf::Music();
 
-            NEW_SIGNAL_FOR_TYPE("play", music_internal);
+            NEW_SIGNAL("play", self);
             return self;
         }
     }
