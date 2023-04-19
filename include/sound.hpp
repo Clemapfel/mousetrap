@@ -12,12 +12,31 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        struct _SoundInternal
+        {
+            GObject parent;
+            sf::Sound* native;
+        };
+        using SoundInternal = _SoundInternal;
+    }
+    #endif
+
     /// @brief a sound, streamed from ram
-    class Sound
+    class Sound : public SignalEmitter,
+        HAS_SIGNAL(Sound, play)
     {
         public:
             /// @brief construct
             Sound();
+
+            /// @brief destruct
+            ~Sound();
+
+            /// @brief expose internal
+            operator GObject*() const override;
 
             /// @brief construct from buffer
             /// @param buffer
@@ -78,6 +97,6 @@ namespace mousetrap
             Vector3f get_spacial_position() const;
 
         private:
-            sf::Sound _native;
+            detail::SoundInternal* _internal;
     };
 }

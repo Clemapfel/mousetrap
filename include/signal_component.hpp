@@ -2185,4 +2185,33 @@ namespace mousetrap
     ///
     /// @fn has_signal_close::has_signal_close
     /// \signal_ctor
+
+    DECLARE_SIGNAL(Play, play, PLAY, "play", void);
+    /// @class has_signal_play
+    /// @brief signal emitted when sound playback starts
+    /// @tparam T instance type
+    ///
+    /// @fn void has_signal_play::connect_signal_play(Function_t)
+    /// \signal_connect{(T*) -> void}
+    ///
+    /// @fn void has_signal_play::connect_signal_play(Function_t, Data_t)
+    /// \signal_connect_data{(T*, Data_t) -> void}
+    ///
+    /// @fn void has_signal_play::emit_signal_play()
+    /// \signal_emit_brief
+    ///
+    /// @var has_signal_play::signal_id
+    /// \signal_id{play}
+    ///
+    /// @fn void has_signal_play::set_signal_play_blocked(bool)
+    /// \signal_set_blocked
+    ///
+    /// @fn bool has_signal_play::get_signal_play_blocked() const
+    /// \signal_get_blocked
+    ///
+    /// @fn void has_signal_play::disconnect_signal_play()
+    /// \signal_disconnect
+    ///
+    /// @fn has_signal_play::has_signal_play
+    /// \signal_ctor
 }
