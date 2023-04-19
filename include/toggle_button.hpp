@@ -24,10 +24,6 @@ namespace mousetrap
             /// @brief construct
             ToggleButton();
 
-            /// @brief construct and set widget as child
-            /// @param child
-            ToggleButton(Widget*);
-
             /// @brief get whether the button is pressed in
             /// @return true if active, false otherwise
             bool get_active() const;

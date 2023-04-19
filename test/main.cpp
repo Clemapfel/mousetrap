@@ -61,7 +61,7 @@ int main()
         add_test(new MotionControllerTest(), "MotionEventController");
         add_test(new PanedTest(), "Paned");
         add_test(new SignalsChapter(), "Chapter 3: Signals");
-        add_test(new SoundTest("/home/clem/Workspace/mousetrap/test/test.wav"));
+        add_test(new SoundTest("/home/clem/Workspace/mousetrap/test/test.wav"), "Sound");
 
         // action to hide gui element other than stack child
 

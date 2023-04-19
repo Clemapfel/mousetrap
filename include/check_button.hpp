@@ -43,6 +43,10 @@ namespace mousetrap
             /// @return mousetrap::CheckButtonState
             CheckButtonState get_state() const;
 
+            /// @brief check whether state is active
+            /// @return true if state is CheckButtonState::ACTIVE, false otherwise
+            bool get_active() const;
+
             #if GTK_MINOR_VERSION >= 8
 
             /// @brief set widget displays next to the button, usually used for a text label
