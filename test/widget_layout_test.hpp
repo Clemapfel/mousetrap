@@ -8,7 +8,7 @@
 
 namespace mousetrap
 {
-    class PanedTest : public Widget
+    class WidgetLayoutTest : public Widget
     {
         private:
             class Child : public Widget
@@ -39,6 +39,8 @@ namespace mousetrap
             };
 
             Child child = Child("CHILD");
+            Box child_box = Box(Orientation::HORIZONTAL);
+            Frame child_box_frame = Frame();
 
             Label halignment_label = Label("halign: ");
             DropDown halignment_dropdown;
@@ -55,9 +57,9 @@ namespace mousetrap
             Box main = Box(Orientation::VERTICAL);
 
         public:
-            PanedTest()
+            WidgetLayoutTest()
             {
-
+                main.push_back(child);
             }
 
             operator NativeWidget() const override

@@ -99,7 +99,7 @@ namespace mousetrap
             /// @param size_y new height
             /// @param interpolation_type interpolation algorithm to use
             /// @return newly allocated image
-            [[nodiscard]] Image as_scaled(size_t size_x, size_t size_y, InterpolationType) const;
+            [[nodiscard]] Image as_scaled(size_t size_x, size_t size_y, InterpolationType = InterpolationType::TILES) const;
 
             /// @brief create a new image, cropped
             /// @param offset_x left most anchor of the newly cropped image, may be negative

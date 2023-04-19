@@ -178,7 +178,7 @@ namespace mousetrap
         out.create(_size.x, _size.y);
 
         glBindTexture(GL_TEXTURE_2D, _native_handle);
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, out.data());
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, out.data());
         glBindTexture(GL_TEXTURE_2D, 0);
 
         return out;

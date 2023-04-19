@@ -34,7 +34,7 @@ namespace mousetrap
             /// @brief set which area of the file should loop
             /// @param start_time start of loop area
             /// @param end_time end of loop area
-            void set_loop_area(Time start_time, Time end_time);
+            void set_loop_region(Time start_time, Time end_time);
 
             /// @brief get whether the sound should loop indefinitely
             /// @return true if looping, false otherwise

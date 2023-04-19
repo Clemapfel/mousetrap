@@ -25,7 +25,7 @@ namespace mousetrap
             /// @param sample_count total number of samples
             /// @param channel_count number of channels
             /// @param sample_rate in Hertz
-            void create(size_t sample_count, size_t channel_count = 1, size_t sample_rate = 44100);
+            [[deprecated("unused as of v0.1.0")]] void create(size_t sample_count, size_t channel_count = 1, size_t sample_rate = 44100);
 
             /// @brief create from file, supports WAV, OGG/Vorbis and FLAC
             /// @param path absolute path

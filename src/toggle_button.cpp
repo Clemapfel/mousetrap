@@ -32,17 +32,22 @@ namespace mousetrap
         gtk_toggle_button_set_active(get_native(), b ? TRUE : FALSE);
     }
 
-    void ToggleButton::set_child(Widget* widget)
+    void ToggleButton::set_child(const Widget& widget)
     {
-        WARN_IF_SELF_INSERTION(ToggleButton::set_child, this, widget);
+        _child = &widget;
+        WARN_IF_SELF_INSERTION(ToggleButton::set_child, this, _child);
+        gtk_button_set_child(GTK_BUTTON(get_native()), widget.operator GtkWidget*());
+    }
 
-        _child = widget;
-        gtk_button_set_child(GTK_BUTTON(get_native()), _child == nullptr ? nullptr : _child->operator GtkWidget*());
+    void ToggleButton::remove_child()
+    {
+        _child = nullptr;
+        gtk_button_set_child(GTK_BUTTON(get_native()), nullptr);
     }
 
     Widget* ToggleButton::get_child() const
     {
-        return _child;
+        return const_cast<Widget*>(_child);
     }
 
     void ToggleButton::set_has_frame(bool b)

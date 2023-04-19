@@ -38,7 +38,10 @@ namespace mousetrap
 
             /// @brief set widget to use as the label for the button
             /// @param widget
-            void set_child(Widget*);
+            void set_child(const Widget&);
+
+            /// @brief remove label widget
+            void remove_child();
 
             /// @brief get widget used as the label for the button
             /// @return child
@@ -53,7 +56,7 @@ namespace mousetrap
             bool get_has_frame() const;
 
         private:
-            Widget* _child = nullptr;
+            const Widget* _child = nullptr;
     };
 }
 

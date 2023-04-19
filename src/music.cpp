@@ -93,7 +93,7 @@ namespace mousetrap
         return Vector3f(vec.x, vec.y, vec.z);
     }
 
-    void Music::set_loop_area(Time start_time, Time end_time)
+    void Music::set_loop_region(Time start_time, Time end_time)
     {
         float start_mys = start_time.as_microseconds();
         float end_mys = start_time.as_microseconds();
