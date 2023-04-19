@@ -2214,4 +2214,33 @@ namespace mousetrap
     ///
     /// @fn has_signal_play::has_signal_play
     /// \signal_ctor
+
+    DECLARE_SIGNAL(Stop, stop, STOP, "stop", void);
+    /// @class has_signal_stop
+    /// @brief signal emitted when sound playback seizes, either by calling pause/stop or by the sound file ending while loop is deactivated
+    /// @tparam T instance type
+    ///
+    /// @fn void has_signal_stop::connect_signal_stop(Function_t)
+    /// \signal_connect{(T*) -> void}
+    ///
+    /// @fn void has_signal_stop::connect_signal_stop(Function_t, Data_t)
+    /// \signal_connect_data{(T*, Data_t) -> void}
+    ///
+    /// @fn void has_signal_stop::emit_signal_stop()
+    /// \signal_emit_brief
+    ///
+    /// @var has_signal_stop::signal_id
+    /// \signal_id{stop}
+    ///
+    /// @fn void has_signal_stop::set_signal_stop_blocked(bool)
+    /// \signal_set_blocked
+    ///
+    /// @fn bool has_signal_stop::get_signal_stop_blocked() const
+    /// \signal_get_blocked
+    ///
+    /// @fn void has_signal_stop::disconnect_signal_stop()
+    /// \signal_disconnect
+    ///
+    /// @fn has_signal_stop::has_signal_stop
+    /// \signal_ctor
 }

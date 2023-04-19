@@ -7,6 +7,8 @@
 #include <include/sound_buffer.hpp>
 #include <include/time.hpp>
 #include <include/vector.hpp>
+#include <include/signal_emitter.hpp>
+#include <include/signal_component.hpp>
 
 #include <SFML/Audio/Sound.hpp>
 
@@ -23,6 +25,19 @@ namespace mousetrap
         using SoundInternal = _SoundInternal;
     }
     #endif
+
+    /// @brief status of a sound
+    enum class SoundStatus
+    {
+        /// @brief sound is currently stopped
+        STOPPED = sf::Sound::Status::Stopped,
+
+        /// @brief sound is currently paused
+        PAUSED = sf::Sound::Status::Paused,
+
+        /// @brief sound is currently playing
+        PLAYING = sf::Sound::Status::Playing
+    };
 
     /// @brief a sound, streamed from ram
     class Sound : public SignalEmitter,
@@ -50,6 +65,9 @@ namespace mousetrap
 
             /// @brief pause the playback, position is reset to the beginning
             void stop();
+
+            /// @brief get sound status
+            SoundStatus get_status() const;
 
             /// @brief get whether the sound should loop indefinitely
             /// @return true if looping, false otherwise
@@ -97,6 +115,6 @@ namespace mousetrap
             Vector3f get_spacial_position() const;
 
         private:
-            detail::SoundInternal* _internal;
+            detail::SoundInternal* _internal = nullptr;
     };
 }

@@ -206,4 +206,6 @@ DEFINE_SIGNAL(Scroll, scroll, SCROLL, "scroll", bool,
                           SPLAT(double x, double y),
                           SPLAT(x, y)
     );
+
+    DEFINE_SIGNAL(Play, play, PLAY, "play", void);
 }

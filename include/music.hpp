@@ -8,15 +8,37 @@
 
 #include <include/vector.hpp>
 #include <include/time.hpp>
+#include <include/signal_component.hpp>
+#include <include/signal_emitter.hpp>
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        struct _MusicInternal
+        {
+            GObject parent;
+            sf::Music* native;
+        };
+        using MusicInternal = _MusicInternal;
+    }
+    #endif
+
+
     /// @brief longform sound, streamed directly from disk if possible
-    class Music
+    class Music : public SignalEmitter,
+        HAS_SIGNAL(Music, play)
     {
         public:
             /// @brief construct
             Music();
+
+            /// @brief destruct
+            ~Music();
+
+            /// @brief expose gobject \internal
+            operator GObject*() const override;
 
             /// @brief create from file
             /// @param path absolute path
@@ -82,6 +104,6 @@ namespace mousetrap
             Vector3f get_spacial_position() const;
 
         private:
-            sf::Music _native;
+            detail::MusicInternal* _internal = nullptr;
     };
 }

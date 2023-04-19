@@ -84,6 +84,10 @@ class SoundTest : public Widget
             _main.push_back(_looping_box);
             _main.push_back(_volume_box);
             _main.push_back(_pitch_box);
+
+            _playback.connect_signal_play([](Sound*){
+               std::cout << "play" << std::endl;
+            });
         }
 
         operator NativeWidget() const override
