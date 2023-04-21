@@ -5,6 +5,13 @@ find_package(mousetrap REQUIRED)
 add_executable(mousetrap_example main.cpp)
 target_link_libraries(mousetrap_example PRIVATE mousetrap)
 
+get_target_property(MOUSETRAP_INCLUDE_DIRS mousetrap::mousetrap INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(MOUSETRAP_LIBRARIES mousetrap::mousetrap INTERFACE_LINK_LIBRARIES)
+
 target_include_directories(mousetrap_example PRIVATE
-    mousetrap::mousetrap
+    "${MOUSETRAP_INCLUDE_DIRS}"
+)
+
+target_link_libraries(mousetrap_example PRIVATE
+    "${MOUSETRAP_LIBRARIES}"
 )
