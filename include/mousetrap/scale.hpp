@@ -138,4 +138,4 @@ namespace mousetrap
     };
 }
 
-#include <src/scale.inl>
+#include "inline/scale.inl"

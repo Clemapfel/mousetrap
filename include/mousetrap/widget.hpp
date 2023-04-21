@@ -378,4 +378,4 @@ namespace mousetrap
     };
 };
 
-#include <src/widget.inl>
+#include "inline/widget.inl"

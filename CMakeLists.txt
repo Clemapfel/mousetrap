@@ -185,10 +185,18 @@ set(MOUSETRAP_HEADER_FILES
         include/mousetrap/window.hpp
         include/mousetrap/wrap_mode.hpp
         include/mousetrap/shape.hpp
+        include/mousetrap/inline/action.inl
+        include/mousetrap/inline/clipboard.inl
+        include/mousetrap/inline/column_view.inl
+        include/mousetrap/inline/drop_down.inl
+        include/mousetrap/inline/log.inl
+        include/mousetrap/inline/scale.inl
+        include/mousetrap/inline/signal_emitter.inl
+        include/mousetrap/inline/spin_button.inl
+        include/mousetrap/inline/widget.inl
 )
 
 set(MOUSETRAP_SOURCE_FILES
-    src/action.inl
     src/adjustment.cpp
     src/angle.cpp
     src/application.cpp
@@ -200,13 +208,10 @@ set(MOUSETRAP_SOURCE_FILES
     src/check_button.cpp
     src/click_event_controller.cpp
     src/clipboard.cpp
-    src/clipboard.inl
     src/color.cpp
     src/column_view.cpp
-    src/column_view.inl
     src/drag_event_controller.cpp
     src/drop_down.cpp
-    src/drop_down.inl
     src/entry.cpp
     src/event_controller.cpp
     src/expander.cpp
@@ -234,7 +239,6 @@ set(MOUSETRAP_SOURCE_FILES
     src/level_bar.cpp
     src/list_view.cpp
     src/log.cpp
-    src/log.inl
     src/long_press_event_controller.cpp
     src/menu_bar.cpp
     src/menu_model.cpp
@@ -256,7 +260,6 @@ set(MOUSETRAP_SOURCE_FILES
     src/revealer.cpp
     src/rotate_event_controller.cpp
     src/scale.cpp
-    src/scale.inl
     src/scroll_event_controller.cpp
     src/scrollbar.cpp
     src/scrolled_window.cpp
@@ -267,11 +270,9 @@ set(MOUSETRAP_SOURCE_FILES
     src/shortcut_controller.cpp
     src/signal_component.cpp
     src/signal_emitter.cpp
-    src/signal_emitter.inl
     src/sound.cpp
     src/sound_buffer.cpp
     src/spin_button.cpp
-    src/spin_button.inl
     src/spinner.cpp
     src/stack.cpp
     src/stylus_event_controller.cpp
@@ -282,7 +283,6 @@ set(MOUSETRAP_SOURCE_FILES
     src/time.cpp
     src/toggle_button.cpp
     src/widget.cpp
-    src/widget.inl
     src/window.cpp
     src/action.cpp
 )
@@ -294,7 +294,6 @@ add_library(mousetrap SHARED
 
 target_include_directories(mousetrap PUBLIC
     "${CMAKE_SOURCE_DIR}/include"
-    "${CMAKE_SOURCE_DIR}" # for .inl
     "${GTK_INCLUDE_DIRS}"
 )
 

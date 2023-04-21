@@ -154,4 +154,4 @@ namespace mousetrap
     };
 }
 
-#include <src/action.inl>
+#include "inline/action.inl"

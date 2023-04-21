@@ -112,5 +112,5 @@ namespace mousetrap
     };
 }
 
-#include <src/clipboard.inl>
+#include "inline/clipboard.inl"
 

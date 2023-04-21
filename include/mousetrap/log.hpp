@@ -127,4 +127,4 @@ namespace mousetrap
     };
 }
 
-#include <src/log.inl>
+#include "inline/log.inl"

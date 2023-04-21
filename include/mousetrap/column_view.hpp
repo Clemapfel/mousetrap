@@ -211,4 +211,4 @@ namespace mousetrap
     };
 }
 
-#include <src/column_view.inl>
+#include "inline/column_view.inl"

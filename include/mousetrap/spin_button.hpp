@@ -170,4 +170,4 @@ namespace mousetrap
     };
 }
 
-#include <src/spin_button.inl>
+#include "inline/spin_button.inl"

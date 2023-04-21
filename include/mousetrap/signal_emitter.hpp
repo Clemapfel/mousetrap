@@ -69,4 +69,4 @@ namespace mousetrap
     };
 }
 
-#include <src/signal_emitter.inl>
+#include "inline/signal_emitter.inl"
