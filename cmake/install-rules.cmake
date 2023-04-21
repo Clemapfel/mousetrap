@@ -15,7 +15,7 @@ install(
 
 install(
     TARGETS mousetrap
-    EXPORT mousetrap_targets
+    EXPORT mousetrap-targets
     DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )
 
@@ -32,9 +32,16 @@ install(
 )
 
 install(
-    EXPORT mousetrap_targets
+    EXPORT mousetrap-targets
     NAMESPACE mousetrap::
     DESTINATION "${MOUSETRAP_INSTALL_CMAKEDIR}"
 )
+
+install(
+    FILES cmake/install-config.cmake
+    DESTINATION "${MOUSETRAP_INSTALL_CMAKEDIR}"
+    RENAME "${package}-config.cmake"
+)
+
 
 include(CPack)
