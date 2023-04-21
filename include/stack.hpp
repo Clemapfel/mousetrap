@@ -115,15 +115,21 @@ namespace mousetrap
             detail::StackInternal* _internal = nullptr;
     };
 
+    /// @brief widget to choose page of stack, uses page id as label
     class StackSidebar : public WidgetImplementation<GtkStackSidebar>
     {
         public:
+            /// @brief construct
+            /// @param stack stack to control
             StackSidebar(const Stack&);
     };
 
+    /// @brief widget to choose page of stack, uses page id as label
     class StackSwitcher : public WidgetImplementation<GtkStackSwitcher>
     {
         public:
+            /// @brief construct
+            /// @param stack stack to control
             StackSwitcher(const Stack&);
     };
 }

@@ -86,7 +86,7 @@ namespace mousetrap::detail
     }
 
     /// @brief simplified g object declaration
-    /// @example \code
+    /// @code
     ///     // in test.hpp
     ///     struct _Test {
     ///         GObject parent; // this is always necessary
@@ -98,7 +98,7 @@ namespace mousetrap::detail
     ///     DEFINE_NEW_TYPE_TRIVIAL_INIT(Test, test, TEST)
     ///     DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(Test, test, TEST)
     ///     DEFINE_NEW_TYPE_TRIVIAL_NEW(Test, test, TEST)
-    /// \endcode
+    /// @endcode
     #define DECLARE_STRUCT_CLASS(CamelCase) struct _##CamelCase##Class { GObjectClass parent_class; };
 
     #define DECLARE_NEW_TYPE(CamelCase, snake_case, CAPS_CASE) \

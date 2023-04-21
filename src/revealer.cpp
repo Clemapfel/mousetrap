@@ -24,6 +24,12 @@ namespace mousetrap
         _child = ptr;
     }
 
+    void Revealer::remove_child()
+    {
+        _child = nullptr;
+        gtk_revealer_set_child(get_native(), nullptr);
+    }
+
     Widget* Revealer::get_child() const
     {
         return const_cast<Widget*>(_child);

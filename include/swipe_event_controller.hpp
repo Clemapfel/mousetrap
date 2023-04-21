@@ -15,9 +15,11 @@ namespace mousetrap
     {
         public:
             /// @brief construct
+            /// @param orientation
             SwipeEventController(Orientation);
 
-           /// @brief get current swipe velocity
-           Vector2f get_velocty() const;
+            /// @brief get current swipe velocity
+            /// @return 2D velocity
+            Vector2f get_velocty() const;
     };
 }

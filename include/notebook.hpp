@@ -43,19 +43,19 @@ namespace mousetrap
             /// @param child_widget widget to display as the pages content, may be nullptr
             /// @param label_widget widget to use for the lable in the pages tab, may be nullptr
             /// @return index of the newly inserted page
-            size_t push_front(Widget* child_widget, Widget* label_widget);
+            size_t push_front(const Widget& child_widget, const Widget& label_widget);
 
             /// @brief add a page to end of the notebook
             /// @param child_widget widget to display as the pages content, may be nullptr
             /// @param label_widget widget to use for the lable in the pages tab, may be nullptr
             /// @return index of the newly inserted page
-            size_t push_back(Widget* child_widget, Widget* label_widget);
+            size_t push_back(const Widget& child_widget, const Widget& label_widget);
 
             /// @brief add a page at a specific position in the notebook
             /// @param child_widget widget to display as the pages content, may be nullptr
             /// @param label_widget widget to use for the lable in the pages tab, may be nullptr
             /// @return index of the newly inserted page
-            size_t insert(size_t new_position, Widget* child_widget, Widget* label_widget);
+            size_t insert(size_t new_position, const Widget& child_widget, const Widget& label_widget);
 
             /// @brief remove page at given position, removes last page if position is out of bounds
             /// @param position

@@ -13,17 +13,23 @@ namespace mousetrap
           CTOR_SIGNAL(Expander, activate)
     {}
 
-    void Expander::set_child(Widget* widget)
+    void Expander::set_child(const Widget& widget)
     {
-        WARN_IF_SELF_INSERTION(Expander::set_child, this, widget);
+        _child = &widget;
+        WARN_IF_SELF_INSERTION(Expander::set_child, this, _child);
 
-        _child = widget;
-        gtk_expander_set_child(get_native(), _child == nullptr ? nullptr : _child->operator GtkWidget*());
+        gtk_expander_set_child(get_native(), widget);
+    }
+
+    void Expander::remove_child()
+    {
+        _child = nullptr;
+        gtk_expander_set_child(get_native(), nullptr);
     }
 
     Widget* Expander::get_child() const
     {
-        return _child;
+        return const_cast<Widget*>(_child);
     }
 
     bool Expander::get_expanded()
@@ -36,16 +42,16 @@ namespace mousetrap
         gtk_expander_set_expanded(get_native(), b);
     }
 
-    void Expander::set_label_widget(Widget* widget)
+    void Expander::set_label_widget(const Widget& widget)
     {
-        WARN_IF_SELF_INSERTION(Expander::set_label_widget, this, widget);
+        _label_widget = &widget;
+        WARN_IF_SELF_INSERTION(Expander::set_label_widget, this, _label_widget);
 
-        _label_widget = widget;
-        gtk_expander_set_label_widget(get_native(), _label_widget == nullptr ? nullptr : _label_widget->operator GtkWidget*());
+        gtk_expander_set_label_widget(get_native(), widget.operator NativeWidget());
     }
 
     Widget* Expander::get_label_widget() const
     {
-        return _label_widget;
+        return const_cast<Widget*>(_label_widget);
     }
 }

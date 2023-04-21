@@ -39,10 +39,10 @@ namespace mousetrap
         detail::attach_ref_to(G_OBJECT(get_native()), _internal);
     }
 
-    size_t Notebook::push_front(Widget* child_widget, Widget* label_widget)
+    size_t Notebook::push_front(const Widget& child_widget, const Widget& label_widget)
     {
-        if ((child_widget != nullptr and child_widget->operator GtkWidget*() == this->operator GtkWidget*()) or
-            (label_widget != nullptr and label_widget->operator GtkWidget*() == this->operator GtkWidget*()))
+        if ((child_widget.operator GtkWidget*() == this->operator GtkWidget*()) or
+            (label_widget.operator GtkWidget*() ==  this->operator GtkWidget*()))
         {
             log::critical("In Notebook::push_front: Attempting to insert Notebook into itself. This would cause an infinite loop");
             return 0;
@@ -50,8 +50,8 @@ namespace mousetrap
 
         auto out = gtk_notebook_prepend_page(
             get_native(),
-            child_widget != nullptr ? child_widget->operator GtkWidget *() : nullptr,
-            label_widget != nullptr ? label_widget->operator GtkWidget*() : nullptr
+            child_widget.operator GtkWidget*(),
+            label_widget.operator GtkWidget*()
         );
 
         if (out == -1)
@@ -61,17 +61,17 @@ namespace mousetrap
 
         gtk_notebook_set_tab_reorderable(
             get_native(),
-            child_widget != nullptr ? child_widget->operator GtkWidget *() : nullptr,
+            child_widget.operator GtkWidget*(),
             _internal->tabs_reorderable
         );
 
         return out;
     }
 
-    size_t Notebook::push_back(Widget* child_widget, Widget* label_widget)
+    size_t Notebook::push_back(const Widget& child_widget, const Widget& label_widget)
     {
-        if ((child_widget != nullptr and child_widget->operator GtkWidget*() == this->operator GtkWidget*()) or
-        (label_widget != nullptr and label_widget->operator GtkWidget*() == this->operator GtkWidget*()))
+        if ((child_widget.operator GtkWidget*() == this->operator GtkWidget*()) or
+            (label_widget.operator GtkWidget*() == this->operator GtkWidget*()))
         {
             log::critical("In Notebook::push_back: Attempting to insert Notebook into itself. This would cause an infinite loop");
             return 0;
@@ -79,25 +79,26 @@ namespace mousetrap
 
         auto out = gtk_notebook_append_page(
             get_native(),
-            child_widget != nullptr ? child_widget->operator GtkWidget *() : nullptr,
-            label_widget != nullptr ? label_widget->operator GtkWidget*() : nullptr);
+            child_widget.operator GtkWidget*(),
+            label_widget.operator GtkWidget*()
+        );
 
         if (out == -1)
             std::cerr << "[ERROR] In Notebook::push_back: Failed to insert page" << std::endl;
 
         gtk_notebook_set_tab_reorderable(
             get_native(),
-            child_widget != nullptr ? child_widget->operator GtkWidget *() : nullptr,
+            child_widget.operator GtkWidget *(),
             _internal->tabs_reorderable
         );
 
         return out;
     }
 
-    size_t Notebook::insert(size_t new_position, Widget* child_widget, Widget* label_widget)
+    size_t Notebook::insert(size_t new_position, const Widget& child_widget, const Widget& label_widget)
     {
-        if ((child_widget != nullptr and child_widget->operator GtkWidget*() == this->operator GtkWidget*()) or
-        (label_widget != nullptr and label_widget->operator GtkWidget*() == this->operator GtkWidget*()))
+        if ((child_widget.operator GtkWidget*() == this->operator GtkWidget*()) or
+        (label_widget.operator GtkWidget*() == this->operator GtkWidget*()))
         {
             log::critical("In Notebook::insert: Attempting to insert Notebook into itself. This would cause an infinite loop");
             return 0;
@@ -107,8 +108,8 @@ namespace mousetrap
 
         auto out = gtk_notebook_insert_page(
             get_native(),
-            child_widget != nullptr ? child_widget->operator GtkWidget *() : nullptr,
-            label_widget != nullptr ? label_widget->operator GtkWidget*() : nullptr,
+            child_widget.operator GtkWidget*(),
+            label_widget.operator GtkWidget*(),
             pos
         );
 
@@ -117,7 +118,7 @@ namespace mousetrap
 
         gtk_notebook_set_tab_reorderable(
             get_native(),
-            child_widget != nullptr ? child_widget->operator GtkWidget *() : nullptr,
+            child_widget.operator GtkWidget*(),
             _internal->tabs_reorderable
         );
 

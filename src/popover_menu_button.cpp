@@ -26,8 +26,7 @@ namespace mousetrap
         {
             if (gtk_popover_menu_add_child(get_native(), pair.second, pair.first.c_str()) != TRUE)
             {
-                // TODO this is triggered but widget insertion seem to be working fine
-                continue;
+                continue; // TODO Why is triggered but widget insertion seem to be working fine?
 
                 std::stringstream str;
                 str << "In PopoverMenu::refresh_widgets: Failed to add Widget of type " << G_STRINGIFY(pair.second) << " to submenu." << std::endl;
@@ -43,15 +42,26 @@ namespace mousetrap
         gtk_menu_button_set_always_show_arrow(get_native(), true);
     }
 
-    void PopoverMenuButton::set_child(Widget* child)
+    void PopoverMenuButton::set_child(const Widget& child)
     {
-        WARN_IF_SELF_INSERTION(PopoverMenuButton::set_child, this, child);
+        _child = &child;
+        WARN_IF_SELF_INSERTION(PopoverMenuButton::set_child, this, _child);
 
-        _child = child;
-        gtk_menu_button_set_child(get_native(), _child == nullptr ? nullptr : _child->operator GtkWidget*());
+        gtk_menu_button_set_child(get_native(), child.operator GtkWidget*());
 
         if (_popover_menu != nullptr)
             _popover_menu->refresh_widgets();
+    }
+
+    void PopoverMenuButton::remove_child()
+    {
+        _child = nullptr;
+        gtk_menu_button_set_child(get_native(), nullptr);
+    }
+
+    Widget* PopoverMenuButton::get_child() const
+    {
+        return const_cast<Widget*>(_child);
     }
 
     void PopoverMenuButton::set_popover_position(RelativePosition type)

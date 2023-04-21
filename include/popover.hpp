@@ -29,7 +29,10 @@ namespace mousetrap
 
             /// @brief set the popovers child
             /// @param widget
-            void set_child(Widget*);
+            void set_child(const Widget&);
+
+            /// @brief remove child
+            void remove_child();
 
             /// @brief get child
             /// @return child
@@ -64,6 +67,6 @@ namespace mousetrap
             bool get_has_base_arrow() const;
 
         private:
-            Widget* _child = nullptr;
+            const Widget* _child = nullptr;
     };
 }

@@ -17,8 +17,7 @@ namespace mousetrap {
     {
         public:
             /// @brief id of an item, keep track of this to refer to items after initialization
-            using ItemID = struct
-            {
+            using ItemID = struct {
                 size_t _value;
             };
 
@@ -37,7 +36,7 @@ namespace mousetrap {
             /// @param data
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t, typename Data_t>
-            [[nodiscard]] ItemID push_back(Widget* list_widget, Widget* label_widget, Function_t, Data_t);
+            [[nodiscard]] ItemID push_back(const Widget& list_widget, const Widget& label_widget, Function_t, Data_t);
 
             /// @brief add an item with an accompanying action to the end of the drop down
             /// @tparam Function_t function or lambda with signature <tt>() -> void</tt>
@@ -46,7 +45,7 @@ namespace mousetrap {
             /// @param function function to trigger when the item is selected
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t>
-            [[nodiscard]] ItemID push_back(Widget* list_widget, Widget* label_widget, Function_t);
+            [[nodiscard]] ItemID push_back(const Widget& list_widget, const Widget& label_widget, Function_t);
 
             /// @brief add an item with an accompanying action to the start of the drop down
             /// @tparam Function_t function or lambda with signature <tt>(Data_t) -> void</tt>
@@ -57,7 +56,7 @@ namespace mousetrap {
             /// @param data
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t, typename Data_t>
-            [[nodiscard]] ItemID push_front(Widget* list_widget, Widget* label_widget, Function_t, Data_t);
+            [[nodiscard]] ItemID push_front(const Widget& list_widget, const Widget& label_widget, Function_t, Data_t);
 
             /// @brief add an item with an accompanying action to the start of the drop down
             /// @tparam Function_t function or lambda with signature <tt>() -> void</tt>
@@ -66,7 +65,7 @@ namespace mousetrap {
             /// @param function function to trigger when the item is selected
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t>
-            [[nodiscard]] ItemID push_front(Widget* list_widget, Widget* label_widget, Function_t);
+            [[nodiscard]] ItemID push_front(const Widget& list_widget, const Widget& label_widget, Function_t);
 
             /// @brief add an item with an accompanying action to a specified position in the drop down
             /// @tparam Function_t function or lambda with signature <tt>(Data_t) -> void</tt>
@@ -78,7 +77,7 @@ namespace mousetrap {
             /// @param data
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t, typename Data_t>
-            [[nodiscard]] ItemID insert(size_t i, Widget* list_widget, Widget* label_widget, Function_t, Data_t);
+            [[nodiscard]] ItemID insert(size_t i, const Widget& list_widget, const Widget& label_widget, Function_t, Data_t);
 
             /// @brief add an item with an accompanying action to a specified position in the drop down
             /// @tparam Function_t function or lambda with signature <tt>() -> void</tt>
@@ -88,7 +87,7 @@ namespace mousetrap {
             /// @param function function to trigger when the item is selected
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t>
-            [[nodiscard]] ItemID insert(size_t i, Widget* list_widget, Widget* label_widget, Function_t);
+            [[nodiscard]] ItemID insert(size_t i, const Widget& list_widget, const Widget& label_widget, Function_t);
 
             /// @brief remove an item from the drop down
             /// @param id
@@ -129,7 +128,7 @@ namespace mousetrap {
             GListStore* _model;
 
             static inline size_t _current_id = 0;
-            void assert_label_is_not_self(const std::string& scope, Widget*, Widget*);
+            bool assert_label_is_not_self(const std::string& scope, const Widget&, const Widget&);
     };
 }
 

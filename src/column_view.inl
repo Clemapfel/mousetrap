@@ -9,10 +9,8 @@ namespace mousetrap
     void ColumnView::push_back_row(Ts... widgets)
     {
         std::vector<std::reference_wrapper<Widget>> refs = {
-        std::ref(widgets)...
+            std::ref(widgets)...
         };
-
-        std::cout << refs.size() << std::endl;
 
         if (refs.size() > get_n_columns())
             log::warning("In ColumnView::push_back_rows: Attempt to push " + std::to_string(refs.size()) + " widgets, but ColumnView only has " + std::to_string(get_n_columns()) + " columns");
@@ -32,7 +30,7 @@ namespace mousetrap
     void ColumnView::push_front_row(Ts... widgets)
     {
         std::vector<std::reference_wrapper<Widget>> refs = {
-        std::ref(widgets)...
+            std::ref(widgets)...
         };
 
         if (refs.size() > get_n_columns())

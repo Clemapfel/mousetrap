@@ -94,7 +94,6 @@
 #include <include/toggle_button.hpp>
 #include <include/transition_type.hpp>
 #include <include/vector.hpp>
-#include <include/viewport.hpp>
 #include <include/widget.hpp>
 #include <include/window.hpp>
 #include <include/wrap_mode.hpp>

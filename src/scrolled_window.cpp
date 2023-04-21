@@ -137,4 +137,10 @@ namespace mousetrap
         _child = ptr;
         gtk_scrolled_window_set_child(get_native(), child.operator NativeWidget());
     }
+
+    void ScrolledWindow::remove_child()
+    {
+        _child = nullptr;
+        gtk_scrolled_window_set_child(get_native(), nullptr);
+    }
 }

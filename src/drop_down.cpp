@@ -21,8 +21,8 @@ namespace mousetrap
 
             size_t id;
 
-            Widget* list_widget;
-            Widget* label_widget;
+            GtkWidget* list_widget;
+            GtkWidget* label_widget;
 
             DropDown* owner;
             std::function<void()>* function;
@@ -48,6 +48,8 @@ namespace mousetrap
         {
             auto* self = G_DROP_DOWN_ITEM(object);
             delete self->function;
+            g_object_unref(self->list_widget);
+            g_object_unref(self->label_widget);
             G_OBJECT_CLASS(drop_down_item_parent_class)->finalize(object);
         }
 
@@ -58,14 +60,14 @@ namespace mousetrap
         }
 
         // sic, not static because forward declared in dropdown.inl
-        DropDownItem* drop_down_item_new(size_t id, Widget* in, Widget* label, DropDown* owner, std::function<void()> f)
+        DropDownItem* drop_down_item_new(size_t id, const Widget* in, const Widget* label, DropDown* owner, std::function<void()> f)
         {
             auto* item = (DropDownItem*) g_object_new(G_TYPE_DROP_DOWN_ITEM, nullptr);
             drop_down_item_init(item);
 
             item->id = id;
-            item->list_widget = in;
-            item->label_widget = label;
+            item->list_widget = g_object_ref(in->operator NativeWidget());
+            item->label_widget = g_object_ref(label->operator NativeWidget());
             item->owner = owner;
             item->function = new std::function<void()>(f);
 
@@ -108,26 +110,26 @@ namespace mousetrap
     {
         auto* item = GTK_LIST_ITEM(object);
         auto* dropdown_item = detail::G_DROP_DOWN_ITEM(gtk_list_item_get_item(item));
-        gtk_list_item_set_child(item, dropdown_item->list_widget == nullptr ? nullptr : dropdown_item->list_widget->operator GtkWidget *());
+        gtk_list_item_set_child(item, dropdown_item->list_widget);
     }
 
     void DropDown::on_list_factory_unbind(GtkSignalListItemFactory* self, void* object, DropDown*)
     {
         auto* item = GTK_LIST_ITEM(object);
-        gtk_list_item_set_child(item, nullptr);
+        //gtk_list_item_set_child(item, nullptr);
     }
 
     void DropDown::on_label_factory_bind(GtkSignalListItemFactory* self, void* object, DropDown*)
     {
         auto* item = GTK_LIST_ITEM(object);
         auto* dropdown_item = detail::G_DROP_DOWN_ITEM(gtk_list_item_get_item(item));
-        gtk_list_item_set_child(item, dropdown_item->label_widget == nullptr ? nullptr : dropdown_item->label_widget->operator GtkWidget *());
+        gtk_list_item_set_child(item, dropdown_item->label_widget);
     }
 
     void DropDown::on_label_factory_unbind(GtkSignalListItemFactory* self, void* object, DropDown*)
     {
         auto* item = GTK_LIST_ITEM(object);
-        gtk_list_item_set_child(item, nullptr);
+        //gtk_list_item_set_child(item, nullptr);
     }
 
     void DropDown::on_selected_item_changed(GtkDropDown* self, void*, DropDown* instance)
@@ -194,22 +196,21 @@ namespace mousetrap
             return DropDown::ItemID{detail::G_DROP_DOWN_ITEM(item)->id};
     }
 
-    void DropDown::assert_label_is_not_self(const std::string& scope, Widget* label01, Widget* label02)
+    bool DropDown::assert_label_is_not_self(const std::string& scope, const Widget& label01, const Widget& label02)
     {
         bool log_warning = false;
-        if (label01 != nullptr and (label01->operator GtkWidget*() == this->operator GtkWidget*()))
-        {
-            label01 = nullptr;
+        if (label01.operator NativeWidget() == this->operator NativeWidget()) //label01 != nullptr and (label01->operator GtkWidget*() == this->operator GtkWidget*()))
             log_warning = true;
-        }
 
-        if (label02 != nullptr and (label02->operator GtkWidget*() == this->operator GtkWidget*()))
-        {
-            label02 = nullptr;
+        if (label02.operator NativeWidget() == this->operator NativeWidget()) //(label02 != nullptr and (label02->operator GtkWidget*() == this->operator GtkWidget*()))
             log_warning = true;
-        }
 
         if (log_warning)
+        {
             log::critical("In DropDown::" + scope + ": Attempting to add DropDown parent as its own child, this would cause an infinite loop.");
+            return true;
+        }
+
+        return false;
     }
 }

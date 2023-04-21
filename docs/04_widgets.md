@@ -17,7 +17,11 @@ Where `T` is the fully specialized widget class, not `Widget*`. For example, for
 
 ### Widget Properties
 
+All widgets share common properties that govern how they behave when the container they are in changes size, or at what position they will appear.
+
 #### Margin
+
+
 
 #### Size Request
 

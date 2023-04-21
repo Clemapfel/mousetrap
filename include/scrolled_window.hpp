@@ -129,6 +129,9 @@ namespace mousetrap
             /// @param widget
             void set_child(const Widget&);
 
+            /// @brief remove child
+            void remove_child();
+
             /// @brief get the windows child
             /// @returns child
             Widget* get_child() const;

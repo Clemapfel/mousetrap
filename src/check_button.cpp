@@ -16,17 +16,23 @@ namespace mousetrap
 
     #if GTK_MINOR_VERSION >= 8
 
-    void CheckButton::set_child(Widget* child)
+    void CheckButton::set_child(const Widget& child)
     {
-        WARN_IF_SELF_INSERTION(CheckButton::set_child, this, child);
+        _child = &child;
+        WARN_IF_SELF_INSERTION(CheckButton::set_child, this, _child);
 
-        _child = child;
-        gtk_check_button_set_child(get_native(), child->operator GtkWidget*());
+        gtk_check_button_set_child(get_native(), child.operator GtkWidget*());
+    }
+
+    void CheckButton::remove_child()
+    {
+        _child = nullptr;
+        gtk_check_button_set_child(get_native(), nullptr);
     }
 
     Widget* CheckButton::get_child() const
     {
-        return _child;
+        return const_cast<Widget*>(_child);
     }
 
     #endif

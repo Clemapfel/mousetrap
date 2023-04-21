@@ -62,6 +62,10 @@ namespace mousetrap
         static void column_view_row_item_finalize(GObject* object)
         {
             auto* self = MOUSETRAP_COLUMN_VIEW_ROW_ITEM(object);
+
+            for (auto& pair : *(self->widgets))
+                g_object_unref(pair.second);
+
             delete self->widgets;
             G_OBJECT_CLASS(column_view_row_item_parent_class)->finalize(object);
         }
@@ -245,7 +249,13 @@ namespace mousetrap
             g_list_store_append(model, detail::column_view_row_item_new());
 
         auto* item = detail::MOUSETRAP_COLUMN_VIEW_ROW_ITEM(g_list_model_get_item(G_LIST_MODEL(model), row_i));
-        item->widgets->insert_or_assign(column._native, widget.operator NativeWidget());
+
+        auto it = item->widgets->find(column._native);
+
+        if (it != item->widgets->end())
+            g_object_unref(it->second);
+
+        item->widgets->insert_or_assign(column._native, g_object_ref(widget.operator NativeWidget()));
     }
 
     void ColumnView::set_enable_rubberband_selection(bool b)
@@ -296,11 +306,5 @@ namespace mousetrap
     bool ColumnView::get_is_reorderable() const
     {
         return gtk_column_view_get_reorderable(get_native());
-    }
-
-    template<typename... Ts>
-    void push_back_row(Ts... widgets)
-    {
-
     }
 }

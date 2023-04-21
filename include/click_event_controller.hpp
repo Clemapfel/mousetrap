@@ -21,7 +21,5 @@ namespace mousetrap
         public:
             /// @brief construct controller, needs to be connected to a widget to function
             ClickEventController();
-
-
     };
 }

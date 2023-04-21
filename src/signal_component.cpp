@@ -208,4 +208,5 @@ DEFINE_SIGNAL(Scroll, scroll, SCROLL, "scroll", bool,
     );
 
     DEFINE_SIGNAL(Play, play, PLAY, "play", void);
+    DEFINE_SIGNAL(Closed, closed, CLOSED, "closed", void);
 }

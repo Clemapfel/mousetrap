@@ -14,6 +14,7 @@
 #include "motion_controller_test.hpp"
 #include "paned_test.hpp"
 #include "sound_test.hpp"
+#include "widget_layout_test.hpp"
 
 using namespace mousetrap;
 
@@ -62,6 +63,7 @@ int main()
         add_test(new PanedTest(), "Paned");
         add_test(new SignalsChapter(), "Chapter 3: Signals");
         add_test(new SoundTest("/home/clem/Workspace/mousetrap/test/test.wav"), "Sound");
+        add_test(new WidgetLayoutTest(), "Widget Layout");
 
         // action to hide gui element other than stack child
 

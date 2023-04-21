@@ -21,17 +21,17 @@ namespace mousetrap
             log::warning("In AspectFrame::AspectFrame: Specified child y-alignment " + std::to_string(x_align) + " is outside [0, 1] ", MOUSETRAP_DOMAIN);
     }
 
-    void AspectFrame::set_child(Widget* child)
+    void AspectFrame::set_child(const Widget& child)
     {
-        WARN_IF_SELF_INSERTION(AspectFrame::set_child, this, child);
+        _child = &child;
+        WARN_IF_SELF_INSERTION(AspectFrame::set_child, this, _child);
 
-        _child = child;
-        gtk_aspect_frame_set_child(get_native(), child == nullptr ? nullptr : child->operator GtkWidget*());
+        gtk_aspect_frame_set_child(get_native(), child.operator NativeWidget());
     }
 
     Widget* AspectFrame::get_child() const
     {
-        return _child;
+        return const_cast<Widget*>(_child);
     }
 
     void AspectFrame::remove_child()

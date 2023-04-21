@@ -22,6 +22,9 @@ namespace mousetrap
             /// @param widget
             void set_child(const Widget&);
 
+            /// @brief remove child
+            void remove_child();
+
             /// @brief get child
             /// @return child
             Widget* get_child() const;

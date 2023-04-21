@@ -45,7 +45,7 @@ namespace mousetrap
 
             /// @brief set child
             /// @param widget, can be nullptr
-            void set_child(Widget*);
+            void set_child(const Widget&);
 
             /// @brief get child
             /// @return widget
@@ -55,6 +55,6 @@ namespace mousetrap
             void remove_child();
 
         private:
-            Widget* _child = nullptr;
+            const Widget* _child = nullptr;
     };
 }

@@ -51,7 +51,10 @@ namespace mousetrap
 
             /// @brief set widget displays next to the button, usually used for a text label
             /// @param widget
-            void set_child(Widget*);
+            void set_child(const Widget&);
+
+            /// @brief remove widget
+            void remove_child();
 
             /// @brief get widget that is displayed next to the button, or nullptr if no such widget was set
             /// @return widget
@@ -60,6 +63,6 @@ namespace mousetrap
             #endif
 
         private:
-            Widget* _child = nullptr;
+            const Widget* _child = nullptr;
     };
 }

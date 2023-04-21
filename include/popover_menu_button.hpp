@@ -44,7 +44,10 @@ namespace mousetrap
 
             /// @brief set the label widget of the button
             /// @param widget can be nullptr
-            void set_child(Widget*);
+            void set_child(const Widget&);
+
+            /// @brief remove child
+            void remove_child();
 
             /// @brief get the label widget of the button
             /// @return widget
@@ -92,7 +95,7 @@ namespace mousetrap
             void popdown();
 
         private:
-            Widget* _child = nullptr;
+            const Widget* _child = nullptr;
 
             Popover* _popover = nullptr;
             PopoverMenu* _popover_menu = nullptr;

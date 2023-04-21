@@ -14,43 +14,62 @@ namespace mousetrap
         gtk_orientable_set_orientation(GTK_ORIENTABLE(get_native()), (GtkOrientation) orientation);
     }
 
-    void CenterBox::set_start_widget(Widget* widget)
+    void CenterBox::set_start_widget(const Widget& widget)
     {
-        WARN_IF_SELF_INSERTION(CenterBox::set_start_widget, this, widget);
+        _start = &widget;
+        WARN_IF_SELF_INSERTION(CenterBox::set_start_widget, this, _start);
 
-        _start = widget;
-        gtk_center_box_set_start_widget(get_native(), _start != nullptr ? _start->operator GtkWidget*() : nullptr);
+        _start = &widget;
+        gtk_center_box_set_start_widget(get_native(), widget.operator NativeWidget());
     }
 
-    void CenterBox::set_end_widget(Widget* widget)
+    void CenterBox::remove_start_widget()
     {
-        WARN_IF_SELF_INSERTION(CenterBox::set_end_widget, this, widget);
-
-        _end = widget;
-        gtk_center_box_set_end_widget(get_native(), _end != nullptr ? _end->operator GtkWidget*() : nullptr);
+        _start = nullptr;
+        gtk_center_box_set_start_widget(get_native(), nullptr);
     }
 
-    void CenterBox::set_center_widget(Widget* widget)
+    void CenterBox::set_end_widget(const Widget& widget)
     {
-        WARN_IF_SELF_INSERTION(CenterBox::set_center_widget, this, widget);
+        _end = &widget;
+        WARN_IF_SELF_INSERTION(CenterBox::set_end_widget, this, _end);
 
-        _center = widget;
-        gtk_center_box_set_center_widget(get_native(), _center != nullptr ? _center->operator GtkWidget*() : nullptr);
+        gtk_center_box_set_end_widget(get_native(), widget.operator NativeWidget());
+    }
+
+    void CenterBox::remove_end_widget()
+    {
+        _end = nullptr;
+        gtk_center_box_set_end_widget(get_native(), nullptr);
+    }
+
+    void CenterBox::set_center_widget(const Widget& widget)
+    {
+        _center = &widget;
+        WARN_IF_SELF_INSERTION(CenterBox::set_center_widget, this, _center);
+
+        gtk_center_box_set_center_widget(get_native(), widget.operator NativeWidget());
+    }
+
+    void CenterBox::remove_center_widget()
+    {
+        _center = nullptr;
+        gtk_center_box_set_center_widget(get_native(), nullptr);
     }
 
     Widget* CenterBox::get_start_widget() const
     {
-        return _start;
+        return const_cast<Widget*>(_start);
     }
 
     Widget* CenterBox::get_center_widget() const
     {
-        return _center;
+        return const_cast<Widget*>(_center);
     }
 
     Widget* CenterBox::get_end_widget() const
     {
-        return _end;
+        return const_cast<Widget*>(_end);
     }
 
     void CenterBox::set_orientation(Orientation orientation)

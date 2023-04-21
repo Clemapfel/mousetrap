@@ -20,15 +20,24 @@ namespace mousetrap
 
             /// @brief if orientation is horizontal, set widget to the left of the center, top of the center otherwise
             /// @param widget
-            void set_start_widget(Widget*);
+            void set_start_widget(const Widget&);
 
             /// @brief set widget at the center
             /// @param widget
-            void set_center_widget(Widget*);
+            void set_center_widget(const Widget&);
 
             /// @brief if orientation is horizontal, set widget to the right of the center, bottom of the center otherwise
             /// @param widget
-            void set_end_widget(Widget*);
+            void set_end_widget(const Widget&);
+
+            /// @brief remove start widget
+            void remove_start_widget();
+
+            /// @brief remove center widget
+            void remove_center_widget();
+
+            /// @brief remove end widget
+            void remove_end_widget();
 
             /// @brief if orientation is horizontal, get widget to the left of the center, top of the center otherwise
             /// @return widget, may be nullptr
@@ -49,8 +58,8 @@ namespace mousetrap
             Orientation get_orientation() const;
 
         private:
-            Widget* _start = nullptr;
-            Widget* _center = nullptr;
-            Widget* _end = nullptr;
+            const Widget* _start = nullptr;
+            const Widget* _center = nullptr;
+            const Widget* _end = nullptr;
     };
 }

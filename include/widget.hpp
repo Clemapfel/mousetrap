@@ -40,7 +40,8 @@ namespace mousetrap
     struct AbstractWidget {};
 
     #ifndef DOXYGEN
-    template<typename GtkWidget_t> struct WidgetImplementation;
+    template<typename GtkWidget_t>
+    struct WidgetImplementation;
     struct EventController;
     class Clipboard;
     class Widget;

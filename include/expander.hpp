@@ -23,7 +23,10 @@ namespace mousetrap
 
             /// @brief set child widget, this is the widget that will be hidden when collapsed
             /// @param widget
-            void set_child(Widget*);
+            void set_child(const Widget&);
+
+            /// @brief remove child widget
+            void remove_child();
 
             /// @brief get child widget
             /// @return widget
@@ -31,7 +34,10 @@ namespace mousetrap
 
             /// @brief set label widget, this label will always be displayed
             /// @param widget
-            void set_label_widget(Widget*);
+            void set_label_widget(const Widget&);
+
+            /// @brief remove label widget
+            void remove_label_widget();
 
             /// @brief get label widget
             /// @return widget
@@ -46,7 +52,7 @@ namespace mousetrap
             void set_expanded(bool);
 
         private:
-            Widget* _child = nullptr;
-            Widget* _label_widget = nullptr;
+            const Widget* _child = nullptr;
+            const Widget* _label_widget = nullptr;
     };
 }

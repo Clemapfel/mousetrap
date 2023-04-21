@@ -28,17 +28,23 @@ namespace mousetrap
         gtk_popover_present(get_native());
     }
 
-    void Popover::set_child(Widget* child)
+    void Popover::set_child(const Widget& child)
     {
-        WARN_IF_SELF_INSERTION(Popover::set_child, this, child);
+        _child = &child;
+        WARN_IF_SELF_INSERTION(Popover::set_child, this, _child);
 
-        _child = child;
-        gtk_popover_set_child(get_native(), _child == nullptr ? nullptr : _child->operator GtkWidget*());
+        gtk_popover_set_child(get_native(), _child->operator GtkWidget*());
+    }
+
+    void Popover::remove_child()
+    {
+        _child = nullptr;
+        gtk_popover_set_child(get_native(), nullptr);
     }
 
     Widget* Popover::get_child() const
     {
-        return _child;
+        return const_cast<Widget*>(_child);
     }
 
     void Popover::set_relative_position(RelativePosition position)

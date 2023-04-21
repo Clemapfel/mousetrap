@@ -2158,32 +2158,32 @@ namespace mousetrap
     /// \signal_ctor
 
     DECLARE_SIGNAL(Closed, closed, CLOSED, "closed", void);
-    /// @class has_signal_close
+    /// @class has_signal_closed
     /// @brief signal emitted popover is closed
     /// @tparam T instance type
     ///
-    /// @fn void has_signal_close::connect_signal_close(Function_t)
+    /// @fn void has_signal_closed::connect_signal_closed(Function_t)
     /// \signal_connect{(T*) -> void}
     ///
-    /// @fn void has_signal_close::connect_signal_close(Function_t, Data_t)
+    /// @fn void has_signal_closed::connect_signal_closed(Function_t, Data_t)
     /// \signal_connect_data{(T*, Data_t) -> void}
     ///
-    /// @fn void has_signal_close::emit_signal_close()
+    /// @fn void has_signal_closed::emit_signal_closed()
     /// \signal_emit_brief
     ///
-    /// @var has_signal_close::signal_id
-    /// \signal_id{https://docs.gtk.org/gtk4/signal.Popover.closed.html}
+    /// @var has_signal_closed::signal_id
+    /// \signal_id{https://docs.gtk.org/gtk4/signal.Popover.closedd.html}
     ///
-    /// @fn void has_signal_close::set_signal_close_blocked(bool)
+    /// @fn void has_signal_closed::set_signal_closed_blocked(bool)
     /// \signal_set_blocked
     ///
-    /// @fn bool has_signal_close::get_signal_close_blocked() const
+    /// @fn bool has_signal_closed::get_signal_closed_blocked() const
     /// \signal_get_blocked
     ///
-    /// @fn void has_signal_close::disconnect_signal_close()
+    /// @fn void has_signal_closed::disconnect_signal_closed()
     /// \signal_disconnect
     ///
-    /// @fn has_signal_close::has_signal_close
+    /// @fn has_signal_closed::has_signal_closed
     /// \signal_ctor
 
     DECLARE_SIGNAL(Play, play, PLAY, "play", void);
