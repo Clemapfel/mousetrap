@@ -16,24 +16,56 @@ using namespace mousetrap;
 
 #define jl_size_t int64_t
 
+template<typename... T>
+static inline jl_value_t* jl_safe_calln(const std::string& scope, jl_function_t* function, T... args)
+{
+    auto* out = jl_calln(function, args...);
+    JL_GC_PUSH1(out);
+
+    auto* exception_maybe = jl_exception_occurred();
+    if (exception_maybe)
+    {
+        log::critical("In " + scope + ":");
+        jl_throw(exception_maybe);
+    }
+
+    JL_GC_POP();
+    return out;
+}
+
 // ### SIGNAL EMITTER ###
+
 template<typename T>
-void make_signal_emitter(T& type)
+void make_signal_emitter(jlcxx::TypeWrapper<T>& type)
 {
    type.method("connect_signal", [](T& self, const std::string& signal_id, jl_value_t* f, jl_value_t* data){
-
+        //self.connect_signal(signal_id, [&](){
+          //  jl_call1(f, data);
+        //});
    });
 
-   type.method("disconnect_signal", [](){
-
+   type.method("disconnect_signal", [](T& self, const std::string& signal_id){
+        self.disconnect_signal(signal_id);
    });
+}
+
+
+#define add_signal_emitter(T) add_type<T>(#T, jlcxx::julia_base_type<AbstractSignalEmitter>())
+
+// ### WINDOW ###
+
+void add_window(jlcxx::Module& module)
+{
+    auto window = module.add_signal_emitter(Window)
+        .constructor<Application&>()
+        .add_type_method(Window, present);
 }
 
 // ### APPLICATION ###
 
 void add_application(jlcxx::Module& module)
 {
-    module.add_type<Application>("Application", jlxc)
+    auto application = module.add_signal_emitter(Application)
         .constructor<const std::string&>()
         .add_type_method(Application, get_id)
         .add_type_method(Application, run)
@@ -43,11 +75,19 @@ void add_application(jlcxx::Module& module)
         .add_type_method(Application, mark_as_busy)
         .add_type_method(Application, unmark_as_busy)
     ;
+    
+    using Data_t = struct {
+        jl_value_t* f;
+        jl_value_t* data;
+    };
+    application.method("connect_signal_activate", [](Application& app, jl_value_t* f, jl_value_t* data){
+        app.connect_signal_activate([data = Data_t{f, data}](Application* app){
+            jl_safe_calln("Application::emit_signal_activate", data.f, jlcxx::box<Application*>(app), data.data);
+        });
+    });
 
-
-
-    // todo actions
-    // todo menubar
+    // TODO actions
+    // TODO menubar
 }
 
 // ### COLORS ###
@@ -178,4 +218,5 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     add_colors(module);
     add_image(module);
     add_application(module);
+    add_window(module);
 }

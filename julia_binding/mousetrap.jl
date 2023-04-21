@@ -17,8 +17,23 @@ module mousetrap
         function __init__()
             @initcxx
         end
-        @wrapmodule("./libmousetrap_julia_binding.so")
+        @wrapmodule("./libjulia_binding.so")
     end
+
+    """
+    """
+    const Application = detail.Application
+    export Application
+
+    """
+    """
+    const run = detail.run
+    export run
+
+    """
+    """
+    const connect_signal_activate = detail.connect_signal_activate
+    export connect_signal_activate
 
     """
     """
@@ -135,12 +150,37 @@ module mousetrap
     export get_pixel
 end
 
-using .mousetrap
-using Test
 
-image = Image()
-create(image, 100, 100, RGBA(1, 0, 0, 0))
-set_pixel(image, 10, 10, RGBA(0, 1, 0, 0)
-@test get_pixel(image, 9, 9) == RGBA(1, 0, 0, 0)
-@test get_pixel(image, 10, 10) == RGBA(0, 1, 0, 0)
-@test get_size(image).x == 100 && get_size(image).y == 100
+using .mousetrap
+
+app = Application("test.app")
+connect_signal_activate(app, function (app, data)
+unsafe_f()
+    return data
+end, 1234)
+mousetrap.run(app)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
