@@ -1,25 +1,40 @@
 set(package mousetrap)
+
+include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
 install(
-    DIRECTORY mousetrap/include
+    FILES mousetrap.hpp
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
 install(
-    FILES mousetrap/mousetrap.hpp
+    DIRECTORY include src
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
 install(
     TARGETS mousetrap
-    EXPORT mousetrap
-    DESTINATION "${CMAKE_INSTALL_PREFIX}"
+    EXPORT mousetrap_targets
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )
 
-include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
     "${package}-config-version.cmake"
-    VERSION ${PACKAGE_VERSION}
     COMPATIBILITY AnyNewerVersion
 )
+
+set(MOUSETRAP_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${package}")
+
+install(
+    FILES "${PROJECT_BINARY_DIR}/${package}-config-version.cmake"
+    DESTINATION "${MOUSETRAP_INSTALL_CMAKEDIR}"
+)
+
+install(
+    EXPORT mousetrap_targets
+    NAMESPACE mousetrap::
+    DESTINATION "${MOUSETRAP_INSTALL_CMAKEDIR}"
+)
+
+include(CPack)

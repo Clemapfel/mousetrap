@@ -339,49 +339,14 @@ if(MOUSETRAP_BUILD_TESTS)
     endif()
 endif()
 
-### INSTALL MOUSETRAP ###
+### INSTALL ###
 
-set(MOUSETRAP_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "install path for jlcxxConfig.cmake")
-
-install(TARGETS mousetrap EXPORT mousetrap
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mousetrap
-)
-
-include(CMakePackageConfigHelpers)
-configure_package_config_file(${PROJECT_NAME}Config.cmake.in
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    INSTALL_DESTINATION ${MOUSETRAP_CMAKECONFIG_INSTALL_DIR}
-)
-
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    VERSION ${${PROJECT_NAME}_VERSION}
-    COMPATIBILITY AnyNewerVersion
-)
-
-export(TARGETS mousetrap
-    NAMESPACE mousetrap::
-    FILE mousetrapTargets.cmake
-)
-
-install(EXPORT mousetrap
-    FILE ${PROJECT_NAME}ConfigExports.cmake
-    NAMESPACE mousetrap::
-    DESTINATION ${MOUSETRAP_CMAKECONFIG_INSTALL_DIR}
-)
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
-    DESTINATION ${MOUSETRAP_CMAKECONFIG_INSTALL_DIR}
-)
+include(cmake/install-rules.cmake)
 
 ### JULIA BINDING ###
 
 option(MOUSETRAP_BUILD_JULIA_BINDING OFF)
-if (MOUSETRAP_BUILD_JULIA_BINDING)
+if (FALSE) #MOUSETRAP_BUILD_JULIA_BINDING)
 
     find_package(JlCxx REQUIRED)
     get_target_property(JlCxx_location JlCxx::cxxwrap_julia LOCATION)
