@@ -27,6 +27,12 @@ write_basic_package_version_file(
 set(MOUSETRAP_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${package}")
 
 install(
+    FILES cmake/install-config.cmake
+    DESTINATION "${MOUSETRAP_INSTALL_CMAKEDIR}"
+    RENAME "${package}-config.cmake"
+)
+
+install(
     FILES "${PROJECT_BINARY_DIR}/${package}-config-version.cmake"
     DESTINATION "${MOUSETRAP_INSTALL_CMAKEDIR}"
 )
@@ -36,12 +42,5 @@ install(
     NAMESPACE mousetrap::
     DESTINATION "${MOUSETRAP_INSTALL_CMAKEDIR}"
 )
-
-install(
-    FILES cmake/install-config.cmake
-    DESTINATION "${MOUSETRAP_INSTALL_CMAKEDIR}"
-    RENAME "${package}-config.cmake"
-)
-
 
 include(CPack)
