@@ -9,7 +9,7 @@ install(
 )
 
 install(
-    DIRECTORY include src
+    DIRECTORY include/mousetrap
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 

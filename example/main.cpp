@@ -4,7 +4,7 @@ using namespace mousetrap;
 
 struct State {
     Window window;
-    Labe label;
+    Label label;
 }* state = nullptr;
 
 int main()
@@ -15,7 +15,7 @@ int main()
         state = new State{
             Window(*app),
             Label("Hello World")
-        }
+        };
         state->window.present();
     });
 
