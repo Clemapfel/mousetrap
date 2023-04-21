@@ -16,6 +16,40 @@ using namespace mousetrap;
 
 #define jl_size_t int64_t
 
+// ### SIGNAL EMITTER ###
+template<typename T>
+void make_signal_emitter(T& type)
+{
+   type.method("connect_signal", [](T& self, const std::string& signal_id, jl_value_t* f, jl_value_t* data){
+
+   });
+
+   type.method("disconnect_signal", [](){
+
+   });
+}
+
+// ### APPLICATION ###
+
+void add_application(jlcxx::Module& module)
+{
+    module.add_type<Application>("Application", jlxc)
+        .constructor<const std::string&>()
+        .add_type_method(Application, get_id)
+        .add_type_method(Application, run)
+        .add_type_method(Application, quit)
+        .add_type_method(Application, hold)
+        .add_type_method(Application, release)
+        .add_type_method(Application, mark_as_busy)
+        .add_type_method(Application, unmark_as_busy)
+    ;
+
+
+
+    // todo actions
+    // todo menubar
+}
+
 // ### COLORS ###
 
 RGBA unbox_rgba(jl_value_t* in)
@@ -135,8 +169,13 @@ void add_image(jlcxx::Module& module)
 
 // ### MAIN ###
 
+make_not_mirrored(AbstractSignalEmitter);
+
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
 {
+    module.add_type<AbstractSignalEmitter>("AbstractSignalEmitter");
+
     add_colors(module);
     add_image(module);
+    add_application(module);
 }
