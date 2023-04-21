@@ -9,13 +9,14 @@ struct State {
 
 int main()
 {
-    auto app = Application("mousetrap.example");
+    auto app = Application("test.app");
     app.connect_signal_activate([](Application* app)
     {
         state = new State{
             Window(*app),
             Label("Hello World")
         };
+        state->window.set_child(state->label);
         state->window.present();
     });
 
