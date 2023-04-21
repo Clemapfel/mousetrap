@@ -1,25 +1,36 @@
-# mousetrap
+# mousetrap: Multi-Media GUI Library
 
+3. [Installation](#installation)<br>
+3.1 [Dependencies](#dependencies)<br>
+3.1.1 [Debian / Ubuntu](#debian--ubuntu)<br>
+3.1.2 [Fedora](#fedora)<br>
+3.1.3 [~~MacOS~~]()<br>
+3.1.4 [~~Windows~~]()<br>
+3.2 [Compiling from Source](#Compilation)<br>
+3.2.1 [Linux / MacOS](#linux--macos)<br>
+3.2.2 [~~Windows~~]()<br>
+4. [Documentation](#documentation)<br>
 
----
+## Documentation
 
-## Installation: C++ Library
+Documentation is available [here](https://clemens-cords.com/mousetrap).
+
+A minimal hello world project can be found in the `[example](./example)` folder here on GitHub.
+
+## Installation
 
 ### Dependencies
 
-To install mousetrap, you will need the following dependencies:
+To install mousetrap from source, the following dependencies are needed:
 
-+ `GTK4`, Version 4.8 or higher recommended but not necessary
-+ `CMake`, 3.12 or newer
-+ `GLM`, no version requirement
-+ `GLEW`, no version requirement
-+ `SFML`, no version requirement,
-+ `OpenGL`, with a driver supporting OpenGL 3.2 Core or newer
-+ `C++17`-capabled C++ compiler, such as clang, gcc, MSVC, etc.
++ `CMake`: To build and install mousetrap
++ `GTK4`: Engine for all GUI elements 
++ `OpenGL`: Hardware accelerated rendering
++ `GLM`: CPU-side OpenGL-related Math
++ `GLEW`: Loading of OpenGL extensions
++ `SFML`: Audio-playback and Joystick Interface
 
-`mousetrap`s dependenices where specifically picked, such that it can run on any PC that has a graphics card manufactured in the last 15 years, most version requirements should not be an issue.
-
-Installing these dependencies is OS-specific, follow the following sections depending on what machine you are using:
+Installing these dependencies is OS-specific, the following section will provide instructions on how to do so:
 
 #### Debian / Ubuntu
 
@@ -27,10 +38,10 @@ Installing these dependencies is OS-specific, follow the following sections depe
 sudo apt-get install aptitude   
 sudo aptitude install cmake            # install cmake
 sudo aptitude install libgtk-4-dev     # install GTK4
+sudo aptitude install libgl1-mesa-dev  # install OpenGL
 sudo aptitude install libglm-dev       # install GLM
 sudo aptitude install libglew-dev      # install GLEW
 sudo aptitude install libsfml-dev      # install SFML
-sudo aptitude install libgl1-mesa-dev  # install OpenGL
 ```
 
 #### Fedora
@@ -45,49 +56,26 @@ sudo dnf install SFML-devel     # install SFML
 
 Where `OpenGL` is usually installed automatically on Fedora.
 
-#### Mac OS
+#### MacOS
 
-> \todo
+> \todo This section is not yet complete
 
 #### Windows
 
-> \todo
+> \todo This section is not yet complete
 
-### Installation: C++ Library
+### Compilation
 
 With the dependencies settled, we can go on to building and installing mousetrap from source.
 
 #### Linux / MacOS
 
-On unix, run the following commands:
+On Unix, run the following commands:
 
 ```shell
 # in any public directory
-git clone https://github.com/Clemapfel/mousetrap
+git clone https://github.com/Clemapfel/mousetrap.git
 cd mousetrap
-mkdir build
-cd build
-cmake .. -DMOUSETRAP_BUILD_TESTS=ON
-sudo make install -j 4
-cd ../..
-```
-
-Where `sudo` is necessary to install to the default include directory.
-
-#### Windows
-
-> \todo
-
----
-
-### Installation: Julia Binding
-
-Instead of the previous section, after installing all the dependencies, execute, in any public directory:
-
-```shell
-# in any public directory
-git clone https://github.com/JuliaInterop/libcxxwrap-julia
-cd libcxxwrap-julia
 mkdir build
 cd build
 cmake ..
@@ -95,15 +83,8 @@ sudo make install -j 4
 cd ../..
 ```
 
-Then
+Where `sudo` is necessary to install to the default library and include directory. If you would like to install mousetrap to a different location, add `-DCMAKE_INSTALL_PREFIX=/path/to/custom/location` at the end of `cmake ..`.
 
-```shell
-# in any public directory
-git clone https://github.com/Clemapfel/mousetrap
-cd mousetrap
-mkdir build
-cd build
-cmake .. -DMOUSETRAP_BUILD_TESTS=ON -DMOUSETRAP_BUILD_JULIA_BINDING=ON
-sudo make install -j 4
-cd ../..
-```
+#### Windows
+
+> \todo

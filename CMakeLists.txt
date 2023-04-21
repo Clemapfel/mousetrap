@@ -345,7 +345,7 @@ include(cmake/install-rules.cmake)
 ### JULIA BINDING ###
 
 option(MOUSETRAP_BUILD_JULIA_BINDING OFF)
-if (FALSE) #MOUSETRAP_BUILD_JULIA_BINDING)
+if (MOUSETRAP_BUILD_JULIA_BINDING)
 
     find_package(JlCxx REQUIRED)
     get_target_property(JlCxx_location JlCxx::cxxwrap_julia LOCATION)
