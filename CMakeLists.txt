@@ -181,7 +181,6 @@ set(MOUSETRAP_HEADER_FILES
     include/toggle_button.hpp
     include/transition_type.hpp
     include/vector.hpp
-    include/viewport.hpp
     include/widget.hpp
     include/window.hpp
     include/wrap_mode.hpp
@@ -282,14 +281,13 @@ set(MOUSETRAP_SOURCE_FILES
     src/texture.cpp
     src/time.cpp
     src/toggle_button.cpp
-    src/viewport.cpp
     src/widget.cpp
     src/widget.inl
     src/window.cpp
     src/action.cpp
 )
 
-add_library(mousetrap SHARED
+add_library(mousetrap STATIC
     ${MOUSETRAP_HEADER_FILES}
     ${MOUSETRAP_SOURCE_FILES}
 )
@@ -313,6 +311,8 @@ target_compile_features(mousetrap PUBLIC
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
     POSITION_INDEPENDENT_CODE ON
+    INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${OpenGL};${GLEW};${GTK_LIBRARIES}"
 )
 
 ### TEST ###
@@ -339,16 +339,42 @@ endif()
 
 ### INSTALL MOUSETRAP ###
 
-include("${CMAKE_SOURCE_DIR}/cmake/install-rules.cmake")
+set(MOUSETRAP_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "install path for jlcxxConfig.cmake")
 
-include(CPack)
-set(CPACK_PACKAGE_VENDOR "Clemens Cords")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_DESCRIPTION}")
-set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
-set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+install(TARGETS mousetrap EXPORT mousetrap
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mousetrap
+)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(${PROJECT_NAME}Config.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    INSTALL_DESTINATION ${MOUSETRAP_CMAKECONFIG_INSTALL_DIR}
+)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+    VERSION ${${PROJECT_NAME}_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
+export(TARGETS mousetrap
+    NAMESPACE mousetrap::
+    FILE mousetrapTargets.cmake
+)
+
+install(EXPORT mousetrap
+    FILE ${PROJECT_NAME}ConfigExports.cmake
+    NAMESPACE mousetrap::
+    DESTINATION ${MOUSETRAP_CMAKECONFIG_INSTALL_DIR}
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    DESTINATION ${MOUSETRAP_CMAKECONFIG_INSTALL_DIR}
+)
 
 ### JULIA BINDING ###
 
