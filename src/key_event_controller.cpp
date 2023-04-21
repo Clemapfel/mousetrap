@@ -2,7 +2,7 @@
 // Created by clem on 3/18/23.
 //
 
-#include <include/key_event_controller.hpp>
+#include <mousetrap/key_event_controller.hpp>
 
 namespace mousetrap
 {

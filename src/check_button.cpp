@@ -3,8 +3,8 @@
 // Created on 9/16/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/check_button.hpp>
-#include <include/log.hpp>
+#include <mousetrap/check_button.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

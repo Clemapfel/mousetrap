@@ -2,8 +2,8 @@
 // Created by clem on 3/24/23.
 //
 
-#include <include/grid.hpp>
-#include <include/log.hpp>
+#include <mousetrap/grid.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

@@ -3,7 +3,7 @@
 // Created on 10/26/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/shortcut_controller.hpp>
+#include <mousetrap/shortcut_controller.hpp>
 
 namespace mousetrap
 {

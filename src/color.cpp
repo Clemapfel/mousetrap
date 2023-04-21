@@ -3,9 +3,9 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/gl_common.hpp>
-#include <include/color.hpp>
-#include <include/log.hpp>
+#include <mousetrap/gl_common.hpp>
+#include <mousetrap/color.hpp>
+#include <mousetrap/log.hpp>
 
 #include <sstream>
 #include <iostream>

@@ -2,8 +2,8 @@
 // Created by clem on 3/26/23.
 //
 
-#include <include/music.hpp>
-#include <include/log.hpp>
+#include <mousetrap/music.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

@@ -3,7 +3,7 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/angle.hpp>
+#include <mousetrap/angle.hpp>
 
 namespace mousetrap
 {

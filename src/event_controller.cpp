@@ -3,8 +3,8 @@
 //
 
 
-#include <include/event_controller.hpp>
-#include <include/vector.hpp>
+#include <mousetrap/event_controller.hpp>
+#include <mousetrap/vector.hpp>
 
 namespace mousetrap
 {

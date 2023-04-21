@@ -5,9 +5,9 @@
 
 #include <iostream>
 #include <sstream>
-#include <include/widget.hpp>
-#include <include/event_controller.hpp>
-#include <include/clipboard.hpp>
+#include <mousetrap/widget.hpp>
+#include <mousetrap/event_controller.hpp>
+#include <mousetrap/clipboard.hpp>
 
 namespace mousetrap
 {

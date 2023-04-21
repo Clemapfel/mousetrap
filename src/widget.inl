@@ -2,8 +2,8 @@
 // Copyright (c) Clemens Cords (mail@clemens-cords.com), created 3/17/23
 //
 
-#include <include/frame_clock.hpp>
-#include <include/log.hpp>
+#include <mousetrap/frame_clock.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

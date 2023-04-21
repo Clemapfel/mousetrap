@@ -2,7 +2,7 @@
 // Created by clem on 3/23/23.
 //
 
-#include <include/spinner.hpp>
+#include <mousetrap/spinner.hpp>
 
 namespace mousetrap
 {

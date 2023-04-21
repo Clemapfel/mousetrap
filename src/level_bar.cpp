@@ -1,4 +1,4 @@
-#include <include/level_bar.hpp>
+#include <mousetrap/level_bar.hpp>
 
 namespace mousetrap
 {

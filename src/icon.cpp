@@ -2,8 +2,8 @@
 // Created by clem on 3/27/23.
 //
 
-#include <include/icon.hpp>
-#include <include/log.hpp>
+#include <mousetrap/icon.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

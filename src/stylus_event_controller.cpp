@@ -2,8 +2,8 @@
 // Created by clem on 4/11/23.
 //
 
-#include <include/stylus_event_controller.hpp>
-#include <include/log.hpp>
+#include <mousetrap/stylus_event_controller.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

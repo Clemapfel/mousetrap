@@ -3,10 +3,10 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/shader.hpp>
-#include <include/gl_common.hpp>
-#include <include/shape.hpp>
-#include <include/log.hpp>
+#include <mousetrap/shader.hpp>
+#include <mousetrap/gl_common.hpp>
+#include <mousetrap/shape.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 #include <sstream>

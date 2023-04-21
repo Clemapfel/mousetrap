@@ -4,7 +4,7 @@
 //
 
 #include <glib.h>
-#include <include/time.hpp>
+#include <mousetrap/time.hpp>
 
 namespace mousetrap
 {

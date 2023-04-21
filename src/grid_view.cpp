@@ -3,8 +3,8 @@
 // Created on 9/22/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/grid_view.hpp>
-#include <include/log.hpp>
+#include <mousetrap/grid_view.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

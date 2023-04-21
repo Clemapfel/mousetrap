@@ -4,8 +4,8 @@
 //
 
 #include <iostream>
-#include <include/signal_emitter.hpp>
-#include <include/log.hpp>
+#include <mousetrap/signal_emitter.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

@@ -4,7 +4,7 @@
 //
 
 #include <iostream>
-#include <include/texture.hpp>
+#include <mousetrap/texture.hpp>
 
 namespace mousetrap
 {

@@ -3,8 +3,8 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/overlay.hpp>
-#include <include/log.hpp>
+#include <mousetrap/overlay.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

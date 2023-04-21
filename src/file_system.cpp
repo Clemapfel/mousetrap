@@ -3,9 +3,9 @@
 // Created by clem on 3/23/23.
 //
 
-#include <include/file_system.hpp>
-#include <include/file_monitor.hpp>
-#include <include/log.hpp>
+#include <mousetrap/file_system.hpp>
+#include <mousetrap/file_monitor.hpp>
+#include <mousetrap/log.hpp>
 
 #include <sstream>
 #include <iostream>

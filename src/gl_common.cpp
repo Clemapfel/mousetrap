@@ -3,7 +3,7 @@
 // Created on 7/31/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/gl_common.hpp>
+#include <mousetrap/gl_common.hpp>
 #include <iostream>
 
 namespace mousetrap

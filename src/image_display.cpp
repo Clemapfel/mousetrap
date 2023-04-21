@@ -3,8 +3,8 @@
 // Created on 8/26/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/image_display.hpp>
-#include <include/log.hpp>
+#include <mousetrap/image_display.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

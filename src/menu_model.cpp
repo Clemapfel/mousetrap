@@ -3,8 +3,8 @@
 // Created on 9/18/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/menu_model.hpp>
-#include <include/log.hpp>
+#include <mousetrap/menu_model.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

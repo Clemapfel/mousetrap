@@ -2,7 +2,7 @@
 // Created by clem on 3/22/23.
 //
 
-#include <include/spin_button.hpp>
+#include <mousetrap/spin_button.hpp>
 #include <iostream>
 
 namespace mousetrap

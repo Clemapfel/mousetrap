@@ -3,8 +3,8 @@
 // Created on 8/15/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/scrolled_window.hpp>
-#include <include/log.hpp>
+#include <mousetrap/scrolled_window.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

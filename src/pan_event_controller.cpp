@@ -2,7 +2,7 @@
 // Created by clem on 4/11/23.
 //
 
-#include <include/pan_event_controller.hpp>
+#include <mousetrap/pan_event_controller.hpp>
 
 namespace mousetrap
 {

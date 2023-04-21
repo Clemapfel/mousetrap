@@ -2,8 +2,8 @@
 // Created by clem on 3/31/23.
 //
 
-#include <include/file_descriptor.hpp>
-#include <include/log.hpp>
+#include <mousetrap/file_descriptor.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

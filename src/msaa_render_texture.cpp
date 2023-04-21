@@ -2,8 +2,8 @@
 // Created by clem on 2/23/23.
 //
 
-#include <include/msaa_render_texture.hpp>
-#include <include/log.hpp>
+#include <mousetrap/msaa_render_texture.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

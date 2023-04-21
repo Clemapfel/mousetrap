@@ -2,7 +2,7 @@
 // Created by clem on 4/11/23.
 //
 
-#include <include/long_press_event_controller.hpp>
+#include <mousetrap/long_press_event_controller.hpp>
 
 namespace mousetrap
 {

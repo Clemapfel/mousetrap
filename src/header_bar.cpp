@@ -2,7 +2,7 @@
 // Created by clem on 4/12/23.
 //
 
-#include <include/header_bar.hpp>
+#include <mousetrap/header_bar.hpp>
 
 namespace mousetrap
 {

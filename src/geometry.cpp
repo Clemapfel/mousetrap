@@ -3,7 +3,7 @@
 // Created on 8/14/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/geometry.hpp>
+#include <mousetrap/geometry.hpp>
 
 namespace mousetrap
 {

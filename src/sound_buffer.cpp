@@ -2,7 +2,7 @@
 // Created by clem on 3/16/23.
 //
 
-#include <include/sound_buffer.hpp>
+#include <mousetrap/sound_buffer.hpp>
 
 namespace mousetrap
 {

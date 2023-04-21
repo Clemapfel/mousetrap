@@ -2,8 +2,8 @@
 
 
 
-#include <include/signal_component.hpp>
-#include <include/log.hpp>
+#include <mousetrap/signal_component.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

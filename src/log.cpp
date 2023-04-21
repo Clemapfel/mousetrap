@@ -2,8 +2,8 @@
 // Created by clem on 3/28/23.
 //
 
-#include <include/log.hpp>
-#include <include/time.hpp>
+#include <mousetrap/log.hpp>
+#include <mousetrap/time.hpp>
 #include <iostream>
 
 namespace mousetrap

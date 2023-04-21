@@ -2,7 +2,7 @@
 // Created by clem on 11/10/22.
 //
 
-#include <include/frame_clock.hpp>
+#include <mousetrap/frame_clock.hpp>
 
 namespace mousetrap
 {

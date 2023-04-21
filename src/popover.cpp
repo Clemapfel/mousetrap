@@ -3,8 +3,8 @@
 // Created on 9/3/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/popover.hpp>
-#include <include/log.hpp>
+#include <mousetrap/popover.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

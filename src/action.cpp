@@ -2,9 +2,9 @@
 // Copyright (c) Clemens Cords (mail@clemens-cords.com), created 1/13/23
 //
 
-#include <include/action.hpp>
-#include <include/application.hpp>
-#include <include/log.hpp>
+#include <mousetrap/action.hpp>
+#include <mousetrap/application.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

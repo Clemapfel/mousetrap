@@ -2,7 +2,7 @@
 // Created by clem on 3/23/23.
 //
 
-#include <include/progress_bar.hpp>
+#include <mousetrap/progress_bar.hpp>
 
 namespace mousetrap
 {

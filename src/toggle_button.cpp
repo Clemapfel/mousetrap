@@ -3,9 +3,9 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/toggle_button.hpp>
-#include <include/action.hpp>
-#include <include/log.hpp>
+#include <mousetrap/toggle_button.hpp>
+#include <mousetrap/action.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

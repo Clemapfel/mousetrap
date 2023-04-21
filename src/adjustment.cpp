@@ -3,8 +3,8 @@
 // Created on 8/11/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/adjustment.hpp>
-#include <include/log.hpp>
+#include <mousetrap/adjustment.hpp>
+#include <mousetrap/log.hpp>
 #include <glm/glm.hpp>
 
 namespace mousetrap

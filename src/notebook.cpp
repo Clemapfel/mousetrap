@@ -2,8 +2,8 @@
 // Created by clem on 3/20/23.
 //
 
-#include <include/notebook.hpp>
-#include <include/log.hpp>
+#include <mousetrap/notebook.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

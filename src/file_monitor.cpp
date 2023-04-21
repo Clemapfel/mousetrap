@@ -2,7 +2,7 @@
 // Created by clem on 3/24/23.
 //
 
-#include <include/file_monitor.hpp>
+#include <mousetrap/file_monitor.hpp>
 #include <iostream>
 
 namespace mousetrap

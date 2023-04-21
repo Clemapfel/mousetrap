@@ -2,7 +2,7 @@
 // Created by clem on 4/10/23.
 //
 
-#include <include/column_view.hpp>
+#include <mousetrap/column_view.hpp>
 
 namespace mousetrap
 {

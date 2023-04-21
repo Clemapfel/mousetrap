@@ -2,8 +2,8 @@
 // Created by clem on 3/3/23.
 //
 
-#include <include/clipboard.hpp>
-#include <include/file_system.hpp>
+#include <mousetrap/clipboard.hpp>
+#include <mousetrap/file_system.hpp>
 
 namespace mousetrap::detail
 {

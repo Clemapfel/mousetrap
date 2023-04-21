@@ -2,7 +2,7 @@
 // Created by clem on 3/23/23.
 //
 
-#include <include/switch.hpp>
+#include <mousetrap/switch.hpp>
 
 namespace mousetrap
 {

@@ -3,8 +3,8 @@
 // Created on 10/26/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/center_box.hpp>
-#include <include/log.hpp>
+#include <mousetrap/center_box.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

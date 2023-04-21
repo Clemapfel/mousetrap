@@ -3,7 +3,7 @@
 // Created on 8/11/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/scrollbar.hpp>
+#include <mousetrap/scrollbar.hpp>
 
 namespace mousetrap
 {

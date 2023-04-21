@@ -3,7 +3,7 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/render_area.hpp>
+#include <mousetrap/render_area.hpp>
 
 namespace mousetrap
 {

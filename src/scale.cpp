@@ -2,7 +2,7 @@
 // Created by clem on 3/23/23.
 //
 
-#include <include/scale.hpp>
+#include <mousetrap/scale.hpp>
 #include <iostream>
 
 namespace mousetrap

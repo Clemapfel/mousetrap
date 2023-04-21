@@ -3,7 +3,7 @@
 // Created on 8/28/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/separator.hpp>
+#include <mousetrap/separator.hpp>
 
 namespace mousetrap
 {

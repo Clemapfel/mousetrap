@@ -3,8 +3,8 @@
 // Created on 9/18/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/popover_menu_button.hpp>
-#include <include/log.hpp>
+#include <mousetrap/popover_menu_button.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

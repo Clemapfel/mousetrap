@@ -5,8 +5,8 @@
 
 #include <vector>
 
-#include <include/box.hpp>
-#include <include/log.hpp>
+#include <mousetrap/box.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

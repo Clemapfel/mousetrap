@@ -2,8 +2,8 @@
 // Created by clem on 4/10/23.
 //
 
-#include <include/menubar.hpp>
-#include <include/log.hpp>
+#include <mousetrap/menubar.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

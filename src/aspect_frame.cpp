@@ -3,8 +3,8 @@
 // Created on 8/9/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/aspect_frame.hpp>
-#include <include/log.hpp>
+#include <mousetrap/aspect_frame.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

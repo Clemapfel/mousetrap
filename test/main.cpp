@@ -2,13 +2,13 @@
 // Created by clem on 4/12/23.
 //
 
-#include <include/window.hpp>
-#include <include/header_bar.hpp>
-#include <include/scrolled_window.hpp>
-#include <include/revealer.hpp>
-#include <include/box.hpp>
-#include <include/button.hpp>
-#include <include/application.hpp>
+#include <mousetrap/window.hpp>
+#include <mousetrap/header_bar.hpp>
+#include <mousetrap/scrolled_window.hpp>
+#include <mousetrap/revealer.hpp>
+#include <mousetrap/box.hpp>
+#include <mousetrap/button.hpp>
+#include <mousetrap/application.hpp>
 
 #include "signals_chapter.hpp"
 #include "motion_controller_test.hpp"

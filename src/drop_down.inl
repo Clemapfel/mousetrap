@@ -2,7 +2,7 @@
 // Copyright (c) Clemens Cords (mail@clemens-cords.com), created 1/18/23
 //
 
-#include <include/log.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {

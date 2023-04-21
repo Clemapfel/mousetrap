@@ -3,8 +3,8 @@
 // Created on 9/16/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/drop_down.hpp>
-#include <include/log.hpp>
+#include <mousetrap/drop_down.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

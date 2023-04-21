@@ -2,7 +2,7 @@
 // Created by clem on 3/20/23.
 //
 
-#include <include/drag_event_controller.hpp>
+#include <mousetrap/drag_event_controller.hpp>
 
 namespace mousetrap
 {

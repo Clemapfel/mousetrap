@@ -3,8 +3,8 @@
 // Created on 8/13/22 by clem (mail@clemens-cords.com)
 //
 
-#include <include/stack.hpp>
-#include <include/log.hpp>
+#include <mousetrap/stack.hpp>
+#include <mousetrap/log.hpp>
 
 #include <iostream>
 

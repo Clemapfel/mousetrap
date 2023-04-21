@@ -86,105 +86,105 @@ endif()
 ### MOUSETRAP ##
 
 set(MOUSETRAP_HEADER_FILES
-    include/action.hpp
-    include/adjustment.hpp
-    include/alignment.hpp
-    include/angle.hpp
-    include/application.hpp
-    include/aspect_frame.hpp
-    include/blend_mode.hpp
-    include/box.hpp
-    include/button.hpp
-    include/center_box.hpp
-    include/check_button.hpp
-    include/click_event_controller.hpp
-    include/clipboard.hpp
-    include/color.hpp
-    include/column_view.hpp
-    include/cursor_type.hpp
-    include/drag_event_controller.hpp
-    include/drop_down.hpp
-    include/entry.hpp
-    include/event_controller.hpp
-    include/expander.hpp
-    include/file_chooser.hpp
-    include/file_descriptor.hpp
-    include/file_monitor.hpp
-    include/file_system.hpp
-    include/fixed.hpp
-    include/focus_event_controller.hpp
-    include/frame.hpp
-    include/frame_clock.hpp
-    include/geometry.hpp
-    include/gl_common.hpp
-    include/gl_transform.hpp
-    include/grid.hpp
-    include/grid_view.hpp
-    include/header_bar.hpp
-    include/icon.hpp
-    include/image.hpp
-    include/image_display.hpp
-    include/justify_mode.hpp
-    include/key_event_controller.hpp
-    include/key_file.hpp
-    include/label.hpp
-    include/level_bar.hpp
-    include/list_view.hpp
-    include/log.hpp
-    include/long_press_event_controller.hpp
-    include/menu_model.hpp
-    include/menubar.hpp
-    include/motion_event_controller.hpp
-    include/msaa_render_texture.hpp
-    include/music.hpp
-    include/music.hpp
-    include/notebook.hpp
-    include/orientable.hpp
-    include/orientation.hpp
-    include/overlay.hpp
-    include/pan_event_controller.hpp
-    include/paned.hpp
-    include/pinch_zoom_event_controller.hpp
-    include/popover.hpp
-    include/popover_menu_button.hpp
-    include/progress_bar.hpp
-    include/relative_position.hpp
-    include/render_area.hpp
-    include/render_task.hpp
-    include/render_texture.hpp
-    include/revealer.hpp
-    include/rotate_event_controller.hpp
-    include/scale.hpp
-    include/scale_mode.hpp
-    include/scroll_event_controller.hpp
-    include/scrollbar.hpp
-    include/scrolled_window.hpp
-    include/selectable.hpp
-    include/selection_model.hpp
-    include/separator.hpp
-    include/shader.hpp
-    include/shortcut_controller.hpp
-    include/signal_component.hpp
-    include/signal_emitter.hpp
-    include/sound.hpp
-    include/sound_buffer.hpp
-    include/spin_button.hpp
-    include/spinner.hpp
-    include/stack.hpp
-    include/stylus_event_controller.hpp
-    include/swipe_event_controller.hpp
-    include/switch.hpp
-    include/text_view.hpp
-    include/texture.hpp
-    include/texture_object.hpp
-    include/time.hpp
-    include/toggle_button.hpp
-    include/transition_type.hpp
-    include/vector.hpp
-    include/widget.hpp
-    include/window.hpp
-    include/wrap_mode.hpp
-    include/shape.hpp
+        include/mousetrap/action.hpp
+        include/mousetrap/adjustment.hpp
+        include/mousetrap/alignment.hpp
+        include/mousetrap/angle.hpp
+        include/mousetrap/application.hpp
+        include/mousetrap/aspect_frame.hpp
+        include/mousetrap/blend_mode.hpp
+        include/mousetrap/box.hpp
+        include/mousetrap/button.hpp
+        include/mousetrap/center_box.hpp
+        include/mousetrap/check_button.hpp
+        include/mousetrap/click_event_controller.hpp
+        include/mousetrap/clipboard.hpp
+        include/mousetrap/color.hpp
+        include/mousetrap/column_view.hpp
+        include/mousetrap/cursor_type.hpp
+        include/mousetrap/drag_event_controller.hpp
+        include/mousetrap/drop_down.hpp
+        include/mousetrap/entry.hpp
+        include/mousetrap/event_controller.hpp
+        include/mousetrap/expander.hpp
+        include/mousetrap/file_chooser.hpp
+        include/mousetrap/file_descriptor.hpp
+        include/mousetrap/file_monitor.hpp
+        include/mousetrap/file_system.hpp
+        include/mousetrap/fixed.hpp
+        include/mousetrap/focus_event_controller.hpp
+        include/mousetrap/frame.hpp
+        include/mousetrap/frame_clock.hpp
+        include/mousetrap/geometry.hpp
+        include/mousetrap/gl_common.hpp
+        include/mousetrap/gl_transform.hpp
+        include/mousetrap/grid.hpp
+        include/mousetrap/grid_view.hpp
+        include/mousetrap/header_bar.hpp
+        include/mousetrap/icon.hpp
+        include/mousetrap/image.hpp
+        include/mousetrap/image_display.hpp
+        include/mousetrap/justify_mode.hpp
+        include/mousetrap/key_event_controller.hpp
+        include/mousetrap/key_file.hpp
+        include/mousetrap/label.hpp
+        include/mousetrap/level_bar.hpp
+        include/mousetrap/list_view.hpp
+        include/mousetrap/log.hpp
+        include/mousetrap/long_press_event_controller.hpp
+        include/mousetrap/menu_model.hpp
+        include/mousetrap/menubar.hpp
+        include/mousetrap/motion_event_controller.hpp
+        include/mousetrap/msaa_render_texture.hpp
+        include/mousetrap/music.hpp
+        include/mousetrap/music.hpp
+        include/mousetrap/notebook.hpp
+        include/mousetrap/orientable.hpp
+        include/mousetrap/orientation.hpp
+        include/mousetrap/overlay.hpp
+        include/mousetrap/pan_event_controller.hpp
+        include/mousetrap/paned.hpp
+        include/mousetrap/pinch_zoom_event_controller.hpp
+        include/mousetrap/popover.hpp
+        include/mousetrap/popover_menu_button.hpp
+        include/mousetrap/progress_bar.hpp
+        include/mousetrap/relative_position.hpp
+        include/mousetrap/render_area.hpp
+        include/mousetrap/render_task.hpp
+        include/mousetrap/render_texture.hpp
+        include/mousetrap/revealer.hpp
+        include/mousetrap/rotate_event_controller.hpp
+        include/mousetrap/scale.hpp
+        include/mousetrap/scale_mode.hpp
+        include/mousetrap/scroll_event_controller.hpp
+        include/mousetrap/scrollbar.hpp
+        include/mousetrap/scrolled_window.hpp
+        include/mousetrap/selectable.hpp
+        include/mousetrap/selection_model.hpp
+        include/mousetrap/separator.hpp
+        include/mousetrap/shader.hpp
+        include/mousetrap/shortcut_controller.hpp
+        include/mousetrap/signal_component.hpp
+        include/mousetrap/signal_emitter.hpp
+        include/mousetrap/sound.hpp
+        include/mousetrap/sound_buffer.hpp
+        include/mousetrap/spin_button.hpp
+        include/mousetrap/spinner.hpp
+        include/mousetrap/stack.hpp
+        include/mousetrap/stylus_event_controller.hpp
+        include/mousetrap/swipe_event_controller.hpp
+        include/mousetrap/switch.hpp
+        include/mousetrap/text_view.hpp
+        include/mousetrap/texture.hpp
+        include/mousetrap/texture_object.hpp
+        include/mousetrap/time.hpp
+        include/mousetrap/toggle_button.hpp
+        include/mousetrap/transition_type.hpp
+        include/mousetrap/vector.hpp
+        include/mousetrap/widget.hpp
+        include/mousetrap/window.hpp
+        include/mousetrap/wrap_mode.hpp
+        include/mousetrap/shape.hpp
 )
 
 set(MOUSETRAP_SOURCE_FILES
@@ -287,13 +287,14 @@ set(MOUSETRAP_SOURCE_FILES
     src/action.cpp
 )
 
-add_library(mousetrap STATIC
+add_library(mousetrap SHARED
     ${MOUSETRAP_HEADER_FILES}
     ${MOUSETRAP_SOURCE_FILES}
 )
 
 target_include_directories(mousetrap PUBLIC
-    "${CMAKE_SOURCE_DIR}"
+    "${CMAKE_SOURCE_DIR}/include"
+    "${CMAKE_SOURCE_DIR}" # for .inl
     "${GTK_INCLUDE_DIRS}"
 )
 
@@ -329,6 +330,7 @@ if(MOUSETRAP_BUILD_TESTS)
                 "${CMAKE_SOURCE_DIR}/test/${name}.cpp"
             )
             target_link_libraries("${PROJECT_PREFIX}${TEST_PREFIX}${name}" PRIVATE mousetrap)
+            target_include_directories("${PROJECT_PREFIX}${TEST_PREFIX}${name}" PRIVATE "${CMAKE_SOURCE_DIR}/include" "${CMAKE_SOURCE_DIR}")
             add_test(NAME "${PROJECT_PREFIX}${TEST_PREFIX}${name}" COMMAND "${PROJECT_PREFIX}${TEST_PREFIX}${name}")
         endfunction()
 
