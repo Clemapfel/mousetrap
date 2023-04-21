@@ -11,11 +11,6 @@
 3.2.2 [~~Windows~~]()<br>
 4. [Documentation](#documentation)<br>
 
-## Documentation
-
-Documentation is available [here](https://clemens-cords.com/mousetrap).
-
-A minimal hello world project can be found in the `[example](./example)` folder here on GitHub.
 
 ## Installation
 
@@ -29,6 +24,8 @@ To install mousetrap from source, the following dependencies are needed:
 + `GLM`: CPU-side OpenGL-related Math
 + `GLEW`: Loading of OpenGL extensions
 + `SFML`: Audio-playback and Joystick Interface
+
+You will also need a C++17-capable compiler, for example those provided by gcc or clang.
 
 Installing these dependencies is OS-specific, the following section will provide instructions on how to do so:
 
@@ -88,3 +85,9 @@ Where `sudo` is necessary to install to the default library and include director
 #### Windows
 
 > \todo
+
+## Documentation
+
+Documentation is available [here](https://clemens-cords.com/mousetrap).
+
+A minimal "hello world" project can be found in the `[example](./example)` folder here on GitHub.
