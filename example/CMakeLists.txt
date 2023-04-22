@@ -1,16 +1,18 @@
 cmake_minimum_required(VERSION 3.12)
 
-# project name
-project(mousetrap_example VERSION 0.1.0 LANGUAGES CXX)
+set(TARGET_NAME example_target)
+set(PROJECT_NAME example_project)
+
+# declare project
+project(${PROJECT_NAME} VERSION 0.1.0 LANGUAGES CXX)
 
 # find mousetrap
 find_package(mousetrap REQUIRED)
 
-# target name
-set(TARGET_NAME example)
-
-# target declaration
+# declare target
 add_executable(${TARGET_NAME} main.cpp)
+
+message(WARNING ${mousetrap})
 
 # link mousetrap libraries, including mousetrap itself
 target_link_libraries(${TARGET_NAME} PRIVATE

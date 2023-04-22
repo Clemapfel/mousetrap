@@ -26,9 +26,12 @@ $extrastylesheet
 <script src="$relpath^highlight.min.js"></script>
 <script src="$relpath^julia.min.js"></script>
 <script src="$relpath^cpp.min.js"></script>
-<script>
+<script src="$relpath^cmake.min.js"></script>
+<script src="$relpath^bash.min.js"></script>
+
+ <script>
     $(function() {
-        hljs.configure({languages: ["julia", "cpp"]});
+        hljs.configure({languages: ["julia", "cpp", "cmake", "bash"]});
         $(".snippet").each(function(i,node) {
             $(node).removeClass(".snippet");
             hljs.highlightBlock(node);

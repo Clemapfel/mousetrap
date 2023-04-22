@@ -11,7 +11,6 @@
 3.2.2 [~~Windows~~]()<br>
 4. [Documentation](#documentation)<br>
 
-
 ## Installation
 
 ### Dependencies
@@ -84,7 +83,7 @@ Where `sudo` is necessary to install to the default library and include director
 
 #### Windows
 
-> \todo
+> \todo this section is not yet complete
 
 ## Documentation
 
