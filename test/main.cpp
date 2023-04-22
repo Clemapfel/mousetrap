@@ -15,13 +15,39 @@ int main()
                                 {
                                     // create window
                                     auto window = Window(*app);
+                                    window.set_title("");
 
-                                    // create label
-                                    auto label = Label("Hello World");
-                                    label.set_margin(75);
+                                    static auto button_01 = Button();
+                                    static auto button_02 = Button();
+
+                                    button_01.connect_signal_clicked([](Button* self){
+                                        std::cout << "01 clicked" << std::endl;
+
+                                        // block signal emission on self
+                                        self->set_signal_clicked_blocked(true);
+
+                                        // trigger other button
+                                        button_02.emit_signal_clicked();
+
+                                        // unblock signal emission on self
+                                        self->set_signal_clicked_blocked(false);
+                                    });
+
+                                    button_02.connect_signal_clicked([](Button* self){
+                                        std::cout << "02 clicked" << std::endl;
+
+                                        self->set_signal_clicked_blocked(true);
+                                        button_01.emit_signal_clicked();
+                                        self->set_signal_clicked_blocked(false);
+                                    });
+
+                                    auto box = Box(Orientation::HORIZONTAL);
+                                    box.push_back(button_01);
+                                    box.push_back(button_02);
+                                    box.set_margin(75);
 
                                     // add label to window
-                                    window.set_child(label);
+                                    window.set_child(box);
 
                                     // show window
                                     window.present();

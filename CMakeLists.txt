@@ -58,6 +58,7 @@ if (${MOUSETRAP_BUILD_DOCUMENTATION})
         add_custom_target("${PROJECT_PREFIX}docs"
             COMMAND doxygen
             WORKING_DIRECTORY "${PROJECT_DOCUMENTATION_DIR}"
+            DEPENDS docs/Doxyfile.in
         )
     endif()
 endif()

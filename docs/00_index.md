@@ -12,40 +12,6 @@ and full index of functions/classes - all written by a human.
 
 Mousetrap is written in C++, but provides a first-party Julia binding, bringing GUI programming to the Julia environment.
 
-## Hello World
-
-Mousetrap was born out of the desire for GTK4 functionality to be available in a clean, expressive, easy-to-learn library. Things that 
-would take dozens of lines in native GTK, can be accomplished with a single one-liner in mousetrap. 
-
-Creating an app, with a window displaying the message "Hello World", can be accomplished like so:
-
-\cpp_code_begin
-```cpp
-#include <include/mousetrap.hpp>
-using namespace mousetrap;
-
-int main()
-{
-    auto app = Application("app.hello_world");
-    app.connect_signal_activate([](Application* app)
-    {
-        auto window = Window(*app);
-        auto label = Label("Hello World");
-        window.set_child(label);
-        window.present();
-    });
-  
-    return app.run();
-}
-```
-\cpp_code_end
-
-\julia_code_begin
-```julia
-# \todo
-```
-\julia_code_end
-
 ### Use Cases
 
 Mousetrap is ideal for:
@@ -88,9 +54,9 @@ Mousetrap is unsuitable for:
 ### Credits
 
 mousetrap was created by wrapping:
-+ [GTK4](https://docs.gtk.org/gtk4/), created by GNOME 
++ [GTK4](https://docs.gtk.org/gtk4/)
 + [SFML Audio](https://github.com/SFML/SFML)
 + [OpenGL](https://www.opengl.org/), [OpenGL Mathematics](https://github.com/g-truc/glm) and [GLEW](https://glew.sourceforge.net/)
 
-Software design and implementation by [C. Cords](https://www.clemens-cords.com)
+Software design, implementation, and documentation by [C. Cords](https://www.clemens-cords.com)
 

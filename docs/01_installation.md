@@ -1,11 +1,11 @@
 # Chapter 1: Installation
 
-In this chapter we will learn
+In this chapter, we will learn
 + how to install mousetrap and it's dependencies
 + how to create our first GUI application
 + how to uninstall mousetrap if we decide to do so
 
-If there is an issue with any step in this chapter, consider continueing onto the [troubleshooting section](#troubleshooting).
+If there is an issue with any step in this chapter, consider continuing onto the [troubleshooting section](#troubleshooting).
 
 ### Dependencies
 
@@ -18,7 +18,7 @@ To install mousetrap from source, the following dependencies are needed:
 + `GLEW`: Loading of OpenGL extensions
 + `SFML`: Audio-playback and Joystick Interface
 
-We'll also need a C++17-capable compiler, for example those provided by gcc or clang.
+We'll also need a C++17-capable compiler, for example those provided by GCC or clang.
 
 Installing these dependencies is OS-specific, the following section will provide instructions on how to do so:
 
@@ -26,7 +26,7 @@ Installing these dependencies is OS-specific, the following section will provide
 
 ```shell
 sudo apt-get install aptitude   
-sudo aptitude install cmake            # install cmake
+sudo aptitude install cmake            # install CMake
 sudo aptitude install libgtk-4-dev     # install GTK4
 sudo aptitude install libgl1-mesa-dev  # install OpenGL
 sudo aptitude install libglm-dev       # install GLM
@@ -46,7 +46,7 @@ sudo dnf install SFML-devel     # install SFML
 
 Where `OpenGL` is usually installed automatically on Fedora.
 
-#### MacOS
+#### macOS
 
 \not_yet_complete
 
@@ -58,7 +58,7 @@ Where `OpenGL` is usually installed automatically on Fedora.
 
 With the dependencies settled, we can go on to building and installing mousetrap from source.
 
-#### Linux / MacOS
+#### Linux / macOS
 
 On Unix, run the following commands:
 
@@ -71,6 +71,7 @@ cd build
 cmake ..
 sudo make install -j 4
 cd ../..
+rm -r mousetrap
 ```
 
 Where `sudo` is necessary to install to the default library and include directory. If we want to install mousetrap to a different location, we can add `-DCMAKE_INSTALL_PREFIX=/path/to/custom/location` at the end of `cmake ..`. This is usually not recommended.
@@ -81,13 +82,18 @@ Where `sudo` is necessary to install to the default library and include director
 
 ## Hello World
 
-Now that mousetrap is installed, we can continue to create our project using mousetrap. 
-
-\note A sample project can be accessed in the `example` folder [here](https://github.com/Clemapfel/mousetrap/tree/main/example).
+Now that everything we need is installed, we can continue onto creating our first project:
 
 ### CMakeLists.txt
 
-After creating a folder `example` in any public directory, we create a file `CMakeLists.txt` with the following contents:
+After creating a folder `example` in any public directory:
+
+```shell
+mkdir example
+cd example
+```
+
+We create a file `CMakeLists.txt` with the following contents:
 
 ```cmake
 cmake_minimum_required(VERSION 3.12)
@@ -122,13 +128,13 @@ target_compile_features(${TARGET_NAME} PUBLIC
 
 Where `TARGET_NAME` and `PROJECT_NAME` can be freely modified.
 
-`find_package(mousetrap REQUIRED)` loads mousetrap and its associated libraries, this command sets two variables `MOUSETRAP_LIBRARIES` and `MOUSETRAP_INLUDE_DIRECTORIES`. We need to link against all the libraries contained in the former, and we need to declare all directories contained in the latter as include directories for our target.
+`find_package(mousetrap REQUIRED)` loads mousetrap and its associated libraries, this command sets two variables `MOUSETRAP_LIBRARIES` and `MOUSETRAP_INLUDE_DIRECTORIES`. We need to link against all the libraries contained in the former, and we need to declare all directories contained in the latter as include directories for our custom target, an executable in this case.
 
-Lastly we set `target_compile_features` to C++17, which automatically links against the C++ standard library.
+Lastly, we set `target_compile_features` for our target to C++17, which automatically links against the C++ standard library.
 
 ### main.cpp
 
-Now, in the same directory as the previous `CMakeLists.txt`, we add a file `main.cpp` with the following contents:
+Now, in the same directory as `CMakeLists.txt` from the previous section, we add a file `main.cpp` with the following contents:
 
 ```cpp
 #include <mousetrap.hpp>
@@ -175,7 +181,7 @@ cmake ..
 make
 ```
 
-This will deposit an executable with the name of the cmake variable `TARGET_NAME`. Assuming that name is `example_target`. We can now run that executable:
+This will deposit an executable with the name of the CMake variable `TARGET_NAME`. Assuming that name is still `example_target`, we can now run that executable:
 
 ```shell
 ./example_target
@@ -191,10 +197,10 @@ If everything seems to be working: great! We can continue onto learning how to c
 
 ## Uninstallation
 
-If you would like to remove mousetrap from your machine, you can follow the following steps:
+If we would like to remove mousetrap from our machine, we only need to delete the following:
 
-+ Delete `libmousetrap.so`, usually installed to `/usr/local/lib` or `/user/local/lib64`
-+ Delete folder `mousetrap` and all its contents, usually installed to `/usr/local/include`
-+ Delete file `mousetrap.hpp`, also usually in `/usr/local/include`
++ `libmousetrap.so`, usually installed to `/usr/local/lib` or `/user/local/lib64`
++ folder `mousetrap` and all its contents, usually installed to `/usr/local/include`
++ file `mousetrap.hpp`, also usually in `/usr/local/include`
 
-If the above paths do not contain the mentioned files, consider manually searching for them, for example by using the `locate` command on Linux / MacOS. 
+If the above paths do not contain the mentioned files, we can manually search for them, for example by using the `locate` command on Linux / macOS. Mousetrap does not install any files other than the ones mentioned here.

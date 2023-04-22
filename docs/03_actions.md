@@ -1,4 +1,4 @@
-# Chapter 2: Actions
+# Chapter 3: Actions
 
 This chapter we will learn:
 + How to encapsulate functionality using the Command pattern
