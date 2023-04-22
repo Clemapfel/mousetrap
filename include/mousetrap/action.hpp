@@ -21,12 +21,15 @@ namespace mousetrap
     using ShortcutTriggerID = std::string;
 
     #ifndef DOXYGEN
+    class Action;
+    class Application;
     namespace detail
     {
         struct _ActionInternal
         {
             GObject parent;
 
+            Application* application;
             ActionID id;
             std::vector<ShortcutTriggerID> shortcuts;
 
@@ -34,8 +37,8 @@ namespace mousetrap
             GSimpleAction* g_action;
             GVariant* g_state;
 
-            std::function<void()> stateless_f;
-            std::function<void()> stateful_f;
+            std::function<void(Action*)> stateless_f;
+            std::function<void(Action*)> stateful_f;
 
             bool enabled;
         };
@@ -53,7 +56,7 @@ namespace mousetrap
             /// @brief construct an action with immutable id
             /// @param id string, usually of the form `scope.action_name`
             /// @param application
-            Action(const std::string& id);
+            Action(const std::string& id, Application*);
 
             /// @brief dtor
             ~Action();
@@ -112,7 +115,7 @@ namespace mousetrap
             bool get_state() const;
 
             /// @brief trigger the action
-            void activate() const;
+            void activate();
 
             /// @brief add a shortcut trigger for action, warns but does not throw if trigger is malformed
             /// @param trigger
@@ -151,6 +154,8 @@ namespace mousetrap
 
             static void on_action_activate(GSimpleAction*, GVariant*, detail::ActionInternal*);
             static void on_action_change_state(GSimpleAction*, GVariant*, detail::ActionInternal*);
+
+            void update_application();
     };
 }
 

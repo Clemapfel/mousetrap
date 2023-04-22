@@ -1,7 +1,7 @@
 # Chapter 5: Event Handling
 
 In this chapter, we will learn:
-+ How to handle user interaction, such as cursor movement, keyboard presses, or even touchpad stylus movements
++ How to manually handle user interaction, such as cursor movement, keyboard presses, or even touchpad stylus movements
 + What an event controller is
 + How to connect a controller to any widget
 

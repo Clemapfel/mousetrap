@@ -1,57 +1,36 @@
 //
 // Created by clem on 4/12/23.
 //
-
 #include <mousetrap.hpp>
 using namespace mousetrap;
 
 int main()
 {
-    // declare application
     auto app = Application("test.app");
-
-    // initialization
     app.connect_signal_activate([](Application* app)
-                                {
-                                    // create window
-                                    auto window = Window(*app);
-                                    window.set_title("");
+    {
+        auto window = Window(*app);
+        window.set_title("");
 
-                                    static auto button_01 = Button();
-                                    static auto button_02 = Button();
+        // delcare action
+        auto action = Action("example.print_clicked", app);
+        action.set_function([](Action* action){
+            std::cout << "clicked" << std::endl;
+        });
 
-                                    button_01.connect_signal_clicked([](Button* self){
-                                        std::cout << "01 clicked" << std::endl;
+        // declare button
+        auto button = Button();
+        button.set_margin(75);
 
-                                        // block signal emission on self
-                                        self->set_signal_clicked_blocked(true);
+        // connect action to button
+        button.set_action(action);
 
-                                        // trigger other button
-                                        button_02.emit_signal_clicked();
+        app->get_action("example.print_clicked").activate();
 
-                                        // unblock signal emission on self
-                                        self->set_signal_clicked_blocked(false);
-                                    });
-
-                                    button_02.connect_signal_clicked([](Button* self){
-                                        std::cout << "02 clicked" << std::endl;
-
-                                        self->set_signal_clicked_blocked(true);
-                                        button_01.emit_signal_clicked();
-                                        self->set_signal_clicked_blocked(false);
-                                    });
-
-                                    auto box = Box(Orientation::HORIZONTAL);
-                                    box.push_back(button_01);
-                                    box.push_back(button_02);
-                                    box.set_margin(75);
-
-                                    // add label to window
-                                    window.set_child(box);
-
-                                    // show window
-                                    window.present();
-                                });
+        // add button to window
+        window.set_child(button);
+        window.present();
+    });
 
     // start main loop
     return app.run();

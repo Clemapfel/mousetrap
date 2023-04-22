@@ -154,7 +154,7 @@ namespace mousetrap
     void Application::remove_action(const ActionID& id)
     {
         if (not has_action(id))
-            log::warning("In Application::remove_action: No action with id `" + id + "` registered");
+            return;
 
         auto* self = operator GActionMap*();
         _internal->actions->erase(id);

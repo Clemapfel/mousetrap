@@ -1,5 +1,145 @@
 # Chapter 3: Actions
 
+In this chapter we will learn:
++ How to use the command pattern to encapsulate appliaction functionality
++ How to create and use `mousetrap::Action`
++ How to trigger actions using `Button` and `Menubar`
+
+## Command Pattern
+
+As we create more and more complex applications, keeping track of how to invoke which functionality gets harder and harder. An application can have hundreds of not thousands of functions, all linked to one or more triggers such a buttons, menus, keyboard shortcuts, etc. This will quickly get out of hand, which is why there is a better design pattern to declaring the act of "triggering a function", called the **command pattern**.
+
+A **command**, henceforth called **action** is a C++ object which has the following components:
++ A **function**, which is the actions behavior
++ An **id** which uniquely identifies the action
+
+The mousetrap class `Action` has two additional properties, a **state** and **shortcut**, both of which we will concern us with later on in this section.
+
+## mousetrap::Action
+
+As early as possible, we should drop the habit of defining application behavior inside a global function. For example, in the previous chapter we declared a `Button` with the following behavior:
+
+```cpp
+auto button = Button();
+button.connect_signal_clicked([](Button* button){
+    std::cout << "clicked" << std::endl;
+});
+```
+
+Let's say instead of simply printing `clicked`, this button does a more complex operation, such as opening / saving a file or using the internet to connect to a server overseas. Often, we want this functionality to not be tied to a specific button, it is much more scalable and easy to maintain to encapsulate it as a automatically managed object. `Action` offers this functionality.
+
+When creating an action, we first need to choose an *id*. An id is any identifier containing the character `[a-zA-Z0-9_.]`, that is all roman letters, number 0-9, `_` and `.`. The dot is usually reserved to simulate scoping, for example an action could be called `image_file.save` and `text_file.save`. Both actions say what they do, `save` a file, but the prefix makes clear which part of the application they act in.
+
+We'll call our example action that prints `clicked`  "`example.print_clicked`". We create the action object like so:
+
+```cpp
+auto action = Action("example.print_clicked", app);
+action.set_function([](){
+    std::cout << "clicked" << std::endl;
+})
+```
+
+Where `app` is a pointer to our application.
+
+We see that we can set an actions behavior using `set_function`. This method acts a lot like connecting so a signal handler, it has a set signature `(Action*, (Data_t)) -> void`.
+
+There are multiple way of triggering an action, for now, we recall that this behavior can be tied to a button. `Button` speficially has a function for this `set_action`, which links the action to the button. If the button is clicked, the action is triggered. 
+
+```cpp
+auto button = Button();
+button.set_action(action);
+```
+<br>
+
+\collapsible_note_begin
+
+For this chapter, we'll modify our `main.cpp` like so:
+
+```cpp
+#include <mousetrap.hpp>
+using namespace mousetrap;
+
+int main()
+{
+    auto app = Application("test.app");
+    app.connect_signal_activate([](Application* app)
+    {
+        auto window = Window(*app);
+
+        // delcare action
+        auto action = Action("example.print_clicked", app);
+        action.set_function([](Action* action){
+            std::cout << "clicked" << std::endl;
+        });
+      
+        // declare button 
+        auto button = Button();
+        button.set_margin(75);
+        
+        // connect action to button
+        button.set_action(action);
+
+        // add button to window
+        window.set_child(button);
+        window.present();
+    });
+
+    // start main loop
+    return app.run();
+}
+```
+
+\image html button_clicked_action.png
+
+```
+clicked
+```
+
+\collapsible_note_end
+
+## Action Maps
+
+Eagle-eyed readers may have noticed that we need to supply an `Application*` to the `Action` constructor, despite the two seemingly not interacting. This is, because the `Application` instance is what stores our actions globally. Once we call `set_function` on an action, it is registered with the application under it's id, `example.print_clicked` in our case, an can now be accessed both internally and externally by everything in the application.
+
+For example, if we lost track of our `Action` instance but would like to call it manually, we can do so like so:
+
+```cpp
+// after action.set_function(//...
+app->get_action("example.print_clicked").activate();
+```
+```
+clicked
+```
+
+Where `get_action` returns a `Action&`. By giving our action a descriptive id, we have a very scalable and automated mechanism of keeping track of and referencing functions. 
+
+## Triggering Actions
+
+`activate` and `Button` are not the only way to trigger actions, there are two additional ways that are commonly used in almost all applications: **menus** and **keyboard shortcuts**.
+
+### Menus
+
+A menu is usually a list of labels. In mousetrap speficially, each of these labels has a name, the text displayed as the label, and a 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+> ###########################
+
+
+# Chapter 3: Actions
+
 This chapter we will learn:
 + How to encapsulate functionality using the Command pattern
 + How to define `mousetrap::Action`s behavior

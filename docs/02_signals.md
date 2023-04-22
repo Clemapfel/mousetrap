@@ -2,10 +2,11 @@
 
 In this chapter, we will learn:
 + What signals and signal handlers are
++ How to check a which signature a signal expects
 + How to connect to a signal
 + How and why to block a signal
 
-## Introduction: Signal Architecture
+## Signal Architecture
 
 Central to mousetrap, GTK and many GUI libraries like QT is what is called **signal architecture** or [**signal programming**](https://en.wikipedia.org/wiki/Signal_programming).
 
@@ -23,7 +24,7 @@ In this case, the signal **id** is `clicked`, the signal **emitter** is an insta
 auto button = Button();
 
 // create signal handler
-auto on_signal_clicked = [](Button* button) {
+auto on_signal_clicked = [](Button* button) -> void {
     std::cout << "clicked" << std::endl;
 }
 
@@ -50,7 +51,7 @@ int main()
         // start of snippet
         auto button = Button();
         
-        auto auto on_signal_clicked = [](Button* button) {
+        auto auto on_signal_clicked = [](Button* button) -> void {
             std::cout << "clicked" << std::endl;
         }
         
@@ -90,8 +91,7 @@ We've aready seen how to connect a signal handler to the signal of an emitter, h
 A functions **signature** descibres a functions return- and argument types. For example, the function
 
 ```cpp
-void foo(int32_t i, const std::string& string)
-{
+void foo(int32_t i, const std::string& string) -> void {
     std::cout << i << " " << string << std::endl;
 }
 ```
@@ -135,7 +135,7 @@ Expanding on our previous example, if we want to send a customized message when 
 auto button = Button();
 
 // add secondary argument of type string
-auto on_signal_clicked = [](Button* button, std::string message) {
+auto on_signal_clicked = [](Button* button, std::string message) -> void {
     std::cout << message << std::endl;
 }
 
@@ -152,7 +152,7 @@ The above can be written more succinctly like so:
 
 ```cpp
 auto button = Button();
-button.connect_signal_clicked([](Button* button, auto message){
+button.connect_signal_clicked([](Button* button, auto message) -> void {
     std::cout << message << std::endl;
 }, "custom message");
 ```
@@ -173,12 +173,12 @@ Consider the following use-case, in which we manually emit a signal using `emit_
 static auto button_01 = Button();
 static auto button_02 = Button();
 
-button_01.connect_signal_clicked([](Button*){
+button_01.connect_signal_clicked([](Button*) -> void {
     std::cout << "01 clicked" << std::endl;
     button_02.emit_signal_clicked();
 });
 
-button_02.connect_signal_clicked([](Button*){
+button_02.connect_signal_clicked([](Button*) -> void {
     std::cout << "02 clicked" << std::endl;
     button_01.emit_signal_clicked();
 });
@@ -205,7 +205,7 @@ Here, we declared two buttons. The intended behavior is that if the user clicks 
 And our application deadlocks. This is of cours extremely undesirable. We can avoid this behavior by **blocking signals**:
 
 ```cpp
-button_01.connect_signal_clicked([](Button* self){
+button_01.connect_signal_clicked([](Button* self) -> void {
     std::cout << "01 clicked" << std::endl;
     
     // block signal emission on self
@@ -218,7 +218,7 @@ button_01.connect_signal_clicked([](Button* self){
     self->set_signal_clicked_blocked(false);
 });
 
-button_02.connect_signal_clicked([](Button* self){
+button_02.connect_signal_clicked([](Button* self) -> void {
     std::cout << "02 clicked" << std::endl;
     
     self->set_signal_clicked_blocked(true);
@@ -246,8 +246,7 @@ Let's talk through what happens when the user clicks one of the two buttons, let
 
 By correctly blocking signals, we get the correct behavior of both buttons being triggered exactly once. Because both buttons unblock themself at the end of the signal handler, after the two buttons are done everything returns to the way it was before the first signal emission.
 
-\collapsible_note_begin
-If you would like to try out this behavior, here is a modified `main.cpp`
+If we want to try out this behavior ourself, here is a modified `main.cpp`
 
 ```cpp
 #include <mousetrap.hpp>
@@ -256,7 +255,7 @@ using namespace mousetrap;
 int main()
 {
     auto app = Application("test.app");
-    app.connect_signal_activate([](Application* app)
+    app.connect_signal_activate([](Application* app) -> void
     {
         auto window = Window(*app);
 
@@ -297,4 +296,37 @@ int main()
 
 \image html double_button_signal_blocking.png
 
-\collapsible_note_end
+---
+
+## Application Signals
+
+With our newfound knowledge about signals, we can recontextualize our `main.cpp`. We recongize that `app`, of type \link mousetrap::Application `Application` \endlink is a signal emitter. In `main` we connect to one of its signals, `activate`, which has the signature `(Application*, (Data_t)) -> void`, though we do not supply any `data` as an argument. 
+
+Application has two signals, `activate` and `shutdown`. The former is invoked when initialization should happen, while `shutdown` is emitted when the application is ready to shut-off, usually once all windows associated with an application are closed.
+
+Checking the \link mousetrap::Documentation documentation page on `Application` \endlink, we see that `shutdown` also requires the signature `(Application*, (Data_t)) -> void`. If want to connect to it to safely free some kind state for our application, we now know how to modify `main.cpp` to do so:
+
+<details><summary><b>Click to see the solution</b></summary>
+
+```cpp
+#include <mousetrap.hpp>
+using namespace mousetrap;
+
+int main()
+{
+    auto app = Application("test.app");
+    app.connect_signal_activate([](Application* app) -> void {
+        // (...)
+    });
+    
+    // connect to signal `shutdown`
+    app.connect_signal_shutodwn([](Application* app) -> void {
+       // shutdown behavior here 
+    });
+
+    return app.run();
+}
+```
+</details>
+
+---
