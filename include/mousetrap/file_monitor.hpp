@@ -46,6 +46,7 @@ namespace mousetrap
 
 
     /// @brief monitors changes to a file that may or may not yet exist
+    /// @todo implement
     class FileMonitor //:  public SignalEmitter
     {
         friend class FileDescriptor;

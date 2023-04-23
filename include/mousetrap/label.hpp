@@ -44,6 +44,8 @@ namespace mousetrap
 
     /// @brief widget displaying text, supports pango attribute syntax
     /// @see https://docs.gtk.org/Pango/pango_markup.html
+    /// \signals
+    /// \widget_signals{Label}
     class Label : public WidgetImplementation<GtkLabel>
     {
         public:

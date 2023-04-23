@@ -17,15 +17,9 @@ namespace mousetrap
 {
     /// @brief button, triggers action or signal when clicked
     /// \signals
+    /// \signal_clicked{Button}
     /// \signal_activate{Button}
-    /// \signal_startup{Button}
-    /// \signal_shutdown{Button}
-    /// \signal_update{Button}
-    /// \signal_paint{Button}
-    /// \signal_realize{Button}
-    /// \signal_unrealize{Button}
-    /// \signal_destroy{Button}
-    /// \signal_hide{Button}
+    /// \widget_signals{Button}
     class Button : public WidgetImplementation<GtkButton>,
         HAS_SIGNAL(Button, activate),
         HAS_SIGNAL(Button, clicked)

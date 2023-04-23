@@ -33,6 +33,9 @@ namespace mousetrap
     #endif
 
     /// @brief widget that allows users to choose a value from a range by dragging a slider
+    /// \signals
+    /// \signal_value_changed{Scale}
+    /// \widget_signals{Scale}
     class Scale : public WidgetImplementation<GtkScale>, public Orientable,
         HAS_SIGNAL(Scale, value_changed)
     {

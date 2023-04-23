@@ -27,6 +27,8 @@ namespace mousetrap
 
 
     /// @brief longform sound, streamed directly from disk if possible
+    /// \signals
+    /// \signal_play{Music}
     class Music : public SignalEmitter,
         HAS_SIGNAL(Music, play)
     {

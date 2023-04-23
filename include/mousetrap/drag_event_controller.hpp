@@ -14,6 +14,10 @@
 namespace mousetrap
 {
     /// @brief event controller, handles click-dragging
+    /// \signals
+    /// \signal_drag_begin{DragEventController}
+    /// \signal_drag{DragEventController}
+    /// \signal_drag_end{DragEventController}
     class DragEventController : public SingleClickGesture,
         HAS_SIGNAL(DragEventController, drag_begin),
         HAS_SIGNAL(DragEventController, drag),

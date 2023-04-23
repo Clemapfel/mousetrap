@@ -11,6 +11,8 @@
 namespace mousetrap
 {
     /// @brief a scrollbar, allows users to scroll a window or range using the scrollwheel or cursor
+    /// \signals
+    /// \widget_signals{Scrollbar}
     class Scrollbar : public WidgetImplementation<GtkScrollbar>, public Orientable
     {
         public:

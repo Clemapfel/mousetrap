@@ -11,6 +11,8 @@
 namespace mousetrap
 {
     /// @brief container widget that arranges a widget in the center with two widgets surrounding it
+    /// \signals
+    /// \widget_signals{CenterBox}
     class CenterBox : public WidgetImplementation<GtkCenterBox>, public Orientable
     {
         public:

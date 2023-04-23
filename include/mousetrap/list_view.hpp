@@ -28,6 +28,9 @@ namespace mousetrap
     #endif
 
     /// @brief Container widget that displays a number of items in a single row, nested lists are possible
+    /// \signals
+    /// \signal_activate{ListView}
+    /// \widget_signals{ListView}
     class ListView : public WidgetImplementation<GtkListView>, public Orientable, public Selectable,
         HAS_SIGNAL(ListView, activate)
     {

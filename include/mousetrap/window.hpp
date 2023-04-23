@@ -16,6 +16,11 @@ namespace mousetrap
     class Application;
 
     /// @brief window, registered to an application
+    /// \signals
+    /// \signal_close_request{Window}
+    /// \signal_activate_default_widget{Window}
+    /// \signal_activate_focused_widget{Window}
+    /// \widget_signals{Window}
     class Window : public WidgetImplementation<GtkWindow>,
         HAS_SIGNAL(Window, close_request),
         HAS_SIGNAL(Window, activate_default_widget),

@@ -14,6 +14,9 @@
 namespace mousetrap
 {
     /// @brief collapsible list widget, hides the child until clicked, usually display and arrow next to the label
+    /// \signals
+    /// \signal_activate{Expander}
+    /// \widget_signals{Expander}
     class Expander : public WidgetImplementation<GtkExpander>,
         HAS_SIGNAL(Expander, activate)
     {

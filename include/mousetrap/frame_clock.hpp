@@ -17,6 +17,9 @@
 namespace mousetrap
 {
     /// @brief clock that is updated every render unit
+    /// \signals
+    /// \signal_update{FrameClock}
+    /// \signal_paint{FrameClock}
     class FrameClock : public SignalEmitter,
         HAS_SIGNAL(FrameClock, update),
         HAS_SIGNAL(FrameClock, paint)

@@ -10,6 +10,8 @@
 namespace mousetrap
 {
     /// @brief displays widgets in a grid, one widget may take up more than one cell
+    /// \signals
+    /// \widget_signals{Grid}
     class Grid : public WidgetImplementation<GtkGrid>, public Orientable
     {
         public:

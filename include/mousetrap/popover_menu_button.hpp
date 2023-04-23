@@ -17,6 +17,9 @@
 namespace mousetrap
 {
     /// @brief displays a menu inside a popover that is attached to a popover menu button. If the button is pressed, the popover is shown automatically
+    /// \signals
+    /// \signal_closed{PopoverMenu}
+    /// \widget_signals{PopoverMenu}
     class PopoverMenu : public WidgetImplementation<GtkPopoverMenu>,
         HAS_SIGNAL(PopoverMenu, closed)
     {

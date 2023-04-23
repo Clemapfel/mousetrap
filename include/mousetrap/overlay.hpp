@@ -10,6 +10,8 @@
 namespace mousetrap
 {
     /// @brief a widget that allows to display multiple widgets above a common child
+    /// \signals
+    /// \widget_signals{Overlay}
     class Overlay : public WidgetImplementation<GtkOverlay>
     {
         public:

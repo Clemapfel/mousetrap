@@ -9,6 +9,8 @@
 namespace mousetrap
 {
     /// @brief display menu as a menubar
+    /// \signals
+    /// \widget_signals{MenuBar}
     class MenuBar : public WidgetImplementation<GtkPopoverMenuBar>
     {
         public:

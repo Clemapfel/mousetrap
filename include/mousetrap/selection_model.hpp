@@ -28,6 +28,8 @@ namespace mousetrap
     };
 
     /// @brief selection model, provides interface and signals for selectable widgets
+    /// \signals
+    /// \signal_selection_changed{SelectionModel}
     class SelectionModel : public SignalEmitter,
         HAS_SIGNAL(SelectionModel, selection_changed)
     {

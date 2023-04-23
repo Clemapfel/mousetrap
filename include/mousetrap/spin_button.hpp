@@ -32,6 +32,10 @@ namespace mousetrap
     #endif
 
     /// @brief entry with and "increase" and "decrease" button, allows user to pick a value by entering the exact numebr
+    /// \signals
+    /// \signal_value_changed{SpinButton}
+    /// \signal_wrapped{SpinButton}
+    /// \widget_signals{SpinButton}
     class SpinButton : public WidgetImplementation<GtkSpinButton>,
         HAS_SIGNAL(SpinButton, value_changed),
         HAS_SIGNAL(SpinButton, wrapped)

@@ -10,8 +10,10 @@
 namespace mousetrap
 {
     /// @brief event controller that listens for long press gestures
+    /// \signals
+    /// \signal_swipe{SwipeEventController}
     class SwipeEventController : public SingleClickGesture,
-    HAS_SIGNAL(SwipeEventController, swipe)
+        HAS_SIGNAL(SwipeEventController, swipe)
     {
         public:
             /// @brief construct

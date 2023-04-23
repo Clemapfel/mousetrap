@@ -68,6 +68,9 @@ namespace mousetrap
 
     /// @brief native file chooser dialog
     /// @todo replace with GtkFileDialog once GTK4.10 stable releases
+    /// \signals
+    /// \signal_response{FileChooser}
+    /// \widget_signals{FileChooser}
     class FileChooser : public WidgetImplementation<GtkFileChooserNative>,
         HAS_SIGNAL(FileChooser, response)
     {

@@ -15,6 +15,9 @@
 namespace mousetrap
 {
     /// @brief switch, can be click dragged or clicked to change a binary state
+    /// \signals
+    /// \signal_activate{Switch}
+    /// \widget_signals{Switch}
     class Switch : public WidgetImplementation<GtkSwitch>,
         HAS_SIGNAL(Switch, activate)
     {

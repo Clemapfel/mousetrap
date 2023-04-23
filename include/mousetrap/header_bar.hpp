@@ -8,6 +8,9 @@
 
 namespace mousetrap
 {
+    /// @brief widget that is usually used in the decoration of a window
+    /// \signals
+    /// \widget_signals{HeaderBar}
     class HeaderBar : public WidgetImplementation<GtkHeaderBar>
     {
         public:

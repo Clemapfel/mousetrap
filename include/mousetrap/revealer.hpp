@@ -11,6 +11,9 @@
 namespace mousetrap
 {
     /// @brief widget that contains exactly one child and animates the process of hiding / showing it
+    /// \signals
+    /// \widget_signals{Revealer}
+    /// @todo signal notifiy:reveal-child
     class Revealer : public WidgetImplementation<GtkRevealer>
     {
         public:

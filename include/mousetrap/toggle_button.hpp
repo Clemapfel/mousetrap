@@ -15,6 +15,11 @@
 namespace mousetrap
 {
     /// @brief toggle button, allows the user to manipulate a state
+    /// \signals
+    /// \signal_toggled{ToggleButton}
+    /// \signal_activate{ToggleButton}
+    /// \signal_clicked{ToggleButton}
+    /// \widget_signals{ToggleButton}
     class ToggleButton : public WidgetImplementation<GtkToggleButton>,
         HAS_SIGNAL(ToggleButton, toggled),
         HAS_SIGNAL(ToggleButton, activate),

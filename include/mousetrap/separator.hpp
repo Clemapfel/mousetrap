@@ -10,6 +10,8 @@
 namespace mousetrap
 {
     /// @brief non-container widget that fills it's area with a dark color, used mousetrap::Widget::set_opacity to make it invisible
+    /// \signals
+    /// \widget_signals{Separator}
     class Separator : public WidgetImplementation<GtkSeparator>, public Orientable
     {
         public:

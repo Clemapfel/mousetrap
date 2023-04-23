@@ -40,6 +40,8 @@ namespace mousetrap
     };
 
     /// @brief a sound, streamed from ram
+    /// \signals
+    /// \signal_play{Sound}
     class Sound : public SignalEmitter,
         HAS_SIGNAL(Sound, play)
     {

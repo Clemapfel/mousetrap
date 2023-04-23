@@ -27,6 +27,10 @@ namespace mousetrap
     };
 
     /// @brief check button, displays a boolean state as a checkmark
+    /// \signals
+    /// \signal_activate{CheckButton}
+    /// \signal_toggled{CheckButton}
+    /// \widget_signals{CheckButton}
     class CheckButton : public WidgetImplementation<GtkCheckButton>,
         HAS_SIGNAL(CheckButton, activate),
         HAS_SIGNAL(CheckButton, toggled)

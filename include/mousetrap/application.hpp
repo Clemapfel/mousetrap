@@ -40,6 +40,9 @@ namespace mousetrap
     #endif
 
     /// @brief object representing an entire application, supplies the main render loop, mapping of actions
+    /// \signals
+    /// \signal_activate{Application}
+    /// \signal_shutdown{Application}
     class Application : public SignalEmitter,
         HAS_SIGNAL(Application, activate),
         HAS_SIGNAL(Application, shutdown)

@@ -28,6 +28,8 @@ namespace mousetrap
     #endif
 
     /// @brief displays exactly one of multiple widgets. Use mousetrap::StackSwitcher and mousetrap::StackSidebar to allow a user to switch them through the GUI
+    /// \signals
+    /// \widget_signals{Stack}
     class Stack : public WidgetImplementation<GtkStack>, public Selectable
     {
         /// @brief id of a stack page, the id is the title of the page and may be used to display the name of that stack page
@@ -116,6 +118,8 @@ namespace mousetrap
     };
 
     /// @brief widget to choose page of stack, uses page id as label
+    /// \signals
+    /// \widget_signals{StackSidebar}
     class StackSidebar : public WidgetImplementation<GtkStackSidebar>
     {
         public:
@@ -125,6 +129,8 @@ namespace mousetrap
     };
 
     /// @brief widget to choose page of stack, uses page id as label
+    /// \signals
+    /// \widget_signals{StackSwitcher}
     class StackSwitcher : public WidgetImplementation<GtkStackSwitcher>
     {
         public:

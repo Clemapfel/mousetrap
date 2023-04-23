@@ -21,6 +21,8 @@ namespace mousetrap
     };
 
     /// @brief level bar to indicate a value as a fraction of a whole
+    /// \signals
+    /// \widget_signals{LevelBar}
     class LevelBar : public WidgetImplementation<GtkLevelBar>, public Orientable
     {
         public:

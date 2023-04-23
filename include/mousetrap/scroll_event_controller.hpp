@@ -13,6 +13,11 @@
 namespace mousetrap
 {
     /// @brief event controller that handles the scrollbar, usually on a mouse
+    /// \signals
+    /// \signal_kinetic_scroll_decelerate{ScrollEventController}
+    /// \signal_scroll_begin{ScrollEventController}
+    /// \signal_scroll{ScrollEventController}
+    /// \signal_scroll_end{ScrollEventController}
     class ScrollEventController : public EventController,
         HAS_SIGNAL(ScrollEventController, kinetic_scroll_decelerate),
         HAS_SIGNAL(ScrollEventController, scroll_begin),

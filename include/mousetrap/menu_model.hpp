@@ -32,6 +32,7 @@ namespace mousetrap
     #endif
 
     /// @brief menu model, used to specifc behavior of menu bars and popover menus
+    /// @todo signal items changed
     class MenuModel
     {
         friend class MenuBar;

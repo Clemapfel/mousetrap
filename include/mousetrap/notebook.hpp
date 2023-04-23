@@ -29,6 +29,12 @@ namespace mousetrap
 
     /// @brief container widget that displays multiple pages the cuser can switch between. Each page as a "tab" with a label
     /// @todo wrap the signals such that unused first argument is eliminated
+    /// \signals
+    /// \signal_page_added{Notebook}
+    /// \signal_page_reordered{Notebook}
+    /// \signal_page_removed{Notebook}
+    /// \signal_page_selection_changed{Notebook}
+    /// \widget_signals{Notebook}
     class Notebook : public WidgetImplementation<GtkNotebook>,
         HAS_SIGNAL(Notebook, page_added),
         HAS_SIGNAL(Notebook, page_reordered),

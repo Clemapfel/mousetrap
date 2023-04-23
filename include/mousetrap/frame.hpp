@@ -10,6 +10,8 @@
 namespace mousetrap
 {
     /// @brief draws frame around widget, rounded corners. Has exactly one child and an optional label widget
+    /// \signals
+    /// \widget_signals{Frame}
     class Frame : public WidgetImplementation<GtkFrame>
     {
         public:

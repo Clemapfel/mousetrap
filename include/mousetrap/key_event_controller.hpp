@@ -14,6 +14,10 @@
 namespace mousetrap
 {
     /// @brief event controller that handles keystrokes
+    /// \signals
+    /// \signal_key_pressed{KeyEventController}
+    /// \signal_key_released{KeyEventController}
+    /// \signal_modifiers_changed{KeyEventController}
     class KeyEventController : public EventController,
         HAS_SIGNAL(KeyEventController, key_pressed),
         HAS_SIGNAL(KeyEventController, key_released),

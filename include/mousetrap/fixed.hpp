@@ -10,6 +10,8 @@
 namespace mousetrap
 {
     /// @brief container that positions a widget at a specific pixel position
+    /// \signals
+    /// \widget_signals{Fixed}
     class Fixed : public WidgetImplementation<GtkFixed>
     {
         public:

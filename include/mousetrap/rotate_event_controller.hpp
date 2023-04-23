@@ -14,6 +14,8 @@
 namespace mousetrap
 {
     /// @brief event controller handling touch rotation, or "turn" events
+    /// \signals
+    /// \signal_rotation_changed{RotateEventController}
     class RotateEventController : public EventController,
         HAS_SIGNAL(RotateEventController, rotation_changed)
     {

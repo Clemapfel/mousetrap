@@ -14,6 +14,10 @@
 namespace mousetrap
 {
     /// @brief a single-line text entry
+    /// \signals
+    /// \signal_activate{Entry}
+    /// \signal_text_changed{Entry}
+    /// \widget_signals{Entry}
     class Entry : public WidgetImplementation<GtkEntry>,
         HAS_SIGNAL(Entry, activate),
         HAS_SIGNAL(Entry, text_changed)

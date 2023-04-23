@@ -15,6 +15,10 @@
 namespace mousetrap
 {
     /// @brief area that allows OpenGL primitives to be rendered
+    /// \signals
+    /// \signal_render{RenderArea}
+    /// \signal_resize{RenderArea}
+    /// \widget_signals{RenderArea}
     class RenderArea : public WidgetImplementation<GtkGLArea>,
         HAS_SIGNAL(RenderArea, render),
         HAS_SIGNAL(RenderArea, resize)

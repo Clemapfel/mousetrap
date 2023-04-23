@@ -24,6 +24,9 @@ namespace mousetrap
     #endif
 
     /// @brief container, arranges widget in a grid
+    /// \signals
+    /// \signal_activate{GridView}
+    /// \widget_signals{GridView}
     class GridView : public WidgetImplementation<GtkGridView>, public Orientable, public Selectable,
         HAS_SIGNAL(GridView, activate)
     {

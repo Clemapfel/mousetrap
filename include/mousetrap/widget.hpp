@@ -21,8 +21,7 @@
     #include "../../docs/doxygen.inl"
 #endif
 
-namespace mousetrap
-{
+namespace mousetrap {
     /// @brief result of tick callback of widget, determines whether the tick callback should be removed
     enum class TickCallbackResult : bool
     {
@@ -37,17 +36,20 @@ namespace mousetrap
     using NativeWidget = GtkWidget*;
 
     /// @brief \only_used_in_julia_binding
-    struct AbstractWidget {};
+    struct AbstractWidget
+    {
+    };
 
     #ifndef DOXYGEN
-    template<typename GtkWidget_t>
+    template <typename GtkWidget_t>
     struct WidgetImplementation;
     struct EventController;
+
     class Clipboard;
+
     class Widget;
 
-    namespace detail
-    {
+    namespace detail {
         struct _WidgetInternal
         {
             GObject parent;

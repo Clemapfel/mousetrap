@@ -15,6 +15,10 @@ namespace mousetrap
 {
     /// @brief multi-line text entry
     /// @todo expose widget-insertion interface and additional signals: https://docs.gtk.org/gtk4/class.TextView.html
+    /// \signals
+    /// \signal_text_changed{TextView}
+    /// \signal_undo{TextView}
+    /// \signal_redo{TextView}
     class TextView : public WidgetImplementation<GtkTextView>,
         HAS_SIGNAL(TextView, text_changed),
         HAS_SIGNAL(TextView, undo),

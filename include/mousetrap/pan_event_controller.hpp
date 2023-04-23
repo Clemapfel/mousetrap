@@ -10,6 +10,8 @@
 namespace mousetrap
 {
     /// @brief event controller that listens for long press gestures
+    /// \signals
+    /// \signal_pan{PanEventController}
     class PanEventController : public EventController,
         HAS_SIGNAL(PanEventController, pan)
     {

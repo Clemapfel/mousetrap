@@ -11,6 +11,8 @@
 namespace mousetrap
 {
     /// @brief paned, displays two children with a draggable area in between, dragging the area resizes the respective two widgets
+    /// \signals
+    /// \widget_signals{Paned}
     class Paned : public WidgetImplementation<GtkPaned>, public Orientable
     {
         public:

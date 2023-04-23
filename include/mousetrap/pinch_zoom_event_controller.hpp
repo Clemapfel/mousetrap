@@ -13,6 +13,8 @@
 namespace mousetrap
 {
     /// @brief event controller, handles the two-finger pinch-zoom gestures
+    /// \signals
+    /// \signal_scale_changed{PinchZoomEventController}
     class PinchZoomEventController : public EventController,
         HAS_SIGNAL(PinchZoomEventController, scale_changed)
     {

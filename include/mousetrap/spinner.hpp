@@ -9,6 +9,8 @@
 namespace mousetrap
 {
     /// @brief spinning "loading" icon, signifies a task is being executed continously, see also mousetrap::ProgressBar
+    /// \signals
+    /// \widget_signals{Spinner}
     class Spinner : public WidgetImplementation<GtkSpinner>
     {
         public:

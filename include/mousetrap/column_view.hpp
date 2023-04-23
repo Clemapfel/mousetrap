@@ -30,6 +30,9 @@ namespace mousetrap
     #endif
 
     /// @brief view that displays widget in a table, ordered by column
+    /// \signals
+    /// \signal_activate{ColumnView}
+    /// \widget_signals{ColumnView}
     class ColumnView : public WidgetImplementation<GtkColumnView>, public Selectable,
         HAS_SIGNAL(ColumnView, activate)
     {

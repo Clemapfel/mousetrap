@@ -11,8 +11,11 @@
 
 #include <iostream>  // TODO
 
-namespace mousetrap {
+namespace mousetrap
+{
     /// @brief drop down menu, present a popup with a list of items
+    /// \signals
+    /// \widget_signals{DropDown}
     class DropDown : public WidgetImplementation<GtkDropDown>
     {
         public:

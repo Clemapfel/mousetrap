@@ -24,6 +24,9 @@ namespace mousetrap
     }
 
     /// @brief adjustment, represents a continous range of values
+    /// \signals
+    /// \signal_value_changed{Adjustment}
+    /// \signal_properties_changed{Adjustment}
     class Adjustment : public SignalEmitter,
         HAS_SIGNAL(Adjustment, value_changed),
         HAS_SIGNAL(Adjustment, properties_changed)

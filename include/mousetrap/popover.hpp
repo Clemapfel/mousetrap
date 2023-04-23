@@ -11,6 +11,9 @@
 namespace mousetrap
 {
     /// @brief widget container that adds a popover to any other widget. Can be hidden fully and controlled manually
+    /// \signals
+    /// \signal_closed{Popover}
+    /// \widget_signals{Popover}
     class Popover : public WidgetImplementation<GtkPopover>,
         HAS_SIGNAL(Popover, closed)
     {

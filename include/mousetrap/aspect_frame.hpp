@@ -10,6 +10,8 @@
 namespace mousetrap
 {
     /// @brief container widget that assures childs size conforms to given aspect ratio
+    /// \signals
+    /// \widget_signals{AspectFrame}
     class AspectFrame : public WidgetImplementation<GtkAspectFrame>
     {
         public:

@@ -9,6 +9,9 @@
 namespace mousetrap
 {
     /// @brief event controller that listens for long press gestures
+    /// \signals
+    /// \signal_pressed{LongPressEventController}
+    /// \signal_press_cancelled{LongPressEventController}
     class LongPressEventController : public SingleClickGesture,
         HAS_SIGNAL(LongPressEventController, pressed),
         HAS_SIGNAL(LongPressEventController, press_cancelled)

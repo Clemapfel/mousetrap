@@ -10,6 +10,8 @@
 namespace mousetrap
 {
     /// @brief widget that displays progress
+    /// \signals
+    /// \widget_signals{ProgressBar}
     class ProgressBar : public WidgetImplementation<GtkProgressBar>, public Orientable
     {
         public:
