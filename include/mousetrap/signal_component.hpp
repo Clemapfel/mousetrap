@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <functional>
 #include <mousetrap/gtk_common.hpp>
 
@@ -229,6 +230,9 @@ namespace mousetrap
             }\
     }\
 
+    /// @brief an argument of this type should not be interacted with
+    using UnusedArgument_t = void*;
+    
     /// @see
     DECLARE_SIGNAL(Activate, activate, ACTIVATE, "activate", void);
     /// @class has_signal_activate
@@ -1627,7 +1631,7 @@ namespace mousetrap
     /// \signal_ctor
 
     DECLARE_SIGNAL_MANUAL(PageAdded, page_added, PAGE_ADDED, "page-added", void,
-        SPLAT(void* _, uint32_t page_index),
+        SPLAT(UnusedArgument_t _, uint32_t page_index),
         SPLAT(_, page_index)
     );
     /// @class has_signal_page_added
@@ -1635,12 +1639,12 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_page_added::connect_signal_page_added(Function_t)
-    /// \signal_connect{(T*, void* _, uint32_t page_index) -> void}
+    /// \signal_connect{(T*, UnusedArgument_t _, uint32_t page_index) -> void}
     ///
     /// @fn void has_signal_page_added::connect_signal_page_added(Function_t, Data_t)
-    /// \signal_connect_data{(T*, void* _, uint32_t page_index, Data_t) -> void}
+    /// \signal_connect_data{(T*, UnusedArgument_t _, uint32_t page_index, Data_t) -> void}
     ///
-    /// @fn void has_signal_page_added::emit_signal_page_added(void* _, uint32_t page_index)
+    /// @fn void has_signal_page_added::emit_signal_page_added(UnusedArgument_t _, uint32_t page_index)
     /// \signal_emit_brief
     /// @param _ pointer to internal widget, can be ignored
     /// @param page_index index of the new page
@@ -1661,7 +1665,7 @@ namespace mousetrap
     /// \signal_ctor
 
     DECLARE_SIGNAL_MANUAL(PageRemoved, page_removed, PAGE_REMOVED, "page-removed", void,
-        SPLAT(void* _, uint32_t page_index),
+        SPLAT(UnusedArgument_t _, uint32_t page_index),
         SPLAT(_, page_index)
     );
     /// @class has_signal_page_removed
@@ -1669,12 +1673,12 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_page_removed::connect_signal_page_removed(Function_t)
-    /// \signal_connect{(T*, void* _, uint32_t page_index) -> void}
+    /// \signal_connect{(T*, UnusedArgument_t _, uint32_t page_index) -> void}
     ///
     /// @fn void has_signal_page_removed::connect_signal_page_removed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, void* _, uint32_t page_index, Data_t) -> void}
+    /// \signal_connect_data{(T*, UnusedArgument_t _, uint32_t page_index, Data_t) -> void}
     ///
-    /// @fn void has_signal_page_removed::emit_signal_page_removed(void* _, uint32_t page_index)
+    /// @fn void has_signal_page_removed::emit_signal_page_removed(UnusedArgument_t _, uint32_t page_index)
     /// \signal_emit_brief
     /// @param _ pointer to internal widget, can be ignored
     /// @param page_index index of the new page
@@ -1695,7 +1699,7 @@ namespace mousetrap
     /// \signal_ctor
 
     DECLARE_SIGNAL_MANUAL(PageReordered, page_reordered, PAGE_REORDERED, "page-reordered", void,
-        SPLAT(void* _, uint32_t page_index),
+        SPLAT(UnusedArgument_t _, uint32_t page_index),
         SPLAT(_, page_index)
     );
     /// @class has_signal_page_reordered
@@ -1703,12 +1707,12 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_page_reordered::connect_signal_page_reordered(Function_t)
-    /// \signal_connect{(T*, void* _, uint32_t page_index) -> void}
+    /// \signal_connect{(T*, UnusedArgument_t _, uint32_t page_index) -> void}
     ///
     /// @fn void has_signal_page_reordered::connect_signal_page_reordered(Function_t, Data_t)
-    /// \signal_connect_data{(T*, void* _, uint32_t page_index, Data_t) -> void}
+    /// \signal_connect_data{(T*, UnusedArgument_t _, uint32_t page_index, Data_t) -> void}
     ///
-    /// @fn void has_signal_page_reordered::emit_signal_page_reordered(void* _, uint32_t page_index)
+    /// @fn void has_signal_page_reordered::emit_signal_page_reordered(UnusedArgument_t _, uint32_t page_index)
     /// \signal_emit_brief
     /// @param _ pointer to internal widget, can be ignored
     /// @param page_index index of the new page
@@ -1729,7 +1733,7 @@ namespace mousetrap
     /// \signal_ctor
 
     DECLARE_SIGNAL_MANUAL(PageSelectionChanged, page_selection_changed, PAGE_SELECTION_CHANGED, "switch-page", void,
-        SPLAT(void* _, uint32_t page_index),
+        SPLAT(UnusedArgument_t _, uint32_t page_index),
         SPLAT(_, page_index)
     );
     /// @class has_signal_page_selection_changed
@@ -1737,10 +1741,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_page_selection_changed::connect_signal_page_selection_changed(Function_t)
-    /// \signal_connect{(T*, void* _, uint32_t page_index) -> void}
+    /// \signal_connect{(T*, UnusedArgument_t _, uint32_t page_index) -> void}
     ///
     /// @fn void has_signal_page_selection_changed::connect_signal_page_selection_changed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, void* _, uint32_t page_index, Data_t) -> void}
+    /// \signal_connect_data{(T*, UnusedArgument_t _, uint32_t page_index, Data_t) -> void}
     ///
     /// @fn void has_signal_page_selection_changed::emit_signal_page_selection_changed(GtkWidget* _, uint32_t page_index)
     /// \signal_emit_brief
@@ -2253,12 +2257,12 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_items_changed::connect_signal_items_changed(Function_t)
-    /// \signal_connect{(T*, ScrollType scroll_type, bool is_horizontal) -> void}
+    /// \signal_connect{(T*, int32_t position, int32_t n_removed, int32_t n_added) -> void}
     ///
     /// @fn void has_signal_items_changed::connect_signal_items_changed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, ScrollType scroll_type, bool is_horizontal, Data_t) -> void}
+    /// \signal_connect_data{(T*, int32_t position, int32_t n_removed, int32_t n_added, Data_t) -> void}
     ///
-    /// @fn void has_signal_items_changed::emit_signal_items_changed(ScrollType scroll_type, bool is_horizontal)
+    /// @fn void has_signal_items_changed::emit_signal_items_changed(int32_t position, int32_t n_removed, int32_t n_added)
     /// \signal_emit_brief
     /// @param position position of item that changed
     /// @param n_removed number of items removed
@@ -2279,18 +2283,18 @@ namespace mousetrap
     /// @fn has_signal_items_changed::has_signal_items_changed
     /// \signal_ctor
 
-    DECLARE_SIGNAL_MANUAL(Revealed, revealed, REVEALED, "notify::reveal-child", void, void* _, _);
+    DECLARE_SIGNAL_MANUAL(Revealed, revealed, REVEALED, "notify::reveal-child", void, UnusedArgument_t _, _);
     /// @class has_signal_revealed
     /// @brief signal emitted once child of Revealer is visible, after the animation has finished
     /// @tparam T instance type
     ///
     /// @fn void has_signal_revealed::connect_signal_revealed(Function_t)
-    /// \signal_connect{(T*, ScrollType scroll_type, bool is_horizontal) -> void}
+    /// \signal_connect{(T*, UnusedArgument_t) -> void}
     ///
     /// @fn void has_signal_revealed::connect_signal_revealed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, ScrollType scroll_type, bool is_horizontal, Data_t) -> void}
+    /// \signal_connect_data{(T*, UnusedArgument_t, Data_t) -> void}
     ///
-    /// @fn void has_signal_revealed::emit_signal_revealed(ScrollType scroll_type, bool is_horizontal)
+    /// @fn void has_signal_revealed::emit_signal_revealed(UnusedArgument_t)
     /// \signal_emit_brief
     /// @param _ unused parameter, should be ignored
     ///
@@ -2307,5 +2311,35 @@ namespace mousetrap
     /// \signal_disconnect
     ///
     /// @fn has_signal_revealed::has_signal_items_changed
+    /// \signal_ctor
+
+    DECLARE_SIGNAL_MANUAL(Activated, activated, ACTIVATED, "activate", void, UnusedArgument_t _, _);
+    /// @class has_signal_activated
+    /// @brief \signal_activated_brief
+    /// @tparam T instance type
+    ///
+    /// @fn void has_signal_activated::connect_signal_activated(Function_t)
+    /// \signal_connect{(T*, UnusedArgument_t) -> void}
+    ///
+    /// @fn void has_signal_activated::connect_signal_activated(Function_t, Data_t)
+    /// \signal_connect_data{(T*, UnusedArgument_t, Data_t) -> void}
+    ///
+    /// @fn void has_signal_activated::emit_signal_activated(UnusedArgument_t)
+    /// \signal_emit_brief
+    /// @param _ unused parameter, should be ignored
+    ///
+    /// @var has_signal_activated::signal_id
+    /// \signal_id{https://docs.gtk.org/gio/signal.SimpleAction.activate.html}
+    ///
+    /// @fn void has_signal_activated::set_signal_activated_blocked(bool)
+    /// \signal_set_blocked
+    ///
+    /// @fn bool has_signal_activated::get_signal_activated_blocked() const
+    /// \signal_get_blocked
+    ///
+    /// @fn void has_signal_activated::disconnect_signal_activated()
+    /// \signal_disconnect
+    ///
+    /// @fn has_signal_activated::has_signal_items_changed
     /// \signal_ctor
 }

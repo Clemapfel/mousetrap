@@ -14,7 +14,6 @@ namespace mousetrap
     /// \signals
     /// \signal_revealed{Revealer}
     /// \widget_signals{Revealer}
-    /// @todo signal notifiy:reveal-child
     class Revealer : public WidgetImplementation<GtkRevealer>,
         HAS_SIGNAL(Revealer, revealed)
     {

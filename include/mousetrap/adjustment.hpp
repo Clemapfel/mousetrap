@@ -15,6 +15,7 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
     namespace detail
     {
         struct _AdjustmentInternal
@@ -22,6 +23,7 @@ namespace mousetrap
             GtkAdjustment* native;
         };
     }
+    #endif
 
     /// @brief adjustment, represents a continous range of values
     /// \signals

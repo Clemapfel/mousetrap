@@ -6,6 +6,7 @@
 
 #include <mousetrap/gtk_common.hpp>
 #include <mousetrap/signal_emitter.hpp>
+#include <mousetrap/signal_component.hpp>
 
 #include <string>
 #include <functional>
@@ -48,7 +49,10 @@ namespace mousetrap
     #endif
 
     /// @brief Command with a name, registered to an application. See the manual section on actions for more information
-    class Action : public SignalEmitter
+    /// \signals
+    /// \signal_activated{Action}
+    class Action : public SignalEmitter,
+        HAS_SIGNAL(Action, activated)
     {
         friend class Application;
 

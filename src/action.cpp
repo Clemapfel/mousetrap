@@ -39,7 +39,8 @@ namespace mousetrap
     {}
 
     Action::Action(detail::ActionInternal* internal)
-        : _internal(internal)
+        : _internal(internal),
+           CTOR_SIGNAL(Action, activated)
     {
         g_object_ref(_internal);
     }
