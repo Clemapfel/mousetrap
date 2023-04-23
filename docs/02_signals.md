@@ -2,25 +2,25 @@
 
 In this chapter, we will learn:
 + What signals and signal handlers are
-+ How to check a which signature a signal expects
++ How to check which signature a signal expects
 + How to connect to a signal
-+ How and why to block a signal
++ How and why to block signals
 
 ## Signal Architecture
 
 Central to mousetrap, GTK and many GUI libraries like QT is what is called **signal architecture** or [**signal programming**](https://en.wikipedia.org/wiki/Signal_programming).
 
 A signal has 3 components:
-+ an **id**, which uniquely identifies it. Ids may not be shared between signals
++ an **id**, which uniquely identifies it. IDs may not be shared between signals
 + an **emitter**, which is a non-signal object
-+ a **callback**, which is a function called when an emitter emits a signal
++ a **callback** or **signal handler**, which is a function called when an emitter emits a signal
 
 It may be easiest to consider an example: One of the simplest interactions a human can have with a GUI program is clicking a button. In mousetrap, the \link mousetrap::Button `Button` \endlink class has a signal just for this, which has the id `clicked`.
 
-In this case, the signal **id** is `clicked`, the signal **emitter** is an instance of `Button`. When a user clicks the button (the graphical area on their screen), the in-memory object emits signal `clicked`. If we want to tie behavior to user behavior, we can **connect** to signals like this by specifying a function. This function is executed whenever the corresponding signal is emitted. This function is the **callback**, also called the **signal handler**.
+In this case, the signal **id** is `clicked` and the signal **emitter** is an instance of `Button`. When a user clicks the button (the graphical area on their screen), the in-memory object emits signal `clicked`. Therefore, if we want to tie program behavior to the user clicking the button, we connect a callback (an function) to this signal. If the button is clicked, `clicked` is emitted. When `clicked` is emitted, our callback will be executed.
 
 ```cpp
-// create Button instance
+// create `Button` instance
 auto button = Button();
 
 // create signal handler
@@ -32,7 +32,7 @@ auto on_signal_clicked = [](Button* button) -> void {
 button.connect_signal_clicked(on_signal_clicked);
 ```
 
-\remarks `on_signal_clicked` above is a C++ lambda. If you are unfamiliar with lambda syntax, please consider working through [this tutorial](https://learn.microsoft.com/en-us/cpp/cpp/lambda-expressions-in-cpp?view=msvc-170) before continuing. Lambdas are intergral to modern C++ and will be extensively.
+\remarks `on_signal_clicked` above is a C++ lambda. If you are unfamiliar with lambda syntax, please consider working through [this tutorial](https://learn.microsoft.com/en-us/cpp/cpp/lambda-expressions-in-cpp?view=msvc-170) before continuing. Lambdas are intergral to modern C++ and will be used extensively.
 
 \collapsible_note_begin
 In this section, code snippets will only show the relevant lines. If we want to actually compile and run the code stated here, we need to modify our `main.cpp` from the last section.
@@ -67,13 +67,13 @@ int main()
 ```
 \collapsible_note_end
 
-Now, when the user clicks the button, `clicked` is printed.
+Now, when the user clicks the button, "`clicked`" is printed.
 
 ## SignalEmitters
 
-`Button`, as most classes in mousetrap, inherits from an abstract class called `SignalEmitter`. Inherting from this class is equivalent to saying "this object can emit signals". Not all object can emit all signals, however. To be able to emit the signal with id `clicked`, an object has to inherit from a *signal component* for that signal. Signal component have the name `has_signal_<id>`, where `<id>` is the id of the signal. For example, `Button` inherits from the signal component `has_signal_clicked`. This means `Button` is able to emit the signal with id `clicked`.
+`Button`, as most classes in mousetrap, inherits from an abstract class called `SignalEmitter`. Inherting from this class is equivalent to saying "this object can emit signals". Not all object can emit all signals, however. To be able to emit the signal with id `clicked`, an object has to inherit from a **signal component** for that specific signal. Signal components have the name `has_signal_<id>`, where `<id>` is the id of the signal. For example, `Button` inherits from the signal component `has_signal_clicked`. This means `Button` is able to emit the signal with id `clicked`.
 
-When an object inherits from signal component `has_signal_<id>`, it gains the following methods
+When an object inherits from signal component `has_signal_<id>`, it gains the following functions:
 
 + `connect_signal_<id>`
 + `disconnect_signal_<id>`
@@ -81,22 +81,21 @@ When an object inherits from signal component `has_signal_<id>`, it gains the fo
 + `set_signal_<id>_blocked`
 + `get_signal_<id>_blocked`
 
-For example, because `Button` inherits from `has_signal_clicked`, it gains the member functions `connect_signal_clicked`, `disconnect_signal_clicked`, `emit_signal_clicked`, etc. We will
+For example, because `Button` inherits from `has_signal_clicked`, it gains the member functions `connect_signal_clicked`, `disconnect_signal_clicked`, `emit_signal_clicked`, `set_signal_clicked_blocked` and `get_signal_clicked_blocked`. 
 
 ### Connecting Signal Handlers
 
 We've aready seen how to connect a signal handler to the signal of an emitter, however, using `Button::connect_signal_clicked`, what may not have been obvious is that the signal handler, a lambda in our above code snippet, is required to conform to a specific signature.
 
 \collapsible_note_begin
-A functions **signature** descibres a functions return- and argument types. For example, the function
+A functions **signature** describes a functions return- and argument types. For example, the function
 
 ```cpp
 void foo(int32_t i, const std::string& string) -> void {
     std::cout << i << " " << string << std::endl;
 }
 ```
-
-Has the signature `(int32_t, const std::string&) -> void`. 
+Has the signature `(int32_t, const std::string&) -> void`.  It takes an `int32_t` (32-bit integer) and a `const std::string&` (a const reference to a string) as its arguments. Its return type is `void`.
 
 The lambda:
 ```cpp
@@ -105,19 +104,20 @@ auto on_signal_clicked = [](Button* button) -> void {
 };
 ```
 
-Has the signature `(Button*) -> void`.
+Has the signature `(Button*) -> void`, because it takes as its argument a `Button*` (pointer to an instance of `Button`), and returns `void.
 
-In general, we write function with argument types `Arg1_t, Arg2_t, ...` and return type `Return_t` as having the signature `(Arg1_t, Arg2_t, ...) -> Return_t`.
+In general, a function with argument types `Arg1_t, Arg2_t, ...` and return type `Return_t` has the signature `(Arg1_t, Arg2_t, ...) -> Return_t`.
 
 \collapsible_note_end
 
-For example, the lambda we connected to signal `clicked` of `Button` had the signature `(Button*) -> void`. When the signal is emitted, the first argument of the signal handler will be a pointer to the signal emitter instance, `Button*` in our case.
+For example, the lambda we connected to signal `clicked` of `Button` had the signature `(Button*) -> void`. The first argument of any signal handler will be a pointer to the signal emitter instance, `Button*` in our case. If there was an imaginary object of type `Foo`, which also has the signal component for `clicked`, the signature of its signal handler would be `(Foo*) -> void`.
 
 Each signal requires its handler to conform to a specific signature. If the handler has the wrong signature, a compiler error will be thrown. This makes it important to know how to check which signal requires which signature.
 
 ### Checking Signal Signature
 
-Working with our example, the signal `clicked` of class `Button`, let's say we do not know what function to connect to this signal. We can find out by checking the mousetrap documentation, navigating to the \link mousetrap::Button corresponding page \endlink, we check "detailed description" (by clicking "more" at the very top of the page), which contains the following table:
+Working with our example, the signal `clicked` of class `Button`, let's say we do not know what function is able to connect to this signal. 
+We can find out, by checking the mousetrap documentation. Navigating to the \link mousetrap::Button corresponding page \endlink, we check "detailed description" (by clicking "more" at the very top of the page), which contains the following table:
 
 \todo TABLE
 

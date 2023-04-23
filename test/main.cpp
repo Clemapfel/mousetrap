@@ -13,22 +13,35 @@ int main()
         window.set_title("");
 
         // delcare action
-        auto action = Action("example.print_clicked", app);
-        action.set_function([](Action* action){
-            std::cout << "clicked" << std::endl;
+        // create two actions
+        auto action_01 = Action("example.menu_model_action_01", app);
+        action_01.set_function([](Action*){
+            std::cout << "01 triggered" << std::endl;
         });
+        action_01.add_shortcut("<Control>1");
 
-        // declare button
-        auto button = Button();
-        button.set_margin(75);
 
-        // connect action to button
-        button.set_action(action);
+        auto action_02 = Action("example.menu_model_action_02", app);
+        action_02.set_function([](Action*){
+            std::cout << "02 triggered" << std::endl;
+        });
+        action_02.add_shortcut("<Control>2");
 
-        app->get_action("example.print_clicked").activate();
+        // create model
+        auto model = MenuModel();
+
+        // add actions to model
+        model.add_action("Action 01", action_01);
+        model.add_action("Action 02", action_02);
+
+        // create view, GUI elements that display the model
+        static auto popover_menu = PopoverMenu(model);
+        auto popover_menu_button = PopoverMenuButton();
+        popover_menu_button.set_popover_menu(popover_menu);
 
         // add button to window
-        window.set_child(button);
+        popover_menu_button.set_margin(75);
+        window.set_child(popover_menu_button);
         window.present();
     });
 

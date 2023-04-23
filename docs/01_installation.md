@@ -128,7 +128,7 @@ target_compile_features(${TARGET_NAME} PUBLIC
 
 Where `TARGET_NAME` and `PROJECT_NAME` can be freely modified.
 
-`find_package(mousetrap REQUIRED)` loads mousetrap and its associated libraries, this command sets two variables `MOUSETRAP_LIBRARIES` and `MOUSETRAP_INLUDE_DIRECTORIES`. We need to link against all the libraries contained in the former, and we need to declare all directories contained in the latter as include directories for our custom target, an executable in this case.
+`find_package(mousetrap REQUIRED)` loads mousetrap and its associated libraries. This command sets two variables: `MOUSETRAP_LIBRARIES` and `MOUSETRAP_INLUDE_DIRECTORIES`. We need to link against all the libraries contained in the former, and we need to declare all directories contained in the latter as include directories for our custom target, an executable in this case.
 
 Lastly, we set `target_compile_features` for our target to C++17, which automatically links against the C++ standard library.
 
@@ -197,7 +197,7 @@ If everything seems to be working: great! We can continue onto learning how to c
 
 ## Uninstallation
 
-If we would like to remove mousetrap from our machine, we only need to delete the following:
+To remove mousetrap from our machine, we only need to delete the following:
 
 + `libmousetrap.so`, usually installed to `/usr/local/lib` or `/user/local/lib64`
 + folder `mousetrap` and all its contents, usually installed to `/usr/local/include`
