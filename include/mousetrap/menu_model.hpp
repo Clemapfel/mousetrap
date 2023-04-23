@@ -32,8 +32,10 @@ namespace mousetrap
     #endif
 
     /// @brief menu model, used to specifc behavior of menu bars and popover menus
-    /// @todo signal items changed
-    class MenuModel
+    /// \signals
+    /// \signal_items_changed{MenuModel}
+    class MenuModel : public SignalEmitter,
+        HAS_SIGNAL(MenuModel, items_changed)
     {
         friend class MenuBar;
         friend class PopoverMenu;
@@ -110,6 +112,9 @@ namespace mousetrap
 
             /// @brief expose as GMenuModel \internal
             operator GMenuModel*() const;
+
+            /// @brief expose a GObject \internal
+            operator GObject*() const override;
 
         protected:
             /// @brief get list of registered widgets \internal

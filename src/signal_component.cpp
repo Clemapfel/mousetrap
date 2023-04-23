@@ -209,4 +209,11 @@ DEFINE_SIGNAL(Scroll, scroll, SCROLL, "scroll", bool,
 
     DEFINE_SIGNAL(Play, play, PLAY, "play", void);
     DEFINE_SIGNAL(Closed, closed, CLOSED, "closed", void);
+
+    DEFINE_SIGNAL(ItemsChanged, items_changed, ITEMS_CHANGED, "items-changed", void,
+          SPLAT(gint position, gint n_removed, gint n_added),
+          SPLAT(position, n_removed, n_added)
+    );
+
+    DEFINE_SIGNAL(Revealed, revealed, REVEALED, "notify::reveal-child", void, void* _, _);
 }

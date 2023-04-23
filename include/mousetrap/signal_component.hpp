@@ -2243,4 +2243,69 @@ namespace mousetrap
     ///
     /// @fn has_signal_stop::has_signal_stop
     /// \signal_ctor
+
+    DECLARE_SIGNAL_MANUAL(ItemsChanged, items_changed, ITEMS_CHANGED, "items-changed", void,
+                          SPLAT(int32_t position, int32_t n_removed, int32_t n_added),
+                          SPLAT(position, n_removed, n_added)
+    );
+    /// @class has_signal_items_changed
+    /// @brief \todo
+    /// @tparam T instance type
+    ///
+    /// @fn void has_signal_items_changed::connect_signal_items_changed(Function_t)
+    /// \signal_connect{(T*, ScrollType scroll_type, bool is_horizontal) -> void}
+    ///
+    /// @fn void has_signal_items_changed::connect_signal_items_changed(Function_t, Data_t)
+    /// \signal_connect_data{(T*, ScrollType scroll_type, bool is_horizontal, Data_t) -> void}
+    ///
+    /// @fn void has_signal_items_changed::emit_signal_items_changed(ScrollType scroll_type, bool is_horizontal)
+    /// \signal_emit_brief
+    /// @param position position of item that changed
+    /// @param n_removed number of items removed
+    /// @param n_added number of items added
+    ///
+    /// @var has_signal_items_changed::signal_id
+    /// \signal_id{https://docs.gtk.org/gio/signal.MenuModel.items-changed.html}
+    ///
+    /// @fn void has_signal_items_changed::set_signal_items_changed_blocked(bool)
+    /// \signal_set_blocked
+    ///
+    /// @fn bool has_signal_items_changed::get_signal_items_changed_blocked() const
+    /// \signal_get_blocked
+    ///
+    /// @fn void has_signal_items_changed::disconnect_signal_items_changed()
+    /// \signal_disconnect
+    ///
+    /// @fn has_signal_items_changed::has_signal_items_changed
+    /// \signal_ctor
+
+    DECLARE_SIGNAL_MANUAL(Revealed, revealed, REVEALED, "notify::reveal-child", void, void* _, _);
+    /// @class has_signal_revealed
+    /// @brief signal emitted once child of Revealer is visible, after the animation has finished
+    /// @tparam T instance type
+    ///
+    /// @fn void has_signal_revealed::connect_signal_revealed(Function_t)
+    /// \signal_connect{(T*, ScrollType scroll_type, bool is_horizontal) -> void}
+    ///
+    /// @fn void has_signal_revealed::connect_signal_revealed(Function_t, Data_t)
+    /// \signal_connect_data{(T*, ScrollType scroll_type, bool is_horizontal, Data_t) -> void}
+    ///
+    /// @fn void has_signal_revealed::emit_signal_revealed(ScrollType scroll_type, bool is_horizontal)
+    /// \signal_emit_brief
+    /// @param _ unused parameter, should be ignored
+    ///
+    /// @var has_signal_revealed::signal_id
+    /// \signal_id{https://docs.gtk.org/gtk4/property.Revealer.reveal-child.html}
+    ///
+    /// @fn void has_signal_revealed::set_signal_revealed_blocked(bool)
+    /// \signal_set_blocked
+    ///
+    /// @fn bool has_signal_revealed::get_signal_revealed_blocked() const
+    /// \signal_get_blocked
+    ///
+    /// @fn void has_signal_revealed::disconnect_signal_revealed()
+    /// \signal_disconnect
+    ///
+    /// @fn has_signal_revealed::has_signal_items_changed
+    /// \signal_ctor
 }

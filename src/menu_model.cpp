@@ -38,6 +38,7 @@ namespace mousetrap
     }
     
     MenuModel::MenuModel()
+        : CTOR_SIGNAL(MenuModel, items_changed)
     {
        _internal = detail::menu_model_internal_new();
        detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
@@ -115,7 +116,7 @@ namespace mousetrap
         if (model._internal->submenus->find(this) != model._internal->submenus->end())
         {
             std::stringstream str;
-            str << "In MenuModel::add_submenu: Trying to add menu " << model << " to " << this << ", even though " << this << " is already a submenu of " << model << ". This will create an infinite loop on initialization." << std::endl;
+            str << "In MenuModel::add_submenu: Trying to add menu " << &model << " to " << this << ", even though " << this << " is already a submenu of " << &model << ". This will create an infinite loop on initialization." << std::endl;
             log::critical(str.str(), MOUSETRAP_DOMAIN);
         }
 
@@ -139,5 +140,10 @@ namespace mousetrap
                 out.insert(pair);
 
         return out;
+    }
+
+    MenuModel::operator GObject*() const
+    {
+        return G_OBJECT(_internal->native);
     }
 }

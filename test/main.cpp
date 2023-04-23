@@ -4,6 +4,11 @@
 #include <mousetrap.hpp>
 using namespace mousetrap;
 
+static void called()
+{
+    std::cout << "called" << std::endl;
+}
+
 int main()
 {
     auto app = Application("test.app");
@@ -29,6 +34,9 @@ int main()
 
         // create model
         auto model = MenuModel();
+        model.connect_signal_items_changed([](MenuModel*, int32_t a, int32_t b, int32_t c){
+            std::cout << a << " " << b << " " << c << std::endl;
+        });
 
         // add actions to model
         model.add_action("Action 01", action_01);
@@ -39,9 +47,26 @@ int main()
         auto popover_menu_button = PopoverMenuButton();
         popover_menu_button.set_popover_menu(popover_menu);
 
+        static auto revealer = Revealer();
+        revealer.set_child(popover_menu_button);
+        revealer.set_revealed(false);
+        revealer.connect_signal_revealed([](Revealer*, void*){
+           std::cout << revealer.get_revealed() << std::endl;
+        });
+        revealer.set_transition_duration(seconds(2));
+
+        auto button = Button();
+        button.connect_signal_clicked([](Button*){
+            revealer.set_revealed(not revealer.get_revealed());
+        });
+
+        auto box = Box(Orientation::VERTICAL);
+        box.push_back(revealer);
+        box.push_back(button);
+
         // add button to window
-        popover_menu_button.set_margin(75);
-        window.set_child(popover_menu_button);
+        revealer.set_margin(75);
+        window.set_child(box);
         window.present();
     });
 

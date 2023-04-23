@@ -9,7 +9,8 @@
 namespace mousetrap
 {
     Revealer::Revealer(RevealerTransitionType type)
-    : WidgetImplementation(GTK_REVEALER(gtk_revealer_new()))
+        : WidgetImplementation(GTK_REVEALER(gtk_revealer_new())),
+          CTOR_SIGNAL(Revealer, revealed)
     {
         gtk_revealer_set_reveal_child(get_native(), true);
         set_transition_type(type);
