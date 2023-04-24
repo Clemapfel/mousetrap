@@ -56,6 +56,14 @@ namespace mousetrap
             /// @return true if outline visible, false otherwise
             bool get_has_frame() const;
 
+            /// @brief set whether button should be circular
+            /// @param b
+            void set_is_circular(bool);
+
+            /// @brief get whether button is circular
+            /// @return true if circular, false otherwise
+            bool get_is_circular() const;
+
         private:
             const Widget* _child = nullptr;
     };

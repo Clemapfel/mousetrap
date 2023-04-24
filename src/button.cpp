@@ -22,6 +22,19 @@ namespace mousetrap
         gtk_button_set_child(get_native(), widget);
     }
 
+    void Button::set_is_circular(bool b)
+    {
+        if (b and not get_is_circular())
+            gtk_widget_add_css_class(GTK_WIDGET(get_native()), "circular");
+        else if (not b and get_is_circular())
+            gtk_widget_remove_css_class(GTK_WIDGET(get_native()), "circular");
+    }
+
+    bool Button::get_is_circular() const
+    {
+        return gtk_widget_has_css_class(GTK_WIDGET(get_native()), "circular");
+    }
+
     void Button::set_has_frame(bool b)
     {
         gtk_button_set_has_frame(get_native(), b);

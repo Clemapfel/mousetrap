@@ -47,26 +47,20 @@ namespace mousetrap
     MenuModel::~MenuModel()
     {}
 
-    void MenuModel::add_action(const std::string& label, const Action& action, Icon* icon)
+    void MenuModel::add_action(const std::string& label, const Action& action)
     {
         auto* item = g_menu_item_new(label.c_str(), ("app." + action.get_id()).c_str());
 
         g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
-        g_menu_item_set_attribute_value(item, "verb-icon", g_icon_serialize(icon->operator GIcon *()));
-
         g_menu_append_item(_internal->native, item);
         g_object_unref(item);
     }
 
-    void MenuModel::add_stateful_action(const std::string& label, const Action& action, bool initial_state, Icon* icon)
+    void MenuModel::add_stateful_action(const std::string& label, const Action& action, bool initial_state)
     {
         auto* item = g_menu_item_new(label.c_str(), ("app." + action.get_id()).c_str());
         g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
         g_menu_item_set_attribute_value(item, "target", g_variant_new_boolean(initial_state));
-
-        if (icon != nullptr)
-            g_menu_item_set_icon(item, icon->operator GIcon *());
-
         g_menu_append_item(_internal->native, item);
         g_object_unref(item);
     }
@@ -81,6 +75,17 @@ namespace mousetrap
         _internal->id_to_widget->insert({std::string(id), widget.operator NativeWidget()});
         _internal->has_widget_in_toplevel = true;
         current_id += 1;
+        g_object_unref(item);
+    }
+
+    void MenuModel::add_icon(const Icon& icon, const Action& action)
+    {
+        auto* item = g_menu_item_new(nullptr, ("app." + action.get_id()).c_str());
+
+        g_menu_item_set_attribute_value(item, "verb-icon", g_icon_serialize(icon.operator GIcon*()));
+        g_menu_item_set_attribute_value(item, "icon", g_icon_serialize(icon.operator GIcon*()));
+        g_menu_append_item(_internal->native, item);
+        g_object_unref(item);
     }
 
     void MenuModel::add_section(const std::string& label, const MenuModel& model, SectionFormat format)

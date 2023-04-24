@@ -97,6 +97,14 @@ namespace mousetrap
             /// @brief hide the attached popover, does nothing if popover is already hidden or there is no popover attached
             void popdown();
 
+            /// @brief set whether button should be circular
+            /// @param b
+            void set_is_circular(bool);
+
+            /// @brief get whether button is circular
+            /// @return true if circular, false otherwise
+            bool get_is_circular() const;
+
         private:
             const Widget* _child = nullptr;
 

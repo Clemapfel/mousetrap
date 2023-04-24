@@ -52,4 +52,18 @@ namespace mousetrap
     bool ToggleButton::get_has_frame() const {
         return gtk_button_get_has_frame(GTK_BUTTON(get_native()));
     }
+
+
+    void ToggleButton::set_is_circular(bool b)
+    {
+        if (b and not get_is_circular())
+            gtk_widget_add_css_class(GTK_WIDGET(get_native()), "circular");
+        else if (not b and get_is_circular())
+            gtk_widget_remove_css_class(GTK_WIDGET(get_native()), "circular");
+    }
+
+    bool ToggleButton::get_is_circular() const
+    {
+        return gtk_widget_has_css_class(GTK_WIDGET(get_native()), "circular");
+    }
 }

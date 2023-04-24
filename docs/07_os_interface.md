@@ -326,3 +326,33 @@ If we want to display it as a widget, we can choose to use `ImageDisplay::create
 
 We see that this makes them easier to keep track of, we can hash or index them using their name, and we can easily double their size if the user requests to do so. 
 
+### Using Icons in Menus
+
+One unique application for `Icon` is that it can be used as a menu item. By adding a menu item using `MenuModel::add_icon`, we can create a menu like this:
+
+```cpp
+// declare action
+auto action = Action("noop.action");
+action.set_function([](Action*){
+  // do something
+});
+
+// create icon
+auto icon = Icon();
+icon.create_from_file(// ...
+
+// create menu
+auto model = MenuModel();
+auto submenu = MenuModel();
+auto section = MenuModel();
+section.add_icon(icon, action);
+submenu.add_section("Buttons!", section, MenuModel::CIRCULAR_BUTTONS);
+model.add_submenu("Menu", submenu);
+auto menubar = MenuBar(model);
+```
+
+\image html menu_model_with_icon.png
+
+Which can add some style to our menus. Note that an item cannot have both a text label and an icon at the same time, to achieve this behavior we need to add a `Box` with both an `ImageDispay` and `Label` to the menu using `add_widget`.
+
+

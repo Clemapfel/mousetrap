@@ -39,6 +39,14 @@ namespace mousetrap
             /// @return bool
             bool get_has_frame() const;
 
+            /// @brief set whether button should be circular
+            /// @param b true if circular, false otherwise
+            void set_is_circular(bool);
+
+            /// @brief get whether button is circular
+            /// @return true if circular, false otherwise
+            bool get_is_circular() const;
+
             /// @brief set widget used as the buttons label
             /// @param widget
             void set_child(const Widget&);

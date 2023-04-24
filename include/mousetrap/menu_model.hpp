@@ -54,8 +54,7 @@ namespace mousetrap
             /// @param use_markup should label respect pango markup syntax, yes by default
             void add_action(
                 const std::string& label,
-                const Action& action,
-                Icon* icon = nullptr
+                const Action& action
             );
 
             /// @brief add a stateful action to the model, the menu item will appear with a checkmark next to it, clicking the item swaps the internal state of the action
@@ -66,8 +65,7 @@ namespace mousetrap
             void add_stateful_action(
                 const std::string& label,
                 const Action& action,
-                bool initial_state,
-                Icon* icon = nullptr
+                bool initial_state
             );
 
             /// @brief add widget to menu, note that widgets can only be display when they are part of a section or submenu, not if they are in the toplevel sectino
@@ -110,6 +108,11 @@ namespace mousetrap
             /// @param label label for the submenu
             /// @param menu_model model to use for populating the submenu items
             void add_submenu(const std::string& label, const MenuModel&);
+
+            /// @brief add menu item that is a button with an icon and no label
+            /// @param icon icon
+            /// @param action acton to trigger
+            void add_icon(const Icon&, const Action&);
 
             /// @brief expose as GMenuModel \internal
             operator GMenuModel*() const;

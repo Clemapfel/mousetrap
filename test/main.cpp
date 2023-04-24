@@ -19,7 +19,10 @@ int main()
 
         auto theme = IconTheme();
         static auto icon = Icon();
-        icon.create_from_theme(theme, "weather-fog-large", 128);
+        icon.create_from_theme(theme, "weather-fog-large", 48);
+
+        for (auto it : theme.get_icon_names())
+            std::cout << it << std::endl;
 
         auto action = Action("test", app);
         action.set_function([](Action*){
@@ -27,28 +30,20 @@ int main()
         });
 
         auto model = MenuModel();
-        auto section = MenuModel();
-        section.add_action("<b>test</b>", action, &icon);
-        model.add_section("Test", section, MenuModel::SectionFormat::CIRCULAR_BUTTONS);
 
+        auto submenu = MenuModel();
+        submenu.add_icon(icon, action);
+        model.add_icon(icon, action);
+        model.add_submenu("Menu", submenu);
+        auto menubar = MenuBar(model);
         auto popover_menu = PopoverMenu(model);
         auto menu_button = PopoverMenuButton();
         menu_button.set_popover_menu(popover_menu);
-        menu_button.set_margin(75);
 
-        auto display = ImageDisplay();
-        display.create_from_icon(icon);
-        display.set_size_request({128, 128});
+        auto check = CheckButton();
+        gtk_widget_add_css_class(check.operator NativeWidget(), "circular");
 
-        auto button = Button();
-        gtk_button_set_icon_name(button.operator GtkButton*(), "weather-fog-large");
-
-        auto box = Box(Orientation::VERTICAL);
-        box.push_back(menu_button);
-        box.push_back(button);
-        box.push_back(display);
-
-        window.set_child(box);
+        window.set_child(check);
         window.present();
     });
 
