@@ -13,11 +13,11 @@
 namespace mousetrap
 {
     /// @brief singleton file manager, mutates files
-    class FileSystem
+    class file_system
     {
         public:
             /// @brief uninstantiatable singleton instance
-            FileSystem() = delete;
+            file_system() = delete;
 
             /// @brief create a file at given path
             /// @param destination file descriptor

@@ -1,4 +1,4 @@
-# Chapter 7: RenderArea & OpenGL
+# Chapter 8: RenderArea & OpenGL
 
 ## mousetrap::RenderArea
 

@@ -17,11 +17,38 @@ int main()
         auto window = Window(*app);
         window.set_title("");
 
-        auto file = FileDescriptor("/home/clem/Workspace/mousetrap/test/main.cpp");
-        auto monitor = file.create_monitor();
-        monitor.on_file_changed([](FileMonitorEvent event, const FileDescriptor& self, const FileDescriptor&){
-            std::cout << self.get_path() << " " << (int32_t) event << std::endl;
-        });
+        auto box = Box();
+        box.push_back(box);
+
+        std::string file_str = R"(
+# keybindings
+[image_view.key_bindings]
+
+# store current file
+save_file=<Control>s
+
+# miscellanous config
+[image_view.window]
+
+# default window size
+width=400
+height=300
+
+# default background color
+default_color_rgba=0.1;0.7;0.2;1
+test=true
+        )";
+
+        auto file = KeyFile();
+        file.load_from_string(file_str);
+
+        std::string save_file_keybinding = file.get_value("image_view.key_bindings", "save_file");
+        int width = file.get_value_as<int>("image_view.window", "width");
+        int height = file.get_value_as<int>("image_view.window", "height");
+        RGBA default_color = file.get_value_as<RGBA>("image_view.window", "default_color_rgba");
+        bool test = file.get_value_as<bool>("image_view.window", "test");
+        std::cout << test << " " << width << " " << height << " " << default_color.operator std::string() << std::endl;
+
         window.present();
     });
 

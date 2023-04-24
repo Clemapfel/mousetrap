@@ -130,7 +130,7 @@ namespace mousetrap
             /// @return standardized content type as string, or "" if uninitialized
             std::string get_content_type() const;
 
-            /// @brief query arbitrary info about self, for a list of attributes available here: https://www.freedesktop.org/software/gstreamer-sdk/data/docs/2012.5/gio/GFileInfo.html
+            /// @brief query arbitrary info about self, for a list of attributes available here: https://docs.gtk.org/gio/index.html#constants
             /// @param attribute_query_string attribute name
             /// @return result as string, or "" if uninitialized or attribute does not exist
             std::string query_info(const char* attribute_query_string) const;

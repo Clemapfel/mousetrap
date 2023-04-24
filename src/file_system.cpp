@@ -26,7 +26,7 @@ namespace mousetrap
         return out;
     }
 
-    bool FileSystem::create_file_at(const FileDescriptor& destination, bool should_replace_destination)
+    bool file_system::create_file_at(const FileDescriptor& destination, bool should_replace_destination)
     {
         int flags = G_FILE_CREATE_NONE;
 
@@ -39,7 +39,7 @@ namespace mousetrap
         if (error != nullptr)
         {
             std::stringstream str;
-            str << "In FileSystem::new_file: Unable to create file at `" << destination.get_name() << "`: " << error->message;
+            str << "In file_system::new_file: Unable to create file at `" << destination.get_name() << "`: " << error->message;
             log::critical(str.str(), MOUSETRAP_DOMAIN);
         }
 
@@ -48,12 +48,12 @@ namespace mousetrap
         return out;
     }
 
-    bool FileSystem::create_directory_at(const FileDescriptor& destination)
+    bool file_system::create_directory_at(const FileDescriptor& destination)
     {
         return g_mkdir_with_parents(destination.get_path().c_str(), 0);
     }
 
-    bool FileSystem::delete_at(const FileDescriptor& file)
+    bool file_system::delete_at(const FileDescriptor& file)
     {
         GError* error = nullptr;
         auto out = g_file_delete(file.operator GFile *(), nullptr, &error);
@@ -61,14 +61,14 @@ namespace mousetrap
         if (error != nullptr)
         {
             std::stringstream str;
-            str << "In FileSystem::delete_file: Unable to delete file at `" << file.get_name() << "`: " << error->message;
+            str << "In file_system::delete_file: Unable to delete file at `" << file.get_name() << "`: " << error->message;
             log::critical(str.str(), MOUSETRAP_DOMAIN);
         }
 
         return out;
     }
 
-    bool FileSystem::copy(
+    bool file_system::copy(
         const FileDescriptor& from,
         const FileDescriptor& to,
         bool allow_overwrite,
@@ -99,7 +99,7 @@ namespace mousetrap
         if (error != nullptr)
         {
             std::stringstream str;
-            str << "In FileSystem::copy: Unable to copy file from `" << from.get_path() << "` to `" << to.get_path() << "`: " << error->message;
+            str << "In file_system::copy: Unable to copy file from `" << from.get_path() << "` to `" << to.get_path() << "`: " << error->message;
             log::critical(str.str(), MOUSETRAP_DOMAIN);
             g_error_free(error);
         }
@@ -107,7 +107,7 @@ namespace mousetrap
         return out;
     }
 
-    bool FileSystem::move(
+    bool file_system::move(
         const FileDescriptor& from,
         const FileDescriptor& to,
         bool allow_overwrite,
@@ -138,7 +138,7 @@ namespace mousetrap
         if (error != nullptr)
         {
             std::stringstream str;
-            str << "In FileSystem::copy: Unable to copy file from `" << from.get_name() << "` to `" << to.get_name() << "`: " << error->message;
+            str << "In file_system::copy: Unable to copy file from `" << from.get_name() << "` to `" << to.get_name() << "`: " << error->message;
             log::critical(str.str(), MOUSETRAP_DOMAIN);
             g_error_free(error);
         }
@@ -146,7 +146,7 @@ namespace mousetrap
         return out;
     }
 
-    bool FileSystem::move_to_trash(const FileDescriptor& file)
+    bool file_system::move_to_trash(const FileDescriptor& file)
     {
         GError* error = nullptr;
         auto out = g_file_trash(file.operator GFile *(), nullptr, &error);
@@ -154,7 +154,7 @@ namespace mousetrap
         if (error != nullptr)
         {
             std::stringstream str;
-            str << "[WARNING] In FileSystem::move_to_trash: Unable to move file `" << file.get_name() << "` to trash: " << error->message;
+            str << "[WARNING] In file_system::move_to_trash: Unable to move file `" << file.get_name() << "` to trash: " << error->message;
             log::critical(str.str(), MOUSETRAP_DOMAIN);
             g_error_free(error);
         }

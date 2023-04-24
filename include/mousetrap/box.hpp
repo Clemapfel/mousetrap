@@ -18,7 +18,7 @@ namespace mousetrap
         public:
             /// @brief construct
             /// @param orientation orientation, if horizontal, widgets will be arranged left to right, if vertical, widgets will be arranged top to bottom
-            Box(Orientation);
+            Box(Orientation = Orientation::HORIZONTAL);
 
             /// @brief add a widget to the end of the box
             /// @param widget
