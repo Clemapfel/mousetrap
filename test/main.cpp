@@ -17,43 +17,11 @@ int main()
         auto window = Window(*app);
         window.set_title("");
 
-        // delcare action
-        // create two actions
-        auto action_01 = Action("example.menu_model_action_01", app);
-        action_01.set_function([](Action*){
-            std::cout << "01 triggered" << std::endl;
+        auto file = FileDescriptor("/home/clem/Workspace/mousetrap/test/main.cpp");
+        auto monitor = file.create_monitor();
+        monitor.on_file_changed([](FileMonitorEvent event, const FileDescriptor& self, const FileDescriptor&){
+            std::cout << self.get_path() << " " << (int32_t) event << std::endl;
         });
-        action_01.add_shortcut("<Control>1");
-
-
-        auto action_02 = Action("example.menu_model_action_02", app);
-        action_02.set_function([](Action*){
-            std::cout << "02 triggered" << std::endl;
-        });
-        action_02.add_shortcut("<Control>2");
-
-        action_01.connect_signal_activated([](Action*, void*){
-            std::cout << "called" << std::endl;
-        });
-
-        // create model
-        auto model = MenuModel();
-        model.connect_signal_items_changed([](MenuModel*, int32_t a, int32_t b, int32_t c){
-            std::cout << a << " " << b << " " << c << std::endl;
-        });
-
-        // add actions to model
-        model.add_action("Action 01", action_01);
-        model.add_action("Action 02", action_02);
-
-        // create view, GUI elements that display the model
-        static auto popover_menu = PopoverMenu(model);
-        auto popover_menu_button = PopoverMenuButton();
-        popover_menu_button.set_popover_menu(popover_menu);
-
-        // add button to window
-        popover_menu_button.set_margin(75);
-        window.set_child(popover_menu_button);
         window.present();
     });
 

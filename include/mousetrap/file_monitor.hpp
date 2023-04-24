@@ -44,37 +44,30 @@ namespace mousetrap
         MOVED_OUT = G_FILE_MONITOR_EVENT_MOVED_OUT
     };
 
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        struct _FileMonitorInternal
+        {
+            GObject parent;
+            GFileMonitor* native;
+            std::function<void(FileMonitorEvent event, FileDescriptor self, FileDescriptor other)>* f;
+        };
+        using FileMonitorInternal = _FileMonitorInternal;
+    }
+    #endif
 
     /// @brief monitors changes to a file that may or may not yet exist
-    /// @todo implement
-    class FileMonitor //:  public SignalEmitter
+    class FileMonitor : public SignalEmitter
     {
         friend class FileDescriptor;
 
         public:
             /// @brief default ctor deleted, use FileDescriptor::create_monitor
-            FileMonitor() = default;
-
-            /// @brief default dtor, this removes any connected signals
-            ~FileMonitor() = default;
-
-            /// @brief copy ctor deleted, use FileDescriptor::create_monitor to create an additional monitor to the same file
-            FileMonitor(const FileMonitor&) = delete;
-
-            /// @brief copy assignment deleted
-            FileMonitor& operator=(const FileMonitor&) = delete;
-
-            /// @brief move ctor
-            /// @param other
-            FileMonitor(FileMonitor&&) noexcept;
-
-            /// @brief move assignment
-            /// @param other
-            /// @return reference to self after assignment
-            FileMonitor& operator=(FileMonitor&&) noexcept;
+            FileMonitor() = delete;
 
             /// @brief expose as GObject \internal
-            //operator GObject*() const override;
+            operator GObject*() const override;
 
             /// @brief cancel the file monitor, cannot be undone
             void cancel();
@@ -84,21 +77,30 @@ namespace mousetrap
             bool is_cancelled() const;
 
             /// @brief register callback to be called when file changes
+            /// @tparam Function_t
+            /// @tparam Data_t arbitrary data
+            /// @param f function with signature `(FileMonitorEvent event_type, const FileDescriptor& self, const FileDescriptor& other, Data_t) -> void`
+            /// @param data arbitrary data, will be forwarded to f
             template<typename Function_t, typename Data_t>
             void on_file_changed(Function_t f, Data_t data);
 
             /// @brief register callback to be called when file changes
+            /// @brief register callback to be called when file changes
+            /// @tparam Function_t
+            /// @param f function with signature `(FileMonitorEvent event_type, const FileDescriptor& self, const FileDescriptor& other) -> void`
             template<typename Function_t>
             void on_file_changed(Function_t f);
 
         protected:
-            FileMonitor(GFileMonitor*) {};
+            /// @brief create from native
+            /// @param GFileMonitor
+            FileMonitor(GFileMonitor*);
 
         private:
-            GFileMonitor* _native;
-            static void on_changed(GFileMonitor*, GFile*, GFile*, GFileMonitorEvent, FileMonitor* instance);
-            static inline gint flags = G_FILE_MONITOR_NONE | G_FILE_MONITOR_WATCH_MOVES;
-
+           detail::FileMonitorInternal* _internal;
+           static void on_changed(GFileMonitor* self, GFile* file, GFile* other, GFileMonitorEvent event, detail::FileMonitorInternal* instance);
     };
 }
+
+#include "inline/file_monitor.inl"
 

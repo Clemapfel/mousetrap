@@ -15,7 +15,7 @@ namespace mousetrap
     FileMonitor FileDescriptor::create_monitor() const
     {
         GError* error = nullptr;
-        auto out = FileMonitor(g_file_monitor(_native, (GFileMonitorFlags) FileMonitor::flags, nullptr, &error));
+        auto out = FileMonitor(g_file_monitor(_native, (GFileMonitorFlags) (G_FILE_MONITOR_NONE | G_FILE_MONITOR_WATCH_MOVES), nullptr, &error));
 
         if (error != nullptr)
         {
