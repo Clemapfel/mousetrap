@@ -17,38 +17,38 @@ int main()
         auto window = Window(*app);
         window.set_title("");
 
-        auto box = Box();
-        box.push_back(box);
+        auto theme = IconTheme();
+        static auto icon = Icon();
+        icon.create_from_theme(theme, "weather-fog-large", 128);
 
-        std::string file_str = R"(
-# keybindings
-[image_view.key_bindings]
+        auto action = Action("test", app);
+        action.set_function([](Action*){
+            std::cout << "called" << std::endl;
+        });
 
-# store current file
-save_file=<Control>s
+        auto model = MenuModel();
+        auto section = MenuModel();
+        section.add_action("<b>test</b>", action, &icon);
+        model.add_section("Test", section, MenuModel::SectionFormat::CIRCULAR_BUTTONS);
 
-# miscellanous config
-[image_view.window]
+        auto popover_menu = PopoverMenu(model);
+        auto menu_button = PopoverMenuButton();
+        menu_button.set_popover_menu(popover_menu);
+        menu_button.set_margin(75);
 
-# default window size
-width=400
-height=300
+        auto display = ImageDisplay();
+        display.create_from_icon(icon);
+        display.set_size_request({128, 128});
 
-# default background color
-default_color_rgba=0.1;0.7;0.2;1
-test=true
-        )";
+        auto button = Button();
+        gtk_button_set_icon_name(button.operator GtkButton*(), "weather-fog-large");
 
-        auto file = KeyFile();
-        file.load_from_string(file_str);
+        auto box = Box(Orientation::VERTICAL);
+        box.push_back(menu_button);
+        box.push_back(button);
+        box.push_back(display);
 
-        std::string save_file_keybinding = file.get_value("image_view.key_bindings", "save_file");
-        int width = file.get_value_as<int>("image_view.window", "width");
-        int height = file.get_value_as<int>("image_view.window", "height");
-        RGBA default_color = file.get_value_as<RGBA>("image_view.window", "default_color_rgba");
-        bool test = file.get_value_as<bool>("image_view.window", "test");
-        std::cout << test << " " << width << " " << height << " " << default_color.operator std::string() << std::endl;
-
+        window.set_child(box);
         window.present();
     });
 

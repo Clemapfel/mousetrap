@@ -14,7 +14,9 @@ namespace mousetrap
     /// @brief id of an icon
     using IconID = std::string;
 
+    #ifndef DOXYGEN
     class Icon;
+    #endif
 
     /// @brief database of icons, opens the systems fallback icon theme automatically, see https://docs.gtk.org/gtk4/class.IconTheme.html for more info
     class IconTheme

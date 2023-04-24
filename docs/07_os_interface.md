@@ -273,27 +273,56 @@ RGBA default_color = file.get_value_as<RGBA>("image_view.window", "default_color
 
 We see that the general syntax to get a value of type `T` from a `KeyFile` file is: `file.get_value_as<T>("group_name", "key_name")`. `KeyFile` automatically treats the string in the corresponding file as the format `T` is associated with. Only the following types are supported:
 
-| Type | Example Value | Format |
-|------|---------------|--------|
- | bool | `true`        | `true` |
-| todo | `todo`        | `todo` |
-| todo | `todo`        | `todo` |
-| todo | `todo`        | `todo` |
-| todo | `todo`        | `todo` |
-| todo | `todo`        | `todo` |
-| todo | `todo`        | `todo` |
-| todo | `todo`        | `todo` |
-| todo | `todo`        | `todo` |
-| todo | `todo`        | `todo` |
-| todo | `todo`        | `todo` |
-| todo | `todo`        | `todo` |
-| todo | `todo`        | `todo` |
+| Type                     | Example Value                                | Format                           |
+|--------------------------|----------------------------------------------|----------------------------------|
+ | bool                     | `true`                                       | `true`                           |
+| std::vector<bool>        | `{true, false, true}`                        | `true;false;true`                |
+| int32_t                  | `32`                                         | `32`                             |
+| std::vector<int32_t>     | `{12, 34, 56}`                               | `12;34;56`                       |
+| uint64_t                 | `984`                                        | `948`                            |
+| std::vector<uint64_t>    | `{124, 123, 192}`                            | `124;123;192`                    |
+| float                    | `3.14`                                       | `3.14`                           |
+| std::vector<float>       | `{1.2, 3.4, 5.6}`                            | `1.2;3.4;5.6`                    |
+| double                   | `3.14569`                                    | `3.14569`                        |
+| std::vector<double>      | `{1.123, 0.151, 3.121}`                      | `1.123;0.151;3.121`              |
+| std::string              | `"foo"`                                      | `foo`                            |
+| std::vector<std::string> | `{"foo", "lib", "bar"}`                      | `foo;lib;bar`                    |
+| RGBA                     | `RGBA(0.1, 0.9, 0, 1)`                       | `0.1;0.9;0.0;1.0`                |
+ | Image | `RGBA(1, 0, 1, 1), RGBA(0.5, 0.5, 0.7, 0.0)` | `1.0;0.0;1.0;1.0;0.5;0.5;0.7;0.0` | 
+
+We can furthermore read comments, if the comment is above a group line, `[image_view.window]` in our example, we can retrieve the comment with `file.get_comment_above("image_view.window")`. If the comment is above a key, we use `file.get_comment_above("image_view.window", "width")`.
+
+### Setting Values
+
+Just like accessing values, we use `KeyFile::set_value<T>`, which also takes a group and key identifier, along with a value of type `T`. If `T` is not one of the above mentioned supported files, a `CRITICAL` error will be logged. 
+
+We can even modify comments, using `file.add_comment_above`, which works just like `get_comment_above`, just with an added string argument containing the comment.
+
+When writing to the keyfile, only the object in memory is modified, not the object on disk. To "save" our changes to the keyfile, we need to call `save_to_file`.
+
 ---
 
 ## Icons
 
-### mousetrap::IconTheme
+We've seen in the section on widgets how to load an image, create an `ImageDisplay`, then use it to display the image. In applications, we will have dozens of these images that will be used as visual labels for a variety of widgets. While it is possible to simply store all these images as `.png`s and load them manually, this is hardly scalable. Furthermore, we often want to be able to swap out all visual labels, for example to allow for monochromatic or larger size images for the visually impaired. 
 
-### mousetrap::Icon
+To accomplish this, we should use **icons** instead of images.
 
-### Displaying Icons
+An icon is similar to an image file, though it usually does not contain pixel data. Icons can be loaded from `.png` files, but also accept `.svg` (vector graphics), and `.ico` (web browser icons), among many more platform-specific formats. Such an icon is managed by `mousetrap::Icon`, which is similar to a file descriptor, in that it does not contain any data, and it does not mutate any file on disk.
+
+### Creating and Viewing Icons
+
+The simplest way to load an icon is to load it as if it was an `Image`, let's say we havea 48x48 pixel image file at `resources/save_icon.svg`. We can load it like so:
+
+```cpp
+auto icon = Icon();
+icon.create_from_file("resources/save_icon.svg", 48);
+```
+
+If we want to display it as a widget, we can choose to use `ImageDisplay::create_from_icon`. The only difference between this an simply using an `Image` is that icons have a two additional properties:
+
++ `name` of type `mousetrap::IconID`, unique identifies the icon
++ `scale`, which is an integer of value 1 or greater
+
+We see that this makes them easier to keep track of, we can hash or index them using their name, and we can easily double their size if the user requests to do so. 
+

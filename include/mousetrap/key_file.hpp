@@ -109,7 +109,6 @@ namespace mousetrap
             /// @return comment if exists, empty string otherwise
             std::string get_comment_above(GroupKey, KeyID);
 
-
             /// @brief get value of key in group as escaped string
             /// @param group_id
             /// @param key_id

@@ -47,19 +47,26 @@ namespace mousetrap
     MenuModel::~MenuModel()
     {}
 
-    void MenuModel::add_action(const std::string& label, const Action& action, bool use_markup)
+    void MenuModel::add_action(const std::string& label, const Action& action, Icon* icon)
     {
         auto* item = g_menu_item_new(label.c_str(), ("app." + action.get_id()).c_str());
-        g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string(use_markup ? "yes" : "no"));
+
+        g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
+        g_menu_item_set_attribute_value(item, "verb-icon", g_icon_serialize(icon->operator GIcon *()));
+
         g_menu_append_item(_internal->native, item);
         g_object_unref(item);
     }
 
-    void MenuModel::add_stateful_action(const std::string& label, const Action& action, bool initial_state, bool use_markup)
+    void MenuModel::add_stateful_action(const std::string& label, const Action& action, bool initial_state, Icon* icon)
     {
         auto* item = g_menu_item_new(label.c_str(), ("app." + action.get_id()).c_str());
-        g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string(use_markup ? "yes" : "no"));
+        g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
         g_menu_item_set_attribute_value(item, "target", g_variant_new_boolean(initial_state));
+
+        if (icon != nullptr)
+            g_menu_item_set_icon(item, icon->operator GIcon *());
+
         g_menu_append_item(_internal->native, item);
         g_object_unref(item);
     }

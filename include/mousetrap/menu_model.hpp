@@ -8,6 +8,7 @@
 #include <mousetrap/gtk_common.hpp>
 #include <mousetrap/widget.hpp>
 #include <mousetrap/action.hpp>
+#include <mousetrap/icon.hpp>
 
 #include <string>
 #include <set>
@@ -54,7 +55,7 @@ namespace mousetrap
             void add_action(
                 const std::string& label,
                 const Action& action,
-                bool use_markup = true
+                Icon* icon = nullptr
             );
 
             /// @brief add a stateful action to the model, the menu item will appear with a checkmark next to it, clicking the item swaps the internal state of the action
@@ -66,7 +67,7 @@ namespace mousetrap
                 const std::string& label,
                 const Action& action,
                 bool initial_state,
-                bool use_markup = true
+                Icon* icon = nullptr
             );
 
             /// @brief add widget to menu, note that widgets can only be display when they are part of a section or submenu, not if they are in the toplevel sectino

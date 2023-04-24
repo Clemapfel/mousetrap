@@ -53,7 +53,7 @@ namespace mousetrap
 
     Icon::~Icon()
     {
-        if (G_IS_OBJECT(_internal))
+        if (_internal->native == nullptr)
             g_object_unref(_internal);
     }
 
@@ -83,10 +83,21 @@ namespace mousetrap
             _internal->scale = 1;
 
         auto* file = g_file_new_for_path(path.c_str());
+        if (file == nullptr)
+        {
+            log::critical("In Icon::create_from_file: Unable to load icon from file at `" + path + "`");
+            g_object_unref(file);
+
+            _internal->native = nullptr;
+            _internal->paintable = nullptr;
+            return;
+        }
+
         _internal->native = g_file_icon_new(file);
         _internal->paintable = gtk_icon_paintable_new_for_file(file, square_resolution, scale);
+        detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
 
-        g_free(file);
+        g_object_unref(file);
         _internal->resolution = square_resolution;
         _internal->scale = scale;
     }
@@ -107,6 +118,7 @@ namespace mousetrap
             GtkTextDirection::GTK_TEXT_DIR_LTR,
             GtkIconLookupFlags::GTK_ICON_LOOKUP_FORCE_REGULAR
         );
+        detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
 
         if (error != nullptr)
         {
