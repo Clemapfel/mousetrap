@@ -6,6 +6,7 @@
 #pragma once
 
 #include <mousetrap/widget.hpp>
+#include <mousetrap/icon.hpp>
 
 #ifdef DOXYGEN
     #include <mousetrap/.*>
@@ -56,5 +57,19 @@ namespace mousetrap
 
             /// @brief get whether the text entry is currently in password mode
             bool get_text_visible() const;
+
+            /// @brief add icon to the start of entry
+            /// @param icon
+            void set_primary_icon(const Icon&);
+
+            /// @brief remove icon at the start of entry
+            void remove_primary_icon();
+
+            /// @brief add icon to end of entry
+            /// @param icon
+            void set_secondary_icon(const Icon&);
+
+            /// @brief remove icon at the end of entry
+            void remove_secondary_icon();
     };
 }

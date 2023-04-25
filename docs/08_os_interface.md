@@ -353,6 +353,12 @@ auto menubar = MenuBar(model);
 
 \image html menu_model_with_icon.png
 
-Which can add some style to our menus. Note that an item cannot have both a text label and an icon at the same time, to achieve this behavior we need to add a `Box` with both an `ImageDispay` and `Label` to the menu using `add_widget`.
+Note that we have specified an optional 3rd argument to `add_section`, which is the **section format**, of type `mousetrap::MenuModel::SectionFormat`. There are \link mousetrap::MenuModel::SectionFormat multiple styles\endlink which look slightly different, but usually sections styles are only used if a section contains icon-items exclusively, that is all menu items in the section were created using `add_icon`.
 
+With section format and a free choice of icon, we can add some style to our menus. Note that an item cannot have both a text label and an icon at the same time, to achieve this behavior we need to add a `Box` with both an `ImageDispay` and `Label` to the menu using `add_widget`.
 
+Along with `MenuModel`, icons can also be used to \link mousetrap::Entry::add_primary_icon add at the end or start of entry\endlink, though this could just as well be accomplished with a `ImageDisplay`.
+
+### IconTheme
+
+\todo this section is not yet complete

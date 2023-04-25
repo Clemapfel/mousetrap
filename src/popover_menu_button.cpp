@@ -116,7 +116,6 @@ namespace mousetrap
         gtk_menu_button_set_has_frame(get_native(), b);
     }
 
-
     void PopoverMenuButton::set_is_circular(bool b)
     {
         if (b and not get_is_circular())

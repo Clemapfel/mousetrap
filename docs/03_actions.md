@@ -1,7 +1,7 @@
 # Chapter 3: Actions
 
 In this chapter we will learn:
-+ How to use the command pattern to encapsulate appliaction functionality
++ How to use the command pattern to encapsulate application functionality
 + How to create and use `mousetrap::Action`
 + How to trigger actions using `Button` and `PopoverMenu`
 
@@ -13,11 +13,9 @@ A **command**, henceforth called **action** is a an object which has the followi
 + A **function**, which is the actions behavior
 + An **id** which uniquely identifies the action
 
-The mousetrap class `Action` has two additional properties, a **state** and **shortcut**, both of which we will concern us with later on in this section.
+## Actions
 
-## \link mousetrap::Action `Action` \endlink
-
-As early as possible, we should drop the habit of defining application behavior inside a global function. For example, in the previous chapter we declared a `Button` with the following behavior:
+As early as possible, we should drop the habit of defining application behavior inside a global function. For example, in the previous chapter, we declared a `Button` with the following behavior:
 
 ```cpp
 auto button = Button();
@@ -26,11 +24,11 @@ button.connect_signal_clicked([](Button* button){
 });
 ```
 
-Let's say instead of simply printing `clicked`, this button does a more complex operation, such as opening / saving a file or using the internet to connect to a server overseas. Often, we want this functionality to not be tied to a specific button, it is much more scalable and easy to maintain to encapsulate it as an automatically managed object that can be connected and disconnected to/from any number of triggers. `Action` offers this functionality.
+If we wanted to have another, different button somewhere else trigger the same behavior, we would either have to copy-paste this lambda (which is a terrible idea when programming in general), or we have to create a global function and have both buttons call that function. As stated above, this works for very small projects, but is unsustainable for applications of average to high complexity. It is much more scalable and easy to maintain to encapsulate the function in an automatically managed object that can be connected and disconnected to/from any number of triggers. `Action` offers this functionality.
 
-When creating an action, we first need to choose an **id**. An id is any identifier containing the character `[a-zA-Z0-9_.]`, that is all roman letters, number 0-9, `_` and `.`. The dot is usually reserved to simulate scoping, for example, an action could be called `image_file.save`, while another is called `text_file.save`. Both actions say what they do, `save` a file, but the prefix makes clear which part of the application they act on. We should always pick a clear, descriptive id for an action. Much like with variable names, abbreviations and otherwise unclear termonology should be avoided.
+When creating an action, we first need to choose an **id**. An id is any identifier containing the character `[a-zA-Z0-9_-.]`, that is all roman letters, numbers 0 to 9, `_`, `-` and `.`. The dot is usually reserved to simulate scoping, for example, an action could be called `image_file.save`, while another is called `text_file.save`. Both actions say what they do, `save` a file, but the prefix makes clear which part of the application they act in. We should always pick a clear, descriptive id for an action. Much like with variable names in general, abbreviations and otherwise unclear termonology should be avoided.
 
-In this spirit, we'll call our example action that prints `clicked`  "`example.print_clicked`". Armed with this appropriate id, we create the action object like so:
+In this spirit, we'll call our example action that prints `clicked` "`example.print_clicked`". Armed with this appropriate id, we create the action object like so:
 
 ```cpp
 auto action = Action("example.print_clicked", app);
@@ -41,9 +39,9 @@ action.set_function([](){
 
 Where `app` is a pointer to our application.
 
-We see that we can set an actions behavior using `set_function`. This method acts a lot like connecting so a signal handler, all functions linked to actions are required to have the signature `(Action*, (Data_t)) -> void`.
+We see that we can specify an actions behavior using `set_function`. This method is structured a lot like connecting a signal handler. All functions linked to actions are required to have the signature `(Action*, (Data_t)) -> void`.
 
-There are multiple way of triggering an action, for now, we recall our `print_clicked` behavior should be tied to a button. `Button` speficially has a function for this `set_action`, which links the action to the button. If the button is clicked, the action is triggered. 
+There are multiple way of triggering an action, for now, we recall that our `print_clicked` behavior should be tied to a button. `Button` speficially has a function for this: `set_action`, which attaches the action to a button. If the button is clicked, the action is triggered. 
 
 ```cpp
 auto button = Button();
@@ -74,12 +72,12 @@ int main()
       
         // declare button 
         auto button = Button();
-        button.set_margin(75);
         
         // connect action to button
         button.set_action(action);
 
         // add button to window
+        button.set_margin(75);
         window.set_child(button);
         window.present();
     });
@@ -97,11 +95,17 @@ clicked
 
 \collapsible_note_end
 
+## Disabling Actions
+
+Not all functionality should be available at all times. For example, the "print document" button should not be available while a document is being loaded. We could achieve this functionaliy by manually blocking signals, however this would need to be on a per-emitter basis, meaning if we have 5 buttons all over our app triggering printing, we would have to disable and later reenable the one-by-one.
+
+`Action` solves this, we can disable an action using `set_enabled`. Once disabled, our application will automatically block all widgets that were connected to the action. For `Button` specifically, the widget will appear half-transparent, or "greyed out", signaling to the user that it cannot be interacted with at this time. This is another advantage of using actions as opposed to functions, we can disable the action itself.
+
 ## Action Maps
 
-Eagle-eyed readers may have noticed that we need to supply an `Application*` to the `Action` constructor, despite the two seemingly not interacting. This is, because the `Application` instance is what stores our actions globally. Once we call `set_function` on an action, it is registered with the application under its id, `example.print_clicked` in our case, and can now be accessed both internally and externally by everything in the application.
+Eagle-eyed readers may have noticed that we need to supply an `Application*` to the `Action` constructor, despite the two seemingly not interacting. This is, because the `Application` instance is what stores our actions globally. Once we call `set_function` on an action, it is registered with the application under its id, `example.print_clicked` in our case, and can now be accessed both internally and externally by everything in the application. The actions life-time is managed by the application, its destructor will only be called once nothing else references the action. This prevents developer errors where we loose track of an action, the application keeps it for us.
 
-For example, if we lost track of our `Action` instance but would like to call it manually, we can retreieve it from our application instance:
+If this happens and we do not have a way to access the `Action` instance, for example if we would like to call it manually, we can retrieve it from our application instance:
 
 ```cpp
 // after action.set_function(//...
@@ -111,7 +115,7 @@ app->get_action("example.print_clicked").activate();
 clicked
 ```
 
-Where `get_action` returns a `Action&`. By giving our action a descriptive id, we have a very scalable and automated mechanism of keeping track of and referencing functions. 
+Where `get_action` returns an `Action&`. By giving our action a descriptive id, we have a very scalable and automated mechanism for keeping track of, and referencing functions. 
 
 ## Triggering Actions
 
@@ -119,9 +123,9 @@ Where `get_action` returns a `Action&`. By giving our action a descriptive id, w
 
 ### Menus
 
-One of the most common forms of interaction with a GUI application is that of *menus*. A menu is a nested list of items. Each item has a label, if the user clicks the label, something happens. That "something", in mousetrap, is invocation of an `Action`.
+One of the most common forms of interaction with a GUI application is in the form of *menus*. A menu is a nested list of items. Each item has a label, if the user clicks the label, something happens. That "something", in mousetrap, is usually an invocation of an `Action`.
 
-To create the most simple menu with just one item, we need two objects, a [**model** and **view**](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller). The model holds the internal structure of the menu, including what label to show for which action. The view displays the menu, where each line of code is commented with what is happening
+To create the most simple menu with just one item, we need two objects, a [**model** and **view**](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller). The model holds the internal structure of the menu, including what label to show for which action, the order of the items, etc. The view displays the menu on screen:
 
 ```cpp
 // create two actions
@@ -135,7 +139,7 @@ action_02.set_function([](Action*){
     std::cout << "02 triggered" << std::endl;
 });
 
-// create model
+// create menu model
 auto model = MenuModel();
 
 // add actions to model
@@ -206,23 +210,25 @@ int main()
 
 \image html two_actions_menu_model.png
 
-Here, we created two actions `action_01` and `action_02`, each of which simply prints to the console. We then created a `MenuModel`, which is the model component of our clickable menu. By calling `MenuModel::add_action`, we add both actions to this model. `add_action` takes two argument, as its second the action, and as its first the label which will be displayed by the menu on screen. 
+\note mousetraps menus are extremely powerful, we will learn more about its functionality in the [next chapter on widgets](./04_widgets.md). For now, we are just using it to illustrate how actions are used in applications
 
-Lastly we create  `PopoverMenu` and `PopoverMenuButton`. The former is a little window that sticks to a button, the latter is a button that, when clicked, show the window. As seen in the screenshot above, the window now contains two items with our given labels. Clicking the first, we get:
+Here, we created two actions `action_01` and `action_02`, each of which simply prints to the console. We then create a `MenuModel`, which is the model component of our clickable menu. By calling `MenuModel::add_action`, we add both actions to this model. `add_action` takes two argument, as its second the action, and as its first the label which will be displayed by the menu on screen. 
+
+Lastly we create  `PopoverMenu` and `PopoverMenuButton`. The former is a little window that sticks to a button, the latter is a button that, when clicked, shows the window. As seen in the screenshot above, the window now contains two items with our given labels. Clicking the first, we get:
 
 ```
 01 triggered
 ```
 
-By using actions instead of global functions, we effectively decoupled behavior and its triggers. The above `action_01` can be linked to a button, a second menu somewhere else or a completely unrelated part of the application, such as another library.
+By using actions instead of global functions, we effectively decoupled behavior and its triggers. The above `action_01` can be linked to a button, a second menu somewhere else or a completely unrelated part of the application, such as another library. We do not need to keep track of what it is connected to, modifying the action modifies all its potential triggers.
 
 ## Shortcuts
 
-Another advantage of actions is that we can associate a **keyboard shortcut** with it. More advanced users and/or users with physical disabilities will often wish to control an application without using the mouse too much. This can be accomplished by using shortcuts.
+Another advantage of actions is that we can associate it with a **keyboard shortcut** with it. More advanced users and/or users with physical disabilities will often wish to control an application without using the mouse too much. This can be accomplished by using shortcuts, a combination of keyboard keys that trigger behavior when pressed once.
 
-We will learn how to trigger shortcuts in general in the chapter on event handling, for now we can make navigation of a menu easier by associating each of ours actions with a keyboard shortcut. Let's say we want to trigger `action_01` using `Control + 1`, and `action_02` using `Control + 2`.
+We will learn how to trigger shortcuts in general in the [chapter on event handling](./05_events.md), for now we, can make navigation of a menu easier by associating each of our actions with a keyboard shortcut. Let's say we want to trigger `action_01` using `Control + 1`, and `action_02` using `Control + 2`.
 
-Using `Action::add_shortcut`, we add the shortcuts like so:
+Using `Action::add_shortcut`, we add the shortcuts to actions like so:
 
 ```cpp
 auto action_01 = Action("example.menu_model_action_01", app);
@@ -240,11 +246,8 @@ action_02.set_function([](Action*){
 action_02.add_shortcut("<Control>2");
 ```
 
-Now, when we run our application and open our popover menu, we see that the application automatically added these keyboard shortcuts to the menu display:
+We do not need to change anything about how the menu is constructed. When we run our application and open our popover menu, we see that the application automatically added the keyboard shortcuts to the menu display:
 
 \image html two_action_menu_model_with_shortcuts.png
 
-Now, while the menu is open, if the user pressed the set keybindings, the actions will trigger, just as if they clicked the corresponding item.
-
-To learn more about the syntax used for the string that is the argument to `add_shortcut`, look forward to chapter 5.
-
+While the menu is open, if the user pressed the shown keybinding, the actions will trigger, just as if they clicked the corresponding item.

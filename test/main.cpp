@@ -4,50 +4,47 @@
 #include <mousetrap.hpp>
 using namespace mousetrap;
 
-static void called()
-{
-    std::cout << "called" << std::endl;
-}
-
 int main()
 {
-    auto app = Application("test.app");
+    auto app = Application("example.menus.app");
     app.connect_signal_activate([](Application* app)
     {
         auto window = Window(*app);
         window.set_title("");
 
-        auto theme = IconTheme();
-        static auto icon = Icon();
-        icon.create_from_theme(theme, "weather-fog-large", 48);
-
-        for (auto it : theme.get_icon_names())
-            std::cout << it << std::endl;
-
-        auto action = Action("test", app);
+        // declare stateless action
+        auto action = Action("example.print_called", app);
         action.set_function([](Action*){
             std::cout << "called" << std::endl;
         });
 
         auto model = MenuModel();
 
-        auto submenu = MenuModel();
-        submenu.add_icon(icon, action);
-        model.add_icon(icon, action);
-        model.add_submenu("Menu", submenu);
+        auto file_submenu = MenuModel();
+
+        auto file_recent_submenu = MenuModel();
+        file_recent_submenu.add_action("Project 01", action);
+        file_recent_submenu.add_action("Project 02", action);
+        file_recent_submenu.add_action("Other...", action);
+
+        file_submenu.add_action("Open", action);
+        file_submenu.add_submenu("Recent...", file_recent_submenu);
+        file_submenu.add_action("Save", action);
+        file_submenu.add_action("Save As", action);
+        file_submenu.add_action("Exit", action);
+
+        auto help_submenu = MenuModel();
+
+        model.add_submenu("File", file_submenu);
+        model.add_submenu("Help", help_submenu);
+
         auto menubar = MenuBar(model);
-        auto popover_menu = PopoverMenu(model);
-        auto menu_button = PopoverMenuButton();
-        menu_button.set_popover_menu(popover_menu);
+        menubar.set_margin_end(100);
 
-        auto check = CheckButton();
-        gtk_widget_add_css_class(check.operator NativeWidget(), "circular");
-
-        window.set_child(check);
+        window.set_child(menubar);
         window.present();
     });
 
-    // start main loop
     return app.run();
 }
 

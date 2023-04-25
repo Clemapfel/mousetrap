@@ -21,8 +21,6 @@ All widgets share common properties that govern how they behave when the contain
 
 #### Margin
 
-
-
 #### Size Request
 
 #### Expansion

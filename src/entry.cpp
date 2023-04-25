@@ -56,4 +56,24 @@ namespace mousetrap
     {
         return gtk_entry_get_visibility(get_native());
     }
+
+    void Entry::set_primary_icon(const Icon& icon)
+    {
+        gtk_entry_set_icon_from_gicon(get_native(), GTK_ENTRY_ICON_PRIMARY, icon.operator GIcon*());
+    }
+
+    void Entry::remove_primary_icon()
+    {
+        gtk_entry_set_icon_from_gicon(get_native(), GTK_ENTRY_ICON_PRIMARY, nullptr);
+    }
+
+    void Entry::set_secondary_icon(const Icon& icon)
+    {
+        gtk_entry_set_icon_from_gicon(get_native(), GTK_ENTRY_ICON_SECONDARY, icon.operator GIcon*());
+    }
+
+    void Entry::remove_secondary_icon()
+    {
+        gtk_entry_set_icon_from_gicon(get_native(), GTK_ENTRY_ICON_SECONDARY, nullptr);
+    }
 }

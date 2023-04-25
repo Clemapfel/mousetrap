@@ -8,7 +8,7 @@ In this chapter we will learn:
 ## Introduction
 
 Mousetrap was originally part of a never-released app for frame-by-frame animation. With the seizing of development for 
-that app, I decided to plug out its GUI engine, polish it and its documentation, port it to Julia and make it 
+that app, I decided to plug out its GUI engine, polish it and its documentation, and make it 
 available publicly as mousetrap.
 
 I note this back-story here because a lot of the mousetrap library was specifically designed for this purpose, mousetrap has robust image-processing features . Images can effortly be exchanged with both GTK4 and OpenGL component, making editing and displaying
@@ -26,19 +26,10 @@ Images in RAM are managed by the `mousetrap::Image` class. This class is tied to
 
 Most commonly, we will want load an image into RAM to modify or display it. To do this we first instantiate image using its default constructor. This image will be of size 0x0, to fill it with data from the disk we call `Image::create_from_file`, which takes the path to an image as a string:
 
-\cpp_code_begin
 ```cpp
 auto image = Image();
 image.create_from_file("/path/to/image.png");
 ```
-\cpp_code_end
-
-
-\julia_code_begin
-```julia
-#TODO
-```
-\julia_code_end
 
 #### Supported Image Formats
 
@@ -68,31 +59,16 @@ The following image formats are supported:
 
 Sometimes we want to fill an image with our own custom image data. For this, using `Image::create`, we can allocate an image of a given size, filling each pixel with the supplied color. For example, the following allocates and image of size 400x300 and fills every color with red (`RGBA(1, 0, 0, 1)`):
 
-\cpp_code_begin
 ```cpp
 auto image = Image();
 image.create(400, 300, RGBA(1, 0, 0, 1));
 ```
-\cpp_code_end
-
-\julia_code_begin
-```julia
-image = Image()
-create(image, 400, 300, RGBA(1, 0, 0, 1))
-```
-\julia_code_end
 
 ### Modifying an Image
 
 Having created an all-red image, we probably want to modify it by setting individual pixels to a certain color. We can use `Image::get_pixel` to access a specific pixel and `Image::set_pixel` to replace that pixels color with the given color.
 
 For an image of size `n*m`, that is an image with a width of `n` pixels and a height of `m` pixels, the top-left-most pixel has index `(0, 0)`, the top-right-most pixel `(0, n)`, the bottom-right-most pixel has index `(n, m)` and the the bottom-left-most pixel `(n, 0)`. In this way, an image is a just a matrix, where each element is a color, as opposed to a single number.
-
-\julia_code_begin
-```julia
-# TODO: 1-based indexing
-```
-\julia_code_end
 
 ### Whole-Image Transforms
 
@@ -102,18 +78,10 @@ If we want to change in images size, we have two options: *scaling*  the image, 
 
 To scale an image, we call `Image::as_scaled`. This functions returns a new image, it does not modify the original image. For example, scaling our 400x300 image to 800x600:
 
-\cpp_code_begin
 ```cpp
 auto image = // ... 400x300 image
 auto scaled = image.as_scaled(800, 600);
 ```
-\cpp_code_end
-
-\julia_code_begin
-```julia
-# TODO
-```
-\julia_code_end
 
 When scaling, we have a choice of the scaling algorithm, or *interpolation*. Mousetrap offers 4 choices, represented by the values of enum `InterpolationType`:
 
@@ -161,7 +129,6 @@ Now that we know how to load and manipulate images in memory, we most likely wil
 
 By default, `ImageDisplay` will expand according `Widget::set_expand`. Expansion like this will scale the image automatically. If this is not desired, we tell `ImageDisplay` to display the image 1:1 (that is, 1 pixel on screen is equivalent to 1 pixel of the image data) by setting its size request to the images size, and disabling expansion in both dimensions:
 
-\cpp_code_begin
 ```cpp
 auto image = Image();
 image.create_from_file( //... load image of size 400x300
@@ -171,13 +138,6 @@ image_display.create_from_image(image);
 image_display.set_expand(false); // prevent expansion
 image_display.set_size_request(image_display.get_size())); // size request to scale 1:1
 ```
-\cpp_code_end
-
-\julia_code_begin
-```julia
-# TODO
-```
-\julia_code_end
 
 \todo example image
 
@@ -231,11 +191,6 @@ sound.play();
 ```
 \cpp_code_end
 
-\julia_code_begin
-```julia
-#TODO
-```
-\julia_code_end
 
 `Sound` offse
 
