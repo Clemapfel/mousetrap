@@ -2,22 +2,24 @@
 
 In this chapter, we will learn:
 + What signals and signal handlers are
-+ How to check which signature a signal expects
 + How to connect to a signal
 + How and why to block signals
++ How to check which signature a signal expects
 
 ## Signal Architecture
 
 Central to mousetrap, GTK and many GUI libraries like QT is what is called **signal architecture** or [**signal programming**](https://en.wikipedia.org/wiki/Signal_programming).
 
 A signal has 3 components:
-+ an **id**, which uniquely identifies it. IDs may not be shared between signals
++ an **ID**, which uniquely identifies it. IDs may not be shared between signals
 + an **emitter**, which is a non-signal object
 + a **callback** or **signal handler**, which is a function called when an emitter emits a signal
 
-It may be easiest to consider an example: One of the simplest interactions a human can have with a GUI program is clicking a button. In mousetrap, the \link mousetrap::Button `Button` \endlink class has a signal just for this, which has the id `clicked`.
+It may be easiest to consider an example: 
 
-In this case, the signal **id** is `clicked` and the signal **emitter** is an instance of `Button`. When a user clicks the button (the graphical area on their screen), the in-memory object emits signal `clicked`. Therefore, if we want to tie program behavior to the user clicking the button, we connect a callback (an function) to this signal. If the button is clicked, `clicked` is emitted. When `clicked` is emitted, our callback will be executed.
+One of the simplest interactions a human can have with a GUI program is clicking a button. In mousetrap, the \link mousetrap::Button `Button` \endlink class is made for this purpose. `Button` has the signal `clicked`, which is emitted when a user pressed the left mousebutton while the cursor is above the button on screen.
+
+In this case, the signal **id** is `clicked` and the signal **emitter** is an instance of `Button`. When a user clicks the button (the graphical area on their screen), the in-memory object emits signal `clicked`. If we want to tie program behavior to the user clicking the button, we **connect a callback** (a function) to this signal. Once connected, when the button is clicked, `clicked` is emitted, which in turn will trigger invokation of the connect function.
 
 ```cpp
 // create `Button` instance
@@ -34,8 +36,8 @@ button.connect_signal_clicked(on_signal_clicked);
 
 \remarks `on_signal_clicked` above is a C++ lambda. If you are unfamiliar with lambda syntax, please consider working through [this tutorial](https://learn.microsoft.com/en-us/cpp/cpp/lambda-expressions-in-cpp?view=msvc-170) before continuing. Lambdas are intergral to modern C++ and will be used extensively.
 
-\collapsible_note_begin
-In this section, code snippets will only show the relevant lines. If we want to actually compile and run the code stated here, we need to modify our `main.cpp` from the last section.
+\collapsible_note_begin{Hint: Running Code Snippets}
+In this section, code snippets will only show the relevant lines. To actually compile and run the code stated here, we need to modify our `main.cpp` from the last sectio:
 
 ```cpp
 #include <mousetrap.hpp>
@@ -67,11 +69,17 @@ int main()
 ```
 \collapsible_note_end
 
-Now, when the user clicks the button, "`clicked`" is printed.
+Run the application, if we click the area inside the window, which is the button, we get:
+
+```
+clicked
+```
 
 ## SignalEmitters
 
-`Button`, as most classes in mousetrap, inherits from an abstract class called `SignalEmitter`. Inherting from this class is equivalent to saying "this object can emit signals". Not all object can emit all signals, however. To be able to emit the signal with id `clicked`, an object has to inherit from a **signal component** for that specific signal. Signal components have the name `has_signal_<id>`, where `<id>` is the id of the signal. For example, `Button` inherits from the signal component `has_signal_clicked`. This means `Button` is able to emit the signal with id `clicked`.
+`Button`, as most classes in mousetrap, inherits from an abstract class called `SignalEmitter`. An abstract class is any class with a member function that is [pure virtual](https://stackoverflow.com/questions/1306778/virtual-pure-virtual-explained), it can only be inherited from, but not instantiated. 
+
+Inherting from `SignalEmitter` is equivalent to saying "this object can emit signals". Not all object can emit **all** signals, however. For example, to be able to emit the signal with id `clicked`, an object has to also inherti from a **signal component** for that specific signal. Signal components have the name `has_signal_<id>`, where `<id>` is the id of the signal. For example, `Button` inherits from the signal component `has_signal_clicked`. This means `Button` is able to emit the signal with id `clicked`.
 
 When an object inherits from signal component `has_signal_<id>`, it gains the following functions:
 
@@ -85,9 +93,9 @@ For example, because `Button` inherits from `has_signal_clicked`, it gains the m
 
 ### Connecting Signal Handlers
 
-We've aready seen how to connect a signal handler to the signal of an emitter, however, using `Button::connect_signal_clicked`, what may not have been obvious is that the signal handler, a lambda in our above code snippet, is required to conform to a specific signature.
+We've aready seen above how to connect a signal handler to a specific signal of an emitter. What may not have been obvious is that the signal handler, a lambda in our above code snippet, is required to conform to a specific signature.
 
-\collapsible_note_begin
+\collapsible_note_begin{Hint: Signatures}
 A functions **signature** describes a functions return- and argument types. For example, the function
 
 ```cpp
@@ -110,24 +118,32 @@ In general, a function with argument types `Arg1_t, Arg2_t, ...` and return type
 
 \collapsible_note_end
 
-For example, the lambda we connected to signal `clicked` of `Button` had the signature `(Button*) -> void`. The first argument of any signal handler will be a pointer to the signal emitter instance, `Button*` in our case. If there was an imaginary object of type `Foo`, which also has the signal component for `clicked`, the signature of its signal handler would be `(Foo*) -> void`.
+For example, the lambda we connected to signal `clicked` of `Button` had the signature `(Button*) -> void`. The first argument of any signal handler will be a pointer to the signal emitter instance, `Button*` in our case. If there was an imaginary object of type `Foo`, which also has the signal component for `clicked`, the signature of signal handler connecting to it would be `(Foo*) -> void`.
 
 Each signal requires its handler to conform to a specific signature. If the handler has the wrong signature, a compiler error will be thrown. This makes it important to know how to check which signal requires which signature.
 
 ### Checking Signal Signature
 
 Working with our example, the signal `clicked` of class `Button`, let's say we do not know what function is able to connect to this signal. 
-We can find out, by checking the mousetrap documentation. Navigating to the \link mousetrap::Button corresponding page \endlink, we check "detailed description" (by clicking "more" at the very top of the page), which contains the following table:
+To find out, we can check the mousetrap documentation. Navigating to the \link mousetrap::Button corresponding page \endlink, we check "detailed description" (by clicking "more" at the very top of the page), which contains the following table:
 
-\todo TABLE
+\signals
+\signal_clicked{Button}
+\signal_activate{Button}
+\widget_signals{Button}
 
-We see that `Button` has a number of additional signals, for now we just want to know which signature `clicked` specifically has. Checking the table, it says `(Button*, (Data_t)) -> void`, so there we go. The table also contains information of when each signal is emitted, which will be covered in the upcomping chapter on widgets.
+We see that `Button` has a number of additional signals, for now we just want to know which signature `clicked` specifically requires. Checking the table, it says `(Button*, (Data_t)) -> void`. The table also contains information of when each signal is emitted, which will be covered in the upcomping chapter on widgets.
 
-`(Data_t)` refers to an **optional** argument for all signal handlers, which is an arbitrary object we can pass to it.
+`(Data_t)` refers to an **optional** argument for all signal handlers, which is an arbitrary object we can pass to it, meaning a function connected to signal `clicked` can have one of the following signatures:
+
+```cpp
+(Button*) -> void
+(Button*, Data_t) -> void
+```
 
 ### Handing Data to Signal Handlers
 
-While we do get passed a pointer to the signal emitter instance as the first argument to any signal handler, we often need to reference outside objects from inside the signal handler. This may be to access a global state, another signal emitter or an otherwise custom object. Mousetrap allows for this by adding an optional, arbitrarily typed, single argument to the end of any signal handler signature. This object is often referred to as `data`, so its type will be called `Data_t`.
+While we do get passed a pointer to the signal emitter instance as the first argument to any signal handler, we often need to reference other objects from inside the signal handler. This may be to access a global state, another signal emitter, or a number of unrelated objects. Mousetrap allows for this by adding an optional, arbitrarily typed, *single* argument to the end of any signal handler signature. This object is often referred to as `data`, so its type will be called `Data_t`.
 
 Expanding on our previous example, if we want to send a customized message when the user clicks our button, we can change `on_signal_clicked` as follows:
 
@@ -146,7 +162,7 @@ button.connect_signal_clicked(on_signal_clicked, "custom message");
 custom message
 ```
 
-We see that we changed the signature of `on_signal_clicked` from `(Button*) -> void` to `(Button*, std::string) -> void`. Our string `custom message` will be stored in the signal component for that signal and handed to our signal handler. Any and all objects can be provided as `data`, however they have to be packages as one argument.
+We see that we changed the signature of `on_signal_clicked` from `(Button*) -> void` to `(Button*, std::string) -> void`. Our string `custom message` will be stored along with the registered function (a lambda in this case). Any and all objects can be provided as `data`, however they have to be packaged as exactly one argument (see note below).
 
 The above can be written more succinctly like so:
 
@@ -159,11 +175,52 @@ button.connect_signal_clicked([](Button* button, auto message) -> void {
 
 Where the C++ compiler will automatically replace `auto` with the correct datatype.
 
+\collapsible_note_begin{Hint: Grouping Arguments}
+
+Because there is only one `data`, it may seem limiting as to what or how much data we can pass to the signal handlers. This is not true, 
+we can use this simple trick to group any amount of objects into a single argument:
+
+Let's say we want to hand both a `std::string`, `int64_t` and an `std::vector<float>` to `connect_signal_clicked`. To achieve, this we create an [anonymous struct](https://learn.microsoft.com/en-us/cpp/cpp/anonymous-class-types?view=msvc-170) like so:
+
+```cpp
+// declare anonymous struct
+using clicked_data_t = struct {
+    std::string string;
+    int64_t number;
+    std::vector<float> vector;
+};
+
+// objects to hand to `connect_signal_clicked`
+to_hand_string = "abcdef";
+to_hand_number = 1234;
+to_hand_vector = {1.5, 2.5, 3.5, 4.5};
+
+// bundle objects into a single object
+// curly braces to invoke the list initialization default constructor, see https://learn.microsoft.com/en-us/cpp/cpp/initializing-classes-and-structs-without-constructors-cpp?view=msvc-170
+auto bundled_data = clicked_data_t{ 
+    to_hand_string,
+    to_hand_number,
+    to_hand_vector
+};
+
+button.connect_signal_clicked([](Button* instance, clicked_data_t data){
+    // access bundled objects
+    auto received_string = data.string;
+    auto received_number = data.number;
+    auto received_vector = data.vector;
+}, bundled_data;)
+```
+
+Using this technique, we can bundle up any number of objects and access them using simple `.` syntax from withing the signal handler.
+
+\collapsible_note_end
+
 ### Blocking Signal Emission
 
-If we want an object to seize invocation of the signal handler on signal emission, we have two options We can **disconnect** the signal, which will permanently remove the registered signal handler, using `disconnect_signal_<id>`. This is a quite costly operation and should rarely be used. A much more performant and convenient method is that of **blocking** signals:
+If we want an object to seize invocation of the signal handler on signal emission, we have two options: 
+We can **disconnect** the signal, which will permanently remove the registered signal handler, using `disconnect_signal_<id>`. This is a quite costly operation and should only rarely be necessary. A much more performant and convenient method is that of **blocking** signals:
 
-Blocking a signal will prevent invocation of the signal handler, not signal emission. This means, for our `Button` example, the user can still click the button, however our connected lambda will not be executed.
+Blocking a signal will prevent invocation of the signal handler, not signal emission. This means, for our `Button` example, the user can still click the button, however our connected lambda will not be executed when it is clicked.
 
 We block a signal using `set_signal_<id>_blocked`, which takes a boolean as its argument. We can check whether a signal is currently blocked using `get_signal_<id>_blocked`.
 
@@ -184,11 +241,15 @@ button_02.connect_signal_clicked([](Button*) -> void {
 });
 ```
 
-\collapsible_note_begin
-We can reference `button_01` and `button_02` from within the lambdas only because both are declare `static`. Alternatively we could capture the buttons from within the lambda capture clauses (the `[]`).
+\collapsible_note_begin{Hint: Static Variables}
+We can reference `button_01` and `button_02` from within the lambdas only because both are declared `static`, which means they are only initialized once, and their lifetime extends as if they were in global scope. See [here](https://en.cppreference.com/w/cpp/language/storage_duration#Static_local_variables) for more information. 
+
+Alternatively we could capture the buttons from within the lambda capture clauses (the `[]`).
 \collapsible_note_end
 
-Here, we declared two buttons. The intended behavior is that if the user clicks either one of the buttons, both buttons emit their signal. Right now, if the user clicks, let's say, `button_01` it will print `01 clicked`, then `button_01` invokes `button_02`, which prints `02 clicked`. `button_02` then causes `button_01` to invoke it's siganl, which creates a loop. The result is the following output:
+Here, we declared two buttons. The intended behavior is that if the user clicks either one of the buttons, both buttons emit their signal. Clicking one button triggers both, regardless of which button is clicked.
+
+Running the above code as is and clicking `button_01`, we get the following output:
 
 ```
 01 clicked
@@ -202,7 +263,11 @@ Here, we declared two buttons. The intended behavior is that if the user clicks 
 ...
 ```
 
-And our application deadlocks. This is of cours extremely undesirable. We can avoid this behavior by **blocking signals**:
+And our application deadlocks. This is of cours extremely undesirable, so lets talk through why this happens.
+
+When `button_01` is clicked, it emits signal `clicked`, which invokes the connected signal handler. Running through the signal handler, first `01 clicked` is printed, then `button_02` is forced to invoke its signal handler by `button_02.emit_signal_clicked()`. Running through the `button_02` signal handler line by line, first `02 clicked` is printed, then `button_01` is invoked againt. This creates an infinite loop, hence the deadlock. 
+
+We can avoid this behavior by **blocking signals** at strategic times:
 
 ```cpp
 button_01.connect_signal_clicked([](Button* self) -> void {
@@ -227,7 +292,7 @@ button_02.connect_signal_clicked([](Button* self) -> void {
 });
 ```
 
-Let's talk through what happens when the user clicks one of the two buttons, let's say `button_01`:
+Let's talk through what happens when the user clicks one of the two buttons now, again assuming `button_01` is the first to be clicked:
 
 + `button_01` invokes its signal handler
 + `button_01`s signal handler prints `01 clicked`
@@ -235,7 +300,7 @@ Let's talk through what happens when the user clicks one of the two buttons, let
 + `button_01` triggers signal emission on `button_02`
 + `button_02`s signal handler prints `02 clicked`
 + `button_02` blocks invocation of its own signal handler
-+ `button_02` attempts to trigger signal emission on `button_01`, but that buttons signal is blocked, so nothing happend
++ `button_02` attempts to trigger signal emission on `button_01`, **but that buttons signal is blocked, so nothing happend**
 + `button_02` unblocks itself
 + `button_01` unblocks itself
 
@@ -244,9 +309,9 @@ Let's talk through what happens when the user clicks one of the two buttons, let
 02 clicked
 ```
 
-By correctly blocking signals, we get the correct behavior of both buttons being triggered exactly once. Because both buttons unblock themself at the end of the signal handler, after the two buttons are done everything returns to the way it was before the first signal emission.
+By correctly blocking signals, we get the correct behavior of both buttons being triggered exactly once. Because both buttons unblock themself at the end of the signal handler, after the two buttons are done, everything returns to the way it was before, meaning both buttons can be clicked once again.
 
-If we want to try out this behavior ourself, here is a modified `main.cpp`
+To try out this behavior ourself, here is a modified `main.cpp`
 
 ```cpp
 #include <mousetrap.hpp>
@@ -300,7 +365,7 @@ int main()
 
 ## Application Signals
 
-With our newfound knowledge about signals, we can recontextualize our `main.cpp`. We recongize that `app`, of type \link mousetrap::Application `Application` \endlink is a signal emitter. In `main` we connect to one of its signals, `activate`, which has the signature `(Application*, (Data_t)) -> void`, though we do not supply any `data` as an argument. 
+With our newfound knowledge about signals, we can recontextualize our `main.cpp`. We recognize that `app`, of type \link mousetrap::Application `Application` \endlink is a signal emitter. In `main` we connect to one of its signals, `activate`, which has the signature `(Application*, (Data_t)) -> void`, though we do not supply any `data` as an argument. 
 
 Application has two signals, `activate` and `shutdown`. The former is invoked when initialization should happen, while `shutdown` is emitted when the application is ready to shut-off, usually once all windows associated with an application are closed.
 
