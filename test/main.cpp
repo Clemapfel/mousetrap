@@ -23,15 +23,26 @@ int main()
         auto file_submenu = MenuModel();
 
         auto file_recent_submenu = MenuModel();
-        file_recent_submenu.add_action("Project 01", action);
-        file_recent_submenu.add_action("Project 02", action);
-        file_recent_submenu.add_action("Other...", action);
 
-        file_submenu.add_action("Open", action);
-        file_submenu.add_submenu("Recent...", file_recent_submenu);
-        file_submenu.add_action("Save", action);
-        file_submenu.add_action("Save As", action);
-        file_submenu.add_action("Exit", action);
+        auto file_recent_projects_section = MenuModel();
+        file_recent_projects_section.add_action("Project 01", action);
+        file_recent_projects_section.add_action("Project 02", action);
+        file_recent_projects_section.add_action("Other...", action);
+        file_recent_submenu.add_section("Projects", file_recent_projects_section);
+
+        auto open_section = MenuModel();
+        open_section.add_action("Open", action);
+        open_section.add_submenu("Recent...", file_recent_submenu);
+        file_submenu.add_section("Open", open_section);
+
+        auto save_section = MenuModel();
+        save_section.add_action("Save", action);
+        save_section.add_action("Save As", action);
+        file_submenu.add_section("Save", save_section);
+
+        auto exit_section = MenuModel();
+        exit_section.add_action("Exit", action);
+        file_submenu.add_section("Quit", exit_section);
 
         auto help_submenu = MenuModel();
 

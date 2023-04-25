@@ -134,7 +134,6 @@ We have one other widget to display menu models, this one is visible most of tim
 
 \image html menus_menubar.html
 
-
 We see that it is a horizontal list of items. This list is visible at all times, when the user clicks on of the items, a nested menu opens revealing additional options. Menus can again be nested multiple times.
 
 Unlike `PopoverMenu`, `MenuBar` requires its `MenuModel` to have a certain structure: **all toplevel items have to be submenus**. What does this mean? Let's work through the menu shown in the image above. We created it like so:
@@ -202,4 +201,15 @@ Another difference between `MenuBar` and `PopoverMenu` is the way the menus are 
 
 Menus are extremely powerful, and, because of this, they are complex to understand. With practice and good software design, we can create deep, complex menus that are still easy to understand and use. We as developers should make this our first priority. By properly using the action interface and good UI design, a menu by itself can be just as powerful as an entire application.
 
+### Style Endnote
+
+Some may be curious as to why some menu items have `...` added to their labels, while some do not. This is not a universal standard, but it is common for `...` to indicate that clicking this item will open another window or dialog. If an item simple does an action (such as `Save` or `Exit`), `...` is ommitted. If the item opens a window or, in the above case of `Recent...`, opens another submenu, `...` is appended to indicate this.
+
+Regarding menu depth, best practice is to never go deeper than 3 levels. The above example with `File > Recent... > Project 01` shows a good situation in when a 3-level-deep menu may be necessary. In most cases, it is much better to add a new section instead of another submenu. 
+
+Lastly, some believe that every menu item should be inside a section. For example, if we were to follow this philosophy, we would redesign the above `MenuBar` example like so:
+
+\image html menus_menubar_with_sections.html
+
+This adds considerable complexity to the code (adding 4 models, on for each sectino, making our total 8). In return, items are grouped logically and each item gets a "heading", which helps make long menus easier to parse for the end-user. Every developer has to decide for themself whether this is a good choice or not, what all should agree on, however, if something makes the developers job harder but makes the user experience better, it is almost always worth the effort.
 
