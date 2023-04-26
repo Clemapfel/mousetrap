@@ -13,6 +13,7 @@
 namespace mousetrap
 {
     /// @brief event controller that triggers when focus is moved to the widget
+    /// \signals
     /// \signal_focus_gained{FocusEventController}
     /// \signal_focus_lost{FocusEventController}
     class FocusEventController : public EventController,
