@@ -7,6 +7,7 @@
 
 #include <mousetrap/gtk_common.hpp>
 
+#include <mousetrap/geometry.hpp>
 #include <mousetrap/vector.hpp>
 #include <mousetrap/signal_emitter.hpp>
 #include <mousetrap/signal_component.hpp>
@@ -283,7 +284,11 @@ namespace mousetrap {
 
             /// @brief get preferred size allocation
             /// @return anonymous struct res where res.minimum size is the minimum possible size, res.natural_size is the preferred size of widget
-            preferred_size get_preferred_size();
+            preferred_size get_preferred_size() const;
+
+            /// @brief get allocated size as rectangle
+            /// @return rectangle
+            Rectangle get_allocation() const;
 
             /// @brief remove the widget from the container it is in, if any
             void unparent();

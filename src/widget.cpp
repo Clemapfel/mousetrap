@@ -365,13 +365,27 @@ namespace mousetrap
         return gtk_widget_get_realized(operator GtkWidget*());
     }
 
-    Widget::preferred_size Widget::get_preferred_size()
+    Widget::preferred_size Widget::get_preferred_size() const
     {
         auto min = gtk_requisition_new();
         auto nat = gtk_requisition_new();
         gtk_widget_get_preferred_size(operator GtkWidget*(), min, nat);
 
         return Widget::preferred_size{{min->width, min->height}, {nat->width, nat->height}};
+    }
+
+    Rectangle Widget::get_allocation() const
+    {
+        GtkAllocation* allocation;
+        gtk_widget_get_allocation(operator GtkWidget*(), allocation);
+
+        auto out = Rectangle{
+            {allocation->x, allocation->y},
+            {allocation->width, allocation->height}
+        };
+
+        g_object_unref(allocation);
+        return out;
     }
 
     void Widget::unparent()
