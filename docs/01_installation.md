@@ -1,22 +1,20 @@
 # Chapter 1: Installation
 
 In this chapter, we will learn
-+ how to install mousetrap and it's dependencies
-+ how to create our first GUI application
-+ how to uninstall mousetrap if we decide to do so
-
-If there is an issue with any step in this chapter, consider continuing onto the [troubleshooting section](#troubleshooting).
++ How to install mousetrap and it's dependencies
++ How to create our first GUI application
++ How to uninstall mousetrap, if we decide to do so
 
 ### Dependencies
 
 To install mousetrap from source, the following dependencies are needed:
 
 + `CMake`: To build and install mousetrap
-+ `GTK4`: Engine for all GUI elements
++ `GTK4`: Engine for all GUI elements and File I/O
 + `OpenGL`: Hardware accelerated rendering
 + `GLM`: CPU-side OpenGL-related Math
 + `GLEW`: Loading of OpenGL extensions
-+ `SFML`: Audio-playback and Joystick Interface
++ `SFML`: Audio-playback, joystick interface
 
 We'll also need a C++17-capable compiler, for example those provided by GCC or clang.
 
@@ -26,33 +24,35 @@ Installing these dependencies is OS-specific, the following section will provide
 
 ```shell
 sudo apt-get install aptitude   
-sudo aptitude install cmake            # install CMake
-sudo aptitude install libgtk-4-dev     # install GTK4
-sudo aptitude install libgl1-mesa-dev  # install OpenGL
-sudo aptitude install libglm-dev       # install GLM
-sudo aptitude install libglew-dev      # install GLEW
-sudo aptitude install libsfml-dev      # install SFML
+sudo aptitude install cmake \  # install CMake
+ libgtk-4-dev \      # install GTK4
+ libgl1-mesa-dev  \  # install OpenGL
+ libglm-dev  \       # install GLM
+ libglew-dev \       # install GLEW
+ libsfml-dev         # install SFML
 ```
 
 #### Fedora
 
-```shell
-sudo dnf install cmake          # install CMake
-sudo dnf install gtk4-devel     # install GTK4
-sudo dnf install glm-devel      # install GLM
-sudo dnf install glew-devel     # install GLEW
-sudo dnf install SFML-devel     # install SFML
+```shell   
+sudo dnf install cmake \  # install CMake
+  gtk4-devel \            # install GTK4
+  glm-devel  \            # install GLM
+  glew-devel \            # install GLEW
+  SFML-devel              # install SFML
 ```
 
 Where `OpenGL` is usually installed automatically on Fedora.
 
 #### macOS
 
-\not_yet_complete
+\not_yet_complete. Consider using [Homebrew](https://brew.sh/) to install the listed dependencies
 
 #### Windows
 
 \not_yet_complete
+
+---
 
 ### Compilation
 
@@ -80,6 +80,8 @@ Where `sudo` is necessary to install to the default library and include director
 
 \not_yet_complete
 
+---
+
 ## Hello World
 
 Now that everything we need is installed, we can continue onto creating our first project:
@@ -98,7 +100,7 @@ We create a file `CMakeLists.txt` with the following contents:
 ```cmake
 cmake_minimum_required(VERSION 3.12)
 
-set(TARGET_NAME example_target)
+set(TARGET_NAME example_target) 
 set(PROJECT_NAME example_project)
 
 # declare project
@@ -128,7 +130,9 @@ target_compile_features(${TARGET_NAME} PUBLIC
 
 Where `TARGET_NAME` and `PROJECT_NAME` can be freely modified.
 
-`find_package(mousetrap REQUIRED)` loads mousetrap and its associated libraries. This command sets two variables: `MOUSETRAP_LIBRARIES` and `MOUSETRAP_INLUDE_DIRECTORIES`. We need to link against all the libraries contained in the former, and we need to declare all directories contained in the latter as include directories for our custom target, an executable in this case.
+`find_package(mousetrap REQUIRED)` loads mousetrap and its associated libraries. This command sets two variables: `MOUSETRAP_LIBRARIES` and `MOUSETRAP_INLUDE_DIRECTORIES`.
+
+We need to link against all the libraries contained in the former, and we need to declare all directories contained in the latter as include directories for our custom target, an executable in this case. Both of these are accomplished above with `target_link_libraries` and `target_include_directories` respectively, where `${}` accesses the value of the variable.
 
 Lastly, we set `target_compile_features` for our target to C++17, which automatically links against the C++ standard library.
 

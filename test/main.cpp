@@ -4,6 +4,32 @@
 #include <mousetrap.hpp>
 using namespace mousetrap;
 
+class Child : public Widget
+{
+    private:
+        Separator body;
+        Label label;
+        Overlay overlay;
+        Frame frame;
+        Box box;
+
+    public:
+        Child(const std::string& name)
+            : label(name)
+        {
+            overlay.set_child(body);
+            overlay.add_overlay(label);
+            frame.set_child(overlay);
+            frame.set_expand(true);
+            box.push_back(frame);
+        }
+
+        operator NativeWidget() const override
+        {
+            return box.operator NativeWidget();
+        }
+};
+
 int main()
 {
     auto app = Application("example.menus.app");
@@ -18,41 +44,27 @@ int main()
             std::cout << "called" << std::endl;
         });
 
-        auto model = MenuModel();
+        auto list_view = ListView(Orientation::VERTICAL);
+        list_view.push_back(Child("Child 01"));
+        list_view.push_back(Child("Child 02"));
+        list_view.push_back(Child("Child 03"));
 
-        auto file_submenu = MenuModel();
+        static auto button = Button();
+        button.connect_signal_clicked([](Button*){
+            std::cout << "called" << std::endl;
+        });
 
-        auto file_recent_submenu = MenuModel();
+        auto click_button_action = Action("action.click_button", app);
+        click_button_action.set_function([](Action*){
+            gtk_widget_activate(button);
+        });
+        click_button_action.add_shortcut("<Control>space");
 
-        auto file_recent_projects_section = MenuModel();
-        file_recent_projects_section.add_action("Project 01", action);
-        file_recent_projects_section.add_action("Project 02", action);
-        file_recent_projects_section.add_action("Other...", action);
-        file_recent_submenu.add_section("Projects", file_recent_projects_section);
+        auto shortcut_controller = ShortcutController();
+        shortcut_controller.add_action(click_button_action);
+        window.add_controller(shortcut_controller);
 
-        auto open_section = MenuModel();
-        open_section.add_action("Open", action);
-        open_section.add_submenu("Recent...", file_recent_submenu);
-        file_submenu.add_section("Open", open_section);
-
-        auto save_section = MenuModel();
-        save_section.add_action("Save", action);
-        save_section.add_action("Save As", action);
-        file_submenu.add_section("Save", save_section);
-
-        auto exit_section = MenuModel();
-        exit_section.add_action("Exit", action);
-        file_submenu.add_section("Quit", exit_section);
-
-        auto help_submenu = MenuModel();
-
-        model.add_submenu("File", file_submenu);
-        model.add_submenu("Help", help_submenu);
-
-        auto menubar = MenuBar(model);
-        menubar.set_margin_end(100);
-
-        window.set_child(menubar);
+        window.set_child(button);
         window.present();
     });
 

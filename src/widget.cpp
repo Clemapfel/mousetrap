@@ -58,6 +58,11 @@ namespace mousetrap
         return G_OBJECT(operator GtkWidget*());
     }
 
+    void Widget::activate()
+    {
+        gtk_widget_activate(operator GtkWidget*());
+    }
+
     Vector2f Widget::get_size_request()
     {
         int w, h;

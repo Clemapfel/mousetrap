@@ -97,6 +97,9 @@ namespace mousetrap {
             /// @brief expose as GObject \internal
             operator GObject*() const override;
 
+            /// @brief activate the widget, if it is activatable. This will also trigger any associated animations or signals
+            void activate();
+
             /// @brief get minimum allocated size
             /// @return width, height
             Vector2f get_size_request();
