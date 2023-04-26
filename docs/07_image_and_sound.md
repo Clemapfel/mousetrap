@@ -3,7 +3,7 @@
 In this chapter we will learn:
 + How to represent colors in mousetrap
 + How to load, store, modify and display 2d images
-+ How to load, store and play audio, both from memory and from the disk
++ How to load, store, and play audio, both from memory and from the disk
 
 ## Introduction
 

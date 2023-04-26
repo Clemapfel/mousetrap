@@ -2,8 +2,8 @@
 
 In this chapter, we will learn:
 + How to create complex, nested Menus
-+ All types of menu items provided by mousetrap
 + How to display menus using `PopoverMenu` and `MenuBar`
++ Best-practice style-guides for menus
 
 We've already seen basic use of menus in the [chapter on actions](03_actions.md#menus). We recall that a menu has two components, a **model** of type `mousetrap::MenuModel`, and a **view**, which is a widget displaying the menu. 
 
@@ -161,9 +161,9 @@ model.add_submenu("Help", help_submenu);
 auto menubar = MenuBar(model);
 ```
 
-Where, in a real application, each item will have a different action, of course.
+Where, in a real application, each item will have a different action.
 
-To make the structure clearer, we can write the structure like we would write a folder structure:
+To make the nesting easier to understand clearer, we can write the structure like we would write a folder structure:
 
 ```
 model \
@@ -188,7 +188,7 @@ Next we have the model called `file_submenu`, which has the title `File`. It con
 
 On the same level as `File`, we have a second menu `Help`.
 
-The **toplevel** menu is `model`. It is used as the argument for the constructor of `MenuBar`. We see that all direct children of `model` are themself subemnus (they have `\` in the above version and were added using `add_submenu`). No directo child of `model` is an action- or widget item. This is what is required for `MenuBar`. All toplevel items have to be submenus (not sections). Apart from this requirement, the rest of the menu can have any arbitrary structure.
+The **toplevel** menu is `model`. It is used as the argument for the constructor of `MenuBar`. We see that all direct children of `model` are themself submenus (they were added using `add_submenu`). No direct child of `model` is an action- or widget item. This is what is required for `MenuBar`. All toplevel items have to be submenus (not sections). Apart from this requirement, the rest of the menu can have any arbitrary structure.
 
 In summary:
 
@@ -203,13 +203,19 @@ Menus are extremely powerful, and, because of this, they are complex to understa
 
 ### Style Endnote
 
-Some may be curious as to why some menu items have `...` added to their labels, while some do not. This is not a universal standard, but it is common for `...` to indicate that clicking this item will open another window or dialog. If an item simple does an action (such as `Save` or `Exit`), `...` is ommitted. If the item opens a window or, in the above case of `Recent...`, opens another submenu, `...` is appended to indicate this.
+#### Ellipses
+
+Some may be curious as to why some menu items have `...` added to their labels, while some do not. This is not a universal standard, but it is common for `...` to indicate that clicking this item will open another window or dialog. If an item simply does an action (such as `Save` or `Exit`), `...` is ommitted. If the item opens a window, widget, or, in the above case of `Recent...`, opens another submenu, `...` is appended to indicate this.
+
+#### Maximum Menu Depth
 
 Regarding menu depth, best practice is to never go deeper than 3 levels. The above example with `File > Recent... > Project 01` shows a good situation in when a 3-level-deep menu may be necessary. In most cases, it is much better to add a new section instead of another submenu. 
+
+#### Section Grouping
 
 Lastly, some believe that every menu item should be inside a section. For example, if we were to follow this philosophy, we would redesign the above `MenuBar` example like so:
 
 \image html menus_menubar_with_sections.html
 
-This adds considerable complexity to the code (adding 4 models, on for each sectino, making our total 8). In return, items are grouped logically and each item gets a "heading", which helps make long menus easier to parse for the end-user. Every developer has to decide for themself whether this is a good choice or not, what all should agree on, however, if something makes the developers job harder but makes the user experience better, it is almost always worth the effort.
+This adds considerable complexity to the code (adding 4 models, one for each section, making our total 8). In return, items are grouped logically and each item gets a "heading", which helps make long menus easier to parse for the end-user. Every developer has to decide for themself whether this is a good choice or not, what all should agree on, however, is that if something makes the developers job harder but makes the users experience better, it is almost always worth the effort.
 
