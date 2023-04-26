@@ -49,6 +49,7 @@
 #include <mousetrap/level_bar.hpp>
 #include <mousetrap/list_view.hpp>
 #include <mousetrap/log.hpp>
+#include <mousetrap/long_press_event_controller.hpp>
 #include <mousetrap/menu_model.hpp>
 #include <mousetrap/motion_event_controller.hpp>
 #include <mousetrap/msaa_render_texture.hpp>
