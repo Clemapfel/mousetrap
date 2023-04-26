@@ -1,5 +1,11 @@
 # Chapter 4: Widgets
 
+In this chapter, we will learn:
++ What a widget is
++ Properties that all widgets share
++ All types of widgets supplied by mousetrap
++ How to create compound widgets
+
 ## mousetrap::Widget
 #### Signals
 
@@ -244,6 +250,8 @@ Between any two children is an optional space, which we can specify using `Box::
 
 ### ListView
 
+`ListView` is one of the more commonly used widgets. At first, it may seem very similar to `Box`. `ListView` can either be horizontal or vertical, also arranging its children in a line. Much like `Box`, children can be add to the front, end, or anywhere inside the container. Unlike `Box`, `ListView::push_front`, `ListView::insert` and `ListView::push_back` have a return value, which returns an **iterator**. We can supply this iterator as an additional argument to functions inserting widgets, which will create a **nested list**. It's best to see an example, where we again used our `ExampleChild` widget:
+
 #### Signals
 
 | id         | signature                                                       | emitted when...                                                              |
@@ -267,6 +275,8 @@ Between any two children is an optional space, which we can specify using `Box::
 #### StackSwitcher
 
 #### StackSidebar
+
+---
 
 ### Notebook
 
