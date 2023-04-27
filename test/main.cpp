@@ -2,6 +2,7 @@
 // Created by clem on 4/12/23.
 //
 #include <mousetrap.hpp>
+
 using namespace mousetrap;
 
 class Child : public Widget
@@ -59,6 +60,35 @@ int main()
             gtk_widget_activate(button);
         });
         click_button_action.add_shortcut("<Control>space");
+
+        static auto long_press = LongPressEventController();
+        long_press.connect_signal_pressed([](LongPressEventController* controller, double x, double y){
+             if (controller->get_current_button() == ButtonID::BUTTON_01)
+                 std::cout << "long press registered at " << x << " " << y << std::endl;
+        });
+        window.add_controller(long_press);
+
+        static Vector2f distance_scrolled = {0, 0};
+
+        auto scroll = ScrollEventController();
+        scroll.connect_signal_scroll([](ScrollEventController*, double delta_x, double delta_y)-> bool {
+            distance_scrolled.x += delta_x;
+            distance_scrolled.y += delta_y;
+            return false;
+        });
+        window.add_controller(scroll);
+
+        auto pan = PanEventController(Orientation::HORIZONTAL);
+        pan.connect_signal_pan([](PanEventController*, PanDirection direction, double offset){
+            if (direction == PanDirection::LEFT)
+            {
+                // move widget left by offset
+            }
+            else if (direction == PanDirection::RIGHT)
+            {
+                // move widget right by offset
+            }
+        });
 
         auto shortcut_controller = ShortcutController();
         shortcut_controller.add_action(click_button_action);

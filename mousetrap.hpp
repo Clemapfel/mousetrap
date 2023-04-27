@@ -1,9 +1,3 @@
-//
-// Copyright (c) Clemens Cords (mail@clemens-cords.com), created 3/31/23
-//
-
-#pragma once
-
 #include <mousetrap/action.hpp>
 #include <mousetrap/adjustment.hpp>
 #include <mousetrap/alignment.hpp>
@@ -18,6 +12,7 @@
 #include <mousetrap/click_event_controller.hpp>
 #include <mousetrap/clipboard.hpp>
 #include <mousetrap/color.hpp>
+#include <mousetrap/colors.hpp>
 #include <mousetrap/column_view.hpp>
 #include <mousetrap/cursor_type.hpp>
 #include <mousetrap/drag_event_controller.hpp>
@@ -39,6 +34,7 @@
 #include <mousetrap/grid.hpp>
 #include <mousetrap/grid_view.hpp>
 #include <mousetrap/gtk_common.hpp>
+#include <mousetrap/header_bar.hpp>
 #include <mousetrap/icon.hpp>
 #include <mousetrap/image.hpp>
 #include <mousetrap/image_display.hpp>
@@ -51,6 +47,7 @@
 #include <mousetrap/log.hpp>
 #include <mousetrap/long_press_event_controller.hpp>
 #include <mousetrap/menu_model.hpp>
+#include <mousetrap/menubar.hpp>
 #include <mousetrap/motion_event_controller.hpp>
 #include <mousetrap/msaa_render_texture.hpp>
 #include <mousetrap/music.hpp>
@@ -58,11 +55,11 @@
 #include <mousetrap/orientable.hpp>
 #include <mousetrap/orientation.hpp>
 #include <mousetrap/overlay.hpp>
+#include <mousetrap/pan_event_controller.hpp>
 #include <mousetrap/paned.hpp>
 #include <mousetrap/pinch_zoom_event_controller.hpp>
 #include <mousetrap/popover.hpp>
 #include <mousetrap/popover_menu_button.hpp>
-#include <mousetrap/menubar.hpp>
 #include <mousetrap/progress_bar.hpp>
 #include <mousetrap/relative_position.hpp>
 #include <mousetrap/render_area.hpp>
@@ -80,6 +77,7 @@
 #include <mousetrap/separator.hpp>
 #include <mousetrap/shader.hpp>
 #include <mousetrap/shape.hpp>
+#include <mousetrap/shortcut_controller.hpp>
 #include <mousetrap/signal_component.hpp>
 #include <mousetrap/signal_emitter.hpp>
 #include <mousetrap/sound.hpp>
@@ -87,6 +85,8 @@
 #include <mousetrap/spin_button.hpp>
 #include <mousetrap/spinner.hpp>
 #include <mousetrap/stack.hpp>
+#include <mousetrap/stylus_event_controller.hpp>
+#include <mousetrap/swipe_event_controller.hpp>
 #include <mousetrap/switch.hpp>
 #include <mousetrap/text_view.hpp>
 #include <mousetrap/texture.hpp>
@@ -98,5 +98,3 @@
 #include <mousetrap/widget.hpp>
 #include <mousetrap/window.hpp>
 #include <mousetrap/wrap_mode.hpp>
-#include <mousetrap/shortcut_controller.hpp>
-#include <mousetrap/header_bar.hpp>
