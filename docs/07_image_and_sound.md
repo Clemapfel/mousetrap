@@ -1,22 +1,19 @@
 # Chapter 6: Image & Sound
 
 In this chapter we will learn:
-+ How to represent colors in mousetrap
-+ How to load, store, modify and display 2d images
-+ How to load, store, and play audio, both from memory and from the disk
++ How to use colors in mousetrap
++ How to load, store, modify, and display 2d images
++ How to load, store, and play audio
 
 ## Introduction
 
-Mousetrap was originally part of a never-released app for frame-by-frame animation. With the seizing of development for 
-that app, I decided to plug out its GUI engine, polish it and its documentation, and make it 
-available publicly as mousetrap.
+Mousetrap was originally part of a never-released app for frame-by-frame animation. Due to this history, mousetrap features a robust and fully featured image-processing interface. Before we can talk about images, we need to talk about individual colors.
 
-I note this back-story here because a lot of the mousetrap library was specifically designed for this purpose, mousetrap has robust image-processing features . Images can effortly be exchanged with both GTK4 and OpenGL component, making editing and displaying
-images easy and - thanks to hardware accelleration - fast. 
+## Colors
 
-Mousetraps origin makes it suited for apps about illustration, animation, and scientific image processing.
+Two color representations are available in mousetrap, `RGBA` and `HSVA`, re
 
-## Image
+## 
 
 Images in RAM are managed by the `mousetrap::Image` class. This class is tied to the widget architecture and can only be used in the context of an application.
 
