@@ -77,11 +77,9 @@ To modify a pixel, we use `Image::set_pixel`, which takes the pixels coordinate.
 
 Similarly, we can access any pixel using `Image::get_pixel`. If the coordinates are out of range, a soft warning will be printed and `RGBA(0, 0, 0, 0)` will be returned.
 
-### Whole-Image Transforms
+### Scaling
 
 To change an images size, we have two options: **scaling**  the image and **cropping**. These operations work identical to those in common image-manipulation programs such as Gimp or Photoshop.
-
-##### Scaling
 
 To scale an image, we call `Image::as_scaled`. This functions returns a new image, it does not modify the original image. For example, scaling our 400x300 image to 800x600:
 
@@ -92,18 +90,22 @@ auto scaled = image.as_scaled(800, 600);
 
 Only `scaled` will be of size `800x600`, `image` has not changed.
 
-When scaling, we have a choice of scaling algorithm, which chooses what information to fill pixels with through **interpolation**. Mousetrap offers 4 interpolation types, as the enum `InterpolationType`:
+#### Interpolation Type
 
-+ `InterpolationType::NEAREST`: nearest neighbor, no interpolation
-+ `InterpolationType::BILINEAR`: linear scaling
-+ `InterpolationType::TILES`: nearest neighbor for enlargment, linear for shrinking
-+ `InterpolationType::HYPERBOLIC`: hyperbolic interpolation
+When scaling, we have a choice of scaling algorithm, which chooses what information to fill pixels with through **interpolation**. Mousetrap offers 4 interpolation types supplied by the \link mousetrap::Image::InterpolationType enum `InterpolationType`\endlink where, below, the effect on scaling an image with the different interpolation types is shown. In each figure, the image in the middle labled "1x" is the original image, which has a resolution of `10x10`
 
-\todo example images
+\image html interpolation_nearest.png "InterpolationType::NEAREST"
+<br>
+\image html interpolation_bilinear.png "InterpolationType::BILINEAR"
+<br>
+\image html interpolation_hyperbolic.png "InterpolationType::HYPERBOLIC"
+<br>
+\image html interpolation_tiles.png "InterpolationType::TILES"
+<br>
 
-By default, the scaling mode is `TILES`.
+The main difference between `BILINEAR` and `HYPERBOLIC` is that of performance, `HYPERBOLIC` offers superior smoothing but does so at about 1.5 times the speed when compared to `BILINEAR` interpolation, meaning `HYPERBOLIC` is about 50% slower. If no interpolation type is specified when calling `as_scaled`, `TILES` will be chosen by default.
 
-##### Cropping
+### Cropping
 
 We crop an image using `Image::as_cropped`. Similar to `as_scaled`, this functions returns a newly allocated image, it does not modify the original image.
 
@@ -111,7 +113,7 @@ We crop an image using `Image::as_cropped`. Similar to `as_scaled`, this functio
 
 \todo example image
 
-##### Flipping
+### Flipping
 
 Lastly we have `Image::as_flipped` which flips the image along the x- and/or y-axis. Just like before, `as_flipped` returns a newly allocated image and does not modify the original. It takes two arguments, booleans indicating along which axis the image should be flipped. 
 

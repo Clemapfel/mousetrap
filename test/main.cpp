@@ -47,7 +47,9 @@ void add_test(Widget* test, const std::string& title)
 {
     assert(state != nullptr);
     state->tests.push_back(test);
-    auto _ = state->stack.add_child(*test, title);
+    auto box = Box();
+    box.push_back(*test);
+    auto _ = state->stack.add_child(box, title);
 }
 
 /// @brief main
