@@ -314,9 +314,86 @@ namespace mousetrap
         );
 
         on_error:
-
             log::warning("In html_code_to_rgba: Unable to parse code \"" + text + "\"", MOUSETRAP_DOMAIN);
             return RGBA(0, 0, 0, 1);
+    }
+
+    bool is_html_code_valid(const std::string& text, RGBA& out)
+    {
+        static auto hex_char_to_int = [](char c) -> uint8_t
+        {
+            if (c == '0')
+                return 0;
+
+            if (c == '1')
+                return 1;
+
+            if (c == '2')
+                return 2;
+
+            if (c == '3')
+                return 3;
+
+            if (c == '4')
+                return 4;
+
+            if (c == '5')
+                return 5;
+
+            if (c == '6')
+                return 6;
+
+            if (c == '7')
+                return 7;
+
+            if (c == '8')
+                return 8;
+
+            if (c == '9')
+                return 9;
+
+            if (c == 'A')
+                return 10;
+
+            if (c == 'B')
+                return 11;
+
+            if (c == 'C')
+                return 12;
+
+            if (c == 'D')
+                return 13;
+
+            if (c == 'E')
+                return 14;
+
+            if (c == 'F')
+                return 15;
+
+            return -1; // on error
+        };
+
+        static auto hex_component_to_int = [](int left, int right) -> uint8_t
+        {
+            return left * 16 + right;
+        };
+
+        std::vector<int> as_hex;
+        as_hex.reserve(6);
+        for (size_t i = 1; i < text.size(); ++i)
+        {
+            as_hex.push_back(hex_char_to_int(text.at(i)));
+            if (as_hex.back() == -1)
+                goto on_error;
+        }
+
+        out.r = hex_component_to_int(as_hex.at(0), as_hex.at(1)) / 255.f;
+        out.g = hex_component_to_int(as_hex.at(2), as_hex.at(3)) / 255.f;
+        out.b = hex_component_to_int(as_hex.at(4), as_hex.at(5)) / 255.f;
+        return true
+
+        on_error:
+            return false;
     }
 
     std::string rgba_to_html_code(RGBA in, bool show_alpha = true)

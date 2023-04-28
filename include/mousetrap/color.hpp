@@ -135,6 +135,12 @@ namespace mousetrap
     /// @return color
     RGBA html_code_to_rgba(const std::string& code);
 
+    /// @brief check whether html code can be parsed
+    /// @param code
+    /// @param out [out] pointer to resulting color, assigned `nullptr` if code is invalid
+    /// @return true if code is valid, false otherwise
+    bool is_valid_html_code(const std::string& code, RGBA& out);
+
     /// @brief construct HTML code of the form #RRGGBB from a color, all components in hexadecimal
     /// @param color in rbga
     /// @return code

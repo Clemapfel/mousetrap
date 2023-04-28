@@ -13,7 +13,8 @@ namespace mousetrap
 {
     Image::~Image()
     {
-        g_object_unref(_data);
+        if (G_IS_OBJECT(_data))
+            g_object_unref(_data);
     }
 
     Image::Image(GdkPixbuf* pixbuf)
@@ -32,8 +33,11 @@ namespace mousetrap
 
     Image::Image(Image&& other) noexcept
     {
-        g_object_unref(_data);
-        g_object_ref(other._data);
+        if (G_IS_OBJECT(_data))
+            g_object_unref(_data);
+
+        if (G_IS_OBJECT(other._data))
+            g_object_ref(other._data);
 
         _data = other._data;
         _size = other._size;
@@ -69,18 +73,25 @@ namespace mousetrap
 
     void Image::create(size_t width, size_t height, RGBA default_color)
     {
+        if (G_IS_OBJECT(_data))
+            g_object_unref(_data);
+
         _data = gdk_pixbuf_new(GDK_COLORSPACE_RGB, GL_TRUE, 8, width, height);
         _size = {width, height};
 
-        for (size_t x = 0; x < width; ++x)
-            for (size_t y = 0; y < height; ++y)
-                set_pixel(x, y, default_color);
+        if (default_color.r != 0 or default_color.g != 0 or default_color.b != 0 or default_color.a != 0)
+            for (size_t x = 0; x < width; ++x)
+                for (size_t y = 0; y < height; ++y)
+                    set_pixel(x, y, default_color);
 
         g_object_ref(_data);
     }
 
     bool Image::create_from_file(const std::string& path)
     {
+        if (G_IS_OBJECT(_data))
+            g_object_unref(_data);
+
         GError* error_maybe = nullptr;
         _data = gdk_pixbuf_new_from_file(path.c_str(), &error_maybe);
 

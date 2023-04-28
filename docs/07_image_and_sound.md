@@ -11,19 +11,61 @@ In this chapter we will learn:
 
 ## Colors
 
-\todo
+Mousetrap offers two color representations, `RGBA` and `HSVA`, which have the following components:
+
+| representation | component   | meaning         |
+|----------------|-------------|-----------------|
+| `RGBA`         | `r`         | red             |
+| `RGBA`         | `g`         | green           |
+| `RGBA`         | `b`         | blue            |
+| `RGBA`         | `a`         | opacity (alpha) |
+| ----------     | ----------- | --------        |
+| `HSVA`         | `h`         | hue             |
+| `HSVA`         | `s`         | saturation      |
+| `HSVA`         | `v`         | value (chroma)  |
+| `HSVA`         | `a`         | opacity (alpha) |
+
+For more information on these color systems, see [here](https://en.wikipedia.org/wiki/RGBA_color_model) and [here](https://en.wikipedia.org/wiki/HSL_and_HSV).
+
+For both representations, all components are 32-bit floats in `[0, 1]`. The **alpha** component contains the **opacity**, which the invers of transparency. An alpha value of 1 means the color is fully opaque, a value of 0 means it is fully transparent, making it invisible.
+
+### Converting Colors
+
+We can freely convert between `RGBA` and `HSVA`, to do this we use the two purpose-built functions:
+
+```cpp
+auto rgba = RGBA(// ...
+auto as_hsva = rgba_to_hsva(rgba);
+auto as_rgba = hsva_to_rgba(hsva);
+assert(rgba == as_rgba) // true
+```
+
+Lastly, mousetrap has a function of converting a `RGBA` to its HTML-color-code, which is a string of the form `#RRGGBB`, where `RR` is the red component in hexadecimal, `GG` the green and `BB` the blue component. Using `rgba_to_html_code` and `html_code_to_rgba`, we can freely convert them. This is useful if we want to let the user pick a color by adding the html-code to an entry like so:
+
+```cpp
+auto html_code_entry = Entry();
+html_code_entry.connect_signal_activate([](Entry* entry){
+    auto rgba_maybe = RGBA(0, 0, 0, 0);
+    if (is_valid_html_code(entry->get_tet(), rgba_maybe))
+        std::cout << "HTML Color: " << rgba_maybe.r << " " << rgba_maybe.g << " " << rgba_maybe.g << std::endl;
+})
+```
+
+if parsing was succesfull, the second argument of `is_valid_html_code` will be assigned with the parsed color, an `RGBA`.
+
+---
 
 ## Images
 
-In general, images are a 2-dimensional matrix of colors. Each element in the matrix is called a **pixel**. An image of size 400x300 will have a 400 * 300 = 120000 pixes. Each pixel is a color in RGBA format, meaning it has 4 components, as state above.
+Now that we know how to handle colors, we continue onto images. In general, **images are a 2-dimensional matrix of colors**. Each element in the matrix is called a **pixel**. An image of size 400x300 will have a 400 * 300 = 120000 pixes. Each pixel is a color in `RGBA` format, meaning it has the four components `r`, `g`, `b` and  `a`, as stated above.
 
-Images are represented by the  `mousetrap::Image` class. This class is not a widget or signal emitter, it is simply a way to manage memory in the form of a pixel matrix in RAM. We need the help of other classes if we want to show the image on screen.
+Images are represented by the `mousetrap::Image` class. This class is not a widget or signal emitter, it is simply a way to manage memory (in the form of a pixel matrix) in RAM. We need the help of other classes, if we want to show the image on screen.
 
 ### Creating an Image
 
 #### Loading an Image from Disk
 
-Most commonly, we will want load an image into RAM from an already existing file. This can be achieved with `Image::create_from_file`, which takes the path to an image file as a string:
+Most commonly, we will want load an image from an already existing file. This can be achieved with `Image::create_from_file`, which takes the path to an image file as a string:
 
 ```cpp
 auto image = Image();
@@ -54,9 +96,11 @@ The following image formats are supported:
 | XBM                     | `.xbm`  |
 | XPM                     | `.xpm`  |
 
+It is recommended to use `Image` only for raster-based file types. For vector-graphics based types like `.ico` and `.svg`, mousetrap offers another more specialized class, called `mousetrap::Icon`. We will learn how to use `Icon` [in the chapter after this one](08_os_interface.md). 
+
 #### Creating an Image from Scratch
 
-Sometimes we want to fill an image with our own custom image data. For this, we use `Image::create`, which allocates an image of a given size, and fills each pixel with the a color supplied as an optional argument. For example, the following allocates and image of size 400x300 and fills every color with red (`RGBA(1, 0, 0, 1)`):
+Sometimes we want to fill an image with our own custom image data. For this, we use `Image::create`, which allocates an image of a given size and fills each pixel with the a color supplied as an optional argument. For example, the following allocates and image of size 400x300 and fills every color with red (`RGBA(1, 0, 0, 1)`):
 
 ```cpp
 auto image = Image();
