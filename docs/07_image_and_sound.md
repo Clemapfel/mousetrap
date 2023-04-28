@@ -195,7 +195,7 @@ The following formats are support:
 
 `.mp3` is not supported, due to copyright issues.
 
-### Saving an Image to Disk
+#### Saving an Image to Disk
 
 Just like with `Image`, `SoundBuffer::save_to_file` will store our audio data on the disk, automatically choosing the correct file format based ont the extension supplied in the path that is the functions argument.
 
@@ -203,7 +203,7 @@ Just like with `Image`, `SoundBuffer::save_to_file` will store our audio data on
 
 \todo Manipulating sound is not yet implemented
 
-#### Sound Playback
+### Sound Playback
 
 The analog of `ImageDisplay`, which displays image data, is `Sound`, which "displays" audio data by playing it over the end-users speakers. 
 
@@ -223,7 +223,7 @@ sound.create_from_buffer(buffer);
 // play sound once
 sound.play();
 ```
-#### Playback Offset and Loops
+### Playback Offset and Loops
 
 We can manually change at what part of the buffer the sound starts playing by called `set_playback_position`, which takes a float in `[0, 1]`, where `0` is the first sample of the audio data, `1` the very last. 
 For example, if we have a sound that is 30s long, and we want to start the sound at 13s in, we can do the following:
@@ -245,11 +245,39 @@ Lastly we can choose to loop the `Sound` with `Sound::set_should_loop`. If set t
 
 ### Sound Playback from Disk
 
-For long tracks such a entire pieces of music, loading the entire file into RAM is impractical. For this purpose, mousetrap offers `Music`. This class takes a filename as a string, just like `SoundBuffer`, unlike it, however, it streams sound directly from the disk, making it suitable for large audio files.
+For long tracks such as multi-minute long pieces of music, `SoundBuffer` would take a large amount of space in RAM. To avoid this, mousetrap offers a the option to play music directly from the disk, minimizing RAM usage. This is possible through `mousetrap::Music`, which is very similar to  `Sound`.
 
-In addition to the volume/pitch/position controls that `Sound` offser, `Music` allows a user to select a "loop region". This is a stretch of time through which the music will loop, when `set_should_loop` is enabled. We set this region by calling `set_loop_region`, which takes two time stamps, the start and end of the region in seconds.
+To create a `Music`, we use `Music::create_from_file`. The number of supported file formats is identical as those available to `Sound`.
 
+Once we created the instance, we can start, pause, stop, just like with `Sound`, though music offers an additional feature: **loop region**. A loop region is a range of time that designate part of a music track such that, if `set_should_loop` is set to `true` and the current playback position reaches the end of the loop region, it jumps to the start of the loop region. By default, the loop region is the start of the piece to the end of the piece, making it behave just like `Sound`.
 
+We can set the loop region like so:
 
+```cpp
+auto music = Musci(// load music file with duration of 4mins
+music.set_should_loop(true);
+
+// designate 1:00 to 2:30 as loop region
+music.set_loop_region(seconds(60), second(120 + 30));
+music.play();
+```
+
+### Volume, Pitch Control, Panning
+
+For both `Music` and `Sound`, we can control the volume of playback using `set_volume` which takes a float that is the factor. A factor of 1 means no change in volume as compared to that of the file, `2` means twice as loud, `0.5` means half as loud.
+
+Similarly, we can control the pitch of playback using `set_pitch`, which, just like `set_volume`, takes a factor.
+
+Lastly, again for both `Sound` and `Music`, mousetrap offers the option of changing the **spacial position** in 3d space. This will pan the sound left-to-right, top-to-bottom, near-to-far for the x, y and z axis respectively. For example, if we wanted to move the sound such that it is left of the listener, we would do:
+
+```cpp
+music.set_space_position(
+ -1,  // x: left-right
+ +0,  // y: down-up
+ +0   // z: near-far
+);
+```
+
+---
 
 
