@@ -9,7 +9,7 @@ namespace mousetrap
     namespace detail
     {
         struct _DropDownItem;
-        _DropDownItem* drop_down_item_new(size_t id, const Widget* in, const Widget* label, DropDown* owner, std::function<void()> f);
+        _DropDownItem* drop_down_item_new(size_t id, const Widget* in, const Widget* label, DropDown* owner, std::function<void(DropDown*)> f);
     }
 
     template<typename Function_t, typename Data_t>
@@ -23,8 +23,8 @@ namespace mousetrap
         &list_widget,
         &label_widget,
         this,
-        [f = f_in, data = data_in](){
-            f(data);
+        [f = f_in, data = data_in](DropDown* instance){
+            f(instance, data);
         });
 
         g_list_store_append(_model, item);
@@ -42,8 +42,8 @@ namespace mousetrap
         &list_widget,
         &label_widget,
         this,
-        [f = f_in](){
-            f();
+        [f = f_in](DropDown* instance){
+            f(instance);
         });
 
         g_list_store_append(_model, item);
@@ -61,8 +61,8 @@ namespace mousetrap
         &list_widget,
         &label_widget,
         this,
-        [f = f_in, data = data_in](){
-            f(data);
+        [f = f_in, data = data_in](DropDown* instance){
+            f(instance, data);
         });
 
         g_list_store_prepend(_model, item);
@@ -80,8 +80,8 @@ namespace mousetrap
         &list_widget,
         &label_widget,
         this,
-        [f = f_in](){
-            f();
+        [f = f_in](DropDown* instance){
+            f(instance);
         });
 
         g_list_store_prepend(_model, item);
@@ -102,8 +102,8 @@ namespace mousetrap
         &list_widget,
         &label_widget,
         this,
-        [f = f_in, data = data_in](){
-            f(data);
+        [f = f_in, data = data_in](DropDown* instance){
+            f(instance, data);
         });
 
         g_list_store_insert(_model, i, item);
@@ -124,8 +124,8 @@ namespace mousetrap
         &list_widget,
         &label_widget,
         this,
-        [f = f_in](){
-            f();
+        [f = f_in](DropDown* instance){
+            f(instance);
         });
 
         g_list_store_insert(_model, i, item);

@@ -97,6 +97,7 @@ namespace mousetrap
     {
         gtk_image_clear(get_native());
         gtk_image_set_from_pixbuf(get_native(), image.operator GdkPixbuf*());
+        _internal->size = image.get_size();
     }
 
     void ImageDisplay::create_from_file(const std::string& path)
@@ -113,6 +114,10 @@ namespace mousetrap
         }
 
         gtk_image_set_from_pixbuf(get_native(), pixbuf);
+
+        _internal->size.x = gdk_pixbuf_get_width(pixbuf);
+        _internal->size.y = gdk_pixbuf_get_height(pixbuf);
+
         g_object_unref(pixbuf);
     }
 

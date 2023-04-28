@@ -12,7 +12,6 @@
 #include <mousetrap/click_event_controller.hpp>
 #include <mousetrap/clipboard.hpp>
 #include <mousetrap/color.hpp>
-#include <mousetrap/colors.hpp>
 #include <mousetrap/column_view.hpp>
 #include <mousetrap/cursor_type.hpp>
 #include <mousetrap/drag_event_controller.hpp>

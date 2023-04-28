@@ -76,30 +76,30 @@ namespace mousetrap
                 halignment_box.push_back(halignment_label);
                 halignment_box.push_back(halignment_dropdown);
 
-                halignment_dropdown.push_back(Label("Alignment::START"), Label("Alignment::START"), [](WidgetLayoutTest* instance){
+                halignment_dropdown.push_back(Label("Alignment::START"), Label("Alignment::START"), [](DropDown*, WidgetLayoutTest* instance){
                     instance->child_box_frame.set_horizontal_alignment(Alignment::START);
                 }, this);
 
-                halignment_dropdown.push_back(Label("Alignment::CENTER"), Label("Alignment::CENTER"), [](WidgetLayoutTest* instance){
+                halignment_dropdown.push_back(Label("Alignment::CENTER"), Label("Alignment::CENTER"), [](DropDown*, WidgetLayoutTest* instance){
                     instance->child_box_frame.set_horizontal_alignment(Alignment::CENTER);
                 }, this);
 
-                halignment_dropdown.push_back(Label("Alignment::END"), Label("Alignment::END"), [](WidgetLayoutTest* instance){
+                halignment_dropdown.push_back(Label("Alignment::END"), Label("Alignment::END"), [](DropDown*, WidgetLayoutTest* instance){
                     instance->child_box_frame.set_horizontal_alignment(Alignment::END);
                 }, this);
 
 
                 valignment_box.push_back(valignment_label);
                 valignment_box.push_back(valignment_dropdown);
-                valignment_dropdown.push_back(Label("Alignment::START"), Label("Alignment::START"), [](WidgetLayoutTest* instance){
+                valignment_dropdown.push_back(Label("Alignment::START"), Label("Alignment::START"), [](DropDown*, WidgetLayoutTest* instance){
                     instance->child_box_frame.set_vertical_alignment(Alignment::START);
                 }, this);
 
-                valignment_dropdown.push_back(Label("Alignment::CENTER"), Label("Alignment::CENTER"), [](WidgetLayoutTest* instance){
+                valignment_dropdown.push_back(Label("Alignment::CENTER"), Label("Alignment::CENTER"), [](DropDown*, WidgetLayoutTest* instance){
                     instance->child_box_frame.set_vertical_alignment(Alignment::CENTER);
                 }, this);
 
-                valignment_dropdown.push_back(Label("Alignment::END"), Label("Alignment::END"), [](WidgetLayoutTest* instance){
+                valignment_dropdown.push_back(Label("Alignment::END"), Label("Alignment::END"), [](DropDown*, WidgetLayoutTest* instance){
                     instance->child_box_frame.set_vertical_alignment(Alignment::END);
                 }, this);
 

@@ -1,107 +1,6 @@
 //
 // Created by clem on 4/12/23.
 //
-#include <mousetrap.hpp>
-
-using namespace mousetrap;
-
-class Child : public Widget
-{
-    private:
-        Separator body;
-        Label label;
-        Overlay overlay;
-        Frame frame;
-        Box box;
-
-    public:
-        Child(const std::string& name)
-            : label(name)
-        {
-            overlay.set_child(body);
-            overlay.add_overlay(label);
-            frame.set_child(overlay);
-            frame.set_expand(true);
-            box.push_back(frame);
-        }
-
-        operator NativeWidget() const override
-        {
-            return box.operator NativeWidget();
-        }
-};
-
-int main()
-{
-    auto app = Application("example.menus.app");
-    app.connect_signal_activate([](Application* app)
-    {
-        auto window = Window(*app);
-        window.set_title("");
-
-        // declare stateless action
-        auto action = Action("example.print_called", app);
-        action.set_function([](Action*){
-            std::cout << "called" << std::endl;
-        });
-
-        auto list_view = ListView(Orientation::VERTICAL);
-        list_view.push_back(Child("Child 01"));
-        list_view.push_back(Child("Child 02"));
-        list_view.push_back(Child("Child 03"));
-
-        static auto button = Button();
-        button.connect_signal_clicked([](Button*){
-            std::cout << "called" << std::endl;
-        });
-
-        auto click_button_action = Action("action.click_button", app);
-        click_button_action.set_function([](Action*){
-            gtk_widget_activate(button);
-        });
-        click_button_action.add_shortcut("<Control>space");
-
-        static auto long_press = LongPressEventController();
-        long_press.connect_signal_pressed([](LongPressEventController* controller, double x, double y){
-             if (controller->get_current_button() == ButtonID::BUTTON_01)
-                 std::cout << "long press registered at " << x << " " << y << std::endl;
-        });
-        window.add_controller(long_press);
-
-        static Vector2f distance_scrolled = {0, 0};
-
-        auto scroll = ScrollEventController();
-        scroll.connect_signal_scroll([](ScrollEventController*, double delta_x, double delta_y)-> bool {
-            distance_scrolled.x += delta_x;
-            distance_scrolled.y += delta_y;
-            return false;
-        });
-        window.add_controller(scroll);
-
-        auto pan = PanEventController(Orientation::HORIZONTAL);
-        pan.connect_signal_pan([](PanEventController*, PanDirection direction, double offset){
-            if (direction == PanDirection::LEFT)
-            {
-                // move widget left by offset
-            }
-            else if (direction == PanDirection::RIGHT)
-            {
-                // move widget right by offset
-            }
-        });
-
-        auto shortcut_controller = ShortcutController();
-        shortcut_controller.add_action(click_button_action);
-        window.add_controller(shortcut_controller);
-
-        window.set_child(button);
-        window.present();
-    });
-
-    return app.run();
-}
-
-#ifdef UNDEF
 
 #include <mousetrap/window.hpp>
 #include <mousetrap/header_bar.hpp>
@@ -116,6 +15,7 @@ int main()
 #include "paned_test.hpp"
 #include "sound_test.hpp"
 #include "widget_layout_test.hpp"
+#include "image_scale_test.hpp"
 
 using namespace mousetrap;
 
@@ -165,11 +65,12 @@ int main()
         add_test(new SignalsChapter(), "Chapter 3: Signals");
         add_test(new SoundTest("/home/clem/Workspace/mousetrap/test/test.wav"), "Sound");
         add_test(new WidgetLayoutTest(), "Widget Layout");
+        add_test(new ImageScaleTest(), "Image Scaling");
 
         // action to hide gui element other than stack child
 
-        static auto hide_show_stack_control_action = Action("main.show_hide_stack_control");
-        hide_show_stack_control_action.set_function([]()
+        static auto hide_show_stack_control_action = Action("main.show_hide_stack_control", app);
+        hide_show_stack_control_action.set_function([](Action*)
         {
             auto current = state->stack_control_revealer.get_revealed();
             state->stack_control_revealer.set_revealed(not current);
@@ -181,13 +82,12 @@ int main()
                 button->set_visible(not current);
         });
         hide_show_stack_control_action.add_shortcut("<Control>h");
-        app->add_action(hide_show_stack_control_action);
         state->stack_control_revealer_button.set_action(hide_show_stack_control_action);
 
         // action to go to next child
 
-        static auto next_child_action = Action("main.stack_next");
-        next_child_action.set_function([](){
+        static auto next_child_action = Action("main.stack_next", app);
+        next_child_action.set_function([](Action*){
 
             auto* model = state->stack.get_selection_model();
             size_t current = model->get_selection().at(0);
@@ -197,13 +97,12 @@ int main()
                 model->select(current+1);
         });
         next_child_action.add_shortcut("<Control>Right");
-        app->add_action(next_child_action);
         state->stack_next_button.set_action(next_child_action);
 
         // action to go to previous child
 
-        static auto previous_child_action = Action("main.stack_previous");
-        previous_child_action.set_function([](){
+        static auto previous_child_action = Action("main.stack_previous", app);
+        previous_child_action.set_function([](Action*){
             auto* model = state->stack.get_selection_model();
             size_t current = model->get_selection().at(0);
             size_t max = state->stack.get_n_children();
@@ -212,7 +111,6 @@ int main()
                 model->select(current-1);
         });
         previous_child_action.add_shortcut("<Control>Left");
-        app->add_action(previous_child_action);
         state->stack_previous_button.set_action(previous_child_action);
 
         // add shortcut binding for all actions
@@ -279,5 +177,3 @@ int main()
 
     return app.run();
 }
-
-    #endif

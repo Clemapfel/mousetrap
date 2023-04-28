@@ -31,7 +31,7 @@ namespace mousetrap
             ~DropDown();
 
             /// @brief add an item with an accompanying action to the end of the drop down
-            /// @tparam Function_t function or lambda with signature <tt>(Data_t) -> void</tt>
+            /// @tparam Function_t function or lambda with signature `(DropDown, (Data_t)) -> void`
             /// @tparam Data_t arbitrary data type
             /// @param list_widget widget to display when the itme is selected and the drop down popover is closed
             /// @param label_widget widget to display for that item inside the drop down popoever
@@ -42,7 +42,7 @@ namespace mousetrap
             [[nodiscard]] ItemID push_back(const Widget& list_widget, const Widget& label_widget, Function_t, Data_t);
 
             /// @brief add an item with an accompanying action to the end of the drop down
-            /// @tparam Function_t function or lambda with signature <tt>() -> void</tt>
+            /// @tparam Function_t function or lambda with signature `(DropDown*) -> void`
             /// @param list_widget widget to display when the itme is selected and the drop down popover is closed
             /// @param label_widget widget to display for that item inside the drop down popoever
             /// @param function function to trigger when the item is selected
@@ -51,7 +51,7 @@ namespace mousetrap
             [[nodiscard]] ItemID push_back(const Widget& list_widget, const Widget& label_widget, Function_t);
 
             /// @brief add an item with an accompanying action to the start of the drop down
-            /// @tparam Function_t function or lambda with signature <tt>(Data_t) -> void</tt>
+            /// @tparam Function_t function or lambda with signature `(DropDown, (Data_t)) -> void`
             /// @tparam Data_t arbitrary data type
             /// @param list_widget widget to display when the itme is selected and the drop down popover is closed
             /// @param label_widget widget to display for that item inside the drop down popoever
@@ -62,7 +62,7 @@ namespace mousetrap
             [[nodiscard]] ItemID push_front(const Widget& list_widget, const Widget& label_widget, Function_t, Data_t);
 
             /// @brief add an item with an accompanying action to the start of the drop down
-            /// @tparam Function_t function or lambda with signature <tt>() -> void</tt>
+            /// @tparam Function_t function or lambda with signature `(DropDown) -> void`
             /// @param list_widget widget to display when the itme is selected and the drop down popover is closed
             /// @param label_widget widget to display for that item inside the drop down popoever
             /// @param function function to trigger when the item is selected
@@ -71,7 +71,7 @@ namespace mousetrap
             [[nodiscard]] ItemID push_front(const Widget& list_widget, const Widget& label_widget, Function_t);
 
             /// @brief add an item with an accompanying action to a specified position in the drop down
-            /// @tparam Function_t function or lambda with signature <tt>(Data_t) -> void</tt>
+            /// @tparam Function_t function or lambda with signature `(DropDown, (Data_t)) -> void`
             /// @tparam Data_t arbitrary data type
             /// @param i index
             /// @param list_widget widget to display when the itme is selected and the drop down popover is closed
@@ -83,7 +83,7 @@ namespace mousetrap
             [[nodiscard]] ItemID insert(size_t i, const Widget& list_widget, const Widget& label_widget, Function_t, Data_t);
 
             /// @brief add an item with an accompanying action to a specified position in the drop down
-            /// @tparam Function_t function or lambda with signature <tt>() -> void</tt>
+            /// @tparam Function_t function or lambda with signature `(DropDown) -> void`
             /// @param i index
             /// @param list_widget widget to display when the itme is selected and the drop down popover is closed
             /// @param label_widget widget to display for that item inside the drop down popoever

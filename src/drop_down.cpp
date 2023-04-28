@@ -25,7 +25,7 @@ namespace mousetrap
             GtkWidget* label_widget;
 
             DropDown* owner;
-            std::function<void()>* function;
+            std::function<void(DropDown*)>* function;
         };
 
         struct _DropDownItemClass
@@ -60,7 +60,7 @@ namespace mousetrap
         }
 
         // sic, not static because forward declared in dropdown.inl
-        DropDownItem* drop_down_item_new(size_t id, const Widget* in, const Widget* label, DropDown* owner, std::function<void()> f)
+        DropDownItem* drop_down_item_new(size_t id, const Widget* in, const Widget* label, DropDown* owner, std::function<void(DropDown*)> f)
         {
             auto* item = (DropDownItem*) g_object_new(G_TYPE_DROP_DOWN_ITEM, nullptr);
             drop_down_item_init(item);
@@ -69,7 +69,7 @@ namespace mousetrap
             item->list_widget = g_object_ref(in->operator NativeWidget());
             item->label_widget = g_object_ref(label->operator NativeWidget());
             item->owner = owner;
-            item->function = new std::function<void()>(f);
+            item->function = new std::function<void(DropDown*)>(f);
 
             return item;
         }
@@ -137,7 +137,7 @@ namespace mousetrap
         auto i = gtk_drop_down_get_selected(self);
         auto* item = detail::G_DROP_DOWN_ITEM(g_list_model_get_item(G_LIST_MODEL(instance->_model), i));
         if (item->function != nullptr)
-            (*item->function)();
+            (*item->function)(instance);
     }
 
     void DropDown::remove(ItemID id)

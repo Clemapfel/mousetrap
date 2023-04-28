@@ -72,6 +72,10 @@ namespace mousetrap
         _data = gdk_pixbuf_new(GDK_COLORSPACE_RGB, GL_TRUE, 8, width, height);
         _size = {width, height};
 
+        for (size_t x = 0; x < width; ++x)
+            for (size_t y = 0; y < height; ++y)
+                set_pixel(x, y, default_color);
+
         g_object_ref(_data);
     }
 

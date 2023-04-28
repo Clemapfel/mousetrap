@@ -7,21 +7,23 @@ In this chapter we will learn:
 
 ## Introduction
 
-Mousetrap was originally part of a never-released app for frame-by-frame animation. Due to this history, mousetrap features a robust and fully featured image-processing interface. Before we can talk about images, we need to talk about individual colors.
+ mousetrap features a robust and fully featured image-processing interface, which features many of the relevant image-modifying functions a graphic editor, such as an image manipulation app,  Before we can talk about images, we need to talk about individual colors.
 
 ## Colors
 
-Two color representations are available in mousetrap, `RGBA` and `HSVA`, re
+\todo
 
-## 
+## Images
 
-Images in RAM are managed by the `mousetrap::Image` class. This class is tied to the widget architecture and can only be used in the context of an application.
+In general, images are a 2-dimensional matrix of colors. Each element in the matrix is called a **pixel**. An image of size 400x300 will have a 400 * 300 = 120000 pixes. Each pixel is a color in RGBA format, meaning it has 4 components, as state above.
+
+Images are represented by the  `mousetrap::Image` class. This class is not a widget or signal emitter, it is simply a way to manage memory in the form of a pixel matrix in RAM. We need the help of other classes if we want to show the image on screen.
 
 ### Creating an Image
 
 #### Loading an Image from Disk
 
-Most commonly, we will want load an image into RAM to modify or display it. To do this we first instantiate image using its default constructor. This image will be of size 0x0, to fill it with data from the disk we call `Image::create_from_file`, which takes the path to an image as a string:
+Most commonly, we will want load an image into RAM from an already existing file. This can be achieved with `Image::create_from_file`, which takes the path to an image file as a string:
 
 ```cpp
 auto image = Image();
@@ -36,13 +38,13 @@ The following image formats are supported:
 |-------------------------|-----------------|
 | PNG                     | `.png`  |
 | JPEG                    | `.jpeg` `.jpe` `.jpg`  |
+| JPEG XL image           | `.jxl`  |
 | Windows Metafile        | `.wmf` `.apm`  |
 | Windows animated cursor | `.ani`  |
 | BMP                     | `.bmp`  |
 | GIF                     | `.gif`  |
 | MacOS X icon            | `.icns`  |
 | Windows icon            | `.ico` `.cur`  |
-| JPEG XL image           | `.jxl`  |
 | PNM/PBM/PGM/PPM         | `.pnm` `.pbm` `.pgm` `.ppm`  |
 | QuickTime               | `.qtif` `.qif`  |
 | Scalable Vector Graphics | `.svg` `.svgz` `.svg.gz`  |
@@ -54,22 +56,30 @@ The following image formats are supported:
 
 #### Creating an Image from Scratch
 
-Sometimes we want to fill an image with our own custom image data. For this, using `Image::create`, we can allocate an image of a given size, filling each pixel with the supplied color. For example, the following allocates and image of size 400x300 and fills every color with red (`RGBA(1, 0, 0, 1)`):
+Sometimes we want to fill an image with our own custom image data. For this, we use `Image::create`, which allocates an image of a given size, and fills each pixel with the a color supplied as an optional argument. For example, the following allocates and image of size 400x300 and fills every color with red (`RGBA(1, 0, 0, 1)`):
 
 ```cpp
 auto image = Image();
 image.create(400, 300, RGBA(1, 0, 0, 1));
 ```
 
+If unspecified, the image will be filled with `RGBA(0, 0, 0, 0)`.
+
+### Saving an Image to Disk
+
+We can call `Image::save_to_file`, which automatically stores the image as a file to the given path. The file format will be automatically determined by the extension of the path, so a path `/resources/save_image.png` will store the image as a PNG image. Depending on the file format, this is a very costly operation.
+
 ### Modifying an Image
 
-Having created an all-red image, we probably want to modify it by setting individual pixels to a certain color. We can use `Image::get_pixel` to access a specific pixel and `Image::set_pixel` to replace that pixels color with the given color.
+An all-red image will usually not be very useful, we most likely will want to fill the image with custom data, possibly algorithmically. 
 
-For an image of size `n*m`, that is an image with a width of `n` pixels and a height of `m` pixels, the top-left-most pixel has index `(0, 0)`, the top-right-most pixel `(0, n)`, the bottom-right-most pixel has index `(n, m)` and the the bottom-left-most pixel `(n, 0)`. In this way, an image is a just a matrix, where each element is a color, as opposed to a single number.
+To modify a pixel, we use `Image::set_pixel`, which takes the pixels coordinate. For image of size `nxm`, that is a width of `n` and height of `m`, the x-coordinate of a pixel is in `[0, n)`, meaning (`0`, `1`, ..., `n-2`, `n-1`)`, while the y-coordinate is in `[0, m)`, meaning (`0`, `1`, ..., `m-2`, `m-1`).
+
+Similarly, we can access any pixel using `Image::get_pixel`. If the coordinates are out of range, a soft warning will be printed and `RGBA(0, 0, 0, 0)` will be returned.
 
 ### Whole-Image Transforms
 
-If we want to change in images size, we have two options: *scaling*  the image, and *cropping*. These operations work identical to those in common image-manipulation programs such as Gimp or Photoshop.
+To change an images size, we have two options: **scaling**  the image and **cropping**. These operations work identical to those in common image-manipulation programs such as Gimp or Photoshop.
 
 ##### Scaling
 
@@ -80,7 +90,9 @@ auto image = // ... 400x300 image
 auto scaled = image.as_scaled(800, 600);
 ```
 
-When scaling, we have a choice of the scaling algorithm, or *interpolation*. Mousetrap offers 4 choices, represented by the values of enum `InterpolationType`:
+Only `scaled` will be of size `800x600`, `image` has not changed.
+
+When scaling, we have a choice of scaling algorithm, which chooses what information to fill pixels with through **interpolation**. Mousetrap offers 4 interpolation types, as the enum `InterpolationType`:
 
 + `InterpolationType::NEAREST`: nearest neighbor, no interpolation
 + `InterpolationType::BILINEAR`: linear scaling
@@ -95,17 +107,23 @@ By default, the scaling mode is `TILES`.
 
 We crop an image using `Image::as_cropped`. Similar to `as_scaled`, this functions returns a newly allocated image, it does not modify the original image.
 
-`as_cropped` takes 4 arguments, the new width and height of the cropped image, and the x- and y-**offset**. The offset sets which pixel is used as the new top-left coordinate of the cropped image. This offset can be negative, any space that does not have pixeldata will be filled with `RGBA(0, 0, 0, 0)`
+`as_cropped` takes 4 arguments, the new width and height, and the x- and y-**offset**. The offset specifies which pixel is used as the new top-left coordinate of the cropped image. This offset can be negative, and we can specify a sizer greater as that of the current image. This is similar to the "resize canvas" feature of many image editing applications. Any newly allocated space that is not part of the original image will be filled with `RGBA(0, 0, 0, 0)`.
 
 \todo example image
 
 ##### Flipping
 
-Lastly we have `Image::as_flipped` which flips the image along the x- and/or y-axis. Just like before, `as_flipped` returns a newly allocated image and does not modify the original. It takes two arguments, a boolean indicating along which axis the image should be flipped.
+Lastly we have `Image::as_flipped` which flips the image along the x- and/or y-axis. Just like before, `as_flipped` returns a newly allocated image and does not modify the original. It takes two arguments, booleans indicating along which axis the image should be flipped. 
+
+```cpp
+auto image = Image(//...
+auto horizontally_flipped = image.as_flipped(true, false);
+auto vertically_flipped = image.as_flipped(false, true);
+```
 
 ### Image Data
 
-While the two color presentations present, `RGBA` and `HSVA` have each components as a 32-bit float, for image this format would take up an unreasonable amount of memory. Because of this, internally, image data is stored as row-major, 8-bit RGBA, meaning a color is represents as four, 8-bit component, with the red, green, blue and alpha component in that order, an pixels are stored row-first. For example, consider the following 2x2 image:
+While `mousetrap::RGBA`, the class used to express color has four 32-bit components, for an entire image this would take too much spacy in memory. Instead, mousetrap uses the `RGBA8888` format, which allocates 8 bits per color component. The components are stored in-line, in row-major order. Consider the following 2x2 image as an example
 
 ```
 RGBA(1.0, 1.0, 1.0, 1.0), RGBA(0.75, 0.75, 0.75, 1.0)
@@ -118,13 +136,18 @@ This image is stored in memory as follows:
 255 255 255 255 191 191 191 255 128 128 128 255 0 0 0 255
 ```
 
-We rarely have to interact with the raw memory, as `get_pixel` and `set_pixel` automatically do the conversion and position of pixels for us. If we do have to handle the raw memory, we can access it using `Image::data`, which returns a `void*`. For an image of size `n*m`, `data` be an array of `n*m*4` 8-bit unsigned integers (`unsigned char`). We can also get the number of elements in `data` by calling `Image::get_data_size`.
+We get these by multiplying each `RGBA` component with 255, rounding, then storing each pixel as 4 sequential 8-bit integers. 
+
+We rarely have to interact with the raw memory, as `get_pixel` and `set_pixel` automatically do the conversion and position of pixels for us. If we do have to handle the raw memory, we can access it using `Image::data`, which returns a `void*`. For an image of size `n*m`, `data` will point to a C array with `n*m*4` 8-bit unsigned integers (`unsigned char`), where `n` is the image width, `m` is the image height.
+We can also get the number of elements in `data` using `Image::get_data_size`.
 
 ### Displaying Images
 
-Now that we know how to load and manipulate images in memory, we most likely will want a way to display them to the user. We've already seen a widget capable of this `ImageDisplay`. So far we have been loading the image straight from the disk, however `ImageDisplay` also takes an image in memory as the argument to `create_from_image`.
+Now that we know how to load and manipulate images in memory, we most likely will want a way to display them to the user in some way. We've already seen a widget capable of this: `ImageDisplay`. So far we have been loading the image straight from the disk, however `ImageDisplay` also takes an image in memory as the argument to `ImageDisplay::create_from_image`.
 
-By default, `ImageDisplay` will expand according `Widget::set_expand`. Expansion like this will scale the image automatically. If this is not desired, we tell `ImageDisplay` to display the image 1:1 (that is, 1 pixel on screen is equivalent to 1 pixel of the image data) by setting its size request to the images size, and disabling expansion in both dimensions:
+`ImageDisplay` copies the contents of the image to the graphics card and is read-only. This means that if we change our `Image`, `ImageDisplay` will not change. To update the `ImageDisplay` with the newest version of our image, we need to call `create_from_image` again. The advantage of this is that if our original `Image` goes out of scope and is freed, `ImageDisplay` will be unaffected.
+
+By default, `ImageDisplay` will expand according `Widget::set_expand`. Since this expansion uses the widget display engine, it does not follow the scaling mode we set when calling `Image::scale`. To make sure `ImageDisplay` is always at the correct resolution and displays an image 1-to-1 (that is 1 pixel of the image is exactly 1 pixel on the screen), we can use the following trick:
 
 ```cpp
 auto image = Image();
@@ -136,20 +159,27 @@ image_display.set_expand(false); // prevent expansion
 image_display.set_size_request(image_display.get_size())); // size request to scale 1:1
 ```
 
+With no expansion, the widget will always follow its size-request, which is the conceptual minimum size the widget can allocated on screen. We can get the actual resolution of the underelying image (as opposed to the size of the widget) using `ImageDisplay::get_size`.
+
 \todo example image
 
-Note that once an `ImageDisplay` is created, changing the image does not change the image display. `ImageDisplay` automatically copies the image data, usually to the graphics card, and it cannot be modified afterwards. If we want to change the image `ImageDisplay` displays, we need to call `create_from_image` again.
+### OpenGL Textures
 
-`ImageDisplay` is enough for most purposes, however we will learn about a more low-level and flexible way of displaying images using OpenGL textures in the next chapter.
+`ImageDisplay::create_from_image` is an extremely costly operation and would be insufficient to, for example, fluently display a 60 fps animation. Ẁe would have to call `ImageDisplay::create_from_image` every frame, but the loading and updating of the widget would most likely take more than 1/60th of a section on most machines.
+
+For purposes like this, we should use a custom render widget and display an OpenGL `Texture`. We will learn how to do this in the [chapter on native rendering](09_opengl.md).
+
+---
 
 ## Sound
 
-Mousetrap supports audio playback. This can happen from two locations, streamed from memory (RAM), or streamed from the disk
+Mousetrap supports audio playback. Sound can be streamed from two location, **from memory** and **from disk**. For from-memory playback we use `SoundBuffer` for the data and `Sound` for playback, for from-disk playback we use `Music`, which has no data component as it directly streams from the hard drive.
 
 ### SoundBuffer
 
-A sound in memory is managed by `mousetrap::SoundBuffer`, which is very similar to `Image` in its interface. We can load a sound from a file using `create_from_file`,
-which similarly takes the path to the file as a string. Just like with `Image`, we can save the sound to disk using `save_to_file`.
+A sound in memory is managed by `mousetrap::SoundBuffer`, which is conceptually similar to `Image`, in that it only manages the raw data in memory.
+
+It provides many of the same functions, for example we can load a sound from a file using `SoundBuffer::create_from_file`, which supports the following file formats:
 
 #### Support Sound Formats
 
@@ -163,17 +193,22 @@ The following formats are support:
 
 `.mp3` is not supported, due to copyright issues.
 
+### Saving an Image to Disk
+
+Just like with `Image`, `SoundBuffer::save_to_file` will store our audio data on the disk, automatically choosing the correct file format based ont the extension supplied in the path that is the functions argument.
+
 #### Manipulating Sound
 
-\note As of v0.1.0, sound buffer data cannot be manipulated, this feature is planned for a future update
+\todo Manipulating sound is not yet implemented
 
 #### Sound Playback
 
-The analog of `ImageDisplay`, which displays image data, is `Sound`, which plays sound data for the user. By default, sound will start at the beginning of the sound buffer, play the entire sound, then stop indefinitely. To trigger this behavior, we call `Sound::play`.
+The analog of `ImageDisplay`, which displays image data, is `Sound`, which "displays" audio data by playing it over the end-users speakers. 
 
-Similarly, `Sound::pause` pause the playback, after which it can be resume by calling `play` again. If `Sound::stop` is called instead of pause, when the sound resumes playing it will instead start from the beginning of the file.
+By default, playback will start at the beginning of the sound buffer, play the entire sound, then stop. We can start this sequence using `Sound::play`.
 
-\cpp_code_begin
+`Sound::pause` pauses the playback, after which it can be resumed by calling `play` again. If `Sound::stop` is called instead of `pause`, a subsequent use of `play` will make it so playback starts at the beginning, as opposed to where we left of.
+
 ```cpp
 // load buffer
 auto buffer = SoundBuffer();
@@ -186,10 +221,25 @@ sound.create_from_buffer(buffer);
 // play sound once
 sound.play();
 ```
-\cpp_code_end
+#### Playback Offset and Loops
 
+We can manually change at what part of the buffer the sound starts playing by called `set_playback_position`, which takes a float in `[0, 1]`, where `0` is the first sample of the audio data, `1` the very last. 
+For example, if we have a sound that is 30s long, and we want to start the sound at 13s in, we can do the following:
 
-`Sound` offse
+```cpp
+auto buffer = SoundBuffer();
+buffer.create_from_file(// ...
+
+auto sound = Sound();
+sound.create_from_buffer(buffer);
+
+sound.set_playback_position(seconds(13) / sound.get_duration()));
+sound.play();
+```
+
+Where we used `mousetrap::Time` to calculate the fraction we need for `set_playback_position`.
+
+Lastly we can choose to loop the `Sound` with `Sound::set_should_loop`. If set to `true`, it will make it so that when playback reaches the end of the buffer, it jumps back to the very first sample and continues playing indefinitely, or until `pause`, `stop` or `Sound::set_should_loop(false)` is called.
 
 ### Sound Playback from Disk
 
