@@ -19,6 +19,7 @@ namespace mousetrap::detail
         GtkTreeExpander* expander;
         GtkWidget* widget;
         GListStore* children;
+        size_t depth;
     };
 
     struct _ListViewItemClass
@@ -28,7 +29,7 @@ namespace mousetrap::detail
 
     G_DEFINE_TYPE (ListViewItem, tree_list_view_item, G_TYPE_OBJECT)
 
-    static void tree_list_view_item_finalize (GObject *object)
+    static void tree_list_view_item_finalize(GObject *object)
     {
         auto* self = G_TREE_VIEW_ITEM(object);
         g_object_unref(self->widget);
@@ -43,7 +44,7 @@ namespace mousetrap::detail
         item->expander = g_object_ref(GTK_TREE_EXPANDER(gtk_tree_expander_new()));
         item->widget = nullptr;
         item->children = g_object_ref(g_list_store_new(G_TYPE_OBJECT));
-
+        item->depth = 0;
         gtk_tree_expander_set_indent_for_icon(item->expander, true);
         // TODO: once GTK4 4.10 releases: gtk_tree_expander_set_indent_for_depth(item->expander, TRUE);
     }
@@ -58,7 +59,11 @@ namespace mousetrap::detail
     {
         auto* item = (ListViewItem*) g_object_new(G_TYPE_LIST_VIEW_ITEM, nullptr);
         tree_list_view_item_init(item);
-        item->widget = in != nullptr ? in->operator GtkWidget*() : nullptr;
+        item->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        gtk_widget_set_halign(item->widget, GTK_ALIGN_START);
+        if (in != nullptr)
+            gtk_box_append(GTK_BOX(item->widget), in->operator NativeWidget());
+
         g_object_ref(item->widget);
         return item;
     }
@@ -99,6 +104,7 @@ namespace mousetrap::detail
 
         if (g_list_model_get_n_items(G_LIST_MODEL(tree_list_view_item->children)) != 0) // non-leaf
         {
+            gtk_widget_set_margin_start(tree_list_view_item->widget, 0);
             gtk_tree_expander_set_child(tree_list_view_item->expander, tree_list_view_item->widget);
             gtk_tree_expander_set_list_row(tree_list_view_item->expander, tree_list_row);
             gtk_list_item_set_child(list_item, GTK_WIDGET(tree_list_view_item->expander));
@@ -106,6 +112,7 @@ namespace mousetrap::detail
         else // leaf
         {
            gtk_list_item_set_child(list_item, tree_list_view_item->widget);
+           gtk_widget_set_margin_start(tree_list_view_item->widget, ListView::indent_per_depth * tree_list_view_item->depth);
         }
 
         gtk_list_item_set_activatable(list_item, true);
@@ -202,6 +209,9 @@ namespace mousetrap
             to_append_to = G_LIST_MODEL(it->children);
 
         auto* item = detail::tree_list_view_item_new(&widget);
+        if (it != nullptr)
+            item->depth = it->depth + 1;
+
         g_list_store_append(G_LIST_STORE(to_append_to), item);
         g_object_unref(item);
 
@@ -234,6 +244,8 @@ namespace mousetrap
             to_append_to = G_LIST_MODEL(it->children);
 
         auto* item = detail::tree_list_view_item_new(&widget);
+        if (it != nullptr)
+            item->depth = it->depth + 1;
 
         auto n =  g_list_model_get_n_items(G_LIST_MODEL(to_append_to));
         if (i > n)

@@ -19,8 +19,7 @@ and full index of functions/classes - all written by a human.
 Mousetrap is ideal for:
 + complex desktop applications for Windows, Mac, and/or Linux
 + graphical applications for illustration / animation
-+ 2D video games, controlled with a mouse, keyboard, and/or touchscreen
-+ people with no experience developing GUIs, but moderate knowledge about C++
++ 2D video games only controlled with a mouse, keyboard, and/or touchscreen
 
 While currently unsuitable, future updates will make mousetrap a good use case for:
 + applications for people living with disabilities, such as impaired vision or limited fine motor skills
@@ -30,21 +29,32 @@ While currently unsuitable, future updates will make mousetrap a good use case f
 
 Mousetrap is unsuitable for:
 + people already intimately familiar with GTK4 & GLib
-+ people who have no prior knowledge on C++
 + applications intended for non-desktop machines, such as mobile phones, video game consoles, microcontrollers
 + low-resolution displays (< 400x300 px)
 + machines with no graphics card
 + machines with limited RAM (< 500mb)
-+ applications requiring a large number of widgets (> 100k, for example viewing a dataset with millions of entries)
++ applications requiring a large number of widgets on screen (> 100k, for example viewing a dataset with millions of entries)
 + applications requiring a refresh rate different from that of the monitor (for example, precise GUI-based physics simulations)
+
+Mousetrap developers should have be moderately well-versed in C++. The Julia binding is much simpler to use and should be well suited for Julia beginners.
 
 ### Planned Features
 
 (In order of priority, from highest to lowest)
 
 + complete Julia binding
-+ Make list-based widgets (`ListView`, `ColumnView`, `GridView`, etc.) filterable and add searching functionality
++ Expose css styling and custom, per-application themes
++ Make list-based widgets (`ListView`, `ColumnView`, `GridView`, etc.) filterable, add searching functionality
++ Expose real-time GTK4 debugging features 
 + Expose `GtkSettings` interface
 + Allow video game controller input
++ Add accessibility features
 + Expose the full `GtkTextView` interface
 + Add 3D capabilities to `RenderArea`
+
+### License
+
+`mousetrap` is licensed under [GNU Lesser General Public License 3.0](https://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License). This means projects are free to use mousetrap for any purpose, including commercial, regardless of the users products license. However, if mousetrap itself is modified, that part of the library has to be published as open source. In practice this means any fork of mousetraps should be public on GitHub, but the rest of your application or library is unaffected and may be closed-source, making it fully available to closed-source, for-profit projects.
+
+### Credits
+

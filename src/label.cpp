@@ -8,13 +8,14 @@
 namespace mousetrap
 {
     Label::Label()
-    : Label("")
+        : Label("")
     {}
 
     Label::Label(const std::string& str)
     : WidgetImplementation<GtkLabel>(GTK_LABEL(gtk_label_new(str.c_str())))
     {
         gtk_label_set_use_markup(get_native(), true);
+        set_wrap_mode(LabelWrapMode::WORD_OR_CHAR);
     }
 
     void Label::set_text(const std::string& text)

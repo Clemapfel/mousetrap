@@ -38,6 +38,10 @@ namespace mousetrap
             /// @brief iterator to a list, specifying it as the target during an operationt that adds an item to a list view will create a sublist at that iterator
             using Iterator = detail::_ListViewItem*;
 
+            /// @brief number of pixels a nested list item should be offset to the right
+            /// \todo make non-const
+            static inline const size_t indent_per_depth = 20;
+
             /// @brief ctor list view
             /// @param orientation Orientation, horizontal for left to right, vertical for top to bottom
             /// @param selection_mode

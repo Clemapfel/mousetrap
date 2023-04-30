@@ -37,7 +37,8 @@ namespace mousetrap
 
             DropDown dropdown;
 
-            Box main = Box(Orientation::VERTICAL);
+            Box window_box = Box(Orientation::VERTICAL);
+            ScrolledWindow window;
 
         public:
             ImageScaleTest()
@@ -124,14 +125,16 @@ namespace mousetrap
                 }
                 dropdown.set_margin(10);
 
-                main.push_back(display_box);
-                main.push_back(Separator());
-                main.push_back(dropdown);
+                window_box.push_back(display_box);
+                window_box.push_back(Separator());
+                window_box.push_back(dropdown);
+
+                window.set_child(window_box);
             }
 
             operator NativeWidget() const override
             {
-                return main.operator NativeWidget();
+                return window.operator NativeWidget();
             }
     };
 }

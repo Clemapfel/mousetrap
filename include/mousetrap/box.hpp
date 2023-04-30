@@ -66,4 +66,28 @@ namespace mousetrap
             /// @copydoc mousetrap::Orientable::set_orientation
             void set_orientation(Orientation) override;
     };
+
+
+    /// @brief convenience constructor of box
+    /// @param any amount of widgets
+    /// @reutrns Box with Orientation::HORIZONTAL
+    template<typename... Widgets>
+    Box hbox(const Widgets&... widgets)
+    {
+        auto out = Box(Orientation::HORIZONTAL);
+        (out.push_back(widgets), ...);
+        return out;
+    }
+
+    /// @brief convenience constructor of box
+    /// @param any amount of widgets
+    /// @returns Box with Orientation::HORIZONTAL
+    template<typename... Widgets>
+    Box vbox(const Widgets&... widgets)
+    {
+        auto out = Box(Orientation::VERTICAL);
+        (out.push_back(widgets), ...);
+        return out;
+    }
+
 }

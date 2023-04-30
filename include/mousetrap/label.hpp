@@ -11,7 +11,7 @@
 namespace mousetrap
 {
     /// @brief label ellipsize mode
-    enum class EllipsizeMode
+    enum class EllipsizeMode : int
     {
         /// @brief do not ellipsize
         NONE = PANGO_ELLIPSIZE_NONE,
@@ -27,7 +27,7 @@ namespace mousetrap
     };
 
     /// @brief label wrap mode, determines on which part of the label a new line can be created if necessary
-    enum class LabelWrapMode
+    enum class LabelWrapMode : int
     {
         /// @brief never create a new line
         NONE = -1,

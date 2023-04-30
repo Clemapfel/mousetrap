@@ -22,15 +22,15 @@ namespace mousetrap
 
             /// @brief if orientation is horizontal, set widget to the left of the center, top of the center otherwise
             /// @param widget
-            void set_start_widget(const Widget&);
+            void set_start_child(const Widget&);
 
             /// @brief set widget at the center
             /// @param widget
-            void set_center_widget(const Widget&);
+            void set_center_child(const Widget&);
 
             /// @brief if orientation is horizontal, set widget to the right of the center, bottom of the center otherwise
             /// @param widget
-            void set_end_widget(const Widget&);
+            void set_end_child(const Widget&);
 
             /// @brief remove start widget
             void remove_start_widget();
@@ -43,15 +43,15 @@ namespace mousetrap
 
             /// @brief if orientation is horizontal, get widget to the left of the center, top of the center otherwise
             /// @return widget, may be nullptr
-            Widget* get_start_widget() const;
+            Widget* get_start_child() const;
 
             /// @brief get widget at center
             /// @return widget, may be nullptr
-            Widget* get_center_widget() const;
+            Widget* get_center_child() const;
 
             /// @brief if orientation is horizontal, get widget to the left of the center, top of the center otherwise
             /// @return widget, may be nullptr
-            Widget* get_end_widget() const;
+            Widget* get_end_child() const;
 
             /// @copydoc Orientable::set_orientation
             void set_orientation(Orientation);

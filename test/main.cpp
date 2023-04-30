@@ -16,6 +16,8 @@
 #include "sound_test.hpp"
 #include "widget_layout_test.hpp"
 #include "image_scale_test.hpp"
+#include "list_test.hpp"
+#include "label_test.hpp"
 
 using namespace mousetrap;
 
@@ -47,9 +49,7 @@ void add_test(Widget* test, const std::string& title)
 {
     assert(state != nullptr);
     state->tests.push_back(test);
-    auto box = Box();
-    box.push_back(*test);
-    auto _ = state->stack.add_child(box, title);
+    auto _ = state->stack.add_child(hbox(*test), title);
 }
 
 /// @brief main
@@ -64,10 +64,12 @@ int main()
 
         add_test(new MotionControllerTest(), "MotionEventController");
         add_test(new PanedTest(), "Paned");
-        add_test(new SignalsChapter(), "Chapter 3: Signals");
+        //add_test(new SignalsChapter(), "Chapter 3: Signals");
         add_test(new SoundTest("/home/clem/Workspace/mousetrap/test/test.wav"), "Sound");
         add_test(new WidgetLayoutTest(), "Widget Layout");
         add_test(new ImageScaleTest(), "Image Scaling");
+        add_test(new ListTest(), "ListView");
+        add_test(new LabelTest(), "Label");
 
         // action to hide gui element other than stack child
 
@@ -166,6 +168,11 @@ int main()
         state->main_window.set_title("mousetrap");
         state->main_window.set_child(state->stack_box);
         state->main_window.set_titlebar_widget(state->main_window_header_bar);
+
+        auto separator = Separator();
+        separator.set_margin(20);
+        separator.set_expand(true);
+        state->main_window.set_child(separator);
 
         state->main_window.present();
     });

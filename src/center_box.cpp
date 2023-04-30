@@ -14,7 +14,7 @@ namespace mousetrap
         gtk_orientable_set_orientation(GTK_ORIENTABLE(get_native()), (GtkOrientation) orientation);
     }
 
-    void CenterBox::set_start_widget(const Widget& widget)
+    void CenterBox::set_start_child(const Widget& widget)
     {
         _start = &widget;
         WARN_IF_SELF_INSERTION(CenterBox::set_start_widget, this, _start);
@@ -29,7 +29,7 @@ namespace mousetrap
         gtk_center_box_set_start_widget(get_native(), nullptr);
     }
 
-    void CenterBox::set_end_widget(const Widget& widget)
+    void CenterBox::set_end_child(const Widget& widget)
     {
         _end = &widget;
         WARN_IF_SELF_INSERTION(CenterBox::set_end_widget, this, _end);
@@ -43,7 +43,7 @@ namespace mousetrap
         gtk_center_box_set_end_widget(get_native(), nullptr);
     }
 
-    void CenterBox::set_center_widget(const Widget& widget)
+    void CenterBox::set_center_child(const Widget& widget)
     {
         _center = &widget;
         WARN_IF_SELF_INSERTION(CenterBox::set_center_widget, this, _center);
@@ -57,17 +57,17 @@ namespace mousetrap
         gtk_center_box_set_center_widget(get_native(), nullptr);
     }
 
-    Widget* CenterBox::get_start_widget() const
+    Widget* CenterBox::get_start_child() const
     {
         return const_cast<Widget*>(_start);
     }
 
-    Widget* CenterBox::get_center_widget() const
+    Widget* CenterBox::get_center_child() const
     {
         return const_cast<Widget*>(_center);
     }
 
-    Widget* CenterBox::get_end_widget() const
+    Widget* CenterBox::get_end_child() const
     {
         return const_cast<Widget*>(_end);
     }

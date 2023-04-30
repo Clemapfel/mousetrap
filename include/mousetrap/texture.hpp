@@ -70,11 +70,11 @@ namespace mousetrap
 
             /// @brief set wrap mode, this governs how the texture behaves when the texture coordinates of a vertex are outside of [0, 1]
             /// @param wrap_mode
-            void set_wrap_mode(WrapMode);
+            void set_wrap_mode(TextureWrapMode);
 
             /// @brief get wrap mode, this governs how the texture behaves when the texture coordinates of a vertex are outside of [0, 1]
             /// @return wrap mode
-            WrapMode get_wrap_mode();
+            TextureWrapMode get_wrap_mode();
 
             /// @brief set scale mode, this governs how the texture behaves when displayed at a resolution other than it's native resolution
             /// @param scale_mode
@@ -95,7 +95,7 @@ namespace mousetrap
 
         private:
             GLNativeHandle _native_handle = 0;
-            WrapMode _wrap_mode = WrapMode::STRETCH;
+            TextureWrapMode _wrap_mode = TextureWrapMode::STRETCH;
             TextureScaleMode _scale_mode = TextureScaleMode::NEAREST;
 
             Vector2i _size;

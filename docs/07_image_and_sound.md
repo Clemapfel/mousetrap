@@ -136,7 +136,7 @@ Only `scaled` will be of size `800x600`, `image` has not changed.
 
 #### Interpolation Type
 
-When scaling, we have a choice of scaling algorithm, which chooses what information to fill pixels with through **interpolation**. Mousetrap offers 4 interpolation types supplied by the \link mousetrap::Image::InterpolationType enum `InterpolationType`\endlink where, below, the effect on scaling an image with the different interpolation types is shown. In each figure, the image in the middle labled "1x" is the original image, which has a resolution of `10x10`
+When scaling, we have a choice of scaling algorithm, which fills in newly generated pixels through **interpolation**. Mousetrap offers four interpolation types supplied by the \link mousetrap::Image::InterpolationType enum `InterpolationType`\endlink where, below, the effect on scaling an image with the different interpolation types is shown. In each figure, the image in the middle labled "1x" is the original image, which has a resolution of 10x10 pixels:
 
 \image html interpolation_nearest.png "InterpolationType::NEAREST"
 <br>
@@ -154,8 +154,6 @@ The main difference between `BILINEAR` and `HYPERBOLIC` is that of performance, 
 We crop an image using `Image::as_cropped`. Similar to `as_scaled`, this functions returns a newly allocated image, it does not modify the original image.
 
 `as_cropped` takes 4 arguments, the new width and height, and the x- and y-**offset**. The offset specifies which pixel is used as the new top-left coordinate of the cropped image. This offset can be negative, and we can specify a sizer greater as that of the current image. This is similar to the "resize canvas" feature of many image editing applications. Any newly allocated space that is not part of the original image will be filled with `RGBA(0, 0, 0, 0)`.
-
-\todo example image
 
 ### Flipping
 

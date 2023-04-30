@@ -9,7 +9,7 @@
 namespace mousetrap
 {
     /// @brief texture wrap mode, governs what is displayed when a vertex' texture coordinate is outside of [0, 1]
-    enum class WrapMode
+    enum class TextureWrapMode
     {
         /// @brief display RGBA(0, 0, 0, 0)
         ZERO = 0,

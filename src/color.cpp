@@ -390,7 +390,8 @@ namespace mousetrap
         out.r = hex_component_to_int(as_hex.at(0), as_hex.at(1)) / 255.f;
         out.g = hex_component_to_int(as_hex.at(2), as_hex.at(3)) / 255.f;
         out.b = hex_component_to_int(as_hex.at(4), as_hex.at(5)) / 255.f;
-        return true
+        out.a = 1;
+        return true;
 
         on_error:
             return false;
