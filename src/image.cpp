@@ -39,6 +39,7 @@ namespace mousetrap
         if (G_IS_OBJECT(other._data))
             g_object_ref(other._data);
 
+
         _data = other._data;
         _size = other._size;
 

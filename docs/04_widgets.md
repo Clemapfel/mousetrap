@@ -100,17 +100,55 @@ Between any two children is an optional space, which we can specify using `Box::
 
 ### Paned
 
+`Paned` is widget that always has exactly two children. Between the two children, a barrier is drawn. The user can click on this barrier and drag it horizontally or vertically, depending on the orientation of the `Paned`. This gives the user the option to resize how much space a widget is allocated by hand.
+
+\image html paned_centered.png
+
+Assuming the `Paned`s orientation is `Orientation::HORIZONTAL`, we can set the child on the left using `Paned::set_start_child` and the child on the right with `Paned::set_end_child`. Both childs have to be set to valid widgets in order for the user to have the option of interacting with the `Paned`. If we for some reason do not have two widgets but still like to use a `Paned`, we should set the other child to a `Separator`.
+
+`Paned` has two per-child properties: whether a child is **resizable** and whether it is **shrinkable**.
+
+Resizable means that if the paned changes size, the child should change size with it.
+
+Shrinkable sets whether the side of the paned can be made smaller than the allocated size of that sides child widget. If set to true, the user can hide drag the paned barrier to complee hide the widget, regardless of its size allocation.
+
+\image html paned_shrinkable.png `Paned::set_end_child_shrinkable(true)` made it possible to move the barrier such that the right child is partially covered"
+
+---
+
 ### Revealer
 
-### Expander
+`Revealer` is a "flair" widget, meaning it does not have any direct functionality. Instead, it is used to animate widgets appearing and dissapearing.
 
-#### Signals
+It has exactly one child, set via `Revealer::set_child`. By default, the revealer will hide the child and not allocate any space. When we call `Revealer::set_revelead(true)`, the animation will start playing and the child widget will be displayed to the user.
 
-| id         | signature                      | emitted when...                                                       |
-|------------|--------------------------------|-----------------------------------------------------------------------|
-| `activate` | (Expander*, (Data_t)) -> void` | user pressed the enter key or otherwise activated the expander itself |
+`Revealer` has a custom signal, `revealed` which is emitted once the transition animation finished playing:
 
+\signals
+\signal_relevaed{Revealer}
 
+We can change the type of animation using `Revealer::set_transition_type`, which takes \link mousetrap::RevealerTransitionType of many enum values\endlink. By default, it will be set to `RevealerTransitionType::CROSSFADE`, which fades the widget into view.
+
+We can change the speed of the animation using `Revealer::set_transition_duration`, which takes a time duration as `mousetrap::Time`:
+
+```cpp
+// set duration as 1.5s
+revealer.set_transition_duration(seconds(1.5));
+```
+
+`Revealer`s are rarely necessary, but can increase GUI "snappyness" and elevate the user experience of our app.
+
+---
+
+## Expander
+
+`Expander` is similar to revealer, in that it shows and hides a widget. While `Revealer` is controlled by the developer, `Expander` is controlled by the user. It creates a button-like widget with a label. When it is clicked, the `Expander` reveals its child. It acts identical to the `<details>` html entity:
+
+<details><summary>like this</summary>
+ (revealed text goes here)
+</details>
+
+We choose the label widget with `Expander::set_label_widget` and the child with `Expander::set_child`. Both are optional, if no label widget is set the label will be a simple arrow.
 
 ---
 
@@ -140,7 +178,7 @@ auto label = Label("text!")
 ```
 We can change a labels text after initialization by calling `set_text`. While this is nice `Label` provides a number of other high-lever features, making it suitable even for long blocks of text or entire book pages.
 
-#### Justify Mode
+### Justify Mode
 
 Justification is how multiple words in a line are arranged. There are 5 modes in totla, all part of the enum `JustifyMode`:
 
@@ -203,9 +241,133 @@ For things like color, other fonts, and many more options, [consult the pango do
 
 ## ImageDisplay
 
+`ImageDisplay` is used to display static images. It works by taking image data in RAM, deep-copying it into the graphics card memory,
+then using it to display the image on screen.
+
+Assuming we have an image at the absolute path `/resources/image.png`, we can create an `ImageDisplay` like so:
+
+```cpp
+auto display = ImageDisplay();
+display.create_from_file("/resources/image.png");
+```
+
+The following image formats are supported by `ImageDisplay`:
+
+| Format Name             | File Extensions |
+|-------------------------|-----------------|
+| PNG                     | `.png`  |
+| JPEG                    | `.jpeg` `.jpe` `.jpg`  |
+| JPEG XL image           | `.jxl`  |
+| Windows Metafile        | `.wmf` `.apm`  |
+| Windows animated cursor | `.ani`  |
+| BMP                     | `.bmp`  |
+| GIF                     | `.gif`  |
+| MacOS X icon            | `.icns`  |
+| Windows icon            | `.ico` `.cur`  |
+| PNM/PBM/PGM/PPM         | `.pnm` `.pbm` `.pgm` `.ppm`  |
+| QuickTime               | `.qtif` `.qif`  |
+| Scalable Vector Graphics | `.svg` `.svgz` `.svg.gz`  |
+| Targa                   | `.tga` `.targa`  |
+| TIFF                    | `.tiff` `.tif`  |
+| WebP                    | `.webp`  |
+| XBM                     | `.xbm`  |
+| XPM                     | `.xpm`  |
+
+Afterwards, we cannot change the contents of `ImageDisplay` directly. If the file on disk changes, `ImageDisplay` remains unchanged. If we want to update `ImageDisplay`, we should call `create_from_file` with the same path again.
+
+By default, `ImageDisplay` behaves just like any other wigdet, in that it scales freely, which, in case of a raster-based image, may distort the image. To prevent this, we can call `display.set_expand(false)` which prevents expansion of the widget, then sizehint it like so:
+
+```cpp
+display.set_size_request(display.get_size());
+```
+
+Where `ImageDisplay::get_size` returns the original resolution of the image it was created from. If we want to allow scaling (expansion) but want to keep the aspect ratio òf an `ImageDisplay` fixed, we can use the container widget `AspectFrame`, which we will learn about later in this section.
+
+---
+
 ## LevelBar
 
-## Progressbar & Spinner 
+`LevelBar` is used to display a fraction, often use to indicate the level of something such as the volume of a playback device.
+
+To create a level bar, we need to specify the minimum and maximum value of the range we wish to display. We can then set the current value using `LevelBar::set_value`:
+
+```cpp
+// create level for range [0, 2]
+auto level_bar = LevelBar(0, 2);
+level_bar.set_value(1.0); // set to 50%
+```
+
+The bar will be oriented horizontally by default, but we can call `set_orientation` and change this.
+
+Once the bar reaches 75%, it changes color:
+
+\image html level_bar.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto box = Box(Orientation::VERTICAL);
+box.set_spacing(10);
+box.set_margin(10);
+
+size_t n_bars = 5;
+for (size_t i = 0; i < n_bars+1; ++i)
+{
+    float fraction = 1.f / n_bars;
+
+    auto label = Label(std::to_string(int(fraction * 100)) + "%");
+    label.set_size_request({50, 0});
+
+    auto bar = LevelBar(0, 1);
+    bar.set_value(fraction);
+    bar.set_expand_horizontally(true);
+
+    auto local_box = Box(Orientation::HORIZONTAL);
+    local_box.push_back(label);
+    local_box.push_back(bar);
+    box.push_back(local_box);
+}
+
+window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+The bar can also be used to display a discrete value (a range only consisting of integers), in which case the bar will be shown segmented. We can set the level bars mode using `set_mode`, which takes either `LevelBarMode::CONTINUOUS` or `LevelBarMode::DISCRETE` as its argument.
+
+---
+
+## Progressbar
+
+A specialized case of indicating a continous value is that of a **progress bar**. A progress bar is used to show how much of a task is currently complete, this is most commonly used during a multi-second loading animation. As more and more resources are loaded, the progress bar fills, which communicates to the user how long they will have to wait.
+
+`ProgressBar` is a widget built for this purpose. It does not have an upper or lower bound, it is alwasy assumed to be show values in the range `[0, 1]`. We can set the current fraction using `ProgressBar::set_fraction`. `ProgressBar` has a special animation trigger, which makes the bar "pulse", which is supposed to show the end user that the bar has changed fractions. We can trigger this animation by simply calling `ProgressBar::pulse`. Note that this does not change the currently displayed fraction of the progress bar.
+
+\image html progress_bar.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto progress_bar = ProgressBar();
+progress_bar.set_fraction(0.47);
+progress_bar.set_vertical_alignment(Alignment::CENTER);
+progress_bar.set_expand(true);
+
+auto label = Label("47%");
+label.set_margin_end(10);
+
+auto box = Box(Orientation::HORIZONTAL);
+box.set_homogeneous(false);
+box.push_back(label);
+box.push_back(progress_bar);
+box.set_margin(10);
+
+window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+## Spinner
+
+For progress where we do not have an exact fraction, we can use the `Spinner` widget, which simply displays an animated spinning loading icon. Using `Spinner::set_is_spinning`, we can control whether the animation is currently playing or not.
+
+---
 
 ## Interactive Widgets
 

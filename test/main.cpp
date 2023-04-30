@@ -69,7 +69,7 @@ int main()
         add_test(new WidgetLayoutTest(), "Widget Layout");
         add_test(new ImageScaleTest(), "Image Scaling");
         add_test(new ListTest(), "ListView");
-        add_test(new LabelTest(), "Label");
+        //add_test(new LabelTest(), "Label");
 
         // action to hide gui element other than stack child
 
@@ -169,11 +169,16 @@ int main()
         state->main_window.set_child(state->stack_box);
         state->main_window.set_titlebar_widget(state->main_window_header_bar);
 
-        auto separator = Separator();
-        separator.set_margin(20);
-        separator.set_expand(true);
-        state->main_window.set_child(separator);
+        // TODO
 
+        auto expander = Expander();
+        expander.set_label_widget(Label("Click to Expand"));
+        expander.set_child(Label("Child Widget"));
+
+        state->main_window.set_child(expander);
+        // TODO
+
+        //state->main_window.set_child(state->stack_box);
         state->main_window.present();
     });
 
