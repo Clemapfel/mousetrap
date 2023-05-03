@@ -16,7 +16,6 @@ namespace mousetrap
       CTOR_SIGNAL(Window, activate_focused_widget)
     {}
 
-
     Window::Window(Application& app)
         : WidgetImplementation<GtkWindow>(GTK_WINDOW(gtk_application_window_new(app.operator GtkApplication*()))),
           CTOR_SIGNAL(Window, close_request),

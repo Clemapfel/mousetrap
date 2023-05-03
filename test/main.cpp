@@ -54,8 +54,6 @@ void add_test(Widget* test, const std::string& title)
     auto _ = state->stack.add_child(hbox(*test), title);
 }
 
-
-
 /// @brief main
 int main()
 {

@@ -5,6 +5,8 @@
 
 #include <mousetrap/application.hpp>
 #include <mousetrap/log.hpp>
+#include <mousetrap/render_area.hpp>
+
 #include <iostream>
 
 namespace mousetrap
@@ -38,6 +40,11 @@ namespace mousetrap
             return self;
         }
     }
+
+    static void test()
+    {
+        std::cout << "Also called" << std::endl;
+    }
     
     Application::Application(const std::string& id)
         : CTOR_SIGNAL(Application, activate),
@@ -52,6 +59,8 @@ namespace mousetrap
 
         if (not G_IS_OBJECT(_internal))
             log::warning("TODO");
+
+        connect_signal("startup", detail::initialize_opengl);
     }
 
     Application::~Application()

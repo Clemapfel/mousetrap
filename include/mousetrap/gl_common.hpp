@@ -20,9 +20,6 @@ using GLNativeHandle = GLuint;
 
 namespace mousetrap
 {
-    /// @brief initliaze the OpenGL state, should be called after gtk_init
-    void initialize_opengl();
-
     /// @brief convert relative widget space pos to OpenGL coordinates
     /// @param pos position in 2d space
     /// @returns mousetrap::Vector2f

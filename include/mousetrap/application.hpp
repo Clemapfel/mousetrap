@@ -43,7 +43,7 @@ namespace mousetrap
     /// \signals
     /// \signal_activate{Application}
     /// \signal_shutdown{Application}
-    /// \todo add files open signal
+    /// \todo add files-open signal
     class Application : public SignalEmitter,
         HAS_SIGNAL(Application, activate),
         HAS_SIGNAL(Application, shutdown)
