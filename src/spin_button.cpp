@@ -33,13 +33,14 @@ namespace mousetrap
         }
     }
 
-    SpinButton::SpinButton(float min, float max, float step)
+    SpinButton::SpinButton(float min, float max, float step, Orientation orientation)
         : WidgetImplementation<GtkSpinButton>(GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(min, max, step))),
           CTOR_SIGNAL(SpinButton, value_changed),
           CTOR_SIGNAL(SpinButton, wrapped)
     {
         _internal = detail::spin_button_internal_new(get_native());
         detail::attach_ref_to(G_OBJECT(get_native()), _internal);
+        set_orientation(orientation);
     }
 
     SpinButton::SpinButton(detail::SpinButtonInternal* internal)

@@ -171,11 +171,7 @@ int main()
 
         // TODO
 
-        auto expander = Expander();
-        expander.set_label_widget(Label("Click to Expand"));
-        expander.set_child(Label("Child Widget"));
 
-        state->main_window.set_child(expander);
         // TODO
 
         //state->main_window.set_child(state->stack_box);

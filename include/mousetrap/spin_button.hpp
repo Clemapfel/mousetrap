@@ -46,7 +46,8 @@ namespace mousetrap
             /// @param min lower bound
             /// @param max upper bound
             /// @param step minimum step increment
-            SpinButton(float min, float max, float step);
+            /// @param orientation
+            SpinButton(float min, float max, float step, Orientation = Orientation::HORIZONTAL);
 
             /// @brief construct as thin wrapper \internal
             /// @param internal

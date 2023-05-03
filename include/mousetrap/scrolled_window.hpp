@@ -21,9 +21,6 @@ namespace mousetrap
 
         /// @brief whether scrollbar is visible is decided by the default handler
         AUTOMATIC = GTK_POLICY_AUTOMATIC,
-
-        /// @brief whether scrollbar is visible or hidden is entirely decided by the user
-        EXTERNAL = GTK_POLICY_EXTERNAL
     };
 
     /// @brief placement of the scrollbars relative to the window
