@@ -9,6 +9,7 @@
 #include <mousetrap/menu_model.hpp>
 #include <mousetrap/relative_position.hpp>
 #include <mousetrap/popover.hpp>
+#include <mousetrap/popover_menu.hpp>
 
 #ifdef DOXYGEN
     #include "../../docs/doxygen.inl"
@@ -16,34 +17,13 @@
 
 namespace mousetrap
 {
-    /// @brief displays a menu inside a popover that is attached to a popover menu button. If the button is pressed, the popover is shown automatically
-    /// \signals
-    /// \signal_closed{PopoverMenu}
-    /// \widget_signals{PopoverMenu}
-    class PopoverMenu : public WidgetImplementation<GtkPopoverMenu>,
-        HAS_SIGNAL(PopoverMenu, closed)
-    {
-        friend class PopoverMenuButton;
-
-        public:
-            /// @brief create from menu model
-            /// @param menu_model
-            PopoverMenu(const MenuModel&);
-
-        protected:
-            void refresh_widgets();
-
-        private:
-            const MenuModel* _model = nullptr;
-    };
-
     /// @brief popover menu button, if pressed, shows it's attached popover or popover menu automatically
-    class PopoverMenuButton : public WidgetImplementation<GtkMenuButton>,
-        HAS_SIGNAL(PopoverMenuButton, activate)
+    class PopoverButton : public WidgetImplementation<GtkMenuButton>,
+        HAS_SIGNAL(PopoverButton, activate)
     {
         public:
             /// @brief construct with no child or popover attached
-            PopoverMenuButton();
+            PopoverButton();
 
             /// @brief set the label widget of the button
             /// @param widget can be nullptr

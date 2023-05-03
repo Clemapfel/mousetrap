@@ -151,7 +151,7 @@ model.add_action("Action 02", action_02);
 
 // create view, GUI elements that display the model
 auto popover_menu = PopoverMenu(model);
-auto popover_menu_button = PopoverMenuButton();
+auto popover_menu_button = PopoverButton();
 popover_menu_button.set_popover_menu(popover_menu);
 
 // add button to window
@@ -195,7 +195,7 @@ int main()
 
         // create view, GUI elements that display the model
         auto popover_menu = PopoverMenu(model);
-        auto popover_menu_button = PopoverMenuButton();
+        auto popover_menu_button = PopoverButton();
         popover_menu_button.set_popover_menu(popover_menu);
 
         // add button to window
@@ -215,7 +215,7 @@ int main()
 
 Here, we created two actions `action_01` and `action_02`, each of which simply prints to the console. We then create a `MenuModel`, which is the model component of our menu. By calling `MenuModel::add_action`, we add both actions to this model. `add_action` takes two argument, a label that will be displayed on screen and the action that should be triggered.
 
-Lastly, we create  `PopoverMenu` and `PopoverMenuButton`. The former is a little window that sticks to a button, the latter is a button that, when clicked, shows the window. As seen in the screenshot above, the window now contains two items with our given labels. Clicking the first, we get:
+Lastly, we create  `PopoverMenu` and `PopoverButton`. The former is a little window that sticks to a button, the latter is a button that, when clicked, shows the window. As seen in the screenshot above, the window now contains two items with our given labels. Clicking the first, we get:
 
 ```
 01 triggered

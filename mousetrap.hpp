@@ -58,7 +58,7 @@
 #include <mousetrap/paned.hpp>
 #include <mousetrap/pinch_zoom_event_controller.hpp>
 #include <mousetrap/popover.hpp>
-#include <mousetrap/popover_menu_button.hpp>
+#include <mousetrap/popover_button.hpp>
 #include <mousetrap/progress_bar.hpp>
 #include <mousetrap/relative_position.hpp>
 #include <mousetrap/render_area.hpp>

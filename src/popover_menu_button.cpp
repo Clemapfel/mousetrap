@@ -3,7 +3,7 @@
 // Created on 9/18/22 by clem (mail@clemens-cords.com)
 //
 
-#include <mousetrap/popover_menu_button.hpp>
+#include <mousetrap/popover_button.hpp>
 #include <mousetrap/log.hpp>
 
 #include <iostream>
@@ -35,17 +35,17 @@ namespace mousetrap
         }
     }
 
-    PopoverMenuButton::PopoverMenuButton()
+    PopoverButton::PopoverButton()
         : WidgetImplementation<GtkMenuButton>(GTK_MENU_BUTTON(gtk_menu_button_new())),
-          CTOR_SIGNAL(PopoverMenuButton, activate)
+          CTOR_SIGNAL(PopoverButton, activate)
     {
         gtk_menu_button_set_always_show_arrow(get_native(), true);
     }
 
-    void PopoverMenuButton::set_child(const Widget& child)
+    void PopoverButton::set_child(const Widget& child)
     {
         _child = &child;
-        WARN_IF_SELF_INSERTION(PopoverMenuButton::set_child, this, _child);
+        WARN_IF_SELF_INSERTION(PopoverButton::set_child, this, _child);
 
         gtk_menu_button_set_child(get_native(), child.operator GtkWidget*());
 
@@ -53,35 +53,35 @@ namespace mousetrap
             _popover_menu->refresh_widgets();
     }
 
-    void PopoverMenuButton::remove_child()
+    void PopoverButton::remove_child()
     {
         _child = nullptr;
         gtk_menu_button_set_child(get_native(), nullptr);
     }
 
-    Widget* PopoverMenuButton::get_child() const
+    Widget* PopoverButton::get_child() const
     {
         return const_cast<Widget*>(_child);
     }
 
-    void PopoverMenuButton::set_popover_position(RelativePosition type)
+    void PopoverButton::set_popover_position(RelativePosition type)
     {
         gtk_popover_set_position(gtk_menu_button_get_popover(get_native()), (GtkPositionType) type);
     }
 
-    RelativePosition PopoverMenuButton::get_popover_position() const
+    RelativePosition PopoverButton::get_popover_position() const
     {
         return (RelativePosition) gtk_popover_get_position(gtk_menu_button_get_popover(get_native()));
     }
 
-    void PopoverMenuButton::set_popover(Popover& popover)
+    void PopoverButton::set_popover(Popover& popover)
     {
         _popover = &popover;
         _popover_menu = nullptr;
         gtk_menu_button_set_popover(get_native(), popover.operator GtkWidget*());
     }
 
-    void PopoverMenuButton::set_popover_menu(PopoverMenu& popover_menu)
+    void PopoverButton::set_popover_menu(PopoverMenu& popover_menu)
     {
         _popover = nullptr;
         _popover_menu = &popover_menu;
@@ -90,33 +90,33 @@ namespace mousetrap
         _popover_menu->refresh_widgets();
     }
 
-    void PopoverMenuButton::remove_popover()
+    void PopoverButton::remove_popover()
     {
         _popover_menu = nullptr;
         gtk_menu_button_set_popover(get_native(), nullptr);
     }
 
-    void PopoverMenuButton::popup()
+    void PopoverButton::popup()
     {
         gtk_menu_button_popup(get_native());
     }
 
-    void PopoverMenuButton::popdown()
+    void PopoverButton::popdown()
     {
         gtk_menu_button_popdown(get_native());
     }
 
-    void PopoverMenuButton::set_always_show_arrow(bool b)
+    void PopoverButton::set_always_show_arrow(bool b)
     {
         gtk_menu_button_set_always_show_arrow(get_native(), b);
     }
 
-    void PopoverMenuButton::set_has_frame(bool b)
+    void PopoverButton::set_has_frame(bool b)
     {
         gtk_menu_button_set_has_frame(get_native(), b);
     }
 
-    void PopoverMenuButton::set_is_circular(bool b)
+    void PopoverButton::set_is_circular(bool b)
     {
         if (b and not get_is_circular())
             gtk_widget_add_css_class(GTK_WIDGET(get_native()), "circular");
@@ -124,7 +124,7 @@ namespace mousetrap
             gtk_widget_remove_css_class(GTK_WIDGET(get_native()), "circular");
     }
 
-    bool PopoverMenuButton::get_is_circular() const
+    bool PopoverButton::get_is_circular() const
     {
         return gtk_widget_has_css_class(GTK_WIDGET(get_native()), "circular");
     }

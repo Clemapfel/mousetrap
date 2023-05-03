@@ -37,7 +37,7 @@ namespace mousetrap
 
             /// @brief set maximum number of characters for the text display or -1 for unlimited
             /// @param n
-            void set_max_length(int);
+            void set_max_length(size_t);
 
             /// @brief get maximum number of characters for the text display, or -1 if unlimited
             /// @return size_t

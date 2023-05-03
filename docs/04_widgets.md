@@ -7,7 +7,6 @@ In this chapter, we will learn:
 + How to create compound widgets
 
 ## mousetrap::Widget
-#### Signals
 
 | id          | signature               | emitted when...                                               |
 |-------------|-------------------------|---------------------------------------------------------------|
@@ -144,7 +143,6 @@ aspect_frame.set_child(child_widget);
 
 Where we wrote `4.f / 3` instead of `4 / 3` because in C++, the latter would trigger [integer divison](https://en.wikipedia.org/wiki/Division_(mathematics)#Of_integers) resulting in a ratio of `1`, instead of the intended `1.333...`.
 
-
 ---
 
 ## ScrolledWindow
@@ -164,13 +162,13 @@ Now, the window is free to allocate any size smaller than the widget. The user c
 
 ### Size Propagation
 
-By default, `ScrolledWindow` will size itself according to the prefferred size of the `ScrolledWindow` itself, not of its child. This means we can control the size just like any other widget. Sometimes we do want `ScrolledWindow` to follow its child however. 
+By default, `ScrolledWindow` will size itself according to the prefferred size of the `ScrolledWindow` itself, not of its child. This means we can control the size just like any other widget. Sometimes we do want `ScrolledWindow` to follow its child however.
 
 To force `ScrolledWindow` to assume the width of its child, we call `ScrolledWindow::set_propagate_natural_width(true)`, for height we use `ScrolledWindow::set_propagate_natural_height(true)`. For example, if the child has a preferred size of 5000x1000 and we set `propagate_natural_height` to true, the windows width will be whatever the properties of the `ScrolledWindow` itself determin, while the windows height will be 1000, the natural height of its child.
 
 ### Scrollbar Policy
 
-`ScrolledWindow` has two scrollbars, controlling the horizontal and vertical position. If we want to trigger behavior in addition to changing which part of the chid widget `ScrolledWindow` displays, we can access each scrollbars `Adjustment` using `ScrolledWindow::get_horizontal_adjustment` and `ScrolledWindow::get_vertical_adjustment` respectively. 
+`ScrolledWindow` has two scrollbars, controlling the horizontal and vertical position. If we want to trigger behavior in addition to changing which part of the chid widget `ScrolledWindow` displays, we can access each scrollbars `Adjustment` using `ScrolledWindow::get_horizontal_adjustment` and `ScrolledWindow::get_vertical_adjustment` respectively.
 
 The default behavior is that if the users cursor enters the `ScrolledWindow`, both of the scrollbars will reveal themself. Sometimes, we do not want one or both of the scrollbars to behave this way, for example hide one of them completely. This behavior of the scroll bars is controlled with a **policy** which is one of the following values:
 
@@ -378,94 +376,6 @@ display.set_size_request(display.get_size());
 
 Where `ImageDisplay::get_size` returns the original resolution of the image it was created from. If we want to allow scaling (expansion) but want to keep the aspect ratio òf an `ImageDisplay` fixed, we can use the container widget `AspectFrame`, which we will learn about later in this section.
 
----
-
-## LevelBar
-
-`LevelBar` is used to display a fraction, often use to indicate the level of something such as the volume of a playback device.
-
-To create a level bar, we need to specify the minimum and maximum value of the range we wish to display. We can then set the current value using `LevelBar::set_value`:
-
-```cpp
-// create level for range [0, 2]
-auto level_bar = LevelBar(0, 2);
-level_bar.set_value(1.0); // set to 50%
-```
-
-The bar will be oriented horizontally by default, but we can call `set_orientation` and change this.
-
-Once the bar reaches 75%, it changes color:
-
-\image html level_bar.png
-
-\how_to_generate_this_image_begin
-```cpp
-auto box = Box(Orientation::VERTICAL);
-box.set_spacing(10);
-box.set_margin(10);
-
-size_t n_bars = 5;
-for (size_t i = 0; i < n_bars+1; ++i)
-{
-    float fraction = 1.f / n_bars;
-
-    auto label = Label(std::to_string(int(fraction * 100)) + "%");
-    label.set_size_request({50, 0});
-
-    auto bar = LevelBar(0, 1);
-    bar.set_value(fraction);
-    bar.set_expand_horizontally(true);
-
-    auto local_box = Box(Orientation::HORIZONTAL);
-    local_box.push_back(label);
-    local_box.push_back(bar);
-    box.push_back(local_box);
-}
-
-window.set_child(box);
-```
-\how_to_generate_this_image_end
-
-The bar can also be used to display a discrete value (a range only consisting of integers), in which case the bar will be shown segmented. We can set the level bars mode using `set_mode`, which takes either `LevelBarMode::CONTINUOUS` or `LevelBarMode::DISCRETE` as its argument.
-
----
-
-## Progressbar
-
-A specialized case of indicating a continous value is that of a **progress bar**. A progress bar is used to show how much of a task is currently complete, this is most commonly used during a multi-second loading animation. As more and more resources are loaded, the progress bar fills, which communicates to the user how long they will have to wait.
-
-`ProgressBar` is a widget built for this purpose. It does not have an upper or lower bound, it is alwasy assumed to be show values in the range `[0, 1]`. We can set the current fraction using `ProgressBar::set_fraction`. `ProgressBar` has a special animation trigger, which makes the bar "pulse", which is supposed to show the end user that the bar has changed fractions. We can trigger this animation by simply calling `ProgressBar::pulse`. Note that this does not change the currently displayed fraction of the progress bar.
-
-\image html progress_bar.png
-
-\how_to_generate_this_image_begin
-```cpp
-auto progress_bar = ProgressBar();
-progress_bar.set_fraction(0.47);
-progress_bar.set_vertical_alignment(Alignment::CENTER);
-progress_bar.set_expand(true);
-
-auto label = Label("47%");
-label.set_margin_end(10);
-
-auto box = Box(Orientation::HORIZONTAL);
-box.set_homogeneous(false);
-box.push_back(label);
-box.push_back(progress_bar);
-box.set_margin(10);
-
-window.set_child(box);
-```
-\how_to_generate_this_image_end
-
-## Spinner
-
-For progress where we do not have an exact fraction, we can use the `Spinner` widget, which simply displays an animated spinning loading icon. Using `Spinner::set_is_spinning`, we can control whether the animation is currently playing or not.
-
----
-
-## Interactive Widgets
-
 ## Button
 
 We've seen `Button` in the previous chapter, it is one of the simplest ways for a user to interact with an application.
@@ -596,40 +506,162 @@ We can check what the properties of a `SpinButton`s range are by either calling 
 
 Similar to `Scale`, `ScrollBar` is used to pick a value on a floating-point scale. It is often used as a way to choose which part of a widget should be shown on screen. For an already-automated way of doing this, see `ScrolledWindow`.
 
+
+---
+
+## LevelBar
+
+`LevelBar` is used to display a fraction, often use to indicate the level of something such as the volume of a playback device.
+
+To create a level bar, we need to specify the minimum and maximum value of the range we wish to display. We can then set the current value using `LevelBar::set_value`:
+
+```cpp
+// create level for range [0, 2]
+auto level_bar = LevelBar(0, 2);
+level_bar.set_value(1.0); // set to 50%
+```
+
+The bar will be oriented horizontally by default, but we can call `set_orientation` and change this.
+
+Once the bar reaches 75%, it changes color:
+
+\image html level_bar.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto box = Box(Orientation::VERTICAL);
+box.set_spacing(10);
+box.set_margin(10);
+
+size_t n_bars = 5;
+for (size_t i = 0; i < n_bars+1; ++i)
+{
+    float fraction = 1.f / n_bars;
+
+    auto label = Label(std::to_string(int(fraction * 100)) + "%");
+    label.set_size_request({50, 0});
+
+    auto bar = LevelBar(0, 1);
+    bar.set_value(fraction);
+    bar.set_expand_horizontally(true);
+
+    auto local_box = Box(Orientation::HORIZONTAL);
+    local_box.push_back(label);
+    local_box.push_back(bar);
+    box.push_back(local_box);
+}
+
+window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+The bar can also be used to display a discrete value (a range only consisting of integers), in which case the bar will be shown segmented. We can set the level bars mode using `set_mode`, which takes either `LevelBarMode::CONTINUOUS` or `LevelBarMode::DISCRETE` as its argument.
+
+---
+
+## Progressbar
+
+A specialized case of indicating a continous value is that of a **progress bar**. A progress bar is used to show how much of a task is currently complete, this is most commonly used during a multi-second loading animation. As more and more resources are loaded, the progress bar fills, which communicates to the user how long they will have to wait.
+
+`ProgressBar` is a widget built for this purpose. It does not have an upper or lower bound, it is alwasy assumed to be show values in the range `[0, 1]`. We can set the current fraction using `ProgressBar::set_fraction`. `ProgressBar` has a special animation trigger, which makes the bar "pulse", which is supposed to show the end user that the bar has changed fractions. We can trigger this animation by simply calling `ProgressBar::pulse`. Note that this does not change the currently displayed fraction of the progress bar.
+
+\image html progress_bar.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto progress_bar = ProgressBar();
+progress_bar.set_fraction(0.47);
+progress_bar.set_vertical_alignment(Alignment::CENTER);
+progress_bar.set_expand(true);
+
+auto label = Label("47%");
+label.set_margin_end(10);
+
+auto box = Box(Orientation::HORIZONTAL);
+box.set_homogeneous(false);
+box.push_back(label);
+box.push_back(progress_bar);
+box.set_margin(10);
+
+window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+## Spinner
+
+For progress where we do not have an exact fraction, we can use the `Spinner` widget, which simply displays an animated spinning loading icon. Using `Spinner::set_is_spinning`, we can control whether the animation is currently playing or not.
+
 ---
 
 ## Entry
 
+Being able to input text with the keyboard is central to desktop applications, as such, `Entry`, the widget used for single-line text entry, may be one of the most important widgets.
+
+Entry is an area that, when clicked, allows the user to write freely. This text is written to an internal text buffer. We can access the text in that buffer with `Entry::get_text`. `Entry::set_text` overwrites this buffer with a custom message.
+
+We can of course control the width of an `Entry` by sizehinting it like any other widget, though a less manual way to do this is `Entry::set_max_length`, which takes an integer that is the number of characters that the prompts should make size for. 
+
+`Entry` supports "password mode", which is when each character typed is replaced with a dot, or otherwise made unreadable. This is such that a person looking over another persons shoulder can read a sensitive prompt, such as a message or password. We can enter and exit this mode using `Entry::set_text_visible`, where `false` is password-mode and `true` is the regular mode.
+
+Lastly, `Entry` is activatable, which is usually done by pressing the enter key while the cursor is inside the entry. This does not cause any behavior initially, but we can connect to the `activate` signal of `Entry` to trigger behavior.
+
+Other than `activate`, `Entry` has one more signal `text_changed`, which is emitted whenever the internal buffer changes, including when set programmatically using `set_text`.
+
+\signals 
+\signal_activate{Entry}
+\signal_text_changed{Entry}
+
 ## TextView
 
-### Signals
+While we can technically input a newline character into `Entry`, it is not possible to display two lines at the same time. For this purpose, we use `TextView`. It supports a number of basic text-editor features, including **undo / redo**  are triggered by the user pressing Control + Z or Control + Y respectively. We can also trigger this behavior manually by calling `TextView::undo` / `TextView::redo`.
 
-| id         | signature                       | emitted when...                                                                          |
-|------------|---------------------------------|------------------------------------------------------------------------------------------|
-| `text_changed` | `(TextView*, (Data_t)) -> void` | text buffer changes                                                                      |
-| `undo` | `(TextView*, (Data_t)) -> void` | undo keybinding is pressed, this signal can be emitted directly to trigger this behavior |                 
-| `undo` | `(TextView*, (Data_t)) -> void` | redo keybinding is pressed, this signal can be emitted directly to trigger this behavior |  
+Much like `Label`, we can set how the text aligns horizontally using `TextView::set_justify_mode`. To further customize how text is displayed, we can choose the **internal margin**, which is the distance between the frame of the `TextView` and the text inside of it. `TextView::set_left_margin`, `TextView::set_right_margin`, `TextView::set_top_margin` and `TextView::set_bottom_margin` allow us to customize this freely.
 
+`TextView` does not have the `activate` signal, pressing enter while the cursor is inside the widget will simply create a new line. 
 
-## PopoverMenuButton & Popovers
+`TextView` has the following signals, where `text_changed` behaves exactly like it does with `Entry`:
 
-### Signals: Popover
+\signals
+\signal_text_changed{TextView}
+\signal_undo{TextView}
+\signal_redo{TextView}
 
-| id       | signature                      | emitted when...      |
-|----------|--------------------------------|----------------------|
-| `closed` | `(Popover*, (Data_t)) -> void` | popover is closed    |  
+---
 
-### Signals: PopoverMenu
+## Popovers
 
-| id       | signature                          | emitted when...      |
-|----------|------------------------------------|----------------------|
-| `closed` | `(PopoverMenu*, (Data_t)) -> void` | popover is closed    |
+\todo figure popover 
 
-### Signals: PopoverMenuButton
+A popover is a special kind of window. It is always **[modal](#window)**, instead of the regular frame with a close button it instead closes when the user exists the window by clicking somewhere else. Showing the popover is called **pop up**, close the popover is called **pop down**. 
 
-| id         | signature                                | emitted when...                                                                          |
-|------------|------------------------------------------|------------------------------------------------------------------------------------------|
-| `activate` | `(PopoverMenuButton*, (Data_t)) -> void` | button is clicked or otherwise activated |            
+To create a generic popover we can place freely, we use `Popover`. The popover cannot be displayed by itself, it has to attach to another widget:
+
+\todo code example
+
+Then we need to manually call `Popover::popoup` or `Popover::popdown` from inside a signal handler. This can be finnicky, which is why there is a widget that automates this for use. `PopoverButton`:
+
+## PopoverButton
+
+Like `Button`, `PopoverButton` has a single child, can be circular, and has the `activate` signals. `PopoverButton` purpose, however, like it's name suggest, is to automatically show / hide a `Popover`. 
+
+We first create the popover, then connect it to the button using `PopoverButton::set_popover`:
+
+```cpp
+auto popover = Popover();
+popover.set_child(// ...
+auto popover_button = PopoverButton();
+popover_button.set_popover(popover);
+```
+
+\todo figure with blank popover
+
+For 90% of cases, this is the way to go when we want to use a `Popover`. It's easy and we don't have to manually control the popover position or when to open/close it. The arrow next to the `PopoverButton`s child indicates to the user that clicking it will reveal a popover. We can surpress this arrow by setting `PopoverButton::set_always_show_arrow` to `false`.
+
+`PopoverButton` lets us control the relative position of the popover by setting `PopoverButton::set_popover_position` to one of the following: `RelativePosition::ABOVE`, `RelativePosition::LEFT_OF`, `RelativePosition::RIGHT_OF`, `RelativePosition::BELOW`, which will place the popover above, left of, right of or below the button respectively. Before `set_popover_position` is called, a `PopoverButton` instance will dynamically choose where to display the popover, based on the window position and screen layout.
+
+To further customize the `Popover`, we have to call one of its member functions. `Popover::set_has_base_arrow` hides the triangular area which points to the widget it is attached to. 
+
+We will see one more use of `PopoverButton` in the [next chapter on menus](06_menus.md), where we can have it create a popover to show a menu for us.
 
 ---
 
@@ -646,8 +678,6 @@ Similar to `Scale`, `ScrollBar` is used to pick a value on a floating-point scal
 ## ListView
 
 `ListView` is one of the more commonly used widgets. At first, it may seem very similar to `Box`. `ListView` can either be horizontal or vertical, arranging its children in a line. Much like `Box`, children can be added to the front, end, or at a specific position in the container. Unlike `Box`, `ListView::push_front`, `ListView::insert` and `ListView::push_back` have a return value, which returns an **iterator**. We can supply this iterator as an additional argument to functions inserting widgets, which will create a **nested list**. It's best to see an example:
-
-
 
 
 ### Signals
@@ -667,8 +697,6 @@ Similar to `Scale`, `ScrollBar` is used to pick a value on a floating-point scal
 ---
 
 ## Stack
-
-
 
 ### Signals
 
@@ -698,6 +726,8 @@ Where `_` is an unused argument.
 | id         | signature                         | emitted when...                                                                  |
 |------------|-----------------------------------|----------------------------------------------------------------------------------|
 | `activate` | `(ColumnView*, (Data_t)) -> void` | user pressed the enter key or otherwise activates the view or a widget inside it |
+
+## DropDown
 
 ---
 

@@ -1,4 +1,4 @@
-## Chapter 6: Menus
+# Chapter 6: Menus
 
 In this chapter, we will learn:
 + How to create complex, nested Menus
@@ -7,7 +7,7 @@ In this chapter, we will learn:
 
 We've already seen basic use of menus in the [chapter on actions](03_actions.md#menus). We recall that a menu has two components, a **model** of type `mousetrap::MenuModel`, and a **view**, which is a widget displaying the menu. 
 
-### MenuModel Architecture
+## MenuModel Architecture
 
 `MenuModel` is a list of items. This means the items have a specific order, set by the order at which we insert items into the model. If item A is added before item B at runtime, then A will appear above item B.
 
@@ -39,7 +39,7 @@ int main()
         
         // create model view
         auto popover_menu = PopoverMenu(model);
-        auto menu_button = PopoverMenuButton();
+        auto menu_button = PopoverButton();
         menu_button.set_popover_menu(popover_menu);
         menu_button.set_margin(75);
 
@@ -126,9 +126,12 @@ model.add_section("Type 04: Section", section);
 
 We see that the section label, `"Type 04: Section"` in this case, is used as a type of heading. All items in the inner menu are group together and shown separately. This makes menus more easy to parse, as developer can group items with a similar theme or functionality physically together.
 
-## Displaying Menus: MenuBar
+## Displaying Menus: PopoverMenu & MenuBar
 
-Now that we have learned to construct arbitrarily complex menu *models*, we should turn our attention to the *view*, a widget displaying the model. We've already seen one such widget, `PopoverMenu`, which is tied to a `PopoverMenuButton` which pops it up. This widget is well suited for context actions, it hides the menu unless the user spefically requests it to appear, which result in less clutter in the UI.
+Now that we have learned to construct arbitrarily complex menu *models*, we should turn our attention to the *view*, a widget displaying the model. We've already seen one such widget, `PopoverMenu`, which is tied to a `PopoverButton` which pops it up. This widget is well suited for context actions, it hides the menu unless the user spefically requests it to appear, which result in less clutter in the UI.
+
+\todo cpp code
+\todo figure popover menu
 
 We have one other widget to display menu models, this one is visible most of time. It is called `MenuBar`, and used extensively by many applications:
 
@@ -197,7 +200,7 @@ For `PopoverMenu`, there are no requirements.
 
 Another difference between `MenuBar` and `PopoverMenu` is the way the menus are displayed. When navigating through submenus in `PopoverMenu`, new submenus "slide" into view, taking over the entire popover. In `MenuBar`, this sliding animation does not happen, instead the current submenu and all of its "father" submenus (all submenus for whom the current one is a child) are visibl at the same time. This asthetic difference makes both type of menu model views suited for different purposes.
 
-### Summary
+## Summary
 
 Menus are extremely powerful, and, because of this, they are complex to understand. With practice and good software design, we can create deep, complex menus that are still easy to understand and use. We as developers should make this our first priority. By properly using the action interface and good UI design, a menu by itself can be just as powerful as an entire application.
 
