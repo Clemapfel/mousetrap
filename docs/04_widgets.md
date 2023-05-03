@@ -41,9 +41,7 @@ All widgets share common properties that govern how they behave when the contain
 
 ---
 
-## Common Widget Containers
-
-### Window
+## Window
 
 Windows are central to any application. Any `Window` instance takes the application itself as the only argument to its constructor. This is because `Window` and  `Application` are linked internally. For example, if all `Window`s are closed, the application exits.
 
@@ -51,7 +49,7 @@ All widgets are contained in a `Window`, that is, every widget has a sequence of
 
 Windows are containers, but can only contain a single widget inside of them. We set the windows child using `Window::set_child`. This child will usually be a container that contain more than one widget, so we are not limited by windows 1-child limitation.
 
-#### Signals
+### Signals
 
 `Window` has three signals (on top of those inherited from `Widget`) that we can connect to:
 
@@ -65,13 +63,13 @@ Windows are containers, but can only contain a single widget inside of them. We 
 
 `activate_focused_widget` is self-explanatory (it is emitted when the widget that is currently in focus emits `activate`). Signal `close_request` is not.
 
-#### Close Request
+### Close Request
 
 When the window manager, which is the part of the users operating system that deals with window layout and lifetime, request a window to close, the window does not immediately close. Instead, `close_request` is emitted first. The return value of `close_request` determines what happens next, if the return value is `WindowCloseRequestResult::ALLOW_CLOSE` then the window will close. If the result is `WindowCloseRequestResult::PREVENT_CLOSE`, the window will stay open. We can use this to for example delay closing of a window until a certain filesystem operation is done. 
 
 If no handler is connected to `close_request`, the default handler will always return `ALLOW_CLOSE`.
 
-### Box
+## Box
 
 Boxes are the simplest multi-widget container in mousetrap and are used extensively in almost any application. A box aligns its children horizontally or vertically, depending on the argument passed to the boxes constructor. 
 
@@ -81,24 +79,121 @@ We can add widgets to the start, end or after a specific widget using `push_fron
 
 Between any two children is an optional space, which we can specify using `Box::set_spacing`. This spacing is unrelated to the margins of its child widgets and will be applied between any two consecutive children, but not before the very first and after the very last child.
 
+## CenterBox
 
-### CenterBox
+`CenterBox` is a widget that has exactly three children, at the start, end and center of the allocated area. `CenterBox` prioritizes keeping the center widget centered at all costs, making it an ideal choice for a layout where this is desired.
 
-### Overlay
+We set the start widget with `CenterBox::set_start_child`, the center widget with `CenterBox::set_center_child` and the end widget with `CenterBox::set_end_child`.
 
-### Frame
+`CenterBox` is orientable, meaning it also supplies `set_orientation` to choose the preferred layout.
 
-### AspectFrame
+## Overlay
 
-### ScrolledWindow
+So far, all widget containers align widget such that the do not overlap, which is why the margin property may not be negative. There is one container that allows overlapping: `Overlay`.
 
-#### Signals
+`Overlay` has one "base" widget, which is at the conceptual bottom of the overlay. We set this widget using `Overlay::set_child`. Then, we can add any number of widgets on top of the base widget using `Overlay::add_overlay`:
 
-| id             | signature                                                                  | emitted when...                                       |
-|----------------|----------------------------------------------------------------------------|-------------------------------------------------------|
-| `scroll_child` | `(ScrolledWindow*, ScrollType type, bool is_horizontal, (Data_t)) -> void` | user requests scroll action through with a keybinding |
+```cpp
+auto child_widget = // ...
+auto overlay_widget = // ...
 
-### Paned
+auto overlay = Overlay();
+overlay.set_child(child_widget);
+overlay.add_overlay(overlay_widget);
+```
+
+\todo image
+
+By default, `Overlay` will allocate exactly as much space as the base widget does. If one of the overlaid widgets takes up more space than the base widget, it will be truncated. We can change this by supplying a second argument to `add_overlay`, which is a boolean indicated whether the overlay widget should be included in the entire containers allocation, that is, if the overlay widget is larger than the base widget, should the overlay resize itself such that the entire overlay widget is shown:
+
+```cpp
+overlay.add_overlay(overlay_widget, true);
+``` 
+
+\todo image
+
+When constructing complex compound widgets, we often want to widgets to overlap each other. This can cause problems, if the user clicks on an area that is occupied by two or more widgets, which widget should be activated? By default, only the top-most widget will be activated. If we want a different layer to be activated instead, we have to deactivate interaction with all widgets above it, either by calling `Widget::hide` or `Widget::set_can_respond_to_input(false)`. 
+
+---
+
+## Frame
+
+`Frame` is a purely cosmetical widget that displays whatever child we choose using `Frame::set_child` in a frame with a small border and rounded corners:
+
+```cpp
+auto child_widget = // ...
+auto frame = Frame();
+frame.set_child(child_widget);
+```
+
+\todo image
+
+Using `Frame::set_label_widget`, we can furthermore choose a label widget, which will be displayed above the child widget of the frame. This will usually be a `Label`, though `set_label_widget` accepts any kind of widget.
+
+---
+
+## AspectFrame
+
+Not to be confused with `Frame`, `AspectFrame` adds no graphical element to its single child. Instead, the widget set via `AspectFrame::set_child` will be forced to stay in a certain **aspect ratio**. We choose the aspect ratio either in the constructor or with `AspectFrame::set_ratio`, both of which accept a float that is `width / height`. For example, if we want an aspect ratio of 4 by 3:
+
+```cpp
+auto child_widget = // ...
+auto aspect_frame = AspectFrame(4.f / 3) // 4:3 aspect ratio
+aspect_frame.set_child(child_widget);
+```
+
+Where we wrote `4.f / 3` instead of `4 / 3` because in C++, the latter would trigger [integer divison](https://en.wikipedia.org/wiki/Division_(mathematics)#Of_integers) resulting in a ratio of `1`, instead of the intended `1.333...`.
+
+
+---
+
+## ScrolledWindow
+
+By default, most containers will allocate a size that is equal to or exceeds the largest preferred size of its children. For example, if we create a widget that has a preferred size of 5000x1000 px and use it as the child of a `Window`, the `Window` will attempt to allocate 5000x1000 px on screen, making the window far larger than most screens can display. We can prevent this by instead adding the widget to a `ScrolledWindow`, which truncates it while giving the user a way to choose which part of the large widget they want to see:
+
+```cpp
+auto large_widget = // ...
+auto scrolled_window = ScrolledWindow();
+scrolled_window.set_child(large_widget);
+window.set_child(scrolled_window);
+```
+
+Now, the window is free to allocate any size smaller than the widget. The user can choose which part to display be triggering the scroll bars native to `ScrolledWindow`.
+
+\todo image
+
+### Size Propagation
+
+By default, `ScrolledWindow` will size itself according to the prefferred size of the `ScrolledWindow` itself, not of its child. This means we can control the size just like any other widget. Sometimes we do want `ScrolledWindow` to follow its child however. 
+
+To force `ScrolledWindow` to assume the width of its child, we call `ScrolledWindow::set_propagate_natural_width(true)`, for height we use `ScrolledWindow::set_propagate_natural_height(true)`. For example, if the child has a preferred size of 5000x1000 and we set `propagate_natural_height` to true, the windows width will be whatever the properties of the `ScrolledWindow` itself determin, while the windows height will be 1000, the natural height of its child.
+
+### Scrollbar Policy
+
+`ScrolledWindow` has two scrollbars, controlling the horizontal and vertical position. If we want to trigger behavior in addition to changing which part of the chid widget `ScrolledWindow` displays, we can access each scrollbars `Adjustment` using `ScrolledWindow::get_horizontal_adjustment` and `ScrolledWindow::get_vertical_adjustment` respectively. 
+
+The default behavior is that if the users cursor enters the `ScrolledWindow`, both of the scrollbars will reveal themself. Sometimes, we do not want one or both of the scrollbars to behave this way, for example hide one of them completely. This behavior of the scroll bars is controlled with a **policy** which is one of the following values:
+
++ `ScrollbarVisibilityPolicy::NEVER`: scrollbar is hidden permanently
++ `ScrollbarVisibilityPolicy::ALWAYS`: scrollbar is always shown, does not hide itself
++ `ScrollbarVisibilityPolicy::AUTOMATIC`: default behavior, see above
+
+We can set the policy for either scrollbar using `ScrolledWindow::set_horizontal_scrollbar_policy` and `ScrolledWIndow::set_vertical_scrollbar_policy`.
+
+### Scrollbar Position
+
+Lastly, we can customize where the scrollbar appear in the window. We choose the position of both at the same time using `ScrolledWindow::set_scrollbar_placement`, which takes one of the following values:
+
++ `CornerPlacement::TOP_LEFT`: horizontal scrollbar at the top, vertical scrollbar on the left
++ `CornerPlacement::TOP_RIGHT`: horizontal at the top, vertical on the right
++ `CornerPlacement::BOTTOM_LEFT`: horizontal at the bottom, vertical on the left
++ `CornerPlacement::BOTTOM_RIGHT`: horizontal at the bottom, vertical on the right
+
+Using this, the scrollbars policy and each scrollbars adjustment, we can hook into every component of the `ScrolledWindow`, making it fully customizable. This adn the common usecase of fitting a large widget into a variable-size container makes `ScrolledWindow` one of the more commonly used container widgets.
+
+---
+
+## Paned
 
 `Paned` is widget that always has exactly two children. Between the two children, a barrier is drawn. The user can click on this barrier and drag it horizontally or vertically, depending on the orientation of the `Paned`. This gives the user the option to resize how much space a widget is allocated by hand.
 
@@ -116,7 +211,7 @@ Shrinkable sets whether the side of the paned can be made smaller than the alloc
 
 ---
 
-### Revealer
+## Revealer
 
 `Revealer` is a "flair" widget, meaning it does not have any direct functionality. Instead, it is used to animate widgets appearing and dissapearing.
 
@@ -373,79 +468,137 @@ For progress where we do not have an exact fraction, we can use the `Spinner` wi
 
 ## Button
 
-### Signals
+We've seen `Button` in the previous chapter, it is one of the simplest ways for a user to interact with an application.
 
-| id        | signature                     | emitted when...               |
-|-----------|-------------------------------|-------------------------------|
-| `activate` | `(Button*, (Data_t)) -> void` | widget is activated, for example by clicking the button, pressing enter while it holds focus, or by calling `activate()` |
-| `clicked` | `(Button*, (Data_t)) -> void` | button is clicked by the user |
+`Button` has the following signals:
+
+\signals
+\signal_activate{Button}
+\signal_clicked{Button}
+
+Where physically clicking the button both emits `activate` and `clicked`, while calling `Widget::activate` only emits `activate`, not clicked. 
+
+To change the label of a button, we use `Button::set_child`. This will usually be a label or image, though any arbitrary widget can be used as a child this way.
+
+Other than the child widget, we can customize a buttons look. `Button::set_has_frame` will change wether the button has a texture outline to it, while `Button::set_is_circular` changes the button to a fully rounded appearance:
+
+\todo image for all 3 buttons
+
+---
 
 ## ToggleButton
 
-### Signals
+`ToggleButton` is a specialized form of `Button`. It supports most of methods/signals, including signal `clicked` and `set_child`, `set_has_frame` and `set_is_circular`.
+Unique to `ToggleButton` is that, if clicked, it stays pressed in, emitting the `toggled` signal (see below). In this way, `ToggleButton` can be used to track a boolean state. To check whether the button is currently toggled, we use `ToggleButton::get_active`, which returns a boolean.
 
-| id        | signature                           | emitted when...               |
-|-----------|-------------------------------------|-------------------------------|
-| `activate` | `(ToggleButton*, (Data_t)) -> void` | widget is activated, for example by clicking the button, pressing enter while it holds focus, or by calling `activate()` |
-| `clicked` | `(ToggleButton*, (Data_t)) -> void` | button is clicked by the user |
-| `toggled` | `(ToggleButton*, (Data_t)) -> void` | buttons state changes |                                   
+\signals
+\signal_toggled{ToggleButton}
+\signal_activate{ToggleButton}
+\signal_clicked{ToggleButton}
+
+\todo figure for untoggled, toggled 
+
+---
+                             
 ## CheckButton
 
-### Signals
+`CheckButton` is almost identical to `ToggleButton` in function, but not appearance. `CheckButton` is an empty box in which a checkmark appears when it is toggled. Just like before, we query whether it is pressed by calling `CheckButton::get_active`.
 
-| id        | signature                          | emitted when...               |
-|-----------|------------------------------------|-------------------------------|
-| `activate` | `(CheckButton*, (Data_t)) -> void` | widget is activated, for example by clicking the button, pressing enter while it holds focus, or by calling `activate()` |
-| `toggled` | `(CheckButton*, (Data_t)) -> void` | buttons state changes | 
+\signals
+\signal_activate{CheckButton}
+\signal_toggled{CheckButton}
+
+\todo figure check, unchecked, inconsistent
+
+---
 
 ## Switch
 
-### Signals
+The last widget that is meant to convey a boolean state to the user, we have `Switch`, which has the appearance of a flick-switch. It can be clicked or dragged to the other state. `Switch` does not emit `toggled`, instead we listen to the `activate` signal and query it's state using `Switch::get_active`.
 
-| id        | signature                     | emitted when...               |
-|-----------|-------------------------------|-------------------------------|
-| `activate` | `(Switch*, (Data_t)) -> void` | widget is activated, for example by clicking the button, pressing enter while it holds focus, or by calling `activate()` |
+\signals
+\signals_activate{CheckButton}
 
-## Adjustments
+\todo figure switch on/off
 
-### Signals
+---
 
-| id        | signature                     | emitted when...               |
-|-----------|-------------------------------|-------------------------------|
-| `value_changed` | `(Adjustment*, (Data_t)) -> void` | `value` property changes |
-| `properties_changed` | `(Adjustment*, (Data_t)) -> void` | property that isn't `value` changes |
+## Adjustment
+
+The next few widgets we will be discussing are used to let the user choose a value from a **range**, which, in mousetrap, is represented by a signal emitter called `Adjustment`. In general, a range has a **lower and upper value**. For example, the range `[0, 2]` has the `lower` of `0` and `upper` of `2`. A second property is the **step increment**, which is the minimum difference between two adjacent values in the range. For example, if our range is still `[0, 2]` and the step increment is `0.5`, then that includes the numbers `{0, 0.5, 1, 1.5, 2}`. If the step increment is `0.01`, `[0,2]` include the numbers  `{0, 0.01, 0.02, ..., 1.98, 2.00}`. 
+
+Turning to the actual `Adjustment` class, it has four properties
+
++ `lower`: Lower bound of the range
++ `upper`: Upper bound of the range
++ `increment`: step increment
++ `value`: Current value, in `[lower, upper]`
+
+For example, expressing the previous range of `[0, 2]` with step increment `0.5`, we create an `Adjustment` like so:
+
+```cpp
+auto adjustment = Adjustment(
+    1,      // value
+    0,      // lower
+    2,      // upper
+    0.5     // increment    
+);
+```
+
+We usually do not need to create our own adjustment, rather it is provided by a widget. Notable about this is that the widget and its adjustment are automatically kept in synch. If we change any property of the adjustment, the widget will change its appearance accordingly, which we will see an example of shortly.
+
+Adjustment has two signals:
+
+\signals
+\signal_value_changed{Adjustment}
+\signal_properties_changed{Adjustment}
+
+We can connect to `value_changed` to monitor the value of an `Adjustment`, and thus whatever widget is controlled by it.
+
+`properties_changed` is emitted when one of upper, lower or step increment is changed, usually through `Adjustment::set_upper`, `Adjustment::set_lower` and/or `Adjustment::set_increment`.
+
+---
 
 ## SpinButton
 
-### Signals
+\todo figure spinbutton in both orientations
 
-| id        | signature                         | emitted when...                                            |
-|-----------|-----------------------------------|------------------------------------------------------------|
-| `value_changed` | `(SpinButton*, (Data_t)) -> void` | `value` property changes                                   |
-| `wrapped` | `(SpinButton*, (Data_t)) -> void` | `set_should_wrap` is set to true and value under/overflows |
+`SpinButton` is used to pick an exact value from a range. The user can click the rectangular area and manually enter a value, or they can increase or decrease the current value by the step increment of the `SpinButton`s adjustment. We supply the properties of the range in `SpinButton`s constructor:
+
+```cpp
+// create SpinButton with range [0, 2] and increment 0.01
+auto spin_button = SpinButton(0, 2, 0.01)
+```
+
+`SpinButton` has two signals:
+
+\signals
+\signal_value_changed{SpinButton}
+\signal_wrapped{SpinButton}
+
+Only the latter of which needs explanation, as we recognize `value_changed` from `Adjustment`. When the user reaches one end of the `SpinButton`s range, which, for a range of `[0, 2]` would be either the value `0` or `2`, by default the value will not change. By setting `SpinButton::set_should_wrap(true)`, instead of stopping, the value will wrap to the other end of the range. So if the user increments at value `2` it will jump to `0`, and if the user decrements at value `0`, it will jump to 2.
+
+We can check what the properties of a `SpinButton`s range are by either calling `SpinButton::get_adjustment` and querying the returned adjustment, or we can use the functions like `SpinButton::get_value`, `SpinButton::get_lower`, etc. directly.
+
+---
 
 ## Scale
 
-### Signals
+\todo figure scale in both orientations
 
-| id        | signature                    | emitted when...                                            |
-|-----------|------------------------------|------------------------------------------------------------|
-| `value_changed` | `(Scale*, (Data_t)) -> void` | `value` property changes          |              
+`Scale`, just like `SpinButton` is a widget that chooses a value from an `Adjustment`. The user chooses the value by click-dragging the knob on the scale. In this way, it is usually harder to pick an exact decimal value on a scale. We can aid in this by displaying the exact value next to the scale, using `Scale::set_should_draw_value`:
+
+\todo figure scale with value drawn
+
+---           
 
 ## ScrollBar
 
-### Signals
+Similar to `Scale`, `ScrollBar` is used to pick a value on a floating-point scale. It is often used as a way to choose which part of a widget should be shown on screen. For an already-automated way of doing this, see `ScrolledWindow`.
 
-`ScrollBar` does not have any signals, but we can connect to the signals of the  `Adjustment` controlling the scrollbar.
+---
 
 ## Entry
-
-### Signals
-
-| id         | signature                                                        | emitted when...                                                               |
-|------------|------------------------------------------------------------------|-------------------------------------------------------------------------------|
-| `activate` | `(Entry*, (Data_t)) -> void`                                     | widget is activated, for example by pressing enter while it holds input focus |
-| `text_changed` | `(Entry*, (Data_t)) -> void`                                     | text buffer changes                 |
 
 ## TextView
 
@@ -457,7 +610,6 @@ For progress where we do not have an exact fraction, we can use the `Spinner` wi
 | `undo` | `(TextView*, (Data_t)) -> void` | undo keybinding is pressed, this signal can be emitted directly to trigger this behavior |                 
 | `undo` | `(TextView*, (Data_t)) -> void` | redo keybinding is pressed, this signal can be emitted directly to trigger this behavior |  
 
-## Revealer
 
 ## PopoverMenuButton & Popovers
 
