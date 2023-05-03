@@ -22,6 +22,11 @@ module mousetrap
 
     """
     """
+    connect_signal = detail.connect_signal
+    export connect_signal
+
+    """
+    """
     const Application = detail.Application
     export Application
 
@@ -29,11 +34,6 @@ module mousetrap
     """
     const run = detail.run
     export run
-
-    """
-    """
-    const connect_signal_activate = detail.connect_signal_activate
-    export connect_signal_activate
 
     """
     """
@@ -154,9 +154,8 @@ end
 using .mousetrap
 
 app = Application("test.app")
-connect_signal_activate(app, function (app, data)
-unsafe_f()
-    return data
+connect_signal(app, "activate", function (app, data)
+     println(" called ")
 end, 1234)
 mousetrap.run(app)
 
