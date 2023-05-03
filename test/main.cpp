@@ -18,6 +18,8 @@
 #include "image_scale_test.hpp"
 #include "list_test.hpp"
 #include "label_test.hpp"
+#include "render_area_test.hpp"
+
 
 using namespace mousetrap;
 
@@ -52,6 +54,8 @@ void add_test(Widget* test, const std::string& title)
     auto _ = state->stack.add_child(hbox(*test), title);
 }
 
+
+
 /// @brief main
 int main()
 {
@@ -62,6 +66,7 @@ int main()
 
         // setup children
 
+        add_test(new RenderAreaTest(), "RenderArea");
         add_test(new MotionControllerTest(), "MotionEventController");
         add_test(new PanedTest(), "Paned");
         //add_test(new SignalsChapter(), "Chapter 3: Signals");
@@ -168,11 +173,6 @@ int main()
         state->main_window.set_title("mousetrap");
         state->main_window.set_child(state->stack_box);
         state->main_window.set_titlebar_widget(state->main_window_header_bar);
-
-        // TODO
-
-
-        // TODO
 
         //state->main_window.set_child(state->stack_box);
         state->main_window.present();

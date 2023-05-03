@@ -14,6 +14,12 @@
 
 namespace mousetrap
 {
+    namespace detail
+    {
+        /// @brief whether OpenGL has been initialized yet
+        bool GL_INITIALIZED = false;
+    }
+
     /// @brief area that allows OpenGL primitives to be rendered
     /// \signals
     /// \signal_render{RenderArea}
