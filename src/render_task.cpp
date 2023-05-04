@@ -8,7 +8,7 @@
 
 namespace mousetrap
 {
-    RenderTask::RenderTask(const Shape* shape, const Shader* shader, const GLTransform* transform, BlendMode blend_mode)
+    RenderTask::RenderTask(const Shape& shape, const Shader* shader, const GLTransform* transform, BlendMode blend_mode)
     {
         if (noop_shader == nullptr)
             noop_shader = new Shader();
@@ -16,17 +16,21 @@ namespace mousetrap
         if (noop_transform == nullptr)
             noop_transform = new GLTransform();
 
-        _shape = shape;
+        g_object_ref(shape.operator GObject *());
+
+        _shape = &shape;
         _shader = shader;
         _transform = transform;
         _blend_mode = blend_mode;
     }
 
+    RenderTask::~RenderTask()
+    {
+        g_object_unref(_shape->operator GObject*());
+    }
+
     void RenderTask::render() const
     {
-        if (_shape == nullptr)
-            return;
-
         auto* shader = _shader == nullptr ? noop_shader : _shader;
         auto* transform = _transform == nullptr ? noop_transform : _transform;
 

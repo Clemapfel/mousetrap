@@ -23,7 +23,10 @@ namespace mousetrap
             /// @param shader shader to apply to the shape when rendering, if nullptr, the default shader is used
             /// @param transform transform to hand to the vertex shader when rendering, if nullptr, the identity transform will be handed isntead
             /// @param blend_mode blend_mode to set before rendering the shape, normal alpha-blending if unspecified
-            explicit RenderTask(const Shape*, const Shader* = nullptr, const GLTransform* = nullptr, BlendMode blend_mode = BlendMode::NORMAL);
+            explicit RenderTask(const Shape&, const Shader* = nullptr, const GLTransform* = nullptr, BlendMode blend_mode = BlendMode::NORMAL);
+
+            /// @brief destructor
+            ~RenderTask();
 
             /// @brief register a float that will be handed to a shader uniform of the given name during render
             /// @param uniform_name name of the uniform variable in the glsl shader code, has to be of type <tt>float</tt>

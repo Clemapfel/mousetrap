@@ -29,7 +29,12 @@ namespace mousetrap
     #ifndef DOXYGEN
     namespace detail
     {
-
+        struct _RenderAreaInternal
+        {
+            GObject parent;
+            std::vector<RenderTask>* tasks;
+        };
+        using RenderAreaInternal = _RenderAreaInternal;
     }
     #endif
 
@@ -51,7 +56,7 @@ namespace mousetrap
             /// @param shader shader to hand to the render task, or nullptr to use the default shader
             /// @param transform transform to hand to the render task, or nullptr to use the identity transform
             /// @param blend_mode BlendMode to hand to the render task, or nullptr to use normal alpha blending
-            void add_render_task(Shape*, Shader* = nullptr, GLTransform* = nullptr, BlendMode = BlendMode::NORMAL);
+            void add_render_task(const Shape&, Shader* = nullptr, GLTransform* = nullptr, BlendMode = BlendMode::NORMAL);
 
             /// @brief add render task
             /// @param already allocated render task, this object will take ownership of the task
@@ -70,6 +75,6 @@ namespace mousetrap
             static void on_resize(RenderArea* area, gint width, gint height);
             static gboolean on_render(RenderArea*, GdkGLContext*);
             static GdkGLContext* on_create_context(GtkGLArea*, GdkGLContext*);
-            std::vector<RenderTask> _render_tasks;
+            detail::RenderAreaInternal* _internal = nullptr;
     };
 }

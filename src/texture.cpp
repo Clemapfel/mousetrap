@@ -8,14 +8,48 @@
 
 namespace mousetrap
 {
+    namespace detail
+    {
+        DECLARE_NEW_TYPE(TextureInternal, texture_internal, TEXTURE_INTERNAL)
+
+        static void texture_internal_finalize(GObject* object)
+        {
+            auto* self = MOUSETRAP_TEXTURE_INTERNAL(object);
+            G_OBJECT_CLASS(texture_internal_parent_class)->finalize(object);
+            delete self->size;
+
+            if (self->native_handle != 0)
+                glDeleteTextures(1, &self->native_handle);
+        }
+
+        DEFINE_NEW_TYPE_TRIVIAL_INIT(TextureInternal, texture_internal, TEXTURE_INTERNAL)
+        DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(TextureInternal, texture_internal, TEXTURE_INTERNAL)
+
+        static TextureInternal* texture_internal_new()
+        {
+            auto* self = (TextureInternal*) g_object_new(texture_internal_get_type(), nullptr);
+            texture_internal_init(self);
+
+            self->native_handle = 0;
+            self->wrap_mode = TextureWrapMode::STRETCH;
+            self->scale_mode = TextureScaleMode::NEAREST;
+            self->size = new Vector2i(0, 0);
+
+            return self;
+        }
+    }
+    
     Texture::Texture()
     {
-        glGenTextures(1, &_native_handle);
+        _internal = detail::texture_internal_new();
+        glGenTextures(1, &_internal->native_handle);
     }
 
     Texture::Texture(GLNativeHandle handle)
-        : _native_handle(handle)
     {
+        _internal = detail::texture_internal_new();
+        _internal->native_handle = handle;
+
         glBindTexture(GL_TEXTURE_2D, handle);
 
         int width = 0;
@@ -23,19 +57,18 @@ namespace mousetrap
 
         glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
         glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
-        _size = {width, height};
+        *_internal->size = {width, height};
     }
 
     Texture::~Texture()
     {
-        if (_native_handle != 0)
-            glDeleteTextures(1, &_native_handle);
+        g_object_unref(_internal);
     }
 
     void Texture::create(size_t width, size_t height)
     {
         glActiveTexture(GL_TEXTURE0 + 0);
-        glBindTexture(GL_TEXTURE_2D, _native_handle);
+        glBindTexture(GL_TEXTURE_2D, _internal->native_handle);
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         glTexImage2D(GL_TEXTURE_2D,
@@ -49,7 +82,7 @@ namespace mousetrap
              nullptr
         );
 
-        _size = {width, height};
+        *_internal->size = {width, height};
     }
 
     void Texture::create_from_file(const std::string& path)
@@ -62,22 +95,22 @@ namespace mousetrap
 
     Texture::Texture(Texture&& other) noexcept
     {
-        _native_handle = other._native_handle;
-        _size = other._size;
-        _wrap_mode = other._wrap_mode;
+        _internal->native_handle = other._internal->native_handle;
+        _internal->size = other._internal->size;
+        _internal->wrap_mode = other._internal->wrap_mode;
 
-        other._native_handle = 0;
-        other._size = {0, 0};
+        other._internal->native_handle = 0;
+        *other._internal->size = {0, 0};
     }
 
     Texture& Texture::operator=(Texture&& other) noexcept
     {
-        _native_handle = other._native_handle;
-        _size = other._size;
-        _wrap_mode = other._wrap_mode;
+        _internal->native_handle = other._internal->native_handle;
+        _internal->size = other._internal->size;
+        _internal->wrap_mode = other._internal->wrap_mode;
 
-        other._native_handle = 0;
-        other._size = {0, 0};
+        other._internal->native_handle = 0;
+        *other._internal->size = {0, 0};
 
         return *this;
     }
@@ -85,7 +118,7 @@ namespace mousetrap
     void Texture::create_from_image(const Image& image)
     {
         glActiveTexture(GL_TEXTURE0 + 0);
-        glBindTexture(GL_TEXTURE_2D, _native_handle);
+        glBindTexture(GL_TEXTURE_2D, _internal->native_handle);
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         glTexImage2D(GL_TEXTURE_2D,
@@ -99,22 +132,22 @@ namespace mousetrap
              image.data()
         );
 
-        _size = image.get_size();
+        *_internal->size = image.get_size();
     }
 
     void Texture::bind(size_t texture_unit) const
     {
         glActiveTexture(GL_TEXTURE0 + texture_unit);
-        glBindTexture(GL_TEXTURE_2D, _native_handle);
+        glBindTexture(GL_TEXTURE_2D, _internal->native_handle);
 
-        if (_wrap_mode == TextureWrapMode::ZERO)
+        if (_internal->wrap_mode == TextureWrapMode::ZERO)
         {
             static float zero_border[] = {0.f, 0.f, 0.f, 0.f};
             glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, zero_border);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
         }
-        else if (_wrap_mode == TextureWrapMode::ONE)
+        else if (_internal->wrap_mode == TextureWrapMode::ONE)
         {
             static float one_border[] = {0.f, 0.f, 0.f, 0.f};
             glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, one_border);
@@ -123,13 +156,12 @@ namespace mousetrap
         }
         else
         {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint) _wrap_mode);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint) _wrap_mode);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint) _internal->wrap_mode);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint) _internal->wrap_mode);
         }
 
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) _scale_mode);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint) _scale_mode);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) _internal->scale_mode);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint) _internal->scale_mode);
     }
 
     void Texture::bind() const
@@ -144,43 +176,48 @@ namespace mousetrap
 
     void Texture::set_wrap_mode(TextureWrapMode wrap_mode)
     {
-        _wrap_mode = wrap_mode;
+        _internal->wrap_mode = wrap_mode;
     }
 
     TextureWrapMode Texture::get_wrap_mode()
     {
-        return _wrap_mode;
+        return _internal->wrap_mode;
     }
 
     Vector2i Texture::get_size() const
     {
-        return _size;
+        return *_internal->size;
     }
 
     GLNativeHandle Texture::get_native_handle() const
     {
-        return _native_handle;
+        return _internal->native_handle;
     }
 
     void Texture::set_scale_mode(TextureScaleMode mode)
     {
-        _scale_mode = mode;
+        _internal->scale_mode = mode;
     }
 
     TextureScaleMode Texture::get_scale_mode()
     {
-        return _scale_mode;
+        return _internal->scale_mode;
     }
 
     Image Texture::download() const
     {
         auto out = Image();
-        out.create(_size.x, _size.y);
+        out.create(_internal->size->x, _internal->size->y);
 
-        glBindTexture(GL_TEXTURE_2D, _native_handle);
+        glBindTexture(GL_TEXTURE_2D, _internal->native_handle);
         glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, out.data());
         glBindTexture(GL_TEXTURE_2D, 0);
 
         return out;
+    }
+
+    Texture::operator GObject*() const
+    {
+        return G_OBJECT(_internal);
     }
 }

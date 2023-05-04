@@ -281,7 +281,7 @@ namespace mousetrap
         glUseProgram(shader.get_program_id());
         glUniformMatrix4fv(shader.get_uniform_location("_transform"), 1, GL_FALSE, &(transform.transform[0][0]));
 
-        glUniform1i(shader.get_uniform_location("_internal->texture_set"), _internal->texture != nullptr ? GL_TRUE : GL_FALSE);
+        glUniform1i(shader.get_uniform_location("_texture_set"), _internal->texture != nullptr ? GL_TRUE : GL_FALSE);
 
         if (_internal->texture != nullptr)
             _internal->texture->bind();

@@ -11,11 +11,28 @@
 #include <mousetrap/texture_object.hpp>
 #include <mousetrap/wrap_mode.hpp>
 #include <mousetrap/scale_mode.hpp>
+#include <mousetrap/signal_emitter.hpp>
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        struct _TextureInternal
+        {
+            GObject parent;
+
+            GLNativeHandle native_handle = 0;
+            TextureWrapMode wrap_mode = TextureWrapMode::STRETCH;
+            TextureScaleMode scale_mode = TextureScaleMode::NEAREST;
+            Vector2i* size;
+        };
+        using TextureInternal = _TextureInternal;
+    }
+    #endif
+
     /// @brief texture object, image living GPU-side, immutable
-    class Texture : public TextureObject
+    class Texture : public TextureObject, public SignalEmitter
     {
         public:
             /// @brief construct as texture of size 0x0
@@ -93,11 +110,10 @@ namespace mousetrap
             /// @return handle
             GLNativeHandle get_native_handle() const;
 
-        private:
-            GLNativeHandle _native_handle = 0;
-            TextureWrapMode _wrap_mode = TextureWrapMode::STRETCH;
-            TextureScaleMode _scale_mode = TextureScaleMode::NEAREST;
+            /// @brief expose as gobject, \internal
+            operator GObject*() const override;
 
-            Vector2i _size;
+        private:
+            detail::TextureInternal* _internal = nullptr;
     };
 }

@@ -20,14 +20,24 @@
 
 namespace mousetrap
 {
+    /// @brief render shape vertex
     struct Vertex
     {
+        /// @brief constructor
+        /// @param x x-coordiante, in gl coordinates
+        /// @param y y-coordinate, in gl coordinates
+        /// @param color
         Vertex(float x, float y, RGBA rgba)
             : position(x, y, 0), color(rgba), texture_coordinates(0, 0)
             {}
 
+        /// @brief position in 3d space, gl coordinates
         Vector3f position;
+
+        /// @brief color
         RGBA color;
+
+        /// @brief texture coordinates, in relative image coordinates
         Vector2f texture_coordinates;
     };
 
