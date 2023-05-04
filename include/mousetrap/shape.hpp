@@ -16,11 +16,55 @@
 #include <mousetrap/gl_transform.hpp>
 #include <mousetrap/texture.hpp>
 #include <mousetrap/geometry.hpp>
+#include <mousetrap/signal_emitter.hpp>
 
 namespace mousetrap
 {
+    struct Vertex
+    {
+        Vertex(float x, float y, RGBA rgba)
+            : position(x, y, 0), color(rgba), texture_coordinates(0, 0)
+            {}
+
+        Vector3f position;
+        RGBA color;
+        Vector2f texture_coordinates;
+    };
+
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        struct VertexInfo
+        {
+            float _position[3];
+            float _color[4];
+            float _texture_coordinates[2];
+        };
+
+        struct _ShapeInternal
+        {
+            GObject parent;
+
+            RGBA* color;
+            bool is_visible = true;
+
+            std::vector<Vertex>* vertices;
+            std::vector<int>* indices;
+            GLenum render_type = GL_TRIANGLE_STRIP;
+
+            std::vector<VertexInfo>* vertex_data;
+
+            GLNativeHandle vertex_array_id = 0;
+            GLNativeHandle vertex_buffer_id = 0;
+
+            const TextureObject* texture = nullptr;
+        };
+        using ShapeInternal = _ShapeInternal;
+    }
+    #endif
+
     /// @brief opengl shape primitive, variable number of vertices
-    class Shape
+    class Shape : public SignalEmitter
     {
         public:
             /// @brief ctor, allocates vertex buffer gpu-side
@@ -28,6 +72,10 @@ namespace mousetrap
 
             /// @brief dtor, deallocated vertex buffer gpu-side
             ~Shape();
+
+            /// @brief construct from internal, \internal
+            /// @param internal
+            Shape(detail::ShapeInternal*);
 
             /// @brief copy ctor, allocates new vertex array with identical vertex data
             /// @param other
@@ -180,11 +228,11 @@ namespace mousetrap
 
             /// @brief set whether shape should render when instructed
             /// @param b if false, mousetrap::Shape::render will do nothing, true otherwise
-            void set_visible(bool);
+            void set_is_visible(bool);
 
             /// @brief get whether shape should render when instructed
             /// @param true if false, mousetrap::Shape::render will do nothing, true otherwise
-            bool get_visible() const;
+            bool get_is_visible() const;
 
             /// @brief get axis aligned bounding box of all vertices
             /// @return rectangle
@@ -223,25 +271,10 @@ namespace mousetrap
             /// @returns pointer to texture object, or nullptr if no texture is registered
             const TextureObject* get_texture() const;
 
+            /// @brief expose as GObject
+            operator GObject*() const override;
+
         private:
-            struct Vertex
-            {
-                Vertex(float x, float y, RGBA rgba)
-                : position(x, y, 0), color(rgba), texture_coordinates(0, 0)
-                {}
-
-                Vector3f position;
-                RGBA color;
-                Vector2f texture_coordinates;
-            };
-
-            RGBA _color = RGBA(1, 1, 1, 1);
-            bool _visible = true;
-
-            std::vector<Vertex> _vertices;
-            std::vector<int> _indices;
-            GLenum _render_type = GL_TRIANGLE_STRIP;
-
             void update_position() const;
             void update_color() const;
             void update_texture_coordinate() const;
@@ -249,25 +282,13 @@ namespace mousetrap
 
             std::vector<Vector2f> sort_by_angle(const std::vector<Vector2f>&);
 
-            struct VertexInfo
-            {
-                float _position[3];
-                float _color[4];
-                float _texture_coordinates[2];
-            };
-
             void update_data(
                 bool update_position = true,
                 bool update_color = true,
                 bool update_tex_coords = true
             ) const;
 
-            mutable std::vector<VertexInfo> _vertex_data;
-
-            GLNativeHandle _vertex_array_id = 0,
-            _vertex_buffer_id = 0;
-
-            const TextureObject* _texture = nullptr;
+            detail::ShapeInternal* _internal = nullptr;
     };
 }
 

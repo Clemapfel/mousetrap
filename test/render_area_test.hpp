@@ -39,7 +39,6 @@ namespace mousetrap
                     instance->_right_shape.as_rectangle({-1, -1}, {2, 2});
                     instance->_right_shape.set_color(RGBA(0, 1, 0, 1));
                     area->add_render_task(&instance->_right_shape);
-
                 }, this);
 
                 _left.set_expand(true);
