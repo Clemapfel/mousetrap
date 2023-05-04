@@ -8,8 +8,21 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        struct _RenderTextureInternal
+        {
+            GObject parent;
+            GLNativeHandle framebuffer_handle;
+            GLint before_buffer;
+        };
+        using RenderTextureInternal = _RenderTextureInternal;
+    }
+    #endif
+
     /// @brief texture that can be bound, such that any rendering happening afterwards will be pushed into the textures framebuffer. It can still be used like a regular texture
-    /// @note this texture does no anti-aliasing, use mousetrap::MultisampleRenderTexture instead
+    /// @note this texture does no anti-aliasing, use \link mousetrap::MultisampleRenderTexture MultiSampledRenderTexture\endlink for this purpose instead
     class RenderTexture : public Texture
     {
         public:
@@ -40,9 +53,11 @@ namespace mousetrap
             /// @brief unbind as render target, restores the framebuffer that was active before mousetrap::RenderTexture::bind_as_rendertarget was called
             void unbind_as_rendertarget() const;
 
-        protected:
-            GLNativeHandle _framebuffer_handle;
-            mutable GLint _before_buffer = 0;
+            /// @brief expose as gobject
+            operator GObject*() const override;
+
+        private:
+            detail::RenderTextureInternal* _internal = nullptr;
     };
 }
 

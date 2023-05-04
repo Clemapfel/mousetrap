@@ -9,15 +9,36 @@
 
 namespace mousetrap
 {
+    namespace detail
+    {
+        struct _MultisampledRenderTextureInternal
+        {
+            GObject parent;
+
+            size_t n_samples;
+
+            size_t width = 0;
+            size_t height = 0;
+
+            mutable GLint before_buffer = 0;
+
+            GLNativeHandle buffer = 0;
+            GLNativeHandle msaa_color_buffer_texture = 0;
+            GLNativeHandle intermediate_buffer = 0;
+            GLNativeHandle screen_texture = 0;
+        };
+        using MultisampledRenderTextureInternal = _MultisampledRenderTextureInternal;
+    }
+
     /// @brief render texture that utilizes a multi-sampled buffer, which renders the resulting image anti-aliased
-    class MultisampledRenderTexture : public TextureObject
+    class MultisampledRenderTexture : public TextureObject, public SignalEmitter
     {
         public:
             /// @brief construct
             /// @param n_samples number of MSAA samples, usually 2, 4, 8 or 16
             MultisampledRenderTexture(size_t n_samples = 8);
 
-            /// @brief destruct, frees all reated OpenGL objects
+            /// @brief destruct, frees all related OpenGL objects
             virtual ~MultisampledRenderTexture();
 
             /// @brief bind for use as a texture, usually called automatically during mousetrap::Shape::render
@@ -37,19 +58,11 @@ namespace mousetrap
             /// @param height y-dimensino
             void create(size_t width, size_t height);
 
+            /// @brief expose a gobject
+            operator GObject*() const override;
+
         private:
-            size_t _n_samples;
-
-            size_t _width = 0;
-            size_t _height = 0;
-
-            mutable GLint _before_buffer = 0;
-
-            GLNativeHandle _buffer = 0;
-            GLNativeHandle _msaa_color_buffer_texture = 0;
-            GLNativeHandle _intermediate_buffer = 0;
-            GLNativeHandle _screen_texture = 0;
-
             void free();
+            detail::RenderTextureInternal* _internal = nullptr;
     };
 }
