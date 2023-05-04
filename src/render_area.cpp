@@ -158,6 +158,33 @@ namespace mousetrap
         gtk_gl_area_make_current(get_native());
     }
 
+    Vector2f RenderArea::from_gl_coordinates(Vector2f in)
+    {
+        auto out = in;
+        out /= 2;
+        out += 0.5;
+        out.y = 1 - out.y;
+
+        auto allocation = this->get_allocation();
+        return {out.x * allocation.size.x, out.y * allocation.size.y};
+    }
+
+    Vector2f RenderArea::to_gl_coordinates(Vector2f in)
+    {
+        auto out = in;
+
+        auto allocation = this->get_allocation();
+        out.x /= allocation.size.x;
+        out.y /= allocation.size.y;
+
+        out.y = 1 - out.y;
+        out -= 0.5;
+        out *= 2;
+
+        std::cout << in.x << " " << in.y << " -> " << out.x << " " << out.y << std::endl;
+        return out;
+    }
+
     GdkGLContext* RenderArea::on_create_context(GtkGLArea* area, GdkGLContext* context)
     {
         assert(detail::GL_INITIALIZED == true);

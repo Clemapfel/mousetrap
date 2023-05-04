@@ -376,7 +376,7 @@ namespace mousetrap
 
     Rectangle Widget::get_allocation() const
     {
-        GtkAllocation* allocation;
+        GtkAllocation* allocation = new GtkAllocation();
         gtk_widget_get_allocation(operator GtkWidget*(), allocation);
 
         auto out = Rectangle{
@@ -384,7 +384,7 @@ namespace mousetrap
             {allocation->width, allocation->height}
         };
 
-        g_object_unref(allocation);
+        delete allocation;
         return out;
     }
 

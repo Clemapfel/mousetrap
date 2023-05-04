@@ -6,6 +6,7 @@
 
 #include <mousetrap/gl_common.hpp>
 #include <mousetrap/texture_object.hpp>
+#include <mousetrap/signal_emitter.hpp>
 
 namespace mousetrap
 {
@@ -63,6 +64,6 @@ namespace mousetrap
 
         private:
             void free();
-            detail::RenderTextureInternal* _internal = nullptr;
+            detail::MultisampledRenderTextureInternal* _internal = nullptr;
     };
 }

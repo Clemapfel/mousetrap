@@ -127,4 +127,9 @@ namespace mousetrap
     {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
+
+    MultisampledRenderTexture::operator GObject*() const
+    {
+        return G_OBJECT(_internal);
+    }
 }

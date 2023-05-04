@@ -68,8 +68,18 @@ namespace mousetrap
             /// @brief notify the area that a re-render should be done as soon as possible
             void queue_render();
 
-            /// @brief make the areas OpenGL context the currently active context
+            /// @brief make the areas OpenGL context the currently active context, this is usually not necessary to call
             void make_current();
+
+            /// @brief convert gl coordinates to absolut widget-space coordinates
+            /// @param in vector, in GL coordinates ([-1, 1], [-1, 1]) with origin at (0, 0)
+            /// @return vector, in Widget-space coordinates([0, width], [0, height]) with origin at (0.5 * width, 0.5 * height)
+            Vector2f from_gl_coordinates(Vector2f gl_space);
+
+            /// @brief convert widget-space coordinates to gl
+            /// @param vector, in Widget-space coordinates([0, width], [0, height]) with origin at (0.5 * width, 0.5 * height)
+            /// @return vector, in GL coordinates ([-1, 1], [-1, 1]) with origin at (0, 0)
+            Vector2f to_gl_coordinates(Vector2f widget_space);
 
         private:
             static void on_resize(RenderArea* area, gint width, gint height);
