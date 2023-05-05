@@ -42,7 +42,7 @@ template<typename T>
 void make_signal_emitter(jlcxx::TypeWrapper<T>& type)
 {
    type.method("connect_signal", [](T& self, const std::string& signal_id, jl_value_t* f, jl_value_t* data){
-        //self.connect_signal(signal_id, invoke_julia_function, f);
+        self.connect_signal(signal_id, invoke_julia_function, f);
    });
 }
 

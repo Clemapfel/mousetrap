@@ -39,7 +39,7 @@ namespace mousetrap
                 _render_texture_shape.set_texture(&_render_texture);
                 _render_texture_task = RenderTask(_render_texture_shape);
 
-                _motion_shape.as_circle({-1, -1}, 0.02 * 2, 32);
+                _motion_shape.as_rectangle({0, 0}, {0.1, 0.1});//.as_circle({-1, -1}, 0.02 * 2, 32);
                 _motion_shape.set_color(RGBA(1, 0, 1, 1));
 
                 _area.connect_signal_resize([](RenderArea* area, int32_t w, int32_t h, RenderAreaTest* instance){

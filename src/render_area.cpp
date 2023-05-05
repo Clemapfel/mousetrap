@@ -174,14 +174,15 @@ namespace mousetrap
         auto out = in;
 
         auto allocation = this->get_allocation();
-        out.x /= allocation.size.x;
-        out.y /= allocation.size.y;
+        out.x /= (allocation.size.x);
+        out.y /= (allocation.size.y);
 
         out.y = 1 - out.y;
         out -= 0.5;
         out *= 2;
 
-        std::cout << in.x << " " << in.y << " -> " << out.x << " " << out.y << std::endl;
+        std::cout << out.x << " " << out.y << std::endl;
+
         return out;
     }
 

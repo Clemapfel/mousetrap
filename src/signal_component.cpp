@@ -45,7 +45,7 @@ namespace mousetrap::detail
     DEFINE_SIGNAL(Unmap, unmap, UNMAP, "unmap", void);
     DEFINE_SIGNAL(CloseRequest, close_request, CLOSE_REQUEST, "close-request", WindowCloseRequestResult);
     DEFINE_SIGNAL(ActivateDefaultWidget, activate_default_widget, ACTIVATE_DEFAULT_WIDGET, "activate-default", void);
-    DEFINE_SIGNAL(ActivateFocusWidget, activate_focused_widget, ACTIVATE_FOCUS_WIDGET, "activate-focus", void);
+    DEFINE_SIGNAL(ActivateFocusedWidget, activate_focused_widget, ACTIVATE_FOCUSED_WIDGET, "activate-focus", void);
     DEFINE_SIGNAL(Clicked, clicked, CLICKED, "clicked", void);
     DEFINE_SIGNAL(Toggled, toggled, TOGGLED, "toggled", void);
     DEFINE_SIGNAL(TextChanged, text_changed, TEXT_CHANGED, "changed", void);

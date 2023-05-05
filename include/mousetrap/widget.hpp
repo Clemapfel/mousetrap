@@ -38,8 +38,7 @@ namespace mousetrap {
 
     /// @brief \only_used_in_julia_binding
     struct AbstractWidget
-    {
-    };
+    {};
 
     #ifndef DOXYGEN
     template <typename GtkWidget_t>

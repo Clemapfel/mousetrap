@@ -236,7 +236,7 @@ namespace mousetrap
     /// @see
     DECLARE_SIGNAL(Activate, activate, ACTIVATE, "activate", void);
     /// @class has_signal_activate
-    /// @brief signal emitted when activate
+    /// @brief \signal_activate_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_activate::connect_signal_activate(Function_t)
@@ -265,7 +265,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Startup, startup, STARTUP, "startup", void);
     /// @class has_signal_startup
-    /// @brief signal emitted when application registers with the OS, this usually happens before `activate` is emitted
+    /// @brief \signal_startup_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_startup::connect_signal_startup(Function_t)
@@ -294,7 +294,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Shutdown, shutdown, SHUTDOWN, "shutdown", void);
     /// @class has_signal_shutdown
-    /// @brief signal emitted when application runtime ends
+    /// @brief \signal_shutdown_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_shutdown::connect_signal_shutdown(Function_t)
@@ -320,7 +320,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Update, update, UPDATE, "update", void);
     /// @class has_signal_update
-    /// @brief signal emitted when a frame clock is updated, this happens exactly once per render frame
+    /// @brief \signal_update_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_update::connect_signal_update(Function_t)
@@ -349,7 +349,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Paint, paint, PAINT, "paint", void);
     /// @class has_signal_paint
-    /// @brief signal emitted during the render step of the frame
+    /// @brief \signal_paint_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_paint::connect_signal_paint(Function_t)
@@ -378,7 +378,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Realize, realize, REALIZE, "realize", void);
     /// @class has_signal_realize
-    /// @brief signal emitted when a widget is realized
+    /// @brief \signal_realize_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_realize::connect_signal_realize(Function_t)
@@ -407,7 +407,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Unrealize, unrealize, UNREALIZE, "unrealize", void);
     /// @class has_signal_unrealize
-    /// @brief signal emitted when a widget seizes to be displayed, it will deallocate its size and stop rendering
+    /// @brief \signal_unrealize_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_unrealize::connect_signal_unrealize(Function_t)
@@ -433,7 +433,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Destroy, destroy, DESTROY, "destroy", void);
     /// @class has_signal_destroy
-    /// @brief signal emitted when a widget is destroyed, this happens only once the reference count of a widget reaches 0, calling Widget::~Widget may not necessarily emit this signal
+    /// @brief \signal_destroy_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_destroy::connect_signal_destroy(Function_t)
@@ -459,7 +459,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Hide, hide, HIDE, "hide", void);
     /// @class has_signal_hide
-    /// @brief signal emitted when a widget is hidden, usually triggered by calling Widget::hide
+    /// @brief \signal_hide_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_hide::connect_signal_hide(Function_t)
@@ -488,7 +488,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Show, show, SHOW, "show", void);
     /// @class has_signal_show
-    /// @brief signal emitted when a widget is shown or presented
+    /// @brief \signal_show_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_show::connect_signal_show(Function_t)
@@ -517,7 +517,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Map, map, MAP, "map", void);
     /// @class has_signal_map
-    /// @brief signal emitted when a widget is mapped, this happens when it and all of its parents become visible
+    /// @brief \signal_map_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_map::connect_signal_map(Function_t)
@@ -546,7 +546,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Unmap, unmap, UNMAP, "unmap", void);
     /// @class has_signal_unmap
-    /// @brief signal emitted when a widget is unmapped, this happens when it is currently visible and it or at least one of its parents becomes invisible
+    /// @brief \signal_unmap_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_unmap::connect_signal_unmap(Function_t)
@@ -585,7 +585,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(CloseRequest, close_request, CLOSE_REQUEST, "close-request", WindowCloseRequestResult);
     /// @class has_signal_close_request
-    /// @brief signal emitted when a window is requested to close, usually by calling mousetrap::Window::close or when a user presses the `x` button in the windows title bar
+    /// @brief \signal_close_request_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_close_request::connect_signal_close_request(Function_t)
@@ -614,7 +614,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(ActivateDefaultWidget, activate_default_widget, ACTIVATE_DEFAULT_WIDGET, "activate-default", void);
     /// @class has_signal_activate_default_widget
-    /// @brief signal emitted when the default widget of a window is activated
+    /// @brief \signal_activate_default_widget_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_activate_default_widget::connect_signal_activate_default_widget(Function_t)
@@ -641,9 +641,9 @@ namespace mousetrap
     /// @fn has_signal_activate_default_widget::has_signal_activate_default_widget
     /// \signal_ctor
 
-    DECLARE_SIGNAL(ActivateFocusWidget, activate_focused_widget, ACTIVATE_FOCUS_WIDGET, "activate-focus", void);
+    DECLARE_SIGNAL(ActivateFocusedWidget, activate_focused_widget, ACTIVATE_FOCUSED_WIDGET, "activate-focus", void);
     /// @class has_signal_activate_focused_widget
-    /// @brief signal emitted when the focused widget of a window is activated
+    /// @brief \signal_activate_focused_widget
     /// @tparam T instance type
     ///
     /// @fn void has_signal_activate_focused_widget::connect_signal_activate_focused_widget(Function_t)
@@ -672,7 +672,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Clicked, clicked, CLICKED, "clicked", void);
     /// @class has_signal_clicked
-    /// @brief signal emitted when a button is clicked by the user, this is different from activating the button
+    /// @brief \signal_clicked_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_clicked::connect_signal_clicked(Function_t)
@@ -701,7 +701,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Toggled, toggled, TOGGLED, "toggled", void);
     /// @class has_signal_toggled
-    /// @brief signal emitted when a stateful-button such as CheckButton or ToggleButton changes its state
+    /// @brief \signal_toggled_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_toggled::connect_signal_toggled(Function_t)
@@ -730,7 +730,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(TextChanged, text_changed, TEXT_CHANGED, "changed", void);
     /// @class has_signal_text_changed
-    /// @brief signal emitted when the text buffer of an editable widget changes
+    /// @brief \signal_text_changed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_text_changed::connect_signal_text_changed(Function_t)
@@ -759,7 +759,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Undo, undo, UNDO, "undo", void);
     /// @class has_signal_undo
-    /// @brief signal emitted when the user or application request an `undo` action for a text buffer
+    /// @brief \signal_undo_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_undo::connect_signal_undo(Function_t)
@@ -788,7 +788,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Redo, redo, REDO, "redo", void);
     /// @class has_signal_redo
-    /// @brief signal emitted when the user or application requests a `redo` action for a text buffer
+    /// @brief \signal_redo_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_redo::connect_signal_redo(Function_t)
@@ -820,7 +820,7 @@ namespace mousetrap
         SPLAT(position, n_items)
     );
     /// @class has_signal_selection_changed
-    /// @brief signal emitted when selection of a widget managed by a mousetrap::SelectionModel changes
+    /// @brief \signal_selection_changed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_selection_changed::connect_signal_selection_changed(Function_t)
@@ -858,7 +858,7 @@ namespace mousetrap
         SPLAT(keyval, keycode, modifier)
     );
     /// @class has_signal_key_pressed
-    /// @brief signal emitted when a widget that has a mousetrap::KeyEventController connected captures a keypress event, usually from the user pressing a keyboard key
+    /// @brief \signal_key_pressed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_key_pressed::connect_signal_key_pressed(Function_t)
@@ -893,7 +893,7 @@ namespace mousetrap
         SPLAT(keyval, keycode, modifier)
     );
     /// @class has_signal_key_released
-    /// @brief signal emitted when a widget that has a mousetrap::KeyEventController connected captures a key release event, usually from the user seizing to press a keyboard key
+    /// @brief \signal_key_released_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_key_released::connect_signal_key_released(Function_t)
@@ -929,7 +929,7 @@ namespace mousetrap
         SPLAT(keyval, keycode, modifier)
     );
     /// @class has_signal_modifiers_changed
-    /// @brief signal emitted when modifiers keys (Control, Alt, Shift, etc.) change
+    /// @brief \signal_modifiers_changed
     /// @tparam T instance type
     ///
     /// @fn void has_signal_modifiers_changed::connect_signal_modifiers_changed(Function_t)
@@ -964,7 +964,7 @@ namespace mousetrap
         SPLAT(x, y)
     );
     /// @class has_signal_motion_enter
-    /// @brief signal emitted when cursor enters a widgets mapped area while it has a mousetrap::MotionEventController connected
+    /// @brief \signal_motion_enter_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_motion_enter::connect_signal_motion_enter(Function_t)
@@ -998,7 +998,7 @@ namespace mousetrap
         SPLAT(x, y)
     );
     /// @class has_signal_motion
-    /// @brief signal emitted when cursor moves while inside the mapped area of a widget that has a mousetrap::MotionEventController connected
+    /// @brief \signal_motion_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_motion::connect_signal_motion(Function_t)
@@ -1029,7 +1029,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(MotionLeave, motion_leave, MOTION_LEAVE, "leave", void);
     /// @class has_signal_motion_leave
-    /// @brief signal emitted when cursor exits the mapped area of a widget that has a mousetrap::MotionEventController connected
+    /// @brief \signal_motion_leave_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_motion_leave::connect_signal_motion_leave(Function_t)
@@ -1061,7 +1061,7 @@ namespace mousetrap
         SPLAT(n_press, x, y)
     );
     /// @class has_signal_click_pressed
-    /// @brief signal emitted when user pressed one of the mouse buttons while inside a widgets mapped area that has a mousetrap::ClickEventController connected
+    /// @brief \signal_click_pressed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_click_pressed::connect_signal_click_pressed(Function_t)
@@ -1096,7 +1096,7 @@ namespace mousetrap
         SPLAT(n_press, x, y)
     );
     /// @class has_signal_click_released
-    /// @brief signal emitted when user seizes to hold down one of the mouse buttons while inside a widgets mapped area that has a mousetrap::ClickEventController connected
+    /// @brief \signal_click_released_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_click_released::connect_signal_click_released(Function_t)
@@ -1128,7 +1128,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(ClickStopped, click_stopped, CLICK_STOPPED, "stopped", void);
     /// @class has_signal_click_stopped
-    /// @brief signal emitted when a sequence of clicks stops, emitted by mousetrap::ClickEventController
+    /// @brief \signal_click_stopped_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_click_stopped::connect_signal_click_stopped(Function_t)
@@ -1160,7 +1160,7 @@ namespace mousetrap
         SPLAT(x_velocity, y_velocity)
     );
     /// @class has_signal_kinetic_scroll_decelerate
-    /// @brief signal emitted when kinetic scroll ends, this may be many frames after the user has already stopped pressing the scroll button
+    /// @brief \signal_kinetic_scroll_decelerate_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_kinetic_scroll_decelerate::connect_signal_kinetic_scroll_decelerate(Function_t)
@@ -1191,7 +1191,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(ScrollBegin, scroll_begin, SCROLL_BEGIN, "scroll-begin", void);
     /// @class has_signal_scroll_begin
-    /// @brief signal emitted the first frame a user starts a scrolling action, emitted by mousetrap::ScrollEventController
+    /// @brief \signal_scroll_begin_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_scroll_begin::connect_signal_scroll_begin(Function_t)
@@ -1223,7 +1223,7 @@ namespace mousetrap
        SPLAT(delta_x, delta_y)
     );
     /// @class has_signal_scroll
-    /// @brief signal emitted once per frame while the user scrolls a widget that has a mousetrap::ScrollEventController connected
+    /// @brief \signal_scroll_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_scroll::connect_signal_scroll(Function_t)
@@ -1254,7 +1254,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(ScrollEnd, scroll_end, SCROLL_END, "scroll-end", void);
     /// @class has_signal_scroll_end
-    /// @brief signal emitted when the first frame after a user stops scrolling, emitted by mousetrap::ScrollEventController
+    /// @brief \signal_scroll_end_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_scroll_end::connect_signal_scroll_end(Function_t)
@@ -1283,7 +1283,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(FocusGained, focus_gained, FOCUS_GAINED, "enter", void);
     /// @class has_signal_focus_gained
-    /// @brief signal emitted when a widget that is currently not focused becomes focused
+    /// @brief \signal_focus_gained_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_focus_gained::connect_signal_focus_gained(Function_t)
@@ -1312,7 +1312,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(FocusLost, focus_lost, FOCUS_LOST, "leave", void);
     /// @class has_signal_focus_lost
-    /// @brief signal emitted when a widget that is currently focused looses focus to another widget. Emitted by mousetrap::FocusEventController
+    /// @brief \signal_focus_lost_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_focus_lost::connect_signal_focus_lost(Function_t)
@@ -1344,7 +1344,7 @@ namespace mousetrap
         SPLAT(start_x, start_y)
     );
     /// @class has_signal_drag_begin
-    /// @brief signal emitted when the user initiates a drag over a widget that has a mousetrap::DragEventController connected
+    /// @brief \signal_drag_begin_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_drag_begin::connect_signal_drag_begin(Function_t)
@@ -1378,7 +1378,7 @@ namespace mousetrap
         SPLAT(offset_x, offset_y)
     );
     /// @class has_signal_drag
-    /// @brief signal emitted when once per frame while a drag is active
+    /// @brief \signal_drag_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_drag::connect_signal_drag(Function_t)
@@ -1412,7 +1412,7 @@ namespace mousetrap
         SPLAT(offset_x, offest_y)
     );
     /// @class has_signal_drag_end
-    /// @brief signal emitted when when drag ends, usually when the user seizes to press the mouse button
+    /// @brief \signal_drag_end_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_drag_end::connect_signal_drag_end(Function_t)
@@ -1446,7 +1446,7 @@ namespace mousetrap
         scale
     );
     /// @class has_signal_scale_changed
-    /// @brief signal emitted when the distance between two fingers of the "Pinch-Zoom" gesture changes
+    /// @brief \signal_scale_changed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_scale_changed::connect_signal_scale_changed(Function_t)
@@ -1479,7 +1479,7 @@ namespace mousetrap
         SPLAT(angle_absolute_radians, angle_delta_radians)
     );
     /// @class has_signal_rotation_changed
-    /// @brief signal emitted when angel of two-finger-rotation-gestured changes
+    /// @brief \signal_rotation_changed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_rotation_changed::connect_signal_rotation_changed(Function_t)
@@ -1510,7 +1510,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(PropertiesChanged, properties_changed, PROPERTIES_CHANGED, "changed", void);
     /// @class has_signal_properties_changed
-    /// @brief signal emitted when properties other than the "value" property of a mousetrap::Adjustment change
+    /// @brief \signal_properties_changed_brief
     /// @tparam T instance type
     /// @see mousetrap::has_signal_value_changed
     ///
@@ -1540,7 +1540,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(ValueChanged, value_changed, VALUE_CHANGED, "value-changed", void);
     /// @class has_signal_value_changed
-    /// @brief signal emitted when the value of a widget representing a range of values changes
+    /// @brief \signal_value_changed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_value_changed::connect_signal_value_changed(Function_t)
@@ -1569,7 +1569,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL_MANUAL(Render, render, RENDER, "render", bool, GdkGLContext* context, context);
     /// @class has_signal_render
-    /// @brief signal emitted when a mousetrap::RenderArea enters its draw cycle. If the user does not connect to this signal, the area will automatically render all objects registered via mousetrap::RenderArea::add_render_task
+    /// @brief \signal_render_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_render::connect_signal_render(Function_t)
@@ -1601,7 +1601,7 @@ namespace mousetrap
         SPLAT(width, height)
     );
     /// @class has_signal_resize
-    /// @brief signal emitted when a mousetrap::RenderArea changes size on screen
+    /// @brief \signal_resize_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_resize::connect_signal_resize(Function_t)
@@ -1635,7 +1635,7 @@ namespace mousetrap
         SPLAT(_, page_index)
     );
     /// @class has_signal_page_added
-    /// @brief signal emitted when a page is added to a mousetrap::Notebook
+    /// @brief \signal_page_added_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_page_added::connect_signal_page_added(Function_t)
@@ -1669,7 +1669,7 @@ namespace mousetrap
         SPLAT(_, page_index)
     );
     /// @class has_signal_page_removed
-    /// @brief signal emitted when a page is removed from a mousetrap::Notebook
+    /// @brief \signal_page_removed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_page_removed::connect_signal_page_removed(Function_t)
@@ -1703,7 +1703,7 @@ namespace mousetrap
         SPLAT(_, page_index)
     );
     /// @class has_signal_page_reordered
-    /// @brief signal emitted when the position of a page of a mousetrap::Notebook changes
+    /// @brief \signal_page_reordered_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_page_reordered::connect_signal_page_reordered(Function_t)
@@ -1737,7 +1737,7 @@ namespace mousetrap
         SPLAT(_, page_index)
     );
     /// @class has_signal_page_selection_changed
-    /// @brief signal emitted when page selection of a mousetrap::Notebook changes
+    /// @brief \signal_page_selection_changed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_page_selection_changed::connect_signal_page_selection_changed(Function_t)
@@ -1768,7 +1768,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Wrapped, wrapped, WRAPPED, "wrapped", void);
     /// @class has_signal_wrapped
-    /// @brief signal emitted when a spin buttons values "wraps", meaning it overflows from the lowest possible value to the highest, or vice-versa. This signal is not emitted if mousetrap::SpinButton::set_should_wrap was set to false
+    /// @brief \signal_wrapped_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_wrapped::connect_signal_wrapped(Function_t)
@@ -1797,7 +1797,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL_MANUAL(Response, response, RESPONSE, "response", void, int response, response);
     /// @class has_signal_response
-    /// @brief signal emitted when the users choosed an action of a dialog
+    /// @brief \signal_respone_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_response::connect_signal_response(Function_t)
@@ -1830,7 +1830,7 @@ namespace mousetrap
                           SPLAT(x, y)
     );
     /// @class has_signal_pressed
-    /// @brief signal emitted a long press staet
+    /// @brief \signal_pressed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_pressed::connect_signal_pressed(Function_t)
@@ -1861,7 +1861,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(PressCancelled, press_cancelled, PRESS_CANCELLED, "cancelled", void);
     /// @class has_signal_press_cancelled
-    /// @brief signal emitted when a long press ends
+    /// @brief \signal_press_cancelled_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_press_cancelled::connect_signal_press_cancelled(Function_t)
@@ -1909,7 +1909,7 @@ namespace mousetrap
           SPLAT(direction, offset)
     );
     /// @class has_signal_pan
-    /// @brief signal emitted when a panning gesture is recognized
+    /// @brief \signal_pan_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_pan::connect_signal_pan(Function_t)
@@ -1943,7 +1943,7 @@ namespace mousetrap
                           SPLAT(x_velocity, y_velocity)
     );
     /// @class has_signal_swipe
-    /// @brief signal emitted when a swipening gesture is recognized
+    /// @brief \signal_swipe_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_swipe::connect_signal_swipe(Function_t)
@@ -1978,7 +1978,7 @@ namespace mousetrap
                           SPLAT(x, y)
     );
     /// @class has_signal_stylus_down
-    /// @brief signal emitted when a stylus makes physical contact with the touchpad
+    /// @brief \signal_stylus_down_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_stylus_down::connect_signal_stylus_down(Function_t)
@@ -2012,7 +2012,7 @@ namespace mousetrap
                           SPLAT(x, y)
     );
     /// @class has_signal_stylus_up
-    /// @brief signal emitted when a stylus seizes to make physical contact with the touchpad
+    /// @brief \signal_stylus_up_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_stylus_up::connect_signal_stylus_up(Function_t)
@@ -2046,7 +2046,7 @@ namespace mousetrap
                           SPLAT(x, y)
     );
     /// @class has_signal_proximity
-    /// @brief signal emitted when a stylus comes into proximity of the touchpad without physically touching it
+    /// @brief \signal_proximity_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_proximity::connect_signal_proximity(Function_t)
@@ -2132,7 +2132,7 @@ namespace mousetrap
           SPLAT(scroll_type, is_horizontal)
     );
     /// @class has_signal_scroll_child
-    /// @brief signal emitted user requests scrolling of a mousetrap::ScrolledWindow via a keybinding
+    /// @brief \signal_scroll_child_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_scroll_child::connect_signal_scroll_child(Function_t)
@@ -2163,7 +2163,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Closed, closed, CLOSED, "closed", void);
     /// @class has_signal_closed
-    /// @brief signal emitted popover is closed
+    /// @brief \signal_closed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_closed::connect_signal_closed(Function_t)
@@ -2192,7 +2192,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Play, play, PLAY, "play", void);
     /// @class has_signal_play
-    /// @brief signal emitted when sound playback starts
+    /// @brief \signal_play_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_play::connect_signal_play(Function_t)
@@ -2221,7 +2221,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(Stop, stop, STOP, "stop", void);
     /// @class has_signal_stop
-    /// @brief signal emitted when sound playback seizes, either by calling pause/stop or by the sound file ending while loop is deactivated
+    /// @brief \signal_stop_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_stop::connect_signal_stop(Function_t)
@@ -2253,7 +2253,7 @@ namespace mousetrap
                           SPLAT(position, n_removed, n_added)
     );
     /// @class has_signal_items_changed
-    /// @brief \todo
+    /// @brief \signal_items_changed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_items_changed::connect_signal_items_changed(Function_t)
@@ -2285,7 +2285,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL_MANUAL(Revealed, revealed, REVEALED, "notify::reveal-child", void, UnusedArgument_t _, _);
     /// @class has_signal_revealed
-    /// @brief signal emitted once child of Revealer is visible, after the animation has finished
+    /// @brief \signal_revealed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_revealed::connect_signal_revealed(Function_t)

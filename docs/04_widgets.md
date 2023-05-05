@@ -6,27 +6,34 @@ In this chapter, we will learn:
 + All types of widgets supplied by mousetrap
 + How to create compound widgets
 
-## mousetrap::Widget
+## What is a widget?
 
-| id          | signature               | emitted when...                                               |
-|-------------|-------------------------|---------------------------------------------------------------|
-| `realize`   | `(T*, (Data_t) -> void` | widget itself and all its parents are realized                |               
-| `unrealize` | `(T*, (Data_t) -> void` | the display surface associated with the widget is deallocated |
-| `hide`      | `(T*, (Data_t) -> void` | widget that is currently visible is                           |
-| `show`      | `(T*, (Data_t) -> void` | widget that is currently hidden is shown                      |                    
-| `map`       | `(T*, (Data_t) -> void` | once the widget iself and all its parents become visible      |
-| `unmap`     | `(T*, (Data_t) -> void` | widget itself or any of its parents are hidden                |  
-| `destroy`   | `(T*, (Data_t) -> void` | all references to a widget are released                       |
+When creating a GUI, widgets are the central element to any and all applications. In general, a widget is anything that can be rendered on screen. Often, widgets have a way of interacting with them, for example, in the cas of `Button`, the widget is rendered to screen as a filled rectangle and the user can click on it to emit a signal.
 
-Where `T` is the fully specialized widget class, not `Widget*`. For example, for `Separator`, the signature of `realize` would be `(Separator*, (Data_t)) -> void`.
+All widgets are signal emitters, but not all signal emitters are widgets. As such, all widgets share a number of signals:
 
-### Widget Properties
+\signals
+\widget_signals{Widget}
+
+
+## Widget Properties
 
 All widgets share common properties that govern how they behave when the container they are in changes size, or at what position they will appear.
 
-#### Margin
+### Size Request
 
-#### Size Request
+We may have noticed that in previous chapter, if we resized the window manually, most of the time the widgets inside dynamically resized themself to fit into the new windows size.
+
+There are two properties that control this behavior, **size request** and **expansion**.
+
+By calling `Widget::set_expand_horizontally` and `Widget::set_expand_vertically`, we can choose whether a widget should dynamically resize itself along the x- and y-axis. Mousetrap offers `Widget::set_expand`, which sets both the horizontal and vertical expansion at the same time.
+
+Regardless of whether a widget does or does not expand, any widget will always at least allocate size requested using `Widget::set_size_request`. This functions takes a vector of two ints, which govern the minimum size in pixels. For example, 
+
+### Margin
+
+Any widget has four margins: `start`, `end`, `top` and `bottom`. Usually, these correspond to empty space left, right, above and below the widget respectively. If a widget has a natural 
+
 
 #### Expansion
 
