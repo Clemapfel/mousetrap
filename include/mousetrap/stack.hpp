@@ -51,15 +51,15 @@ namespace mousetrap
             /// @param widget may be nullptr to create an empty page
             /// @param title title of the page, usually used to identify pages in widgets allowed user interaction with the stack
             /// @return id of the page, the user is responsible for keeping track of this id to be able to refer to specific pages
-            [[nodiscard]] Stack::ID add_child(const Widget&, const std::string& child_title);
+            [[nodiscard]] Stack::ID add_child(const Widget& widget, const std::string& title);
 
             /// @brief get page widget for page with given id
             /// @param id obtained from mousetrap::Stack::add_child
-            Widget* get_child(Stack::ID);
+            Widget* get_child(Stack::ID id);
 
             /// @brief remove a page from the stack
             /// @param id obtained from mousetrap::Stack::add_child
-            void remove_child(Stack::ID);
+            void remove_child(Stack::ID id);
 
             /// @brief get number of children
             /// @return n
@@ -71,11 +71,11 @@ namespace mousetrap
 
             /// @brief set which page is visible
             /// @param id obtained from mousetrap::Stack::add_child
-            void set_visible_child(Stack::ID);
+            void set_visible_child(Stack::ID id);
 
             /// @brief set the type of animation played when switching between pages of the stack
             /// @param transition_type
-            void set_transition_type(StackTransitionType);
+            void set_transition_type(StackTransitionType transition_type);
 
             /// @brief get type of animation played when switching between pages of the stack
             /// @return transition type
@@ -83,7 +83,7 @@ namespace mousetrap
 
             /// @brief set amount of time it takes for the animation to switch between two pages of the stack takes
             /// @param time
-            void set_transition_duration(Time);
+            void set_transition_duration(Time time);
 
             /// @brief get amount of time it takes for the animation to switch between two pages of the stack takes
             /// @return duration

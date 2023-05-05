@@ -38,8 +38,8 @@ namespace mousetrap
             Adjustment();
 
             /// @brief create from gtk adjustment \internal
-            /// @param adjustment
-            Adjustment(GtkAdjustment*);
+            /// @param native
+            Adjustment(GtkAdjustment* native);
 
             /// @brief create adjustment
             /// @param current current value, clamped to [lower, upper]
@@ -51,7 +51,7 @@ namespace mousetrap
             /// @brief dtor
             ~Adjustment();
 
-            /// @copydoc SignalEmitter::operator GObject*() const
+            /// @brief expose a gobject, \internal
             operator GObject*() const override;
 
             /// @brief copy ctor delete
@@ -90,19 +90,19 @@ namespace mousetrap
 
             /// @brief set lower bounds, clamped to upper bound
             /// @param new_value
-            void set_lower(float);
+            void set_lower(float new_value);
 
             /// @brief set upper bound, clamped to lower bound
             /// @param new_value
-            void set_upper(float);
+            void set_upper(float new_value);
 
             /// @brief set current value, clamped to [lower, upper]
             /// @param new_value
-            void set_value(float);
+            void set_value(float new_value);
 
             /// @brief set minimum step increment
             /// @param new_value
-            void set_increment(float);
+            void set_increment(float new_value);
 
         private:
             GtkAdjustment* _native;

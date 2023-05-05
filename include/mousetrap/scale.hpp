@@ -43,6 +43,7 @@ namespace mousetrap
             /// @brief construct
             /// @param min lower bound of the range
             /// @param max upper bound of the range
+            /// @param step minimum step increment
             /// @param orientation orientation of the slider bar
             Scale(float min, float max, float step, Orientation orientation = Orientation::HORIZONTAL);
 
@@ -91,7 +92,7 @@ namespace mousetrap
             void set_should_draw_value(bool);
 
             /// @brief get whether a string signifying the scales current value is shown next to the slider button
-            /// @param true if string is being shown, false otherwise
+            /// @return true if string is being shown, false otherwise
             bool get_should_draw_value() const;
 
             /// @brief set whether the area of the slider between its origin and the current value should be filled in
@@ -104,6 +105,7 @@ namespace mousetrap
 
             /// @brief add a mark to a scale, its position is picked based on the marks value, it optionally also has a label
             /// @param at value the mark should be put at, automatically calcaulated based on the scales range
+            /// @param pos relative position
             /// @param label label, or std::string() to omit label
             void add_mark(float at, RelativePosition pos, const std::string& label = "");
 
@@ -120,9 +122,7 @@ namespace mousetrap
 
             /// @brief set function that takes the scales values and transforms it into the label shown if mousetrap::Scale::set_should_draw_value was set to true
             /// @tparam Function_t lambda or static function with signature <tt>(float) -> std::string</tt>
-            /// @tparam Data_t arbitary data
             /// @param function
-            /// @param data
             template<typename Function_t>
             void set_format_value_function(Function_t function);
 

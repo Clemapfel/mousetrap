@@ -59,8 +59,8 @@ namespace mousetrap
             void add_render_task(const Shape&, Shader* = nullptr, GLTransform* = nullptr, BlendMode = BlendMode::NORMAL);
 
             /// @brief add render task
-            /// @param already allocated render task, this object will take ownership of the task
-            void add_render_task(RenderTask);
+            /// @param task allocated render task, this object will take ownership of the task
+            void add_render_task(RenderTask task);
 
             /// @brief unregister all render tasks
             void clear_render_tasks();
@@ -72,14 +72,14 @@ namespace mousetrap
             void make_current();
 
             /// @brief convert gl coordinates to absolut widget-space coordinates
-            /// @param in vector, in GL coordinates ([-1, 1], [-1, 1]) with origin at (0, 0)
+            /// @param gl_space_coordinate vector, in GL coordinates ([-1, 1], [-1, 1]) with origin at (0, 0)
             /// @return vector, in Widget-space coordinates([0, width], [0, height]) with origin at (0.5 * width, 0.5 * height)
-            Vector2f from_gl_coordinates(Vector2f gl_space);
+            Vector2f from_gl_coordinates(Vector2f gl_space_coordinate);
 
             /// @brief convert widget-space coordinates to gl
-            /// @param vector, in Widget-space coordinates([0, width], [0, height]) with origin at (0.5 * width, 0.5 * height)
+            /// @param widget_space_coordinate Widget-space coordinates([0, width], [0, height]) with origin at (0.5 * width, 0.5 * height)
             /// @return vector, in GL coordinates ([-1, 1], [-1, 1]) with origin at (0, 0)
-            Vector2f to_gl_coordinates(Vector2f widget_space);
+            Vector2f to_gl_coordinates(Vector2f widget_space_coordinate);
 
         private:
             static void on_resize(RenderArea* area, gint width, gint height);

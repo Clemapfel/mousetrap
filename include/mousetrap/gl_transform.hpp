@@ -40,7 +40,7 @@ namespace mousetrap
             void rotate(Angle, Vector2f gl_coords);
 
             /// @brief translate transform
-            /// @param offset offset in 2d space
+            /// @param gl_offset offset in 2d space
             void translate(Vector2f gl_offset);
 
             /// @brief scale transform

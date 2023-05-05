@@ -32,11 +32,11 @@ namespace mousetrap
 
             /// @brief construct
             /// @param application
-            Window(Application&);
+            Window(Application& application);
 
             /// @brief link with application
             /// @param application
-            void set_application(Application&);
+            void set_application(Application& application);
 
             /// @brief attempt to maximize the window
             /// @param b true if window should be maximize, false otherwise
@@ -81,7 +81,7 @@ namespace mousetrap
 
             /// @brief set the title of the titlebar
             /// @param title
-            void set_title(const std::string&);
+            void set_title(const std::string& title);
 
             /// @brief get the title of the window
             /// @return title
@@ -127,7 +127,7 @@ namespace mousetrap
 
             /// @brief set the window startup notification identifier, usually results in the users OS sending a notification "<name> is ready"
             /// @param id
-            void set_startup_notification_identifier(const std::string&);
+            void set_startup_notification_identifier(const std::string& id);
 
             /// @brief set whether the focused widget should be highlighted with a rectangle
             /// @param b true if it should be highlighted, false otherwise

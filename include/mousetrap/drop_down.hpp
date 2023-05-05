@@ -39,7 +39,7 @@ namespace mousetrap
             /// @param data
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t, typename Data_t>
-            [[nodiscard]] ItemID push_back(const Widget& list_widget, const Widget& label_widget, Function_t, Data_t);
+            [[nodiscard]] ItemID push_back(const Widget& list_widget, const Widget& label_widget, Function_t function, Data_t data);
 
             /// @brief add an item with an accompanying action to the end of the drop down
             /// @tparam Function_t function or lambda with signature `(DropDown*) -> void`
@@ -48,7 +48,7 @@ namespace mousetrap
             /// @param function function to trigger when the item is selected
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t>
-            [[nodiscard]] ItemID push_back(const Widget& list_widget, const Widget& label_widget, Function_t);
+            [[nodiscard]] ItemID push_back(const Widget& list_widget, const Widget& label_widget, Function_t function);
 
             /// @brief add an item with an accompanying action to the start of the drop down
             /// @tparam Function_t function or lambda with signature `(DropDown, (Data_t)) -> void`
@@ -59,7 +59,7 @@ namespace mousetrap
             /// @param data
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t, typename Data_t>
-            [[nodiscard]] ItemID push_front(const Widget& list_widget, const Widget& label_widget, Function_t, Data_t);
+            [[nodiscard]] ItemID push_front(const Widget& list_widget, const Widget& label_widget, Function_t function, Data_t data);
 
             /// @brief add an item with an accompanying action to the start of the drop down
             /// @tparam Function_t function or lambda with signature `(DropDown) -> void`
@@ -68,7 +68,7 @@ namespace mousetrap
             /// @param function function to trigger when the item is selected
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t>
-            [[nodiscard]] ItemID push_front(const Widget& list_widget, const Widget& label_widget, Function_t);
+            [[nodiscard]] ItemID push_front(const Widget& list_widget, const Widget& label_widget, Function_t function);
 
             /// @brief add an item with an accompanying action to a specified position in the drop down
             /// @tparam Function_t function or lambda with signature `(DropDown, (Data_t)) -> void`
@@ -80,7 +80,7 @@ namespace mousetrap
             /// @param data
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t, typename Data_t>
-            [[nodiscard]] ItemID insert(size_t i, const Widget& list_widget, const Widget& label_widget, Function_t, Data_t);
+            [[nodiscard]] ItemID insert(size_t i, const Widget& list_widget, const Widget& label_widget, Function_t function, Data_t data);
 
             /// @brief add an item with an accompanying action to a specified position in the drop down
             /// @tparam Function_t function or lambda with signature `(DropDown) -> void`
@@ -90,15 +90,15 @@ namespace mousetrap
             /// @param function function to trigger when the item is selected
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t>
-            [[nodiscard]] ItemID insert(size_t i, const Widget& list_widget, const Widget& label_widget, Function_t);
+            [[nodiscard]] ItemID insert(size_t i, const Widget& list_widget, const Widget& label_widget, Function_t function);
 
             /// @brief remove an item from the drop down
             /// @param id
-            void remove(ItemID);
+            void remove(ItemID id);
 
             /// @brief set whether a downward arrow should be shown next to the currently active label widget
             /// @param b
-            void set_show_arrow(bool);
+            void set_show_arrow(bool b);
 
             /// @brief get whether a downward arrow is shown next to the currently active label widget
             /// @return bool
@@ -106,7 +106,7 @@ namespace mousetrap
 
             /// @brief set currently selected item
             /// @param id
-            void set_selected(ItemID);
+            void set_selected(ItemID id);
 
             /// @brief get the id of the currently selected item
             /// @return id

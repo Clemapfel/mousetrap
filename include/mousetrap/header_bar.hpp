@@ -19,7 +19,7 @@ namespace mousetrap
 
             /// @brief set layout from config string, see https://docs.gtk.org/gtk4/method.HeaderBar.set_decoration_layout.html
             /// @param layout_string
-            void set_layout(const std::string&);
+            void set_layout(const std::string& layout_string);
 
             /// @brief get layout config string
             /// @return string, adheres to https://docs.gtk.org/gtk4/method.HeaderBar.set_decoration_layout.html
@@ -27,7 +27,7 @@ namespace mousetrap
 
             /// @brief set widget that will appear as the header bars title, usually in the center
             /// @param widget
-            void set_title_widget(const Widget&);
+            void set_title_widget(const Widget& widget);
 
             /// @brief get widget that will appear as the header bars title, usually in the center
             /// @return widget, may be nullptr
@@ -38,7 +38,7 @@ namespace mousetrap
 
             /// @brief set whether buttons like close, minimize, maximize should be visible
             /// @param b true if visible, false otherwise
-            void set_show_title_buttons(bool);
+            void set_show_title_buttons(bool b);
 
             /// @brief get whether buttons like close, minimize, maximize are visible
             /// @return true if visible, false otherwise
@@ -46,15 +46,15 @@ namespace mousetrap
 
             /// @brief add a widget to the start of the header bar
             /// @param widget
-            void push_back(const Widget&);
+            void push_back(const Widget& widget);
 
             /// @brief add a widget to the end of the header bar
             /// @param widget
-            void push_front(const Widget&);
+            void push_front(const Widget& widget);
 
             /// @brief remove a widget from the header bar
             /// @param widget
-            void remove(const Widget&);
+            void remove(const Widget& widget);
 
         private:
             const Widget* _title_widget = nullptr;

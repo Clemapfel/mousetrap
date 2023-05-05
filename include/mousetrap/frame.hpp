@@ -20,7 +20,7 @@ namespace mousetrap
 
             /// @brief set the child
             /// @param child
-            void set_child(const Widget&);
+            void set_child(const Widget& child);
 
             /// @brief remove child, frame is now empty
             void remove_child();
@@ -31,7 +31,7 @@ namespace mousetrap
 
             /// @brief set label widget
             /// @param widget
-            void set_label_widget(const Widget&);
+            void set_label_widget(const Widget& widget);
 
             /// @brief remove label widget, frame no longer has a label
             void remove_label_widget();

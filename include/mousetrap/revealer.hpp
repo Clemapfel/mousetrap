@@ -20,11 +20,11 @@ namespace mousetrap
         public:
             /// @brief construct
             /// @param transition_type which animation style to use
-            Revealer(RevealerTransitionType = RevealerTransitionType::CROSSFADE);
+            Revealer(RevealerTransitionType transition_type = RevealerTransitionType::CROSSFADE);
 
             /// @brief set child
             /// @param widget
-            void set_child(const Widget&);
+            void set_child(const Widget& widget);
 
             /// @brief remove child
             void remove_child();
@@ -43,7 +43,7 @@ namespace mousetrap
 
             /// @brief set animation style
             /// @param transition_type which animation style to use
-            void set_transition_type(RevealerTransitionType);
+            void set_transition_type(RevealerTransitionType transition_type);
 
             /// @brief get animation style
             /// @return transition type
@@ -51,7 +51,7 @@ namespace mousetrap
 
             /// @brief set amount of time that the hide/show animation will take
             /// @param time
-            void set_transition_duration(Time);
+            void set_transition_duration(Time time);
 
             /// @brief get amount of time that the hide/show animation takes
             /// @return time

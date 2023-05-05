@@ -42,7 +42,7 @@ namespace mousetrap
 
             /// @brief if whether the bar should be drawn inverted (bottom-to-top instead of top-to-bottom, or right-to-left instead of left-to-right, depending on orientation
             /// @param b
-            void set_inverted(bool);
+            void set_inverted(bool b);
 
             /// @brief get whether the bar should be drawn inverted (bottom-to-top instead of top-to-bottom, or right-to-left instead of left-to-right, depending on orientation
             /// @return bool
@@ -50,7 +50,7 @@ namespace mousetrap
 
             /// @brief choose mode, continuous vs discrete
             /// @param mode
-            void set_mode(LevelBarMode);
+            void set_mode(LevelBarMode mode);
 
             /// @brief get mode, continuous vs discrete
             /// @return mode
@@ -61,7 +61,7 @@ namespace mousetrap
             void set_min_value(float min);
 
             /// @brief get lower bound of the values
-            /// @param min value
+            /// @return min value
             float get_min_value() const;
 
             /// @brief set upper bound of the values
@@ -69,21 +69,21 @@ namespace mousetrap
             void set_max_value(float max);
 
             /// @brief get upper bound of the values
-            /// @param max value
+            /// @return max value
             float get_max_value() const;
 
             /// @brief set value the level bar is displaying
             /// @param value
-            void set_value(float);
+            void set_value(float value);
 
             /// @brief get value the level bar is displaying
             /// @return value
             float get_value() const;
 
-            /// @copydoc mousetrap::Orientable::set_orientation
+            /// @copydoc mousetrap::Orientable::get_orientation
             Orientation get_orientation() const override;
 
             /// @copydoc mousetrap::Orientable::set_orientation
-            void set_orientation(Orientation) override;
+            void set_orientation(Orientation orientation) override;
     };
 }

@@ -93,8 +93,8 @@ namespace mousetrap
 
         protected:
             /// @brief create from native
-            /// @param GFileMonitor
-            FileMonitor(GFileMonitor*);
+            /// @param native
+            FileMonitor(GFileMonitor* native);
 
         private:
            detail::FileMonitorInternal* _internal;

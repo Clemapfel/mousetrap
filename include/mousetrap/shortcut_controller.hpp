@@ -30,7 +30,6 @@ namespace mousetrap
     {
         public:
             /// @brief construct
-            /// @param app Application actions are registered to
             ShortcutController();
 
             /// @brief add action, if the action has a shortcut and it is registered with the application, shortcut controller will activate the action when the shortcut is pressed

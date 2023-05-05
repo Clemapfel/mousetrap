@@ -113,7 +113,7 @@ namespace mousetrap
             ButtonID get_only_listens_to_button() const;
 
             /// @brief get whether the controller should only list to touch events
-            /// @param b true if only listening to touch events, false otherwise
+            /// @return true if only listening to touch events, false otherwise
             bool get_touch_only() const;
 
             /// @brief set whether the controller should only listen to touch events

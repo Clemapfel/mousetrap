@@ -86,7 +86,7 @@ namespace mousetrap {
 
             /// @brief move ctor, safely transfers widget-level properties
             /// @param other
-            Widget(Widget&&) = delete;
+            Widget(Widget&& other) = delete;
 
             /// @brief move assignment, safely transfers widget-level properties
             Widget& operator=(Widget&&) = delete;
@@ -120,7 +120,7 @@ namespace mousetrap {
 
             /// @brief set top margin, minimum distance to any other widget boundary
             /// @param margin
-            void set_margin_top(float);
+            void set_margin_top(float margin);
 
             /// @brief get top margin, minimum distance to any other widget boundary
             /// @return margin
@@ -128,7 +128,7 @@ namespace mousetrap {
 
             /// @brief set bottom margin, minimum distance to any other widget boundary
             /// @param margin
-            void set_margin_bottom(float);
+            void set_margin_bottom(float margin);
 
             /// @brief set botom margin, minimum distance to any other widget boundary
             /// @return margin
@@ -136,7 +136,7 @@ namespace mousetrap {
 
             /// @brief set left margin, minimum distance to any other widget boundary
             /// @param margin
-            void set_margin_start(float);
+            void set_margin_start(float margin);
 
             /// @brief get left margin, minimum distance to any other widget boundary
             /// @return margin
@@ -144,7 +144,7 @@ namespace mousetrap {
 
             /// @brief set right margin, minimum distance to any other widget boundary
             /// @param margin
-            void set_margin_end(float);
+            void set_margin_end(float margin);
 
             /// @brief get right margin, minimum distance to any other widget boundary
             /// @return margin
@@ -152,15 +152,15 @@ namespace mousetrap {
 
             /// @brief set left and right margin, minimum distance to any other widget boundary
             /// @param margin
-            void set_margin_horizontal(float);
+            void set_margin_horizontal(float margin);
 
             /// @brief set top and bottom margin, minimum distance to any other widget boundary
             /// @param margin
-            void set_margin_vertical(float);
+            void set_margin_vertical(float margin);
 
             /// @brief set margin in all directions, minimum distance to any other widget boundary
             /// @param margin
-            void set_margin(float);
+            void set_margin(float margin);
 
             /// @brief set whether widget should attempt to allocate the maximum allowed space horizontally
             /// @param should_expand true if widget should expand horizontally, false otherwise
@@ -204,7 +204,7 @@ namespace mousetrap {
 
             /// @brief set widget opacity, in [0, 1], if opacity is set to 0, equivalent to mousetrap::Widget::hide()
             /// @param opacity
-            void set_opacity(float);
+            void set_opacity(float opacity);
 
             /// @brief get widget opacity
             /// @return opacity, in [0, 1]
@@ -212,7 +212,7 @@ namespace mousetrap {
 
             /// @brief set whether the widget should be hidden
             /// @param b false if hidden, true otherwise
-            void set_visible(bool);
+            void set_visible(bool b);
 
             /// @brief get whether the widget is hidden
             /// @return false if hidden, true otherwise
@@ -264,7 +264,7 @@ namespace mousetrap {
             void set_focus_on_click(bool);
 
             /// @brief get whether the input should attempt to grab the focus when the user clicks on it
-            /// @param true if it should grab focus, false otherwise
+            /// @return true if it should grab focus, false otherwise
             bool get_focus_on_click() const;
 
             /// @brief get whether the widget was realized
@@ -306,13 +306,13 @@ namespace mousetrap {
             /// @param function
             /// @param data
             template<typename Function_t, typename Data_t>
-            void set_tick_callback(Function_t, Data_t);
+            void set_tick_callback(Function_t function, Data_t data);
 
             /// @brief add a callback that is invoked every frame
             /// @tparam Function_t static function or lambda with signature <tt>(FrameClock) -> TickCallbackResult</tt>
             /// @param function
             template<typename Function_t>
-            void set_tick_callback(Function_t);
+            void set_tick_callback(Function_t function);
 
             /// @brief remove callback that si invoked every frame
             void remove_tick_callback();
@@ -354,16 +354,16 @@ namespace mousetrap {
 
             /// @brief move ctor, safely transfers ownership
             /// @param other
-            WidgetImplementation(WidgetImplementation<GtkWidget_t>&&);
+            WidgetImplementation(WidgetImplementation<GtkWidget_t>&& other);
 
             /// @brief move assignment, safely transfers ownership
             /// @param other
-            WidgetImplementation<GtkWidget_t>& operator=(WidgetImplementation<GtkWidget_t>&&);
+            WidgetImplementation<GtkWidget_t>& operator=(WidgetImplementation<GtkWidget_t>&& other) noexcept;
 
             /// @brief expose as native GTK4 widget \internal
             virtual operator GtkWidget_t*() const;
 
-            /// @copydoc Widget::operator NativeWidget() const
+            /// @brief implement widget operator
             operator NativeWidget() const override;
 
         protected:
@@ -380,7 +380,7 @@ namespace mousetrap {
 
             /// @brief override native pointer safely \internal
             /// @param new_pointer
-            void override_native(GtkWidget*);
+            void override_native(GtkWidget* new_pointer);
 
         private:
             GtkWidget* _native;

@@ -40,11 +40,11 @@ namespace mousetrap
 
             /// @brief construct from image
             /// @param image
-            ImageDisplay(const Image&);
+            ImageDisplay(const Image& image);
 
             /// @brief construct from icon
-            /// @param image
-            ImageDisplay(const Icon&);
+            /// @param icon
+            ImageDisplay(const Icon& icon);
 
             /// @brief get resolution of image buffer
             /// @return resolution
@@ -56,22 +56,22 @@ namespace mousetrap
 
             /// @brief load from image
             /// @param image
-            void create_from_image(const Image&);
+            void create_from_image(const Image& image);
 
             /// @brief load from icon
             /// @param icon
-            void create_from_icon(const Icon&);
+            void create_from_icon(const Icon& icon);
 
             /// @brief create as preview of a file, if the file can be opened as an image, will display image, otherwise will display icon of filetype
             /// @param file
-            void create_as_file_preview(const FileDescriptor&);
+            void create_as_file_preview(const FileDescriptor& file);
 
             /// @brief create from empty image
             void clear();
 
             /// @brief set scale, will use linear interpolation. For other types of interpolation, scale a mousetrap::Image instead
-            /// @param pixel_size: scale (positive integer) or -1 for default size
-            void set_scale(int);
+            /// @param scale (positive integer) or -1 for default size
+            void set_scale(int scale);
 
         private:
             detail::ImageDisplayInternal* _internal = nullptr;

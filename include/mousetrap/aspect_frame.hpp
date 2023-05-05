@@ -23,7 +23,7 @@ namespace mousetrap
 
             /// @brief set ratio, width / height
             /// @param ratio new ratio as fraction
-            void set_ratio(float);
+            void set_ratio(float ratio);
 
             /// @brief get ratio
             /// @return float
@@ -31,11 +31,11 @@ namespace mousetrap
 
             /// @brief set child horizontal alignment
             /// @param value in [0, 1] where 0 for left-most, 1 for right-most
-            void set_child_x_alignment(float);
+            void set_child_x_alignment(float value);
 
             /// @brief set child vertical alignment
             /// @param value in [0, 1] where 0 for top-most, 1 for bottom-most
-            void set_child_y_alignment(float);
+            void set_child_y_alignment(float value);
 
             /// @brief get child horizontal alignment
             /// @return float
@@ -46,8 +46,8 @@ namespace mousetrap
             float get_child_y_alignment() const;
 
             /// @brief set child
-            /// @param widget, can be nullptr
-            void set_child(const Widget&);
+            /// @param widget
+            void set_child(const Widget& widget);
 
             /// @brief get child
             /// @return widget

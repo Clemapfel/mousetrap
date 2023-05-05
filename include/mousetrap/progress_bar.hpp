@@ -22,8 +22,8 @@ namespace mousetrap
             void pulse();
 
             /// @brief set the fraction of progress the bar is displaying, 0 for fully empty, 1 for full
-            /// @param value: float in [0, 1]
-            void set_fraction(float);
+            /// @param value float in [0, 1]
+            void set_fraction(float value);
 
             /// @brief get the fraction the progress bar is displaying
             /// @returns float in [0, 1]
@@ -35,24 +35,24 @@ namespace mousetrap
 
             /// @brief set whether the bar filles left-to-right or right-to-left when horizontal, top-to-bottom or bottom-to-top when vertical
             /// @param b true if inverted, false otherwise
-            void set_is_inverted(bool);
+            void set_is_inverted(bool b);
 
             /// @brief set text next to the progress bar. If this text is unset, a percentage will be shown instead
             /// @param text
-            void set_text(const std::string&);
+            void set_text(const std::string& text);
 
             /// @brief get text next to the progress bar, or std::string() if mousetrap::ProgressBar::set_text was not called yet
             std::string get_text() const;
 
             /// @brief set whether text (or the percentage if mousetrap::ProgressBar::set_text was not called yet) should appear next to the progress bar
             /// @param b true if text should appear, false otherwise
-            void set_show_text_or_percentage(bool);
+            void set_show_text_or_percentage(bool b);
 
             /// @brief sgt whether text (or the percentage if mousetrap::ProgressBar::set_text was not called yet) should appear next to the progress bar
             /// @return true if text should appear, false otherwise
             bool get_show_text_or_percentage() const;
 
-            /// @copydoc mousetrap::Orientable::set_orientation
+            /// @brief set orientation
             Orientation get_orientation() const override;
 
             /// @copydoc mousetrap::Orientable::set_orientation

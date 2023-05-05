@@ -27,8 +27,8 @@ namespace mousetrap
         /// @param x x-coordiante, in gl coordinates
         /// @param y y-coordinate, in gl coordinates
         /// @param color
-        Vertex(float x, float y, RGBA rgba)
-            : position(x, y, 0), color(rgba), texture_coordinates(0, 0)
+        Vertex(float x, float y, RGBA color)
+            : position(x, y, 0), color(color), texture_coordinates(0, 0)
             {}
 
         /// @brief position in 3d space, gl coordinates
@@ -106,66 +106,66 @@ namespace mousetrap
             Shape& operator=(Shape&&) noexcept;
 
             /// @brief construct as 2d point that point is always rendered as exactly 1 fragment
-            /// @param position position normalized 2d space
-            void as_point(Vector2f);
+            /// @param position position gl coordinates
+            void as_point(Vector2f position);
 
             /// @brief construct as set of points, each point is always rendered as exactly 1 fragment
             /// @param points vector of points
-            void as_points(const std::vector<Vector2f>&);
+            void as_points(const std::vector<Vector2f>& points);
 
             /// @brief construct as filled triangle
-            /// @param a point in normalized 2d space
-            /// @param b point in normalized 2d space
-            /// @param c point in normalized 2d space
+            /// @param a point in gl coordinates
+            /// @param b point in gl coordinates
+            /// @param c point in gl coordinates
             void as_triangle(Vector2f a, Vector2f b, Vector2f c);
 
             /// @brief construct as filled rectangle from top left and size
-            /// @param top_left point in normalized 2d space
-            /// @param size length in normalized 2d space
+            /// @param top_left point in gl coordinates
+            /// @param size length in gl coordinates
             void as_rectangle(Vector2f top_left, Vector2f size);
 
             /// @brief construct as filled rectangle from 4 points
-            /// @param a point in normalized 2d space
-            /// @param b point in normalized 2d space
-            /// @param c point in normalized 2d space
-            /// @param d point in normalized 2d space
-            void as_rectangle(Vector2f, Vector2f, Vector2f, Vector2f);
+            /// @param a point in gl coordinates
+            /// @param b point in gl coordinates
+            /// @param c point in gl coordinates
+            /// @param d point in gl coordinates
+            void as_rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d);
 
             /// @brief construct as filled circle
-            /// @param center point in normalized 2d space
-            /// @param radius distance in normalized 2d space
+            /// @param center point in gl coordinates
+            /// @param radius distance in gl coordinates
             /// @param n_outer_vertices number of equally spaced vertices on the perimeter of the circle
             void as_circle(Vector2f center, float radius, size_t n_outer_vertices);
 
             /// @brief construct as ellipse
-            /// @param center point in normalized 2d space
+            /// @param center point in gl coordinates
             /// @param x_radius radius along the x-axis, normalized distance in 2d space
             /// @param y_radius radius along the y-axis, normalized distance in 2d space
             /// @param n_outer_vertices number of equally spaced vertices on the perimeter of the circle
             void as_ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices);
 
             /// @brief construct as line, has a width of 1 fragment exactly
-            /// @param a point in normalized 2d space
-            /// @param b point in normalized 2d space
+            /// @param a point in gl coordinates
+            /// @param b point in gl coordinates
             void as_line(Vector2f a, Vector2f b);
 
             /// @brief construct as set of lines, each has a width of exactly 1 fragment
-            /// @param points vector of pairs of 2 points, both in normalized 2d space
-            void as_lines(const std::vector<std::pair<Vector2f, Vector2f>>&);
+            /// @param points vector of pairs of 2 points, both in gl coordinates
+            void as_lines(const std::vector<std::pair<Vector2f, Vector2f>>& points);
 
             /// @brief construct as set of connected lines
             /// @param points {a1, a2, ..., an} will result in line segments {a1, a2}, {a2, a3}, ..., {an-1, an}
-            void as_line_strip(const std::vector<Vector2f>&);
+            void as_line_strip(const std::vector<Vector2f>& points);
 
             /// @brief construct as convex polygon
-            /// @param points points in normalized 2d space, minimum bounding polygon is calculated on these, so some of the vertices ay be discarded
-            void as_polygon(const std::vector<Vector2f>& positions);
+            /// @param points points in gl coordinates, minimum bounding polygon is calculated on these, so some of the vertices ay be discarded
+            void as_polygon(const std::vector<Vector2f>& points);
 
             /// @brief construct as rectanglular frame of given thickness
-            /// @param top_left top left anchor of the outer perimeter of the frame, in normalized 2d space
-            /// @param outer_size width and height of the oute perimeter of the frame, in normalized 2d space
-            /// @param x_width horizontal width of the frames inner bounds, in normalized 2d space
-            /// @param y_width vertical height of the frames inner bounds, in normalized 2d space
+            /// @param top_left top left anchor of the outer perimeter of the frame, in gl coordinates
+            /// @param outer_size width and height of the oute perimeter of the frame, in gl coordinates
+            /// @param x_width horizontal width of the frames inner bounds, in gl coordinates
+            /// @param y_width vertical height of the frames inner bounds, in gl coordinates
             void as_rectangle_frame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width);
 
             /// @brief construct as circular ring, a "2d donut"
@@ -186,11 +186,11 @@ namespace mousetrap
 
             /// @brief construct as a closed loop linesegment
             /// @param points {a1, a2, ..., an} will result in line segments {a1, a2}, {a2, a3}, ..., {an-1, an}, {an, a1}
-            void as_wireframe(const std::vector<Vector2f>&);
+            void as_wireframe(const std::vector<Vector2f>& points);
 
             /// @brief construct a wireframe from a shapes outer vertices. Useful for generating frames or outlines
             /// @param shape another shape, will generate minimum bounding polygon and construct a wireframe from that polygon
-            void as_wireframe(const Shape&);
+            void as_wireframe(const Shape& shape);
 
             /// @brief render the shape to the currently bound framebuffer
             /// @param shader shader program to use
@@ -200,48 +200,48 @@ namespace mousetrap
             /// @brief get color of n-th vertex, returns RGBA(0, 0, 0, 0) and prints a warning if vertex index out of bounds
             /// @param index vertex index
             /// @returns color as RGBA
-            RGBA get_vertex_color(size_t) const;
+            RGBA get_vertex_color(size_t index) const;
 
             /// @brief set color of n-th vertex, does nothing if vertex index out of bounds
             /// @param index vertex index
             /// @param new_color
-            void set_vertex_color(size_t, RGBA);
+            void set_vertex_color(size_t index, RGBA new_color);
 
             /// @brief set texture coordinate of vertex, does nothing if vertex index out of bounds
             /// @param index vertex index
             /// @param coordinate new texture coordinate, {0, 0} for top left, {1, 1} for bottom right of texture
-            void set_vertex_texture_coordinate(size_t, Vector2f);
+            void set_vertex_texture_coordinate(size_t index, Vector2f coordinate);
 
             /// @brief get vertex texture coordinate, returns Vector2f() if index out of bounds
             /// @param index vertex index
             /// @return texture coordinate, {0, 0} for top left, {1, 1} for bottom right of texture
-            Vector2f get_vertex_texture_coordinate(size_t) const;
+            Vector2f get_vertex_texture_coordinate(size_t index) const;
 
             /// @brief set vertex position in 3d space, does nothing if index out of bounds
             /// @param index vertex index
             /// @param position position in 3d space
             /// @note if multiple vertex positions change at the same time, use mousetrap::Vertex::as_rectangle (or other appropriate shape) to update all of them at once in a more performant manned
-            void set_vertex_position(size_t, Vector3f);
+            void set_vertex_position(size_t index, Vector3f position);
 
             /// @brief get vertex position in 3d space, return Vector3f() if out of bounds
             /// @param index vertex index
             /// @return position in 3d space
-            Vector3f get_vertex_position(size_t) const;
+            Vector3f get_vertex_position(size_t index) const;
 
             /// @brief get number of vertices, the number depends on the shape and may be larger than intuitive
-            /// @param number of vertices
+            /// @return number of vertices
             size_t get_n_vertices() const;
 
             /// @brief set color of all vertices at once
             /// @param rgba color in RGBA
-            void set_color(RGBA);
+            void set_color(RGBA rgba);
 
             /// @brief set whether shape should render when instructed
             /// @param b if false, mousetrap::Shape::render will do nothing, true otherwise
-            void set_is_visible(bool);
+            void set_is_visible(bool b);
 
             /// @brief get whether shape should render when instructed
-            /// @param true if false, mousetrap::Shape::render will do nothing, true otherwise
+            /// @return true if false, mousetrap::Shape::render will do nothing, true otherwise
             bool get_is_visible() const;
 
             /// @brief get axis aligned bounding box of all vertices
@@ -254,7 +254,7 @@ namespace mousetrap
 
             /// @brief align all vertices such that the centroid, the center of the axis aligned bounding box, is set to the given position
             /// @param new_position
-            void set_centroid(Vector2f);
+            void set_centroid(Vector2f new_position);
 
             /// @brief get centroid, center of the axis aligned bounding box
             /// @return position
@@ -262,20 +262,20 @@ namespace mousetrap
 
             /// @brief align top left of axis aligned bounding box with position
             /// @param position
-            void set_top_left(Vector2f);
+            void set_top_left(Vector2f position);
 
             /// @brief get top left of axis aligned bounding box
-            /// @param position
+            /// @return position
             Vector2f get_top_left() const;
 
             /// @brief rotate all vertices around origin
             /// @param angle
             /// @param origin point in 2d space
-            void rotate(Angle, Vector2f origin);
+            void rotate(Angle angle, Vector2f origin);
 
             /// @brief set texture of shape, has to be queried in the fragment shader using the <tt>int _texture_set</tt> and <tt>Sampler2D _texture</tt> uniforms, the default fragment shader does this automatically
             /// @param texture texture object, such as mousetrap::Texture, mousetrap::RenderTexture or mousetrap::MultisampledRenderTexture. The user is responsible for making sure the texture stays in memory. May be nullptr
-            void set_texture(const TextureObject*);
+            void set_texture(const TextureObject* texture);
 
             /// @brief get texture object
             /// @returns pointer to texture object, or nullptr if no texture is registered

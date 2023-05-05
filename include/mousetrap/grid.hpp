@@ -20,24 +20,24 @@ namespace mousetrap
 
             /// @brief insert widget a position
             /// @param widget
-            /// @param row_column row and column index, may be negative
+            /// @param row_column_index row and column index, may be negative
             /// @param n_horizontal_cells how many horizontal cells should the widget occupy
             /// @param n_vertical_cells how many vertical cells should the widget occupy
             void insert(const Widget& widget, Vector2i row_column_index, size_t n_horizontal_cells, size_t n_vertical_cells);
 
             /// @brief remove a widget from the grid
             /// @param widget
-            void remove(const Widget&);
+            void remove(const Widget& widget);
 
             /// @brief get the row and column position of a widget
             /// @param widget
             /// @return row index, column index
-            Vector2i get_position(const Widget&) const;
+            Vector2i get_position(const Widget& widget) const;
 
             /// @brief get how many cells a widget should occupy
             /// @param widget
             /// @return number of rows, number of columns
-            Vector2ui get_bounds(const Widget&) const;
+            Vector2ui get_bounds(const Widget& widget) const;
 
             /// @brief insert a new row at given index
             /// @param index may be negative
@@ -57,7 +57,7 @@ namespace mousetrap
 
             /// @brief set spacing between columns
             /// @param spacing in pixels
-            void set_column_spacing(float);
+            void set_column_spacing(float spacing);
 
             /// @brief get spacing between columns
             /// @return spacing in pixels
@@ -65,7 +65,7 @@ namespace mousetrap
 
             /// @brief set spacing between rows
             /// @param spacing in pixels
-            void set_row_spacing(float);
+            void set_row_spacing(float spacing);
 
             /// @brief get spacing between rows
             /// @return spacing in pixels
@@ -73,7 +73,7 @@ namespace mousetrap
 
             /// @brief set whether all rows should allocate the same size
             /// @param b true if allocation should be homogenous, false otherwise
-            void set_rows_homogenous(bool);
+            void set_rows_homogenous(bool b);
 
             /// @brief get whether all rows should allocate the same size
             /// @return true if allocation should be homogenous, false otherwise
@@ -81,13 +81,13 @@ namespace mousetrap
 
             /// @brief set whether all columns should allocate the same size
             /// @param b true if allocation should be homogenous, false otherwise
-            void set_columns_homogenous(bool);
+            void set_columns_homogenous(bool b);
 
             /// @brief get whether all columns should allocate the same size
             /// @return true if allocation should be homogenous, false otherwise
             bool get_columns_homogenous() const;
 
-            /// @copydoc mousetrap::Orientable::set_orientation
+            /// @copydoc mousetrap::Orientable::get_orientation
             Orientation get_orientation() const override;
 
             /// @copydoc mousetrap::Orientable::set_orientation

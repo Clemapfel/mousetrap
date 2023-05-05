@@ -93,29 +93,25 @@ namespace mousetrap
 
             /// @brief add an action to application, see the manual page on actions for details
             /// @param action pointer to action, the user is responsible for making sure the action stays in scope
-            void add_action(const Action&);
-
-            /// @brief convenience function, creates new actino, set its behavior, then immediately add it to the application
-            template<typename Function_t>
-            Action* add_new_action(const std::string& action_id, Function_t f);
+            void add_action(const Action& action);
 
             /// @brief remove an action from application
             /// @param id
-            void remove_action(const ActionID&);
+            void remove_action(const ActionID& id);
 
             /// @brief lookup action based on action id
             /// @param id
             /// @return thin wrapper around action, this is a newly created wrapper around the internal action object, not the mousetrap::Action instance initially registered via Application::add_action
-            [[nodiscard]] Action get_action(const ActionID&);
+            [[nodiscard]] Action get_action(const ActionID& id);
 
             /// @brief check if application has an action with given id registered
             /// @param id
             /// @return true if action with id is registered, false otherwise
-            bool has_action(const ActionID&);
+            bool has_action(const ActionID& id);
 
-            /// @brief set the model used for the applications menubar, this should be called during emission of the <tt>startup<//t> signal
+            /// @brief set the model used for the applications menubar, this should be called during emission of the <tt>startup</tt> signal
             /// @param model
-            void set_menubar(MenuModel*);
+            void set_menubar(MenuModel* model);
 
         private:
             detail::ApplicationInternal* _internal = nullptr;

@@ -34,35 +34,35 @@ namespace mousetrap
             /// @brief construct
             /// @param orientation if horizontal, widgets will be arranged left to right, if vertical, widgets will be arranged top to bottom
             /// @param selection_mode
-            GridView(Orientation = Orientation::VERTICAL, SelectionMode = SelectionMode::NONE);
+            GridView(Orientation orientation = Orientation::VERTICAL, SelectionMode selection_mode = SelectionMode::NONE);
 
             /// @brief add widget to the left if orientation is horizontal, to the top if vertical
             /// @param widget
-            void push_front(const Widget&);
+            void push_front(const Widget& widget);
 
             /// @brief add widget to the right if orientation is horizontal, to the bottom if vertical
             /// @param widget
-            void push_back(const Widget&);
+            void push_back(const Widget& widget);
 
             /// @brief insert widget at index
             /// @param widget
             /// @param index
-            void insert(const Widget&, size_t);
+            void insert(const Widget& widget, size_t index);
 
             /// @brief remove all widgets
             void clear();
 
             /// @brief remove widget
             /// @param widget
-            void remove(const Widget&);
+            void remove(const Widget& widget);
 
             /// @brief get number of widgets
             /// @return n
             size_t get_n_items() const;
 
             /// @brief enable user interaction where a user can click-drag across the mousetrap::GridView to select multiple items
-            /// @param enabled true to enable, false otherwise
-            void set_enable_rubberband_selection(bool);
+            /// @param b true to enable, false otherwise
+            void set_enable_rubberband_selection(bool b);
 
             /// @brief get whether user interaction where a user can click-drag across the mousetrap::GridView to select multiple items is enabled
             /// @return true if enabled, false otherwise
@@ -70,7 +70,7 @@ namespace mousetrap
 
             /// @brief set maximum number of columns
             /// @param n
-            void set_max_n_columns(size_t);
+            void set_max_n_columns(size_t n);
 
             /// @brief get maximum number of columns
             /// @return n
@@ -78,7 +78,7 @@ namespace mousetrap
 
             /// @brief set minimum number of columns
             /// @param n
-            void set_min_n_columns(size_t);
+            void set_min_n_columns(size_t n);
 
             /// @brief get minimum number of columns
             /// @return n
@@ -90,16 +90,16 @@ namespace mousetrap
 
             /// @brief set whether an <tt>activated</tt> signal should be emitted when the user selects the item, as opposed to selecting and activating the item
             /// @param enable true to enable, false otherwise
-            void set_single_click_activate(bool);
+            void set_single_click_activate(bool enable);
 
             /// @brief get whether an <tt>activated</tt> signal is be emitted when the user selects the item, as opposed to selecting and activating the item
             /// @return true if enable, false otherwise
             bool get_single_click_activate() const;
 
             /// @copydoc mousetrap::Orientable::set_orientation
-            void set_orientation(Orientation) override;
+            void set_orientation(Orientation orientation) override;
 
-            /// @copydoc mousetrap::Orientation::get_orientation
+            /// @copydoc mousetrap::Orientable::get_orientation
             Orientation get_orientation() const override;
 
         private:

@@ -51,7 +51,6 @@ namespace mousetrap
             /// @brief add an action to the model
             /// @param label label to be used
             /// @param action action that triggers when the label is activated
-            /// @param use_markup should label respect pango markup syntax, yes by default
             void add_action(
                 const std::string& label,
                 const Action& action
@@ -61,7 +60,6 @@ namespace mousetrap
             /// @param label label to be used
             /// @param action action that triggers when the label is activated
             /// @param initial_state initial state of the menu item
-            /// @param use_markup should label respect pango markup syntax, yes by default
             void add_stateful_action(
                 const std::string& label,
                 const Action& action,
@@ -70,7 +68,7 @@ namespace mousetrap
 
             /// @brief add widget to menu, note that widgets can only be display when they are part of a section or submenu, not if they are in the toplevel sectino
             /// @param widget
-            void add_widget(const Widget&);
+            void add_widget(const Widget& widget);
 
             /// @brief formatting for sectsion
             enum SectionFormat
@@ -100,14 +98,14 @@ namespace mousetrap
             /// @param format section format to use
             void add_section(
                 const std::string& label,
-                const MenuModel&,
-                SectionFormat = NORMAL
+                const MenuModel& menu_model,
+                SectionFormat format = NORMAL
             );
 
             /// @brief add submenu to a menu. A submenut will appear as a single menu item, when clicked, the menu will open another popup to display the menu items contained in the submenu
             /// @param label label for the submenu
             /// @param menu_model model to use for populating the submenu items
-            void add_submenu(const std::string& label, const MenuModel&);
+            void add_submenu(const std::string& label, const MenuModel& menu_model);
 
             /// @brief add menu item that is a button with an icon and no label
             /// @param icon icon

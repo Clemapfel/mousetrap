@@ -13,11 +13,11 @@ namespace mousetrap
     {
         public:
             /// @brief get orientation
-            /// @return mousetrap::Orientation
+            /// @return orientation
             virtual Orientation get_orientation() const = 0;
 
             /// @brief set orientation
             /// @param orientation
-            virtual void set_orientation(Orientation) = 0;
+            virtual void set_orientation(Orientation orientation) = 0;
     };
 }

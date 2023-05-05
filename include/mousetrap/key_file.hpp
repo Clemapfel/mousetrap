@@ -41,12 +41,12 @@ namespace mousetrap
 
             /// @brief move ctor, safely transfers ownership
             /// @param other
-            KeyFile(KeyFile&&) noexcept;
+            KeyFile(KeyFile&& other) noexcept;
 
             /// @brief move assignment, safely transfers ownership
             /// @param other
             /// @return self after assignment
-            KeyFile& operator=(KeyFile&&) noexcept;
+            KeyFile& operator=(KeyFile&& other) noexcept;
 
             /// @brief serialize
             operator std::string();
@@ -63,7 +63,7 @@ namespace mousetrap
             /// @brief load from string
             /// @param string
             /// @return true if successfull, false otherwise. Prints soft warning for parsing erros
-            bool load_from_string(const std::string& file);
+            bool load_from_string(const std::string& string);
 
             /// @brief save to file on disk, creates file but not enclosed folder
             /// @param path
@@ -77,63 +77,65 @@ namespace mousetrap
             /// @brief get all keys for a specific group
             /// @param group_id
             /// @return vector of ids
-            std::vector<KeyID> get_keys(GroupKey) const;
+            std::vector<KeyID> get_keys(GroupKey group_id) const;
 
             /// @brief test whether file has a group of given name and whether that group has a key of given name
+            /// @param group_id
+            /// @param key_id
             /// @return true if exist, false otherwise
-            bool has_key(GroupKey, KeyID);
+            bool has_key(GroupKey group_id, KeyID key_id);
 
             /// @brief test whether file has a group of given name
             /// @return true if exist, false otherwise
-            bool has_group(GroupKey);
+            bool has_group(GroupKey group_id);
 
             /// @brief add comment above group id, only one line of comment is possible. Prints soft warning if group doesn't exist
-            /// @param group_id,
+            /// @param group_id
             /// @param comment
-            void add_comment_above(GroupKey, const std::string& comment);
+            void add_comment_above(GroupKey group_id, const std::string& comment);
 
             /// @brief add comment above key in group, only one line of comment is possible. Prints soft warning if group doesn't exist
-            /// @param group_id,
+            /// @param group_id
             /// @param key_id
             /// @param comment
-            void add_comment_above(GroupKey, KeyID, const std::string& comment);
+            void add_comment_above(GroupKey group_id, KeyID key_id, const std::string& comment);
 
             /// @brief get comment above group label, prints soft warning if group does not exist
             /// @param group_id
             /// @return comment if exist, empty string otherwise
-            std::string get_comment_above(GroupKey);
+            std::string get_comment_above(GroupKey group_id);
 
             /// @brief get comment above key, prints soft warning if group or key in group does not exist
             /// @param group_id
             /// @param key_id
             /// @return comment if exists, empty string otherwise
-            std::string get_comment_above(GroupKey, KeyID);
+            std::string get_comment_above(GroupKey group_id, KeyID key_id);
 
             /// @brief get value of key in group as escaped string
             /// @param group_id
             /// @param key_id
             /// @return value as string if exists, empty string otherwise
             /// @note if the value is a string, all control sequences will be escaped. To avoid this, use get_value_as<std::string> instead of get_value
-            std::string get_value(GroupKey, KeyID);
+            std::string get_value(GroupKey group_id, KeyID key_id);
 
             /// @brief get value of key in group as data type, conversion may fail
             /// @param group_id
             /// @param key_id
             template<typename Return_t>
-            Return_t get_value_as(GroupKey, KeyID);
+            Return_t get_value_as(GroupKey group_id, KeyID key_id);
 
             /// @brief set value from string, prints soft warning if group or key in group does not exist
             /// @param group_id
             /// @param key_id
             /// @param string
-            void set_value(GroupKey, KeyID, const std::string&);
+            void set_value(GroupKey group_id, KeyID key_id, const std::string& string);
 
             /// @brief set value from type, prints soft warning if group or key in group does not exist, or conversion failed
             /// @param group_id
             /// @param key_id
             /// @param value
             template<typename Value_t>
-            void set_value_as(GroupKey, KeyID, Value_t);
+            void set_value_as(GroupKey group_id, KeyID key_id, Value_t value);
 
         private:
             GKeyFile* _native;

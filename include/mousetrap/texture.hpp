@@ -95,7 +95,7 @@ namespace mousetrap
 
             /// @brief set scale mode, this governs how the texture behaves when displayed at a resolution other than it's native resolution
             /// @param scale_mode
-            void set_scale_mode(TextureScaleMode);
+            void set_scale_mode(TextureScaleMode scale_mode);
 
             /// @brief get scale mode, this governs how the texture behaves when displayed at a resolution other than it's native resolution
             /// @return scale mode

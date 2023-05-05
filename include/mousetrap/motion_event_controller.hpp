@@ -15,7 +15,7 @@ namespace mousetrap
     /// @brief handles cursor motion events
     /// \signals
     /// \signal_motion_enter{MotionEventController}
-    /// \siganl_motion{MotionEventController}
+    /// \signal_motion{MotionEventController}
     /// \signal_motion_leave{MotionEventController}
     class MotionEventController : public EventController,
         HAS_SIGNAL(MotionEventController, motion_enter),

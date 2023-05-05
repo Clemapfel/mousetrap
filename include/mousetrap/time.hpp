@@ -48,12 +48,12 @@ namespace mousetrap
             /// @brief operator add
             /// @param time
             /// @returns newly created duration
-            [[nodiscard]] Time operator+(const Time&);
+            [[nodiscard]] Time operator+(const Time& time);
 
             /// @brief operator subtract
             /// @param time
             /// @returns newly created duration
-            [[nodiscard]] Time operator-(const Time&);
+            [[nodiscard]] Time operator-(const Time& time);
 
             /// @brief equality comparison
             /// @param other
@@ -100,29 +100,29 @@ namespace mousetrap
     };
 
     /// @brief construct duration from number of minutes
-    /// @param n_minutes, double
+    /// @param n_minutes
     /// @returns new duration object
-    [[nodiscard]] Time minutes(double);
+    [[nodiscard]] Time minutes(double n_minutes);
 
     /// @brief construct duration from number of seconds
-    /// @param n_seconds, double
+    /// @param n_seconds
     /// @returns new duration object
-    [[nodiscard]] Time seconds(double);
+    [[nodiscard]] Time seconds(double n_seconds);
 
     /// @brief construct duration from number of milliseconds
-    /// @param n_milliseconds, double
+    /// @param n_milliseconds
     /// @returns new duration object
-    [[nodiscard]] Time milliseconds(double);
+    [[nodiscard]] Time milliseconds(double n_milliseconds);
 
     /// @brief construct duration from number of microseconds
-    /// @param n_microseconds, double
+    /// @param n_microseconds
     /// @returns new duration object
-    [[nodiscard]] Time microseconds(double);
+    [[nodiscard]] Time microseconds(double n_microseconds);
 
     /// @brief construct duration from number of nanoseconds
-    /// @param n_nanoseconds, signed
+    /// @param n_nanoseconds
     /// @returns new duration object
-    [[nodiscard]] Time nanoseconds(int64_t ns);
+    [[nodiscard]] Time nanoseconds(int64_t n_nanoseconds);
 
     /// @brief timing device, counts seconds elapsed in real-time
     class Clock

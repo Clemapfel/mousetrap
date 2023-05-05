@@ -19,8 +19,8 @@ namespace mousetrap
 
         public:
             /// @brief create from menu model
-            /// @param menu_model
-            PopoverMenu(const MenuModel&);
+            /// @param model
+            PopoverMenu(const MenuModel& model);
 
         protected:
             void refresh_widgets();

@@ -58,6 +58,7 @@ namespace mousetrap
             size_t push_back(const Widget& child_widget, const Widget& label_widget);
 
             /// @brief add a page at a specific position in the notebook
+            /// @param new_position
             /// @param child_widget widget to display as the pages content, may be nullptr
             /// @param label_widget widget to use for the lable in the pages tab, may be nullptr
             /// @return index of the newly inserted page
@@ -72,7 +73,7 @@ namespace mousetrap
 
             /// @brief switch to page with the given index, or the last page if index is out of bounds
             /// @param index
-            void goto_page(size_t);
+            void goto_page(size_t index);
 
             /// @brief make active the page before the current one, does nothing if current page is the first
             void previous_page();
@@ -95,7 +96,7 @@ namespace mousetrap
 
             /// @brief set whether notebook will have a black border
             /// @param b true if black border visible, false otherwise
-            void set_has_border(bool);
+            void set_has_border(bool b);
 
             /// @brief get whether notebook is displaying a black border
             /// @return true if black border visible, false otherwise
@@ -103,7 +104,7 @@ namespace mousetrap
 
             /// @brief set whether the tabs of pages should be displayed
             /// @param b true if tabs should be displayed, false otherwise
-            void set_tabs_visible(bool);
+            void set_tabs_visible(bool b);
 
             /// @brief get whether tabs are being display
             /// @return true if tabs are visible, false otherwise
@@ -111,7 +112,7 @@ namespace mousetrap
 
             /// @brief set whether a menu dropdown that allows users to navigate to a specific page should be accessible
             /// @param b true if it should be enabled, false otherwise
-            void set_quick_change_menu_enabled(bool);
+            void set_quick_change_menu_enabled(bool b);
 
             /// @brief get whether a menu dropdown that allows users to navigate to a speicifc page is accessible
             /// @return true if enabled, false otherwise
@@ -119,7 +120,7 @@ namespace mousetrap
 
             /// @brief set relative position of the tabs
             /// @param position relative position
-            void set_tab_position(RelativePosition);
+            void set_tab_position(RelativePosition position);
 
             /// @brief get relative position of the tabs
             /// @return relative position

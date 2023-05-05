@@ -76,15 +76,15 @@ namespace mousetrap
 
             /// @brief set left margin of the text, minimum distance between the left side of the widget and the start of each line
             /// @param distance in pixels
-            void set_left_margin(float);
+            void set_left_margin(float distance);
 
             /// @brief get left margin of the text, minimum distance between the left side of the widget and the start of each line
             /// @return distance in pixels
             float get_left_margin() const;
 
             /// @brief get left margin of the text, minimum distance between the right side of the widget and the end of each line
-            /// @return distance in pixels
-            void set_right_margin(float);
+            /// @param distance in pixels
+            void set_right_margin(float distance);
 
             /// @brief get right margin of the text, minimum distance between the right side of the widget and the end of each line
             /// @return distance in pixels
@@ -92,15 +92,15 @@ namespace mousetrap
 
             /// @brief set top margin of the text, minimum distance between the top of the widget and the top of the first line of text
             /// @param distance in pixels
-            void set_top_margin(float);
+            void set_top_margin(float distance);
 
             /// @brief get top margin of the text, minimum distance between the top of the widget and the top of the last line of text
-            /// @param distance in pixels
+            /// @return distance in pixels
             float get_top_margin() const;
 
             /// @brief set bottom margin of the text, minimum distance between the bottom of the widget and the bottom of the first line of text
             /// @param distance in pixels
-            void set_bottom_margin(float);
+            void set_bottom_margin(float distance);
             
             /// @brief get bottom margin of the text, minimum distance between the top of the widget and the top of the first line of text
             /// @return distance in pixels

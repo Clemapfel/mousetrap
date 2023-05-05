@@ -27,7 +27,7 @@ namespace mousetrap
 
             /// @brief set the label widget of the button
             /// @param widget can be nullptr
-            void set_child(const Widget&);
+            void set_child(const Widget& widget);
 
             /// @brief remove child
             void remove_child();
@@ -38,15 +38,15 @@ namespace mousetrap
 
             /// @brief attach a popover to the button, the button will take care of showing / hiding the popover
             /// @param popover Popover or nullptr to remove any popover or popover menu
-            void set_popover(Popover&);
+            void set_popover(Popover& popover);
 
             /// @brief attach a popover menu to the button, the button will take care of showing / hiden the popover menu
             /// @param popover_menu
-            void set_popover_menu(PopoverMenu&);
+            void set_popover_menu(PopoverMenu& popover_menu);
 
             /// @brief set relative position, applied to any popover attached
             /// @param relative_position
-            void set_popover_position(RelativePosition);
+            void set_popover_position(RelativePosition relative_position);
 
             /// @brief get relative position of any potential popover
             /// @return relative position
@@ -65,10 +65,10 @@ namespace mousetrap
 
             /// @brief set whether the button has a black outline
             /// @param b true if it should have an outline, false otherwise
-            void set_has_frame(bool);
+            void set_has_frame(bool b);
 
             /// @brief get whether the button has a black outline
-            /// @param true if it has an outline, false otherwise
+            /// @return true if it has an outline, false otherwise
             bool get_has_frame() const;
 
             /// @brief show the attached popover, does nothing if popover is already displayed or there is no popover attached
@@ -79,7 +79,7 @@ namespace mousetrap
 
             /// @brief set whether button should be circular
             /// @param b
-            void set_is_circular(bool);
+            void set_is_circular(bool b);
 
             /// @brief get whether button is circular
             /// @return true if circular, false otherwise

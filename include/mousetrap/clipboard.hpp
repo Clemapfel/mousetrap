@@ -60,41 +60,41 @@ namespace mousetrap
 
             /// @brief override the data in the clipboard with a string
             /// @param string
-            void set_string(const std::string&);
+            void set_string(const std::string& string);
 
             /// @brief concurrently read the data in the clipboard. Once reading is done, <tt>on_string_read</tt>> will be called with the returned string
-            /// @param Function_t lamdba with signature <tt>(Clipboard*, const std::string&, Data_t) -> void</tt>
+            /// @param on_string_read lamdba with signature <tt>(Clipboard*, const std::string&, Data_t) -> void</tt>
             /// @param data arbitrary data
             /// @return true if data can be serialized into a string, false otherwise
             template<typename Function_t, typename Data_t>
-            bool get_string(Function_t on_string_read, Data_t);
+            bool get_string(Function_t on_string_read, Data_t data);
 
             /// @brief concurrently read the data in the clipboard. Once reading is done, <tt>on_string_read</tt>> will be called with the returned string
-            /// @param Function_t lamdba with signature <tt>(Clipboard*, const std::string&) -> void</tt>
+            /// @param on_string_read lamdba with signature <tt>(Clipboard*, const std::string&) -> void</tt>
             /// @return true if data can be serialized into a string, false otherwise
             template<typename Function_t>
             bool get_string(Function_t on_string_read);
 
             /// @brief override data in clipboard with an image
             /// @param image
-            void set_image(const Image&);
+            void set_image(const Image& image);
 
             /// @brief concurrently read the data in the clipboard. Once reading is done, <tt>on_string_read</tt>> will be called with the returned image
-            /// @param Function_t lamdba with signature <tt>(Clipboard*, const Image&, Data_t) -> void</tt>
+            /// @param on_image_read lamdba with signature <tt>(Clipboard*, const Image&, Data_t) -> void</tt>
             /// @param data arbitrary data
             /// @return true if data can be serialized into an image, false otherwise
             template<typename Function_t, typename Data_t>
-            bool get_image(Function_t on_image_read, Data_t);
+            bool get_image(Function_t on_image_read, Data_t data);
 
             /// @brief concurrently read the data in the clipboard. Once reading is done, <tt>on_string_read</tt>> will be called with the returned image
-            /// @param Function_t lamdba with signature <tt>(Clipboard*, const Image&) -> void</tt>
+            /// @param on_image_read lamdba with signature <tt>(Clipboard*, const Image&) -> void</tt>
             /// @return true if data can be serialized into an image, false otherwise
             template<typename Function_t>
             bool get_image(Function_t on_image_read);
 
             /// @brief override data with a file
             /// @param file
-            void set_file(const FileDescriptor&);
+            void set_file(const FileDescriptor& file);
 
         protected:
             /// @brief constructor from widget, usually a window

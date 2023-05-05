@@ -51,7 +51,7 @@ namespace mousetrap
 
             /// @brief construct as thin wrapper \internal
             /// @param internal
-            SpinButton(detail::SpinButtonInternal*);
+            SpinButton(detail::SpinButtonInternal* internal);
 
             /// @brief get orientation
             /// @return mousetrap::Orientation
@@ -59,7 +59,7 @@ namespace mousetrap
 
             /// @brief set orientation
             /// @param orientation
-            void set_orientation(Orientation) override;
+            void set_orientation(Orientation orientation) override;
 
             /// @brief get adjustment, modifying it will modify the spin button
             /// @return adjusment
@@ -86,16 +86,16 @@ namespace mousetrap
             float get_increment() const;
 
             /// @brief set lower bound of the range
-            /// @param value float
-            void set_lower(float);
+            /// @param lower float
+            void set_lower(float lower);
 
             /// @brief set upper bound of the range
-            /// @param value float
-            void set_upper(float);
+            /// @param upper float
+            void set_upper(float upper);
 
             /// @brief set value, changes position of the slider and emits the <tt>value_changed</tt> signal
             /// @param value float
-            void set_value(float);
+            void set_value(float value);
 
             /// @brief set minimum step increment
             /// @param value float
@@ -103,7 +103,7 @@ namespace mousetrap
 
             /// @brief set number of digits after the decimal point that should be displayed
             /// @param n
-            void set_n_digits(size_t);
+            void set_n_digits(size_t n);
 
             /// @brief get number of digits after the decimal point that should be displayed
             /// @return number of digits
@@ -111,15 +111,15 @@ namespace mousetrap
 
             /// @brief set whether incrementing while the value is equal to upper bound should wrap around such that the value is now equal to the lower bound, or vice versa
             /// @param b true if wrapping enabled, false otherwise
-            void set_should_wrap(bool);
+            void set_should_wrap(bool b);
 
             /// @brief get whether incrementing while the value is equal to upper bound should wrap around such that the value is now equal to the lower bound, or vice versa
-            /// @param b
+            /// @return true if wrapping enabled, false otherwise
             bool get_should_wrap() const;
 
             /// @brief set rate at which the step increment increases the longer increment or decrement button is held down
             /// @param rate 0 for default rate, 1 for double the default rate, 2 for triple, etc.
-            void set_acceleration_rate(float);
+            void set_acceleration_rate(float rate);
 
             /// @brief get rate at which the step increment increases the longer increment or decrement button is held down
             /// @return 0 for default rate, 1 for double the default rate, 2 for triple, etc.
@@ -127,7 +127,7 @@ namespace mousetrap
 
             /// @brief set whether, when entering a number manually, the number should be rounded to nearest multiple of the step increment
             /// @param b true if rounding should take place, false otherwise
-            void set_should_snap_to_ticks(bool);
+            void set_should_snap_to_ticks(bool b);
 
             /// @brief get whether, when entering a number manually, the number should be rounded to nearest multiple of the step increment
             /// @return true if rounding should take place, false otherwise
@@ -135,7 +135,7 @@ namespace mousetrap
 
             /// @brief set whether the text entry only accepts characters `0`, ..., `9` and `.`
             /// @param b false if non-numerical characters should be allowed, true otherwise
-            void set_allow_only_numeric(bool);
+            void set_allow_only_numeric(bool b);
 
             /// @brief get whether the text entry only accepts characters `0`, ..., `9` and `.`
             /// @return false if non-numerical characters should be allowed, true otherwise
@@ -147,15 +147,13 @@ namespace mousetrap
             /// @param function
             /// @param data
             template<typename Function_t, typename Data_t>
-            void set_text_to_value_function(Function_t, Data_t);
+            void set_text_to_value_function(Function_t function, Data_t data);
 
             /// @brief set function that transforms the spin button entry text to a numerical value
             /// @tparam Function_t lambda or static function with signature <tt>(const SpinButton*, const std::string&) -> float</tt>
-            /// @tparam Data_t arbitrary data
             /// @param function
-            /// @param data
             template<typename Function_t>
-            void set_text_to_value_function(Function_t);
+            void set_text_to_value_function(Function_t function);
 
             void reset_text_to_value_function();
 
@@ -165,13 +163,13 @@ namespace mousetrap
             /// @param function
             /// @param data
             template<typename Function_t, typename Data_t>
-            void set_value_to_text_function(Function_t, Data_t);
+            void set_value_to_text_function(Function_t function, Data_t data);
 
             /// @brief set function that transforms the spin button numerical value to a label
             /// @tparam Function_t lambda or static function with signature <tt>(const SpinButton*, float) -> std::string</tt>
             /// @param function
             template<typename Function_t>
-            void set_value_to_text_function(Function_t);
+            void set_value_to_text_function(Function_t function);
 
             /// @brief set function that transforms the spin button numerical value to a label to default
             void reset_value_to_text_function();

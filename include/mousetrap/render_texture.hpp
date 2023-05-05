@@ -22,7 +22,6 @@ namespace mousetrap
     #endif
 
     /// @brief texture that can be bound, such that any rendering happening afterwards will be pushed into the textures framebuffer. It can still be used like a regular texture
-    /// @note this texture does no anti-aliasing, use \link mousetrap::MultisampleRenderTexture MultiSampledRenderTexture\endlink for this purpose instead
     class RenderTexture : public Texture
     {
         public:

@@ -80,11 +80,11 @@ namespace mousetrap
             /// @param title title of the window, may be empty
             /// @param accept_label label for the button that confirms the users choice
             /// @param cancel_label label for the button that aborts the users choice
-            FileChooser(FileChooserAction, const std::string& title, const std::string& accept_label = "Accept", const std::string& cancel_label = "Cancel");
+            FileChooser(FileChooserAction action, const std::string& title, const std::string& accept_label = "Accept", const std::string& cancel_label = "Cancel");
 
             /// @brief set label for button that confirms users choice
             /// @param label
-            void set_accept_label(const std::string&);
+            void set_accept_label(const std::string& label);
 
             /// @brief get label for button that confirms users choice
             /// @return label
@@ -92,7 +92,7 @@ namespace mousetrap
 
             /// @brief set label for button that aborts dialog
             /// @param label
-            void set_cancel_label(const std::string&);
+            void set_cancel_label(const std::string& label);
 
             /// @brief get label for button that aborts dialog
             /// @return label
@@ -116,11 +116,11 @@ namespace mousetrap
             bool get_is_modal() const;
 
             /// @brief set whether dialog should be transient for another window. If transient, dialog will always be shown on top
-            void set_transient_for(Window*);
+            void set_transient_for(Window* window);
 
             /// @brief set whether the user can select more than one file or directory at the same time
             /// @param b true if multiple selection should be allowed, false otherwise
-            void set_can_select_multiple(bool);
+            void set_can_select_multiple(bool b);
 
             /// @brief get whether the user can select more than one file or directory at the same time
             /// @return true if multiple selection is allowed, false otherwise
@@ -128,7 +128,7 @@ namespace mousetrap
 
             /// @brief set the type of action, determines formatting of the file chooser
             /// @param action
-            void set_file_chooser_action(FileChooserAction);
+            void set_file_chooser_action(FileChooserAction action);
 
             /// @brief get the type of action
             /// @return action
@@ -140,7 +140,7 @@ namespace mousetrap
 
             /// @brief change the current directory such that given file is now selected
             /// @param file
-            void set_selected_file(const FileDescriptor&) const;
+            void set_selected_file(const FileDescriptor& file) const;
 
             /// @brief get current directory
             /// @return directory
@@ -148,15 +148,15 @@ namespace mousetrap
 
             /// @brief set current directory
             /// @param directory
-            void set_current_folder(const FileDescriptor&);
+            void set_current_folder(const FileDescriptor& directory);
 
             /// @brief add a filter to the choice of filters
             /// @param file_filter
-            void add_filter_choice(const FileFilter&);
+            void add_filter_choice(const FileFilter& file_filter);
 
             /// @brief set the currently selected filter, does not have to be added via mousetrap::FileChooser::add_filter_choice first
             /// @param file_filter
-            void set_filter(const FileFilter&);
+            void set_filter(const FileFilter& file_filter);
 
             /// @brief set name in the file selector, as if entered by the user
             /// @param name

@@ -43,21 +43,21 @@ namespace mousetrap
 
             /// @brief copy ctor, invokes deep copy of the data
             /// @param other
-            Image(const Image&);
+            Image(const Image& other);
 
             /// @brief move ctor, moves data, empties original image
-            /// @param original
-            Image(Image&&) noexcept;
+            /// @param other
+            Image(Image&& other) noexcept;
 
             /// @brief copy assignment, invokes deep copy of the data
             /// @param other
             /// @return self after assignment
-            Image& operator=(const Image&);
+            Image& operator=(const Image& other);
 
             /// @brief move assignment, empties original image
             /// @param other
             /// @return self after assignment
-            Image& operator=(Image&&) noexcept;
+            Image& operator=(Image&& other) noexcept;
 
             /// @brief expose as GdkPixbuf, for interal use only
             operator GdkPixbuf*() const;
@@ -71,12 +71,12 @@ namespace mousetrap
             /// @brief create an image by reading a file
             /// @param path
             /// @return true if successfull, false otherwise
-            bool create_from_file(const std::string&);
+            bool create_from_file(const std::string& path);
 
             /// @brief sae to file
             /// @param path
             /// @return true if successfull, false otherwise
-            bool save_to_file(const std::string&) const;
+            bool save_to_file(const std::string& path) const;
 
             /// @brief expose pixel data, linear array of RGBA values. For internal use only
             /// @return void pointer to data
@@ -99,7 +99,7 @@ namespace mousetrap
             /// @param size_y new height
             /// @param interpolation_type interpolation algorithm to use
             /// @return newly allocated image
-            [[nodiscard]] Image as_scaled(size_t size_x, size_t size_y, InterpolationType = InterpolationType::TILES) const;
+            [[nodiscard]] Image as_scaled(size_t size_x, size_t size_y, InterpolationType interpolation_type = InterpolationType::TILES) const;
 
             /// @brief create a new image, cropped
             /// @param offset_x left most anchor of the newly cropped image, may be negative
@@ -120,29 +120,29 @@ namespace mousetrap
             /// @param x row-index
             /// @param y column-index
             /// @param new_color RGBA
-            void set_pixel(size_t, size_t, RGBA);
+            void set_pixel(size_t x, size_t y, RGBA new_color);
 
             /// @brief set value of individual pixel, prints soft warning if indices out of bounds
             /// @param x row-index
             /// @param y column-index
             /// @param new_color HSVA
-            void set_pixel(size_t, size_t, HSVA);
+            void set_pixel(size_t x, size_t y, HSVA new_color);
 
             /// @brief get value of individual pixel, prints soft warning if indices out of bounds
             /// @param x row-index
             /// @param y column-index
             /// @returns pixel if indices in bounds, RGBA(0, 0, 0, 0) otherwise
-            RGBA get_pixel(size_t, size_t) const;
+            RGBA get_pixel(size_t x, size_t y) const;
 
             /// @brief set value of individual pixel, linear indexing. Prints soft warning if index out of bounds
             /// @param linear_index
             /// @param new_color RBGA
-            void set_pixel(size_t linear_index, RGBA);
+            void set_pixel(size_t linear_index, RGBA new_color);
 
             /// @brief set value of individual pixel, linear indexing. Prints soft warning if index out of bounds
             /// @param linear_index
             /// @param new_color HSVA
-            void set_pixel(size_t linear_index, HSVA);
+            void set_pixel(size_t linear_index, HSVA new_color);
 
             /// @brief get value of individual pixel, linear indexing.
             /// @param linear_index

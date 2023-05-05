@@ -86,7 +86,7 @@ namespace mousetrap
             ScrollbarVisibilityPolicy get_vertical_scrollbar_policy() const;
 
             /// @brief set placement of the scrollbars
-            /// @param corner_placement
+            /// @param content_relative_to_scrollbars
             void set_scrollbar_placement(CornerPlacement content_relative_to_scrollbars);
 
             /// @brief get placement of scrollbars
@@ -98,7 +98,7 @@ namespace mousetrap
             void set_has_frame(bool);
 
             /// @brief get whether the window has rounded corners and a dark outline
-            /// @param b true if window has rounded cornrers and a dark outline, false otherwise
+            /// @return b true if window has rounded cornrers and a dark outline, false otherwise
             bool get_has_frame() const;
 
             /// @brief get adjument that controls the horizontal scrollbar
@@ -127,7 +127,7 @@ namespace mousetrap
 
             /// @brief set the windows child
             /// @param widget
-            void set_child(const Widget&);
+            void set_child(const Widget& widget);
 
             /// @brief remove child
             void remove_child();

@@ -22,7 +22,7 @@ namespace mousetrap
 
             /// @brief set the amount of time that has to pass until a long press is registered
             /// @param factor multiplier with the standard duration, 1 means no modification, 2 means twice as long of a delay, 0.5 half as a long
-            void set_delay_factor(float);
+            void set_delay_factor(float factor);
 
             /// @brief get amount of time that has to pass until a long press is registered
             /// @return multiplier with the standard duration, 1 means no modification, 2 means twice as long of a delay, 0.5 half as a long

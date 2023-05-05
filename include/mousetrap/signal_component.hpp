@@ -643,7 +643,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL(ActivateFocusedWidget, activate_focused_widget, ACTIVATE_FOCUSED_WIDGET, "activate-focus", void);
     /// @class has_signal_activate_focused_widget
-    /// @brief \signal_activate_focused_widget
+    /// @brief \signal_activate_focused_widget_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_activate_focused_widget::connect_signal_activate_focused_widget(Function_t)
@@ -929,7 +929,7 @@ namespace mousetrap
         SPLAT(keyval, keycode, modifier)
     );
     /// @class has_signal_modifiers_changed
-    /// @brief \signal_modifiers_changed
+    /// @brief \signal_modifiers_changed_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_modifiers_changed::connect_signal_modifiers_changed(Function_t)
@@ -1408,8 +1408,8 @@ namespace mousetrap
     /// \signal_ctor
 
     DECLARE_SIGNAL_MANUAL(DragEnd, drag_end, DRAG_END, "drag-end", void,
-        SPLAT(double offset_x, double offest_y),
-        SPLAT(offset_x, offest_y)
+        SPLAT(double offset_x, double offset_y),
+        SPLAT(offset_x, offset_y)
     );
     /// @class has_signal_drag_end
     /// @brief \signal_drag_end_brief
@@ -1421,7 +1421,7 @@ namespace mousetrap
     /// @fn void has_signal_drag_end::connect_signal_drag_end(Function_t, Data_t)
     /// \signal_connect_data{(T*, double offset_x, double offset_y, Data_t) -> void}
     ///
-    /// @fn void has_signal_drag_end::emit_signal_drag_end(double offset_x, double offest_y)
+    /// @fn void has_signal_drag_end::emit_signal_drag_end(double offset_x, double offset_y)
     /// \signal_emit_brief
     /// @param offset_x horizontal offset from drag start point, widget-relative coordinates, in pixels
     /// @param offset_y vertical offset from drag start point, widget-relative coordinates, in pixels
@@ -1797,7 +1797,7 @@ namespace mousetrap
 
     DECLARE_SIGNAL_MANUAL(Response, response, RESPONSE, "response", void, int response, response);
     /// @class has_signal_response
-    /// @brief \signal_respone_brief
+    /// @brief \signal_response_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_response::connect_signal_response(Function_t)
@@ -1954,9 +1954,8 @@ namespace mousetrap
     ///
     /// @fn void has_signal_swipe::emit_signal_swipe(int32_t n_press, double x, double y)
     /// \signal_emit_brief
-    /// @param n_press number of clicks in this sequence
-    /// @param x x-coordinate of the cursor, widget-relative position, in pixels
-    /// @param y y-coordinate of the cursor, widget-relative position, in pixels
+    /// @param x_velocity speed along the x-axis
+    /// @param y_velocity speed along the y-axis
     ///
     /// @var has_signal_swipe::signal_id
     /// \signal_id{https://docs.gtk.org/gtk4/signal.GestureClick.swipe.html}
@@ -2310,7 +2309,7 @@ namespace mousetrap
     /// @fn void has_signal_revealed::disconnect_signal_revealed()
     /// \signal_disconnect
     ///
-    /// @fn has_signal_revealed::has_signal_items_changed
+    /// @fn has_signal_revealed::has_signal_revealed
     /// \signal_ctor
 
     DECLARE_SIGNAL_MANUAL(Activated, activated, ACTIVATED, "activate", void, UnusedArgument_t _, _);
@@ -2340,6 +2339,6 @@ namespace mousetrap
     /// @fn void has_signal_activated::disconnect_signal_activated()
     /// \signal_disconnect
     ///
-    /// @fn has_signal_activated::has_signal_items_changed
+    /// @fn has_signal_activated::has_signal_activated
     /// \signal_ctor
 }

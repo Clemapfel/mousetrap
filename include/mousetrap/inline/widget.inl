@@ -60,7 +60,7 @@ namespace mousetrap
     }
 
     template<typename T>
-    WidgetImplementation<T>& WidgetImplementation<T>::operator=(WidgetImplementation<T>&& other)
+    WidgetImplementation<T>& WidgetImplementation<T>::operator=(WidgetImplementation<T>&& other) noexcept
     {
         _native = other._native;
         other._native = nullptr;

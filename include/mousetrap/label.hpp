@@ -53,11 +53,12 @@ namespace mousetrap
             Label();
 
             /// @brief construct from string
-            Label(const std::string&);
+            /// @param formatted_string
+            Label(const std::string& formatted_string);
 
             /// @brief set text
-            /// @param text
-            void set_text(const std::string&);
+            /// @param formatted_string
+            void set_text(const std::string& formatted_string);
 
             /// @brief get text
             /// @return text
@@ -65,7 +66,7 @@ namespace mousetrap
 
             /// @brief set should respect pango attribute syntax, on by default
             /// @param enable
-            void set_use_markup(bool b);
+            void set_use_markup(bool enable);
 
             /// @brief get whether label respects pango attribute syntax
             /// @return true if enabled, false otherwise
@@ -73,7 +74,7 @@ namespace mousetrap
 
             /// @brief set ellipsize mode, mousetrap::EllipsizeMode::NONE by default
             /// @param mode
-            void set_ellipsize_mode(EllipsizeMode);
+            void set_ellipsize_mode(EllipsizeMode mode);
 
             /// @brief get ellipsize mode
             /// @return mode
@@ -81,7 +82,7 @@ namespace mousetrap
 
             /// @brief set wrap mode, mousetrap::LabelWrapMode::NONE by default
             /// @param mode
-            void set_wrap_mode(LabelWrapMode);
+            void set_wrap_mode(LabelWrapMode mode);
 
             /// @brief get wrap mode
             /// @return mode
@@ -89,7 +90,7 @@ namespace mousetrap
 
             /// @brief set justify mdoe, mousetrap::JustifyMode::LEFT by default
             /// @param mode
-            void set_justify_mode(JustifyMode);
+            void set_justify_mode(JustifyMode mode);
 
             /// @brief get justify mode
             /// @return mode
@@ -105,7 +106,7 @@ namespace mousetrap
 
             /// @brief set horizontal offset of text
             /// @param offset
-            void set_x_alignment(float);
+            void set_x_alignment(float offset);
 
             /// @brief get horizontal offset of text
             /// @return offset
@@ -113,7 +114,7 @@ namespace mousetrap
 
             /// @brief set vertical offset of text
             /// @param offset
-            void set_y_alignment(float);
+            void set_y_alignment(float offset);
 
             /// @brief get vertical offset of text
             /// @return offset
@@ -121,7 +122,7 @@ namespace mousetrap
 
             /// @brief set whether the user can highlight the text with the cursor
             /// @param b true if selection should be possible, false otherwise
-            void set_selectable(bool);
+            void set_selectable(bool b);
 
             /// @brief get whether the user can highight thex text with the cursor
             /// @return true if selection is possible, false otherwise

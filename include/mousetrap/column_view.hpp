@@ -47,7 +47,7 @@ namespace mousetrap
 
                     /// @brief set title of column
                     /// @param title
-                    void set_title(const std::string&);
+                    void set_title(const std::string& title);
 
                     /// @brief get title of column
                     /// @return title
@@ -55,7 +55,7 @@ namespace mousetrap
 
                     /// @brief set fixed width of column
                     /// @param width
-                    void set_fixed_width(float);
+                    void set_fixed_width(float width);
 
                     /// @brief get fixed width of column
                     /// @return width
@@ -63,11 +63,11 @@ namespace mousetrap
 
                     /// @brief set the menumodel to use for the header menu, this menu is accessible by clicked the columns header bar
                     /// @param menu_model
-                    void set_header_menu(const MenuModel&);
+                    void set_header_menu(const MenuModel& menu_model);
 
                     /// @brief set whether column should be visible
                     /// @param visible
-                    void set_is_visible(bool);
+                    void set_is_visible(bool visible);
 
                     /// @brief get whether column is visible
                     /// @return true if visible, false otherwise
@@ -75,7 +75,7 @@ namespace mousetrap
 
                     /// @brief set whether column should be resizable
                     /// @param resizable
-                    void set_is_resizable(bool);
+                    void set_is_resizable(bool resizable);
 
                     /// @brief get whether column is resizable
                     /// @return true if resizable, false otherwise
@@ -111,7 +111,7 @@ namespace mousetrap
 
             /// @brief remove a column from the column view
             /// @param column
-            void remove_column(const Column&);
+            void remove_column(const Column& column);
 
             /// @brief get column at specified position
             /// @param column_i index
@@ -132,30 +132,30 @@ namespace mousetrap
             /// @param column column
             /// @param row_i row index
             /// @param widget widget to insert
-            void set_widget(const Column&, size_t row_i, const Widget& widget);
+            void set_widget(const Column& column, size_t row_i, const Widget& widget);
 
             /// @brief convenience function that maps widgets to columns and appends them as a new row at end of the list
             /// @tparam WidgetRef_ts has to be Widget, Widget& or const Widget&
-            /// @param widgets number of widgets has to smaller than or equal to the number of columns
+            /// @param widget_by_column number of widgets has to smaller than or equal to the number of columns
             template<typename... WidgetRef_ts>
             void push_back_row(WidgetRef_ts... widget_by_column);
 
             /// @brief convenience functino that maps widgets to columns and appends them as a new row at end of the list
             /// @tparam WidgetRef_ts has to be Widget, Widget& or const Widget&
-            /// @param widgets
+            /// @param widget_by_column
             template<typename... WidgetRef_ts>
             void push_front_row(WidgetRef_ts... widget_by_column);
 
             /// @brief convenience functino that maps widgets to columns and appends them as a new row at end of the list
             /// @tparam WidgetRef_ts has to be Widget, Widget& or const Widget&
             /// @param i row index, table is backfilled if current number of rows is less than i
-            /// @param widgets
+            /// @param widget_by_column
             template<typename... WidgetRef_ts>
             void insert_row(size_t i, WidgetRef_ts... widget_by_column);
 
             /// @brief set whether the user is able to selecte multiple items by click-dragging
             /// @param b true if this type of selection should be enabled, false otherwise
-            void set_enable_rubberband_selection(bool);
+            void set_enable_rubberband_selection(bool b);
 
             /// @brief get whether the user is able to selecte multiple items by click-dragging
             /// @return true if this type of selection should be enabled, false otherwise
@@ -163,7 +163,7 @@ namespace mousetrap
 
             /// @brief set whether rows should be separated
             /// @param b true if separators should be visible, false otherwise
-            void set_show_row_separators(bool);
+            void set_show_row_separators(bool b);
 
             /// @brief get whether row separators are shown
             /// @return true if separators are visible, false otherwise
@@ -171,7 +171,7 @@ namespace mousetrap
 
             /// @brief set whether columns should be separated
             /// @param b true if spearators should be visible, false otherwise
-            void set_show_column_separators(bool);
+            void set_show_column_separators(bool b);
 
             /// @brief get whether row separators are shown
             /// @return true if separators are visible, false otherwise
@@ -179,15 +179,15 @@ namespace mousetrap
 
             /// @brief set whether the column views seletion model should emit an activate signal when the user clicks on an item in the view once
             /// @param b true if signal emissions this way should be allowed, false otherwise
-            void set_single_click_activate(bool);
+            void set_single_click_activate(bool b);
 
             /// @brief get whether the column views seletion model should emit an activate signal when the user clicks on an item in the view once
-            /// @param b true if signal emissions this way should be allowed, false otherwise
+            /// @return true if signal emissions this way should be allowed, false otherwise
             bool get_single_click_activate() const;
 
             /// @brief set whether user can reorder columns by click-dragging
             /// @param b true if reorderable, false otherwise
-            void set_is_reorderable(bool);
+            void set_is_reorderable(bool b);
 
             /// @brief get whether the user can reorder columns by click-dragging
             /// @return true if reorderable, false otherwise
@@ -202,7 +202,7 @@ namespace mousetrap
             size_t get_n_rows() const;
 
             /// @brief get number of columns
-            /// qreturn size_t
+            /// @return size_t
             size_t get_n_columns() const;
 
         private:

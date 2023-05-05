@@ -45,20 +45,20 @@ namespace mousetrap
 
             /// @brief create shader from source code as string
             /// @param code glsl code
-            /// @param shader_type
+            /// @param type One of ShaderType::FRAGMENT or ShaderType::VERTEX
             /// @return true if compiled succesfully, false otherwise
-            bool create_from_string(const std::string& code, ShaderType);
+            bool create_from_string(const std::string& code, ShaderType type);
 
             /// @brief create shader from a file, usually .glsl, .frag or .vert
             /// @param path absolute path to file with glsl code
-            /// @param shader_type
+            /// @param type One of ShaderType::FRAGMENT or ShaderType::VERTEX
             /// @return true the file was accessed and compiled succesfully, false otherwise
-            bool create_from_file(const std::string& path, ShaderType);
+            bool create_from_file(const std::string& path, ShaderType type);
 
             /// @brief get location of a uniform with given name
             /// @param name exact name of a uniform mentioned in the shader source code
             /// @return location or -1 if no uniform of that name exists
-            int get_uniform_location(const std::string&) const;
+            int get_uniform_location(const std::string& name) const;
 
             /// @brief set uniform float
             /// @param uniform_name exact name of a uniform mentioned in the shader source

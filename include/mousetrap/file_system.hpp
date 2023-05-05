@@ -26,14 +26,14 @@ namespace mousetrap
             static bool create_file_at(const FileDescriptor& destination, bool should_replace_destination);
 
             /// @brief create a directory, including intermediate parents if they do not already exist
-            /// @param path absolute path to new directory
+            /// @param destination absolute path to new directory
             /// @return true if operation was succesfull, false otherwise
             static bool create_directory_at(const FileDescriptor& destination);
 
             /// @brief delete a file at given path
             /// @param destination file descriptor
             /// @return true if operation was succesfull, false otherwise
-            static bool delete_at(const FileDescriptor&);
+            static bool delete_at(const FileDescriptor& destination);
 
             /// @brief copy a file to somewhere else
             /// @param from original file that should be copied
@@ -64,7 +64,7 @@ namespace mousetrap
 
             /// @brief attempt to move a file to the trash
             /// @param file target file to move
-            static bool move_to_trash(const FileDescriptor&);
+            static bool move_to_trash(const FileDescriptor& file);
     };
 }
 

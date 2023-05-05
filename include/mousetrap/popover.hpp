@@ -32,7 +32,7 @@ namespace mousetrap
 
             /// @brief set the popovers child
             /// @param widget
-            void set_child(const Widget&);
+            void set_child(const Widget& widget);
 
             /// @brief remove child
             void remove_child();
@@ -47,7 +47,7 @@ namespace mousetrap
 
             /// @brief set position of popover relative to its anchor widget
             /// @param position
-            void set_relative_position(RelativePosition);
+            void set_relative_position(RelativePosition position);
 
             /// @brief get position of popover relative to its anchor widget
             /// @return position
@@ -55,7 +55,7 @@ namespace mousetrap
 
             /// @brief set whether popover should hide automatically when it looses focus
             /// @param b true if it should hide, false otherwise
-            void set_autohide(bool);
+            void set_autohide(bool b);
 
             /// @brief get whether popover hides automatically when it looses focus
             /// @return true if it should hide, false otherwise
@@ -63,7 +63,7 @@ namespace mousetrap
 
             /// @brief set whether popover has a triangular arrow pointing to its anchor widget
             /// @param b true if arrow should be shown, false otherwise
-            void set_has_base_arrow(bool);
+            void set_has_base_arrow(bool b);
 
             /// @brief get whether popover displays a triangular arrow pointing to its anchor widget
             /// @return true if arrow is shown, false otherwise

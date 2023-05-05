@@ -27,7 +27,7 @@ namespace mousetrap
         public:
             /// @brief construct from GdkFrameClock \internal. Use the callback of widget::add_tick_callback to get an initialized mousetrap::FrameClock
             /// @param clock
-            FrameClock(GdkFrameClock*);
+            FrameClock(GdkFrameClock* clock);
 
             /// @brief destruct
             ~FrameClock();
@@ -37,7 +37,7 @@ namespace mousetrap
 
             /// @brief move ctor, safely transfers ownership
             /// @param other
-            FrameClock(FrameClock&&) noexcept;
+            FrameClock(FrameClock&& other) noexcept;
 
             /// @brief copy assignment deleted
             FrameClock& operator=(const FrameClock&) = delete;
@@ -45,7 +45,7 @@ namespace mousetrap
             /// @brief move assignment, safely transfers ownership
             /// @param other
             /// @return self after mutation
-            FrameClock& operator=(FrameClock&&) noexcept;
+            FrameClock& operator=(FrameClock&& other) noexcept;
 
             /// @brief expose as GObject \internal
             operator GObject*() const;

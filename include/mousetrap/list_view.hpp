@@ -45,7 +45,7 @@ namespace mousetrap
             /// @brief ctor list view
             /// @param orientation Orientation, horizontal for left to right, vertical for top to bottom
             /// @param selection_mode
-            ListView(Orientation = Orientation::HORIZONTAL, SelectionMode = SelectionMode::NONE);
+            ListView(Orientation orientation = Orientation::HORIZONTAL, SelectionMode selection_mode = SelectionMode::NONE);
 
             /// @brief dtor
             ~ListView();
@@ -54,44 +54,45 @@ namespace mousetrap
             /// @param widget
             /// @param iterator iterator to sub-list, or nullptr to add to the toplevel list
             /// @return iterator to list the widget was inserted in
-            Iterator push_back(const Widget& widget, Iterator = nullptr);
+            Iterator push_back(const Widget& widget, Iterator iterator = nullptr);
 
             /// @brief add a widget to the front of the list
             /// @param widget
             /// @param iterator iterator to sub-list, or nullptr to add to the toplevel list
             /// @return iterator to list the widget was inserted in
-            Iterator push_front(const Widget& widget, Iterator = nullptr);
+            Iterator push_front(const Widget& widget, Iterator iterator = nullptr);
 
             /// @brief add a widget at a specific position to the list
+            /// @param index
             /// @param widget
             /// @param iterator iterator to sub-list, or nullptr to add to the toplevel list
             /// @return iterator to list the widget was inserted in
-            Iterator insert(size_t, const Widget&, Iterator = nullptr);
+            Iterator insert(size_t index, const Widget& widget, Iterator iterator = nullptr);
 
             /// @brief remove n-th element from list specified by iterator
             /// @param index
             /// @param iterator iterator to list to remove from, or nullptr to remove from toplevel list
-            void remove(size_t, Iterator = nullptr);
+            void remove(size_t index, Iterator iterator = nullptr);
 
             /// @brief clear list at iterator
             /// @param iterator iterator to list to clear, or nullptr to clear the toplevel list
-            void clear(Iterator = nullptr);
+            void clear(Iterator iterator = nullptr);
 
             /// @brief get widget at i-th position in list
             /// @param i index
             /// @param iterator iterator to list, or nullptr to access the toplevel list
             /// @return pointer to widget at that position, or nullptr if unable to retrieve widget
-            Widget* get_widget_at(size_t i, Iterator = nullptr);
+            Widget* get_widget_at(size_t i, Iterator iterator = nullptr);
 
             /// @brief set widget at i-th position in list
             /// @param i index
             /// @param widget
             /// @param iterator iterator to list, or nullptr to set widget in toplevel list
-            void set_widget_at(size_t i, const Widget&, Iterator = nullptr);
+            void set_widget_at(size_t i, const Widget& widget, Iterator iterator = nullptr);
 
             /// @brief enable users to select multiple elements by click-dragging
             /// @param b true if enabled, false otherwise
-            void set_enable_rubberband_selection(bool);
+            void set_enable_rubberband_selection(bool b);
 
             /// @brief get whether users can select multiple elements by click-dragging
             /// @return true if enabled, false otherwise
@@ -99,7 +100,7 @@ namespace mousetrap
 
             /// @brief set whether separators should be shown in between each item, this applies to the toplevel and all sub-lists
             /// @param b true if separators should be shown, false oherwise
-            void set_show_separators(bool);
+            void set_show_separators(bool b);
 
             /// @brief get whether separator should be shown in between each item
             /// @return true if separators should be shown, false otherwise
@@ -107,10 +108,10 @@ namespace mousetrap
 
             /// @brief set whether the <tt>activate</tt> signal should be emitted when the user selects an item, as opposed to selected and activating it
             /// @param b true if emission should already happen on selection, false otherwise
-            void set_single_click_activate(bool);
+            void set_single_click_activate(bool b);
 
             /// @brief get whether the <tt>activate</tt> signal should be emitted when the user selects an item, as opposed to selected and activating it
-            /// @param true if emission already happens on selection, false otherwise
+            /// @return true if emission already happens on selection, false otherwise
             bool get_single_click_activate() const;
 
             /// @brief expose the selection model, connect to its signals to monitor list item selection

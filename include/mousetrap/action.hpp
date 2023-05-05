@@ -60,7 +60,7 @@ namespace mousetrap
             /// @brief construct an action with immutable id
             /// @param id string, usually of the form `scope.action_name`
             /// @param application
-            Action(const std::string& id, Application*);
+            Action(const std::string& id, Application* application);
 
             /// @brief dtor
             ~Action();
@@ -112,7 +112,7 @@ namespace mousetrap
 
             /// @brief set the state of a stateful action, if the action is not stateful, does nothing
             /// @param new_state
-            void set_state(bool);
+            void set_state(bool new_state);
 
             /// @brief get state of a stateful action, if the action is not stateful, returns false
             /// @return false if state is set to false or the action is not stateful, true otherwise
@@ -124,7 +124,7 @@ namespace mousetrap
             /// @brief add a shortcut trigger for action, warns but does not throw if trigger is malformed
             /// @param trigger
             /// @note shortcuts can be changed only before the action is registered with an application. If already registered, unregister the action and reregister a new action with the same behavior but different shortcuts
-            void add_shortcut(const ShortcutTriggerID&);
+            void add_shortcut(const ShortcutTriggerID& trigger);
 
             /// @brief get shortcuts for action
             /// @return vector of shortcut triggers
@@ -133,12 +133,12 @@ namespace mousetrap
             /// @brief cast to GAction \internal
             explicit operator GAction*() const;
 
-            /// @copydoc SignalEmitter::operator GObject*() const
+            /// @brief expose as GObject \internal
             operator GObject*() const override;
 
             /// @brief set whether triggering the action will execute the registered function
             /// @param is_enabled
-            void set_enabled(bool);
+            void set_enabled(bool is_enabled);
 
             /// @brief get whether the action is currently enabled
             /// @return true if enabled, false otherwise
@@ -151,7 +151,7 @@ namespace mousetrap
         protected:
             /// @brief init from floating internal
             /// @param internal
-            Action(detail::ActionInternal*);
+            Action(detail::ActionInternal* internal);
 
         private:
             detail::ActionInternal* _internal = nullptr;

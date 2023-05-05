@@ -40,7 +40,7 @@ namespace mousetrap
 
         /// @brief move rectangle such that top left is as specified
         /// @param position
-        void set_top_left(Vector2f);
+        void set_top_left(Vector2f position);
 
         /// @brief get center top
         /// @return position
@@ -48,7 +48,7 @@ namespace mousetrap
 
         /// @brief move rectangle such that top center is as specified
         /// @param position
-        void set_top_center(Vector2f);
+        void set_top_center(Vector2f position);
 
         /// @brief get top right
         /// @return position
@@ -56,7 +56,7 @@ namespace mousetrap
 
         /// @brief move rectangle such that top right is as specified
         /// @param position
-        void set_top_right(Vector2f);
+        void set_top_right(Vector2f position);
 
         /// @brief get center left
         /// @return position
@@ -64,7 +64,7 @@ namespace mousetrap
 
         /// @brief move rectangle such that center left is as specified
         /// @param position
-        void set_center_left(Vector2f);
+        void set_center_left(Vector2f position);
 
         /// @brief get center
         /// @return position
@@ -72,7 +72,7 @@ namespace mousetrap
 
         /// @brief move rectangle such that center is as specified
         /// @param position
-        void set_center(Vector2f);
+        void set_center(Vector2f position);
 
         /// @brief get center right
         /// @return position
@@ -80,7 +80,7 @@ namespace mousetrap
 
         /// @brief move rectangle such that center right is as specified
         /// @param position
-        void set_center_right(Vector2f);
+        void set_center_right(Vector2f position);
 
         /// @brief get bottom right
         /// @return position
@@ -88,7 +88,7 @@ namespace mousetrap
 
         /// @brief move rectangle such that bottom right is as specified
         /// @param position
-        void set_bottom_right(Vector2f);
+        void set_bottom_right(Vector2f position);
 
         /// @brief get center bottom
         /// @return position
@@ -96,7 +96,7 @@ namespace mousetrap
 
         /// @brief move rectangle such that center bottom is as specified
         /// @param position
-        void set_center_bottom(Vector2f);
+        void set_center_bottom(Vector2f position);
 
         /// @brief get bottom left
         /// @return position
@@ -104,7 +104,7 @@ namespace mousetrap
 
         /// @brief move rectangle such that bottom left is as specified
         /// @param position
-        void set_bottom_left(Vector2f);
+        void set_bottom_left(Vector2f position);
     };
 
     /// @brief circle, defined by center in 2d space, radius

@@ -16,7 +16,7 @@ namespace mousetrap
         public:
             /// @brief create from menu model
             /// @param menu_model
-            MenuBar(const MenuModel&);
+            MenuBar(const MenuModel& menu_model);
 
         protected:
             void refresh_widgets();

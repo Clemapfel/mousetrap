@@ -32,28 +32,28 @@ namespace mousetrap
             bool should_shortcut_trigger_trigger(const ShortcutTriggerID& shortcut);
 
             /// @brief test whether shift is pressed in the given modifier state
-            /// @param modifier state, obtained during signal emission of key_pressed, key_released or modifiers_changed
+            /// @param state modifier state, obtained during signal emission of key_pressed, key_released or modifiers_changed
             /// @return true if pressed, false otherwise
-            static bool shift_pressed(ModifierState);
+            static bool shift_pressed(ModifierState state);
 
             /// @brief test whether control is pressed in the given modifier state
-            /// @param modifier state, obtained during signal emission of key_pressed, key_released or modifiers_changed
+            /// @param state modifier state, obtained during signal emission of key_pressed, key_released or modifiers_changed
             /// @return true if pressed, false otherwise
-            static bool control_pressed(ModifierState);
+            static bool control_pressed(ModifierState state);
 
             /// @brief test whether alt is pressed in the given modifier state
-            /// @param modifier state, obtained during signal emission of key_pressed, key_released or modifiers_changed
+            /// @param state modifier state, obtained during signal emission of key_pressed, key_released or modifiers_changed
             /// @return true if pressed, false otherwise
-            static bool alt_pressed(ModifierState);
+            static bool alt_pressed(ModifierState state);
 
             /// @brief test whether left mouse button is pressed in the given modifier state
-            /// @param modifier state, obtained during signal emission of key_pressed, key_released or modifiers_changed
+            /// @param state modifier state, obtained during signal emission of key_pressed, key_released or modifiers_changed
             /// @return true if pressed, false otherwise
-            static bool mouse_button_01_pressed(ModifierState);
+            static bool mouse_button_01_pressed(ModifierState state);
 
             /// @brief test whether right mouse button is pressed in the given modifier state
-            /// @param modifier state, obtained during signal emission of key_pressed, key_released or modifiers_changed
+            /// @param state modifier state, obtained during signal emission of key_pressed, key_released or modifiers_changed
             /// @return true if pressed, false otherwise
-            static bool mouse_button_02_pressed(ModifierState);
+            static bool mouse_button_02_pressed(ModifierState state);
     };
 }

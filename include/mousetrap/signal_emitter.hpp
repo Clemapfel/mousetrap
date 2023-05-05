@@ -34,28 +34,26 @@ namespace mousetrap
     class SignalEmitter : public AbstractSignalEmitter
     {
         public:
-            /// @brief block a signal by id
+            /// @brief block a signal by id \internal
+            /// @param signal_id
             /// @param b true if signal handler should not be invoked, false otherwise
-            void set_signal_blocked(const std::string& signal_id, bool);
+            void set_signal_blocked(const std::string& signal_id, bool b);
 
-            /// @brief get list of possible signal ids
-            /// @param vector of signals names
+            /// @brief get list of possible signal ids \internal
+            /// @return vector of signals names
             std::vector<std::string> get_all_signal_names();
 
             /// @brief connect static function to signal, does not work with lambdas \internal
             /// @tparam Function_t static function pointer, the user is responsible for asserting that the function has the correct signature
             /// @param signal_id glib id of the signal
+            /// @param function pointer to C-function, does not work with lambdas
             /// @param data void-pointer to arbitrary data
             template<typename Function_t>
-            void connect_signal(const std::string& signal_id, Function_t*, void* data = nullptr);
+            void connect_signal(const std::string& signal_id, Function_t* function, void* data = nullptr);
 
             /// @brief disconnect signal, it may not be invoked until reconnected, if signal is not registered, does nothing. For internal use only
             /// @param signal_id
             void disconnect_signal(const std::string& signal_id);
-
-            /// @brief add a new simple signal
-            /// @param signal_id
-            //void new_signal(const std::string& signal_id);
 
             /// @brief expose as GObject \internal
             virtual operator GObject*() const = 0;

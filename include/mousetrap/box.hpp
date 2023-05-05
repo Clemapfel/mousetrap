@@ -60,7 +60,7 @@ namespace mousetrap
             /// @return size_t
             size_t get_n_items();
 
-            /// @copydoc mousetrap::Orientable::set_orientation
+            /// @copydoc mousetrap::Orientable::get_orientation
             Orientation get_orientation() const override;
 
             /// @copydoc mousetrap::Orientable::set_orientation
