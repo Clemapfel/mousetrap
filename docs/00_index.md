@@ -46,7 +46,7 @@ Mousetrap is unsuitable for:
 
 ### License
 
-`mousetrap` is licensed under [GNU Lesser General Public License 3.0](https://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License). 
+Mousetrap is licensed under [GNU Lesser General Public License 3.0](https://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License). 
 
 This means projects are free to use mousetrap for any purpose, including commercial, regardless of the user's product's license. However, if mousetrap itself is modified, that part of the library has to be published as open source. In practice, this means any fork of mousetraps should be public on GitHub, but the rest of your application or library is unaffected and may be closed-source, making it fully available to closed-source, for-profit projects.
 

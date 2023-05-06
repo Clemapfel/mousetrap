@@ -208,9 +208,9 @@ html {
         --blockquote-background: #222325;
         --blockquote-foreground: var(--page-foreground-color);
 
-        --warning-color: #2e1917;
-        --warning-color-dark: #ad2617;
-        --warning-color-darker: #f5b1aa;
+        --warning-color: #540a03;
+        --warning-color-dark: #FF112C;
+        --warning-color-darker: var(--page-foreground-color);
         --note-color: var(--side-nav-background);
         --note-color-dark: var(--primary-color);
         --note-color-darker: var(--page-foreground-color);
@@ -1306,6 +1306,7 @@ div.fragment span.comment {
 
 div.fragment a.code {
     color: var(--fragment-link) !important;
+    text-display: underline;
 }
 
 div.fragment span.preprocessor {

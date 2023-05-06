@@ -5,6 +5,8 @@ In this chapter, we will learn
 + How to create our first GUI application
 + How to uninstall mousetrap, if we decide to do so
 
+---
+
 ## Dependencies
 
 To install mousetrap from source, the following dependencies are needed:
@@ -22,7 +24,7 @@ Installing these dependencies is OS-specific, the following section will provide
 
 ### Debian / Ubuntu
 
-\code{sh}
+```shel
 sudo apt-get install aptitude   
 sudo aptitude install cmake \  # install CMake
  libgtk-4-dev \      # install GTK4
@@ -30,11 +32,11 @@ sudo aptitude install cmake \  # install CMake
  libglm-dev  \       # install GLM
  libglew-dev \       # install GLEW
  libsfml-dev         # install SFML
-\endcode
+```
 
 ### Fedora
 
-```shell   
+```shell
 sudo dnf install cmake \  # install CMake
   gtk4-devel \            # install GTK4
   glm-devel  \            # install GLM
