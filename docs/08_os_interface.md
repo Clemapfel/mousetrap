@@ -406,7 +406,7 @@ auto menubar = MenuBar(model);
 
 \image html menu_model_with_icon.png
 
-Note that when calling `add_section`, we provided an optional 3rd argument. This  is the **section format**, of type `mousetrap::MenuModel::SectionFormat`. 
+Note that when calling `add_section`, we provided an optional 3rd argument. This  is the **section format**, of type ` MenuModel::SectionFormat`. 
 
 There are \link mousetrap::MenuModel::SectionFormat multiple styles\endlink of format, which all look slightly different. We should use sections styles **only when all items in the section are icons**, that is, all menu items in the section were created using `add_icon`.
 

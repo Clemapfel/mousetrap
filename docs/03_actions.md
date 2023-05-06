@@ -19,7 +19,7 @@ A **command**, henceforth called **action**, is an object which has the followin
 
 As early as possible, we should drop the habit of defining application behavior inside a global function. Unless a function/lambda is used exactly once, it should be an action.
 
-For example, in the previous chapter, we declared a `Button` with the following behavior when clicked:
+For example, in the previous chapter, we declared a \a{Button} with the following behavior when clicked:
 
 ```cpp
 auto button = Button();

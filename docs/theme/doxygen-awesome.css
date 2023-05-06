@@ -1209,7 +1209,7 @@ code, div.fragment, pre.fragment {
 code {
     display: inline;
     background: var(--code-background);
-    color: var(--code-foreground);
+    color: inherit;
     padding: 1px 1px;
 }
 
@@ -1306,7 +1306,7 @@ div.fragment span.comment {
 
 div.fragment a.code {
     color: var(--fragment-link) !important;
-    text-display: underline;
+    text-decoration: underline;
 }
 
 div.fragment span.preprocessor {
