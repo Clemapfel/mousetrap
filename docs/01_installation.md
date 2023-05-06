@@ -1,11 +1,11 @@
 # Chapter 1: Installation
 
 In this chapter, we will learn
-+ How to install mousetrap and it's dependencies
++ How to install mousetrap and its dependencies
 + How to create our first GUI application
 + How to uninstall mousetrap, if we decide to do so
 
-### Dependencies
+## Dependencies
 
 To install mousetrap from source, the following dependencies are needed:
 
@@ -20,9 +20,9 @@ We'll also need a C++17-capable compiler, for example those provided by GCC or c
 
 Installing these dependencies is OS-specific, the following section will provide instructions on how to do so:
 
-#### Debian / Ubuntu
+### Debian / Ubuntu
 
-```shell
+\code{sh}
 sudo apt-get install aptitude   
 sudo aptitude install cmake \  # install CMake
  libgtk-4-dev \      # install GTK4
@@ -30,9 +30,9 @@ sudo aptitude install cmake \  # install CMake
  libglm-dev  \       # install GLM
  libglew-dev \       # install GLEW
  libsfml-dev         # install SFML
-```
+\endcode
 
-#### Fedora
+### Fedora
 
 ```shell   
 sudo dnf install cmake \  # install CMake
@@ -44,21 +44,21 @@ sudo dnf install cmake \  # install CMake
 
 Where `OpenGL` is usually installed automatically on Fedora.
 
-#### macOS
+### macOS
 
 \not_yet_complete. Consider using [Homebrew](https://brew.sh/) to install the listed dependencies
 
-#### Windows
+### Windows
 
 \not_yet_complete
 
 ---
 
-### Compilation
+## Compilation
 
 With the dependencies settled, we can go on to building and installing mousetrap from source.
 
-#### Linux / macOS
+### Linux / macOS
 
 On Unix, run the following commands:
 
@@ -76,7 +76,7 @@ rm -r mousetrap
 
 Where `sudo` is necessary to install to the default library and include directory. If we want to install mousetrap to a different location, we can add `-DCMAKE_INSTALL_PREFIX=/path/to/custom/location` at the end of `cmake ..`. This is usually not recommended.
 
-#### Windows
+### Windows
 
 \not_yet_complete
 
@@ -114,12 +114,12 @@ add_executable(${TARGET_NAME} main.cpp)
 
 # link mousetrap libraries, including mousetrap itself
 target_link_libraries(${TARGET_NAME} PRIVATE
-    ${MOUSETRAP_LIBRARIES}
+    "${MOUSETRAP_LIBRARIES}"
 )
 
 # add mousetrap include directories
 target_include_directories(${TARGET_NAME} PRIVATE
-    ${MOUSETRAP_INCLUDE_DIRECTORIES}
+    "${MOUSETRAP_INCLUDE_DIRECTORIES}"
 )
 
 # add std:: for C++17
@@ -177,13 +177,13 @@ We'll learn in the coming chapters what each of these lines do.
 
 After saving `main.cpp`, we can compile our project like so:
 
-```shell
+\code{bash}
 # in the same directory as CMakeLists.txt
 mkdir build
 cd build
 cmake ..
 make
-```
+\endcode
 
 This will deposit an executable with the name of the CMake variable `TARGET_NAME`. Assuming that name is still `example_target`, we can now run that executable:
 

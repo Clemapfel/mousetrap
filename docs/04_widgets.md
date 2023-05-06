@@ -1,5 +1,7 @@
 # Chapter 4: Widgets
 
+\todo this section is stil under construction
+
 In this chapter, we will learn:
 + What a widget is
 + Properties that all widgets share
