@@ -19,6 +19,9 @@ namespace mousetrap
         static void widget_internal_finalize(GObject* object)
         {
             auto* self = MOUSETRAP_WIDGET_INTERNAL(object);
+            if (self->tooltip_widget != nullptr)
+                g_object_unref(self->tooltip_widget);
+
             G_OBJECT_CLASS(widget_internal_parent_class)->finalize(object);
         }
 
@@ -319,6 +322,16 @@ namespace mousetrap
         }
     }
 
+    void Widget::set_cursor_from_image(const Image& image, Vector2i offset)
+    {
+        auto* texture = gdk_texture_new_for_pixbuf(image.operator GdkPixbuf *());
+        auto* cursor = gdk_cursor_new_from_texture(texture, offset.x, offset.y, nullptr);
+        gtk_widget_set_cursor(operator GtkWidget*(), cursor);
+
+        g_object_unref(texture);
+        g_object_unref(cursor);
+    }
+
     void Widget::add_controller(const EventController& controller)
     {
        gtk_widget_add_controller(operator GtkWidget*(), controller.operator GtkEventController*());
@@ -404,13 +417,23 @@ namespace mousetrap
         return gtk_widget_is_sensitive(operator GtkWidget*());
     }
 
-    void Widget::set_tooltip_widget(Widget* widget)
+    void Widget::set_tooltip_widget(const Widget& widget)
     {
         initialize();
 
         _internal->tooltip_widget = widget;
+        g_object_ref(_internal->tooltip_widget);
         gtk_widget_set_has_tooltip(operator GtkWidget*(), true);
         g_signal_connect(operator GtkWidget*(), "query-tooltip", G_CALLBACK(on_query_tooltip), _internal);
+    }
+
+    void Widget::remove_tooltip_widget()
+    {
+        if (_internal->tooltip_widget != nullptr)
+            g_object_unref(_internal->tooltip_widget);
+
+        _internal->tooltip_widget = nullptr;
+        gtk_widget_set_has_tooltip(operator GtkWidget*(), false);
     }
 
     gboolean Widget::on_query_tooltip(GtkWidget*, gint x, gint y, gboolean, GtkTooltip* tooltip, detail::WidgetInternal* instance)
@@ -418,7 +441,7 @@ namespace mousetrap
         if (instance->tooltip_widget == nullptr)
             return false;
 
-        gtk_tooltip_set_custom(tooltip, instance->tooltip_widget->operator GtkWidget*());
+        gtk_tooltip_set_custom(tooltip, instance->tooltip_widget);
         return true;
     }
 

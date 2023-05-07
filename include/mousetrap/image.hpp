@@ -38,6 +38,16 @@ namespace mousetrap
             /// @brief default ctor, initialize as image of size 0x0
             Image() = default;
 
+            /// @brief construct from file
+            /// @param path
+            Image(const std::string& path);
+
+            /// @brief construct as single-color image
+            /// @param width
+            /// @param height
+            /// @param rgba default color for all pixels
+            Image(size_t width, size_t height, RGBA rgba = RGBA(0, 0, 0, 0));
+
             /// @brief destruct, frees data
             ~Image();
 

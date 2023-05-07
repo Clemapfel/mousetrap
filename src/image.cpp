@@ -25,6 +25,16 @@ namespace mousetrap
         _size.y = gdk_pixbuf_get_height(pixbuf);
     }
 
+    Image::Image(const std::string& path)
+    {
+        create_from_file(path);
+    }
+
+    Image::Image(size_t width, size_t height, RGBA rgba)
+    {
+        create(width, height, rgba);
+    }
+
     Image::Image(const Image& other)
     {
         _data = gdk_pixbuf_copy(other._data);

@@ -173,6 +173,18 @@ int main()
         state->main_window.set_titlebar_widget(state->main_window_header_bar);
 
         state->main_window.set_child(state->stack_box);
+
+        // TODO
+        auto open_file_button = Button();
+        open_file_button.set_tooltip_widget(Button());
+        open_file_button.set_expand(false);
+        open_file_button.set_horizontal_alignment(Alignment::START);
+
+        auto preferred_size = open_file_button.get_preferred_size().
+
+        state->main_window.set_child(open_file_button);
+        // TODO
+
         state->main_window.present();
     });
 

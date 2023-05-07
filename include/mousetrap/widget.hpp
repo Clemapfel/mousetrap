@@ -13,6 +13,7 @@
 #include <mousetrap/signal_component.hpp>
 #include <mousetrap/cursor_type.hpp>
 #include <mousetrap/alignment.hpp>
+#include <mousetrap/image.hpp>
 
 #include <map>
 #include <string>
@@ -55,7 +56,7 @@ namespace mousetrap {
             GObject parent;
             std::function<TickCallbackResult(GdkFrameClock*)> tick_callback;
             guint tick_callback_id = -1;
-            Widget* tooltip_widget = nullptr;
+            GtkWidget* tooltip_widget = nullptr;
         };
         using WidgetInternal = _WidgetInternal;
     }
@@ -220,15 +221,23 @@ namespace mousetrap {
 
             /// @brief set text displayed as a tooltip when the user hovers over the widget
             /// @param text
-            void set_tooltip_text(const std::string&);
+            void set_tooltip_text(const std::string& text);
 
             /// @brief set arbitrary widget displayed as a tooltip when user hovers over the widget
             /// @param widget
-            void set_tooltip_widget(Widget*);
+            void set_tooltip_widget(const Widget& widget);
+
+            /// @brief remove tooltip
+            void remove_tooltip_widget();
 
             /// @brief set the shape of cursor displayed when the cursor is above the widget
             /// @param type cursor type
             void set_cursor(CursorType type);
+
+            /// @brief set cursor from custom image
+            /// @param image
+            /// @param offset where the pixel should be anchored, in pixels
+            void set_cursor_from_image(const Image& image, Vector2i offset);
 
             /// @brief hide the widget, this may set its allocated size to 0
             void hide();

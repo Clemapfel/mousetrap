@@ -1,22 +1,43 @@
 # Chapter 4: Widgets
 
-\todo this section is stil under construction
-
 In this chapter, we will learn:
 + What a widget is
 + Properties that all widgets share
 + All types of widgets supplied by mousetrap
 + How to create compound widgets
 
+---
+
 ## What is a widget?
 
 When creating a GUI, widgets are the central element to any and all applications. In general, a widget is anything that can be rendered on screen. Often, widgets have a way of interacting with them, for example, in the cas of `Button`, the widget is rendered to screen as a filled rectangle and the user can click on it to emit a signal.
 
+## Widget Signals
+
 All widgets are signal emitters, but not all signal emitters are widgets. As such, all widgets share a number of signals:
 
 \signals
-\widget_signals{Widget}
+\signal_realize{Widget}
+\signal_unrealize{Widget}
+\signal_destroy{Widget}
+\signal_hide{Widget}
+\signal_show{Widget}
+\signal_map{Widget}
+\signal_unmap{Widget}
 
+From this point onwards, any widget also has these signals. For example, if we want to trigger behavior when a `Button` is first shown, we connect to that signal like so:
+
+```cpp
+auto button = Button();
+button.connect_signal_show([](Widget* self)
+{
+    std::cout << "button shown" << std::endl;
+});
+```
+
+Where the first argument of this signal, as state in the table above, is a `Widget*` (**not** a `Button*`). Signals that all widgets share use `Widget*`. For class-specific signals, such as signal `clicked` for `Button`, the first argument is `Button*`.
+
+If we are unsure about the signatures, recall that any class has the exact signatures listed in the detailed description, right here in the documentation.
 
 ## Widget Properties
 
@@ -24,58 +45,186 @@ All widgets share common properties that govern how they behave when the contain
 
 ### Size Request
 
-We may have noticed that in previous chapter, if we resized the window manually, most of the time the widgets inside dynamically resized themself to fit into the new windows size.
+When a widget is shown, it will dynamically **allocate its size**. This governs the amount of space a widget will take up on screen. This size is determined programmatically, based on the widgets own properties, as well as the properties of its children or parents.
 
-There are two properties that control this behavior, **size request** and **expansion**.
+\collapsible_note_begin{Widget Children & Parents}
 
-By calling `Widget::set_expand_horizontally` and `Widget::set_expand_vertically`, we can choose whether a widget should dynamically resize itself along the x- and y-axis. Mousetrap offers `Widget::set_expand`, which sets both the horizontal and vertical expansion at the same time.
+Some widgets can contain other widgets. For example, `Window` has a single **child**. `Button`, also has a child, which is the label of the button. If widget `A` is inside of widget `B`, for example by calling `A.set_child(B)`, then we say B is As **child**, and A is Bs **parent**.
 
-Regardless of whether a widget does or does not expand, any widget will always at least allocate size requested using `Widget::set_size_request`. This functions takes a vector of two ints, which govern the minimum size in pixels. For example, 
+Each widget that is not a window has exactly one parent. The number of children varies per widget, `Window` and `Button` has exactly on child, while other widgets may have a any number of children, or no children at all.
+
+\collapsible_note_end
+
+One property used for determinening the widgets size is its **size request**. The size request is the minimum amount of space the widget has to take up. For example, a widget displaying for letters, where each of the letter has a fixed size, would implicitely need to allocate at least as much space as those letters take up. For widgets without any children, the default size request is `{0, 0}`. 
+
+We can manually control the size request property of any widget by calling `Widget::set_size_request`, which takes a 2d-vector, the target width and height of the widget. This is is also sometimes called **size-hinting**.
+
+### Accessing Widget Size
+
+We can query information about a widgets size using multiple functions.
+
+`Widget::get_allocation` returns a \link mousetrap::Rectangle rectangle\endlink, which holds the current widgets position on screen and current size, in pixels. This size may or may not be equal to what we size-hinted the widget to.
+
+```cpp
+auto current_size = widget.get_allocation().size;
+```
+
+To access a widgets size request, we use `Widget::get_size_request`.
+
+```cpp
+auto size_hint = widget.get_size_request();
+```
+
+If we have not yet sizehinted the widget, this size will be `{0, 0}`.
+
+Lastly, we can query the widgets **minimum possible size**, that is the size that is has to occupy no matter what, using `Widget::get_preferred_size`. The returned object of this function als holds information about the size the widget would allocate naturally, if given infinite amount of space. We access the minimum and preferred size like so:
+
+```cpp
+auto minimum_size = widget.get_preferred_size().minimum_size;
+auto preferred_size = widget.get_preferred_size().natural_size;
+```
 
 ### Margin
 
-Any widget has four margins: `start`, `end`, `top` and `bottom`. Usually, these correspond to empty space left, right, above and below the widget respectively. If a widget has a natural 
+Any widget has four margins: `start`, `end`, `top` and `bottom`. Usually, these correspond to empty space left, right, above, and below the widget respectively. Margins are unaffected by the widgets original size and expansion, they are simply added to the corresponding side of the widget.
 
+We use `Widget::set_margin_start`, `Widget::set_margin_end`, `Widget::set_margin_top` and `Widget::set_margin_bottom` to control each individual margin. Mousetrap also provides the convenience functions `Widget::set_margin_horizontal` and `Widget::set_margin_vertical`, which sets both `start` and `end', or `top` and `bottom` at the same time respectively.
 
-#### Expansion
+Lastly `Widget::set_margin` sets all fours margins to the same value.
 
-#### Alignment
+Margins should be used extensively, as they make a UI look more professional and asthetically pleasing. A good rule of thumb is that for a 1920x1080 display, the minimum **margin unit** should be 10 pixels. That is, all margins should be a multiple of 10. If the display has a higher or lower resolution, the margin unit should be adjusted. 
 
-#### Visibility
+### Expansion
 
-#### Cursor
+In previous chapters, we may have noticed that if we scale the window from our previous `main.cpp`s, the widget inside may scale along with it. This is called **expansion**, which is a property of all widgets.
 
-#### Tooltip
+We an specify wether a widget should expand along the vertical or horizontal axis using `Widget::set_expand_horizontally` and `Widget::set_expand_vertically`, which take a single boolean as its argument. `Widget::set_expand` sets both properties to the same value at the same time.
+
+### Alignment
+
+Widget **alignment** governs how one or multiple widget behave when expansion is disabled and they are inside another widget whos allocated area is larger than that of the child widget.
+
+An example, a button sizehinted to 100x100 pixels has expansion disabled (`set_expand` was set to `false`). It has a margin of 0 and is placed inside a window. When we scale the window, the button will not change size. Alignment, then, governs where in the window the button is positioned. We can set alignment for the horizontal and vertical axis separately, using `Widget::set_horizontal_alignment` and `Widget::set_vertical_alignment`, which both take an enum value of type \a{Alignment} as their only argument. 
+
+The button from this example would be located as follows:
+
+| Vertical Alignment | Horizontal Alignment | Resulting Position  |
+|--------------------|----------------------|---------------------|
+| `START`            | `START`              | top left corner     |
+| `START`            | `CENTER`             | top center          |
+| `START`            | `END`                | top right corner    |
+| `CENTER`           | `START`              | center left         |
+| `CENTER`           | `CENTER`             | center              |
+| `CENTER`           | `END`                | center right        |
+| `END`              | `START`              | bottom left corner  |
+| `END`              | `CENTER`             | bottom center       |
+| `END`              | `END`                | bottom right corner |
+
+Using this, sizehinting and expansion, we can fully control how and where widgets allocate size on screen.
+
+### Visibility 
+
+Once a widgets allocated area enters the visible area on screen, it is shown (which we can track using the `shown` signal). Once it leaves the visible area, it is hidden. `Widget::set_visible` sets the widgets visibility based on the boolean argument. Other than this, it behaves exactly as `Widget::show` and `Widget::hide`. That is, the widget will dissappear and its allocated space will be zero.
+
+A way to make a widget invisiblie without hiding it, is to control its **opacity**. By setting the opacity to 0 using `Widget::set_opacity`, all other properties of the widget including its size allocation and interactability are kept, all that changes is that the graphical part of it becomes fully transparent.
+
+### Cursor Type
+
+Each widget has a property that sets what shape the cursor will have when it entres the widgets allocated area. By default, this is a simple pointer. We can manually choose the cursor type using `Widget::set_cursor` to one of the following values, all of which are part of the enum \a{CursorType}:
+
+| `CursorType` value  | Appearance                                                       |
+|---------------------|------------------------------------------------------------------|
+| `NONE`              | no visible cursor                                                |
+| `POINTER`           | small arrow, this is the default value widgets                   |
+| `DEFAULT`           | default system cursor, usually same as `POINTER`                 |
+| `HELP`              | questionmark, instructs user to open a help dialog               |
+| `CONTEXT_MENU`      | pointer with `...` to indicate clicking will open a context menu |
+| `PROGRESS`          | pointer with a small "currently loading" icon                    |
+| `WAIT`              | instructs user to wait for an action to finish                   |
+| `CELL`              | used when interacting with a table                               | 
+| `CROSSHAIR`         | cross-hair shaped cursor, used for precise selections            |
+| `TEXT`              | text-entry cursor                                                | 
+| `MOVE`              | four-pointed arrow, used to move around object                   |
+ | `GRAB`              | open hand, not yet grabbing                                      |
+| `GRABBING`          | closed hand, currently grabbing                                  |
+| `ALL_SCROLL`        | four-direction scroll                                            |
+| `ZOOM_IN`           | lens, usually with a plus icon                                   |
+| `ZOOM_OUT`          | lens, usually with a minus icon                                  |
+| `COLUMN_RESIZE`     | left-right arrow                                                 | 
+| `ROW_RESIZE`        | up-down arrow                                                    |
+| `NORTH_RESIZE`      | up arrow                                                         | 
+| `EAST_RESIZE`       | right arrow                                                      | 
+| `SOUTH_RESIZE`      | bottom arrow                                                     | 
+| `WEST_RESIZE`       | left arrow                                                       | 
+| `NORTH_EAST_RESIZE` | top-right arrow                                                  | 
+| `SOUTH_EAST_RESIZE` | bottom-right arrow                                               | 
+| `SOUTH_WEST_RESIZE` | bottom-left arrow                                                | 
+| `NORTH_WEST_RESIZE` | top-left arrow                                                   | 
+
+We can also choose a fully custom cursor with `Widget::set_cursor_from_pixel`. We will learn more about \a{Image} in the [chapter on image and sound](07_image_and_sound.md). Until then, this is how we can use an image on disk as a cursor:
+
+```cpp
+auto widget = //...
+widget.set_cursor_from_image(Image("/path/to/image.png"), {0, 0});
+```
+
+Where `"/path/to/image.png"` is the absolute path of the image, `widget` is the widget for whom we want to set the custom cursor. `{0, 0}` is the cursor anchors, in pixels, which controls how the image is aligned.
+
+### Tooltip
+
+Each widget can optionally have a **tooltip**. This is a little window that opens when the cursor hovers over a widgets allocated area for enough time. This is usually reserved to a simple text message, which we can set directly using `Widget::set_tooltip_text`:
+
+```cpp
+auto open_file_button = Button();
+open_file_button.set_tooltip_text("Click to Open");
+```
+\image html widget_tooltip_text.png
+
+If we want to use something more complex than just simple text, we can register an arbitrarily complex widget as a tooltip by calling `Widget::set_tooltip_widget`.
 
 ---
 
 ## Window
 
-Windows are central to any application. Any `Window` instance takes the application itself as the only argument to its constructor. This is because `Window` and  `Application` are linked internally. For example, if all `Window`s are closed, the application exits.
+Windows are central to any application. \a{Window}s constructor takes an `Application*` because the two are linked. Once all windows of an application are closed, the application exits.
 
-All widgets are contained in a `Window`, that is, every widget has a sequence of parents that ends with a `Window`. `Window` is therefore what is called the most **toplevel** widget.
+Windows are widgets, though they occupy somewhat of a special place. A `Window` cannot be the child of any other widget, it is **top-level**.
+This means that any and all widgets are children of a `Window`, usually indirectly, as a `Window` can only contain a single widget.
 
-Windows are containers, but can only contain a single widget inside of them. We set the windows child using `Window::set_child`. This child will usually be a container that contain more than one widget, so we are not limited by windows 1-child limitation.
-
-### Signals
+We set this widget using `Window::set_child`. In most cases, the signel child will be a container widget that, in turn, can contain other widgets.
 
 `Window` has three signals (on top of those inherited from `Widget`) that we can connect to:
 
-| id                        | signature                                         | emitted when...                                                                             |
-|---------------------------|---------------------------------------------------|---------------------------------------------------------------------------------------------|
- | `close_request`           | `(Window*, (Data_t)) -> WindowCloseRequestResult` | window manager requests the window to close, for example by the user pressing the "x" button |
-| `activate_default_widget` | `(Window*, (Data_t)) -> void`                     | default widget is activate (see below)                                                      |
-| `activate_focused_widget` | `(Window*, (Data_t)) -> void`                      | `activate` emitted on currently focused widget                                              |
+\signals
+\signal_close_request{Window}
+\signal_activate_default_widget{Window}
+\signal_activate_focused_widget{Window}
 
-`activate_default_widget` is emitted when the default widget is activated. This is a widget designated as such via `Window::set_default_widget`. If the user presses the enter key while the window itself holds focus, this widget will be activated. This is useful for small message dialogs that have, for example, an "ok" button.
+`activate_default_widget` is emitted when the default widget is activated. This is a widget designated as such via `Window::set_default_widget`. If the user presses the enter key while the window is shown, this widget will be activated. This is useful for small message dialogs that have, for example, an "ok" and "cancel" button. The user can press enter or escape to close the dialog, instead of manually having to click either button.
 
-`activate_focused_widget` is self-explanatory (it is emitted when the widget that is currently in focus emits `activate`). Signal `close_request` is not.
+`activate_focused_widget` is activated when the widget that currently *holds input focus* is activated. We will learn what input focus is in the [chapter on event handling](05_events.md).
+
+Lastly, we have signal `close_request`, which requries some explanation.
 
 ### Close Request
 
-When the window manager, which is the part of the users operating system that deals with window layout and lifetime, request a window to close, the window does not immediately close. Instead, `close_request` is emitted first. The return value of `close_request` determines what happens next, if the return value is `WindowCloseRequestResult::ALLOW_CLOSE` then the window will close. If the result is `WindowCloseRequestResult::PREVENT_CLOSE`, the window will stay open. We can use this to for example delay closing of a window until a certain filesystem operation is done. 
+When the window manager, which is the part of the users operating system that deals with window layout and lifetime, request a window to close, the window does not immediately close. Instead, `Window` emits `close_request`, which we can connect to. If no signal handler is connected, the window simply closes. This is the default behavior. If we do connect a signal handler, we can not only trigger custom behavior, but we can also **prevent closing of the window**.
 
-If no handler is connected to `close_request`, the default handler will always return `ALLOW_CLOSE`.
+We recall the signature of `close_request` to be `(Window*, (Data_t)) -> WindowCloseRequestResult`. This return type, \a{WindowCloseRequestResult} is an enum with two values `ALLOW_CLOSE` and `PREVENT_CLOSE`. Depending on which of the two is returned, the window does or does close when requested.
+
+### Window Properties
+
+Other than the signals, we can set basic properties of the window.
+
+#### Title
+
+`Window::set_title` sets the name displayed in the windows header bar. By default, this name will be the name of the application. We can choose to hide the title by simply calling `set_title("")`.
+
+#### Modality & Transience
+
+When dealing with multiple windows, the windows often interact with each other. Two of these interactions are determined by wether a window is **modal** and wether it is **transient** for another window.
+
+By setting `Window::set_model` to true, if the window is revealed, all other windows of the application will be deactivated, prevent interaction with them. The most common use-case for this 
 
 ## Box
 
