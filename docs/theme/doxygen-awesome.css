@@ -1210,6 +1210,7 @@ code {
     display: inline;
     background: var(--code-background);
     color: inherit;
+    text-decoration: inherit;
     padding: 1px 1px;
 }
 

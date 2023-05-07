@@ -172,11 +172,7 @@ int main()
         state->main_window.set_child(state->stack_box);
         state->main_window.set_titlebar_widget(state->main_window_header_bar);
 
-        const LogDomain FOO_DOMAIN = "foo";
-        log::set_file("temp_log.txt");
-        log::warning("In example.main: Example Message", FOO_DOMAIN);
-
-        //state->main_window.set_child(state->stack_box);
+        state->main_window.set_child(state->stack_box);
         state->main_window.present();
     });
 

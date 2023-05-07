@@ -82,6 +82,7 @@ namespace mousetrap
             Vector2f to_gl_coordinates(Vector2f widget_space_coordinate);
 
         private:
+            static void on_realize(Widget* area);
             static void on_resize(RenderArea* area, gint width, gint height);
             static gboolean on_render(RenderArea*, GdkGLContext*);
             static GdkGLContext* on_create_context(GtkGLArea*, GdkGLContext*);

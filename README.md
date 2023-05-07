@@ -1,89 +1,99 @@
-# mousetrap: Multi-Media GUI Library
+# mousetrap: Easy-to-Use GUI Library for C++ & Julia
 
-3. [Installation](#installation)<br>
-3.1 [Dependencies](#dependencies)<br>
-3.1.1 [Debian / Ubuntu](#debian--ubuntu)<br>
-3.1.2 [Fedora](#fedora)<br>
-3.1.3 [~~MacOS~~]()<br>
-3.1.4 [~~Windows~~]()<br>
-3.2 [Compiling from Source](#Compilation)<br>
-3.2.1 [Linux / MacOS](#linux--macos)<br>
-3.2.2 [~~Windows~~]()<br>
-4. [Documentation](#documentation)<br>
+GTK4 is extremely powerful, well-optimized, and utterly inscrutable. Mousetrap aims to address this by wrapping most of GTK4
+in an easy-to-use, easy-to-understand new coat. Mousetrap empowers user to create applications and widgets within a few minutes, as opposed requiring weeks of studying and days of implementation.
 
-## Installation
+## Features
++ For Linux, MacOS & Windows
++ C++-Side Garbage-Collection for Widgets
++ Fully abstracted, SFML-like native Rendering
++ Powerful Image Processing Capabilities
++ Events TODO
 
-### Dependencies
+## Advantages over GTK
++ Allow connecting C++ Lambdas to Signals
++ Every Widget, no matter how complex, is created with a One-Liner
++ Abstracted OpenGL interface
++ Audio Playback
++ Step-by-Step Manual and Introduction, written for Beginners
 
-To install mousetrap from source, the following dependencies are needed:
+## Showcase
 
-+ `CMake`: To build and install mousetrap
-+ `GTK4`: Engine for all GUI elements 
-+ `OpenGL`: Hardware accelerated rendering
-+ `GLM`: CPU-side OpenGL-related Math
-+ `GLEW`: Loading of OpenGL extensions
-+ `SFML`: Audio-playback and Joystick Interface
+### Hello World
 
-You will also need a C++17-capable compiler, for example those provided by gcc or clang.
+To create a new application, only the following is necessary:
 
-Installing these dependencies is OS-specific, the following section will provide instructions on how to do so:
+```cpp
+int main()
+{
+    auto app = Application("hello.world");
+    app.connect_signal_activate([](Application*)
+    {
+        auto window = Window(app);
+        window.present()
+    });
+    
+    return app.run();
+}
+```
+---
 
-#### Debian / Ubuntu
+#### Creating a TreeView
 
-```shell
-sudo apt-get install aptitude   
-sudo aptitude install cmake            # install cmake
-sudo aptitude install libgtk-4-dev     # install GTK4
-sudo aptitude install libgl1-mesa-dev  # install OpenGL
-sudo aptitude install libglm-dev       # install GLM
-sudo aptitude install libglew-dev      # install GLEW
-sudo aptitude install libsfml-dev      # install SFML
+In GTK4, creating a `GtkTreeView` will take dozens of lines and will use up to 6 different classes. In mousetrap, it just takes one:
+
+```cpp
+auto tree_view = TreeListView();
+tree_view.push_back(Label("new element"));
+```
+\todo figure
+
+---
+
+#### Adding a Keyboard Shortcut Action
+
+```cpp
+auto shortcut_action = Action("action.keyboard_shortcut_example", app);
+shortcut_action.set_function([](Action*){
+    std::cout << "shortcut called" << std::endl;
+});
+shortcut_action.set_shortcut("<Control>t");
+```
+---
+
+#### OpenGL Rendering 
+
+Initialization of the OpenGL state and rendering is fully automatic, you just need to pick which shape you want to render, that's it:
+
+```cpp
+auto canvas = RenderArea();
+auto circle = Shape();
+circle.as_circle({0, 0}, 0.5);
+canvas.add_render_task(circle);
+```
+\todo figure
+
+The following shapes are already implemented: point, triangle, rectangle, circle, ellipse, line, line-strap, convex polygon, rectangle frame, circular ring, elliptic ring, wireframe
+
+Also supported: Shaders, Transforms, Textures, RenderTexture, Multisample Anti Aliasing
+
+---
+
+#### Adding a Widget to a Menu
+
+```cpp
 ```
 
-#### Fedora
+---
 
-```shell
-sudo dnf install cmake          # install CMake
-sudo dnf install gtk4-devel     # install GTK4
-sudo dnf install glm-devel      # install GLM
-sudo dnf install glew-devel     # install GLEW
-sudo dnf install SFML-devel     # install SFML
+#### Playing Music
+
+```cpp
+auto music = Music();
+music.create_from_file("example.wav");
+music.play();
 ```
-
-Where `OpenGL` is usually installed automatically on Fedora.
-
-#### MacOS
-
-> \todo This section is not yet complete
-
-#### Windows
-
-> \todo This section is not yet complete
-
-### Compilation
-
-With the dependencies settled, we can go on to building and installing mousetrap from source.
-
-#### Linux / MacOS
-
-On Unix, run the following commands:
-
-```shell
-# in any public directory
-git clone https://github.com/Clemapfel/mousetrap.git
-cd mousetrap
-mkdir build
-cd build
-cmake ..
-sudo make install -j 4
-cd ../..
-```
-
-Where `sudo` is necessary to install to the default library and include directory. If you would like to install mousetrap to a different location, add `-DCMAKE_INSTALL_PREFIX=/path/to/custom/location` at the end of `cmake ..`.
-
-#### Windows
-
-> \todo this section is not yet complete
+---
 
 ## Documentation
 

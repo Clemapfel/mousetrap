@@ -101,6 +101,7 @@ namespace mousetrap
         gtk_gl_area_set_auto_render(get_native(), TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(get_native()), 1, 1);
 
+        connect_signal_realize(on_realize);
         connect_signal_render(on_render);
         connect_signal_resize(on_resize);
 
@@ -123,6 +124,11 @@ namespace mousetrap
     void RenderArea::clear_render_tasks()
     {
         _internal->tasks->clear();
+    }
+
+    void RenderArea::on_realize(Widget* area)
+    {
+        static_cast<RenderArea*>(area)->queue_render();
     }
 
     void RenderArea::on_resize(RenderArea* area, gint width, gint height)

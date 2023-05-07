@@ -46,6 +46,11 @@ namespace mousetrap
                     instance->_render_texture.create(w, h);
                 }, this);
 
+                static auto circle = Shape();
+                circle.as_circle({0, 0}, 0.5, 16);
+                _area.add_render_task(circle);
+
+                /*
                 _area.connect_signal_render([](RenderArea* area, GdkGLContext* context, RenderAreaTest* instance) -> bool {
 
                     instance->_render_texture.bind_as_rendertarget();
@@ -65,6 +70,7 @@ namespace mousetrap
 
                     return false;
                 }, this);
+                 */
 
                 _area.set_tick_callback([](FrameClock clock, RenderAreaTest* instance) -> TickCallbackResult{
 
