@@ -8,11 +8,11 @@
 namespace mousetrap
 {
     FileDescriptor::FileDescriptor()
-            : FileDescriptor(g_file_new_for_path(""))
+        : FileDescriptor(g_file_new_for_path(""))
     {}
 
     FileDescriptor::FileDescriptor(const FilePath& path)
-            : FileDescriptor(g_file_new_for_path(path.c_str()))
+        : FileDescriptor(g_file_new_for_path(path.c_str()))
     {}
 
     FileDescriptor::FileDescriptor(GFile* file)
@@ -155,7 +155,7 @@ namespace mousetrap
 
         if (should_replace_destination)
             flags |= G_FILE_CREATE_REPLACE_DESTINATION;
-
+s
         GError* error = nullptr;
         auto* stream = g_file_create(destination.operator GFile *(), static_cast<GFileCreateFlags>(flags), nullptr, &error);
 

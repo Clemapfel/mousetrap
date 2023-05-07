@@ -13,8 +13,7 @@ void main()
     // assumes canvas is always square
 
     vec2 pos = _vertex_position.xy;
-    pos.x *= 2;
-
+    pos.y *= 2;
     float margin = 2 * _half_margin;
 
     if (distance(vec2(0, 0), pos) < 1 - margin)

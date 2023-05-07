@@ -25,8 +25,6 @@ namespace mousetrap
             float get_upper() const;
             float get_value() const;
             float get_step_increment() const;
-            float get_page_increment() const;
-            float get_page_size() const;
 
             float get_minimum_increment() const;
 

@@ -8,8 +8,8 @@
 namespace mousetrap
 {
     Button::Button()
-            : WidgetImplementation<GtkButton>(GTK_BUTTON(gtk_button_new())),
-              HasClickedSignal<Button>(this)
+        : WidgetImplementation<GtkButton>(GTK_BUTTON(gtk_button_new())),
+          HasClickedSignal<Button>(this)
     {}
 
     void Button::set_has_frame(bool b)

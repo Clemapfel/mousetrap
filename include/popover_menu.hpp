@@ -13,13 +13,9 @@ namespace mousetrap
     class PopoverMenu : public WidgetImplementation<GtkPopoverMenu>
     {
         public:
-            enum SubmenuLayout : bool
-            {
-                SLIDING = true,
-                NESTED = false
-            };
+            PopoverMenu(MenuModel*);
 
-            PopoverMenu(MenuModel*, SubmenuLayout = SLIDING);
+        protected:
             void refresh_widgets();
 
         private:

@@ -6,6 +6,8 @@ in vec3 _vertex_position;
 
 out vec4 _fragment_color;
 
+uint
+
 uniform float _half_margin;
 
 void main()
@@ -13,7 +15,7 @@ void main()
     // assumes canvas is always square
 
     vec2 pos = _vertex_position.xy;
-    pos.y *= 2;
+    pos.x *= 2;
     float margin = 2 * _half_margin;
 
     if (distance(vec2(0, 0), pos) < 1 - margin)

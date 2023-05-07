@@ -11,7 +11,7 @@ namespace mousetrap
 {
     namespace detail
     {
-        static inline const std::string DEFAULT_RESOURCE_PATH = "/home/clem/Workspace/mousetrap/resources/";
+        static inline const std::string DEFAULT_RESOURCE_PATH = "/home/clem/Workspace/~mousetrap/resources/";
     }
 
     ///

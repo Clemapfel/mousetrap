@@ -118,7 +118,6 @@ namespace mousetrap
     GListModel* TreeColumnView::on_tree_list_model_create(void* item, void* user_data)
     {
         auto* column_view_item = (detail::TreeColumnViewItem*) item;
-
         auto* out = g_list_store_new(G_TYPE_OBJECT);
 
         for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(column_view_item->children)); ++i)

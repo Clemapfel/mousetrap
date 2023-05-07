@@ -135,5 +135,4 @@ namespace mousetrap
     using Vector4fSet = Vector4Set<float>;
     using Vector4iSet = Vector4Set<int64_t>;
     using Vector4uiSet = Vector4Set<size_t>;
-
 }

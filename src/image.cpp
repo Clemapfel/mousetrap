@@ -1,4 +1,4 @@
-// 
+//
 // Copyright 2022 Clemens Cords
 // Created on 8/6/22 by clem (mail@clemens-cords.com)
 //
@@ -8,147 +8,83 @@
 
 namespace mousetrap
 {
+    Image::~Image()
+    {
+        g_object_unref(_data);
+    }
+
+    Image::Image(GdkPixbuf* pixbuf)
+    : _data(pixbuf)
+    {
+        g_object_ref(_data);
+        _size.x = gdk_pixbuf_get_width(pixbuf);
+        _size.y = gdk_pixbuf_get_height(pixbuf);
+    }
+
     Image::Image(const Image& other)
     {
-        _data = std::vector<float>();
-        _data.reserve(other._data.size());
-        for (auto v : other._data)
-            _data.push_back(v);
-
+        _data = gdk_pixbuf_copy(other._data);
         _size = other._size;
     }
 
-    Image::Image(Image&& other)
+    Image::Image(Image&& other) noexcept
     {
-        _data = std::vector<float>();
-        _data.reserve(other._data.size());
-        for (auto v : other._data)
-            _data.push_back(v);
+        g_object_unref(_data);
+        g_object_ref(other._data);
 
+        _data = other._data;
         _size = other._size;
 
-        other._data.clear();
+        other._data = nullptr;
         other._size = {0, 0};
     }
 
     Image& Image::operator=(const Image& other)
     {
-        _data = std::vector<float>();
-        _data.reserve(other._data.size());
-        for (auto v : other._data)
-            _data.push_back(v);
-
+        _data = gdk_pixbuf_copy(other._data);
         _size = other._size;
-
         return *this;
     }
 
-    Image& Image::operator=(Image&& other)
+    Image& Image::operator=(Image&& other) noexcept
     {
-        _data = std::vector<float>();
-        _data.reserve(other._data.size());
-        for (auto v : other._data)
-            _data.push_back(v);
+        g_object_unref(_data);
+        g_object_ref(other._data);
 
+        _data = other._data;
         _size = other._size;
 
-        other._data.clear();
+        other._data = nullptr;
         other._size = {0, 0};
-
         return *this;
     }
 
     void Image::create(size_t width, size_t height, RGBA default_color)
     {
-        _data.clear();
-        _data.reserve(width * height * 4);
-        for (size_t i = 0; i < width * height; ++i)
-        {
-            _data.push_back(default_color.r);
-            _data.push_back(default_color.g);
-            _data.push_back(default_color.b);
-            _data.push_back(default_color.a);
-        }
-
+        _data = gdk_pixbuf_new(GDK_COLORSPACE_RGB, GL_TRUE, 8, width, height);
         _size = {width, height};
-    }
 
-    void Image::create_from_pixbuf(GdkPixbuf* pixbuf)
-    {
-        unsigned char* buffer = gdk_pixbuf_get_pixels(pixbuf);
-
-        bool has_alpha = gdk_pixbuf_get_has_alpha(pixbuf);
-        size_t padding_bytes = gdk_pixbuf_get_rowstride(pixbuf) / sizeof(unsigned char) - gdk_pixbuf_get_width(pixbuf) * (has_alpha ? 4 : 3);
-        _size = {gdk_pixbuf_get_width(pixbuf) - padding_bytes, gdk_pixbuf_get_height(pixbuf)};
-        size_t n = _size.x * _size.y * (has_alpha ? 4 : 3);
-
-        _data.clear();
-        _data.reserve(n);
-
-        for (size_t i = 0; i < n; ++i)
-        {
-            _data.push_back(buffer[i] / 255.f);
-
-            if (not has_alpha)
-                _data.push_back(1);
-        }
+        g_object_ref(_data);
     }
 
     bool Image::create_from_file(const std::string& path)
     {
         GError* error_maybe = nullptr;
-        auto* pixbuf = gdk_pixbuf_new_from_file(path.c_str(), &error_maybe);
+        _data = gdk_pixbuf_new_from_file(path.c_str(), &error_maybe);
 
         if (error_maybe != nullptr)
         {
             std::cerr << "[WARNING] In Image::create_from_file: unable to open file \"" << path << "\"" << std::endl;
-            _data.clear();
+            g_error_free(error_maybe);
             _size = {0, 0};
             return false;
         }
 
-        create_from_pixbuf(pixbuf);
-        g_object_unref(pixbuf);
+        _size.x = gdk_pixbuf_get_width(_data);
+        _size.y = gdk_pixbuf_get_height(_data);
+
+        g_object_ref(_data);
         return true;
-    }
-
-    void Image::create_from_texture(GdkTexture* texture)
-    {
-        auto size = Vector2ui(gdk_texture_get_width(texture), gdk_texture_get_height(texture));
-
-        // FORMAT: ARGB32, c.f. https://docs.gtk.org/gdk4/method.Texture.download.html
-
-        auto* surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,gdk_texture_get_width(texture), gdk_texture_get_height(texture));
-        gdk_texture_download(texture,cairo_image_surface_get_data(surface),cairo_image_surface_get_stride(surface));
-        auto* data = cairo_image_surface_get_data(surface);
-
-        create(size.x, size.y);
-        for (size_t i = 0; i < size.x * size.y * 4; i = i + 4)
-        {
-            guchar b = data[i+0];
-            guchar g = data[i+1];
-            guchar r = data[i+2];
-            guchar a = data[i+3];
-
-            _data[i+0] = float(r) / 255.f;
-            _data[i+1] = float(g) / 255.f;
-            _data[i+2] = float(b) / 255.f;
-            _data[i+3] = float(a) / 255.f;
-        }
-
-        cairo_surface_mark_dirty(surface);
-        g_free(surface);
-    }
-
-    GdkPixbuf* Image::to_pixbuf() const
-    {
-        auto* out = gdk_pixbuf_new(GDK_COLORSPACE_RGB, true, 8, _size.x, _size.y);
-        auto* data = gdk_pixbuf_get_pixels(out);
-
-        for (size_t i = 0; i < _data.size(); ++i)
-            data[i] = uint8_t(_data.at(i) * 255.f);
-
-        return out;
     }
 
     bool Image::save_to_file(const std::string& path) const
@@ -159,13 +95,12 @@ namespace mousetrap
             return false;
         }
 
-        auto* as_pixbuf = to_pixbuf();
         GError* error = nullptr;
-
-        gdk_pixbuf_save(as_pixbuf, path.c_str(), "png", &error, NULL);
+        gdk_pixbuf_save(_data, path.c_str(), "png", &error, NULL);
         if (error != nullptr)
         {
             std::cerr << "[ERROR] In Image::save_to_file: " << error->message << std::endl;
+            g_error_free(error);
             return false;
         }
 
@@ -179,12 +114,12 @@ namespace mousetrap
 
     void* Image::data() const
     {
-        return (void*) _data.data();
+        return gdk_pixbuf_get_pixels(_data);
     }
 
     size_t Image::get_data_size() const
     {
-        return _data.size();
+        return _size.x * _size.y * 4;
     }
 
     size_t Image::get_n_pixels() const
@@ -201,16 +136,17 @@ namespace mousetrap
     {
         auto i = to_linear_index(x, y);
 
-        if (i >= _data.size())
+        if (i >= get_data_size())
         {
             std::cerr << "[ERROR] In Image::set_pixel: indices " << x << " " << y << " are out of bounds for an image of size " << _size.x << "x" << _size.y << std::endl;
             return;
         }
 
-        _data.at(i) = color.r;
-        _data.at(i+1) = color.g;
-        _data.at(i+2) = color.b;
-        _data.at(i+3) = color.a;
+        auto* data = gdk_pixbuf_get_pixels(_data);
+        data[i] = color.r * 255;
+        data[i+1] = color.g * 255;
+        data[i+2] = color.b * 255;
+        data[i+3] = color.a * 255;
     }
 
     void Image::set_pixel(size_t x, size_t y, HSVA color)
@@ -222,18 +158,19 @@ namespace mousetrap
     {
         auto i = to_linear_index(x, y);
 
-        if (i >= _data.size())
+        if (i >= get_data_size())
         {
             std::cerr << "[ERROR] In Image::get_pixel: indices " << x << " " << y << " are out of bounds for an image of size " << _size.x << "x" << _size.y << std::endl;
             return RGBA(0, 0, 0, 0);
         }
 
-        return RGBA
-        (
-            _data.at(i),
-            _data.at(i+1),
-            _data.at(i+2),
-            _data.at(i+3)
+        auto* data = gdk_pixbuf_get_pixels(_data);
+
+        return RGBA (
+        data[i] / 255.f,
+        data[i+1] / 255.f,
+        data[i+2] / 255.f,
+        data[i+3] / 255.f
         );
     }
 
@@ -241,46 +178,35 @@ namespace mousetrap
     {
         i *= 4;
 
-        if (i >= _data.size())
+        if (i >= get_data_size())
         {
             std::cerr << "[ERROR] In Image::set_pixel: index " << i / 4 << " out of bounds for an image of with " << _size.x * _size.y << " pixels" << std::endl;
             return;
         }
 
-        _data.at(i) = color.r;
-        _data.at(i+1) = color.g;
-        _data.at(i+2) = color.b;
-        _data.at(i+3) = color.a;
+        auto* data = gdk_pixbuf_get_pixels(_data);
+        data[i] = color.r * 255;
+        data[i+1] = color.g * 255;
+        data[i+2] = color.b * 255;
+        data[i+3] = color.a * 255;
     }
 
     void Image::set_pixel(size_t i, HSVA color_hsva)
     {
-        auto color = color_hsva.operator RGBA();
-
-        i *= 4;
-
-        if (i >= _data.size())
-        {
-            std::cerr << "[ERROR] In Image::set_pixel: index " << i / 4 << " out of bounds for an image of with " << _size.x * _size.y << " pixels" << std::endl;
-            RGBA(0, 0, 0, 0);
-        }
-
-        _data.at(i) = color.r;
-        _data.at(i+1) = color.g;
-        _data.at(i+2) = color.b;
-        _data.at(i+3) = color.a;
+        set_pixel(i, color_hsva.operator RGBA());
     }
 
     RGBA Image::get_pixel(size_t i) const
     {
         i *= 4;
 
-        return RGBA
-        (
-            _data.at(i),
-            _data.at(i+1),
-            _data.at(i+2),
-            _data.at(i+3)
+        auto* data = gdk_pixbuf_get_pixels(_data);
+
+        return RGBA (
+        data[i] / 255.f,
+        data[i+1] / 255.f,
+        data[i+2] / 255.f,
+        data[i+3] / 255.f
         );
     }
 
@@ -305,7 +231,7 @@ namespace mousetrap
         return out;
     }
 
-    Image Image::as_scaled(size_t size_x, size_t size_y, GdkInterpType interpolation_type) const
+    Image Image::as_scaled(size_t size_x, size_t size_y, InterpolationType type) const
     {
         if (int(size_x) == _size.x and int(size_y) == _size.y)
             return *this;
@@ -316,16 +242,9 @@ namespace mousetrap
         if (size_y == size_t(0))
             size_y = 1;
 
-        GdkPixbuf* unscaled = g_object_ref(to_pixbuf());
-        auto scaled = g_object_ref(gdk_pixbuf_scale_simple(unscaled, size_x, size_y, interpolation_type));
-
-        auto out = Image();
-        out.create_from_pixbuf(scaled);
-
-        g_object_unref(unscaled);
-        g_object_unref(scaled);
-
-        return out;
+        GdkInterpType gdk_interpolation_type;
+        GdkPixbuf* unscaled = _data;
+        return Image(gdk_pixbuf_scale_simple(unscaled, size_x, size_y, (GdkInterpType) type));
     }
 
     Image Image::as_flipped(bool flip_horizontally, bool flip_vertically) const

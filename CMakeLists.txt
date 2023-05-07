@@ -57,7 +57,7 @@ add_library(mousetrap SHARED
         src/gl_area.cpp
 
     include/gl_transform.hpp
-        src/transform.cpp
+        src/gl_transform.cpp
 
     include/widget.hpp
         src/widget.cpp
