@@ -773,6 +773,63 @@ The bar can also be used to display a discrete value (a range only consisting of
 
 ---
 
+## Entry
+
+We've learned how to choose a widget allowing a boolean and discrete value to be inputed, so we will now move on to inputting text. This is central to many desktop applications, as such, \a{Entry}, the widget used for single-line text entry, may be one of the most important widgets there is.
+
+Entry is an area that, when clicked, allows the user to type freely. This current text is stored in an internal text buffer. We can its contents with `Entry::get_text`. `Entry::set_text`, conversely, overwrites this buffer with a custom message.
+
+While we could control the widget of an `Entry` by using size request like any other widget, a less manual way to do this is `Entry::set_max_length`, which takes an integer, which represents the number characters that the prompts should make space for.
+
+`Entry` supports "password mode", which is when each character typed is replaced with a dot, or otherwise made unreadable. This is such that a person looking over another persons shoulder can read a sensitive prompt, such as a message or password. We can enter and exit this mode using `Entry::set_text_visible`, where `false` is password-mode and `true` is the regular mode.
+
+\image html entry_password_mode.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto clear = Entry();
+clear.set_text("text");
+
+auto password = Entry();
+password.set_text("text");
+password.set_text_visible(false);
+
+auto box = Box(Orientation::VERTICAL);
+box.set_spacing(10);
+box.push_back(clear);
+box.push_back(password);
+
+box.set_margin_horizontal(75);
+box.set_margin_vertical(40);
+window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+Lastly, `Entry` is *activatable*. Users usually do this by pressing the enter key while the cursor is inside the entry. This does not cause any behavior initially, but we can connect to the `activate` signal of `Entry` to trigger behavior. 
+
+Other than `activate`, `Entry` has one more signal `text_changed`, which is emitted whenever the internal buffer changes, including when set programmatically using `set_text`.
+
+\signals
+\signal_activate{Entry}
+\signal_text_changed{Entry}
+
+Note that the user cannot insert a newline character using the enter key. As such `Entry` should exclusively be used for text prompts which are exactly one line. For multi-line text entry, we should use the next widget instead.
+
+## TextView
+
+While we can technically input a newline character into `Entry`, it is not possible to display two lines at the same time. For this purpose, we use \a{TextView}. It supports a number of basic text-editor features, including **undo / redo**, which  are triggered by the user pressing Control + Z or Control + Y respectively. We can also trigger this behavior manually by calling `TextView::undo` / `TextView::redo`.
+
+Much like `Label`, we can set how the text aligns horizontally using `TextView::set_justify_mode`. To further customize how text is displayed, we can choose the **internal margin**, which is the distance between the frame of the `TextView` and the text inside of it. `TextView::set_left_margin`, `TextView::set_right_margin`, `TextView::set_top_margin` and `TextView::set_bottom_margin` allow us to customize this freely.
+
+`TextView` does **not** have the `activate` signal, pressing enter while the cursor is inside the widget will simply create a new line. Instead, it has the following signals, where `text_changed` behaves exactly like it does with `Entry`:
+
+\signals
+\signal_text_changed{TextView}
+\signal_undo{TextView}
+\signal_redo{TextView}
+
+---
+
 ## Frame
 
 `Frame` is a purely cosmetical widget that displays whatever child we choose using `Frame::set_child` in a frame with a small border and rounded corners:
@@ -926,41 +983,6 @@ window.set_child(box);
 ## Spinner
 
 For progress where we do not have an exact fraction, we can use the `Spinner` widget, which simply displays an animated spinning loading icon. Using `Spinner::set_is_spinning`, we can control whether the animation is currently playing or not.
-
----
-
-## Entry
-
-Being able to input text with the keyboard is central to desktop applications, as such, `Entry`, the widget used for single-line text entry, may be one of the most important widgets.
-
-Entry is an area that, when clicked, allows the user to write freely. This text is written to an internal text buffer. We can access the text in that buffer with `Entry::get_text`. `Entry::set_text` overwrites this buffer with a custom message.
-
-We can of course control the width of an `Entry` by sizehinting it like any other widget, though a less manual way to do this is `Entry::set_max_length`, which takes an integer that is the number of characters that the prompts should make size for. 
-
-`Entry` supports "password mode", which is when each character typed is replaced with a dot, or otherwise made unreadable. This is such that a person looking over another persons shoulder can read a sensitive prompt, such as a message or password. We can enter and exit this mode using `Entry::set_text_visible`, where `false` is password-mode and `true` is the regular mode.
-
-Lastly, `Entry` is activatable, which is usually done by pressing the enter key while the cursor is inside the entry. This does not cause any behavior initially, but we can connect to the `activate` signal of `Entry` to trigger behavior.
-
-Other than `activate`, `Entry` has one more signal `text_changed`, which is emitted whenever the internal buffer changes, including when set programmatically using `set_text`.
-
-\signals 
-\signal_activate{Entry}
-\signal_text_changed{Entry}
-
-## TextView
-
-While we can technically input a newline character into `Entry`, it is not possible to display two lines at the same time. For this purpose, we use `TextView`. It supports a number of basic text-editor features, including **undo / redo**  are triggered by the user pressing Control + Z or Control + Y respectively. We can also trigger this behavior manually by calling `TextView::undo` / `TextView::redo`.
-
-Much like `Label`, we can set how the text aligns horizontally using `TextView::set_justify_mode`. To further customize how text is displayed, we can choose the **internal margin**, which is the distance between the frame of the `TextView` and the text inside of it. `TextView::set_left_margin`, `TextView::set_right_margin`, `TextView::set_top_margin` and `TextView::set_bottom_margin` allow us to customize this freely.
-
-`TextView` does not have the `activate` signal, pressing enter while the cursor is inside the widget will simply create a new line. 
-
-`TextView` has the following signals, where `text_changed` behaves exactly like it does with `Entry`:
-
-\signals
-\signal_text_changed{TextView}
-\signal_undo{TextView}
-\signal_redo{TextView}
 
 ---
 
