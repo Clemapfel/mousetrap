@@ -175,14 +175,25 @@ int main()
         state->main_window.set_child(state->stack_box);
 
         // TODO
-        auto open_file_button = Button();
-        open_file_button.set_tooltip_widget(Button());
-        open_file_button.set_expand(false);
-        open_file_button.set_horizontal_alignment(Alignment::START);
+        auto horizontal = Scale(0, 2, 0.5);
+        horizontal.set_orientation(Orientation::HORIZONTAL);
+        horizontal.set_value(1);
+        horizontal.set_size_request({200, 0});
+        horizontal.set_should_draw_value(true);
 
-        auto preferred_size = open_file_button.get_preferred_size().
+        auto vertical = Scale(0, 2, 0.5);
+        vertical.set_orientation(Orientation::VERTICAL);
+        vertical.set_value(1);
+        vertical.set_size_request({0, 200});
+        vertical.set_should_draw_value(true);
 
-        state->main_window.set_child(open_file_button);
+        auto box = CenterBox(Orientation::HORIZONTAL);;
+        box.set_start_child(horizontal);
+        box.set_end_child(vertical);
+
+        box.set_margin_horizontal(75);
+        box.set_margin_vertical(40);
+        state->main_window.set_child(box);
         // TODO
 
         state->main_window.present();

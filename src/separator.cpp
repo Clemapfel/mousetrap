@@ -7,13 +7,15 @@
 
 namespace mousetrap
 {
-    Separator::Separator(Orientation orientation)
+    Separator::Separator(float opacity, Orientation orientation)
         : WidgetImplementation<GtkSeparator>(GTK_SEPARATOR(gtk_separator_new((GtkOrientation) orientation)))
     {
         if (orientation == Orientation::HORIZONTAL)
             set_expand_horizontally(true);
         else
             set_expand_vertically(true);
+
+        set_opacity(opacity);
     }
 
     void Separator::set_orientation(Orientation orientation)

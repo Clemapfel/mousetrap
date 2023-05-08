@@ -222,54 +222,554 @@ Other than the signals, we can set basic properties of the window.
 
 #### Modality & Transience
 
-When dealing with multiple windows, the windows often interact with each other. Two of these interactions are determined by wether a window is **modal** and wether it is **transient** for another window.
+When dealing with multiple windows, we can influence the way two windows interact with each other. Two of these interactions are determined by whether a window is **modal** and whether it is **transient** for another window.
 
-By setting `Window::set_model` to true, if the window is revealed, all other windows of the application will be deactivated, prevent interaction with them. The most common use-case for this 
+By setting `Window::set_model` to true, if the window is revealed all other windows of the application will be deactivated, preventing interaction with them. The most common use-case for this is for dialogs, for example if the user requests to close the application, it's common to open a small dialog requesting the user to confirm exiting the application. While the dialog is shown, the main window is essentially paused until the user chooses an action.
+
+Using `Window::set_transient_for`, we can make sure a window will always be on top of another. `A.set_transient_for(B)` will make it so while A overlaps B, A will always be on top. This is again useful for message dialogs, if the dialog is not transient for the main window it could appear "behind" the main window, being essentially invisible to the user.
+
+---
+
+## Label
+
+In contention for being *the* most used widget, `Label`s are important to understand. A `Label` displays static text, it's initialized as one would expect:
+
+```cpp
+auto label = Label("text!")
+```
+
+To change a labels text after initialization, we use `Label::set_text`. By default, a label will be a single-line of text, but it can also be used to display multi-line text, in which case we have some additional options to control formatting.
+
+### Justify Mode
+
+Justification how words are destributed along the horizontal axis. There are 5 modes in total, which are part of the enum \a{JustifyMode}:
+
+\image html text_justify_left.png "JustifyMode::LEFT"<br>
+\image html text_justify_center.png "JustifyMode::CENTER" <br>
+\image html text_justify_right.png "JustifyMode::RIGHT"<br>
+\image html text_justify_fill.png "JustifyMode::FILL" <br>
+
+Where the fifth mode is `JustifyMode::NONE` which arranges all text in exactly one line.
+
+### Wrapping
+
+Wrapping determines at which part of the text display a line break is inserted. For wrapping to happen at all, the `JustifyMode` has to not be set to anything **other** than `JustifyMode::NONE`.
+
+| `JustifyMode` | meaning                                                 |
+|------|---------------------------------------------------------|
+| `NONE`  | no wrapping                                             | 
+| `ONLY_ON_WORD` | line will only be split between two words               |
+| `ONLY_ON_CHAR` | line will only be split between syllables, adding a `-` |
+| `WORD_OR_CHAR` | line will be split between words and/or syllables        |
+
+Where `WORD_OR_CHAR` is the default.
+
+### Ellipsize Mode
+
+If a line is too long for the available space and wrapping is disabled, **ellipzing** will take place. The corresponding enum has four possible value:
+
+| `EllipsizeMode` | meaning | example |
+|------|--------|---------|
+| `NONE`  | text will not be ellipsize | "Humane mousetrap engineer" |
+| `START` | text starts with `...`, showing only the last few words | "...engineer" |
+| `END` | text end with `...`, showing only the first few words | "Humane mousetrap..."|
+| `MIDDLE` | "..." in the center, shows start and beginnig | "Humane...engineer" |
+
+### Markup
+
+Labels support **markup**, which allows use to change properties about individual words or characters in a way very similar to html. Markup in mousetrap uses [pango attributes](https://docs.gtk.org/Pango/pango_markup.html), which allows for the following markup properties:
+
+| `tag`        | Label String              | Result                  |
+|--------------|---------------------------|-------------------------|
+| `b`          | `<b>bold</b>`             | <b>bold</b>             |
+| `i`          | `<i>italic</i>`           | <i>italic</i>           |
+| `u`          | `<u>underline</u>`        | <u>underline</u>        |
+| `s`          | `<s>strikethrough</s>`    | <s>strikethrough</s>    |
+| `tt`         | `<tt>inline_code</tt>`    | <tt>inline_code</tt>    |
+| `small`      | `<small>small</small>`    | <small>small</small>    |
+| `big`        | `<big>big</big>`          | <big>big</big>          |
+| `sub`        | `x<sub>subscript</sub>`   | x<sub>subscript</sub>   |
+| `sup`        | `x<sup>superscript</sup>` | x<sup>superscript</sup> |
+| `&#` and `;` | `&#129700;`               | 🪤                    | 
+
+Where in the last row, we used the [decimal html code](https://www.compart.com/en/unicode/U+1FAA4) for the mousetrap emoji that unicode provides.
+
+\note All `<`, `>` will be parsed as style tags event when escaped with `\`. To prevent this, simply us `&lt;` (less-than) and `&gt;` (greater-than) instead of `<` and `>`.
+
+For things like color, other fonts, and many more options, [consult the pango documentation](https://docs.gtk.org/Pango/pango_markup.html).
+
+---
 
 ## Box
 
-Boxes are the simplest multi-widget container in mousetrap and are used extensively in almost any application. A box aligns its children horizontally or vertically, depending on the argument passed to the boxes constructor. 
+Boxes are the simplest multi-widget container in mousetrap and are used extensively in almost any application. A box aligns its children horizontally or vertically, depending on whether we pass \a{Orientation::HORIZONTAL} or \a{Orientation::VERTICAL} to its constructor. We can change a boxes orientation any time after construction using `set_orientation`. 
 
-We can add widgets to the start, end or after a specific widget using `push_front`, `push_back`, and `insert_after`, respectively.
+We can add widgets to the start, end, and after any other widget already inside box using `Box::push_front`, `Box::push_back` and `Box::insert_after`, respectively: 
 
-\todo screenshot
+```cpp
+auto box = Box(Orientation::HORIZONTAL);
+
+auto start = Label("|start");
+auto end = Label("end|");
+auto center = Label("|middle|");
+
+// add to start of box
+box.push_front(start);
+
+// add to end of box
+box.push_back(end);
+
+// add right after start
+box.insert_after(center, start);
+```
+
+\image html box_start_center_end.png
 
 Between any two children is an optional space, which we can specify using `Box::set_spacing`. This spacing is unrelated to the margins of its child widgets and will be applied between any two consecutive children, but not before the very first and after the very last child.
 
 ## CenterBox
 
-`CenterBox` is a widget that has exactly three children, at the start, end and center of the allocated area. `CenterBox` prioritizes keeping the center widget centered at all costs, making it an ideal choice for a layout where this is desired.
+\a{CenterBox} is a container that has exactly three children, situated around a centered child. `CenterBox` prioritizes keeping this child centered at all costs, making it an better choice for a layout where this is desired than other containers.
 
-We set the start widget with `CenterBox::set_start_child`, the center widget with `CenterBox::set_center_child` and the end widget with `CenterBox::set_end_child`.
+We use `CenterBox::set_start_child`, `CenterBox::set_center_child` and `CenterBox::set_end_child` to choose the corresponding child widget.
+
+```cpp
+auto center_box = CenterBox(Orientation::HORIZONTAL);
+center_box.set_center_child(Button());
+center_box.set_start_child(Label("start"));
+center_box.set_end_child(Label("end"));
+```
+
+\image html center_box.png
 
 `CenterBox` is orientable, meaning it also supplies `set_orientation` to choose the preferred layout.
 
-## Overlay
+---
 
-So far, all widget containers align widget such that the do not overlap, which is why the margin property may not be negative. There is one container that allows overlapping: `Overlay`.
+## Separator
 
-`Overlay` has one "base" widget, which is at the conceptual bottom of the overlay. We set this widget using `Overlay::set_child`. Then, we can add any number of widgets on top of the base widget using `Overlay::add_overlay`:
+Perhaps the simplest widget is `Separator`. It simply fills its allocated area with a solid color:
 
 ```cpp
-auto child_widget = // ...
-auto overlay_widget = // ...
-
-auto overlay = Overlay();
-overlay.set_child(child_widget);
-overlay.add_overlay(overlay_widget);
+auto separator = Separator();
+separator.set_margin(20);
+separator.set_expand(true);
+window.set_child(separator);
 ```
 
-\todo image
+\image html separator_example.png
 
-By default, `Overlay` will allocate exactly as much space as the base widget does. If one of the overlaid widgets takes up more space than the base widget, it will be truncated. We can change this by supplying a second argument to `add_overlay`, which is a boolean indicated whether the overlay widget should be included in the entire containers allocation, that is, if the overlay widget is larger than the base widget, should the overlay resize itself such that the entire overlay widget is shown:
+This widget is often used as a background to another widget, to fill empty space, or as en element visually separating two sections. Often we want to have the separator be a specific thickness. To create a horizontal line, we would usually sizehint it: `separator.set_size_request({0, 3})` will create a horizontal line, 3 pixels thick.
+
+---
+
+## ImageDisplay
+
+`ImageDisplay` is used to display static images. It works by taking image data in RAM, deep-copying it into the graphics card memory,
+then using it to display the image on screen.
+
+Assuming we have an image at the absolute path `/resources/image.png`, we can create an `ImageDisplay` like so:
 
 ```cpp
-overlay.add_overlay(overlay_widget, true);
-``` 
+auto display = ImageDisplay();
+display.create_from_file("/resources/image.png");
+```
 
-\todo image
+The following image formats are supported by `ImageDisplay`:
 
-When constructing complex compound widgets, we often want to widgets to overlap each other. This can cause problems, if the user clicks on an area that is occupied by two or more widgets, which widget should be activated? By default, only the top-most widget will be activated. If we want a different layer to be activated instead, we have to deactivate interaction with all widgets above it, either by calling `Widget::hide` or `Widget::set_can_respond_to_input(false)`. 
+| Format Name             | File Extensions |
+|-------------------------|-----------------|
+| PNG                     | `.png`  |
+| JPEG                    | `.jpeg` `.jpe` `.jpg`  |
+| JPEG XL image           | `.jxl`  |
+| Windows Metafile        | `.wmf` `.apm`  |
+| Windows animated cursor | `.ani`  |
+| BMP                     | `.bmp`  |
+| GIF                     | `.gif`  |
+| MacOS X icon            | `.icns`  |
+| Windows icon            | `.ico` `.cur`  |
+| PNM/PBM/PGM/PPM         | `.pnm` `.pbm` `.pgm` `.ppm`  |
+| QuickTime               | `.qtif` `.qif`  |
+| Scalable Vector Graphics | `.svg` `.svgz` `.svg.gz`  |
+| Targa                   | `.tga` `.targa`  |
+| TIFF                    | `.tiff` `.tif`  |
+| WebP                    | `.webp`  |
+| XBM                     | `.xbm`  |
+| XPM                     | `.xpm`  |
+
+Afterwards, we cannot change the contents of `ImageDisplay` directly. If the file on disk changes, `ImageDisplay` remains unchanged. If we want to update `ImageDisplay`, we should call `create_from_file` with the same path again.
+
+By default, `ImageDisplay` behaves just like any other wigdet, in that it scales freely, which, in case of a raster-based image, may distort the image. To prevent this, we can call `display.set_expand(false)` which prevents expansion of the widget, then sizehint it like so:
+
+```cpp
+display.set_size_request(display.get_size());
+```
+
+Where `ImageDisplay::get_size` returns the original resolution of the image it was created from. If we want to allow scaling (expansion) but want to keep the aspect ratio òf an `ImageDisplay` fixed, we can use the container widget `AspectFrame`, which we will learn about later in this section.
+
+---
+
+## Button
+
+We've seen `Button` in the previous chapter, it is one of the simplest ways for a user to interact with an application.
+
+`Button` has the following signals:
+
+\signals
+\signal_activate{Button}
+\signal_clicked{Button}
+
+Where physically clicking the button both emits `activate` and `clicked`, while calling `Widget::activate` only emits `activate`, not clicked.
+
+To change the label of a button, we use `Button::set_child`. This will usually be a `Label` or `ImageDisplay`, though any arbitrary widget can be used as a child this way.
+
+Other than the child widget, we can customize a buttons look. `Button::set_has_frame` will change wether the button has a texture outline to it, while `Button::set_is_circular` changes the button to a fully rounded appearance:
+
+\image html button_types.png
+
+Where the above shown buttons have following properties:
+
+| Button | set_has_frame | set_is_circular |
+|--------|---------------|-----------------|
+| 01  | true | false |
+| 02 | false | false |
+| 03 | true | true |
+
+\how_to_generate_this_image_begin
+```cpp
+auto normal = Button();
+normal.set_child(Label("01"));
+
+auto no_frame = Button();
+no_frame.set_has_frame(false);
+no_frame.set_child(Label("02"));
+
+auto circular = Button();
+circular.set_is_circular(true);
+circular.set_child(Label("03"));
+
+auto box = CenterBox(Orientation::HORIZONTAL);;
+box.set_start_child(normal);
+box.set_center_child(no_frame);
+box.set_end_child(circular);
+
+box.set_margin(75);
+window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+
+Buttons are ideal to trigger run-through `Action`s, which are action that do a single thing, then immediately exit. For `Button`s, it is usually preferred to create an `Action` and use `Button::set_action` to associate the two, over connecting to one of the signals. The reasons for this were illustrated in the [chapter on actions](03_actions.md).
+
+---
+
+## ToggleButton
+
+`ToggleButton` is a specialized form of `Button`. It supports most of `Button`s methods/signals, including signal `clicked`, `set_child`, `set_has_frame` and `set_is_circular`.
+Unique to `ToggleButton` is that, if clicked, the button will remain pressed. When clicked again, it returns to being unpressed. Anytime the internal state of the `ToggleButton` changes, the `toggled` signal will be emitted.
+
+\signals
+\signal_toggled{ToggleButton}
+\signal_activate{ToggleButton}
+\signal_clicked{ToggleButton}
+
+In this way, `ToggleButton` can be used to track a boolean state. To check whether the button is currently toggled, we use `ToggleButton::get_active`, which returns a `true` if the button is currently pressed, `false` otherwise.
+\todo figure for untoggled, toggled
+
+---
+
+## CheckButton
+
+`CheckButton` is almost identical to `ToggleButton` in function, but not appearance. `CheckButton` is an empty box in which a checkmark appears when it is toggled. Just like before, we query whether it is pressed by calling `CheckButton::get_active`.
+
+\signals
+\signal_activate{CheckButton}
+\signal_toggled{CheckButton}
+
+`CheckButton` can be in one of three states, as opposed to two, all of which are represented by the enum \a{CheckButtonState}. The button can either be active, inactive, or **inconsistent**. This changes the appearance of the button:
+
+\image html check_button_states.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto active = CheckButton();
+active.set_state(CheckButtonState::ACTIVE);
+auto active_box = Box(Orientation::VERTICAL);
+active_box.push_back(active);
+active_box.push_back(Label("active"));
+
+auto inconsistent = CheckButton();
+inconsistent.set_state(CheckButtonState::INCONSISTENT);
+auto inconsistent_box = Box(Orientation::VERTICAL);
+inconsistent_box.push_back(inconsistent);
+inconsistent_box.push_back(Label("inconsistent"));
+
+auto inactive = CheckButton();
+inactive.set_state(CheckButtonState::INACTIVE);
+auto inactive_box = Box(Orientation::VERTICAL);
+inactive_box.push_back(inactive);
+inactive_box.push_back(Label("inactive"));
+
+for (auto* button : {
+   &active,
+   &inconsistent,
+   &inactive
+})
+   button->set_horizontal_alignment(Alignment::CENTER);
+
+auto box = CenterBox(Orientation::HORIZONTAL);;
+box.set_start_child(active_box);
+box.set_center_child(inconsistent_box);
+box.set_end_child(inactive_box);
+
+box.set_margin(75);
+window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+Note that `CheckButton::get_active` will only return true if the current state is specifically `CheckButtonState::ACTIVE`. Otherwise, `get_active` will return false. `toggled` is emitted whenever the state changes, regardless of which state the `CheckButton` was in.
+
+---
+
+## Switch
+
+As the last widget intended to convey a boolean state to the user, we have `Switch`, which has the appearance of a light-switch. It can be clicked or dragged in order to change its state. `Switch` does not emit `toggled`, instead we connect to the `activate` signal, which is emitted anytime the switch is flicked to either side. 
+
+\signals
+\signals_activate{Switch}
+
+\image html switch_states.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto active = Switch();
+active.set_active(true);
+auto active_box = Box(Orientation::VERTICAL);
+active_box.push_back(active);
+active_box.push_back(Label("active"));
+
+auto inactive = Switch();
+inactive.set_active(false);
+auto inactive_box = Box(Orientation::VERTICAL);
+inactive_box.push_back(inactive);
+inactive_box.push_back(Label("inactive"));
+
+for (auto* s : {&active, &inactive})
+{
+    s->set_horizontal_alignment(Alignment::CENTER);
+    s->set_margin(10);
+}
+
+auto box = CenterBox(Orientation::HORIZONTAL);;
+box.set_start_child(active_box);
+box.set_end_child(inactive_box);
+
+box.set_margin(75);
+state->main_window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+---
+
+## Adjustment
+
+From widgets conveying a boolean state, we'll move to widgets conveying a discrete number. These let the user choose a value from a **range**, which, in mousetrap, is represented by a signal emitter called \a{Adjustment}. 
+
+In general, a range has a **lower and upper value**. For example, the range `[0, 2]` has the `lower` of `0` and `upper` of `2`. A second property is the **step increment**, which is the minimum difference between two adjacent values in the range. For example, if our range is still `[0, 2]` and the step increment is `0.5`, then that includes the numbers `{0, 0.5, 1, 1.5, 2}`. If the step increment is `0.01`, `[0,2]` includes the numbers  `{0, 0.01, 0.02, ..., 1.98, 2.00}`.
+
+Turning to the actual `Adjustment` class, it has four properties
+
++ `lower`: Lower bound of the range
++ `upper`: Upper bound of the range
++ `increment`: step increment
++ `value`: Current value, in `[lower, upper]`
+
+For example, expressing the previous range of `[0, 2]` with step increment `0.5`, we create an `Adjustment` like so:
+
+```cpp
+auto adjustment = Adjustment(
+    1,      // value
+    0,      // lower
+    2,      // upper
+    0.5     // increment    
+);
+```
+
+We usually do not need to create our own adjustment, rather it is provided by a widget. Notable about this is that the widget and its adjustment **are automatically kept in synch**. If we change any property of the adjustment, the widget will change its appearance accordingly, which we will see an example of shortly.
+
+Adjustment has two signals:
+
+\signals
+\signal_value_changed{Adjustment}
+\signal_properties_changed{Adjustment}
+
+We can connect to `value_changed` to monitor the value of an `Adjustment`, and thus whatever widget is controlled by it.
+
+`properties_changed` is emitted when one of upper, lower or step increment changes, usually by calling `Adjustment::set_upper`, `Adjustment::set_lower` and/or `Adjustment::set_increment`.
+
+---
+
+## SpinButton
+
+\image html spin_button.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto horizontal = SpinButton(0, 2, 0.5);
+horizontal.set_orientation(Orientation::HORIZONTAL);
+horizontal.set_value(1);
+
+// pad horizontal spin button with invisible separators above and below
+auto horizontal_buffer = CenterBox(Orientation::VERTICAL);
+horizontal_buffer.set_start_child(Separator(0));
+horizontal_buffer.set_center_child(horizontal);
+horizontal_buffer.set_end_child(Separator(0));
+
+auto vertical = SpinButton(0, 2, 0.5);
+vertical.set_orientation(Orientation::VERTICAL);
+vertical.set_value(1);
+
+auto box = CenterBox(Orientation::HORIZONTAL);;
+box.set_start_child(horizontal_buffer);
+box.set_end_child(vertical);
+
+box.set_margin_horizontal(75);
+box.set_margin_vertical(40);
+window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+`SpinButton` is used to pick an exact value from a range. The user can click the rectangular area and manually enter a value, or they can increase or decrease the current value by the step increment of the `SpinButton`s adjustment by pressing the plus or minus button. 
+
+We supply the properties of the range in `SpinButton`s constructor:
+
+```cpp
+// create SpinButton with range [0, 2] and increment 0.01
+auto spin_button = SpinButton(0, 2, 0.5)
+```
+
+If we want to check what the properties of a `SpinButton`s range, we can either query `SpinButton::get_adjustment`, or we can get the values from the spin button directly using `SpinButton::get_value`, `SpinButton::get_lower`, etc.
+
+`SpinButton` has two signals:
+
+\signals
+\signal_value_changed{SpinButton}
+\signal_wrapped{SpinButton}
+
+Only the latter of which needs explanation, as we recognize `value_changed` from `Adjustment`. When the user reaches one end of the `SpinButton`s range, which, for a range of `[0, 2]` would be either the value `0` or `2`, if the user attempts to increase or decrease the value further, nothing will happen. However, if we set `SpinButton::set_can_wrap` to `true`, the value will wrap all the way around. If the user attempts to increase the value while it is `2`, it will jump to `0`, and vice-versa.
+
+---
+
+## Scale
+
+\image html scale_no_value.png
+\how_to_generate_this_image_begin
+```cpp
+auto horizontal = Scale(0, 2, 0.5);
+horizontal.set_orientation(Orientation::HORIZONTAL);
+horizontal.set_value(1);
+horizontal.set_size_request({200, 0});
+
+auto vertical = Scale(0, 2, 0.5);
+vertical.set_orientation(Orientation::VERTICAL);
+vertical.set_value(1);
+vertical.set_size_request({0, 200});
+
+auto box = CenterBox(Orientation::HORIZONTAL);;
+box.set_start_child(horizontal);
+box.set_end_child(vertical);
+
+box.set_margin_horizontal(75);
+box.set_margin_vertical(40);
+state->main_window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+\a{Scale}, just like `SpinButton` is a widget that allows a user to choose a value from an `Adjustment`. The user chooses the value by click-dragging the knob on the scale. In this way, it is usually harder to pick an exact decimal value on a scale. We can aid in this by displaying the exact value next to the scale, using `Scale::set_should_draw_value`:
+
+\image html scale_with_value.png
+\how_to_generate_this_image_begin
+```cpp
+auto horizontal = Scale(0, 2, 0.5);
+horizontal.set_orientation(Orientation::HORIZONTAL);
+horizontal.set_value(1);
+horizontal.set_size_request({200, 0});
+horizontal.set_should_draw_value(true);
+
+auto vertical = Scale(0, 2, 0.5);
+vertical.set_orientation(Orientation::VERTICAL);
+vertical.set_value(1);
+vertical.set_size_request({0, 200});
+vertical.set_should_draw_value(true);
+
+auto box = CenterBox(Orientation::HORIZONTAL);;
+box.set_start_child(horizontal);
+box.set_end_child(vertical);
+
+box.set_margin_horizontal(75);
+box.set_margin_vertical(40);
+state->main_window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+
+`Scale`supports most of `SpinButton`s functions, including querying information about its underlying range.
+
+---           
+
+## ScrollBar
+
+Similar to `Scale`, `ScrollBar` is used to pick a value on a floating-point scale. It is often used as a way to choose which part of a widget should be shown on screen. For an already-automated way of doing this, see `ScrolledWindow`. 
+
+---
+
+## LevelBar
+
+\a{LevelBar} is used to display a fraction, often use to indicate the level of something, for example the the volume of a playback device.
+
+To create a level bar, we need to specify the minimum and maximum value of the range we wish to display. We can then set the current value using `LevelBar::set_value`, which takes an absolute value. The resulting fraction is computed automatically based on the upper and lower limit we supplied to the constructor.
+
+```cpp
+// create level for range [0, 2]
+auto level_bar = LevelBar(0, 2);
+level_bar.set_value(1.0); // set to 50%
+```
+
+The bar will be oriented horizontally by default, but we can call `set_orientation` and change this.
+
+Once the bar reaches 75%, it changes color:
+
+\image html level_bar.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto box = Box(Orientation::VERTICAL);
+box.set_spacing(10);
+box.set_margin(10);
+
+size_t n_bars = 5;
+for (size_t i = 0; i < n_bars+1; ++i)
+{
+    float fraction = 1.f / n_bars;
+
+    auto label = Label(std::to_string(int(fraction * 100)) + "%");
+    label.set_size_request({50, 0});
+
+    auto bar = LevelBar(0, 1);
+    bar.set_value(fraction);
+    bar.set_expand_horizontally(true);
+
+    auto local_box = Box(Orientation::HORIZONTAL);
+    local_box.push_back(label);
+    local_box.push_back(bar);
+    box.push_back(local_box);
+}
+
+window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+The bar can also be used to display a discrete value (a range only consisting of integers), in which case the bar will be shown segmented. We can set the `LevelBar`s mode using `set_mode`, which takes either `LevelBarMode::CONTINUOUS` or `LevelBarMode::DISCRETE` as its argument.
 
 ---
 
@@ -300,6 +800,33 @@ aspect_frame.set_child(child_widget);
 ```
 
 Where we wrote `4.f / 3` instead of `4 / 3` because in C++, the latter would trigger [integer divison](https://en.wikipedia.org/wiki/Division_(mathematics)#Of_integers) resulting in a ratio of `1`, instead of the intended `1.333...`.
+
+---
+
+## Overlay
+
+So far, all widget containers align widget such that the do not overlap, which is also why the margin property may not be negative. There is one container that allows overlapping: `Overlay`.
+
+`Overlay` has one "base" widget, which is at the conceptual bottom of the overlay. We set this widget using `Overlay::set_child`. Then, we can add any number of widgets on top of the base widget using `Overlay::add_overlay`:
+
+```cpp
+auto child_widget = // ...
+auto overlay_widget = // ...
+
+auto overlay = Overlay();
+overlay.set_child(child_widget);
+overlay.add_overlay(overlay_widget);
+```
+
+\todo image
+
+By default, `Overlay` will allocate exactly as much space as the base widget (set with `set_child`) does. If one of the overlaid widgets takes up more space than the base widget, it will be truncated. We can change this by supplying a second argument to `add_overlay`, which is a boolean indicated whether the overlay widget should be included in the entire containers size allocation, that is, if the overlay widget is larger than the base widget, the overlay resize itself such that the entire overlay widget is shown:
+
+```cpp
+overlay.add_overlay(overlay_widget, true);
+``` 
+
+When constructing complex compound widgets, we often want widgets to overlap each other. This can cause problems for interactibility: if the user clicks on an area that is occupied by two or more widgets, which widget should be activated? By default, only the **top-most** widget will be activated. If we want a different layer to be activated instead, we have to deactivate interaction with all widgets above it, either by calling `Widget::hide` or `Widget::set_can_respond_to_input(false)`. 
 
 ---
 
@@ -365,355 +892,6 @@ Shrinkable sets whether the side of the paned can be made smaller than the alloc
 
 \image html paned_shrinkable.png `Paned::set_end_child_shrinkable(true)` made it possible to move the barrier such that the right child is partially covered"
 
----
-
-## Revealer
-
-`Revealer` is a "flair" widget, meaning it does not have any direct functionality. Instead, it is used to animate widgets appearing and dissapearing.
-
-It has exactly one child, set via `Revealer::set_child`. By default, the revealer will hide the child and not allocate any space. When we call `Revealer::set_revelead(true)`, the animation will start playing and the child widget will be displayed to the user.
-
-`Revealer` has a custom signal, `revealed` which is emitted once the transition animation finished playing:
-
-\signals
-\signal_relevaed{Revealer}
-
-We can change the type of animation using `Revealer::set_transition_type`, which takes \link mousetrap::RevealerTransitionType of many enum values\endlink. By default, it will be set to `RevealerTransitionType::CROSSFADE`, which fades the widget into view.
-
-We can change the speed of the animation using `Revealer::set_transition_duration`, which takes a time duration as `mousetrap::Time`:
-
-```cpp
-// set duration as 1.5s
-revealer.set_transition_duration(seconds(1.5));
-```
-
-`Revealer`s are rarely necessary, but can increase GUI "snappyness" and elevate the user experience of our app.
-
----
-
-## Expander
-
-`Expander` is similar to revealer, in that it shows and hides a widget. While `Revealer` is controlled by the developer, `Expander` is controlled by the user. It creates a button-like widget with a label. When it is clicked, the `Expander` reveals its child. It acts identical to the `<details>` html entity:
-
-<details><summary>like this</summary>
- (revealed text goes here)
-</details>
-
-We choose the label widget with `Expander::set_label_widget` and the child with `Expander::set_child`. Both are optional, if no label widget is set the label will be a simple arrow.
-
----
-
-## Separator
-
-Perhaps the simplest widget is `Separator`. It simply fills its allocated area with a solid color:
-
-```cpp
-auto separator = Separator();
-separator.set_margin(20);
-separator.set_expand(true);
-window.set_child(separator);
-```
-
-\image html separator_example.png
-
-This widget is often used as a background to another widget, to fill empty space, or as en element visually separating two sections. Often we want to have the separator be a specific thickness. To create a horizontal line, we would usually sizehint it: `separator.set_size_request({0, 3})` will create a horizontal line, 3 pixels thick. 
-
----
-
-## Label
-
-In contention for being *the* most used widget, `Label`s are important to understand. A `Label` display text and is initialized as one would expect:
-
-```cpp
-auto label = Label("text!")
-```
-We can change a labels text after initialization by calling `set_text`. While this is nice `Label` provides a number of other high-lever features, making it suitable even for long blocks of text or entire book pages.
-
-### Justify Mode
-
-Justification is how multiple words in a line are arranged. There are 5 modes in totla, all part of the enum `JustifyMode`:
-
-\image html text_justify_left.png "JustifyMode::LEFT"<br>
-\image html text_justify_center.png "JustifyMode::CENTER" <br>
-\image html text_justify_right.png "JustifyMode::RIGHT"<br>
-\image html text_justify_fill.png "JustifyMode::FILL" <br>
-
-Where the fifth mode is `JustifyMode::NONE` which arranges all text in exactly on line.
-
-### Wrapping
-
-Wrapping is at which part of the text a newline is created. For wrapping to happen at all, the `JustifyMode` has to not be set to `JustifyMode::NONE`, otherwise it forces the text in a single line so no wrapping is possible.
-
-For the other modes, the enum `LabelWrapMode` has the following values:
-| `JustifyMode` | meaning |
-|------|--------|
-| `NONE`  | no wrapping |
-| `ONLY_ON_WORD` | line will only be split between two words 
-| `ONLY_ON_CHAR` | line will only be split inbetween syllables
-| `WORD_OR_CHAR` | line will be split between words or syllables
-
-Where `WORD_OR_CHAR` is the default.
-
-### Ellipsize Mode
-
-If a line is too long for the available space and wrapping is disabled, **ellipzing** will take place. The corresponding enum has 4 value:
-
-| `EllipsizeMode` | meaning | example |
-|------|--------|---------|
-| `NONE`  | text will not be ellipsize | "Humane mousetrap engineer" |
-| `START` | text starts with `...`, showing only the last few words | "...engineer" |
-| `END` | text end with `...`, showing only the first few words | "Humane mousetrap..."|
-| `MIDDLE` | "..." in the center, shows start and beginnig | "Humane ... engineer" |
-
-### Markup
-
-Labels support **markup**, which is a way to modify how texts are displayed. Mousetraps labels are based on pango attributes, which is amazing at rendering text because it handles unicode flawlessly and supports many html-like styles:
-
-| `tag`        | Label String              | Result                  |
-|--------------|---------------------------|-------------------------|
-| `b`          | `<b>bold</b>`             | <b>bold</b>             |
-| `i`          | `<i>italic</i>`           | <i>italic</i>           |
- | `u`          | `<u>underline</u>`        | <u>underline</u>        |
-| `s`          | `<s>strikethrough</s>`    | <s>strikethrough</s>    |
-| `tt`         | `<tt>inline_code</tt>`    | <tt>inline_code</tt>    |
-| `small`      | `<small>small</small>`    | <small>small</small>    |
-| `big`        | `<big>big</big>`          | <big>big</big>          |
- | `sub`        | `x<sub>subscript</sub>`   | x<sub>subscript</sub>   |
-| `sup`        | `x<sup>superscript</sup>` | x<sup>superscript</sup> |
-| `&#` and `;` | `&#129700;`               | 🪤                    | 
-
-Where in the last row, we used the [decimal html code](https://www.compart.com/en/unicode/U+1FAA4) for the mousetrap emoji that unicode provides. 
-
-\note All `<`, `>` will be parsed as style tags event when escaped with `\`. To prevent this, simply us `&lt;` (less-than) and `&gt;` (greater-than) instead of `<` and `>`.
-
-For things like color, other fonts, and many more options, [consult the pango documentation](https://docs.gtk.org/Pango/pango_markup.html).
-
----
-
-## ImageDisplay
-
-`ImageDisplay` is used to display static images. It works by taking image data in RAM, deep-copying it into the graphics card memory,
-then using it to display the image on screen.
-
-Assuming we have an image at the absolute path `/resources/image.png`, we can create an `ImageDisplay` like so:
-
-```cpp
-auto display = ImageDisplay();
-display.create_from_file("/resources/image.png");
-```
-
-The following image formats are supported by `ImageDisplay`:
-
-| Format Name             | File Extensions |
-|-------------------------|-----------------|
-| PNG                     | `.png`  |
-| JPEG                    | `.jpeg` `.jpe` `.jpg`  |
-| JPEG XL image           | `.jxl`  |
-| Windows Metafile        | `.wmf` `.apm`  |
-| Windows animated cursor | `.ani`  |
-| BMP                     | `.bmp`  |
-| GIF                     | `.gif`  |
-| MacOS X icon            | `.icns`  |
-| Windows icon            | `.ico` `.cur`  |
-| PNM/PBM/PGM/PPM         | `.pnm` `.pbm` `.pgm` `.ppm`  |
-| QuickTime               | `.qtif` `.qif`  |
-| Scalable Vector Graphics | `.svg` `.svgz` `.svg.gz`  |
-| Targa                   | `.tga` `.targa`  |
-| TIFF                    | `.tiff` `.tif`  |
-| WebP                    | `.webp`  |
-| XBM                     | `.xbm`  |
-| XPM                     | `.xpm`  |
-
-Afterwards, we cannot change the contents of `ImageDisplay` directly. If the file on disk changes, `ImageDisplay` remains unchanged. If we want to update `ImageDisplay`, we should call `create_from_file` with the same path again.
-
-By default, `ImageDisplay` behaves just like any other wigdet, in that it scales freely, which, in case of a raster-based image, may distort the image. To prevent this, we can call `display.set_expand(false)` which prevents expansion of the widget, then sizehint it like so:
-
-```cpp
-display.set_size_request(display.get_size());
-```
-
-Where `ImageDisplay::get_size` returns the original resolution of the image it was created from. If we want to allow scaling (expansion) but want to keep the aspect ratio òf an `ImageDisplay` fixed, we can use the container widget `AspectFrame`, which we will learn about later in this section.
-
-## Button
-
-We've seen `Button` in the previous chapter, it is one of the simplest ways for a user to interact with an application.
-
-`Button` has the following signals:
-
-\signals
-\signal_activate{Button}
-\signal_clicked{Button}
-
-Where physically clicking the button both emits `activate` and `clicked`, while calling `Widget::activate` only emits `activate`, not clicked. 
-
-To change the label of a button, we use `Button::set_child`. This will usually be a label or image, though any arbitrary widget can be used as a child this way.
-
-Other than the child widget, we can customize a buttons look. `Button::set_has_frame` will change wether the button has a texture outline to it, while `Button::set_is_circular` changes the button to a fully rounded appearance:
-
-\todo image for all 3 buttons
-
----
-
-## ToggleButton
-
-`ToggleButton` is a specialized form of `Button`. It supports most of methods/signals, including signal `clicked` and `set_child`, `set_has_frame` and `set_is_circular`.
-Unique to `ToggleButton` is that, if clicked, it stays pressed in, emitting the `toggled` signal (see below). In this way, `ToggleButton` can be used to track a boolean state. To check whether the button is currently toggled, we use `ToggleButton::get_active`, which returns a boolean.
-
-\signals
-\signal_toggled{ToggleButton}
-\signal_activate{ToggleButton}
-\signal_clicked{ToggleButton}
-
-\todo figure for untoggled, toggled 
-
----
-                             
-## CheckButton
-
-`CheckButton` is almost identical to `ToggleButton` in function, but not appearance. `CheckButton` is an empty box in which a checkmark appears when it is toggled. Just like before, we query whether it is pressed by calling `CheckButton::get_active`.
-
-\signals
-\signal_activate{CheckButton}
-\signal_toggled{CheckButton}
-
-\todo figure check, unchecked, inconsistent
-
----
-
-## Switch
-
-The last widget that is meant to convey a boolean state to the user, we have `Switch`, which has the appearance of a flick-switch. It can be clicked or dragged to the other state. `Switch` does not emit `toggled`, instead we listen to the `activate` signal and query it's state using `Switch::get_active`.
-
-\signals
-\signals_activate{CheckButton}
-
-\todo figure switch on/off
-
----
-
-## Adjustment
-
-The next few widgets we will be discussing are used to let the user choose a value from a **range**, which, in mousetrap, is represented by a signal emitter called `Adjustment`. In general, a range has a **lower and upper value**. For example, the range `[0, 2]` has the `lower` of `0` and `upper` of `2`. A second property is the **step increment**, which is the minimum difference between two adjacent values in the range. For example, if our range is still `[0, 2]` and the step increment is `0.5`, then that includes the numbers `{0, 0.5, 1, 1.5, 2}`. If the step increment is `0.01`, `[0,2]` include the numbers  `{0, 0.01, 0.02, ..., 1.98, 2.00}`. 
-
-Turning to the actual `Adjustment` class, it has four properties
-
-+ `lower`: Lower bound of the range
-+ `upper`: Upper bound of the range
-+ `increment`: step increment
-+ `value`: Current value, in `[lower, upper]`
-
-For example, expressing the previous range of `[0, 2]` with step increment `0.5`, we create an `Adjustment` like so:
-
-```cpp
-auto adjustment = Adjustment(
-    1,      // value
-    0,      // lower
-    2,      // upper
-    0.5     // increment    
-);
-```
-
-We usually do not need to create our own adjustment, rather it is provided by a widget. Notable about this is that the widget and its adjustment are automatically kept in synch. If we change any property of the adjustment, the widget will change its appearance accordingly, which we will see an example of shortly.
-
-Adjustment has two signals:
-
-\signals
-\signal_value_changed{Adjustment}
-\signal_properties_changed{Adjustment}
-
-We can connect to `value_changed` to monitor the value of an `Adjustment`, and thus whatever widget is controlled by it.
-
-`properties_changed` is emitted when one of upper, lower or step increment is changed, usually through `Adjustment::set_upper`, `Adjustment::set_lower` and/or `Adjustment::set_increment`.
-
----
-
-## SpinButton
-
-\todo figure spinbutton in both orientations
-
-`SpinButton` is used to pick an exact value from a range. The user can click the rectangular area and manually enter a value, or they can increase or decrease the current value by the step increment of the `SpinButton`s adjustment. We supply the properties of the range in `SpinButton`s constructor:
-
-```cpp
-// create SpinButton with range [0, 2] and increment 0.01
-auto spin_button = SpinButton(0, 2, 0.01)
-```
-
-`SpinButton` has two signals:
-
-\signals
-\signal_value_changed{SpinButton}
-\signal_wrapped{SpinButton}
-
-Only the latter of which needs explanation, as we recognize `value_changed` from `Adjustment`. When the user reaches one end of the `SpinButton`s range, which, for a range of `[0, 2]` would be either the value `0` or `2`, by default the value will not change. By setting `SpinButton::set_should_wrap(true)`, instead of stopping, the value will wrap to the other end of the range. So if the user increments at value `2` it will jump to `0`, and if the user decrements at value `0`, it will jump to 2.
-
-We can check what the properties of a `SpinButton`s range are by either calling `SpinButton::get_adjustment` and querying the returned adjustment, or we can use the functions like `SpinButton::get_value`, `SpinButton::get_lower`, etc. directly.
-
----
-
-## Scale
-
-\todo figure scale in both orientations
-
-`Scale`, just like `SpinButton` is a widget that chooses a value from an `Adjustment`. The user chooses the value by click-dragging the knob on the scale. In this way, it is usually harder to pick an exact decimal value on a scale. We can aid in this by displaying the exact value next to the scale, using `Scale::set_should_draw_value`:
-
-\todo figure scale with value drawn
-
----           
-
-## ScrollBar
-
-Similar to `Scale`, `ScrollBar` is used to pick a value on a floating-point scale. It is often used as a way to choose which part of a widget should be shown on screen. For an already-automated way of doing this, see `ScrolledWindow`.
-
-
----
-
-## LevelBar
-
-`LevelBar` is used to display a fraction, often use to indicate the level of something such as the volume of a playback device.
-
-To create a level bar, we need to specify the minimum and maximum value of the range we wish to display. We can then set the current value using `LevelBar::set_value`:
-
-```cpp
-// create level for range [0, 2]
-auto level_bar = LevelBar(0, 2);
-level_bar.set_value(1.0); // set to 50%
-```
-
-The bar will be oriented horizontally by default, but we can call `set_orientation` and change this.
-
-Once the bar reaches 75%, it changes color:
-
-\image html level_bar.png
-
-\how_to_generate_this_image_begin
-```cpp
-auto box = Box(Orientation::VERTICAL);
-box.set_spacing(10);
-box.set_margin(10);
-
-size_t n_bars = 5;
-for (size_t i = 0; i < n_bars+1; ++i)
-{
-    float fraction = 1.f / n_bars;
-
-    auto label = Label(std::to_string(int(fraction * 100)) + "%");
-    label.set_size_request({50, 0});
-
-    auto bar = LevelBar(0, 1);
-    bar.set_value(fraction);
-    bar.set_expand_horizontally(true);
-
-    auto local_box = Box(Orientation::HORIZONTAL);
-    local_box.push_back(label);
-    local_box.push_back(bar);
-    box.push_back(local_box);
-}
-
-window.set_child(box);
-```
-\how_to_generate_this_image_end
-
-The bar can also be used to display a discrete value (a range only consisting of integers), in which case the bar will be shown segmented. We can set the level bars mode using `set_mode`, which takes either `LevelBarMode::CONTINUOUS` or `LevelBarMode::DISCRETE` as its argument.
 
 ---
 

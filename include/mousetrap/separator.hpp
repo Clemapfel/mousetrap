@@ -17,7 +17,7 @@ namespace mousetrap
         public:
             /// @brief construct
             /// @param orientation if horizontal, expands horizontally by default, if vertical, expands vertically by default
-            Separator(Orientation = Orientation::HORIZONTAL);
+            Separator(float opacity = 1, Orientation = Orientation::HORIZONTAL);
 
             /// @copydoc mousetrap::Orientable::set_orientation
             void set_orientation(Orientation) override;
