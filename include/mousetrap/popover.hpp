@@ -43,7 +43,7 @@ namespace mousetrap
 
             /// @brief attach popover to another widget, that widget will become the popovers anchor
             /// @param widget
-            void attach_to(Widget*);
+            void attach_to(const Widget&);
 
             /// @brief set position of popover relative to its anchor widget
             /// @param position

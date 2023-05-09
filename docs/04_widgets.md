@@ -773,6 +773,50 @@ The bar can also be used to display a discrete value (a range only consisting of
 
 ---
 
+## Progressbar
+
+A specialized case of indicating a continous value is that of a **progress bar**. A progress bar is used to show how much of a task is currently complete, this is most commonly used during a multi-second loading animation. As more and more resources are loaded, the progress bar fills, which communicates to the user how long they will have to wait.
+
+`ProgressBar` is a widget built for this purpose. It does not have an upper or lower bound, it is alwasy assumed to be show values in the range `[0, 1]`. We can set the current fraction using `ProgressBar::set_fraction`. `ProgressBar` has a special animation trigger, which makes the bar "pulse", which is supposed to show the end user that the bar has changed fractions. We can trigger this animation by simply calling `ProgressBar::pulse`. Note that this does not change the currently displayed fraction of the progress bar.
+
+\image html progress_bar.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto progress_bar = ProgressBar();
+progress_bar.set_fraction(0.47);
+progress_bar.set_vertical_alignment(Alignment::CENTER);
+progress_bar.set_expand(true);
+
+auto label = Label("47%");
+label.set_margin_end(10);
+
+auto box = Box(Orientation::HORIZONTAL);
+box.set_homogeneous(false);
+box.push_back(label);
+box.push_back(progress_bar);
+box.set_margin(10);
+
+window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+## Spinner
+
+To signal progress where we do not have an exact fraction, we can use the \a{Spinner} widget. This simply displays an animated spinning icon, communicating progress. Using `Spinner::set_is_spinning`, we can control whether the animation is currently playing or not.
+
+\image html spinner.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto spinner = Spinner();
+spinner.set_is_spinning(true);
+window.set_child(spinner);
+```
+\how_to_generate_this_image_end
+
+---
+
 ## Entry
 
 We've learned how to choose a widget allowing a boolean and discrete value to be inputed, so we will now move on to inputting text. This is central to many desktop applications, as such, \a{Entry}, the widget used for single-line text entry, may be one of the most important widgets there is.
@@ -830,17 +874,79 @@ Much like `Label`, we can set how the text aligns horizontally using `TextView::
 
 ---
 
-## Frame
+## Dropdown
 
-`Frame` is a purely cosmetical widget that displays whatever child we choose using `Frame::set_child` in a frame with a small border and rounded corners:
+Sometimes, we want users to be able to pick a value from a **set list of values**, which may or may not be numeric. \a{DropDown} allows for this, though its operation is somewhat unconventional.
+
+When the dropdown widget is clicked, a window presents the user with a list of items. The user can click on any of these, at which point the dropdown will invoke the corresponding function for that item, which is set using \{DropDown::push_back}. This function takes three arguments:
+
++ **list label**: Widget displayed inside the dropdown window
++ **selected label**: Widget displayed once one of the items is selected
++ **callback**: Function with signature `(DropDown*, (Data_t)) -> void`, which is invoked when a selection is made
+
+We usually want both labels to be an actual `Label`, though technically any widget can be used as the list and selected label.
+
+As an example, consider the following snippet:
 
 ```cpp
-auto child_widget = // ...
-auto frame = Frame();
-frame.set_child(child_widget);
+auto dropdown = DropDown();
+dropdown.push_back(
+    Label("List Label"), // list label
+    Label("Selected Label"), // selected label
+    [](DropDown*) { std::cout << "selected" << std::endl; } // callback
+);
 ```
 
-\todo image
+\image dropdown_hello_world.png
+
+Here, we created a dropdown and added a single item. The item has the list label `"List Label"`, which is displayed in the dropdown window when the user is making a selection. Once the user clicks this label, the callback will be invoked, which in this case simply prints `"selected"`. Lastly, we specified `"Selected Label"` to be the widget displayed once an element was selected. 
+
+In praxis, we would want the callback to mutate some global property to keep track of which item is selected. Alternatively, we can query which item is currently selected by calling `DropDown::get_selected`. This function returns an **item id**, which is optained when we call `push_back`:
+
+```cpp
+auto dropdown = DropDown();
+auto id_01 = dropdown.push_back(Label("01"), Label("Option 01"), [](DropDown*){});
+auto id_02 = dropdown.push_back(Label("02"), Label("Option 02"), [](DropDown*){});
+
+// check if selected item is 01
+bool item_01_selected = dropdown.get_selected() == id_01;
+```
+
+Where `[](DropDown*){}` is a lambda that simply does nothing (but still conforms to the `(DropDown*, (Data_t)) -> void` signature).
+
+Using item ids or the callback, we can trigger custom behavior whenever the user changes their selection of dropdown items.
+
+---
+
+## Frame
+
+\a{Frame} is a purely cosmetical widget that displays whatever child we choose using `Frame::set_child` in a frame with a small border and rounded corners:
+
+\image html frame_no_frame.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto left = Separator();
+auto right = Separator();
+
+auto frame = Frame();
+frame.set_child(right);
+
+for (auto* separator : {&left, &right})
+{
+    separator->set_size_request({50, 50});
+    separator->set_expand(false);
+}
+
+auto box = CenterBox(Orientation::HORIZONTAL);
+box.set_start_child(left);
+box.set_end_child(frame);
+
+box.set_margin_horizontal(75);
+box.set_margin_vertical(40);
+window.set_child(box);
+```
+\how_to_generate_this_image_end
 
 Using `Frame::set_label_widget`, we can furthermore choose a label widget, which will be displayed above the child widget of the frame. This will usually be a `Label`, though `set_label_widget` accepts any kind of widget.
 
@@ -848,7 +954,9 @@ Using `Frame::set_label_widget`, we can furthermore choose a label widget, which
 
 ## AspectFrame
 
-Not to be confused with `Frame`, `AspectFrame` adds no graphical element to its single child. Instead, the widget set via `AspectFrame::set_child` will be forced to stay in a certain **aspect ratio**. We choose the aspect ratio either in the constructor or with `AspectFrame::set_ratio`, both of which accept a float that is `width / height`. For example, if we want an aspect ratio of 4 by 3:
+Not to be confused with `Frame`, \{AspectFrame} adds no graphical element to its singular child. Instead, child widgets added with `AspectFrame::set_child` will be forced to stay in a certain **aspect ratio**, their width to height ratio will stay constant, regardless of the size allocation of the `AspectFrame`s parent. 
+
+We choose the aspect ratio either in the constructor or with `AspectFrame::set_ratio`, both of which accept a float ratio calculated as `width / height`. For example, if we want to force a widget to keep an aspect ratio of 4:3:
 
 ```cpp
 auto child_widget = // ...
@@ -862,145 +970,194 @@ Where we wrote `4.f / 3` instead of `4 / 3` because in C++, the latter would tri
 
 ## Overlay
 
-So far, all widget containers align widget such that the do not overlap, which is also why the margin property may not be negative. There is one container that allows overlapping: `Overlay`.
+So far, all widget containers align widget such that they do not overlap. This is also why the margin property may not be negative. To render a widget on top of another, we have to use \a{Overlay}.
 
 `Overlay` has one "base" widget, which is at the conceptual bottom of the overlay. We set this widget using `Overlay::set_child`. Then, we can add any number of widgets on top of the base widget using `Overlay::add_overlay`:
 
+\image html overlay_two_buttons.png
+
+\how_to_generate_this_image_begin
 ```cpp
-auto child_widget = // ...
-auto overlay_widget = // ...
+ auto lower = Button();
+lower.set_horizontal_alignment(Alignment::START);
+lower.set_vertical_alignment(Alignment::START);
+
+auto upper = Button();
+upper.set_horizontal_alignment(Alignment::END);
+upper.set_vertical_alignment(Alignment::END);
+
+for (auto* button : {&lower, &upper})
+    button->set_size_request({50, 50});
 
 auto overlay = Overlay();
-overlay.set_child(child_widget);
-overlay.add_overlay(overlay_widget);
-```
+overlay.set_child(Separator());
+overlay.add_overlay(lower);
+overlay.add_overlay(upper);
 
-\todo image
+auto aspect_frame = AspectFrame(1);
+aspect_frame.set_child(overlay);
+
+aspect_frame.set_margin(10);
+window.set_child(aspect_frame);
+```
+\how_to_generate_this_image_end
 
 By default, `Overlay` will allocate exactly as much space as the base widget (set with `set_child`) does. If one of the overlaid widgets takes up more space than the base widget, it will be truncated. We can change this by supplying a second argument to `add_overlay`, which is a boolean indicated whether the overlay widget should be included in the entire containers size allocation, that is, if the overlay widget is larger than the base widget, the overlay resize itself such that the entire overlay widget is shown:
 
 ```cpp
-overlay.add_overlay(overlay_widget, true);
+overlay.add_overlay(overlay_widget, true); // resize if overlay_widget allocates more space than child
 ``` 
 
-When constructing complex compound widgets, we often want widgets to overlap each other. This can cause problems for interactibility: if the user clicks on an area that is occupied by two or more widgets, which widget should be activated? By default, only the **top-most** widget will be activated. If we want a different layer to be activated instead, we have to deactivate interaction with all widgets above it, either by calling `Widget::hide` or `Widget::set_can_respond_to_input(false)`. 
+When one interactable widget is shown partially overlapping another, only the top-most widget will be interactable. If we want the user to be able to access a lower layer, we need to make any widget on top non-interactable, either by calling `Widget::hide` or `Widget::set_can_respond_to_input(false)`.
+
+---
+
+## Paned
+
+\a{Paned} is widget that always has exactly two children. Between the two children, a visual barrier is drawn. The user can click on this barrier and drag it horizontally or vertically, depending on the orientation of the `Paned`. This gives the user the option to resize how much of a shared space two widgets allocated.
+
+\image html paned_centered.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto left = Overlay();
+left.set_child(Separator());
+left.add_overlay(Label("left"));
+
+auto right = Overlay();
+right.set_child(Separator());
+right.add_overlay(Label("right"));
+
+for (auto* child : {&left, &right})
+    child->set_margin(10);
+
+auto paned = Paned(Orientation::HORIZONTAL);
+paned.set_start_child(left);
+paned.set_end_child(right);
+
+state->main_window.set_child(paned);
+```
+\how_to_generate_this_image_end
+
+Assuming the `Paned`s orientation is `Orientation::HORIZONTAL`, we can set the child on the left using `Paned::set_start_child` and the child on the right with `Paned::set_end_child`. Both childs have to be set to valid widgets in order for the user to have the option of interacting with the `Paned`. If we for some reason do not have two widgets but still like to use a `Paned`, we should add a `Separator` as the other child.
+
+`Paned` has two per-child properties: whether a child is **resizable** and whether it is **shrinkable**.
+
+Resizable means that if the paned changes size, the child should change size with it.
+
+Shrinkable sets whether the side of the paned can be made smaller than the allocated size of that sides child widget. If set to true, the user can hide drag the paned barrier such that one of the widgets is complete hidden, regardless of its size allocation.
+
+\image html paned_shrinkable.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto left = Overlay();
+left.set_child(Separator());
+left.add_overlay(Label("left"));
+
+auto right = Overlay();
+right.set_child(Separator());
+right.add_overlay(Label("right"));
+
+for (auto* child : {&left, &right})
+    child->set_margin(10);
+
+auto paned = Paned(Orientation::HORIZONTAL);
+paned.set_start_child(left);
+paned.set_end_child(right);
+
+paned.set_start_child_shrinkable(true);
+paned.set_end_child_shrinkable(true);
+
+state->main_window.set_child(paned);
+```
+\how_to_generate_this_image_end
+
+`Paned::set_end_child_shrinkable(true)` made it possible to move the barrier such that the right child is partially covered.
 
 ---
 
 ## ScrolledWindow
 
-By default, most containers will allocate a size that is equal to or exceeds the largest preferred size of its children. For example, if we create a widget that has a preferred size of 5000x1000 px and use it as the child of a `Window`, the `Window` will attempt to allocate 5000x1000 px on screen, making the window far larger than most screens can display. We can prevent this by instead adding the widget to a `ScrolledWindow`, which truncates it while giving the user a way to choose which part of the large widget they want to see:
+By default, most containers will allocate a size that is equal to or exceeds the largest preferred size of its children. For example, if we create a widget that has a preferred size of 5000x1000 px and use it as the child of a `Window`, the `Window` will attempt to allocate 5000x1000 pixels on screen, making the window far larger than most screens can display. In situations like these, we can use \a{ScrolledWindow}, which allows use to only view part of a larger widget:
 
 ```cpp
-auto large_widget = // ...
+auto child = Separator();
+child.set_size_request({5000, 5000});
+
 auto scrolled_window = ScrolledWindow();
-scrolled_window.set_child(large_widget);
-window.set_child(scrolled_window);
+scrolled_window.set_child(child);
+
+state->main_window.set_child(scrolled_window
 ```
+\image html scrolled_window.png
 
-Now, the window is free to allocate any size smaller than the widget. The user can choose which part to display be triggering the scroll bars native to `ScrolledWindow`.
-
-\todo image
+Without the `ScrolledWindow`, the separator child widget would force the outer `Window` to also allocate 5000x5000 pixels. By using `ScrolledWindow`, the `Window` is free to allocate any size, retaining resizability. The end-user can influence which are of the larger widget is currently visible by operating the scrollbars inherent to `ScrolledWindow`.
 
 ### Size Propagation
 
-By default, `ScrolledWindow` will size itself according to the prefferred size of the `ScrolledWindow` itself, not of its child. This means we can control the size just like any other widget. Sometimes we do want `ScrolledWindow` to follow its child however.
+By default, `ScrolledWindow` will disregard the size of its child and simply allocated based on its own properties, such as expansion and size request. We can override this behavior by forcing `ScrolledWindow` to **propagate** the width or height of its child. 
 
-To force `ScrolledWindow` to assume the width of its child, we call `ScrolledWindow::set_propagate_natural_width(true)`, for height we use `ScrolledWindow::set_propagate_natural_height(true)`. For example, if the child has a preferred size of 5000x1000 and we set `propagate_natural_height` to true, the windows width will be whatever the properties of the `ScrolledWindow` itself determin, while the windows height will be 1000, the natural height of its child.
+By calling `ScrolledWindow::set_propagate_natural_width(true)`, `ScrolledWindow` will assume the width of its child. Conversely, calling `ScrolledWindow::set_propagate_natural_width(true)` forces the window to allocate space equal to the height of its child.
 
 ### Scrollbar Policy
 
-`ScrolledWindow` has two scrollbars, controlling the horizontal and vertical position. If we want to trigger behavior in addition to changing which part of the chid widget `ScrolledWindow` displays, we can access each scrollbars `Adjustment` using `ScrolledWindow::get_horizontal_adjustment` and `ScrolledWindow::get_vertical_adjustment` respectively.
+`ScrolledWindow` has two scrollbars, controlling the horizontal and vertical position. If we want to trigger behavior in addition to changing which part of the child widget `ScrolledWindow` displays, we can access each scrollbars `Adjustment` using `ScrolledWindow::get_horizontal_adjustment` and `ScrolledWindow::get_vertical_adjustment` respectively.
 
-The default behavior is that if the users cursor enters the `ScrolledWindow`, both of the scrollbars will reveal themself. Sometimes, we do not want one or both of the scrollbars to behave this way, for example hide one of them completely. This behavior of the scroll bars is controlled with a **policy** which is one of the following values:
+By default, once the cursor enters `ScrolledWindow`, both scrollbars will reveal themself. If the cursor stays outside of the `ScrolledWindow`, the scrollbars will hide again.
 
-+ `ScrollbarVisibilityPolicy::NEVER`: scrollbar is hidden permanently
-+ `ScrollbarVisibilityPolicy::ALWAYS`: scrollbar is always shown, does not hide itself
-+ `ScrollbarVisibilityPolicy::AUTOMATIC`: default behavior, see above
+This behavior is controlled by the windows **scrollbar policy**, represented by the \a{ScrollbarVisibilityPolicy} enum:
 
-We can set the policy for either scrollbar using `ScrolledWindow::set_horizontal_scrollbar_policy` and `ScrolledWIndow::set_vertical_scrollbar_policy`.
++ `NEVER`: scrollbar is hidden permanently
++ `ALWAYS`: scrollbar is always shown, does not hide itself
++ `AUTOMATIC`: default behavior, see above
+
+We can set the policy for each scrollbar individually using `ScrolledWindow::set_horizontal_scrollbar_policy` and `ScrolledWIndow::set_vertical_scrollbar_policy`.
 
 ### Scrollbar Position
 
-Lastly, we can customize where the scrollbar appear in the window. We choose the position of both at the same time using `ScrolledWindow::set_scrollbar_placement`, which takes one of the following values:
+Lastly, we can customize the location of both scrollbars at the same time using `ScrolledWindow::set_scrollbar_placement`, which takes one of the following values:
 
 + `CornerPlacement::TOP_LEFT`: horizontal scrollbar at the top, vertical scrollbar on the left
 + `CornerPlacement::TOP_RIGHT`: horizontal at the top, vertical on the right
 + `CornerPlacement::BOTTOM_LEFT`: horizontal at the bottom, vertical on the left
 + `CornerPlacement::BOTTOM_RIGHT`: horizontal at the bottom, vertical on the right
 
-Using this, the scrollbars policy and each scrollbars adjustment, we can hook into every component of the `ScrolledWindow`, making it fully customizable. This adn the common usecase of fitting a large widget into a variable-size container makes `ScrolledWindow` one of the more commonly used container widgets.
-
----
-
-## Paned
-
-`Paned` is widget that always has exactly two children. Between the two children, a barrier is drawn. The user can click on this barrier and drag it horizontally or vertically, depending on the orientation of the `Paned`. This gives the user the option to resize how much space a widget is allocated by hand.
-
-\image html paned_centered.png
-
-Assuming the `Paned`s orientation is `Orientation::HORIZONTAL`, we can set the child on the left using `Paned::set_start_child` and the child on the right with `Paned::set_end_child`. Both childs have to be set to valid widgets in order for the user to have the option of interacting with the `Paned`. If we for some reason do not have two widgets but still like to use a `Paned`, we should set the other child to a `Separator`.
-
-`Paned` has two per-child properties: whether a child is **resizable** and whether it is **shrinkable**.
-
-Resizable means that if the paned changes size, the child should change size with it.
-
-Shrinkable sets whether the side of the paned can be made smaller than the allocated size of that sides child widget. If set to true, the user can hide drag the paned barrier to complee hide the widget, regardless of its size allocation.
-
-\image html paned_shrinkable.png `Paned::set_end_child_shrinkable(true)` made it possible to move the barrier such that the right child is partially covered"
-
-
----
-
-## Progressbar
-
-A specialized case of indicating a continous value is that of a **progress bar**. A progress bar is used to show how much of a task is currently complete, this is most commonly used during a multi-second loading animation. As more and more resources are loaded, the progress bar fills, which communicates to the user how long they will have to wait.
-
-`ProgressBar` is a widget built for this purpose. It does not have an upper or lower bound, it is alwasy assumed to be show values in the range `[0, 1]`. We can set the current fraction using `ProgressBar::set_fraction`. `ProgressBar` has a special animation trigger, which makes the bar "pulse", which is supposed to show the end user that the bar has changed fractions. We can trigger this animation by simply calling `ProgressBar::pulse`. Note that this does not change the currently displayed fraction of the progress bar.
-
-\image html progress_bar.png
-
-\how_to_generate_this_image_begin
-```cpp
-auto progress_bar = ProgressBar();
-progress_bar.set_fraction(0.47);
-progress_bar.set_vertical_alignment(Alignment::CENTER);
-progress_bar.set_expand(true);
-
-auto label = Label("47%");
-label.set_margin_end(10);
-
-auto box = Box(Orientation::HORIZONTAL);
-box.set_homogeneous(false);
-box.push_back(label);
-box.push_back(progress_bar);
-box.set_margin(10);
-
-window.set_child(box);
-```
-\how_to_generate_this_image_end
-
-## Spinner
-
-For progress where we do not have an exact fraction, we can use the `Spinner` widget, which simply displays an animated spinning loading icon. Using `Spinner::set_is_spinning`, we can control whether the animation is currently playing or not.
+With this, scrollbar policy, size propagation, and being able to access the adjustment of each scrollbar individually, we have full control over every aspect of `ScrolledWindow`.
 
 ---
 
 ## Popovers
 
-\todo figure popover 
+A \a{Popover} is a special kind of window. It is always **[modal](#modality--transience)**. Instead of the regular frame with a close button it instead closes when the user exists the window by clicking somewhere else. Showing the popover is called **pop up**, closing the popover is called **pop down**. 
 
-A popover is a special kind of window. It is always **[modal](#window)**, instead of the regular frame with a close button it instead closes when the user exists the window by clicking somewhere else. Showing the popover is called **pop up**, close the popover is called **pop down**. 
+\image html popover.png
 
-To create a generic popover we can place freely, we use `Popover`. The popover cannot be displayed by itself, it has to attach to another widget:
+\how_to_generate_this_image_begin
+```cpp
+auto popover = Popover();
+auto child = Separator();
+child.set_size_request({150, 200});
+popover.set_child(child);
 
-\todo code example
+auto popover_button = PopoverButton();
+popover_button.set_popover(popover);
+popover_button.set_expand(false);
+popover_button.set_margin(50);
 
-Then we need to manually call `Popover::popoup` or `Popover::popdown` from inside a signal handler. This can be finnicky, which is why there is a widget that automates this for use. `PopoverButton`:
+auto aspect_frame = AspectFrame(1);
+aspect_frame.set_child(popover_button);
+window.set_child(aspect_frame);
+```
+\how_to_generate_this_image_end
+
+Popovers can only be shown once attached to another widget. We use `Popover::set_child` to choose what widget to display inside the popover window and `Popover::attach_to` to choose which widget it should attach to.
+
+Once attached, we can call `Popover::popup` and `Popover::popdown` to reveal or hide the window. While possible, this will take a few lines of code to setup. A simple one-line solution is to use a widget dedicated to revealing popovers: \a{PopoverButton}.
 
 ## PopoverButton
 
-Like `Button`, `PopoverButton` has a single child, can be circular, and has the `activate` signals. `PopoverButton` purpose, however, like it's name suggest, is to automatically show / hide a `Popover`. 
+Like `Button`, `PopoverButton` has a single child, can be circular, and has the `activate` signals. `PopoverButton`s purpose, however, is not to trigger behavior. Instead, it is used to show a `Popover`
 
 We first create the popover, then connect it to the button using `PopoverButton::set_popover`:
 
@@ -1011,48 +1168,235 @@ auto popover_button = PopoverButton();
 popover_button.set_popover(popover);
 ```
 
-\todo figure with blank popover
+\image html popover.png
 
-For 90% of cases, this is the way to go when we want to use a `Popover`. It's easy and we don't have to manually control the popover position or when to open/close it. The arrow next to the `PopoverButton`s child indicates to the user that clicking it will reveal a popover. We can surpress this arrow by setting `PopoverButton::set_always_show_arrow` to `false`.
+\how_to_generate_this_image_begin
+```cpp
+auto popover = Popover();
+auto child = Separator();
+child.set_size_request({150, 200});
+popover.set_child(child);
 
-`PopoverButton` lets us control the relative position of the popover by setting `PopoverButton::set_popover_position` to one of the following: `RelativePosition::ABOVE`, `RelativePosition::LEFT_OF`, `RelativePosition::RIGHT_OF`, `RelativePosition::BELOW`, which will place the popover above, left of, right of or below the button respectively. Before `set_popover_position` is called, a `PopoverButton` instance will dynamically choose where to display the popover, based on the window position and screen layout.
+auto popover_button = PopoverButton();
+popover_button.set_popover(popover);
+popover_button.set_expand(false);
+popover_button.set_margin(50);
+
+auto aspect_frame = AspectFrame(1);
+aspect_frame.set_child(popover_button);
+window.set_child(aspect_frame);
+```
+\how_to_generate_this_image_end
+
+For 90% of cases, this is the way to go when we want to use a `Popover`. It is easy to setup and we don't have to manually control the popover position, or when to show or hide it. The arrow next to the `PopoverButton`s child indicates to the user that clicking it will reveal a popover. We can surpress this arrow by setting `PopoverButton::set_always_show_arrow` to `false`.
+
+`PopoverButton` lets us control the relative position of the popover by setting `PopoverButton::set_popover_position` to one of the following: `RelativePosition::ABOVE`, `RelativePosition::LEFT_OF`, `RelativePosition::RIGHT_OF`, `RelativePosition::BELOW`, which will place the popover above, left of, right of or below the button respectively. By default, the popover is shown on whichever ide of the button has the space for it.
 
 To further customize the `Popover`, we have to call one of its member functions. `Popover::set_has_base_arrow` hides the triangular area which points to the widget it is attached to. 
 
-We will see one more use of `PopoverButton` in the [next chapter on menus](06_menus.md), where we can have it create a popover to show a menu for us.
+We will see one more use of `PopoverButton` in the [chapter on menus](06_menus.md), where we use `PopoverMenu`, a specialized form of `Popover` that shows a menu.
 
 ---
 
-## Selectable Widget Containers
+## Selectable Widgets: SelectionModel
 
-## SelectionModel
+The next few selections will concern themself with **selectable widgets**. These tend to be the most complex and powerful widgets in mousetrap. They all have certain things in common: They a) are widget containers supporting multiple children and b) provide `get_selection_model`, which returns a \{SelectioModel} representing the currently selected widget.
 
-### Signals
+`SelectionModel` is not a widget, though it is a signal emitter. Similar to `Adjustment`, it is bound to a certain widget. Changing the widget updates the `SelectionModel`, changing the `SelectionModel` updates the widget.
 
-| id                 | signature                                | emitted when...                                      |
-|--------------------|------------------------------------------|------------------------------------------------------|
-| `selection_changed` |  `(SelectionModel* , int32_t position, int32_t n_items, (Data_t)) -> void` | selection of widget controlled by this model changes |
+`SelectionModel` provides signal `selection_changed`, which is emitted whenever the internal state of the `SelectionModel` changes. 
+
+\signals
+\signal_selection_changed{SelectionModel}
+
+The signal provides two arguments, `position`, which is the newly selected item, and `n_items`, which is the new number of currently selected items.
+
+The latter is necessary because `SelectionModel`s can have one of three internal **selection modes**, represented by the enum \a{SelectionMode}:
+
++ `NONE`: Exactly 0 items are selected at all times
++ `SINGLE`: Exactly 1 item is selected at all times
++ `MULTIPLE`: 0 or more items can be selected
+
+To illustrate use of `SelectionModel`, we should concern ourself with one of the selectable widgets directly.
 
 ## ListView
 
-`ListView` is one of the more commonly used widgets. At first, it may seem very similar to `Box`. `ListView` can either be horizontal or vertical, arranging its children in a line. Much like `Box`, children can be added to the front, end, or at a specific position in the container. Unlike `Box`, `ListView::push_front`, `ListView::insert` and `ListView::push_back` have a return value, which returns an **iterator**. We can supply this iterator as an additional argument to functions inserting widgets, which will create a **nested list**. It's best to see an example:
+\a{ListView} is a widget that arranges its children in a line, similar to `Box`. Unlike `Box`, it is selectable:
 
+\image html list_view_single_selection.png
 
-### Signals
+\how_to_generate_this_image_begin
+```cpp
+auto list_view = ListView(Orientation::HORIZONTAL, SelectionMode::SINGLE);
 
-| id         | signature                                                       | emitted when...                                                              |
-|------------|-----------------------------------------------------------------|------------------------------------------------------------------------------|
-| `activate` | `(ListView*, (Data_t)) -> void`                                  | user pressed the enter key or otherwise activates view or a widget inside it |
+auto child = [](size_t id)
+{
+    auto overlay = Overlay();
+    overlay.set_child(Separator());
+
+    auto label = Label((id < 10 ? "0" : "") + std::to_string(id));
+    label.set_alignment(Alignment::CENTER);
+    overlay.add_overlay(label);
+
+    auto frame = Frame();
+    frame.set_child(overlay);
+    frame.set_size_request({50, 50});
+
+    auto aspect_frame = AspectFrame(1);
+    aspect_frame.set_child(frame);
+
+    return aspect_frame;
+};
+
+for (size_t i = 0; i < 7; ++i)
+    list_view.push_back(child(i));
+
+window.set_child(list_view);
+```
+\how_to_generate_this_image_end
+
+Where the blue border indicates that the 4th element (with label `"03"`) is currently selected.
+
+When creating the `ListView`, the first argument to its constructor is the orientation, while the second one is the selection mode. If not specified, `SelectionMode::NONE` is used.
+
+Much like `Box`, `ListView` supports `ListView::push_back`, `ListView::push_front` and `ListView::insert` to insert any widget child at the specified position. Unlike `Box`, for `ListView`, these functions return a value.
+
+`ListView` can be requested to automatically show separator inbetween to items. To show these, we simply call `ListView::set_show_separators(true)`.
+
+### Nested Trees
+
+By default, `ListView` displays its children in a linear list, either horizontally or vertically. `ListView` also supports **nested lists**:
+
+\image html list_view_nested.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto list_view = ListView(Orientation::VERTICAL);
+auto child = [](const std::string& string)
+{
+    auto overlay = Overlay();
+    overlay.set_child(Separator());
+
+    auto label = Label(string);
+    label.set_alignment(Alignment::CENTER);
+    label.set_margin(5);
+    overlay.add_overlay(label);
+
+    auto frame = Frame();
+    frame.set_child(overlay);
+
+    return frame;
+};
+
+list_view.push_back(child("outer item #01"));
+auto it = list_view.push_back(child("outer item #02"));
+list_view.push_back(child("inner item #01"), it);
+it = list_view.push_back(child("inner item #02"), it);
+list_view.push_back(child("inner inner item #01"), it);
+list_view.push_back(child("outer item #03"));
+
+auto frame = Frame();
+frame.set_child(list_view);
+list_view.set_margin(50);
+window.set_child(frame);
+```
+\how_to_generate_this_image_end
+
+Here, we have a triple nested list. The outer list has the items `outer item #01`, `outer item #02` and `outer item #03`. `outer item #02` is itself a list, with wo children `inner item #01` and `inner item #02`, the latter of which is also a list with a single item.
+
+When `ListView::push_back` is called, it returns an **iterator**. We can use this iterator as the second argument to `ListView::push_back` in order for that item to be inserted as a nested list. We would construct the above shown nested list like so:
+
+```cpp
+auto it_01 = list_view.push_back(/* outer item #01 */);
+auto it_02 = list_view.push_back(/* outer item #02 */);
+
+  auto inner_it_01 = list_view.push_back(/* inner item #01 */, it_02);
+  auto inner_it_02 = list_view.push_back(/* inner item #02 */, it_02);
+   
+    auto inner_inner_it_01 = list_view.push_back(/* inner inner item #01 */, inner_it_02);
+    
+auto it_03 = list_view.push_back(/* outer item #03 */);
+```
+
+If we do not specify an iterator as the second argument to functions for item insertion (such as `ListView::push_back`), the item will be inserted into the top-level list. Thanks to this, if we just want a linear list, we do not have to think or deal with the iterators at all.
+
+When a list item is a nested list, a downwards arrow will appear next to it, indicating to the user that they can click that item in order to reveal the nested list.
+
+### Reacting to Selection
+
+In order to react to the user selecting a new item in our `ListView` (if its selection mode is anything other than `NONE`), we connect to the lists `SelectionModel` like so:
+
+```cpp
+auto list_view = ListView(Orientation::HORIZONTAL, SelectionMode::SINGLE);
+
+list_view.get_selection_model()->connect_signal_selection_changed(
+    [](SelectionModel*, int32_t item_i, int32_t n_items){
+        std::cout << "selected: " << item_i << std::endl;
+    }
+);
+```
+
+This process will be the same for any of the selectable widgets following this section on `ListView`.
+
+\warning For any selectable widget, if it was initialized with `SelectionMode::NONE`, `selection_changed` will never be emitted. Make sure to manually specify the selection mode in the selectable widgets constructor, otherwise `NONE` will be chosen.
+
+### Selection Mechanics
+
+Usually, when the user clicks one of the children of `ListView` once, the selection is changed accordingly. However, we can add two more methods of selecting an item available to the user.
+
+**Rubberband selection** is a method of selection where the user draws a rectangle by clickdragin the cursor over multiple items. This makes it easy to select many, physically close items at the same time. To allow for this kind of selection, we need to set `ListView::set_enable_rubberband_selection` to `true`. This method of selection is only available for `SelectionMode::MULTIPLE`.
+
+Lastly, **single click** selection is a shortened from of regular selection. As opposed to having to press the mouse button to select an item, once `ListView::set_single_click_activate` is called, simply moving the cursor over one of the items is enough to select them. This method can be used if the selection mode is either `SINGLE` or `MULTIPLE`.
+
+---
 
 ## GridView
 
-### Signals
+\a{GridView} supports many of the same functions as `ListView`. Instead of displaying its children in a nested list, it shows them in a grid:
 
-| id         | signature                      | emitted when...                                                                  |
-|------------|--------------------------------|----------------------------------------------------------------------------------|
-| `activate` | `(GridView*, (Data_t)) -> void` | user pressed the enter key or otherwise activates the view or a widget inside it |
+\image html grid_view.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto grid_view = GridView(Orientation::HORIZONTAL, SelectionMode::SINGLE);
+grid_view.set_max_n_columns(4);
+
+auto child = [](size_t id)
+{
+    auto overlay = Overlay();
+    overlay.set_child(Separator());
+
+    auto label = Label((id < 10 ? "0" : "") + std::to_string(id));
+    label.set_alignment(Alignment::CENTER);
+    overlay.add_overlay(label);
+
+    auto frame = Frame();
+    frame.set_child(overlay);
+    frame.set_size_request({50, 50});
+
+    auto aspect_frame = AspectFrame(1);
+    aspect_frame.set_child(frame);
+
+    return aspect_frame;
+};
+
+for (size_t i = 0; i < 7; ++i)
+    grid_view.push_back(child(i));
+
+window.set_child(grid_view);
+```
+\how_to_generate_this_image_end
+
+Items are dynamically allocated to rows and columns based on the space available to the `GridView`. If we want more control over how many row/columns the grid view has, we can use `GridView::set_min_n_columns` and `GridView::set_max_n_columns` to force one of either row or columns (depending on `Orientation`) to adhere to the given limit.
+
+Other than this, `GridView` supports the same functions as `ListView`, including `push_front`, `push_back`, `insert`, `get_selection_model`, set_enable_rubberband_selection`, `set_single_click_activate`, etc..
 
 ---
+
+## Column View
+
+
+--- 
 
 ## Stack
 
@@ -1077,15 +1421,7 @@ We will see one more use of `PopoverButton` in the [next chapter on menus](06_me
 
 Where `_` is an unused argument.
 
-## Column View
 
-### Signals
-
-| id         | signature                         | emitted when...                                                                  |
-|------------|-----------------------------------|----------------------------------------------------------------------------------|
-| `activate` | `(ColumnView*, (Data_t)) -> void` | user pressed the enter key or otherwise activates the view or a widget inside it |
-
-## DropDown
 
 ---
 

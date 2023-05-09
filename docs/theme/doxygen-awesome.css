@@ -82,8 +82,8 @@ html {
 
     /* colors for various content boxes: @warning, @note, @deprecated @bug */
     --warning-color: #f8d1cc;
-    --warning-color-dark: #b61825;
-    --warning-color-darker: #75070f;
+    --warning-color-dark: #b0434c;
+    --warning-color-darker: #451a1d;
     --note-color: var(--side-nav-background);
     --note-color-dark: var(--primary-color);
     --note-color-darker: var(--page-foreground-color);

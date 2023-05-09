@@ -174,22 +174,34 @@ int main()
 
         state->main_window.set_child(state->stack_box);
 
+        auto& window = state->main_window;
         // TODO
-        auto clear = Entry();
-        clear.set_text("text");
+        auto grid_view = GridView(Orientation::HORIZONTAL, SelectionMode::SINGLE);
+        grid_view.set_max_n_columns(4);
 
-        auto password = Entry();
-        password.set_text("text");
-        password.set_text_visible(false);
+        auto child = [](size_t id)
+        {
+            auto overlay = Overlay();
+            overlay.set_child(Separator());
 
-        auto box = Box(Orientation::VERTICAL);
-        box.set_spacing(10);
-        box.push_back(clear);
-        box.push_back(password);
+            auto label = Label((id < 10 ? "0" : "") + std::to_string(id));
+            label.set_alignment(Alignment::CENTER);
+            overlay.add_overlay(label);
 
-        box.set_margin_horizontal(75);
-        box.set_margin_vertical(40);
-        state->main_window.set_child(box);
+            auto frame = Frame();
+            frame.set_child(overlay);
+            frame.set_size_request({50, 50});
+
+            auto aspect_frame = AspectFrame(1);
+            aspect_frame.set_child(frame);
+
+            return aspect_frame;
+        };
+
+        for (size_t i = 0; i < 7; ++i)
+            grid_view.push_back(child(i));
+
+        window.set_child(grid_view);
         // TODO
 
         state->main_window.present();

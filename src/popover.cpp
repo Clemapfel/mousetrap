@@ -72,8 +72,8 @@ namespace mousetrap
         gtk_popover_set_autohide(get_native(), b);
     }
 
-    void Popover::attach_to(Widget* widget)
+    void Popover::attach_to(const Widget& widget)
     {
-        gtk_widget_set_parent(GTK_WIDGET(get_native()), widget->operator GtkWidget*());
+        gtk_widget_set_parent(GTK_WIDGET(get_native()), widget.operator GtkWidget*());
     }
 }
