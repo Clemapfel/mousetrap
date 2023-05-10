@@ -176,21 +176,20 @@ int main()
 
         auto& window = state->main_window;
         // TODO
-        auto grid_view = GridView(Orientation::HORIZONTAL, SelectionMode::SINGLE);
-        grid_view.set_max_n_columns(4);
 
+        auto notebook = Notebook();
         auto child = [](size_t id)
         {
             auto overlay = Overlay();
             overlay.set_child(Separator());
 
-            auto label = Label((id < 10 ? "0" : "") + std::to_string(id));
+            auto label = Label(std::string("Notebook Child #") + (id < 10 ? "0" : "") + std::to_string(id));
             label.set_alignment(Alignment::CENTER);
             overlay.add_overlay(label);
 
             auto frame = Frame();
             frame.set_child(overlay);
-            frame.set_size_request({50, 50});
+            frame.set_size_request({300, 300});
 
             auto aspect_frame = AspectFrame(1);
             aspect_frame.set_child(frame);
@@ -198,10 +197,17 @@ int main()
             return aspect_frame;
         };
 
-        for (size_t i = 0; i < 7; ++i)
-            grid_view.push_back(child(i));
+        notebook.push_back(child(01), Label("Page 01"));
+        notebook.push_back(child(02), Label("Page 02"));
+        notebook.push_back(child(01), Label("Page 03"));
+        notebook.set_tabs_reorderable(true);
 
-        window.set_child(grid_view);
+        notebook.connect_signal_page_selection_changed([](Notebook*, void*, int32_t page_index){
+            std::cout << "Selected Page is now: " << page_index << std::endl;
+        });
+
+        window.set_child(notebook);
+
         // TODO
 
         state->main_window.present();

@@ -182,6 +182,10 @@ open_file_button.set_tooltip_text("Click to Open");
 
 If we want to use something more complex than just simple text, we can register an arbitrarily complex widget as a tooltip by calling `Widget::set_tooltip_widget`.
 
+### Tick Callback
+
+\todo this section is not yet complete
+
 ---
 
 ## Window
@@ -1012,6 +1016,68 @@ When one interactable widget is shown partially overlapping another, only the to
 
 ---
 
+## Revealer
+
+While not technically necessary, animations can improve user experience drastically. Not only do they add visual style, they can hide abrupt transitions or small loading times. As such, animations should be in any advanced GUI designers repertoire.
+
+One of the most common applications for animations is that of hiding or showing a widget. So far, when we called `Widget::hide` or `Widget::show`, the widget appears instantly, one frame after the function was called. This works but when showing a large widget, other widgets around it will want to change their size allocation, which can make for a less than ideal transition.
+
+To address this, mousetrap offers \a{Revealer}, which plays an animation to reveal or hide a widget.
+`Revealer` always has exactly one child, set with `Revealer::set_child`. `Revealer` itself has no graphical element, it acts just like a `Box` with exactly one child. `Revealer` only plays its animation when a widget is shown or hidden. To trigger this animation and change whether the child widget is currently visible, we call `Revealer::set_revealed` which takes a boolean. If the widget goes from hidden to shown or shown to hidden, the animation will automatically play.
+
+Once the animation is done, signal `revealed` will be emitted:
+
+\signals
+\signal_revealed{Revealer}
+
+Using this, we can trigger our own behavior, for example to update a widgets display or trigger additional animations.
+
+### Transition Animation
+
+We have control over the kind and speed of the transition animation. By calling `Revealer::set_transition_duration`, we can set the exact amount of time an animation should take. For example, to set the animation duration to one second:
+
+```cpp
+auto revealer = Revealer();
+revealer.set_child(// ...
+revealer.set_transition_duration(seconds(1));
+```
+
+Where `seconds` returns a `mousetrap::Time`. 
+
+Apart from the speed, we also have a choice of animation **type**, represented by the enum \a{RevealerTransitionDuration}. Animations include a simple crossfade, sliding, swinging, or `NONE`, which instantly shows or hides the widget, as if the revealer was not present. For more informations on the type of animation, see the \link mousetrap::RevealerTransitionType related documentation page\endlink.
+
+---
+
+## Expander
+
+\a{Expander} is similar to `Revealer`, in that is also has exactly one child widget and it shows / hides the widget. Unlike `Revealer`, there is no animation attached to `Expander`. Instead, it hides the widget behind a collapsible label:
+
+\image html expander.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto child = Label("[expanded child]");
+child.set_horizontal_alignment(Alignment::START);
+child.set_margin(5);
+child.set_margin_start(15);
+
+auto expander = Expander();
+expander.set_child(child);
+expander.set_label_widget(Label("Expander"));
+
+auto frame = Frame();
+frame.set_child(expander);
+frame.set_margin(50);
+window.set_child(frame);
+``` 
+\how_to_generate_this_image_end
+
+We set the `Expander`s child widget with `Expander::set_child`, Other than this, we also need to specify a label widget, which is the widget shown next to the small arrow. To specify it, we use `Expander::set_label_widget`.
+
+Note that `Expander` should not be used for large nested list, for example those displaying a filesystem tree. A purpose-built widget for this exists called `ListView`, of which we will learn later in this chapter.
+
+---
+
 ## Paned
 
 \a{Paned} is widget that always has exactly two children. Between the two children, a visual barrier is drawn. The user can click on this barrier and drag it horizontally or vertically, depending on the orientation of the `Paned`. This gives the user the option to resize how much of a shared space two widgets allocated.
@@ -1395,41 +1461,221 @@ Other than this, `GridView` supports the same functions as `ListView`, including
 
 ## Column View
 
+\todo
 
 --- 
 
 ## Stack
 
-### Signals
+Unlike the pervious ones so far, \a{Stack} is a selectable widget that can only ever show one child. As such, it is useful for applications where a page-like layout is desired. The order of children depends on the order at which we call `Stack::add_child` in. This function returns an ID, which uniquely identifies that type of item. We need to keep track of this ID, as it is what allows us to later call `Stack::set_visible_child`, to change the stacks currently shown page to that with the supplied ID:
 
-`Stack` does not directly emit signals, but we can connect so its `SelectionModel` to track changes in the stacks current page
+```cpp
+auto stack = Stack();
+auto page_01 = // widget
+auto page_02 = // widget
+
+auto page_01_id = stack.add_child(page_01, "Page 01");
+auto page_02_id = stack.add_child(page_02, "Page 02");
+
+// make page_01 currently displayed widget
+stack.set_visible_child(page_01_id);
+```
+
+We can also change the currently displayed child by calling methods like `SelectionModel::select` on the internal selection model of the stack, which we acquire using `Stack::get_selection_model`. As state before, if the state of the `SelectionModel` changes, the display widget, `Stack` in this case, will change to match.
+
+We see above that `Stack::add_child` takes an second argument, which is the **page title**. This title is not used in the stack itself, rather, it is used for two widgets made to exclusively interact with the stack. So far, only we as develoeprs where able to change which child is currently displayed. These two widgets give the user the option to choose themself.
 
 ### StackSwitcher
 
+\a{StackSwitcher} presents the user with a row of buttons, each of which have use the current stacks childs title as its label:
+
+```cpp
+auto stack = Stack();
+stack.add_child(/* child #01 */, "Page 01");
+stack.add_child(/* child #02 */, "Page 02");
+stack.add_child(/* child #03 */, "Page 03");
+
+auto stack_switcher = StackSwitcher(stack);
+
+auto box = Box(Orientation::VERTICAL);
+box.push_back(stack);
+box.push_back(stack_switcher);
+```
+
+\image html stack_switcher.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto stack = Stack();
+auto child = [](size_t id)
+{
+    auto overlay = Overlay();
+    overlay.set_child(Separator());
+
+    auto label = Label(std::string("Stack Child #") + (id < 10 ? "0" : "") + std::to_string(id));
+    label.set_alignment(Alignment::CENTER);
+    overlay.add_overlay(label);
+
+    auto frame = Frame();
+    frame.set_child(overlay);
+    frame.set_size_request({300, 300});
+
+    auto aspect_frame = AspectFrame(1);
+    aspect_frame.set_child(frame);
+
+    return aspect_frame;
+};
+
+stack.add_child(child(01), "Page 01");
+stack.add_child(child(02), "Page 02");
+stack.add_child(child(01), "Page 03");
+
+auto stack_switcher = StackSwitcher(stack);
+
+stack.set_expand(true);
+stack.set_margin(10);
+stack_switcher.set_expand_vertically(false);
+
+auto box = Box(Orientation::VERTICAL);
+box.push_back(stack);
+box.push_back(stack_switcher);
+window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+We see that we need to supply the `Stack` instance the `StackSwitcher` should control in `StackSwitcher`s constructor.
+
 ### StackSidebar
+
+`StackSidebar` presents the user with a vertical list of labels, again using the title supplied for each of `Stack`s children:
+
+```cpp
+auto stack = Stack();
+stack.add_child(/* child #01 */, "Page 01");
+stack.add_child(/* child #02 */, "Page 02");
+stack.add_child(/* child #03 */, "Page 03");
+
+auto stack_sidebar = StackSidebar(stack);
+
+auto box = Box(Orientation::HORIZONTAL);
+box.push_back(stack);
+box.push_back(stack_sidebar);
+```
+
+\image html stack_sidebar.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto stack = Stack();
+auto child = [](size_t id)
+{
+    auto overlay = Overlay();
+    overlay.set_child(Separator());
+
+    auto label = Label(std::string("Stack Child #") + (id < 10 ? "0" : "") + std::to_string(id));
+    label.set_alignment(Alignment::CENTER);
+    overlay.add_overlay(label);
+
+    auto frame = Frame();
+    frame.set_child(overlay);
+    frame.set_size_request({300, 300});
+
+    auto aspect_frame = AspectFrame(1);
+    aspect_frame.set_child(frame);
+
+    return aspect_frame;
+};
+
+stack.add_child(child(01), "Page 01");
+stack.add_child(child(02), "Page 02");
+stack.add_child(child(01), "Page 03");
+
+auto stack_sidebar = StackSidebar(stack);
+
+stack.set_expand(true);
+stack.set_margin(10);
+
+auto box = Box(Orientation::HORIZONTAL);
+box.push_back(stack);
+box.push_back(stack_sidebar);
+window.set_child(box);
+```
+\how_to_generate_this_image_end
+
+`StackSidebar` and ``StackSwitcher` have no other member functions, their only use is to control the currently revealed child of a `Stack`.
+
+### Transition Animation
+
+When switching between two pages in a stack, an animation plays transitioning from one to the other. Similar to `Revealer`, we can influence this animation in multiple ways:
+
++ `Stack::set_transition_duration` governs how long the animation will take until it is complete
++ `Stack::set_interpolate_size`, if set to `true`, makes it such that while the transition animation plays, the stack will change from the size of the previous child to the size of the current child
++ `Stack::set_animation_type` governs the type of animation
+
+Mousetrap provides a large number of different animation, which are represented by the enum \a{StackTransitionType}. They including crossfade, sliding and rotating the child widget. For a full list of animation types, see the \link mousetrap::StackTransitionType corresponding documentation page\endlink.
 
 ---
 
 ## Notebook
 
-| id                       | signature                                                     | emitted when...                                                                  |
-|--------------------------|---------------------------------------------------------------|----------------------------------------------------------------------------------|
-| `page_added`             | `(Notebook*, void* _, uint32_t page_index, (Data_t)) -> void` | |
-| `page_removed`           | `(Notebook*, void* _, uint32_t page_index, (Data_t)) -> void`                                                            | |
-| `page_reordered`         | `(Notebook*, void* _, uint32_t page_index, (Data_t)) -> void`                                                            | |
-| `page_selection_changed` | `(Notebook*, void* _, uint32_t page_index, (Data_t)) -> void`                                                            | |
+\a{Notebook} is very similar to `Stack`, it also displays exactly one child at a time. Unlike `Stack`, it comes with a built-in way for users to select which child to show:
 
-Where `_` is an unused argument.
+\image html notebook.png
 
+\how_to_generate_this_image_begin
+```cpp
+auto notebook = Notebook();
+auto child = [](size_t id)
+{
+    auto overlay = Overlay();
+    overlay.set_child(Separator());
 
+    auto label = Label(std::string("Notebook Child #") + (id < 10 ? "0" : "") + std::to_string(id));
+    label.set_alignment(Alignment::CENTER);
+    overlay.add_overlay(label);
+
+    auto frame = Frame();
+    frame.set_child(overlay);
+    frame.set_size_request({300, 300});
+
+    auto aspect_frame = AspectFrame(1);
+    aspect_frame.set_child(frame);
+
+    return aspect_frame;
+};
+
+notebook.push_back(child(01), Label("Page 01"));
+notebook.push_back(child(02), Label("Page 02"));
+notebook.push_back(child(01), Label("Page 03"));
+notebook.set_tabs_reorderable(true);
+
+window.set_child(notebook);
+``` 
+\how_to_generate_this_image_end
+
+`Notebook` sports some additional feature, by setting `Notebook::set_is_scrollable` to `true`, the user can change between pages by scrolling. Furthermore, once `Notebook::set_tabs_reorderable` is set to `true`, the user can drag and drop pages to reorder them. Users can even **drag pages from one notebook to another**.
+
+This complex behavior necessitate notebook having a number of custom signals:
+
+\signals
+\signal_page_added{Notebook}
+\signal_page_reordered{Notebook}
+\signal_page_removed{Notebook}
+\signal_page_selection_changed{Notebook}
+\widget_signals{Notebook}
+
+Where `_` is an unusued argument. For example, we would connect to `page_selection_changed` like so:
+
+```cpp
+notebook.connect_signal_page_selection_changed([](Notebook*, void*, int32_t page_index){
+    std::cout << "Selected Page is now: " << page_index << std::endl;
+});
+```
+
+\todo refactor notebook signals to remove unused argument
 
 ---
 
-## Additional Widget Container
-
-## Grid
-
-## Fixed
-
+## Compound Widgets
 
 
