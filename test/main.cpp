@@ -175,39 +175,49 @@ int main()
         state->main_window.set_child(state->stack_box);
 
         auto& window = state->main_window;
-        // TODO
 
-        auto notebook = Notebook();
-        auto child = [](size_t id)
+        // TODO
+        auto grid = Grid();
+
+        auto add_child = [&](size_t x, size_t y, size_t width, size_t height)
         {
+
             auto overlay = Overlay();
             overlay.set_child(Separator());
-
-            auto label = Label(std::string("Notebook Child #") + (id < 10 ? "0" : "") + std::to_string(id));
+            static size_t i = 0;
+            auto label = Label((i < 9 ? "0" : "") + std::to_string(i++));
             label.set_alignment(Alignment::CENTER);
             overlay.add_overlay(label);
 
             auto frame = Frame();
             frame.set_child(overlay);
-            frame.set_size_request({300, 300});
+            frame.set_size_request({50, 50});
 
-            auto aspect_frame = AspectFrame(1);
-            aspect_frame.set_child(frame);
+            auto box = Box();
+            box.push_back(frame);
 
-            return aspect_frame;
+            grid.insert(box, {x, y}, width, height);
+            return box;
         };
 
-        notebook.push_back(child(01), Label("Page 01"));
-        notebook.push_back(child(02), Label("Page 02"));
-        notebook.push_back(child(01), Label("Page 03"));
-        notebook.set_tabs_reorderable(true);
+        add_child(0, 0, 1, 1);
+        add_child(0, 1, 2, 1);
+        add_child(0, 2, 1, 1);
 
-        notebook.connect_signal_page_selection_changed([](Notebook*, void*, int32_t page_index){
-            std::cout << "Selected Page is now: " << page_index << std::endl;
-        });
+        add_child(1, 0, 2, 1);
+        add_child(2, 1, 1, 2);
+        add_child(1, 2, 1, 1);
 
-        window.set_child(notebook);
+        add_child(3, 0, 1, 3);
 
+        grid.set_row_spacing(5);
+        grid.set_column_spacing(5);
+        grid.set_columns_homogenous(true);
+        grid.set_rows_homogenous(true);
+
+        grid.set_expand(true);
+        grid.set_margin(5);
+        window.set_child(grid);
         // TODO
 
         state->main_window.present();

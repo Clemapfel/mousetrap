@@ -232,6 +232,48 @@ By setting `Window::set_model` to true, if the window is revealed all other wind
 
 Using `Window::set_transient_for`, we can make sure a window will always be on top of another. `A.set_transient_for(B)` will make it so while A overlaps B, A will always be on top. This is again useful for message dialogs, if the dialog is not transient for the main window it could appear "behind" the main window, being essentially invisible to the user.
 
+#### HeaderBar
+
+The part on top of a window is called the **header bar**. By default, it will show the window title and a minimize, maximize and close button. We can completely hide the headerbar using `Window::set_is_decorated`.
+
+A `Window`s header bar actually has space for a widget, we set it using `Window::set_titlebar_widget`. This will usually be a \a{HeaderBar}, though any widget can be inserted this way.
+
+`HeaderBar` has three areas where widgets can be inserted, at the front (left of the title), at the end (right of the title), or as the title. This gives us full flexiblity, though it would be cumbersome to do this for every window. 
+
+An alternative way of formatting the `HeaderBar` is with **header bar layouts**, which is a string supplied to `HeaderBar::set_layout`.
+
+Layout is a string that is a list of button ids. The four valid ids are:
+
++ `maximize`: Maximize Button
++ `minimize`: Minimize Button
++ `close`: Close Button
+
+We choose which buttons are allocated on which side of the title by using `:`. Other buttons are delineated by `,`. 
+
+Some examples, where we used the alternative constructor for `HeaderBar` that takes the layout string directly:
+
+```cpp
+window.set_title("mousetrap");
+window.set_titlebar_widget(HeaderBar("close:minimize,maximize"));
+```
+
+\image html headerbar_close_minimize_maximize.png
+
+```cpp
+window.set_title("");
+window.set_titlebar_widget(HeaderBar("close:"));
+```
+
+\image html headerbar_close_no_title.png
+
+
+```cpp
+window.set_title("mousetrap");
+window.set_titlebar_widget(HeaderBar(":close"));
+```
+
+\image html headerbar_title_close.png
+
 ---
 
 ## Label
@@ -1461,7 +1503,132 @@ Other than this, `GridView` supports the same functions as `ListView`, including
 
 ## Column View
 
-\todo
+\a{ColumnView} is used to display things as a table. The table is split into **rows** and **columns**. Each column has a title. The number of columns can vary, but if the `ColumnView` has, for example, 5 columns, each row should have 5 widgets. The widgets are displayed in their corresponding position.
+
+To fill our `ColumnView`, we need to first create it and allocate a number of columns:
+
+```cpp
+auto column_view = ColumnView(SelectionMode::SINGLE);
+column_view.push_back_column("Column 01");
+column_view.push_back_column("Column 02");
+column_view.push_back_column("Column 03");
+```
+
+We can add a column anytime, either to the start, end or at a specific position using `ColumnView::push_front_column`, `ColumnView::push_back_column`, or `ColumnView::insert_column`, respectively.
+
+Each of these functions take a string which is the title of the column, which will be displayed as a `Label`.
+
+Once we have all our columns setup, we can add child widgets either by using \a{ColumnView::set_widget} or the convienence function `push_back_row`, which adds a row of widgets to the end of the table:
+
+```cpp
+column_view.push_back_row(Label("1 | 1"), Label("1 | 2"), Label("1 | 3"));
+column_view.push_back_row(Label("2 | 1"), Label("2 | 2"), Label("2 | 3"));
+column_view.push_back_row(Label("3 | 1"), Label("3 | 2"), Label("3 | 3"));
+```
+
+\image html column_view_hello_world.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto column_view = ColumnView(SelectionMode::SINGLE);
+auto col1 = column_view.push_back_column("Column 01");
+auto col2 = column_view.push_back_column("Column 02");
+auto col3 = column_view.push_back_column("Column 03");
+
+column_view.push_back_row(Label("1 | 1"), Label("1 | 2"), Label("1 | 3"));
+column_view.push_back_row(Label("2 | 1"), Label("2 | 2"), Label("2 | 3"));
+column_view.push_back_row(Label("3 | 1"), Label("3 | 2"), Label("3 | 3"));
+
+column_view.set_show_row_separators(true);
+column_view.set_show_column_separators(true);
+column_view.set_expand(true);
+
+for (auto* column : {&col1, &col2, &col3})
+column->set_is_resizable(true);
+
+window.set_child(column_view);
+```
+\how_to_generate_this_image_end
+
+Here, we use `Label`s as items in the `ColumnView`, but any arbitrarily complex widget can be inserted anywhere. We could add another `ColumnView` into the `ColumnView`. There is no restriction, a column or row does not have to have the types of widgets, each cell is unique.
+
+When the `ColumnView`s `SelectionMode` is `SINGLE` or `MULTIPLE`, we allow for rubberband selection and single-click activation with `set_enable_rubberband_selection` and `set_single_click_activate`. 
+
+If we define all columns before starting to add rows, like we've done in the above example. For more complex purposes, for example dynamically adding or removing rows/columns, see the \link mousetrap::ColumnView corresponding documentation page\endlink for more information.
+
+---
+
+## Grid
+
+Note to be confused with `GridView`, \a{Grid} arranges its children in a non-uniform grid:
+
+\image html grid.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto grid = Grid();
+
+auto add_child = [&](size_t x, size_t y, size_t width, size_t height)
+{
+    auto overlay = Overlay();
+    overlay.set_child(Separator());
+    static size_t i = 0;
+    auto label = Label((i < 9 ? "0" : "") + std::to_string(i++));
+    label.set_alignment(Alignment::CENTER);
+    overlay.add_overlay(label);
+
+    auto frame = Frame();
+    frame.set_child(overlay);
+    frame.set_size_request({50, 50});
+
+    auto box = Box();
+    box.push_back(frame);
+
+    grid.insert(box, {x, y}, width, height);
+    return box;
+};
+
+add_child(0, 0, 1, 1);
+add_child(0, 1, 2, 1);
+add_child(0, 2, 1, 1);
+add_child(1, 0, 2, 1);
+add_child(2, 1, 1, 2);
+add_child(1, 2, 1, 1);
+add_child(3, 0, 1, 3);
+
+grid.set_row_spacing(5);
+grid.set_column_spacing(5);
+grid.set_columns_homogenous(true);
+
+grid.set_expand(true);
+grid.set_margin(5);
+window.set_child(grid);
+```
+\how_to_generate_this_image_end
+
+Each widget on the grid has four properties, it's **x-index**, **y-index**, **width** and **height** in the grid. These are not in pixels, rather they are the conceptional index in a grid, similar to how a matrix in math would be indexed. 
+
+For example, in the above figure, the widget labeled `00` has x- and y-index `0` and width and height `1`. The widget next to it, labeled `03` had x-index 1, y-index `0`, a width of `2` and a height of `1`.
+
+To add a widget to a grid, we need to provide the widget and it's properties:
+
+```cpp
+grid.insert(
+    /* child widget */
+    {1, 0}, // x, y
+    2,      // width
+    1       // height
+);
+```
+Once a widget is added to a column or row not yet present in the grid, it is added automatically. Valid x- and y-indices are 0-based (`{0, 1, 2, ...}`), while width and height have to be a multiple of 1 (`{1, 2, ...}`).
+
+Note that it is our responsibility to make it such that the widgets do not overlap, we have to choose the size and index of each child carefully.
+
+`Grid::set_columns_homogenous` and `Grid::set_rows_homogenous` specify whether the `Grid` should allocate the exact same width for all columns or height for all rows, respectively.
+
+Lastly, we can choose spacing between each cell using `Grid::set_row_spacing` and `Grid::set_column_spacing`.
+
+`Grid` can be seen as a more flexible version of `ColumnView`. It also arranges arbitrary widgets in columns and rows, but, unlike `ColumnView`, in `Grid` a widget can occupy more thant one row / column.
 
 --- 
 
@@ -1678,4 +1845,150 @@ notebook.connect_signal_page_selection_changed([](Notebook*, void*, int32_t page
 
 ## Compound Widgets
 
+This concludes our tour of most of mousetraps widgets. Even though the selection is wide and powerful, we have yet to learn one of the more important things: **how do we make our own widgets?**
 
+If we want to start from scratch and implement every pixel and shape and interaction, we will have to wait until the chapter on [native rendering](09_opengl.md). Not all custom widgets need to be that low-level, however. Often we simply want a collection of already existing widgets to act as one. To illustrate this, an example may be best.
+
+In previous sections, somewhat more complex C++ code was used to better illustrate the function of a widget. For example, we saw this figure in the section of `GridView`:
+
+\image html grid_view.png
+
+Here, `GridView` has 7 children. Each child is clearly a widget, as `GridView::push_back` requires a widget to be used as the argument. Looking closely, the children are actually at least 3 widgets:
+
++ a `Label` with the number
++ a `Separator` as the background
++ a `Frame` for the rounded outline
+
+On top of these, we have an `Overlay` in order to layer all three graphical elements on top of each other, and we also have an `AspectFrame` that keeps the element square.
+
+A widget like this is called a **compound widget**. It is made up of multiple other widgets, but acts as one. Given that C++ is an object oriented language, we should create a new custom widget object for this purpose:
+
+```cpp
+class CompoundWidget
+{
+    public:
+        CompoundWidget(size_t id);
+        
+    private:
+        Separator _separator;
+        Label _label;
+        Frame _frame;
+        Overlay _overlay;
+        AspectFrame _aspect_frame = AspectFrame(1);
+};
+```
+
+All the ingredients are in this class, we now need to put them together. This will usually happen in the compound widgets constructor:
+
+```cpp
+// define constructor
+CompoundWidget(size_t id)
+   : _label(std::to_string(id))
+{
+   _overlay.set_child(_separator);
+   _overlay.add_overlay(_label);
+   
+   _frame.set_child(_overlay);
+   _aspect_frame.set_child(_frame);
+}
+```
+
+This constructors sets up all the widget like we discussed. The lower most layer of the `Overlay` is the `Separator`, which will act as the background for the compound widget. On top of it, a `Label` is inserted. we set the string of the label based on the id given to the constructor.
+
+The entire `Overlay` is the set as the child of the frame, giving it a rounded appearance. Lastly, that `Frame` is put into the `AspectFrame`, which will enforce that the entire widget is always square (as we initialized the `AspectFrame` with ratio `1`).
+
+We can now initialize our compound widget and add it to a window, right?
+
+```cpp
+auto instance = CompoundWidget(0);
+window.set_child(compound_widget);
+```
+
+```
+/home/mousetrap/test/main.cpp:201:26: error: non-const lvalue reference to type 'mousetrap::Widget' cannot bind to a value of unrelated type 'CompoundWidget'
+        window.set_child(instance);
+                         ^~~~~~~~
+```
+We cannot, as we get a sensible error. For this to work, we need to declare `CompoundWidget` to be a widget. We do this be publicy **inheriting from mousetrap::Widget**:
+
+```cpp
+class CompoundWidget : public Widget    // inherit
+{
+    public:
+        // ctor
+        CompoundWidget(size_t id);
+        
+        // function required by `Widget`
+        operator NativeWidget const override;
+        
+    private:
+        Separator _separator;
+        Label _label;
+        Frame _frame;
+        Overlay _overlay;
+        AspectFrame _aspect_frame = AspectFrame(1);
+};
+```
+
+Inherting from `Widget` requires us to implement a single pure virtual function `operator NativeWidget const override`. Using this function, mousetrap can convert any object into a widget and add to the internal state of the mousetrap runtime. 
+
+We implement this function as follows:
+
+```cpp
+CompoundWidget::operator NativeWidget() const {
+     return _aspect_frame;
+}
+```
+
+The returned value has to be the **top-level** widget of our compound widget. All other widgets in the compound widget are contained in the top-level widget, and the top-level widget is not contained in any other widget.
+
+Writing out example `CompoundWidget` like this may make the widget order clearer:
+
+```cpp
+AspectFrame \
+    Frame \
+        Overlay \
+            Label 
+            Separator
+``` 
+
+Where each line ending in `\` is a widget container. We see that `AspectFrame` is the only widget that is not also a child of another widget. Therefore, `AspectFrame` is the top-level widget, hence the definition of `operator NativeWidget` above.
+
+Putting it all together:
+
+```cpp
+/// compound_widget.hpp
+struct CompoundWidget : public Widget
+{
+    public:
+        CompoundWidget(size_t id)
+        : _label(std::to_string(id))
+        {
+            _overlay.set_child(_separator);
+            _overlay.add_overlay(_label);
+
+            _frame.set_child(_overlay);
+            _aspect_frame.set_child(_frame);
+            _aspect_frame.set_margin(10);
+        }
+
+        operator NativeWidget() const override {
+            return _aspect_frame;
+        }
+
+    private:
+        Separator _separator;
+        Label _label;
+        Frame _frame;
+        Overlay _overlay;
+        AspectFrame _aspect_frame = AspectFrame(1);
+};
+
+/// main.cpp
+auto instance = CompoundWidget(0);
+window.set_child(instance);
+```
+
+\image html compound_widget.png
+
+In this example, `CompoundWidget` is fairly simple. In the real-world, applications can have dozens if not hundreds of different compound widget. Indeed, an entire application can be just one giant complex nested compound widget. In either case, `operator NativeWidget` is the glue that binds our custom objects to the pre-build ways mousetrap allows widgets to be used. Once it is implemented (by simple returning the top-level widget), everything works automatically.

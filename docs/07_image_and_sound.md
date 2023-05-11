@@ -1,4 +1,4 @@
-# Chapter 6: Image & Sound
+# Chapter 7: Image & Sound
 
 In this chapter we will learn:
 + How to use colors in mousetrap

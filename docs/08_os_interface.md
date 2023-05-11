@@ -1,4 +1,4 @@
-# Chapter 7: Operating System Interface
+# Chapter 8: Operating System Interface
 
 In this chapter, we will learn:
 + How to properly do logging

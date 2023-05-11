@@ -1,4 +1,4 @@
-# Chapter 8: RenderArea & OpenGL
+# Chapter 9: Native Rendering
 
 In this chapter we will learn:
 + How to use `RenderArea`

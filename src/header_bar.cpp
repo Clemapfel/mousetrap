@@ -13,6 +13,12 @@ namespace mousetrap
         // to synchronize with HeaderBar::_title_widget
     }
 
+    HeaderBar::HeaderBar(const std::string& layout)
+        : HeaderBar()
+    {
+        set_layout(layout);
+    }
+
     void HeaderBar::set_layout(const std::string& layout)
     {
         gtk_header_bar_set_decoration_layout(get_native(), layout.c_str());

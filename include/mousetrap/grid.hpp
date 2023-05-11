@@ -23,7 +23,7 @@ namespace mousetrap
             /// @param row_column_index row and column index, may be negative
             /// @param n_horizontal_cells how many horizontal cells should the widget occupy
             /// @param n_vertical_cells how many vertical cells should the widget occupy
-            void insert(const Widget& widget, Vector2i row_column_index, size_t n_horizontal_cells, size_t n_vertical_cells);
+            void insert(const Widget& widget, Vector2i row_column_index, size_t n_horizontal_cells = 1, size_t n_vertical_cells = 1);
 
             /// @brief remove a widget from the grid
             /// @param widget
