@@ -473,14 +473,6 @@ Other than the child widget, we can customize a buttons look. `Button::set_has_f
 
 \image html button_types.png
 
-Where the above shown buttons have following properties:
-
-| Button | set_has_frame | set_is_circular |
-|--------|---------------|-----------------|
-| 01  | true | false |
-| 02 | false | false |
-| 03 | true | true |
-
 \how_to_generate_this_image_begin
 ```cpp
 auto normal = Button();
@@ -504,6 +496,13 @@ window.set_child(box);
 ```
 \how_to_generate_this_image_end
 
+Where the above shown buttons have following properties:
+
+| Button | set_has_frame | set_is_circular |
+|--------|---------------|-----------------|
+| 01  | true | false |
+| 02 | false | false |
+| 03 | true | true |
 
 Buttons are ideal to trigger run-through `Action`s, which are action that do a single thing, then immediately exit. For `Button`s, it is usually preferred to create an `Action` and use `Button::set_action` to associate the two, over connecting to one of the signals. The reasons for this were illustrated in the [chapter on actions](03_actions.md).
 
@@ -1610,7 +1609,7 @@ Each widget on the grid has four properties, it's **x-index**, **y-index**, **wi
 
 For example, in the above figure, the widget labeled `00` has x- and y-index `0` and width and height `1`. The widget next to it, labeled `03` had x-index 1, y-index `0`, a width of `2` and a height of `1`.
 
-To add a widget to a grid, we need to provide the widget and it's properties:
+To add a widget to a grid, we need to provide the widget the position and size in the grid:
 
 ```cpp
 grid.insert(
@@ -1620,7 +1619,10 @@ grid.insert(
     1       // height
 );
 ```
-Once a widget is added to a column or row not yet present in the grid, it is added automatically. Valid x- and y-indices are 0-based (`{0, 1, 2, ...}`), while width and height have to be a multiple of 1 (`{1, 2, ...}`).
+
+Where `width` and `height` are optional, they are set to `1` by default.
+
+When a widget is added to a column or row not yet present in the grid, it is added automatically. Valid x- and y-indices are 0-based (`{0, 1, 2, ...}`), while width and height have to be a multiple of 1 (`{1, 2, ...}`).
 
 Note that it is our responsibility to make it such that the widgets do not overlap, we have to choose the size and index of each child carefully.
 
