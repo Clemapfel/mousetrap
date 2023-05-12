@@ -10,7 +10,7 @@ In this chapter, we will learn:
 
 ## What is a widget?
 
-When creating a GUI, widgets are the central element to any and all applications. In general, a widget is anything that can be rendered on screen. Often, widgets have a way of interacting with them, for example, in the cas of `Button`, the widget is rendered to screen as a filled rectangle and the user can click on it to emit a signal.
+When creating a GUI, widgets are the central element to any and all applications. In general, a widget is anything that can be rendered on screen. Often wigdets are **interactable**, which means that the user can trigger behavior by interacting with the widget. In the case of `Button`, the widget is rendered to screen as a filled rectangle and it is interactable because the user can click that rectangle to trigger an animation and emit signal `clicked`.
 
 ## Widget Signals
 
@@ -35,78 +35,120 @@ button.connect_signal_show([](Widget* self)
 });
 ```
 
-Where the first argument of this signal, as state in the table above, is a `Widget*` (**not** a `Button*`). Signals that all widgets share use `Widget*`. For class-specific signals, such as signal `clicked` for `Button`, the first argument is `Button*`.
+Where the first argument of this signal, is a `Widget*` (**not** a `Button*`). Signals that all widgets share use `Widget*`. For class-specific signals, such as signal `clicked` for `Button`, the first argument is `Button*`. 
 
-If we are unsure about the signatures, recall that any class has the exact signatures listed in the detailed description, right here in the documentation.
+For each widget type we can check their table of signals as described in the [chapter on signals](02_signals.md#checking-signal-signature).
 
 ## Widget Properties
 
-All widgets share common properties that govern how they behave when the container they are in changes size, or at what position they will appear.
+All widgets share common properties that govern how they behave when the container they are in changes size, or at what position they will appear. Any function in this section can be called for any widget class.
 
 ### Size Request
 
-When a widget is shown, it will dynamically **allocate its size**. This governs the amount of space a widget will take up on screen. This size is determined programmatically, based on the widgets own properties, as well as the properties of its children or parents.
+When a widget is shown, it will dynamically **allocate its size**. This governs the amount of space a widget will take up on screen. This size is determined programmatically, based on the widgets properties, as well as the properties of its children and/or parents.
 
 \collapsible_note_begin{Widget Children & Parents}
 
-Some widgets can contain other widgets. For example, `Window` has a single **child**. `Button`, also has a child, which is the label of the button. If widget `A` is inside of widget `B`, for example by calling `A.set_child(B)`, then we say B is As **child**, and A is Bs **parent**.
+Some widgets can contain other widgets. For example, `Window` has a single **child**. `Button`, also has a child, which is the label of the button. 
 
-Each widget that is not a window has exactly one parent. The number of children varies per widget, `Window` and `Button` has exactly on child, while other widgets may have a any number of children, or no children at all.
+In general, if widget `A` is inside of widget `B`, for example by calling `A.set_child(B)`, then we say `B` is `A`s **child**, and `A` is `B`s **parent**.
+
+Each widget that is not a window has exactly one parent. The number of children varies per widget, `Window` and `Button` have exactly on child, while other widgets may have a any number of children, or no children at all.
 
 \collapsible_note_end
 
-One property used for determinening the widgets size is its **size request**. The size request is the minimum amount of space the widget has to take up. For example, a widget displaying for letters, where each of the letter has a fixed size, would implicitely need to allocate at least as much space as those letters take up. For widgets without any children, the default size request is `{0, 0}`. 
+One property used for determinening the widgets size is its **size request**. This is the minimum amount of space the widget has to take up, expressed as a \{Vector2f}, its minimum width and height (in pixels). 
 
-We can manually control the size request property of any widget by calling `Widget::set_size_request`, which takes a 2d-vector, the target width and height of the widget. This is is also sometimes called **size-hinting**.
+For example, a widget that displays a string of text that is 60px wide and 15px tall, would have to have a size request of `{60, 15}` in order to display the text without cropping. This size is usually chosen dynamically, but we can manual control it using `Widget::set_size_request`. For an empty widget, the default size request is `{0, 0}`.  
+
+Setting either the width or height of the size-request to `0` signals to the layout manager that the widget should automatically choose that part of the size request.
+
+Manipulating the size request like this is also called **size-hinting**.
 
 ### Accessing Widget Size
 
-We can query information about a widgets size using multiple functions.
+We can query information about a widgets current and target size using multiple functions:
 
-`Widget::get_allocation` returns a \link mousetrap::Rectangle rectangle\endlink, which holds the current widgets position on screen and current size, in pixels. This size may or may not be equal to what we size-hinted the widget to.
-
-```cpp
-auto current_size = widget.get_allocation().size;
-```
-
-To access a widgets size request, we use `Widget::get_size_request`.
+`Widget::get_allocation` returns a \link mousetrap::Rectangle rectangle\endlink, which holds the current widgets position and its current size, both  in pixels. This size may or may not be equal to what we size-hinted the widget to.
 
 ```cpp
-auto size_hint = widget.get_size_request();
+auto position = widget.get_allocation().top_left;
+auto size = widget.get_allocation().size;
 ```
 
-If we have not yet sizehinted the widget, this size will be `{0, 0}`.
+To access a widgets size-request (not the actual size), we use `Widget::get_size_request`:
 
-Lastly, we can query the widgets **minimum possible size**, that is the size that is has to occupy no matter what, using `Widget::get_preferred_size`. The returned object of this function als holds information about the size the widget would allocate naturally, if given infinite amount of space. We access the minimum and preferred size like so:
+```cpp
+auto size_request = widget.get_size_request();
+```
+
+If we have not yet size-hinted the widget, this size will be `{0, 0}`.
+
+Lastly, we can query the widgets **minimum possible size**, that is the size that is has to occupy no matter what, using `Widget::get_preferred_size`. This size is of course influenced on whether we size-hinted the widget. 
+
+The object returned by `get_preferred_size` also holds information about the size the widget would allocate naturally, if given infinite amount of space. This is called the **natural size**. 
+
+We access the minimum and natural size like so:
 
 ```cpp
 auto minimum_size = widget.get_preferred_size().minimum_size;
 auto preferred_size = widget.get_preferred_size().natural_size;
 ```
 
+Layout management is very complex and the algorithm behind managing the size of all widgets is highly sophisiticated. All that users of mousetrap need to understand is how to influence this algorithm, not how exactly it works.
+
+On top of a widgets size request, a widgets target allocated size depends on a number of other variables:
+
 ### Margin
 
-Any widget has four margins: `start`, `end`, `top` and `bottom`. Usually, these correspond to empty space left, right, above, and below the widget respectively. Margins are unaffected by the widgets original size and expansion, they are simply added to the corresponding side of the widget.
+Any widget has four margins: `start`, `end`, `top` and `bottom`. Usually, these correspond to empty space left, right, above, and below the widget respectively. Margins are unaffected by the widgets original size and expansion, they are simply added to the corresponding side of the widget. In this way, they work identical to the [css properties of the same name](https://www.w3schools.com/css/css_margin.asp).
 
 We use `Widget::set_margin_start`, `Widget::set_margin_end`, `Widget::set_margin_top` and `Widget::set_margin_bottom` to control each individual margin. Mousetrap also provides the convenience functions `Widget::set_margin_horizontal` and `Widget::set_margin_vertical`, which sets both `start` and `end', or `top` and `bottom` at the same time respectively.
 
-Lastly `Widget::set_margin` sets all fours margins to the same value.
+Lastly `Widget::set_margin` sets all fours margins to the same value:
 
-Margins should be used extensively, as they make a UI look more professional and asthetically pleasing. A good rule of thumb is that for a 1920x1080 display, the minimum **margin unit** should be 10 pixels. That is, all margins should be a multiple of 10. If the display has a higher or lower resolution, the margin unit should be adjusted. 
+```cpp
+auto widget = // ...
+widget.set_margin_start(10);
+widget.set_margin_end(10);
+widget.set_margin_top(10);
+widget.set_margin_bottom(10);
+
+// equivalent to
+widget.set_margin(10)
+```
+
+Margins are used extensively in UI design. They make an application look more professional and asthetically pleasing. A good rule of thumb is that for a 1920x1080 display, the **margin unit** should be 10 pixels. That is, all margins should be a multiple of 10. If the display has a higher or lower resolution, the margin unit should be adjusted.
 
 ### Expansion
 
-In previous chapters, we may have noticed that if we scale the window from our previous `main.cpp`s, the widget inside may scale along with it. This is called **expansion**, which is a property of all widgets.
+In previous chapters, we may have noticed that if we scale the window from our previous `main.cpp`s, the widget inside may or may not scale along with it. This is called **expansion**, which is a property of all widgets.
 
 We an specify wether a widget should expand along the vertical or horizontal axis using `Widget::set_expand_horizontally` and `Widget::set_expand_vertically`, which take a single boolean as its argument. `Widget::set_expand` sets both properties to the same value at the same time.
 
+```cpp
+auto widget = // ...
+widget.set_expand_horizontally(true);
+widget.set_expand_vertically(true);
+
+// equivalent to
+widget.set_expand(true)
+```
+
+When `set_expand` is set to `true`, the widgets maximum size is essentially infinite. If it is set to `false`, the widget will not expand past its natural size. 
+
 ### Alignment
 
-Widget **alignment** governs how one or multiple widget behave when expansion is disabled and they are inside another widget whos allocated area is larger than that of the child widget.
+Widget **alignment** governs how one or more widgets behave when grouped together, for example if they are all children of the same container widget.
 
-An example, a button sizehinted to 100x100 pixels has expansion disabled (`set_expand` was set to `false`). It has a margin of 0 and is placed inside a window. When we scale the window, the button will not change size. Alignment, then, governs where in the window the button is positioned. We can set alignment for the horizontal and vertical axis separately, using `Widget::set_horizontal_alignment` and `Widget::set_vertical_alignment`, which both take an enum value of type \a{Alignment} as their only argument. 
+An example: a `Button` size-hinted to 100x100 pixels has expansion disabled (`set_expand` was set to `false`). It has a margin of 0 and is placed inside a `Window`. When we scale the window, the button will not change size. *Alignment*, then, governs **where in the window the button is positioned**.
 
-The button from this example would be located as follows:
+We can set alignment for the horizontal and vertical axis separately, using `Widget::set_horizontal_alignment` and `Widget::set_vertical_alignment`, which both take an enum value of type \a{Alignment} as their only argument. This enum has three possible values:
++ `Alignment::START`: left if horizontal, top if vertical
++ `Alignment::END`: right if horizontal, bottom if vertical
++ `Alignment::CENTER`: center of axis, regardless of orientation
+
+For our example, the button would take on these locations based on which enum value we chose for each alignment axis:
 
 | Vertical Alignment | Horizontal Alignment | Resulting Position  |
 |--------------------|----------------------|---------------------|
@@ -120,46 +162,50 @@ The button from this example would be located as follows:
 | `END`              | `CENTER`             | bottom center       |
 | `END`              | `END`                | bottom right corner |
 
-Using this, sizehinting and expansion, we can fully control how and where widgets allocate size on screen.
+Using alignment, size-hinting, and expansion, we can fully control where and at what size widgets appear on screen.
 
 ### Visibility 
 
-Once a widgets allocated area enters the visible area on screen, it is shown (which we can track using the `shown` signal). Once it leaves the visible area, it is hidden. `Widget::set_visible` sets the widgets visibility based on the boolean argument. Other than this, it behaves exactly as `Widget::show` and `Widget::hide`. That is, the widget will dissappear and its allocated space will be zero.
+Once a widgets allocated area enters the visible area on screen, it is **shown** (which we can track using the `shown` signal). Once it leaves the visible area, it is **hidden** (emitting `hide`). 
 
-A way to make a widget invisiblie without hiding it, is to control its **opacity**. By setting the opacity to 0 using `Widget::set_opacity`, all other properties of the widget including its size allocation and interactability are kept, all that changes is that the graphical part of it becomes fully transparent.
+`Widget::set_visible` sets the widgets visibility based on the boolean argument. Other than this, it behaves exactly as `Widget::show` and `Widget::hide`. If we hide a widget that is currently shown, it will disappear and its allocated size will be 0.
+
+On way to make a widget invisible without hiding it, is to control its **opacity**. Using `Widget::set_opacity`, if we set the opacity to 0, all other properties of the widget, including its size allocation and interactability are kept. It remains shown. The only thing that changes is the opacity of is that the graphical part element, which is now fully transparent and thus invisible to the the user.
 
 ### Cursor Type
 
-Each widget has a property that sets what shape the cursor will have when it entres the widgets allocated area. By default, this is a simple pointer. We can manually choose the cursor type using `Widget::set_cursor` to one of the following values, all of which are part of the enum \a{CursorType}:
+Each widget has a property governing what the users cursor will look like while in the widgets allocated area. By default, this is a simple arrow. A widget intended for text-entry would want the cursor to be a [caret](https://en.wikipedia.org/wiki/Caret_navigation), while a clickable widget would likely want a pointer cursor.
 
-| `CursorType` value  | Appearance                                                       |
-|---------------------|------------------------------------------------------------------|
-| `NONE`              | no visible cursor                                                |
-| `POINTER`           | small arrow, this is the default value widgets                   |
-| `DEFAULT`           | default system cursor, usually same as `POINTER`                 |
-| `HELP`              | questionmark, instructs user to open a help dialog               |
-| `CONTEXT_MENU`      | pointer with `...` to indicate clicking will open a context menu |
-| `PROGRESS`          | pointer with a small "currently loading" icon                    |
-| `WAIT`              | instructs user to wait for an action to finish                   |
-| `CELL`              | used when interacting with a table                               | 
-| `CROSSHAIR`         | cross-hair shaped cursor, used for precise selections            |
-| `TEXT`              | text-entry cursor                                                | 
-| `MOVE`              | four-pointed arrow, used to move around object                   |
- | `GRAB`              | open hand, not yet grabbing                                      |
-| `GRABBING`          | closed hand, currently grabbing                                  |
-| `ALL_SCROLL`        | four-direction scroll                                            |
-| `ZOOM_IN`           | lens, usually with a plus icon                                   |
-| `ZOOM_OUT`          | lens, usually with a minus icon                                  |
-| `COLUMN_RESIZE`     | left-right arrow                                                 | 
-| `ROW_RESIZE`        | up-down arrow                                                    |
-| `NORTH_RESIZE`      | up arrow                                                         | 
-| `EAST_RESIZE`       | right arrow                                                      | 
-| `SOUTH_RESIZE`      | bottom arrow                                                     | 
-| `WEST_RESIZE`       | left arrow                                                       | 
-| `NORTH_EAST_RESIZE` | top-right arrow                                                  | 
-| `SOUTH_EAST_RESIZE` | bottom-right arrow                                               | 
-| `SOUTH_WEST_RESIZE` | bottom-left arrow                                                | 
-| `NORTH_WEST_RESIZE` | top-left arrow                                                   | 
+We can manually choose the cursor type using `Widget::set_cursor` to one of the following values, all of which are part of the enum \a{CursorType}:
+
+| `CursorType` value  | Appearance                                                                                   |
+|---------------------|----------------------------------------------------------------------------------------------|
+| `NONE`              | no visible cursor                                                                            |
+| `POINTER`           | a hand, indicates that widget can be interacted with by pressing and releasing the mouse     |
+| `DEFAULT`           | small arrow, this is the default value widgets                                               |
+| `HELP`              | questionmark, instructs user to open a help dialog                                           |
+| `CONTEXT_MENU`      | pointer with `...` to indicate clicking will open a context menu                             |
+| `PROGRESS`          | pointer with a small "currently loading" icon                                                |
+| `WAIT`              | instructs user to wait for an action to finish                                               |
+| `CELL`              | used when interacting with a table                                                           | 
+| `CROSSHAIR`         | cross-hair shaped cursor, used for precise selections                                        |
+| `TEXT`              | text-entry cursor                                                                            | 
+| `MOVE`              | four-pointed arrow, used to move around object                                               |
+ | `GRAB`              | open hand, not yet grabbing                                                                  |
+| `GRABBING`          | closed hand, currently grabbing                                                              |
+| `ALL_SCROLL`        | four-direction scroll                                                                        |
+| `ZOOM_IN`           | lens, usually with a plus icon                                                               |
+| `ZOOM_OUT`          | lens, usually with a minus icon                                                              |
+| `COLUMN_RESIZE`     | left-right arrow                                                                             | 
+| `ROW_RESIZE`        | up-down arrow                                                                                |
+| `NORTH_RESIZE`      | up arrow                                                                                     | 
+| `EAST_RESIZE`       | right arrow                                                                                  | 
+| `SOUTH_RESIZE`      | bottom arrow                                                                                 | 
+| `WEST_RESIZE`       | left arrow                                                                                   | 
+| `NORTH_EAST_RESIZE` | top-right arrow                                                                              | 
+| `SOUTH_EAST_RESIZE` | bottom-right arrow                                                                           | 
+| `SOUTH_WEST_RESIZE` | bottom-left arrow                                                                            | 
+| `NORTH_WEST_RESIZE` | top-left arrow                                                                               | 
 
 We can also choose a fully custom cursor with `Widget::set_cursor_from_pixel`. We will learn more about \a{Image} in the [chapter on image and sound](07_image_and_sound.md). Until then, this is how we can use an image on disk as a cursor:
 

@@ -217,6 +217,8 @@ int main()
 
         grid.set_expand(true);
         grid.set_margin(5);
+
+        grid.set_cursor(CursorType::POINTER);
         window.set_child(grid);
         // TODO
 
