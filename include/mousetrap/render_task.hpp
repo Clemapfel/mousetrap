@@ -121,20 +121,8 @@ namespace mousetrap
             /// @brief perform the render step to the currently bound framebuffer
             void render() const;
 
-            /// @brief get the shape used during render
-            /// @return pointer to shape, const
-            const Shape* get_shape() const;
-
-            /// @brief get the shader used during render. If no shader was specified, this will return the default shader
-            /// @return pointer to shader, const
-            const Shader* get_shader() const;
-
-            /// @brief get the transform used during render. If no transform was specified, this will return the identity transform
-            /// @return pointer to transform, const
-            const GLTransform* get_transform() const;
-
         private:
-            const Shape* _shape = nullptr;
+            detail::ShapeInternal* _shape = nullptr;
             const Shader* _shader = nullptr;
             const GLTransform* _transform = nullptr;
             BlendMode _blend_mode;

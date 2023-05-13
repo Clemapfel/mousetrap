@@ -19,7 +19,7 @@
 #include "list_test.hpp"
 #include "label_test.hpp"
 #include "render_area_test.hpp"
-
+#include "shape_showcase.hpp"
 
 using namespace mousetrap;
 
@@ -64,15 +64,14 @@ int main()
 
         // setup children
 
-        add_test(new RenderAreaTest(), "RenderArea");
+        //add_test(new RenderAreaTest(), "RenderArea");
+        add_test(new ShapeShowcase(), "GL Shapes");
         add_test(new MotionControllerTest(), "MotionEventController");
         add_test(new PanedTest(), "Paned");
-        //add_test(new SignalsChapter(), "Chapter 3: Signals");
         add_test(new SoundTest("/home/clem/Workspace/mousetrap/test/test.wav"), "Sound");
         add_test(new WidgetLayoutTest(), "Widget Layout");
         add_test(new ImageScaleTest(), "Image Scaling");
         add_test(new ListTest(), "ListView");
-        //add_test(new LabelTest(), "Label");
 
         // action to hide gui element other than stack child
 
@@ -177,49 +176,6 @@ int main()
         auto& window = state->main_window;
 
         // TODO
-        auto grid = Grid();
-
-        auto add_child = [&](size_t x, size_t y, size_t width, size_t height)
-        {
-
-            auto overlay = Overlay();
-            overlay.set_child(Separator());
-            static size_t i = 0;
-            auto label = Label((i < 9 ? "0" : "") + std::to_string(i++));
-            label.set_alignment(Alignment::CENTER);
-            overlay.add_overlay(label);
-
-            auto frame = Frame();
-            frame.set_child(overlay);
-            frame.set_size_request({50, 50});
-
-            auto box = Box();
-            box.push_back(frame);
-
-            grid.insert(box, {x, y}, width, height);
-            return box;
-        };
-
-        add_child(0, 0, 1, 1);
-        add_child(0, 1, 2, 1);
-        add_child(0, 2, 1, 1);
-
-        add_child(1, 0, 2, 1);
-        add_child(2, 1, 1, 2);
-        add_child(1, 2, 1, 1);
-
-        add_child(3, 0, 1, 3);
-
-        grid.set_row_spacing(5);
-        grid.set_column_spacing(5);
-        grid.set_columns_homogenous(true);
-        grid.set_rows_homogenous(true);
-
-        grid.set_expand(true);
-        grid.set_margin(5);
-
-        grid.set_cursor(CursorType::POINTER);
-        window.set_child(grid);
         // TODO
 
         state->main_window.present();

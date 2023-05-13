@@ -18,7 +18,7 @@ namespace mousetrap
 
         g_object_ref(shape.operator GObject *());
 
-        _shape = &shape;
+        _shape = (detail::ShapeInternal*) shape.operator GObject*();
         _shader = shader;
         _transform = transform;
         _blend_mode = blend_mode;
@@ -26,7 +26,10 @@ namespace mousetrap
 
     RenderTask::~RenderTask()
     {
-        g_object_unref(_shape->operator GObject*());
+        std::cout << "called" << std::endl;
+
+        if (G_IS_OBJECT(_shape))
+            g_object_unref(_shape);
     }
 
     void RenderTask::render() const
@@ -70,7 +73,9 @@ namespace mousetrap
 
         glEnable(GL_BLEND);
         set_current_blend_mode(_blend_mode);
-        _shape->render(*shader, *transform);
+
+        auto shape = Shape(_shape);
+        shape.render(*shader, *transform);
         set_current_blend_mode(BlendMode::NORMAL);
     }
 
@@ -164,8 +169,10 @@ namespace mousetrap
         _colors_hsva.insert({uniform_name, value});
     }
 
+    /*
     const Shape* RenderTask::get_shape() const
     {
+        std::cerr << "In RenderTask::get_shape: TODO" << std::endl;
         return _shape;
     }
 
@@ -178,4 +185,5 @@ namespace mousetrap
     {
         return _transform == nullptr ? noop_transform : _transform;
     }
+     */
 }

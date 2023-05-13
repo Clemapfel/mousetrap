@@ -300,5 +300,14 @@ namespace mousetrap
 
             detail::ShapeInternal* _internal = nullptr;
     };
+
+    /// @brief create point shape, convenience function
+    /// @param position position gl coordinates
+    static inline Shape Point(Vector2f position)
+    {
+        auto out = Shape();
+        out.as_point(position);
+        return out;
+    }
 }
 

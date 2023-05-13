@@ -76,14 +76,14 @@ namespace mousetrap
         auto* ptr = &widget;
         if (widget.operator GtkWidget*() == this->operator GtkWidget*())
         {
-            log::critical("In Stack::add_child: Attempting to insert Stack into itself. This would cause an infinite loop");
+            log::critical("In Stack::add_child: Attempting to insert Stack into itself. This would cause an infinite loop", MOUSETRAP_DOMAIN);
             gtk_stack_add_titled(get_native(), nullptr, title.c_str(), title.c_str());
             return title;
         }
 
         auto it = _internal->children->find(title);
         if (it != _internal->children->end())
-            log::critical("In Stack::add_child: Child with title `" + title + "` already exist. This may cause the original child to become inaccesible.");
+            log::critical("In Stack::add_child: Child with title `" + title + "` already exist. This may cause the original child to become inaccesible.", MOUSETRAP_DOMAIN);
 
         gtk_stack_add_titled(get_native(), widget.operator NativeWidget(), title.c_str(), title.c_str());
         _internal->children->insert({title, std::ref(widget)});

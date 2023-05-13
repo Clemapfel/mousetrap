@@ -51,6 +51,9 @@ namespace mousetrap
             /// @brief constrcut
             RenderArea();
 
+            /// @brief destructor
+            ~RenderArea();
+
             /// @brief add render task, unless the <tt>render</tt> signal was overwritten, the default signal handler will render all render tasks in the order they were added
             /// @param shape shape to hand to the render task
             /// @param shader shader to hand to the render task, or nullptr to use the default shader
@@ -82,10 +85,11 @@ namespace mousetrap
             Vector2f to_gl_coordinates(Vector2f widget_space_coordinate);
 
         private:
-            static void on_realize(Widget* area);
-            static void on_resize(RenderArea* area, gint width, gint height);
-            static gboolean on_render(RenderArea*, GdkGLContext*);
-            static GdkGLContext* on_create_context(GtkGLArea*, GdkGLContext*);
+            static void on_realize(GtkWidget* area, detail::RenderAreaInternal*);
+            static void on_resize(GtkGLArea* area, gint width, gint height, detail::RenderAreaInternal*);
+            static gboolean on_render(GtkGLArea*, GdkGLContext*, detail::RenderAreaInternal*);
+            static GdkGLContext* on_create_context(GtkGLArea*, GdkGLContext*, detail::RenderAreaInternal*);
+
             detail::RenderAreaInternal* _internal = nullptr;
     };
 }

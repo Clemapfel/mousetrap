@@ -286,7 +286,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/widget.cpp
     src/window.cpp
     src/action.cpp
-)
+        test/shape_showcase.hpp)
 
 add_library(mousetrap SHARED
     ${MOUSETRAP_HEADER_FILES}

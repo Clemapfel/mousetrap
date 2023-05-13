@@ -32,6 +32,8 @@ namespace mousetrap
             delete self->vertices;
             delete self->indices;
             delete self->vertex_data;
+
+            std::cout << "called" << std::endl;
         }
 
         DEFINE_NEW_TYPE_TRIVIAL_INIT(ShapeInternal, shape_internal, SHAPE_INTERNAL)
@@ -70,7 +72,9 @@ namespace mousetrap
 
     Shape::Shape(detail::ShapeInternal* internal)
     {
-        g_object_unref(_internal);
+        if (G_IS_OBJECT(_internal))
+            g_object_unref(_internal);
+
         _internal = internal;
         g_object_ref(_internal);
     }
@@ -79,6 +83,8 @@ namespace mousetrap
     {
         glGenVertexArrays(1, &_internal->vertex_array_id);
         glGenBuffers(1, &_internal->vertex_buffer_id);
+
+        g_object_ref(other._internal);
 
         _internal->vertex_data = other._internal->vertex_data;
         _internal->color = other._internal->color;
@@ -95,6 +101,8 @@ namespace mousetrap
     {
         if (&other == this)
             return *this;
+
+        g_object_ref(other._internal);
 
         glGenVertexArrays(1, &_internal->vertex_array_id);
         glGenBuffers(1, &_internal->vertex_buffer_id);
@@ -113,16 +121,18 @@ namespace mousetrap
 
     Shape::Shape(Shape&& other) noexcept
     {
+        g_object_ref(other._internal);
+
         _internal->vertex_array_id = other._internal->vertex_array_id;
         _internal->vertex_buffer_id = other._internal->vertex_buffer_id;
 
-        _internal->vertex_data = std::move(other._internal->vertex_data);
-        _internal->color = std::move(other._internal->color);
-        _internal->is_visible = std::move(other._internal->is_visible);
-        _internal->render_type = std::move(other._internal->render_type);
-        _internal->vertices = std::move(other._internal->vertices);
-        _internal->indices = std::move(other._internal->indices);
-        _internal->texture = std::move(other._internal->texture);
+        _internal->vertex_data = (other._internal->vertex_data);
+        _internal->color = (other._internal->color);
+        _internal->is_visible = (other._internal->is_visible);
+        _internal->render_type = (other._internal->render_type);
+        _internal->vertices = (other._internal->vertices);
+        _internal->indices = (other._internal->indices);
+        _internal->texture = (other._internal->texture);
 
         other._internal->vertex_buffer_id = 0;
         other._internal->vertex_array_id = 0;
@@ -132,16 +142,18 @@ namespace mousetrap
 
     Shape& Shape::operator=(Shape&& other) noexcept
     {
+        g_object_ref(other._internal);
+
         _internal->vertex_array_id = other._internal->vertex_array_id;
         _internal->vertex_buffer_id = other._internal->vertex_buffer_id;
 
-        _internal->vertex_data = std::move(other._internal->vertex_data);
-        _internal->color = std::move(other._internal->color);
-        _internal->is_visible = std::move(other._internal->is_visible);
-        _internal->render_type = std::move(other._internal->render_type);
-        _internal->vertices = std::move(other._internal->vertices);
-        _internal->indices = std::move(other._internal->indices);
-        _internal->texture = std::move(other._internal->texture);
+        _internal->vertex_data = (other._internal->vertex_data);
+        _internal->color = (other._internal->color);
+        _internal->is_visible = (other._internal->is_visible);
+        _internal->render_type = (other._internal->render_type);
+        _internal->vertices = (other._internal->vertices);
+        _internal->indices = (other._internal->indices);
+        _internal->texture = (other._internal->texture);
 
         other._internal->vertex_buffer_id = 0;
         other._internal->vertex_array_id = 0;
@@ -325,10 +337,7 @@ namespace mousetrap
 
     void Shape::as_point(Vector2f a)
     {
-        _internal->vertices = {};
-        _internal->indices = {0};
-        _internal->render_type = GL_POINTS;
-        initialize();
+        as_points({a});
     }
 
     void Shape::as_points(const std::vector<Vector2f>& points)

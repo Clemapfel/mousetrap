@@ -72,8 +72,8 @@ namespace mousetrap
         static void render_area_internal_finalize(GObject* object)
         {
             auto* self = MOUSETRAP_RENDER_AREA_INTERNAL(object);
+            std::cout << "called" << std::endl;
             G_OBJECT_CLASS(render_area_internal_parent_class)->finalize(object);
-
             delete self->tasks;
         }
 
@@ -101,11 +101,15 @@ namespace mousetrap
         gtk_gl_area_set_auto_render(get_native(), TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(get_native()), 1, 1);
 
-        connect_signal_realize(on_realize);
-        connect_signal_render(on_render);
-        connect_signal_resize(on_resize);
+        connect_signal("realize", on_realize, _internal);
+        connect_signal("render", on_render, _internal);
+        connect_signal("resize", on_resize, _internal);
+        connect_signal("create-context", on_create_context, _internal);
+    }
 
-        connect_signal("create-context", on_create_context);
+    RenderArea::~RenderArea()
+    {
+        g_object_unref(get_native());
     }
 
     void RenderArea::add_render_task(const Shape& shape, Shader* shader, GLTransform* transform, BlendMode blend_mode)
@@ -126,19 +130,27 @@ namespace mousetrap
         _internal->tasks->clear();
     }
 
-    void RenderArea::on_realize(Widget* area)
+    GdkGLContext* RenderArea::on_create_context(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal*)
     {
-        static_cast<RenderArea*>(area)->queue_render();
+        assert(detail::GL_INITIALIZED == true);
+        gdk_gl_context_make_current(detail::GL_CONTEXT);
+        return detail::GL_CONTEXT;
     }
 
-    void RenderArea::on_resize(RenderArea* area, gint width, gint height)
+    void RenderArea::on_realize(GtkWidget* area, detail::RenderAreaInternal* internal)
     {
-        area->make_current();
+        gtk_gl_area_queue_render(GTK_GL_AREA(area));
     }
 
-    gboolean RenderArea::on_render(RenderArea* area, GdkGLContext* context)
+    void RenderArea::on_resize(GtkGLArea* area, gint width, gint height, detail::RenderAreaInternal* internal)
     {
-        area->make_current();
+        gtk_gl_area_make_current(area);
+        gtk_gl_area_queue_render(area);
+    }
+
+    gboolean RenderArea::on_render(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal* internal)
+    {
+        gtk_gl_area_make_current(area);
 
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -146,7 +158,7 @@ namespace mousetrap
         glEnable(GL_BLEND);
         set_current_blend_mode(BlendMode::NORMAL);
 
-        for (auto& task : *(area->_internal->tasks))
+        for (auto& task : *(internal->tasks))
             task.render();
 
         glFlush();
@@ -190,12 +202,5 @@ namespace mousetrap
         std::cout << out.x << " " << out.y << std::endl;
 
         return out;
-    }
-
-    GdkGLContext* RenderArea::on_create_context(GtkGLArea* area, GdkGLContext* context)
-    {
-        assert(detail::GL_INITIALIZED == true);
-        gdk_gl_context_make_current(detail::GL_CONTEXT);
-        return detail::GL_CONTEXT;
     }
 }
