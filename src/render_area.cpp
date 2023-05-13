@@ -72,7 +72,6 @@ namespace mousetrap
         static void render_area_internal_finalize(GObject* object)
         {
             auto* self = MOUSETRAP_RENDER_AREA_INTERNAL(object);
-            std::cout << "called" << std::endl;
             G_OBJECT_CLASS(render_area_internal_parent_class)->finalize(object);
             delete self->tasks;
         }
@@ -108,9 +107,7 @@ namespace mousetrap
     }
 
     RenderArea::~RenderArea()
-    {
-        g_object_unref(get_native());
-    }
+    {}
 
     void RenderArea::add_render_task(const Shape& shape, Shader* shader, GLTransform* transform, BlendMode blend_mode)
     {

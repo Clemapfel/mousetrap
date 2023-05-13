@@ -50,10 +50,6 @@ namespace mousetrap
 
                 add_page("Point", Point({0, 0}));
 
-                key_controller.connect_signal_key_pressed([](KeyEventController*, int32_t keycode, int32_t){
-
-                });
-
                 main.add_controller(key_controller);
                 main.push_back(stack);
             }
