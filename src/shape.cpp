@@ -828,9 +828,9 @@ namespace mousetrap
             max_z = std::max(max_z, v.position.z);
         }
 
-        return Rectangle{
-        {min_x, min_y},
-        {max_x - min_x, max_y - min_y}
+        return mousetrap::Rectangle{
+            {min_x, min_y},
+            {max_x - min_x, max_y - min_y}
         };
     }
 
@@ -890,5 +890,92 @@ namespace mousetrap
     Shape::operator GObject*() const
     {
         return G_OBJECT(_internal);
+    }
+}
+
+namespace mousetrap
+{
+    Shape Shape::Point(Vector2f position)
+    {
+        auto out = Shape();
+        out.as_point(position);
+        return out;
+    }
+
+    Shape Shape::Points(const std::vector<Vector2f>& positions)
+    {
+        auto out = Shape();
+        out.as_points(positions);
+        return out;
+    }
+
+    Shape Shape::Triangle(Vector2f a, Vector2f b, Vector2f c)
+    {
+        auto out = Shape();
+        out.as_triangle(a, b, c);
+        return out;
+    }
+
+    Shape Shape::Rectangle(Vector2f top_left, Vector2f size)
+    {
+        auto out = Shape();
+        out.as_rectangle(top_left, size);
+        return out;
+    }
+
+    Shape Shape::Rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d)
+    {
+        auto out = Shape();
+        out.as_rectangle(a, b, c, d);
+        return out;
+    }
+
+    Shape Shape::Circle(Vector2f center, float radius, size_t n_outer_vertices)
+    {
+        auto out = Shape();
+        out.as_circle(center, radius, n_outer_vertices);
+        return out;
+    }
+
+    Shape Shape::Ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices)
+    {
+        auto out = Shape();
+        out.as_ellipse(center, x_radius, y_radius, n_outer_vertices);
+        return out;
+    }
+
+    Shape Shape::Line(Vector2f a, Vector2f b)
+    {
+        auto out = Shape();
+        out.as_line(a, b);
+        return out;
+    }
+
+    Shape Shape::Lines(const std::vector<std::pair<Vector2f, Vector2f>>& points)
+    {
+        auto out = Shape();
+        out.as_lines(points);
+        return out;
+    }
+
+    Shape Shape::LineStrip(const std::vector<Vector2f>& points)
+    {
+        auto out = Shape();
+        out.as_line_strip(points);
+        return out;
+    }
+
+    Shape Shape::Polygon(const std::vector<Vector2f>& points)
+    {
+        auto out = Shape();
+        out.as_polygon(points);
+        return out;
+    }
+
+    Shape Shape::RectangleFrame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width)
+    {
+        auto out = Shape();
+        out.as_rectangle_frame(top_left, outer_size, x_width, y_width);
+        return out;
     }
 }

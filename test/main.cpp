@@ -67,7 +67,7 @@ int main()
     app.connect_signal_activate([](Application* app)
     {
         state = new State{Window(*app)};
-        /*
+
         // setup children
 
         //add_test(new RenderAreaTest(), "RenderArea");
@@ -184,15 +184,6 @@ int main()
         // TODO
         // TODO
 
-        state->main_window.present();
-         */
-
-        auto render_area = RenderArea();
-        render_area.set_size_request({100, 100});
-
-        g_object_add_toggle_ref(G_OBJECT(render_area.operator GObject*()), (GToggleNotify) test, nullptr);
-
-        state->main_window.set_child(render_area);
         state->main_window.present();
     });
 

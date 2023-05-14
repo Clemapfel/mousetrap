@@ -18,7 +18,7 @@ namespace mousetrap
             HeaderBar();
 
             /// @brief construct
-            /// @param layout see Headerbar::set_layout
+            /// @param layout_string see Headerbar::set_layout
             HeaderBar(const std::string& layout_string);
 
             /// @brief set layout from config string, see https://docs.gtk.org/gtk4/method.HeaderBar.set_decoration_layout.html

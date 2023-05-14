@@ -109,9 +109,15 @@ namespace mousetrap
             /// @param position position gl coordinates
             void as_point(Vector2f position);
 
+            /// @copydoc Shape::as_point
+            static Shape Point(Vector2f position);
+
             /// @brief construct as set of points, each point is always rendered as exactly 1 fragment
             /// @param points vector of points
             void as_points(const std::vector<Vector2f>& points);
+
+            /// @copydoc Shape::as_points
+            static Shape Points(const std::vector<Vector2f>& points);
 
             /// @brief construct as filled triangle
             /// @param a point in gl coordinates
@@ -119,10 +125,16 @@ namespace mousetrap
             /// @param c point in gl coordinates
             void as_triangle(Vector2f a, Vector2f b, Vector2f c);
 
+            /// @copydoc Shape::as_triangle
+            static Shape Triangle(Vector2f a, Vector2f b, Vector2f c);
+
             /// @brief construct as filled rectangle from top left and size
             /// @param top_left point in gl coordinates
             /// @param size length in gl coordinates
             void as_rectangle(Vector2f top_left, Vector2f size);
+
+            /// @copydoc Shape::as_rectangle(Vector2f top_left, Vector2f size)
+            static Shape Rectangle(Vector2f top_left, Vector2f size);
 
             /// @brief construct as filled rectangle from 4 points
             /// @param a point in gl coordinates
@@ -131,11 +143,17 @@ namespace mousetrap
             /// @param d point in gl coordinates
             void as_rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d);
 
+            /// @copydoc Shape::as_rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d)
+            static Shape Rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d);
+
             /// @brief construct as filled circle
             /// @param center point in gl coordinates
             /// @param radius distance in gl coordinates
             /// @param n_outer_vertices number of equally spaced vertices on the perimeter of the circle
             void as_circle(Vector2f center, float radius, size_t n_outer_vertices);
+
+            /// @copydoc Shape::as_circle
+            static Shape Circle(Vector2f center, float radius, size_t n_outer_vertices);
 
             /// @brief construct as ellipse
             /// @param center point in gl coordinates
@@ -144,22 +162,37 @@ namespace mousetrap
             /// @param n_outer_vertices number of equally spaced vertices on the perimeter of the circle
             void as_ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices);
 
+            /// @copydoc Shape::as_ellipse
+            static Shape Ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices);
+
             /// @brief construct as line, has a width of 1 fragment exactly
             /// @param a point in gl coordinates
             /// @param b point in gl coordinates
             void as_line(Vector2f a, Vector2f b);
 
+            /// @copydoc Shape::as_line
+            static Shape Line(Vector2f a, Vector2f b);
+
             /// @brief construct as set of lines, each has a width of exactly 1 fragment
             /// @param points vector of pairs of 2 points, both in gl coordinates
             void as_lines(const std::vector<std::pair<Vector2f, Vector2f>>& points);
+
+            /// @copydoc Shape::as_lines
+            static Shape Lines(const std::vector<std::pair<Vector2f, Vector2f>>& points);
 
             /// @brief construct as set of connected lines
             /// @param points {a1, a2, ..., an} will result in line segments {a1, a2}, {a2, a3}, ..., {an-1, an}
             void as_line_strip(const std::vector<Vector2f>& points);
 
+            /// @copydoc Shape::as_line_strip
+            static Shape LineStrip(const std::vector<Vector2f>& points);
+
             /// @brief construct as convex polygon
             /// @param points points in gl coordinates, minimum bounding polygon is calculated on these, so some of the vertices ay be discarded
             void as_polygon(const std::vector<Vector2f>& points);
+
+            /// @copydoc Shape::as_polygon
+            static Shape Polygon(const std::vector<Vector2f>& points);
 
             /// @brief construct as rectanglular frame of given thickness
             /// @param top_left top left anchor of the outer perimeter of the frame, in gl coordinates
@@ -167,6 +200,9 @@ namespace mousetrap
             /// @param x_width horizontal width of the frames inner bounds, in gl coordinates
             /// @param y_width vertical height of the frames inner bounds, in gl coordinates
             void as_rectangle_frame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width);
+
+            /// @copydoc Shape::as_rectangle_frame
+            static Shape RectangleFrame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width);
 
             /// @brief construct as circular ring, a "2d donut"
             /// @param center center in 2d space
@@ -246,7 +282,7 @@ namespace mousetrap
 
             /// @brief get axis aligned bounding box of all vertices
             /// @return rectangle
-            Rectangle get_bounding_box() const;
+            struct Rectangle get_bounding_box() const;
 
             /// @brief get size of axis aligned bounding box
             /// @return width, height
@@ -300,14 +336,5 @@ namespace mousetrap
 
             detail::ShapeInternal* _internal = nullptr;
     };
-
-    /// @brief create point shape, convenience function
-    /// @param position position gl coordinates
-    static inline Shape Point(Vector2f position)
-    {
-        auto out = Shape();
-        out.as_point(position);
-        return out;
-    }
 }
 

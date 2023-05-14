@@ -16,6 +16,7 @@ namespace mousetrap
     {
         public:
             /// @brief construct
+            /// @param opacity float in [0, 1]
             /// @param orientation if horizontal, expands horizontally by default, if vertical, expands vertically by default
             Separator(float opacity = 1, Orientation = Orientation::HORIZONTAL);
 
