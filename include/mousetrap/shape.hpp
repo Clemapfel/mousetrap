@@ -51,6 +51,26 @@ namespace mousetrap
             float _texture_coordinates[2];
         };
 
+        enum class ShapeType
+        {
+            UNKNOWN,
+            POINT,
+            POINTS,
+            TRIANGLE,
+            RECTANGLE,
+            CIRCLE,
+            ELLIPSE,
+            LINE,
+            LINES,
+            LINE_STRIP,
+            POLYGON,
+            RECTANGULAR_FRAME,
+            CIRCULAR_RING,
+            ELLIPTIC_RING,
+            WIREFRAME,
+            OUTLINE
+        };
+
         struct _ShapeInternal
         {
             GObject parent;
@@ -61,6 +81,7 @@ namespace mousetrap
             std::vector<Vertex>* vertices;
             std::vector<int>* indices;
             GLenum render_type = GL_TRIANGLE_STRIP;
+            ShapeType shape_type = ShapeType::UNKNOWN;
 
             std::vector<VertexInfo>* vertex_data;
 
@@ -199,10 +220,10 @@ namespace mousetrap
             /// @param outer_size width and height of the oute perimeter of the frame, in gl coordinates
             /// @param x_width horizontal width of the frames inner bounds, in gl coordinates
             /// @param y_width vertical height of the frames inner bounds, in gl coordinates
-            void as_rectangle_frame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width);
+            void as_rectangular_frame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width);
 
             /// @copydoc Shape::as_rectangle_frame
-            static Shape RectangleFrame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width);
+            static Shape RectangularFrame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width);
 
             /// @brief construct as circular ring, a "2d donut"
             /// @param center center in 2d space

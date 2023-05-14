@@ -338,6 +338,7 @@ namespace mousetrap
     void Shape::as_point(Vector2f a)
     {
         as_points({a});
+        _internal->shape_type = detail::ShapeType::POINT;
     }
 
     void Shape::as_points(const std::vector<Vector2f>& points)
@@ -353,6 +354,7 @@ namespace mousetrap
         }
 
         _internal->render_type = GL_POINTS;
+        _internal->shape_type = detail::ShapeType::POINTS;
         initialize();
     }
 
@@ -367,6 +369,7 @@ namespace mousetrap
 
         *_internal->indices = {0, 1, 2};
         _internal->render_type = GL_TRIANGLES;
+        _internal->shape_type = detail::ShapeType::TRIANGLE;
         initialize();
     }
 
@@ -387,6 +390,7 @@ namespace mousetrap
 
         *_internal->indices = {0, 1, 2, 3};
         _internal->render_type = GL_TRIANGLE_FAN;
+        _internal->shape_type = detail::ShapeType::RECTANGLE;
         initialize();
     }
 
@@ -406,10 +410,11 @@ namespace mousetrap
 
         *_internal->indices = {0, 1, 2, 3};
         _internal->render_type = GL_TRIANGLE_FAN;
+        _internal->shape_type = detail::ShapeType::RECTANGLE;
         initialize();
     }
 
-    void Shape::as_rectangle_frame(Vector2f top_left, Vector2f outer_size, float x_width, float y_height)
+    void Shape::as_rectangular_frame(Vector2f top_left, Vector2f outer_size, float x_width, float y_height)
     {
         float x = top_left.x;
         float y = top_left.y;
@@ -450,6 +455,7 @@ namespace mousetrap
         };
 
         _internal->render_type = GL_TRIANGLES;
+        _internal->shape_type = detail::ShapeType::RECTANGULAR_FRAME;
         initialize();
     }
 
@@ -463,6 +469,7 @@ namespace mousetrap
 
         *_internal->indices = {0, 1};
         _internal->render_type = GL_LINES;
+        _internal->shape_type = detail::ShapeType::LINE;
         initialize();
     }
 
@@ -480,38 +487,30 @@ namespace mousetrap
             _internal->indices->push_back(i);
 
         _internal->render_type = GL_LINES;
+        _internal->shape_type = detail::ShapeType::LINES;
         initialize();
     }
 
     void Shape::as_circle(Vector2f center, float radius, size_t n_outer_vertices)
     {
-        const float step = 360.f / n_outer_vertices;
-
-        _internal->vertices->clear();
-        _internal->vertices->push_back(Vertex(center.x, center.y, *_internal->color));
-
-        for (float angle = 0; angle < 360; angle += step)
+        if (n_outer_vertices < 3)
         {
-            auto as_radians = angle * M_PI / 180.f;
-            _internal->vertices->emplace_back(
-                center.x + cos(as_radians) * radius,
-                center.y + sin(as_radians) * radius,
-                *_internal->color
-            );
+            log::critical("In Shape::as_circle: n_outer_vertices < 3");
+            n_outer_vertices = 3;
         }
 
-        _internal->indices->clear();
-        for (size_t i = 0; i < _internal->vertices->size(); ++i)
-            _internal->indices->push_back(i);
-
-        _internal->indices->push_back(1);
-
-        _internal->render_type = GL_TRIANGLE_FAN;
-        initialize();
+        as_ellipse(center, radius, radius, n_outer_vertices);
+        _internal->shape_type = detail::ShapeType::CIRCLE;
     }
 
     void Shape::as_ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices)
     {
+        if (n_outer_vertices < 3)
+        {
+            log::critical("In Shape::as_ellipse: n_outer_vertices < 3");
+            n_outer_vertices = 3;
+        }
+
         const float step = 360.f / n_outer_vertices;
 
         _internal->vertices->clear();
@@ -534,12 +533,14 @@ namespace mousetrap
         _internal->indices->push_back(1);
 
         _internal->render_type = GL_TRIANGLE_FAN;
+        _internal->shape_type = detail::ShapeType::ELLIPSE;
         initialize();
     }
 
     void Shape::as_circular_ring(Vector2f center, float outer_radius, float thickness, size_t n_outer_vertices)
     {
         as_elliptic_ring(center, outer_radius, outer_radius, thickness, thickness, n_outer_vertices);
+        _internal->shape_type = detail::ShapeType::CIRCULAR_RING;
     }
 
     void Shape::as_elliptic_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices)
@@ -564,6 +565,7 @@ namespace mousetrap
         }
 
         _internal->render_type = GL_TRIANGLES;
+        _internal->shape_type = detail::ShapeType::ELLIPTIC_RING;
 
         _internal->indices->clear();
         for (size_t i = 0; i < n_outer_vertices - 1; ++i)
@@ -602,6 +604,7 @@ namespace mousetrap
         }
 
         _internal->render_type = GL_LINE_STRIP;
+        _internal->shape_type = detail::ShapeType::LINE_STRIP;
         initialize();
     }
 
@@ -620,26 +623,7 @@ namespace mousetrap
         }
 
         _internal->render_type = GL_LINE_LOOP;
-        initialize();
-    }
-
-    void Shape::as_wireframe(const Shape& shape)
-    {
-        _internal->vertices->clear();
-        _internal->indices->clear();
-
-        std::vector<Vector2f> vertices;
-        for (size_t i = 0; i < shape.get_n_vertices(); ++i)
-            vertices.push_back(shape.get_vertex_position(i));
-
-        size_t i = 0;
-        for (auto& position : vertices)
-        {
-            _internal->vertices->emplace_back(position.x, position.y, *_internal->color);
-            _internal->indices->push_back(i++);
-        }
-
-        _internal->render_type = GL_LINE_LOOP;
+        _internal->shape_type = detail::ShapeType::WIREFRAME;
         initialize();
     }
 
@@ -658,6 +642,240 @@ namespace mousetrap
         }
 
         _internal->render_type = GL_TRIANGLE_FAN;
+        _internal->shape_type = detail::ShapeType::POLYGON;
+        initialize();
+    }
+
+    void Shape::as_outline(const Shape& shape, RGBA color)
+    {
+        _internal->vertices->clear();
+        _internal->indices->clear();
+
+        std::vector<std::pair<Vector2f, Vector2f>> positions;
+
+        auto type = shape._internal->shape_type;
+        using namespace detail;
+        if (type == ShapeType::UNKNOWN)
+        {
+            log::critical("In Shape::as_outline: Attempting to create outline of a shape that is not yet initialized", MOUSETRAP_DOMAIN);
+        }
+        else if (type == ShapeType::POINT)
+        {
+            log::warning("In Shape::as_outline: Creating outline of a point, which has an area of 0", MOUSETRAP_DOMAIN);
+            positions = {{shape.get_vertex_position(0), shape.get_vertex_position(0)}};
+        }
+        else if (type == ShapeType::POINTS)
+        {
+            log::warning("In Shape::as_outline: Creating outline of points, which have an area of 0", MOUSETRAP_DOMAIN);
+            for (size_t i = 0; i < shape.get_n_vertices(); ++i)
+            {
+                positions.push_back({
+                    shape.get_vertex_position(i),
+                    shape.get_vertex_position(i),
+                });
+            }
+        }
+        else if (type == ShapeType::LINE)
+        {
+            log::warning("In Shape::as_outline: Creating outline of a line, which has an area of 0", MOUSETRAP_DOMAIN);
+            positions.push_back({
+                shape.get_vertex_position(0),
+                shape.get_vertex_position(1)
+            });
+        }
+        else if (type == ShapeType::LINES)
+        {
+            log::warning("In Shape::as_outline: Creating outline of lines, which have an area of 0", MOUSETRAP_DOMAIN);
+            for (size_t i = 0; i < shape.get_n_vertices()-1; i += 2)
+            {
+                positions.push_back({
+                    shape.get_vertex_position(i),
+                    shape.get_vertex_position(i + 1)
+                });
+            }
+        }
+        else if (type == ShapeType::LINE_STRIP)
+        {
+            log::warning("In Shape::as_outline: Creating outline of a line strip, which has an area of 0", MOUSETRAP_DOMAIN);
+            for (size_t i = 0; i < shape.get_n_vertices()-1; ++i)
+            {
+                positions.push_back({
+                    shape.get_vertex_position(i),
+                    shape.get_vertex_position(i + 1)
+                });
+            }
+        }
+        else if (type == ShapeType::WIREFRAME)
+        {
+            log::warning("In Shape::as_outline: Creating outline of a wireframe, which has an area of 0", MOUSETRAP_DOMAIN);
+            for (size_t i = 0; i < shape.get_n_vertices()-1; ++i)
+            {
+                positions.push_back({
+                    shape.get_vertex_position(i),
+                    shape.get_vertex_position(i + 1)
+                });
+            }
+
+            positions.push_back({
+                shape.get_vertex_position(shape.get_n_vertices()-1),
+                shape.get_vertex_position(0)
+            });
+        }
+        else if (type == ShapeType::OUTLINE)
+        {
+            log::warning("In Shape::as_outline: Creating outline of an outline, which has an area of 0", MOUSETRAP_DOMAIN);
+            for (size_t i = 0; i < shape.get_n_vertices()-1; ++i)
+            {
+                positions.push_back({
+                    shape.get_vertex_position(i),
+                    shape.get_vertex_position(i + 1)
+                });
+            }
+        }
+        else if (type == ShapeType::TRIANGLE)
+        {
+            positions.push_back({
+                shape.get_vertex_position(0),
+                shape.get_vertex_position(1)
+            });
+
+            positions.push_back({
+                shape.get_vertex_position(1),
+                shape.get_vertex_position(2)
+            });
+
+            positions.push_back({
+                shape.get_vertex_position(2),
+                shape.get_vertex_position(0)
+            });
+        }
+        else if (type == ShapeType::RECTANGLE)
+        {
+            auto aabb = shape.get_bounding_box();
+            float x = aabb.top_left.x;
+            float y = aabb.top_left.y;
+            float w = aabb.size.x;
+            float h = aabb.size.y;
+
+            positions = {
+                {{x, y}, {x + w, y}},
+                {{x + w, y}, {x + w, y - h}},
+                {{x + w, y - h}, {x, y - h}},
+                {{x, y - h}, {x, y}}
+            };
+        }
+        else if (type == ShapeType::CIRCLE or type == ShapeType::ELLIPSE)
+        {
+            for (size_t i = 1; i < shape.get_n_vertices() - 2; ++i)
+                positions.push_back({
+                    shape.get_vertex_position(i),
+                    shape.get_vertex_position(i+1)
+                });
+
+            positions.push_back({
+                shape.get_vertex_position(shape.get_n_vertices()-2),
+                shape.get_vertex_position(1)
+            });
+        }
+        else if (type == ShapeType::POLYGON)
+        {
+            for (size_t i = 0; i < shape.get_n_vertices() - 1; ++i)
+            {
+                positions.push_back({
+                shape.get_vertex_position(i),
+                shape.get_vertex_position(i + 1)
+                });
+            }
+
+            positions.push_back({
+                shape.get_vertex_position(shape.get_n_vertices()-1),
+                shape.get_vertex_position(0)
+            });
+        }
+        else if (type == ShapeType::RECTANGULAR_FRAME)
+        {
+            // outer
+
+            positions.push_back({
+                shape.get_vertex_position(0),
+                shape.get_vertex_position(1)
+            });
+
+            positions.push_back({
+                shape.get_vertex_position(1),
+                shape.get_vertex_position(11)
+            });
+
+            positions.push_back({
+                shape.get_vertex_position(11),
+                shape.get_vertex_position(10)
+            });
+
+            positions.push_back({
+                shape.get_vertex_position(10),
+                shape.get_vertex_position(0)
+            });
+
+            // inner
+
+            positions.push_back({
+                shape.get_vertex_position(3),
+                shape.get_vertex_position(4)
+            });
+
+            positions.push_back({
+                shape.get_vertex_position(4),
+                shape.get_vertex_position(8)
+            });
+
+            positions.push_back({
+                shape.get_vertex_position(8),
+                shape.get_vertex_position(7)
+            });
+
+            positions.push_back({
+                shape.get_vertex_position(7),
+                shape.get_vertex_position(3)
+            });
+        }
+        else if (type == ShapeType::CIRCULAR_RING or type == ShapeType::ELLIPTIC_RING)
+        {
+            for (size_t i = 0; i < shape.get_n_vertices() - 2; i++)
+            {
+                positions.push_back({
+                    shape.get_vertex_position(i),
+                    shape.get_vertex_position(i + 2)
+                });
+            }
+
+            positions.push_back({
+                shape.get_vertex_position(shape.get_n_vertices()-1),
+                shape.get_vertex_position(1)
+            });
+
+            positions.push_back({
+                shape.get_vertex_position(shape.get_n_vertices()-2),
+                shape.get_vertex_position(0)
+            });
+        }
+
+        float hue = 0;
+        float hue_step = 1.f / positions.size();
+
+        _internal->vertices->clear();
+
+        for (const auto& pair : positions)
+        {
+            _internal->vertices->emplace_back(pair.first.x, pair.first.y, *_internal->color);
+            _internal->vertices->emplace_back(pair.second.x, pair.second.y, *_internal->color);
+        }
+
+        _internal->indices->clear();
+        for (size_t i = 0; i < _internal->vertices->size(); ++i)
+            _internal->indices->push_back(i);
+
+        _internal->render_type = GL_LINES;
+        _internal->shape_type = detail::ShapeType::OUTLINE;
         initialize();
     }
 
@@ -716,7 +934,6 @@ namespace mousetrap
 
         return _internal->vertices->at(i).position;
     }
-
 
     void Shape::set_vertex_texture_coordinate(size_t i, Vector2f coordinates)
     {
@@ -829,7 +1046,7 @@ namespace mousetrap
         }
 
         return mousetrap::Rectangle{
-            {min_x, min_y},
+            {min_x, max_y},
             {max_x - min_x, max_y - min_y}
         };
     }
@@ -972,10 +1189,10 @@ namespace mousetrap
         return out;
     }
 
-    Shape Shape::RectangleFrame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width)
+    Shape Shape::RectangularFrame(Vector2f top_left, Vector2f outer_size, float x_width, float y_width)
     {
         auto out = Shape();
-        out.as_rectangle_frame(top_left, outer_size, x_width, y_width);
+        out.as_rectangular_frame(top_left, outer_size, x_width, y_width);
         return out;
     }
 
@@ -1006,5 +1223,4 @@ namespace mousetrap
         out.as_outline(shape);
         return out;
     }
-
 }
