@@ -978,4 +978,33 @@ namespace mousetrap
         out.as_rectangle_frame(top_left, outer_size, x_width, y_width);
         return out;
     }
+
+    Shape Shape::CircularRing(Vector2f center, float outer_radius, float thickness, size_t n_outer_vertices)
+    {
+        auto out = Shape();
+        out.as_circular_ring(center, outer_radius, thickness, n_outer_vertices);
+        return out;
+    }
+
+    Shape Shape::EllipticRing(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices)
+    {
+        auto out = Shape();
+        out.as_elliptic_ring(center, x_radius, y_radius, x_thickness, y_thickness, n_outer_vertices);
+        return out;
+    }
+
+    Shape Shape::Wireframe(const std::vector<Vector2f>& points)
+    {
+        auto out = Shape();
+        out.as_wireframe(points);
+        return out;
+    }
+
+    Shape Shape::Outline(const Shape& shape)
+    {
+        auto out = Shape();
+        out.as_outline(shape);
+        return out;
+    }
+
 }

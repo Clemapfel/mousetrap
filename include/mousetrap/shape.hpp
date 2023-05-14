@@ -211,6 +211,9 @@ namespace mousetrap
             /// @param n_outer_vertices number of vertices on the outer perimeter of the ring
             void as_circular_ring(Vector2f center, float outer_radius, float thickness, size_t n_outer_vertices);
 
+            /// @copydoc Shape::as_circular_ring
+            static Shape CircularRing(Vector2f center, float outer_radius, float thickness, size_t n_outer_vertices);
+
             /// @brief construct as elliptic ring, a "2d elliptic donut"
             /// @param center center in 2d space
             /// @param x_radius horizontal radius of the outer perimeter of the ellipse
@@ -220,13 +223,22 @@ namespace mousetrap
             /// @param n_outer_vertices number of vertices on the outer perimeter of the ellipse
             void as_elliptic_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices);
 
+            /// @copydoc Shape::as_elliptic_ring
+            static Shape EllipticRing(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices);
+
             /// @brief construct as a closed loop linesegment
             /// @param points {a1, a2, ..., an} will result in line segments {a1, a2}, {a2, a3}, ..., {an-1, an}, {an, a1}
             void as_wireframe(const std::vector<Vector2f>& points);
 
+            /// @copydoc Shape::as_wireframe
+            static Shape Wireframe(const std::vector<Vector2f>& points);
+
             /// @brief construct a wireframe from a shapes outer vertices. Useful for generating frames or outlines
             /// @param shape another shape, will generate minimum bounding polygon and construct a wireframe from that polygon
-            void as_wireframe(const Shape& shape);
+            void as_outline(const Shape& shape, RGBA color = RGBA(0, 0, 0, 1));
+
+            /// @copydoc Shape::as_outline
+            static Shape Outline(const Shape& shape);
 
             /// @brief render the shape to the currently bound framebuffer
             /// @param shader shader program to use
