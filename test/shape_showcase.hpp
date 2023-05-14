@@ -58,7 +58,7 @@ namespace mousetrap
                 add_page("Lines", Shape::Lines({{{-0.5, 0.5}, {0.5, -0.5}}, {{0.5, 0.5}, {-0.5, -0.5}}}));
                 add_page("Line Strip", Shape::LineStrip({{-0.5, 0.5}, {0.5, -0.5}, {0.5, 0.5}, {-0.5, -0.5}}));
                 add_page("Polygon", Shape::Polygon({{0, 0.75}, {0.75, 0.25}, {0.5, -0.75}, {-0.5, -0.5}, {-0.75, 0}, {0, 0.75}}));
-                add_page("Rectangle Frame", Shape::RectangleFrame({-0.5, 0.5}, {1, 1}, 0.25, 0.25));
+                add_page("Rectangle Frame", Shape::RectangleFrame({-0.5, 0.5}, {1, 1}, 0.15, 0.15));
 
                 key_controller.connect_signal_key_pressed([](KeyEventController*, int32_t key, int32_t, ModifierState, ShapeShowcase* instance){
 

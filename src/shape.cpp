@@ -426,27 +426,27 @@ namespace mousetrap
         {
             v(x, y),
             v(x + w, y),
-            v(x, y + b),
-            v(x + a, y + b),
-            v(x + w - a, y + b),
-            v(x + w, y + b),
-            v(x, y + h - b),
-            v(x + a, y + h - b),
-            v(x + w - a, y + h - b),
-            v(x + w, y + h - b),
-            v(x, y + h),
-            v(x + w, y + h)
+            v(x, y - b),
+            v(x + a, y - b),
+            v(x + w - a, y - b),
+            v(x + w, y - b),
+            v(x, y - h + b),
+            v(x + a, y - h + b),
+            v(x + w - a, y - h + b),
+            v(x + w, y - h + b),
+            v(x, y - h),
+            v(x + w, y - h)
         };
 
         *_internal->indices = {
             0, 1, 5,
-            0, 2, 5,
-            4, 5, 8,
-            5, 8, 9,
-            6, 9, 10,
-            9, 10, 11,
+            0, 5, 2,
+            4, 5, 9,
+            4, 9, 8,
+            6, 9, 11,
+            6, 11, 10,
             2, 3, 7,
-            2, 6, 7
+            2, 7, 6
         };
 
         _internal->render_type = GL_TRIANGLES;
