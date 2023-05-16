@@ -20,6 +20,7 @@ namespace mousetrap
         struct _NotebookInternal
         {
             GObject parent;
+            GtkNotebook* native;
             bool popup_enabled = false;
             bool tabs_reorderable = false;
         };
@@ -28,7 +29,6 @@ namespace mousetrap
     #endif
 
     /// @brief container widget that displays multiple pages the cuser can switch between. Each page as a "tab" with a label
-    /// @todo wrap the signals such that unused first argument is eliminated
     /// \signals
     /// \signal_page_added{Notebook}
     /// \signal_page_reordered{Notebook}

@@ -1382,7 +1382,7 @@ With this, scrollbar policy, size propagation, and being able to access the adju
 
 ## Popovers
 
-A \a{Popover} is a special kind of window. It is always **[modal](#modality--transience)**. Instead of the regular frame with a close button it instead closes when the user exists the window by clicking somewhere else. Showing the popover is called **pop up**, closing the popover is called **pop down**. 
+A \a{Popover} is a special kind of window. It is always **[modal](#modality--transience)**. Rather than having the normal window decoration with a close button and title, `Popover` closes dynamically or on deman. Showing the popover is called **pop up**, closing the popover is called **pop down**, `Popover` correspondingly has `Popover::popup` and `Popover::popdown` to trigger this behavior. 
 
 \image html popover.png
 
@@ -1404,15 +1404,15 @@ window.set_child(aspect_frame);
 ```
 \how_to_generate_this_image_end
 
-Popovers can only be shown once attached to another widget. We use `Popover::set_child` to choose what widget to display inside the popover window and `Popover::attach_to` to choose which widget it should attach to.
+Popovers can only be while they are **attached** to another widget. We use `Popover::attach_to` to specify this widget, while `Popover::set_child` chooses which widget to display inside the popover. Like `Window`, `Popover` always has exactly one child.
 
-Once attached, we can call `Popover::popup` and `Popover::popdown` to reveal or hide the window. While possible, this will take a few lines of code to setup. A simple one-line solution is to use a widget dedicated to revealing popovers: \a{PopoverButton}.
+Manually calling `popup` or `popdown` to show/hide the `Popover` can be a tedious process. Luckily, mousetrap offers a widget that fully automates this process for us.
 
 ## PopoverButton
 
-Like `Button`, `PopoverButton` has a single child, can be circular, and has the `activate` signals. `PopoverButton`s purpose, however, is not to trigger behavior. Instead, it is used to show a `Popover`
+Like `Button`, `PopoverButton` has a single child, can be circular, and has the `activate` signals. `PopoverButton`s purpose is usually to simply show or hide a `Popover`.
 
-We first create the popover, then connect it to the button using `PopoverButton::set_popover`:
+We first create the `Popover`, then connect it to the button using `PopoverButton::set_popover`. We do not use `Popover::attach_to`.
 
 ```cpp
 auto popover = Popover();
@@ -1441,21 +1441,23 @@ window.set_child(aspect_frame);
 ```
 \how_to_generate_this_image_end
 
-For 90% of cases, this is the way to go when we want to use a `Popover`. It is easy to setup and we don't have to manually control the popover position, or when to show or hide it. The arrow next to the `PopoverButton`s child indicates to the user that clicking it will reveal a popover. We can surpress this arrow by setting `PopoverButton::set_always_show_arrow` to `false`.
+For 90% of cases, this is the way to go when we want to use a `Popover`. It is easy to setup and we don't have to manually control the popover position, or when to show or hide it. 
 
-`PopoverButton` lets us control the relative position of the popover by setting `PopoverButton::set_popover_position` to one of the following: `RelativePosition::ABOVE`, `RelativePosition::LEFT_OF`, `RelativePosition::RIGHT_OF`, `RelativePosition::BELOW`, which will place the popover above, left of, right of or below the button respectively. By default, the popover is shown on whichever ide of the button has the space for it.
+The arrow character next to the `PopoverButton`s child indicates to the user that clicking it will reveal a popover. We can surpress this arrow by setting `PopoverButton::set_always_show_arrow` to `false`.
 
-To further customize the `Popover`, we have to call one of its member functions. `Popover::set_has_base_arrow` hides the triangular area which points to the widget it is attached to. 
+`PopoverButton` lets us control the relative position of the popover by setting `PopoverButton::set_popover_position` to one of the following: `RelativePosition::ABOVE`, `RelativePosition::LEFT_OF`, `RelativePosition::RIGHT_OF`, `RelativePosition::BELOW`, which will place the popover above, left of, right of or below the button respectively.
 
-We will see one more use of `PopoverButton` in the [chapter on menus](06_menus.md), where we use `PopoverMenu`, a specialized form of `Popover` that shows a menu.
+We will see one more use of `PopoverButton` in the [chapter on menus](06_menus.md), where we use `PopoverMenu`, a specialized form of `Popover` that shows a menu instead of an arbitrary widget child.
 
 ---
 
 ## Selectable Widgets: SelectionModel
 
-The next few selections will concern themself with **selectable widgets**. These tend to be the most complex and powerful widgets in mousetrap. They all have certain things in common: They a) are widget containers supporting multiple children and b) provide `get_selection_model`, which returns a \{SelectioModel} representing the currently selected widget.
+We will now move on to **selectable widgets**, which tend to be the most complex and powerful widgets in mousetrap. 
 
-`SelectionModel` is not a widget, though it is a signal emitter. Similar to `Adjustment`, it is bound to a certain widget. Changing the widget updates the `SelectionModel`, changing the `SelectionModel` updates the widget.
+All selectable widgets have some things in common: They a) are widget containers supporting multiple children and b) provide `get_selection_model`, which returns a \{SelectioModel} representing the currently selected widget.
+
+`SelectionModel` is not a widget, though it is a signal emitter. Similar to `Adjustment`, it is bound to a certain widget. Changing the widget updates the `SelectionModel`, changing the `SelectionModel` updates the widget. We usually do not construct `SelectionModel` directly, instead we access the underlying `SelectionModel` once we instanced a selectable widget.
 
 `SelectionModel` provides signal `selection_changed`, which is emitted whenever the internal state of the `SelectionModel` changes. 
 
@@ -1470,11 +1472,11 @@ The latter is necessary because `SelectionModel`s can have one of three internal
 + `SINGLE`: Exactly 1 item is selected at all times
 + `MULTIPLE`: 0 or more items can be selected
 
-To illustrate use of `SelectionModel`, we should concern ourself with one of the selectable widgets directly.
+To show how `SelectionModel` is used, we first need to create our first selectable widget.
 
 ## ListView
 
-\a{ListView} is a widget that arranges its children in a line, similar to `Box`. Unlike `Box`, it is selectable:
+\a{ListView} is a widget that arranges its children in a row (or column if its orientation is `VERTICAL`) in a way similar to `Box`. Unlike `Box`, `ListView` is *selectable*.
 
 \image html list_view_single_selection.png
 
@@ -1510,15 +1512,15 @@ window.set_child(list_view);
 
 Where the blue border indicates that the 4th element (with label `"03"`) is currently selected.
 
-When creating the `ListView`, the first argument to its constructor is the orientation, while the second one is the selection mode. If not specified, `SelectionMode::NONE` is used.
+When creating the `ListView`, the first argument to its constructor is the \a{Orientation}, while the second is the underlying `SelectionModel`s mode. If left unspecified, `SelectionMode::NONE` is used.
 
-Much like `Box`, `ListView` supports `ListView::push_back`, `ListView::push_front` and `ListView::insert` to insert any widget child at the specified position. Unlike `Box`, for `ListView`, these functions return a value.
+Much like `Box`, `ListView` supports `ListView::push_back`, `ListView::push_front` and `ListView::insert` to insert any widget at the specified position. 
 
 `ListView` can be requested to automatically show separator inbetween to items. To show these, we simply call `ListView::set_show_separators(true)`.
 
 ### Nested Trees
 
-By default, `ListView` displays its children in a linear list, either horizontally or vertically. `ListView` also supports **nested lists**:
+By default, `ListView` displays its children in a linear list, either horizontally or vertically. `ListView` also supports **nested lists**, sometimes call a tree view:
 
 \image html list_view_nested.png
 
@@ -1557,7 +1559,7 @@ window.set_child(frame);
 
 Here, we have a triple nested list. The outer list has the items `outer item #01`, `outer item #02` and `outer item #03`. `outer item #02` is itself a list, with wo children `inner item #01` and `inner item #02`, the latter of which is also a list with a single item.
 
-When `ListView::push_back` is called, it returns an **iterator**. We can use this iterator as the second argument to `ListView::push_back` in order for that item to be inserted as a nested list. We would construct the above shown nested list like so:
+When `ListView::push_back` is called, it returns an **iterator**. When we supply this iterator as the second argument to any of the widget-inserting functions, such as `ListView::push_back`, the new child will be inserted into a nested list start at the item the iterator was created from. If no iterator is specified, the item will be inserted in the top-level list.
 
 ```cpp
 auto it_01 = list_view.push_back(/* outer item #01 */);
@@ -1571,13 +1573,11 @@ auto it_02 = list_view.push_back(/* outer item #02 */);
 auto it_03 = list_view.push_back(/* outer item #03 */);
 ```
 
-If we do not specify an iterator as the second argument to functions for item insertion (such as `ListView::push_back`), the item will be inserted into the top-level list. Thanks to this, if we just want a linear list, we do not have to think or deal with the iterators at all.
-
-When a list item is a nested list, a downwards arrow will appear next to it, indicating to the user that they can click that item in order to reveal the nested list.
+This means if we only want to show items in a simple, non-nested list, we can ignore the iterator return value completely.
 
 ### Reacting to Selection
 
-In order to react to the user selecting a new item in our `ListView` (if its selection mode is anything other than `NONE`), we connect to the lists `SelectionModel` like so:
+In order to react to the user selecting a new item in our `ListView` (if its selection mode is anything other than `NONE`), we should connect to the lists `SelectionModel` like so:
 
 ```cpp
 auto list_view = ListView(Orientation::HORIZONTAL, SelectionMode::SINGLE);
@@ -1589,17 +1589,7 @@ list_view.get_selection_model()->connect_signal_selection_changed(
 );
 ```
 
-This process will be the same for any of the selectable widgets following this section on `ListView`.
-
-\warning For any selectable widget, if it was initialized with `SelectionMode::NONE`, `selection_changed` will never be emitted. Make sure to manually specify the selection mode in the selectable widgets constructor, otherwise `NONE` will be chosen.
-
-### Selection Mechanics
-
-Usually, when the user clicks one of the children of `ListView` once, the selection is changed accordingly. However, we can add two more methods of selecting an item available to the user.
-
-**Rubberband selection** is a method of selection where the user draws a rectangle by clickdragin the cursor over multiple items. This makes it easy to select many, physically close items at the same time. To allow for this kind of selection, we need to set `ListView::set_enable_rubberband_selection` to `true`. This method of selection is only available for `SelectionMode::MULTIPLE`.
-
-Lastly, **single click** selection is a shortened from of regular selection. As opposed to having to press the mouse button to select an item, once `ListView::set_single_click_activate` is called, simply moving the cursor over one of the items is enough to select them. This method can be used if the selection mode is either `SINGLE` or `MULTIPLE`.
+This process will be the same for any of the selectable widgets, as all of them provide `get_selection_model`, which returns a pointer to the underlying `SelectionModel`.
 
 ---
 
@@ -1640,17 +1630,17 @@ window.set_child(grid_view);
 ```
 \how_to_generate_this_image_end
 
-Items are dynamically allocated to rows and columns based on the space available to the `GridView`. If we want more control over how many row/columns the grid view has, we can use `GridView::set_min_n_columns` and `GridView::set_max_n_columns` to force one of either row or columns (depending on `Orientation`) to adhere to the given limit.
+Items are dynamically allocated to rows and columns based on the space available to the `GridView` and the size of the children. We can use `GridView::set_min_n_columns` and `GridView::set_max_n_columns` to force one of either row or columns (depending on `Orientation`) to adhere to the given limit, which gives us more control over how the children are arranged.
 
-Other than this, `GridView` supports the same functions as `ListView`, including `push_front`, `push_back`, `insert`, `get_selection_model`, set_enable_rubberband_selection`, `set_single_click_activate`, etc..
+Other than this, `GridView` supports the same functions as `ListView`, including `push_front`, `push_back`, `insert`, `get_selection_model`, `set_show_separators`, etc.
 
 ---
 
 ## Column View
 
-\a{ColumnView} is used to display things as a table. The table is split into **rows** and **columns**. Each column has a title. The number of columns can vary, but if the `ColumnView` has, for example, 5 columns, each row should have 5 widgets. The widgets are displayed in their corresponding position.
+\a{ColumnView} is used to display widgets as a table, which is split into rows and columns, the latter of which have a title. 
 
-To fill our `ColumnView`, we need to first create it and allocate a number of columns:
+To fill our `ColumnView`, we first instance it, then allocate a number of columns:
 
 ```cpp
 auto column_view = ColumnView(SelectionMode::SINGLE);
@@ -1659,11 +1649,9 @@ column_view.push_back_column("Column 02");
 column_view.push_back_column("Column 03");
 ```
 
-We can add a column anytime, either to the start, end or at a specific position using `ColumnView::push_front_column`, `ColumnView::push_back_column`, or `ColumnView::insert_column`, respectively.
+To add a column add a later point, either to the start, end or at a specific position, we use `ColumnView::push_front_column`, `ColumnView::push_back_column`, or `ColumnView::insert_column`, respectively. Each of these functions takes as their argument the title used for the column.
 
-Each of these functions take a string which is the title of the column, which will be displayed as a `Label`.
-
-Once we have all our columns setup, we can add child widgets either by using \a{ColumnView::set_widget} or the convienence function `push_back_row`, which adds a row of widgets to the end of the table:
+Once we have all our columns set up, we can add child widgets either by using \a{ColumnView::set_widget} or the convienence function `push_back_row`, which adds a row of widgets to the end of the table:
 
 ```cpp
 column_view.push_back_row(Label("1 | 1"), Label("1 | 2"), Label("1 | 3"));
@@ -1695,17 +1683,13 @@ window.set_child(column_view);
 ```
 \how_to_generate_this_image_end
 
-Here, we use `Label`s as items in the `ColumnView`, but any arbitrarily complex widget can be inserted anywhere. We could add another `ColumnView` into the `ColumnView`. There is no restriction, a column or row does not have to have the types of widgets, each cell is unique.
-
-When the `ColumnView`s `SelectionMode` is `SINGLE` or `MULTIPLE`, we allow for rubberband selection and single-click activation with `set_enable_rubberband_selection` and `set_single_click_activate`. 
-
-If we define all columns before starting to add rows, like we've done in the above example. For more complex purposes, for example dynamically adding or removing rows/columns, see the \link mousetrap::ColumnView corresponding documentation page\endlink for more information.
+Here, we use `Label`s as items in the `ColumnView`, but any arbitrarily complex widget can be used. Rows or columns do not require one specific widget type, we put any type of widget wherever we want.
 
 ---
 
 ## Grid
 
-Note to be confused with `GridView`, \a{Grid} arranges its children in a non-uniform grid:
+Not to be confused with `GridView`, \a{Grid} arranges its children in a **non-uniform** grid:
 
 \image html grid.png
 
@@ -1751,38 +1735,38 @@ window.set_child(grid);
 ```
 \how_to_generate_this_image_end
 
-Each widget on the grid has four properties, it's **x-index**, **y-index**, **width** and **height** in the grid. These are not in pixels, rather they are the conceptional index in a grid, similar to how a matrix in math would be indexed. 
+Each widget on the grid has four properties, it's **x-index**, **y-index**, **width** and **height**. These are not in pixels, rather they are the conceptional position or number of cells in the grid. 
 
-For example, in the above figure, the widget labeled `00` has x- and y-index `0` and width and height `1`. The widget next to it, labeled `03` had x-index 1, y-index `0`, a width of `2` and a height of `1`.
+For example, in the above figure, the widget labeled `00` has x- and y-index `0` and a width and height of `1`. The widget next to it, labeled `03` has an x-index `1`, y-index of `0`, a width of `2` and a height of `1`.
 
 To add a widget to a grid, we need to provide the widget the position and size in the grid:
 
 ```cpp
 grid.insert(
     /* child widget */
-    {1, 0}, // x, y
-    2,      // width
-    1       // height
+    {1, 0},  // x, y
+    2,       // width
+    1        // height
 );
 ```
 
-Where `width` and `height` are optional, they are set to `1` by default.
+Where `width` and `height` are optional, with `1` beind the default value for both arguments.
 
 When a widget is added to a column or row not yet present in the grid, it is added automatically. Valid x- and y-indices are 0-based (`{0, 1, 2, ...}`), while width and height have to be a multiple of 1 (`{1, 2, ...}`).
 
-Note that it is our responsibility to make it such that the widgets do not overlap, we have to choose the size and index of each child carefully.
+Note that it is our responsibility to make sure a widgets position and size do not overlap with that of another widget. If carelessly inserted, one widget may obscure anohter, though in some cases this behavior may also be intentional.
 
 `Grid::set_columns_homogenous` and `Grid::set_rows_homogenous` specify whether the `Grid` should allocate the exact same width for all columns or height for all rows, respectively.
 
 Lastly, we can choose spacing between each cell using `Grid::set_row_spacing` and `Grid::set_column_spacing`.
 
-`Grid` can be seen as a more flexible version of `ColumnView`. It also arranges arbitrary widgets in columns and rows, but, unlike `ColumnView`, in `Grid` a widget can occupy more thant one row / column.
+`Grid` can be seen as a more flexible version of `GridView`. It also arranges arbitrary widgets in columns and rows, but, unlike with `GridView`, in `Grid` a widget can occupy more thant one row / column.
 
 --- 
 
 ## Stack
 
-Unlike the pervious ones so far, \a{Stack} is a selectable widget that can only ever show one child. As such, it is useful for applications where a page-like layout is desired. The order of children depends on the order at which we call `Stack::add_child` in. This function returns an ID, which uniquely identifies that type of item. We need to keep track of this ID, as it is what allows us to later call `Stack::set_visible_child`, to change the stacks currently shown page to that with the supplied ID:
+\a{Stack} is a selectable widget that can only ever display exactly one child. We register a number of widgets with the `Stack`. All widget except the selected on will be hidden, while the selected widget will occupy the entire allocated space of the `Stack`:
 
 ```cpp
 auto stack = Stack();
@@ -1796,13 +1780,13 @@ auto page_02_id = stack.add_child(page_02, "Page 02");
 stack.set_visible_child(page_01_id);
 ```
 
-We can also change the currently displayed child by calling methods like `SelectionModel::select` on the internal selection model of the stack, which we acquire using `Stack::get_selection_model`. As state before, if the state of the `SelectionModel` changes, the display widget, `Stack` in this case, will change to match.
+Adding a widget with `Stack::add_child` will return the **stack id** of that page. To make make a specific widget be the currently shown widget, we use `Stack::set_visible_child`, which takes the stack id we obtained.
 
-We see above that `Stack::add_child` takes an second argument, which is the **page title**. This title is not used in the stack itself, rather, it is used for two widgets made to exclusively interact with the stack. So far, only we as develoeprs where able to change which child is currently displayed. These two widgets give the user the option to choose themself.
+We see above that `Stack::add_child` takes an second argument, which is the **page title**. This title is not used in the stack itself, rather, it is used for two widgets made to exclusively interact with the stack. These widgets are made to make selecting a specific stacks page easy on both the user and developer. If we use any of these two widgets, we will rarely have to manually select the visible child.
 
 ### StackSwitcher
 
-\a{StackSwitcher} presents the user with a row of buttons, each of which have use the current stacks childs title as its label:
+\a{StackSwitcher} presents the user with a row of buttons, each of which use the corresponding stack childs title:
 
 ```cpp
 auto stack = Stack();
@@ -1858,11 +1842,11 @@ window.set_child(box);
 ```
 \how_to_generate_this_image_end
 
-We see that we need to supply the `Stack` instance the `StackSwitcher` should control in `StackSwitcher`s constructor.
+`StackSwitcher` has no other methods, it simply provides a user interface to control a `Stack`.
 
 ### StackSidebar
 
-`StackSidebar` presents the user with a vertical list of labels, again using the title supplied for each of `Stack`s children:
+\a{StackSidebar} has the same purpose as `StackSwitcher`, though it displays the list of stack pages as a vertical list:
 
 ```cpp
 auto stack = Stack();
@@ -1917,23 +1901,23 @@ window.set_child(box);
 ```
 \how_to_generate_this_image_end
 
-`StackSidebar` and ``StackSwitcher` have no other member functions, their only use is to control the currently revealed child of a `Stack`.
+Other than this visual component, its purpose is identical to that of `StackSwitcher`.
 
 ### Transition Animation
 
-When switching between two pages in a stack, an animation plays transitioning from one to the other. Similar to `Revealer`, we can influence this animation in multiple ways:
+When switching selecting a different page of the stack, regardless of how that selection was triggered, an animation transitioning from one page to the other plays. Similar to `Revealer`, we can influence the type and speed of animation in multiple ways:
 
 + `Stack::set_transition_duration` governs how long the animation will take until it is complete
-+ `Stack::set_interpolate_size`, if set to `true`, makes it such that while the transition animation plays, the stack will change from the size of the previous child to the size of the current child
++ `Stack::set_interpolate_size`, if set to `true`, makes it such that while the transition animation plays, the stack will change from the size of the previous child to the size of the current child. If set to `false`, this size-change happens instantly
 + `Stack::set_animation_type` governs the type of animation
 
-Mousetrap provides a large number of different animation, which are represented by the enum \a{StackTransitionType}. They including crossfade, sliding and rotating the child widget. For a full list of animation types, see the \link mousetrap::StackTransitionType corresponding documentation page\endlink.
+Mousetrap provides a large number of different animation, which are represented by the enum \a{StackTransitionType}. They including crossfade, sliding, and rotating between pages. For a full list of animation types, see the \link mousetrap::StackTransitionType corresponding documentation page\endlink.
 
 ---
 
 ## Notebook
 
-\a{Notebook} is very similar to `Stack`, it also displays exactly one child at a time. Unlike `Stack`, it comes with a built-in way for users to select which child to show:
+\a{Notebook} is very similar to `Stack`, it always displays exactly one child. Unlike `Stack`, it comes with a built-in way for users to select which child to show:
 
 \image html notebook.png
 
@@ -1968,16 +1952,18 @@ window.set_child(notebook);
 ``` 
 \how_to_generate_this_image_end
 
-`Notebook` sports some additional feature, by setting `Notebook::set_is_scrollable` to `true`, the user can change between pages by scrolling. Furthermore, once `Notebook::set_tabs_reorderable` is set to `true`, the user can drag and drop pages to reorder them. Users can even **drag pages from one notebook to another**.
+We see that each notebook page has a tab with a title. This title widget will usually be a `Label`, though it can be any arbitrarily complex widget. When adding a page using `Notebook::push_back`, the first argument is the widget that should be used as the page, while the second argument is the widget that should be used as the label.
 
-This complex behavior necessitate notebook having a number of custom signals:
+`Notebook` sports some additional features. Setting `Notebook::set_is_scrollable` to `true` allows users to change between pages by scrolling. 
+When `Notebook::set_tabs_reorderable` is set to `true`, the user can drag and drop pages to reorder them in any order they wish. Users can even **drag pages from one notebook to another**. In this way, `Notebook` is like a `Stack` with a number of complex features already implemented for us.
+
+`Notebook` has a number of custom signals that reflect these multiple modes of interaction, these are in addition to all the signals offered by the underlying `SelectionModel`, which, just like with all selectable widgets, we obtain using `get_selection_model`.
 
 \signals
 \signal_page_added{Notebook}
 \signal_page_reordered{Notebook}
 \signal_page_removed{Notebook}
 \signal_page_selection_changed{Notebook}
-\widget_signals{Notebook}
 
 Where `_` is an unusued argument. For example, we would connect to `page_selection_changed` like so:
 
@@ -1989,19 +1975,23 @@ notebook.connect_signal_page_selection_changed([](Notebook*, void*, int32_t page
 
 \todo refactor notebook signals to remove unused argument
 
+Note that `Notebook` does not provide `get_selection_model`. Use the `page_selection_changed` signal to monitor page selection, and `Notebook::goto_page` to manually switch between pages instead.
+
+---
+
 ---
 
 ## Compound Widgets
 
 This concludes our tour of most of mousetraps widgets. Even though the selection is wide and powerful, we have yet to learn one of the more important things: **how do we make our own widgets?**
 
-If we want to start from scratch and implement every pixel and shape and interaction, we will have to wait until the chapter on [native rendering](09_opengl.md). Not all custom widgets need to be that low-level, however. Often we simply want a collection of already existing widgets to act as one. To illustrate this, an example may be best.
+If we want to start from scratch and manually choose every pixel and mode of interaction, we will have to wait until the chapter on [native rendering](09_opengl.md). Not all custom widgets need to be that low-level, however. Often, we simply want a collection of already existing widgets to act as one. To illustrate this, an example may be best.
 
-In previous sections, somewhat more complex C++ code was used to better illustrate the function of a widget. For example, we saw this figure in the section of `GridView`:
+In previous sections, whenever a figure was shown, the C++ code used to generate that figure was supplied along with it. Take, for example, the figure from the section on `GridView`:
 
 \image html grid_view.png
 
-Here, `GridView` has 7 children. Each child is clearly a widget, as `GridView::push_back` requires a widget to be used as the argument. Looking closely, the children are actually at least 3 widgets:
+Here, `GridView` has 7 children. Each child is clearly a widget, as `GridView::push_back` requires a widget to be used as the argument. Looking closely, the children are actually a collection of at least 3 widgets:
 
 + a `Label` with the number
 + a `Separator` as the background
@@ -2009,7 +1999,9 @@ Here, `GridView` has 7 children. Each child is clearly a widget, as `GridView::p
 
 On top of these, we have an `Overlay` in order to layer all three graphical elements on top of each other, and we also have an `AspectFrame` that keeps the element square.
 
-A widget like this is called a **compound widget**. It is made up of multiple other widgets, but acts as one. Given that C++ is an object oriented language, we should create a new custom widget object for this purpose:
+While we could create 5 individual widgets for every element of `GridView`, this would be highly tedious and not very idiomatic, as C++ is an object-oriented language. Instead, we should create a new, **compound widget**, a widget that is made up of multiple other widgets, but acts as one. 
+
+We first create a class like so:
 
 ```cpp
 class CompoundWidget
@@ -2026,7 +2018,9 @@ class CompoundWidget
 };
 ```
 
-All the ingredients are in this class, we now need to put them together. This will usually happen in the compound widgets constructor:
+All the widgets are private fields of the compound widget. This means, as long as an instance of `CompoundWidget` exists, the 5 widgets it contains will be kept in memory.
+
+We usually define how a compound widget is assembled in its constructor:
 
 ```cpp
 // define constructor
@@ -2041,9 +2035,11 @@ CompoundWidget(size_t id)
 }
 ```
 
-This constructors sets up all the widget like we discussed. The lower most layer of the `Overlay` is the `Separator`, which will act as the background for the compound widget. On top of it, a `Label` is inserted. we set the string of the label based on the id given to the constructor.
+This constructors sets up all the widget like we discussed before. 
 
-The entire `Overlay` is the set as the child of the frame, giving it a rounded appearance. Lastly, that `Frame` is put into the `AspectFrame`, which will enforce that the entire widget is always square (as we initialized the `AspectFrame` with ratio `1`).
+The lower most layer of the `Overlay` is the `Separator`, which will act as the background for the compound widget. On top of it, a `Label` added. We set the string of the label based on the id given to the constructor.
+
+The entire `Overlay` is first insterted into a `Frame`, then that frame is set as child of our `AspectFrame`, which has a ratio of `1`, keeping it square at all times.
 
 We can now initialize our compound widget and add it to a window, right?
 
@@ -2051,13 +2047,14 @@ We can now initialize our compound widget and add it to a window, right?
 auto instance = CompoundWidget(0);
 window.set_child(compound_widget);
 ```
-
 ```
 /home/mousetrap/test/main.cpp:201:26: error: non-const lvalue reference to type 'mousetrap::Widget' cannot bind to a value of unrelated type 'CompoundWidget'
         window.set_child(instance);
                          ^~~~~~~~
 ```
-We cannot, as we get a sensible error. For this to work, we need to declare `CompoundWidget` to be a widget. We do this be publicy **inheriting from mousetrap::Widget**:
+No, we cannot. As the error states, `CompoundWidget` cannot bind to a reference of type `mousetrap::Widget`.  For this to work, we need to declare `CompoundWidget` to be a widget manually. 
+
+This is accomplished by simply **inheriting from mousetrap::Widget**:
 
 ```cpp
 class CompoundWidget : public Widget    // inherit
@@ -2067,7 +2064,7 @@ class CompoundWidget : public Widget    // inherit
         CompoundWidget(size_t id);
         
         // function required by `Widget`
-        operator NativeWidget const override;
+        operator NativeWidget() const override;
         
     private:
         Separator _separator;
@@ -2078,7 +2075,7 @@ class CompoundWidget : public Widget    // inherit
 };
 ```
 
-Inherting from `Widget` requires us to implement a single pure virtual function `operator NativeWidget const override`. Using this function, mousetrap can convert any object into a widget and add to the internal state of the mousetrap runtime. 
+Inheriting from `Widget` requires us to implement a single pure virtual function `operator NativeWidget() const`, which we mark as `override`. Once this function is implemented, mousetrap is able treat that object as a widget, allowing us to the compound widget as a single instance of `Widget`.
 
 We implement this function as follows:
 
@@ -2088,7 +2085,7 @@ CompoundWidget::operator NativeWidget() const {
 }
 ```
 
-The returned value has to be the **top-level** widget of our compound widget. All other widgets in the compound widget are contained in the top-level widget, and the top-level widget is not contained in any other widget.
+The returned value should be the **top-level** widget of our compound widget. All other widgets in the compound widget are contained in the top-level widget, and the top-level widget is not contained in any other widget.
 
 Writing out example `CompoundWidget` like this may make the widget order clearer:
 
@@ -2100,7 +2097,7 @@ AspectFrame \
             Separator
 ``` 
 
-Where each line ending in `\` is a widget container. We see that `AspectFrame` is the only widget that is not also a child of another widget. Therefore, `AspectFrame` is the top-level widget, hence the definition of `operator NativeWidget` above.
+Where each line ending in `\` is a widget container. We see that `AspectFrame` is the only widget that is not also a child of another widget. Therefore, `AspectFrame` is the top-level widget, hence the definition of `operator NativeWidget() const` above.
 
 Putting it all together:
 
@@ -2139,4 +2136,8 @@ window.set_child(instance);
 
 \image html compound_widget.png
 
-In this example, `CompoundWidget` is fairly simple. In the real-world, applications can have dozens if not hundreds of different compound widget. Indeed, an entire application can be just one giant complex nested compound widget. In either case, `operator NativeWidget` is the glue that binds our custom objects to the pre-build ways mousetrap allows widgets to be used. Once it is implemented (by simple returning the top-level widget), everything works automatically.
+In this example, `CompoundWidget` is fairly simple. In the real-world, applications can have dozens if not hundreds of different compound widget, all made up an even larger number of native widgets. 
+
+Indeed, an entire application will usually be one, giant compound widget which a `Window` as the top-level widget. 
+
+In any case, `operator NativeWidget() const` is the glue that binds our custom objects to the pre-built way mousetrap allows widgets to be used. Once it is implemented (by simply returning the top-level widget), everything works as expected.

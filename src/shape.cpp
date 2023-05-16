@@ -539,11 +539,11 @@ namespace mousetrap
 
     void Shape::as_circular_ring(Vector2f center, float outer_radius, float thickness, size_t n_outer_vertices)
     {
-        as_elliptic_ring(center, outer_radius, outer_radius, thickness, thickness, n_outer_vertices);
+        as_elliptical_ring(center, outer_radius, outer_radius, thickness, thickness, n_outer_vertices);
         _internal->shape_type = detail::ShapeType::CIRCULAR_RING;
     }
 
-    void Shape::as_elliptic_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices)
+    void Shape::as_elliptical_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices)
     {
         const float step = 360.f / n_outer_vertices;
         _internal->vertices->clear();
@@ -565,7 +565,7 @@ namespace mousetrap
         }
 
         _internal->render_type = GL_TRIANGLES;
-        _internal->shape_type = detail::ShapeType::ELLIPTIC_RING;
+        _internal->shape_type = detail::ShapeType::ELLIPTICAL_RING;
 
         _internal->indices->clear();
         for (size_t i = 0; i < n_outer_vertices - 1; ++i)
@@ -838,7 +838,7 @@ namespace mousetrap
                 shape.get_vertex_position(3)
             });
         }
-        else if (type == ShapeType::CIRCULAR_RING or type == ShapeType::ELLIPTIC_RING)
+        else if (type == ShapeType::CIRCULAR_RING or type == ShapeType::ELLIPTICAL_RING)
         {
             for (size_t i = 0; i < shape.get_n_vertices() - 2; i++)
             {
@@ -1203,10 +1203,10 @@ namespace mousetrap
         return out;
     }
 
-    Shape Shape::EllipticRing(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices)
+    Shape Shape::EllipticalRing(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices)
     {
         auto out = Shape();
-        out.as_elliptic_ring(center, x_radius, y_radius, x_thickness, y_thickness, n_outer_vertices);
+        out.as_elliptical_ring(center, x_radius, y_radius, x_thickness, y_thickness, n_outer_vertices);
         return out;
     }
 

@@ -66,7 +66,7 @@ namespace mousetrap
             POLYGON,
             RECTANGULAR_FRAME,
             CIRCULAR_RING,
-            ELLIPTIC_RING,
+            ELLIPTICAL_RING,
             WIREFRAME,
             OUTLINE
         };
@@ -242,10 +242,10 @@ namespace mousetrap
             /// @param x_thickness width of the inner bound of the ellipse along the x-axis
             /// @param y_thickness height of the inner bounds of the ellipse along the y-axis
             /// @param n_outer_vertices number of vertices on the outer perimeter of the ellipse
-            void as_elliptic_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices);
+            void as_elliptical_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices);
 
             /// @copydoc Shape::as_elliptic_ring
-            static Shape EllipticRing(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices);
+            static Shape EllipticalRing(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices);
 
             /// @brief construct as a closed loop linesegment
             /// @param points {a1, a2, ..., an} will result in line segments {a1, a2}, {a2, a3}, ..., {an-1, an}, {an, a1}

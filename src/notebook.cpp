@@ -4,6 +4,7 @@
 
 #include <mousetrap/notebook.hpp>
 #include <mousetrap/log.hpp>
+#include <mousetrap/selection_model.hpp>
 
 #include <iostream>
 
@@ -12,17 +13,24 @@ namespace mousetrap
     namespace detail
     {
         DECLARE_NEW_TYPE(NotebookInternal, notebook_internal, NOTEBOOK_INTERNAL)
-        DEFINE_NEW_TYPE_TRIVIAL_FINALIZE(NotebookInternal, notebook_internal, NOTEBOOK_INTERNAL)
         DEFINE_NEW_TYPE_TRIVIAL_INIT(NotebookInternal, notebook_internal, NOTEBOOK_INTERNAL)
+
+        static void notebook_internal_finalize(GObject* object)
+        {
+            auto* self = MOUSETRAP_NOTEBOOK_INTERNAL(object);
+            G_OBJECT_CLASS(notebook_internal_parent_class)->finalize(object);
+        }
+
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(NotebookInternal, notebook_internal, NOTEBOOK_INTERNAL)
 
-        static NotebookInternal* notebook_internal_new()
+        static NotebookInternal* notebook_internal_new(GtkNotebook* native)
         {
             auto* self = (NotebookInternal*) g_object_new(notebook_internal_get_type(), nullptr);
             notebook_internal_init(self);
 
             self->popup_enabled = false;
             self->tabs_reorderable = false;
+            self->native = native;
             return self;
         }
     }
@@ -35,7 +43,7 @@ namespace mousetrap
           CTOR_SIGNAL(Notebook, page_selection_changed)
     {
         gtk_notebook_popup_disable(get_native());
-        _internal = detail::notebook_internal_new();
+        _internal = detail::notebook_internal_new(get_native());
         detail::attach_ref_to(G_OBJECT(get_native()), _internal);
     }
 

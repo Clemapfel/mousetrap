@@ -181,8 +181,36 @@ int main()
 
         auto& window = state->main_window;
 
-        // TODO
-        // TODO
+        auto notebook = Notebook();
+        auto child = [](size_t id)
+        {
+            auto overlay = Overlay();
+            overlay.set_child(Separator());
+
+            auto label = Label(std::string("Notebook Child #") + (id < 10 ? "0" : "") + std::to_string(id));
+            label.set_alignment(Alignment::CENTER);
+            overlay.add_overlay(label);
+
+            auto frame = Frame();
+            frame.set_child(overlay);
+            frame.set_size_request({300, 300});
+
+            auto aspect_frame = AspectFrame(1);
+            aspect_frame.set_child(frame);
+
+            return aspect_frame;
+        };
+
+        notebook.push_back(child(01), Label("Page 01"));
+        notebook.push_back(child(02), Label("Page 02"));
+        notebook.push_back(child(01), Label("Page 03"));
+        notebook.set_tabs_reorderable(true);
+
+        notebook.get_selection_model()->connect_signal_selection_changed([](SelectionModel* model, int32_t i, int32_t n){
+            std::cout << i << std::endl;
+        });
+
+        window.set_child(notebook);
 
         state->main_window.present();
     });

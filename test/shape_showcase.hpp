@@ -100,9 +100,9 @@ namespace mousetrap
                 add_page("Circular Ring", circular_ring);
                 add_page("Circular Ring Outline", Shape::Outline(circular_ring));
 
-                auto elliptic_ring = Shape::EllipticRing({0, 0}, 0.6, 0.5, 0.15, 0.15, 32);
-                add_page("Elliptic Ring", elliptic_ring);
-                add_page("Elliptic Ring Outline", Shape::Outline(elliptic_ring));
+                auto elliptic_ring = Shape::EllipticalRing({0, 0}, 0.6, 0.5, 0.15, 0.15, 32);
+                add_page("Elliptical Ring", elliptic_ring);
+                add_page("Elliptical Ring Outline", Shape::Outline(elliptic_ring));
 
                 key_controller.connect_signal_key_pressed([](KeyEventController*, int32_t key, int32_t, ModifierState, ShapeShowcase* instance){
 

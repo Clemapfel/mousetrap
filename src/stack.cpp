@@ -20,6 +20,7 @@ namespace mousetrap
             auto* self = MOUSETRAP_STACK_INTERNAL(object);
             G_OBJECT_CLASS(stack_internal_parent_class)->finalize(object);
             delete self->children;
+            delete self->selection_model;
         }
 
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(StackInternal, stack_internal, STACK_INTERNAL)
