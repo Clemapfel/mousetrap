@@ -30,7 +30,7 @@ Any shape that can be drawn is made up of **vertices**. In mousetrap, a vertex i
 
 In this section, we will be using three different coordinate systems. **3D space**, **texture space**.
 
-#### 3D space
+#### OpenGL Space
 
 A vertices `position` is a point in 3D space, which is the left-handed coordinate system familiar from traditional geometry:
 
@@ -38,7 +38,7 @@ A vertices `position` is a point in 3D space, which is the left-handed coordinat
 
 <center>(source: [learnopengl.com](https://learnopengl.com/Getting-started/Coordinate-Systems))</center>
 
- Sticking to 2D for now, we assume the the z-coordainte is '0' from now on. This reduces the 3d space to a 2D plane, which is sometimes called the **viewport**. 
+ Sticking to 2D for now, we assume the the z-coordainte is '0' from now on. This reduces the 3d space to a 2D plane, which is sometimes called **gl coordinates**. 
  
 We see that the y-coordinate is positive when move "up", negative when moving "down". The x coordinate is negative when going "left", positive when going "right". 
 
@@ -77,6 +77,25 @@ Some examples:
 | bottom right        | `(1.0, 1.0)`  |
 
 This coordinate system is identical to relative widget space.
+
+#### Converting between coordinates
+
+`RenderArea` offers two static functions that allow us to convert between absolute widget space and 3d space. Recall that for a widget of size 400x300, the top left corner will be (0, 0), and the bottom right corner will be (400, 300). For example, `MotionEventController`s `motion` signal provides use with coordinates in widget space. 
+
+To convert from widget to gl coordinates, we use `RenderArea::to_gl_coordinates`. For the inverse, we use `RenderArea::from_gl_coordinates`.
+
+For example, to translate the position returned by `MotionEventController` to gl coordinates used by `Shape`, we can do the following:
+
+```cpp
+auto motion_controller = MotionEventController();
+motion_controller.connect_signal_motion([](MotionEventController*, double widget_x, double widget_y){
+    auto widget_coordinates = Vector2f(widget_x, widget_y);
+    auto gl_coordinates = RenderArea::to_gl_coordinates(widget_coordinates);
+    std::cout << "Current Positio in GL Space: " << gl_coordinates.x << " " < gl_coordinates.y << std::endl;
+})
+```
+
+Note that we do not need an instance of `RenderArea`, as `to_gl_coordinates` is a static function.
 
 ---
 
@@ -418,6 +437,14 @@ Similar to `Image::as_scaled`, we have options on how we want the texture to beh
 
 Which are roughly equivalent to `Image`s `InterpolationType::NEAREST` and `InterpolationType::BILINEAR`.
 
+#### Wrap Mode
 
+Wrap mode governs how the texture behaves when a vertices texture coordinate are outside of `[0, 1]`. Mousetrap offers the following wrap modes, which are all part of the enum \a{TextureWrapMode}:
+
+\todo figures
+
+## Shaders
+
+\note The rest of this chapter is intended for advance readers familiar with OpenGL concepts, such as fragment shaders, vertex shaders, uniforms and transforms. 
 
 
