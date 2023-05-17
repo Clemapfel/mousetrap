@@ -5,6 +5,40 @@ In this chapter, we will learn:
 + What an event controller is
 + How to connect an event controller to any widget
 
+--- 
+<details><summary><b><tt>main.cpp</tt> for this chapter</b></summary>
+
+Snippets from this section can be run using the following main.cpp:
+
+```cpp
+#include <mousetrap.hpp>
+using namespace mousetrap;
+
+int main()
+{
+    auto app = Application("example.app");
+    app.connect_signal_activate([](Application* app)
+    {
+        auto window = Window(*app);
+        static auto separator = Separator();
+        separator.set_size_request({300, 300});
+        separator.set_expand(true);
+        separator.set_focusable(true);
+        separator.connect_signal_show([](Widget* self){
+            self->grab_focus()
+        });
+
+        // snippet goes here, then add the event controller to
+        
+        separator.add_controller(/* controller here */)
+        window.set_child(separator);
+        window.present();
+    });
+    return app.run();
+}
+```
+</details>
+
 ---
 
 ## Event Model

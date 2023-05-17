@@ -24,6 +24,8 @@ One of the simplest interactions a human can have with a GUI program is clicking
 In this case, the signals' **ID** is `clicked`, while the signal **emitter** is an instance of `Button`. When a user clicks the button (the graphical area on their screen), the in-memory object emits signal `clicked`. If we want to tie program behavior to the user clicking the button, we **connect a callback** (a function) to this signal. Once connected, when the button is clicked, `clicked` is emitted, which in turn will trigger invocation of the connected function.
 
 ```cpp
+using namespace mousetrap;
+
 // create `Button` instance
 auto button = Button();
 

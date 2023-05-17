@@ -7,6 +7,32 @@ In this chapter, we will learn:
 + How to create compound widgets
 
 ---
+<details><summary><b><tt>main.cpp</tt> for this chapter</b></summary>
+
+Snippets from this section can be run using the following main.cpp:
+
+```cpp
+#include <mousetrap.hpp>
+using namespace mousetrap;
+
+int main()
+{
+    auto app = Application("example.app");
+    app.connect_signal_activate([](Application* app)
+    {
+        auto window = Window(*app);
+        
+        // add snippet here
+      
+        window.set_child(/* widget from snippet */);
+        window.present();
+    });
+    return app.run();
+}
+```
+</details>
+
+---
 
 ## What is a widget?
 

@@ -7,6 +7,36 @@ In this chapter we will learn:
 
 ---
 
+<details><summary><b><tt>main.cpp</tt> for this chapter</b></summary>
+
+Here is a `main.cpp` that allows us to run any code snippet mentioned in this chapter:
+
+```cpp
+#include <mousetrap.hpp>
+using namespace mousetrap;
+
+int main()
+{
+    auto app = Application("example.app");
+    app.connect_signal_activate([](Application* app)
+    {
+        auto window = Window(*app);
+        auto button = Button();
+        button.set_child("<b>&#9205;</b>");
+        button.connect_signal_clicked([](Button*){
+           // snippet goes here, press button to trigger it 
+        });
+        
+        window.set_child(button);
+        window.present();
+    });
+    return app.run();
+}
+```
+</details>
+
+---
+
 ## Introduction
 
 Mousetrap was originally written as the GUI engine for an unreleased frame-by-frame animation app. This history is why it contains a fully-featured, image processing suite, making it well-suited out of the box for image-editing applications.

@@ -5,6 +5,39 @@ In this chapter we will learn:
 + How to draw any shape
 + How to bind a shape, transform, and shader for rendering
 + How to render to a (multi-sampled) texture
+---
+
+<details><summary><b><tt>main.cpp</tt> for this chapter</b></summary>
+
+Here is a `main.cpp` that allows use to run any code snippet mentioned in this chapter:
+
+```cpp
+#include <mousetrap.hpp>
+using namespace mousetrap;
+
+int main()
+{
+    auto app = Application("example.app");
+    app.connect_signal_activate([](Application* app)
+    {
+        auto window = Window(*app);
+        
+        auto render_area = RenderArea();
+        render_area.set_expand(true);
+        render_area.set_size_request({400, 300})
+        
+        auto aspect_frame = AspectFrame(4:3);
+        aspect_frame.set_chlid(render_area);
+        window.set_child(aspect_frame);
+        window.present();
+    });
+    
+    return app.run();
+}
+```
+</details>
+
+---
 
 In the [chapter on widgets](04_widgets.md), we noted that, so far, we were only create new widgets by combining already pre-defined widgets. We could create a widget that has a `Scale`, but we can't render our own scale with, for example, a square knob. In this chapter, we will change this. By using OpenGL to render any arbitrary shape, we can construct our own widgets pixel-by-pixel, line-by-line. Using this and the event system, we can craft our own `Scale` from scratch.
 

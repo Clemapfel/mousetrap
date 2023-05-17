@@ -31,7 +31,7 @@ $extrastylesheet
 
  <script>
     $(function() {
-        hljs.configure({languages: ["julia", "cpp", "cmake", "bash"]});
+        hljs.configure({languages: ["julia", "cpp", "cmake", "bash", "glsl"]});
         $(".snippet").each(function(i,node) {
             $(node).removeClass(".snippet");
             hljs.highlightBlock(node);
