@@ -181,9 +181,39 @@ int main()
 
         auto& window = state->main_window;
 
-        auto shader = Shader();
-        shader.create_from_string(ShaderType::FRAGMENT);
+        auto render_area = RenderArea();
+        static auto shape = Shape::Rectangle({-1, -1}, {2, 2});
+        static auto shader = Shader();
+        shader.create_from_string(ShaderType::FRAGMENT, R"(
+            #version 130
 
+            in vec4 _vertex_color;
+            in vec2 _texture_coordinates;
+            in vec3 _vertex_position;
+
+            out vec4 _fragment_color;
+
+            void main()
+            {
+                vec2 pos = _vertex_position.xy;
+
+                _fragment_color = vec4(
+                    pos.y,
+                    dot(pos.x, pos.y),
+                    pos.x,
+                    1
+                );
+            }
+        )");
+
+        render_area.add_render_task(
+            shape,
+            &shader
+        );
+
+        auto aspect_frame = AspectFrame(1);
+        aspect_frame.set_child(render_area);
+        window.set_child(aspect_frame);
         state->main_window.present();
     });
 

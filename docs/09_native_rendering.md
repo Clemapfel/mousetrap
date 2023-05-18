@@ -547,6 +547,23 @@ The rest of this chapter is intended users familiar with OpenGL. We will learn h
 
 ---
 
+## Render Task
+
+So far, we registered render tasks using `render_area.add_render_task(shape)`. This is shortform for the following:
+
+```cpp
+auto render_task = RenderTask(
+    shape,        // const Shape&
+    shader,       // const Shader*
+    transform,    // const Transform*
+    blend_mode    // mousetrap::BlendMode
+)
+```
+
+Using these four components, `RenderTask` gathers all object necessary to render a shape to the screen. All of these except the `Shape` are optional, if not specified a default value will be used for them, which allowed use to simply render a shape without thinking about any of the other components. 
+
+In this section, we will want to think about them, however. We've already learned about `Shape`, next are `Shader`s.
+
 ## Shaders
 
 Mousetrap offers two entry points for shaders, **fragment** and **vertex** shaders. These shaders are written in GLSL. While users can write any behavior they want inside the body of these shaders, the in- and out- variables, as well as certain uniforms are set.
@@ -557,7 +574,179 @@ To create a shader, we first instantiate \a{Shader}, then compile code like so:
 
 ```cpp
 auto shader = Shader();
-shader.
+shader.create_from_string(ShaderType::FRAGMENT, R"(
+    #version 130
+    
+    in vec4 _vertex_color;
+    in vec2 _texture_coordinates;
+    in vec3 _vertex_position;
+    
+    out vec4 _fragment_color;
+    
+    void main()
+    {
+        vec2 pos = _vertex_position.xy;
+        _fragment_color = vec4(pos.y, dot(pos.x, pos.y), pos.x, 1);
+    }
+)");
+```
 
+We can then supply a pointer to the shader as the 2nd argument to `RenderArea::add_render_task`, which automatically binds it for rendering:
 
+```cpp
+// create rectangle shape that occupise 100% of the viewport
+auto shape = Shape::Rectangle({-1, -1}, {2, 2});
 
+// create fragment shader
+auto shader = Shader();
+shader.create_from_string(ShaderType::FRAGMENT, R"(
+    (...)
+)");
+
+// bind shape and shader for rendering
+render_area.add_render_task(
+    shape,
+    &shader
+);
+```
+
+\image html shader_hello_world.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto render_area = RenderArea();
+static auto shape = Shape::Rectangle({-1, -1}, {2, 2});
+static auto shader = Shader();
+shader.create_from_string(ShaderType::FRAGMENT, R"(
+            #version 130
+
+            in vec4 _vertex_color;
+            in vec2 _texture_coordinates;
+            in vec3 _vertex_position;
+
+            out vec4 _fragment_color;
+
+            void main()
+            {
+                vec2 pos = _vertex_position.xy;
+
+                _fragment_color = vec4(
+                    pos.y,
+                    dot(pos.x, pos.y),
+                    pos.x,
+                    1
+                );
+            }
+        )");
+
+render_area.add_render_task(
+    shape,
+    &shader
+);
+
+auto aspect_frame = AspectFrame(1);
+aspect_frame.set_child(render_area);
+window.set_child(aspect_frame);
+```
+\how_to_generate_this_image_end
+
+We see that the first argument to `Shader::create_from_file` is the **shader type**, which is either `ShaderType::FRAGMENT` or `ShaderType::VERTEX`. If one or both of these is not specific when creating a render task, mousetrap will use the default shaders, whos definition may be instructive here:
+
+### Default Vertex Shader
+
+This is the default vertex shader:
+
+```glsl
+#version 330
+
+layout (location = 0) in vec3 _vertex_position_in;
+layout (location = 1) in vec4 _vertex_color_in;
+layout (location = 2) in vec2 _vertex_texture_coordinates_in;
+
+uniform mat4 _transform;
+
+out vec4 _vertex_color;
+out vec2 _texture_coordinates;
+out vec3 _vertex_position;
+
+void main()
+{
+    gl_Position = _transform * vec4(_vertex_position_in, 1.0);
+    _vertex_color = _vertex_color_in;
+    _vertex_position = _vertex_position_in;
+    _texture_coordinates = _vertex_texture_coordinates_in;
+}
+```
+
+We see that it requires OpenGL 3.3, which is the reason that mousetrap also requires that version as a dependency. This shader simply forwards the corresponding shape attributes to the fragment shader.
+
+Note that all vertex shaders have to have this layout, meaning `_vertex_position_in`, `_vertex_color_in` and `_vertex_texture_coordinate_in` , which supply the shader with the corresponding data from the shape wer are rendering, **cannot be renamed**, all mousetrap vertex shaders have to use exactly these names at exactly the `location` state above. Similarly, the output `_vertex_color`, `_texture_coordinates` and `_vertex_position` have to have these names, and only these three variables can be outputed. 
+
+This shaders uniform is `_transform`, which is a \a{GLTransform} bound to the `RenderTask`. If one is present, the vertex shader should respect this transform and apply it to the shapes vertices. If a `RenderTask` had no transform registered, the `_transform` uniform will be the identity transform.
+
+### Default Fragment Shader
+
+```glsl
+#version 330
+
+in vec4 _vertex_color;
+in vec2 _texture_coordinates;
+in vec3 _vertex_position;
+
+out vec4 _fragment_color;
+
+uniform int _texture_set;
+uniform sampler2D _texture;
+
+void main()
+{
+    if (_texture_set != 1)
+        _fragment_color = _vertex_color;
+    else
+        _fragment_color = texture2D(_texture, _texture_coordinates) * _vertex_color;
+}
+```
+
+We see that the vertex-shader output variables appear as inputs here. Again, these names are fixed, the shader should always use exactly these names. Similarly, we should use `_fragment_color` as the output, not `gl_FragCoord`. 
+
+The uniform `_texture` is a pointer to the texture data registered via `Shape::set_texture`. If no texture is present, this data will be `0`. `_texture_set`, then, is a boolean flag telling us whether the shape does or does not have a texture. If a texture is present, `_texture_set` will be `1`, if not texture is present, `_texture_set` will have a value of `0`. 
+
+#### Binding Uniforms
+
+Both the vertex and fragment shader make use of uniforms. These, unlike the `in` and `out` variables can be modified freely, and we can forward any object from CPU-side to the shaders.
+
+To bind a uniform, we first need a CPU-side value. Let's say we want our fragment shader to color the shape a certain color, which is specified by a CPU-side program. The vertex shader would look like this:
+
+```glsl
+#version 330
+
+in vec4 _vertex_color;
+in vec2 _texture_coordinates;
+in vec3 _vertex_position;
+
+out vec4 _fragment_color;
+
+uniform vec4 _color_rgba;
+
+void main()
+{
+    _fragment_color = _color_rgba;
+}
+```
+To set the value of `_color_rgba`, we should use `RenderTask`, which has an interface for registering values, called `RenderTask::register_*`, where `*` is the type of the uniform.
+
+The following types can be registered:
+
+| C++ Type   | GLSL Uniform Type |
+|------------|-------------------|
+| `float`    | `float`           |
+| `int32_t`  | `int`             |
+ | `uint32_t` | `uint`            |
+ | `Vector2f` | `vec2`            |
+| `Vector3f` | `vec3`            |
+| `Vector4f` | `vec4`            |
+| `GLTransform` | `mat4x4` |
+| `RGBA` | `vec4` |
+| `HSVA` | `vec4` |
+
+All `register_*` methods take a **pointer**. That is, we have to keep 
