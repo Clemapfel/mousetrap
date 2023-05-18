@@ -181,19 +181,8 @@ int main()
 
         auto& window = state->main_window;
 
-        static auto separator = Separator();
-        separator.set_size_request({300, 300});
-        separator.set_expand(true);
-        separator.set_is_focusable(true);
-        separator.connect_signal_show([](Widget* self){
-            self->grab_focus();
-        });
-
-        // snippet goes here, then add the event controller to
-
-        //separator.add_controller(/* controller here */);
-        window.set_child(separator);
-        window.present();
+        auto shader = Shader();
+        shader.create_from_string(ShaderType::FRAGMENT);
 
         state->main_window.present();
     });

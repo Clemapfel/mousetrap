@@ -422,9 +422,68 @@ We can access the centroid of a shape using `Shape::get_centroid`. To move a sha
 
 To chang the color of a shape, we use `Shape::set_color`. This changes all vertices of the shape to the same color. By default, a shapes color will be `RBGA(1, 1, 1, 1)`, white.
 
+#### Visibility
+
+We can prevent a shape from being rendered (even if its render tasks is bound), by calling `Shape::set_is_visible(false)`. This is different from making all vertices of a shape have an opacity of `0`. `is_visible` directly hooks into the shapes render function and prevents it from being called. 
+
 #### Bounding Box
 
 We can access the [axis aligned bounding box](https://en.wikipedia.org/wiki/Bounding_volume) of a shape with `Shape::get_bounding_box`, which returns a \{Rectangle}. Mousetrap also provides `Shape::get_size` and `Shape::get_top_left`, which return the `size` and  `top_left` property of the bounding box directly.
+
+---
+
+## RenderArea Size
+
+The `resize` signal of `RenderArea` is emitted anytime the render area change sizes on screen, usually when its allocated size changes. While at first seeming redundant (since we can query the size of a widget using `get_allocation` or `get_preferred_size` anyway), it will usually be necessary to connect to this signal for any application where shapes should **maintain a certain aspect ratio**. Consider the following example:
+
+```cpp
+auto render_area = RenderArea();
+auto circle = Shape::Circle({0, 0}, 0.5);
+render_area.add_render_task(circle);
+
+render_area.set_size_request({300, 300});
+window.set_child(render_area);
+```
+
+\image html render_area_circle_unstretched.png
+
+Everything appears as expected. If we now manually resize the window to a non-square resolution:
+
+\image html render_area_circle_stretched.png
+
+The circle appears as an ellipse, despite being a `Shape::Circle`. This is due to the fact the the vertices of this circle use the OpenGL coordinate system, which is **relative**. Regardless of the ratio of width-to-height, y-coordaintes are always in [-1, 1], with the same being true for x-coordinates. Once the viewport (the RenderAreas allocate area, in this case), becomse non-square, a circle will stretch.
+
+The easiest way to prevent this is by putting the `RenderArea` into an `AspectFrame`, which will force the viewport to allows have the correct ratio, `1` in this case. If we want the `RenderArea` to be freely resizable, however, we will need to do some simple geometry.
+
+```cpp
+auto render_area = RenderArea();
+static auto circle = Shape::Ellipse({0, 0}, 0.5, 0.5, 32); // an ellipse for whom x-radius == y-radius is a circle
+render_area.add_render_task(circle);
+
+render_area.connect_signal_resize([](RenderArea*, int32_t width, int32_t height){
+    float new_ratio = float(height) / width;
+    circle.as_ellipse({0, 0}, 0.5 * new_ratio,  0.5, 32);
+});
+
+render_area.set_size_request({200, 200});
+window.set_child(render_area);
+```
+
+Here, we connected to signal `resize`, which provides us with two argument, the current width and height of the `RenderArea`s viewport, in pixels. By changing `Shape::Circle` to `Shape::Ellipse`, we can modify the "circles" x-radius by multiplying it with the current aspect ratio of the viewport:
+
+```cpp
+// calculate y-to-x-ratio
+float new_ratio = float(height) / width;
+
+// multiply x-radius to normalize it. Then reformat the `circle` shape
+circle.as_ellipse({0, 0}, 0.5 * new_ratio,  0.5, 32);
+```
+
+When we now rescale the window, the shape will be automatically reformated, making it a proper circle at any aspect ratio:
+
+\image html render_area_circle_normalized.png
+
+Using signal `resize` smartly this way, we drop the need to put a `RenderArea` into an aspect frame. If our specific problem only requires one specific viewport ratio, however, using the `AspectFrame` is usually less work than connecting to `resize`.
 
 ---
 
@@ -476,8 +535,29 @@ Wrap mode governs how the texture behaves when a vertices texture coordinate are
 
 \todo figures
 
+---
+
+## Intermission
+
+For most users, what we have learned so far will be enough to create new widgets from scratch. Using render tasks and textures, we have full control over rendering any shape. Using signal `resize` or `AspectFrame`, we can create complex images at any resolution. To animate these images, we can react to user-behavior by adding one or more of the [event controllers from the previous chapter](05_events.md) to `RenderArea`, then modifying a shapes property from within any of the signals provided by these event controllers. 
+
+The rest of this chapter is intended users familiar with OpenGL. We will learn how to integrate native OpenGL into mousetrap, write our own shaders, and how to perform advanced rendering techniques, such as rendering to a texture and applying multi-sample anti-aliasing. This requires external knowledge not supplied by this manual, which is why we recommend users unfamiliar with these topics to simply [skip to the last chapter](10_closing_statements.md), as the tools already provided are powerful enough to create an application for almost any task.
+
+---
+
+---
+
 ## Shaders
 
-\note The rest of this chapter is intended for advance readers familiar with OpenGL concepts, such as fragment shaders, vertex shaders, uniforms and transforms. 
+Mousetrap offers two entry points for shaders, **fragment** and **vertex** shaders. These shaders are written in GLSL. While users can write any behavior they want inside the body of these shaders, the in- and out- variables, as well as certain uniforms are set.
+
+### Compiling Shaders
+
+To create a shader, we first instantiate \a{Shader}, then compile code like so:
+
+```cpp
+auto shader = Shader();
+shader.
+
 
 

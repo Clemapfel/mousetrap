@@ -44,16 +44,16 @@ namespace mousetrap
             GLNativeHandle get_vertex_shader_id() const;
 
             /// @brief create shader from source code as string
-            /// @param code glsl code
             /// @param type One of ShaderType::FRAGMENT or ShaderType::VERTEX
+            /// @param code glsl code
             /// @return true if compiled succesfully, false otherwise
-            bool create_from_string(const std::string& code, ShaderType type);
+            bool create_from_string(ShaderType type, const std::string& code);
 
             /// @brief create shader from a file, usually .glsl, .frag or .vert
-            /// @param path absolute path to file with glsl code
             /// @param type One of ShaderType::FRAGMENT or ShaderType::VERTEX
+            /// @param path absolute path to file with glsl code
             /// @return true the file was accessed and compiled succesfully, false otherwise
-            bool create_from_file(const std::string& path, ShaderType type);
+            bool create_from_file(ShaderType type, const std::string& path);
 
             /// @brief get location of a uniform with given name
             /// @param name exact name of a uniform mentioned in the shader source code

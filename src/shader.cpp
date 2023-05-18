@@ -39,7 +39,7 @@ namespace mousetrap
             glDeleteProgram(_program_id);
     }
 
-    bool Shader::create_from_string(const std::string& code, ShaderType type)
+    bool Shader::create_from_string(ShaderType type, const std::string& code)
     {
         if (type == ShaderType::FRAGMENT)
             _fragment_shader_id = compile_shader(code, type);
@@ -58,7 +58,7 @@ namespace mousetrap
             return true;
     }
 
-    bool Shader::create_from_file(const std::string& path, ShaderType type)
+    bool Shader::create_from_file(ShaderType type, const std::string& path)
     {
         auto file = std::ifstream();
 
@@ -71,7 +71,7 @@ namespace mousetrap
         auto str = std::stringstream();
         str << file.rdbuf();
 
-        return create_from_string(str.str(), type);
+        return create_from_string(type, str.str());
         file.close();
         return true;
     }
