@@ -711,7 +711,7 @@ We see that the vertex-shader output variables appear as inputs here. Again, the
 
 The uniform `_texture` is a pointer to the texture data registered via `Shape::set_texture`. If no texture is present, this data will be `0`. `_texture_set`, then, is a boolean flag telling us whether the shape does or does not have a texture. If a texture is present, `_texture_set` will be `1`, if not texture is present, `_texture_set` will have a value of `0`. 
 
-#### Binding Uniforms
+### Binding Uniforms
 
 Both the vertex and fragment shader make use of uniforms. These, unlike the `in` and `out` variables can be modified freely, and we can forward any object from CPU-side to the shaders.
 
@@ -733,20 +733,148 @@ void main()
     _fragment_color = _color_rgba;
 }
 ```
-To set the value of `_color_rgba`, we should use `RenderTask`, which has an interface for registering values, called `RenderTask::register_*`, where `*` is the type of the uniform.
+To set the value of `_color_rgba`, we should use `RenderTask`, which has an interface for registering values, called `RenderTask::set_uniform_*`, where `*` is the type of the uniform.
 
 The following types can be registered:
 
-| C++ Type   | GLSL Uniform Type |
-|------------|-------------------|
-| `float`    | `float`           |
-| `int32_t`  | `int`             |
- | `uint32_t` | `uint`            |
- | `Vector2f` | `vec2`            |
-| `Vector3f` | `vec3`            |
-| `Vector4f` | `vec4`            |
-| `GLTransform` | `mat4x4` |
-| `RGBA` | `vec4` |
-| `HSVA` | `vec4` |
+| C++ Type      | `RenderTask` function   | GLSL Uniform Type |
+|---------------|-------------------------|-------------------|
+| `float`       | `set_uniform_float`     |`float`            |
+| `int32_t`     | `set_uniform_int`       |`int`              |
+ | `uint32_t`    | `set_uniform_uint`      |`uint`             |
+ | `Vector2f`    | `set_uniform_vec2`      |`vec2`             |
+| `Vector3f`    | `set_uniform_vec3`      |`vec3`             |
+| `Vector4f`    | `set_uniform_vec4`      |`vec4`             |
+| `GLTransform` | `set_uniform_transform` |`mat4x4`           |
+| `RGBA`        | `set_uniform_rgba`      | `vec4`            |
+| `HSVA`        | `set_uniform_hsva`      | `vec4`            |
 
-All `register_*` methods take a **pointer**. That is, we have to keep 
+With this, we can set our custom `_color_rgba` uniform like this:
+
+```cpp
+// create shader
+auto shader = Shader();
+shader.create_from_string(ShaderType::FRAGMENT, R"(
+    #version 330
+
+    in vec4 _vertex_color;
+    in vec2 _texture_coordinates;
+    in vec3 _vertex_position;
+
+    out vec4 _fragment_color;
+
+    uniform vec4 _color_rgba;
+
+    void main()
+    {
+        _fragment_color = _color_rgba;
+    }
+)");
+
+// create shape
+auto shape = Shape::Rectangle({-1, -1}, {2, 2});
+
+// create task
+auto task = RenderTask(shape, &shader);
+
+// register uniform with task
+task.set_uniform_rgba("_color_rgba", RGBA(1, 0, 1, 1));
+
+// register task with render area
+render_area.add_render_task(task);
+```
+
+\image html shader_rbga_uniform.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto render_area = RenderArea();
+
+static auto shader = Shader();
+shader.create_from_string(ShaderType::FRAGMENT, R"(
+    #version 330
+
+    in vec4 _vertex_color;
+    in vec2 _texture_coordinates;
+    in vec3 _vertex_position;
+
+    out vec4 _fragment_color;
+
+    uniform vec4 _color_rgba;
+
+    void main()
+    {
+        _fragment_color = _color_rgba;
+    }
+)");
+
+static auto shape = Shape::Rectangle({-1, -1}, {2, 2});
+static auto task = RenderTask(shape, &shader);
+task.set_uniform_rgba("_color_rgba", RGBA(1, 0, 1, 1));
+render_area.add_render_task(task);
+
+auto aspect_frame = AspectFrame(1);
+aspect_frame.set_child(render_area);
+window.set_child(aspect_frame);
+```
+\how_to_generate_this_image_end
+
+In summary, while we cannot choose the `in` and `out` variables of either shader type, we have full control of the uniforms, giving us all the flexibility we need to accomplish complex shader tasks.
+
+## Transforms
+
+As mentioned before, \a{GLTransform} is the C++-side object that represents spatial transforms. It is called `GLTransform` because it **uses the GL coordinate system**. Applying a `GLTransform` to widget- or texture-space coordinates will not work.
+
+Internally, a `GLTransform` is a 4x4 matrix. At any time, we can directly access this matrix by modifying the public member `GLTransform::transform`. 
+
+When constructed, the matrix will be the identity transform:
+
+```
+1 0 0 0
+0 1 0 0
+0 0 1 0
+0 0 0 1
+```
+No matter the current state of the transform, we can reset it back to the identity matrix by calling `GLTransform::reset`.
+
+`GLTransform` has the basic spatial transform already programmed in, so we usually do not need to modify the internal matrix ourself. It provides the following transforms:
+
++ `GLTransform::translate` for translation in 3d space
++ `GLTransform::scale` for scaling
++ `GLTransform::rotate` for rotation around a point
+
+We can combine two transforms using `GLTransform::combine` and if we wish to apply the transfrom CPU-side to a `Vector2f` or `Vector3f`, we can use `GLTransform::apply_to`.
+
+While we could apply the transform to each vertex of a `Shape` CPU-side, it is much more performant to do this kind of math GPU-side. To do this, we register the transform with a `RenderTask`. Afterwards, the transform will be forwarded to the vertex shaders `_transform` uniform, which is then applied to the shapes vertices automatically:
+
+```cpp
+auto shape = // ...
+auto transform = GLTransform();
+transform.translate({-0.5, 0.1});
+transform.rotate(degrees(180), {0,0);
+
+auto task = RenderTask(
+   shape,     // shape
+   nullptr,   // set null to use the default shader
+   transform  // use our transform instead of identity
+);
+```
+
+## Blend Mode
+
+As the last part of a render task, we have **blend mode**. Mousetrap offers the following blend modes, which are part of the enum \a{BlendMode}:
+
+| `BlendMode`        | Resulting Color                      |
+|--------------------|--------------------------------------|
+| `NONE`             | `origin + 0 * destination`           | 
+| `NORMAL`           | traditional alpha-blending           |
+ | `ADD`              | `origin.rgba + destination.rgba`     |
+| `SUBTRACT`         | `origin.rgba - destination.rgba`     |
+| `REVERSE_SUBTRACT` | `destination.rgba - origin.rgba`     | 
+| `MULTIPLY`         | `origin.rgba * destination.rgba`     |
+| `MIN`              | `min(origin.rgba, destination.rgba)` |
+ | `MAX`              | `max(origin.rgba, destination.rgba)` | 
+
+Which are familiar from graphics editors such as PhotoShop or GIMP.
+
+If left unspecified, `RenderTask` will use `BlendMode::NORMAL`, which represents traditional alpha blending, in which the alpha value of both colors is treated as their emission.

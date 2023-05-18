@@ -4,11 +4,12 @@
 //
 
 #include <mousetrap/render_task.hpp>
+#include <mousetrap/log.hpp>
 #include <iostream>
 
 namespace mousetrap
 {
-    RenderTask::RenderTask(const Shape& shape, const Shader* shader, const GLTransform* transform, BlendMode blend_mode)
+    RenderTask::RenderTask(const Shape& shape, const Shader* shader, const GLTransform& transform, BlendMode blend_mode)
     {
         if (noop_shader == nullptr)
             noop_shader = new Shader();
@@ -26,8 +27,6 @@ namespace mousetrap
 
     RenderTask::~RenderTask()
     {
-        std::cout << "called" << std::endl;
-
         if (G_IS_OBJECT(_shape))
             g_object_unref(_shape);
     }
@@ -35,138 +34,185 @@ namespace mousetrap
     void RenderTask::render() const
     {
         auto* shader = _shader == nullptr ? noop_shader : _shader;
-        auto* transform = _transform == nullptr ? noop_transform : _transform;
 
         glUseProgram(shader->get_program_id());
 
         for (auto& pair : _floats)
-            if (pair.second != nullptr)
-                shader->set_uniform_float(pair.first, *pair.second);
+            shader->set_uniform_float(pair.first, pair.second);
 
         for (auto& pair : _ints)
-            if (pair.second != nullptr)
-                shader->set_uniform_int(pair.first, *pair.second);
+            shader->set_uniform_int(pair.first, pair.second);
 
         for (auto& pair : _vec2s)
-            if (pair.second != nullptr)
-                shader->set_uniform_vec2(pair.first, *pair.second);
+            shader->set_uniform_vec2(pair.first, pair.second);
 
         for (auto& pair : _vec3s)
-            if (pair.second != nullptr)
-                shader->set_uniform_vec3(pair.first, *pair.second);
+            shader->set_uniform_vec3(pair.first, pair.second);
 
         for (auto& pair : _vec4s)
-            if (pair.second != nullptr)
-                shader->set_uniform_vec4(pair.first, *pair.second);
+            shader->set_uniform_vec4(pair.first, pair.second);
 
         for (auto& pair : _transforms)
-            if (pair.second != nullptr)
-                shader->set_uniform_transform(pair.first, *pair.second);
+            shader->set_uniform_transform(pair.first, pair.second);
 
         for (auto& pair : _colors_rgba)
-            if (pair.second != nullptr)
-                shader->set_uniform_vec4(pair.first, pair.second->operator glm::vec4());
+            shader->set_uniform_vec4(pair.first, pair.second.operator glm::vec4());
 
         for (auto& pair : _colors_hsva)
-            if (pair.second != nullptr)
-                shader->set_uniform_vec4(pair.first, pair.second->operator glm::vec4());
+            shader->set_uniform_vec4(pair.first, pair.second.operator glm::vec4());
 
         glEnable(GL_BLEND);
         set_current_blend_mode(_blend_mode);
 
         auto shape = Shape(_shape);
-        shape.render(*shader, *transform);
+        shape.render(*shader, _transform);
         set_current_blend_mode(BlendMode::NORMAL);
     }
 
-    void RenderTask::register_float(const std::string& uniform_name, float* value)
+    void RenderTask::set_uniform_float(const std::string& uniform_name, float value)
     {
         _floats.insert({uniform_name, value});
     }
 
-    void RenderTask::register_int(const std::string& uniform_name, int* value)
+    void RenderTask::set_uniform_int(const std::string& uniform_name, int value)
     {
         _ints.insert({uniform_name, value});
     }
 
-    void RenderTask::register_uint(const std::string& uniform_name, glm::uint* value)
+    void RenderTask::set_uniform_uint(const std::string& uniform_name, glm::uint value)
     {
         _uints.insert({uniform_name, value});
     }
 
-    void RenderTask::register_vec2(const std::string& uniform_name, Vector2f* value)
+    void RenderTask::set_uniform_vec2(const std::string& uniform_name, Vector2f value)
     {
         _vec2s.insert({uniform_name, value});
     }
 
-    void RenderTask::register_vec3(const std::string& uniform_name, Vector3f* value)
+    void RenderTask::set_uniform_vec3(const std::string& uniform_name, Vector3f value)
     {
         _vec3s.insert({uniform_name, value});
     }
 
-    void RenderTask::register_vec4(const std::string& uniform_name, Vector4f* value)
+    void RenderTask::set_uniform_vec4(const std::string& uniform_name, Vector4f value)
     {
         _vec4s.insert({uniform_name, value});
     }
 
-    void RenderTask::register_transform(const std::string& uniform_name, GLTransform* value)
+    void RenderTask::set_uniform_transform(const std::string& uniform_name, GLTransform value)
     {
         _transforms.insert({uniform_name, value});
     }
 
-    void RenderTask::register_color(const std::string& uniform_name, RGBA* value)
+    void RenderTask::set_uniform_rgba(const std::string& uniform_name, RGBA value)
     {
-        _colors_rgba.insert({uniform_name, value});
+        set_uniform_vec4(uniform_name, value.operator glm::vec4());
     }
 
-    void RenderTask::register_color(const std::string& uniform_name, HSVA* value)
+    void RenderTask::set_uniform_hsva(const std::string& uniform_name, HSVA value)
     {
-        _colors_hsva.insert({uniform_name, value});
+        set_uniform_vec4(uniform_name, value.operator glm::vec4());
     }
 
-    void RenderTask::register_float(const std::string& uniform_name, const float* value)
+    float RenderTask::get_uniform_float(const std::string& uniform_name)
     {
-        _floats.insert({uniform_name, value});
+        auto it = _floats.find(uniform_name);
+        if (it == _floats.end())
+        {
+            log::critical("In RenderTask::get_uniform_float: No float with name `" + uniform_name + "` registered");
+            return 0;
+        }
+        return it->second;
     }
 
-    void RenderTask::register_int(const std::string& uniform_name, const int* value)
+    glm::int32_t RenderTask::get_uniform_int(const std::string& uniform_name)
     {
-        _ints.insert({uniform_name, value});
+        auto it = _ints.find(uniform_name);
+        if (it == _ints.end())
+        {
+            log::critical("In RenderTask::get_uniform_int: No int with name `" + uniform_name + "` registered");
+            return 0;
+        }
+        return it->second;
     }
 
-    void RenderTask::register_uint(const std::string& uniform_name, const glm::uint* value)
+    glm::uint RenderTask::get_uniform_uint(const std::string& uniform_name)
     {
-        _uints.insert({uniform_name, value});
+        auto it = _uints.find(uniform_name);
+        if (it == _uints.end())
+        {
+            log::critical("In RenderTask::get_uniform_uint: No uint with name `" + uniform_name + "` registered");
+            return 0;
+        }
+        return it->second;
     }
 
-    void RenderTask::register_vec2(const std::string& uniform_name, const Vector2f* value)
+    Vector2f RenderTask::get_uniform_vec2(const std::string& uniform_name)
     {
-        _vec2s.insert({uniform_name, value});
+        auto it = _vec2s.find(uniform_name);
+        if (it == _vec2s.end())
+        {
+            log::critical("In RenderTask::get_uniform_vec2: No vec2 with name `" + uniform_name + "` registered");
+            return {0, 0};
+        }
+        return it->second;
     }
 
-    void RenderTask::register_vec3(const std::string& uniform_name, const Vector3f* value)
+    Vector3f RenderTask::get_uniform_vec3(const std::string& uniform_name)
     {
-        _vec3s.insert({uniform_name, value});
+        auto it = _vec3s.find(uniform_name);
+        if (it == _vec3s.end())
+        {
+            log::critical("In RenderTask::get_uniform_vec3: No vec3 with name `" + uniform_name + "` registered");
+            return {0, 0, 0};
+        }
+        return it->second;
     }
 
-    void RenderTask::register_vec4(const std::string& uniform_name, const Vector4f* value)
+    Vector4f RenderTask::get_uniform_vec4(const std::string& uniform_name)
     {
-        _vec4s.insert({uniform_name, value});
+        auto it = _vec4s.find(uniform_name);
+        if (it == _vec4s.end())
+        {
+            log::critical("In RenderTask::get_uniform_vec4: No vec4 with name `" + uniform_name + "` registered");
+            return {0, 0, 0, 0};
+        }
+        return it->second;
     }
 
-    void RenderTask::register_transform(const std::string& uniform_name, const GLTransform* value)
+    RGBA RenderTask::get_uniform_rgba(const std::string& uniform_name)
     {
-        _transforms.insert({uniform_name, value});
+        auto it = _vec4s.find(uniform_name);
+        if (it == _vec4s.end())
+        {
+            log::critical("In RenderTask::get_uniform_rgba: No vec4 with name `" + uniform_name + "` registered");
+            return {0, 0, 0, 0};
+        }
+        auto out = it->second;
+        return RGBA(out.x, out.y, out.z, out.w);
     }
 
-    void RenderTask::register_color(const std::string& uniform_name, const RGBA* value)
+    HSVA RenderTask::get_uniform_hsva(const std::string& uniform_name)
     {
-        _colors_rgba.insert({uniform_name, value});
+        auto it = _vec4s.find(uniform_name);
+        if (it == _vec4s.end())
+        {
+            log::critical("In RenderTask::get_uniform_hsva: No vec4 with name `" + uniform_name + "` registered");
+            return {0, 0, 0, 0};
+        }
+        auto out = it->second;
+        return HSVA(out.x, out.y, out.z, out.w);
     }
 
-    void RenderTask::register_color(const std::string& uniform_name, const HSVA* value)
+    GLTransform RenderTask::get_uniform_transform(const std::string& uniform_name)
     {
-        _colors_hsva.insert({uniform_name, value});
+        auto it = _transforms.find(uniform_name);
+        if (it == _transforms.end())
+        {
+            log::critical("In RenderTask::get_uniform_transform: No mat4x4 with name `" + uniform_name + "` registered");
+            return GLTransform();
+        }
+        return it->second;
     }
 
     /*
