@@ -26,6 +26,8 @@ int main()
         render_area.set_expand(true);
         render_area.set_size_request({400, 300})
         
+        // snippet code here
+        
         auto aspect_frame = AspectFrame(4:3);
         aspect_frame.set_chlid(render_area);
         window.set_child(aspect_frame);
@@ -39,7 +41,7 @@ int main()
 
 ---
 
-In the [chapter on widgets](04_widgets.md), we noted that, so far, we were only create new widgets by combining already pre-defined widgets. We could create a widget that has a `Scale`, but we can't render our own scale with, for example, a square knob. In this chapter, we will change this. By using OpenGL to render any arbitrary shape, we can construct our own widgets pixel-by-pixel, line-by-line. Using this and the event system, we can craft our own `Scale` from scratch.
+In the [chapter on widgets](04_widgets.md), we learned that, so far, we can only create new widgets by combining already pre-defined widgets as a compound widget. We could create a widget that has a `Scale`, but we can't render our own scale with, for example, a square knob. In this chapter, this will change. By using the native rendering interface mousetrap provides, we are free to create any shape we want and assemble completely new widgets pixel-by-pixel, line-by-line.
 
 ## RendeArea
 
@@ -49,21 +51,21 @@ This central widget of this chapter is `RenderArea`. At first, it may seem very 
 auto area = RenderArea();
 ```
 
-Using OpenGL is hard, which is why mousetrap aims abstract as much as possible, meaning mousetrap users will have to work very little to accomplish tasks that would be complex in pure OpenGL. That said, mousetrap also provides an entry point for experienced users to fully take over rendering, allowing use of pure OpenGL and GLSL, if they choose to do so.
+This widget will render as a transparent area, it's invisible for now. `RenderArea` provides no renderable element, instead, we will have to create **shapes** and bind them for rendering.
 
 ## Vertices
 
-Any shape that can be drawn is made up of **vertices**. In mousetrap, a vertex is represented by the \a{Vertex} struct, which has three properties:
+A drawable shape is made up of **vertices**. In mousetrap, a vertex is represented by the \a{Vertex} struct, which has three properties:
 
-+ `position`: vertex position in 3d space
++ `position`: vertex position in 3D space
 + `texture_coordinates`: texture coordinates in 2d texture space
 + `color`: color in RGBA
 
 ### Coordinate Spaces
 
-In this section, we will be using three different coordinate systems. **3D space**, **texture space**.
+In this section, we will be using two different coordinate systems. **3D space**, **texture space**.
 
-#### OpenGL Space
+#### 3D Spaces
 
 A vertices `position` is a point in 3D space, which is the left-handed coordinate system familiar from traditional geometry:
 
@@ -71,11 +73,11 @@ A vertices `position` is a point in 3D space, which is the left-handed coordinat
 
 <center>(source: [learnopengl.com](https://learnopengl.com/Getting-started/Coordinate-Systems))</center>
 
- Sticking to 2D for now, we assume the the z-coordainte is '0' from now on. This reduces the 3d space to a 2D plane, which is sometimes called **gl coordinates**. 
+ We can simplify 3d space by assuming the the the z-coordinate to be '0' from now on. This reduces the 3d space to a 2D plane. We call this plane **gl space**, named after OpenGL, which is the native rendering framework used by `RenderArea`. 
  
-We see that the y-coordinate is positive when move "up", negative when moving "down". The x coordinate is negative when going "left", positive when going "right". 
+In see that in gl space, the y-coordinate is positive when move "up", negative when moving "down". The x coordinate is negative when going "left", positive when going "right". 
 
-The coordinates are **relative**, meaning they are normalized to `[-1, 1]`. This means that a shapes coordinates are **independent of the size of the viewport**. No matter if our `RenderArea` is of size 500x200 or 200x500, a shapes vertex coordinates do not change. The shape is dynamically resized depending on the viewport size.
+The coordinates are **relative**, meaning they are normalized to `[-1, 1]`. This means that a shapes coordinates are **independent of the size of the viewport**. No matter if our `RenderArea` is of size 500x200 or 200x500, a shapes vertex coordinates do not change. The shape is dynamically resized depending on the viewport size, a distance of 0.25 along the x-axis will be 250px if the viewport is 1000px wide, or 25px if the viewport is 100px wide.
 
 Some more example:
  
@@ -93,7 +95,7 @@ Some more example:
 
 #### Texture Space
 
-A vertices `texture_coordinate` in texture space uses a different coordinate system. This is anchored at the top-left of the texture, with the y-coordinate increasing in value when going down and decreasing in value when going up. The x-coordinate increase in value when going right, and decreases when going left. Coordinates are normalized to `[0, 1]`.
+A vertices `texture_coordinate` use **texture space**, which uses a different coordinate system. It is anchored at the top-left of the texture, with the y-coordinate increasing in value when going down and decreasing in value when going up. The x-coordinate increase in value when going right, and decreases when going left. Coordinates are normalized to `[0, 1]`.
 
 Some examples:
 
@@ -109,13 +111,13 @@ Some examples:
 | bottom              | `(0.5, 1.0)`  |
 | bottom right        | `(1.0, 1.0)`  |
 
-This coordinate system is identical to relative widget space.
+This coordinate system is identical to relative widget space. Note that, because this coordinate system is a float in `[0, 1]`, we cann query a specific pixel of a texture using the texture-coordinates. We are reliant on the graphics card to map a specific pixel position to our texture coordinate.
 
 #### Converting between coordinates
 
-`RenderArea` offers two static functions that allow us to convert between absolute widget space and 3d space. Recall that for a widget of size 400x300, the top left corner will be (0, 0), and the bottom right corner will be (400, 300). For example, `MotionEventController`s `motion` signal provides use with coordinates in widget space. 
+`RenderArea` offers two static functions that allow us to convert between absolute widget space and gl space. Recall that for a widget of size 400x300, the top left corner will be (0, 0), and the bottom right corner will be (400, 300). For example, `MotionEventController`s `motion` signal provides use with coordinates in widget space. 
 
-To convert from widget to gl coordinates, we use `RenderArea::to_gl_coordinates`. For the inverse, we use `RenderArea::from_gl_coordinates`.
+To convert from widget to gl space, we use `RenderArea::to_gl_coordinates`. For the inverse, we use `RenderArea::from_gl_coordinates`.
 
 For example, to translate the position returned by `MotionEventController` to gl coordinates used by `Shape`, we can do the following:
 
@@ -128,7 +130,7 @@ motion_controller.connect_signal_motion([](MotionEventController*, double widget
 })
 ```
 
-Note that we do not need an instance of `RenderArea`, as `to_gl_coordinates` is a static function.
+Note that we do not need an instance of `RenderArea`, as `to_gl_coordinates` and `from_gl_coordinates` are static functions.
 
 ---
 
@@ -159,21 +161,26 @@ To render this point, we first need our `RenderArea` instance, so we will create
 auto render_area = RenderArea();
 ```
 
-Then add our shape as a **render task**. A render task binds all objects needed for rendering, then registeres this task with the render area. From that point onwards, whenever the render area emits its `render` signal (unless we have manually connected our own signal handler to it), that shape will be draw.
+Then we need to bind our shape for rendering. This is done using a **render task**. A render task takes all objects needed for rendering, and groups them together. When a frame is painted, `RenderArea` will iterate through all of its render tasks and draw each task, in order.
+
+\a{RenderTask} can be constructed manually, or we can use the convenience function `RenderArea::add_render_task`:
 
 Putting it all together:
 
 ```cpp
 auto point = Shape::Point({0, 0});
 auto render_area = RenderArea();
-render_area.add_render_task(point);
+
+// create task and register it
+auto task = RenderTask(point);
+render_area.add_render_task(task);
 ```
 
 \image html render_area_point_hello_world.png
 
 \how_to_generate_this_image_begin
 ```cpp
- auto render_area = RenderArea();
+auto render_area = RenderArea();
 auto point = Shape::Point({0, 0});
 render_area.add_render_task(point);
 
@@ -618,26 +625,26 @@ auto render_area = RenderArea();
 static auto shape = Shape::Rectangle({-1, -1}, {2, 2});
 static auto shader = Shader();
 shader.create_from_string(ShaderType::FRAGMENT, R"(
-            #version 130
+    #version 130
 
-            in vec4 _vertex_color;
-            in vec2 _texture_coordinates;
-            in vec3 _vertex_position;
+    in vec4 _vertex_color;
+    in vec2 _texture_coordinates;
+    in vec3 _vertex_position;
 
-            out vec4 _fragment_color;
+    out vec4 _fragment_color;
 
-            void main()
-            {
-                vec2 pos = _vertex_position.xy;
+    void main()
+    {
+        vec2 pos = _vertex_position.xy;
 
-                _fragment_color = vec4(
-                    pos.y,
-                    dot(pos.x, pos.y),
-                    pos.x,
-                    1
-                );
-            }
-        )");
+        _fragment_color = vec4(
+            pos.y,
+            dot(pos.x, pos.y),
+            pos.x,
+            1
+        );
+    }
+)");
 
 render_area.add_render_task(
     shape,
@@ -650,7 +657,7 @@ window.set_child(aspect_frame);
 ```
 \how_to_generate_this_image_end
 
-We see that the first argument to `Shader::create_from_file` is the **shader type**, which is either `ShaderType::FRAGMENT` or `ShaderType::VERTEX`. If one or both of these is not specific when creating a render task, mousetrap will use the default shaders, whos definition may be instructive here:
+We see that the first argument to `Shader::create_from_string` is the **shader type**, which is either `ShaderType::FRAGMENT` or `ShaderType::VERTEX`. If one or both of these is not specific when creating a render task, mousetrap will use the default shaders, which are printed here for reference
 
 ### Default Vertex Shader
 
@@ -733,6 +740,7 @@ void main()
     _fragment_color = _color_rgba;
 }
 ```
+
 To set the value of `_color_rgba`, we should use `RenderTask`, which has an interface for registering values, called `RenderTask::set_uniform_*`, where `*` is the type of the uniform.
 
 The following types can be registered:
@@ -878,3 +886,5 @@ As the last part of a render task, we have **blend mode**. Mousetrap offers the 
 Which are familiar from graphics editors such as PhotoShop or GIMP.
 
 If left unspecified, `RenderTask` will use `BlendMode::NORMAL`, which represents traditional alpha blending, in which the alpha value of both colors is treated as their emission.
+
+## 
