@@ -172,8 +172,7 @@ auto point = Shape::Point({0, 0});
 auto render_area = RenderArea();
 
 // create task and register it
-auto task = RenderTask(point);
-render_area.add_render_task(task);
+render_area.add_render_task(RenderTask(task));
 ```
 
 \image html render_area_point_hello_world.png
@@ -182,7 +181,7 @@ render_area.add_render_task(task);
 ```cpp
 auto render_area = RenderArea();
 auto point = Shape::Point({0, 0});
-render_area.add_render_task(point);
+render_area.add_render_task(RenderTask(point));
 
 auto aspect_frame = AspectFrame(1);
 aspect_frame.set_child(render_area);
@@ -196,6 +195,8 @@ overlay.add_overlay(aspect_frame, true);
 window.set_child(overlay);
 ```
 \how_to_generate_this_image_end
+
+Where we created a `RenderTask` using only `point`, then immediately registered it with our `RenderArea`.
 
 ### Shape Types
 
@@ -402,7 +403,9 @@ auto elliptical_ring = Shape::EllipticalRing(
 
 #### Outline
 
-Lastly, we have a very special shape, `Outline`. `Outline` takes as its only argument to its constructor **another shape**. It will then generate a number of lines such that the outline is along the perimeter of the supplied shape. As the name suggest, this is useful for generating outlines of another shape. By rendering the `Outline` on top of the original shape, we can achieve a similar effects as `Frame` does for widgets.
+Lastly, we have a very special shape, \link mousetrap::Shape::Outline `Outline`\endlink. `Outline` takes as the only argument to its constructor **another shape**. It will then generate a number of lines that trace the conceptual perimeter of the shape. 
+
+As the name suggest, this is useful for generating outlines of another shape. By rendering the `Outline` on top of the original shape, we can achieve a similar effect ot how `Frame` is used for widgets.
 
 \image html render_area_shape_triangle_outline.png "Shape::Outline(triangle)"
 \image html render_area_shape_rectangle_outline.png "Shape::Outline(rectangle)"
@@ -413,35 +416,37 @@ Lastly, we have a very special shape, `Outline`. `Outline` takes as its only arg
 \image html render_area_shape_circular_ring_outline.png "Shape::Outline(circular_ring)"
 \image html render_area_shape_elliptical_ring_outline.png "Shape::Outline(elliptical_ring)"
 
-Rendering these white outline on top of a white shape would make them invisible. To achieve the desired effect, we need to change some properties of the `Outline` shape.
+Rendering these white outline on top of a white shape would make them invisible, of course. To achieve the desired effect, we need to make the outline another color, which brings us to the additional properties of all `Shape`s.
 
 ### Shape Properties
 
-Shapes are made up of vertices whose property we have discussed before. In addition to this, the \a{Shape} itself has some properties of its own:
+Shapes are made up of vertices whose property we have discussed before. In addition to this, the \a{Shape} as a whole has some properties of its own:
 
 #### Centroid
 
-The **centroid** of a shape is the intuitive "center of mass". In mathematical terms, it is the average of all vertex coordinates. In practice, for many shapes such as rectangles, triangle, circle and ellipses, the centroid will be the center of the shape.
+The **centroid** of a shape is the intuitive "center of mass". In mathematical terms, it is the component-wise mean of all vertex coordinates. In practice, for many shapes such as rectangles, triangle, circle and ellipses, the centroid will be the center of the shape, as it is defined in common language. 
 
-We can access the centroid of a shape using `Shape::get_centroid`. To move a shape a certain distance, we move its centroid that distance, which will move all other vertices accordingly. As such, the centroid is the **origin of transformations**. One such transformation is translation, which we can accomplish using `Shape::set_centroid`.
+We can access the centroid of a shape using `Shape::get_centroid`. To move a shape a certain distance, we move its centroid that distance by calling `Shape::set_centroid`, which will automatically move all other vertices of the shape by the same amount.
 
 #### Color
 
-To chang the color of a shape, we use `Shape::set_color`. This changes all vertices of the shape to the same color. By default, a shapes color will be `RBGA(1, 1, 1, 1)`, white.
+To chang the color of a shape, we use `Shape::set_color`. This makes all vertices of the shape the same color. By default, a shapes color will be `RBGA(1, 1, 1, 1)`, white.
 
 #### Visibility
 
-We can prevent a shape from being rendered (even if its render tasks is bound), by calling `Shape::set_is_visible(false)`. This is different from making all vertices of a shape have an opacity of `0`. `is_visible` directly hooks into the shapes render function and prevents it from being called. 
+We can prevent a shape from being rendered by calling `Shape::set_is_visible(false)`. This is different from making all vertices of a shape have an opacity of `0`. `is_visible` directly hooks into the shapes render function and prevents it from being called. 
 
 #### Bounding Box
 
-We can access the [axis aligned bounding box](https://en.wikipedia.org/wiki/Bounding_volume) of a shape with `Shape::get_bounding_box`, which returns a \{Rectangle}. Mousetrap also provides `Shape::get_size` and `Shape::get_top_left`, which return the `size` and  `top_left` property of the bounding box directly.
+We can access the [axis aligned bounding box](https://en.wikipedia.org/wiki/Bounding_volume) of a shape with `Shape::get_bounding_box`, which returns a \a{Rectangle}. Using this, we can query the top-left coordinate and size of the bounding box.
 
 ---
 
 ## RenderArea Size
 
-The `resize` signal of `RenderArea` is emitted anytime the render area change sizes on screen, usually when its allocated size changes. While at first seeming redundant (since we can query the size of a widget using `get_allocation` or `get_preferred_size` anyway), it will usually be necessary to connect to this signal for any application where shapes should **maintain a certain aspect ratio**. Consider the following example:
+The `resize` signal of `RenderArea` is emitted when the `RenderArea` widgets allocated size on screen changes. At first, this may not seem very useful, we can query the size using `Widget::get_allocation` anyway. In actuality, it will usually be necessary to connect to this signal in almost any case where we want to draw a shape to a `RenderArea` of variable size. 
+
+Consider the following example:
 
 ```cpp
 auto render_area = RenderArea();
@@ -458,17 +463,22 @@ Everything appears as expected. If we now manually resize the window to a non-sq
 
 \image html render_area_circle_stretched.png
 
-The circle appears as an ellipse, despite being a `Shape::Circle`. This is due to the fact the the vertices of this circle use the OpenGL coordinate system, which is **relative**. Regardless of the ratio of width-to-height, y-coordaintes are always in [-1, 1], with the same being true for x-coordinates. Once the viewport (the RenderAreas allocate area, in this case), becomse non-square, a circle will stretch.
+The circle appears as an ellipse, despite being a `Shape::Circle`. This is due to the fact the the vertices of this circle use the gl coordinate system, which is **relative**. Relative coordinate systems do not respect the size and aspect ratio of the viewport, the distance between the left edge of the widget and the right edge of the widget will always be `2`, thus stretching the viewport stretches all shapes.
 
-The easiest way to prevent this is by putting the `RenderArea` into an `AspectFrame`, which will force the viewport to allows have the correct ratio, `1` in this case. If we want the `RenderArea` to be freely resizable, however, we will need to do some simple geometry.
+The easiest way to prevent this is by putting the `RenderArea` into an `AspectFrame`, which will force the viewport to allows have the correct ratio, `1` in this case. If we want the `RenderArea` to be freely resizable, however, we will need to do some simple geometry:
 
 ```cpp
 auto render_area = RenderArea();
-static auto circle = Shape::Ellipse({0, 0}, 0.5, 0.5, 32); // an ellipse for whom x-radius == y-radius is a circle
+static auto circle = Shape::Ellipse({0, 0}, 0.5, 0.5, 32); 
+// recall that an ellipse for whom (x-radius == y-radius) is a circle
 render_area.add_render_task(circle);
 
-render_area.connect_signal_resize([](RenderArea*, int32_t width, int32_t height){
+render_area.connect_signal_resize([](RenderArea*, int32_t width, int32_t height)
+{
+    // calculate y-to-x-ratio
     float new_ratio = float(height) / width;
+
+    // multiply x-radius to normalize it. Then reformat the `circle` shape
     circle.as_ellipse({0, 0}, 0.5 * new_ratio,  0.5, 32);
 });
 
@@ -476,27 +486,26 @@ render_area.set_size_request({200, 200});
 window.set_child(render_area);
 ```
 
-Here, we connected to signal `resize`, which provides us with two argument, the current width and height of the `RenderArea`s viewport, in pixels. By changing `Shape::Circle` to `Shape::Ellipse`, we can modify the "circles" x-radius by multiplying it with the current aspect ratio of the viewport:
+Here, we connected to signal `resize`, which provides us with the current width and height of the `RenderArea`, in pixels. By changing `Shape::Circle` to `Shape::Ellipse`, we can modify the "circles" x-radius by multiplying it with the current aspect ratio of the viewport.
 
-```cpp
-// calculate y-to-x-ratio
-float new_ratio = float(height) / width;
-
-// multiply x-radius to normalize it. Then reformat the `circle` shape
-circle.as_ellipse({0, 0}, 0.5 * new_ratio,  0.5, 32);
-```
-
-When we now rescale the window, the shape will be automatically reformated, making it a proper circle at any aspect ratio:
+When we now rescale the window, the shape will be automatically reformated and appear as a proper circle, regardless of `RenderArea`s allocated size:
 
 \image html render_area_circle_normalized.png
 
-Using signal `resize` smartly this way, we drop the need to put a `RenderArea` into an aspect frame. If our specific problem only requires one specific viewport ratio, however, using the `AspectFrame` is usually less work than connecting to `resize`.
+While this isn't that much effort, if we need our `RenderArea` to always have a specific size or aspect ratio, an `AspectFrame` may be an easier solution.
 
 ---
 
 ## Textures
 
-In the chapter on widget, we learned that we can use `ImageDisplay` to render an image on screen. This works for most purposes, though it is somewhat limited, as we can only render an image in a square area, and we have no way of manipulating the image once the widget is created. This can be fixed using \a{Texture}, which manages image data in the graphics card memory. 
+We've learned before that we can us `ImageDisplay` to render an image on screen. This works for most purposes, though it is somewhat limited. `ImageDisplay` has a number of dsiadvantages:
+
++ image data is not updated every frame that it is rendered
++ uploading data is costly
++ scaling the image will always trigger linear interpolation
++ the image is always shown in full, on a rectangle
+
+If we need the additional flexiblity, we should use \a{Texture}, which represents an image living in the graphics card memory.
 
 We create a texture from an \a{Image} like so:
 
@@ -508,7 +517,7 @@ auto texture = Texture();
 texture.create_from_image(image);
 ```
 
-Once `create_from_image` is called, the image data is uploaded to the graphics cards ram, so we can safely discard the `Image` instance. 
+Once `create_from_image` is called, the image data is uploaded to the graphics cards' RAM, so we can safely discard the `Image` instance. 
 
 To display this texture, we need to bind it to a shape, then render that shape:
 
@@ -517,15 +526,10 @@ auto texture_shape = Shape::Rectangle({-1, 1}, {2, 2});
 texture_shape.set_texture(texture);
 ```
 
-Where the shape is a rectangle that is always the size of the entire viewport. 
+Where this shape is a rectangle that is the size of the entire viewport. 
 
-Note that the shape for whom `Shape::set_texture` was called only holds a weak pointer to the texture, we have to make sure that the `Texture` instance stays in memory ourself. This is because we want to create as few texture as possible, uploading a texture is a very costly operation, so if multiple objects should have the same texture, we should only ever hold one copy of that texture in memory.
-
-Once `set_texture` is called, if we render the shape, the texture is displayed:
-
-\todo figure
-
-If the shapes vertices color is anything except `RGBA(1, 1, 1, 1)`, each pixel of the texture will be multiplied with that color.
+\todo figure 
+\todo texture coordinate mapping
 
 #### Scale Mode
 
@@ -534,19 +538,25 @@ Similar to `Image::as_scaled`, we have options on how we want the texture to beh
 + `NEAREST`: nearest-neighbor scaling
 + `LINEAR`: linear scaling
 
-Which are roughly equivalent to `Image`s `InterpolationType::NEAREST` and `InterpolationType::BILINEAR`.
+Which are roughly equivalent to `Image`s `InterpolationType::NEAREST` and `InterpolationType::BILINEAR`, except much, much more performant. Rescaling a texture is essentially free when done by the graphics card, as opposed to the CPU.
 
 #### Wrap Mode
 
-Wrap mode governs how the texture behaves when a vertices texture coordinate are outside of `[0, 1]`. Mousetrap offers the following wrap modes, which are all part of the enum \a{TextureWrapMode}:
+Wrap mode governs how the texture behaves when a vertices texture coordinates are outside of `[0, 1]`. Mousetrap offers the following wrap modes, which are all part of the enum \a{TextureWrapMode}:
 
-\todo figures
++ `ZERO`: Pixels will appear as `RGBA(0, 0, 0, 0)`
++ `ONE`: Pixels will appear as `RGBA(1, 1, 1, 1)`
++ `REPEAT`: \todo figure
++ `MIRROR`: \todo figure
++ `STRETCH`: \todo figure
+
+With this an by being able to modify the vertex coordinates for every shapes vertices, we have much more control over how image data is displayed on screen. Modifying textures is also viable for real-time applications, simple keep an `Image` in RAM that is modified by the application, then `create_from_image` every frame the image changes to update the `Texture` rendered on screen.
 
 ---
 
 ## Intermission
 
-For most users, what we have learned so far will be enough to create new widgets from scratch. Using render tasks and textures, we have full control over rendering any shape. Using signal `resize` or `AspectFrame`, we can create complex images at any resolution. To animate these images, we can react to user-behavior by adding one or more of the [event controllers from the previous chapter](05_events.md) to `RenderArea`, then modifying a shapes property from within any of the signals provided by these event controllers. 
+For most users, what we have learned so far will be enough to create new widgets from scratch. Using render tasks and textures, we have full control over rendering any shape or image. Using signal `resize` or `AspectFrame`, we can create complex images at any resolution. To animate these images, we can react to user-behavior by adding one or more of the [event controllers from the previous chapter](05_events.md) to `RenderArea`, then modifying a shapes property from within any of the signals provided by these event controllers. 
 
 The rest of this chapter is intended users familiar with OpenGL. We will learn how to integrate native OpenGL into mousetrap, write our own shaders, and how to perform advanced rendering techniques, such as rendering to a texture and applying multi-sample anti-aliasing. This requires external knowledge not supplied by this manual, which is why we recommend users unfamiliar with these topics to simply [skip to the last chapter](10_closing_statements.md), as the tools already provided are powerful enough to create an application for almost any task.
 
@@ -556,7 +566,7 @@ The rest of this chapter is intended users familiar with OpenGL. We will learn h
 
 ## Render Task
 
-So far, we registered render tasks using `render_area.add_render_task(shape)`. This is shortform for the following:
+So far, we registered render tasks using `render_area.add_render_task(RenderTask(shape))`. This is shortform for the following:
 
 ```cpp
 auto render_task = RenderTask(
@@ -565,24 +575,30 @@ auto render_task = RenderTask(
     transform,    // const Transform*
     blend_mode    // mousetrap::BlendMode
 )
+render_area.add_render_task(render_task);
 ```
 
-Using these four components, `RenderTask` gathers all object necessary to render a shape to the screen. All of these except the `Shape` are optional, if not specified a default value will be used for them, which allowed use to simply render a shape without thinking about any of the other components. 
+Using these four components, `RenderTask` gathers all objects necessary to render a shape to the screen. All of these except the `Shape` are optional, if not specified a default value will be used for them. This is what allows less experienced users to fully ignore shaders, transforms and blendmodes.
 
-In this section, we will want to think about them, however. We've already learned about `Shape`, next are `Shader`s.
+In this section, we'll go through each render task component, learning how we can hook our own OpenGL behavior into mousetraps rendering architecture.
+
+---
 
 ## Shaders
 
-Mousetrap offers two entry points for shaders, **fragment** and **vertex** shaders. These shaders are written in GLSL. While users can write any behavior they want inside the body of these shaders, the in- and out- variables, as well as certain uniforms are set.
+Mousetrap offers two types of shaders, **fragment** and **vertex** shaders. These shaders are written in GLSL. 
 
 ### Compiling Shaders
 
-To create a shader, we first instantiate \a{Shader}, then compile code like so:
+To create a shader, we first instantiate \a{Shader}, which is a class representing a **shader program** (a compiled vertex- and fragment shader). We can then compile code for a fragment shader like so:
 
 ```cpp
+// create default shader
 auto shader = Shader();
+
+// replace default fragment shader with custom fragment shader
 shader.create_from_string(ShaderType::FRAGMENT, R"(
-    #version 130
+    #version 330
     
     in vec4 _vertex_color;
     in vec2 _texture_coordinates;
@@ -611,8 +627,8 @@ shader.create_from_string(ShaderType::FRAGMENT, R"(
 )");
 
 // bind shape and shader for rendering
-render_area.add_render_task(
-    shape,
+render_area.add_render_task(RenderTask(
+    shape, 
     &shader
 );
 ```
@@ -636,20 +652,11 @@ shader.create_from_string(ShaderType::FRAGMENT, R"(
     void main()
     {
         vec2 pos = _vertex_position.xy;
-
-        _fragment_color = vec4(
-            pos.y,
-            dot(pos.x, pos.y),
-            pos.x,
-            1
-        );
+        _fragment_color = vec4(pos.y, dot(pos.x, pos.y), pos.x, 1);
     }
 )");
 
-render_area.add_render_task(
-    shape,
-    &shader
-);
+render_area.add_render_task(RenderTask(shape, &shader));
 
 auto aspect_frame = AspectFrame(1);
 aspect_frame.set_child(render_area);
@@ -657,11 +664,11 @@ window.set_child(aspect_frame);
 ```
 \how_to_generate_this_image_end
 
-We see that the first argument to `Shader::create_from_string` is the **shader type**, which is either `ShaderType::FRAGMENT` or `ShaderType::VERTEX`. If one or both of these is not specific when creating a render task, mousetrap will use the default shaders, which are printed here for reference
+We see that the first argument to `Shader::create_from_string` is the **shader type**, which is either `ShaderType::FRAGMENT` or `ShaderType::VERTEX`. If we do not call `create_from_string` for either or both of these, the default shader program will be used. It may be instructive to see what these default shaders behavior is:
 
 ### Default Vertex Shader
 
-This is the default vertex shader:
+This is the default vertex shader is the following:
 
 ```glsl
 #version 330
@@ -687,9 +694,9 @@ void main()
 
 We see that it requires OpenGL 3.3, which is the reason that mousetrap also requires that version as a dependency. This shader simply forwards the corresponding shape attributes to the fragment shader.
 
-Note that all vertex shaders have to have this layout, meaning `_vertex_position_in`, `_vertex_color_in` and `_vertex_texture_coordinate_in` , which supply the shader with the corresponding data from the shape wer are rendering, **cannot be renamed**, all mousetrap vertex shaders have to use exactly these names at exactly the `location` state above. Similarly, the output `_vertex_color`, `_texture_coordinates` and `_vertex_position` have to have these names, and only these three variables can be outputed. 
+The current vertices position is supplied via `_vertex_position_in`, the vertices texture coordinates as `_vertex_color_in` and the vertices texture coordinates as `_vertex_texture_coordinates`.
 
-This shaders uniform is `_transform`, which is a \a{GLTransform} bound to the `RenderTask`. If one is present, the vertex shader should respect this transform and apply it to the shapes vertices. If a `RenderTask` had no transform registered, the `_transform` uniform will be the identity transform.
+The output variables are `_vertex_color`, `_texture_coordinates` and `_vertex_position`, which should be assigned with the interpolated result of the vertex shader. The shader has furthermore access to the uniform `_transform`, which holds the transform of the current render task.
 
 ### Default Fragment Shader
 
@@ -714,15 +721,17 @@ void main()
 }
 ```
 
-We see that the vertex-shader output variables appear as inputs here. Again, these names are fixed, the shader should always use exactly these names. Similarly, we should use `_fragment_color` as the output, not `gl_FragCoord`. 
+The fragment shader is handed `_vertex_color`, `_texture_coordinate` and `_vertex_position`, which we recognize as the output of the vertex shader. The output of the fragment shader is `_fragment_color`.
 
-The uniform `_texture` is a pointer to the texture data registered via `Shape::set_texture`. If no texture is present, this data will be `0`. `_texture_set`, then, is a boolean flag telling us whether the shape does or does not have a texture. If a texture is present, `_texture_set` will be `1`, if not texture is present, `_texture_set` will have a value of `0`. 
+The default fragment shader respects two uniforms, `_texture`, which is the texture of the shape we are currently rendering and `_texture_set`, which is `1` if `Shape::set_texture` was called before, `0` otherwise.
+
+Users aiming to experiment with shaders should take care to not modify the name or `location` of any of the `in` or `out` variables of either shader.
 
 ### Binding Uniforms
 
-Both the vertex and fragment shader make use of uniforms. These, unlike the `in` and `out` variables can be modified freely, and we can forward any object from CPU-side to the shaders.
+Both the vertex and fragment shader make use of uniforms. We've seen that `_transform`, `_texture` and `_texture_set` are assigned automatically. Mousetrap offers a convenient way to add additional uniforms, however.
 
-To bind a uniform, we first need a CPU-side value. Let's say we want our fragment shader to color the shape a certain color, which is specified by a CPU-side program. The vertex shader would look like this:
+To bind a uniform, we first need a CPU-side value that should be uploaded to the graphics card. Let's say we want our fragment shader to color the shape a certain color, which is specified by a CPU-side program. This fragment shader would look like this:
 
 ```glsl
 #version 330
@@ -733,7 +742,7 @@ in vec3 _vertex_position;
 
 out vec4 _fragment_color;
 
-uniform vec4 _color_rgba;
+uniform vec4 _color_rgba; // new uniform
 
 void main()
 {
@@ -741,23 +750,25 @@ void main()
 }
 ```
 
-To set the value of `_color_rgba`, we should use `RenderTask`, which has an interface for registering values, called `RenderTask::set_uniform_*`, where `*` is the type of the uniform.
+To set the value of `_color_rgba`, we use `RenderTask::set_uniform_rgba`. This is one of the many `set_uniform_*` functions, which allow us to bind C++ values to OpenGL Shader Uniforms:
 
-The following types can be registered:
+The following types can be assigned this way:
 
 | C++ Type      | `RenderTask` function   | GLSL Uniform Type |
 |---------------|-------------------------|-------------------|
-| `float`       | `set_uniform_float`     |`float`            |
-| `int32_t`     | `set_uniform_int`       |`int`              |
- | `uint32_t`    | `set_uniform_uint`      |`uint`             |
- | `Vector2f`    | `set_uniform_vec2`      |`vec2`             |
-| `Vector3f`    | `set_uniform_vec3`      |`vec3`             |
-| `Vector4f`    | `set_uniform_vec4`      |`vec4`             |
-| `GLTransform` | `set_uniform_transform` |`mat4x4`           |
+| `float`       | `set_uniform_float`     | `float`           |
+| `int32_t`     | `set_uniform_int`       | `int`             |
+ | `uint32_t`    | `set_uniform_uint`      | `uint`            |
+ | `Vector2f`    | `set_uniform_vec2`      | `vec2`            |
+| `Vector3f`    | `set_uniform_vec3`      | `vec3`            |
+| `Vector4f`    | `set_uniform_vec4`      | `vec4`            |
+| `GLTransform` | `set_uniform_transform` | `mat4x4`          |
 | `RGBA`        | `set_uniform_rgba`      | `vec4`            |
 | `HSVA`        | `set_uniform_hsva`      | `vec4`            |
 
-With this, we can set our custom `_color_rgba` uniform like this:
+\todo Add `set_uniform_texture` so users do not have to use texture locations
+
+With this, we can set our custom `_color_rgba` uniform value like this:
 
 ```cpp
 // create shader
@@ -827,16 +838,17 @@ window.set_child(aspect_frame);
 ```
 \how_to_generate_this_image_end
 
-In summary, while we cannot choose the `in` and `out` variables of either shader type, we have full control of the uniforms, giving us all the flexibility we need to accomplish complex shader tasks.
+In summary, while we do not have control over the `in` and `out` variables of either shader type, we have full control of the uniforms, giving us all the flexibility we need to accomplish complex shader tasks.
+
+---
 
 ## Transforms
 
-As mentioned before, \a{GLTransform} is the C++-side object that represents spatial transforms. It is called `GLTransform` because it **uses the GL coordinate system**. Applying a `GLTransform` to widget- or texture-space coordinates will not work.
+As mentioned before, \a{GLTransform} is the C++-side object that represents spatial transforms. It is called `GLTransform` because it **uses the GL coordinate system**. Applying a `GLTransform` to a vector in widget- or texture-space will produce incorrect results. They should only be applied to the `vertex_position` attribute of a `Shape`s vertices.
 
-Internally, a `GLTransform` is a 4x4 matrix. At any time, we can directly access this matrix by modifying the public member `GLTransform::transform`. 
+Internally, a `GLTransform` is a 4x4 matrix. At any time, we can directly access this matrix as the public member `GLTransform::transform`. 
 
 When constructed, the matrix will be the identity transform:
-
 ```
 1 0 0 0
 0 1 0 0
@@ -851,9 +863,9 @@ No matter the current state of the transform, we can reset it back to the identi
 + `GLTransform::scale` for scaling
 + `GLTransform::rotate` for rotation around a point
 
-We can combine two transforms using `GLTransform::combine` and if we wish to apply the transfrom CPU-side to a `Vector2f` or `Vector3f`, we can use `GLTransform::apply_to`.
+We can combine two transforms using `GLTransform::combine`. If we wish to apply the transfrom CPU-side to a `Vector2f` or `Vector3f`, we can use `GLTransform::apply_to`.
 
-While we could apply the transform to each vertex of a `Shape` CPU-side, it is much more performant to do this kind of math GPU-side. To do this, we register the transform with a `RenderTask`. Afterwards, the transform will be forwarded to the vertex shaders `_transform` uniform, which is then applied to the shapes vertices automatically:
+While we could apply the transform to each vertex of a `Shape`, then render the shape, it is much more performant to do this kind of math GPU-side. To do this, we register the transform with a `RenderTask`. Afterwards, the transform will be forwarded to the vertex shaders `_transform` uniform, which is then applied to the shapes vertices automatically:
 
 ```cpp
 auto shape = // ...
@@ -868,9 +880,12 @@ auto task = RenderTask(
 );
 ```
 
+---
+
 ## Blend Mode
 
-As the last part of a render task, we have **blend mode**. Mousetrap offers the following blend modes, which are part of the enum \a{BlendMode}:
+As the last component of a render task, we have **blend mode**. This governs how two colors behave when rendered on top of each other. We call the color currently in the frame buffer `destination`, while the newly added color is called `origin`. 
+Mousetrap offers the following blend modes, which are part of the enum \a{BlendMode}:
 
 | `BlendMode`        | Resulting Color                      |
 |--------------------|--------------------------------------|
@@ -883,8 +898,10 @@ As the last part of a render task, we have **blend mode**. Mousetrap offers the 
 | `MIN`              | `min(origin.rgba, destination.rgba)` |
  | `MAX`              | `max(origin.rgba, destination.rgba)` | 
 
-Which are familiar from graphics editors such as PhotoShop or GIMP.
+These are the familiar blend modes from graphics editors such as Photoshop or GIMP.
 
-If left unspecified, `RenderTask` will use `BlendMode::NORMAL`, which represents traditional alpha blending, in which the alpha value of both colors is treated as their emission.
+If left unspecified, `RenderTask` will use `BlendMode::NORMAL`, which represents traditional alpha blending. Using this blend mode, the opacity of `destination` and `origin` is treated as their emission, and then weighted mean is calculated producing the final result. This mimics how mixing colored light behaves in the real world.
 
-## 
+---
+
+## Render
