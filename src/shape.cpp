@@ -32,8 +32,6 @@ namespace mousetrap
             delete self->vertices;
             delete self->indices;
             delete self->vertex_data;
-
-            std::cout << "called" << std::endl;
         }
 
         DEFINE_NEW_TYPE_TRIVIAL_INIT(ShapeInternal, shape_internal, SHAPE_INTERNAL)

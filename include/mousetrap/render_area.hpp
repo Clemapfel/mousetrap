@@ -32,11 +32,13 @@ namespace mousetrap
         struct _RenderAreaInternal
         {
             GObject parent;
-            std::vector<RenderTask>* tasks;
+            std::vector<detail::RenderTaskInternal*>* tasks;
         };
         using RenderAreaInternal = _RenderAreaInternal;
     }
     #endif
+
+    class RenderTask;
 
     /// @brief area that allows OpenGL primitives to be rendered
     /// \signals
@@ -53,13 +55,6 @@ namespace mousetrap
 
             /// @brief destructor
             ~RenderArea();
-
-            /// @brief add render task, unless the <tt>render</tt> signal was overwritten, the default signal handler will render all render tasks in the order they were added
-            /// @param shape shape to hand to the render task
-            /// @param shader shader to hand to the render task, or nullptr to use the default shader
-            /// @param transform transform to hand to the render task, or nullptr to use the identity transform
-            /// @param blend_mode BlendMode to hand to the render task, or nullptr to use normal alpha blending
-            void add_render_task(const Shape&, Shader* = nullptr, GLTransform* = nullptr, BlendMode = BlendMode::NORMAL);
 
             /// @brief add render task
             /// @param task allocated render task, this object will take ownership of the task

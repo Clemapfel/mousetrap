@@ -14,8 +14,34 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        struct _RenderTaskInternal
+        {
+            GObject parent;
+
+            detail::ShapeInternal* _shape = nullptr;
+            const Shader* _shader = nullptr;
+            GLTransform _transform;
+            BlendMode _blend_mode;
+
+            static inline Shader* noop_shader = nullptr;
+
+            std::map<std::string, float>* _floats;
+            std::map<std::string, int>* _ints;
+            std::map<std::string, glm::uint>* _uints;
+            std::map<std::string, Vector2f>* _vec2s;
+            std::map<std::string, Vector3f>* _vec3s;
+            std::map<std::string, Vector4f>* _vec4s;
+            std::map<std::string, GLTransform>* _transforms;
+        };
+        using RenderTaskInternal = _RenderTaskInternal;
+    }
+    #endif
+
     /// @brief bundles a shape in a render task that can be invoked more conveniently during the render cycle
-    class RenderTask
+    class RenderTask : public SignalEmitter
     {
         public:
             /// @brief construct the render task
@@ -24,6 +50,9 @@ namespace mousetrap
             /// @param transform transform to hand to the vertex shader when rendering, if nullptr, the identity transform will be handed isntead
             /// @param blend_mode blend_mode to set before rendering the shape, normal alpha-blending if unspecified
             explicit RenderTask(const Shape& shape, const Shader* shader = nullptr, const GLTransform& transform = GLTransform(), BlendMode blend_mode = BlendMode::NORMAL);
+
+            /// @brief create from gobject \internal
+            RenderTask(detail::RenderTaskInternal*);
 
             /// @brief destructor
             ~RenderTask();
@@ -122,24 +151,11 @@ namespace mousetrap
             /// @brief perform the render step to the currently bound framebuffer
             void render() const;
 
+            /// @brief expose as GObject \internal
+            operator GObject*() const override;
+
         private:
-            detail::ShapeInternal* _shape = nullptr;
-            const Shader* _shader = nullptr;
-            GLTransform _transform = GLTransform();
-            BlendMode _blend_mode;
-
-            static inline Shader* noop_shader = nullptr;
-            static inline GLTransform* noop_transform = nullptr;
-
-            std::map<std::string, float> _floats;
-            std::map<std::string, int> _ints;
-            std::map<std::string, glm::uint> _uints;
-            std::map<std::string, Vector2f> _vec2s;
-            std::map<std::string, Vector3f> _vec3s;
-            std::map<std::string, Vector4f> _vec4s;
-            std::map<std::string, GLTransform> _transforms;
-            std::map<std::string, RGBA> _colors_rgba;
-            std::map<std::string, HSVA> _colors_hsva;
+            detail::RenderTaskInternal* _internal;
     };
 }
 

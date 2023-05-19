@@ -48,7 +48,7 @@ namespace mousetrap
 
                 static auto circle = Shape();
                 circle.as_circle({0, 0}, 0.5, 16);
-                _area.add_render_task(circle);
+                _area.add_render_task(RenderTask(circle));
 
                 /*
                 _area.connect_signal_render([](RenderArea* area, GdkGLContext* context, RenderAreaTest* instance) -> bool {

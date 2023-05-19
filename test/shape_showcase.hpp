@@ -23,7 +23,7 @@ namespace mousetrap
                 auto add_page = [&](const std::string& string, const Shape& shape){
 
                     auto area = RenderArea();
-                    area.add_render_task(shape);
+                    area.add_render_task(RenderTask(shape));
 
                     auto box = Box(Orientation::VERTICAL);
 

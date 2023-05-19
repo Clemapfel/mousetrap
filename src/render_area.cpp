@@ -4,6 +4,7 @@
 //
 
 #include <mousetrap/render_area.hpp>
+#include <mousetrap/render_task.hpp>
 
 namespace mousetrap
 {
@@ -73,6 +74,10 @@ namespace mousetrap
         {
             auto* self = MOUSETRAP_RENDER_AREA_INTERNAL(object);
             G_OBJECT_CLASS(render_area_internal_parent_class)->finalize(object);
+
+            for (auto* task : *self->tasks)
+                g_object_unref(task);
+
             delete self->tasks;
         }
 
@@ -84,7 +89,7 @@ namespace mousetrap
             auto* self = (RenderAreaInternal*) g_object_new(render_area_internal_get_type(), nullptr);
             render_area_internal_init(self);
 
-            self->tasks = new std::vector<RenderTask>();
+            self->tasks = new std::vector<detail::RenderTaskInternal*>();
             return self;
         }
     }
@@ -109,21 +114,18 @@ namespace mousetrap
     RenderArea::~RenderArea()
     {}
 
-    void RenderArea::add_render_task(const Shape& shape, Shader* shader, GLTransform* transform, BlendMode blend_mode)
-    {
-        if (shape == nullptr)
-            return;
-
-        _internal->tasks->emplace_back(shape, shader, transform, blend_mode);
-    }
-
     void RenderArea::add_render_task(RenderTask task)
     {
-        _internal->tasks->push_back(task);
+        auto* task_internal = (detail::RenderTaskInternal*) task.operator GObject*();
+        _internal->tasks->push_back(task_internal);
+        g_object_ref(task_internal);
     }
 
     void RenderArea::clear_render_tasks()
     {
+        for (auto& task : *_internal->tasks)
+            g_object_unref(task);
+
         _internal->tasks->clear();
     }
 
@@ -155,8 +157,11 @@ namespace mousetrap
         glEnable(GL_BLEND);
         set_current_blend_mode(BlendMode::NORMAL);
 
-        for (auto& task : *(internal->tasks))
+        for (auto* internal : *(internal->tasks))
+        {
+            auto task = RenderTask(internal);
             task.render();
+        }
 
         glFlush();
         return FALSE;
@@ -195,8 +200,6 @@ namespace mousetrap
         out.y = 1 - out.y;
         out -= 0.5;
         out *= 2;
-
-        std::cout << out.x << " " << out.y << std::endl;
 
         return out;
     }

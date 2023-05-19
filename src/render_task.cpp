@@ -9,99 +9,142 @@
 
 namespace mousetrap
 {
+    namespace detail
+    {
+        DECLARE_NEW_TYPE(RenderTaskInternal, render_task_internal, RENDER_TASK_INTERNAL)
+
+        static void render_task_internal_finalize(GObject* object)
+        {
+            auto* self = MOUSETRAP_RENDER_TASK_INTERNAL(object);
+            G_OBJECT_CLASS(render_task_internal_parent_class)->finalize(object);
+
+            delete self->_floats;
+            delete self->_ints;
+            delete self->_uints;
+            delete self->_vec2s;
+            delete self->_vec3s;
+            delete self->_vec4s;
+            delete self->_transforms;
+
+            g_object_unref(self->_shape);
+        }
+
+        DEFINE_NEW_TYPE_TRIVIAL_INIT(RenderTaskInternal, render_task_internal, RENDER_TASK_INTERNAL)
+        DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(RenderTaskInternal, render_task_internal, RENDER_TASK_INTERNAL)
+
+        static RenderTaskInternal* render_task_internal_new(const Shape& shape, const Shader* shader, const GLTransform& transform, BlendMode blend_mode)
+        {
+            auto* self = (RenderTaskInternal*) g_object_new(render_task_internal_get_type(), nullptr);
+            render_task_internal_init(self);
+
+            self->_shape = (detail::ShapeInternal*) shape.operator GObject*();
+            self->_shader = shader;
+
+            self->_floats = new std::map<std::string, float>();
+            self->_ints = new std::map<std::string, int>();
+            self->_uints = new std::map<std::string, glm::uint>();
+            self->_vec2s = new std::map<std::string, Vector2f>();
+            self->_vec3s = new std::map<std::string, Vector3f>();
+            self->_vec4s = new std::map<std::string, Vector4f>();
+            self->_transforms = new std::map<std::string, GLTransform>();
+
+            self->_transform = transform;
+            self->_blend_mode = blend_mode;
+
+            if (self->noop_shader == nullptr)
+                self->noop_shader = new Shader();
+
+            if (self->_shader == nullptr)
+                self->_shader = self->noop_shader;
+
+            g_object_ref(self->_shape);
+            return self;
+        }
+    }
+
     RenderTask::RenderTask(const Shape& shape, const Shader* shader, const GLTransform& transform, BlendMode blend_mode)
     {
-        if (noop_shader == nullptr)
-            noop_shader = new Shader();
+        _internal = detail::render_task_internal_new(shape, shader, transform, blend_mode);
+    }
 
-        if (noop_transform == nullptr)
-            noop_transform = new GLTransform();
-
-        g_object_ref(shape.operator GObject *());
-
-        _shape = (detail::ShapeInternal*) shape.operator GObject*();
-        _shader = shader;
-        _transform = transform;
-        _blend_mode = blend_mode;
+    RenderTask::RenderTask(detail::RenderTaskInternal* internal)
+    {
+        _internal = g_object_ref(internal);
     }
 
     RenderTask::~RenderTask()
     {
-        if (G_IS_OBJECT(_shape))
-            g_object_unref(_shape);
+        g_object_unref(_internal);
     }
 
     void RenderTask::render() const
     {
-        auto* shader = _shader == nullptr ? noop_shader : _shader;
+        auto* shader = _internal->_shader;
 
         glUseProgram(shader->get_program_id());
 
-        for (auto& pair : _floats)
+        for (auto& pair : *_internal->_floats)
             shader->set_uniform_float(pair.first, pair.second);
 
-        for (auto& pair : _ints)
+        for (auto& pair : *_internal->_ints)
             shader->set_uniform_int(pair.first, pair.second);
 
-        for (auto& pair : _vec2s)
+        for (auto& pair : *_internal->_uints)
+            shader->set_uniform_uint(pair.first, pair.second);
+
+        for (auto& pair : *_internal->_vec2s)
             shader->set_uniform_vec2(pair.first, pair.second);
 
-        for (auto& pair : _vec3s)
+        for (auto& pair : *_internal->_vec3s)
             shader->set_uniform_vec3(pair.first, pair.second);
 
-        for (auto& pair : _vec4s)
+        for (auto& pair : *_internal->_vec4s)
             shader->set_uniform_vec4(pair.first, pair.second);
 
-        for (auto& pair : _transforms)
+        for (auto& pair :*_internal-> _transforms)
             shader->set_uniform_transform(pair.first, pair.second);
 
-        for (auto& pair : _colors_rgba)
-            shader->set_uniform_vec4(pair.first, pair.second.operator glm::vec4());
-
-        for (auto& pair : _colors_hsva)
-            shader->set_uniform_vec4(pair.first, pair.second.operator glm::vec4());
-
         glEnable(GL_BLEND);
-        set_current_blend_mode(_blend_mode);
+        set_current_blend_mode(_internal->_blend_mode);
 
-        auto shape = Shape(_shape);
-        shape.render(*shader, _transform);
+        auto shape = Shape(_internal->_shape);
+        shape.render(*shader, _internal->_transform);
         set_current_blend_mode(BlendMode::NORMAL);
     }
 
     void RenderTask::set_uniform_float(const std::string& uniform_name, float value)
     {
-        _floats.insert({uniform_name, value});
+        _internal->_floats->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_int(const std::string& uniform_name, int value)
     {
-        _ints.insert({uniform_name, value});
+        _internal->_ints->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_uint(const std::string& uniform_name, glm::uint value)
     {
-        _uints.insert({uniform_name, value});
+        _internal->_uints->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_vec2(const std::string& uniform_name, Vector2f value)
     {
-        _vec2s.insert({uniform_name, value});
+        _internal->_vec2s->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_vec3(const std::string& uniform_name, Vector3f value)
     {
-        _vec3s.insert({uniform_name, value});
+        _internal->_vec3s->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_vec4(const std::string& uniform_name, Vector4f value)
     {
-        _vec4s.insert({uniform_name, value});
+        _internal->_vec4s->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_transform(const std::string& uniform_name, GLTransform value)
     {
-        _transforms.insert({uniform_name, value});
+        _internal->_transforms->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_rgba(const std::string& uniform_name, RGBA value)
@@ -116,8 +159,8 @@ namespace mousetrap
 
     float RenderTask::get_uniform_float(const std::string& uniform_name)
     {
-        auto it = _floats.find(uniform_name);
-        if (it == _floats.end())
+        auto it = _internal->_floats->find(uniform_name);
+        if (it == _internal->_floats->end())
         {
             log::critical("In RenderTask::get_uniform_float: No float with name `" + uniform_name + "` registered");
             return 0;
@@ -127,8 +170,8 @@ namespace mousetrap
 
     glm::int32_t RenderTask::get_uniform_int(const std::string& uniform_name)
     {
-        auto it = _ints.find(uniform_name);
-        if (it == _ints.end())
+        auto it = _internal->_ints->find(uniform_name);
+        if (it == _internal->_ints->end())
         {
             log::critical("In RenderTask::get_uniform_int: No int with name `" + uniform_name + "` registered");
             return 0;
@@ -138,8 +181,8 @@ namespace mousetrap
 
     glm::uint RenderTask::get_uniform_uint(const std::string& uniform_name)
     {
-        auto it = _uints.find(uniform_name);
-        if (it == _uints.end())
+        auto it = _internal->_uints->find(uniform_name);
+        if (it == _internal->_uints->end())
         {
             log::critical("In RenderTask::get_uniform_uint: No uint with name `" + uniform_name + "` registered");
             return 0;
@@ -149,8 +192,8 @@ namespace mousetrap
 
     Vector2f RenderTask::get_uniform_vec2(const std::string& uniform_name)
     {
-        auto it = _vec2s.find(uniform_name);
-        if (it == _vec2s.end())
+        auto it = _internal->_vec2s->find(uniform_name);
+        if (it == _internal->_vec2s->end())
         {
             log::critical("In RenderTask::get_uniform_vec2: No vec2 with name `" + uniform_name + "` registered");
             return {0, 0};
@@ -160,8 +203,8 @@ namespace mousetrap
 
     Vector3f RenderTask::get_uniform_vec3(const std::string& uniform_name)
     {
-        auto it = _vec3s.find(uniform_name);
-        if (it == _vec3s.end())
+        auto it = _internal->_vec3s->find(uniform_name);
+        if (it == _internal->_vec3s->end())
         {
             log::critical("In RenderTask::get_uniform_vec3: No vec3 with name `" + uniform_name + "` registered");
             return {0, 0, 0};
@@ -171,8 +214,8 @@ namespace mousetrap
 
     Vector4f RenderTask::get_uniform_vec4(const std::string& uniform_name)
     {
-        auto it = _vec4s.find(uniform_name);
-        if (it == _vec4s.end())
+        auto it = _internal->_vec4s->find(uniform_name);
+        if (it == _internal->_vec4s->end())
         {
             log::critical("In RenderTask::get_uniform_vec4: No vec4 with name `" + uniform_name + "` registered");
             return {0, 0, 0, 0};
@@ -182,8 +225,8 @@ namespace mousetrap
 
     RGBA RenderTask::get_uniform_rgba(const std::string& uniform_name)
     {
-        auto it = _vec4s.find(uniform_name);
-        if (it == _vec4s.end())
+        auto it = _internal->_vec4s->find(uniform_name);
+        if (it == _internal->_vec4s->end())
         {
             log::critical("In RenderTask::get_uniform_rgba: No vec4 with name `" + uniform_name + "` registered");
             return {0, 0, 0, 0};
@@ -194,8 +237,8 @@ namespace mousetrap
 
     HSVA RenderTask::get_uniform_hsva(const std::string& uniform_name)
     {
-        auto it = _vec4s.find(uniform_name);
-        if (it == _vec4s.end())
+        auto it = _internal->_vec4s->find(uniform_name);
+        if (it == _internal->_vec4s->end())
         {
             log::critical("In RenderTask::get_uniform_hsva: No vec4 with name `" + uniform_name + "` registered");
             return {0, 0, 0, 0};
@@ -206,13 +249,18 @@ namespace mousetrap
 
     GLTransform RenderTask::get_uniform_transform(const std::string& uniform_name)
     {
-        auto it = _transforms.find(uniform_name);
-        if (it == _transforms.end())
+        auto it = _internal->_transforms->find(uniform_name);
+        if (it == _internal->_transforms->end())
         {
             log::critical("In RenderTask::get_uniform_transform: No mat4x4 with name `" + uniform_name + "` registered");
             return GLTransform();
         }
         return it->second;
+    }
+
+    RenderTask::operator GObject*() const
+    {
+        return G_OBJECT(_internal);
     }
 
     /*
@@ -224,12 +272,12 @@ namespace mousetrap
 
     const Shader* RenderTask::get_shader() const
     {
-        return _shader == nullptr ? noop_shader : _shader;
+        return _shader == nullptr ? _internal->noop_shader : _shader;
     }
 
     const GLTransform* RenderTask::get_transform() const
     {
-        return _transform == nullptr ? noop_transform : _transform;
+        return _transform == nullptr ? _internal->noop_transform : _transform;
     }
      */
 }
