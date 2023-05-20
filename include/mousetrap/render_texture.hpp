@@ -47,10 +47,10 @@ namespace mousetrap
             RenderTexture& operator=(RenderTexture&&);
 
             /// @brief bind texture as render target, from this point on all render calls will write to its internal framebuffer instead
-            void bind_as_rendertarget() const;
+            void bind_as_render_target() const;
 
             /// @brief unbind as render target, restores the framebuffer that was active before mousetrap::RenderTexture::bind_as_rendertarget was called
-            void unbind_as_rendertarget() const;
+            void unbind_as_render_target() const;
 
             /// @brief expose as gobject
             operator GObject*() const override;

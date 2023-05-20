@@ -55,7 +55,7 @@ namespace mousetrap
         return *this;
     }
 
-    void RenderTexture::bind_as_rendertarget() const
+    void RenderTexture::bind_as_render_target() const
     {
         constexpr auto ATTACHMENT = GL_COLOR_ATTACHMENT5;
 
@@ -67,7 +67,7 @@ namespace mousetrap
         glDrawBuffers(1, DrawBuffers);
     }
 
-    void RenderTexture::unbind_as_rendertarget() const
+    void RenderTexture::unbind_as_render_target() const
     {
         glBindFramebuffer(GL_FRAMEBUFFER, _internal->before_buffer);
     }

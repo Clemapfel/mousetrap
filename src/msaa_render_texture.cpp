@@ -98,7 +98,7 @@ namespace mousetrap
         free();
     }
 
-    void MultisampledRenderTexture::bind_as_rendertarget() const
+    void MultisampledRenderTexture::bind_as_render_target() const
     {
         if (_internal->width == 0 or _internal->height == 0)
         {
@@ -109,7 +109,7 @@ namespace mousetrap
         glBindFramebuffer(GL_FRAMEBUFFER, _internal->buffer);
     }
 
-    void MultisampledRenderTexture::unbind_as_rendertarget() const
+    void MultisampledRenderTexture::unbind_as_render_target() const
     {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, _internal->buffer);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _internal->intermediate_buffer);

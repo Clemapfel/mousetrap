@@ -49,10 +49,10 @@ namespace mousetrap
             void unbind() const override;
 
             /// @brief make the textures framebuffer the current render buffer, anything rendered between this and mousetrap::MultisampledRenderTexture::unbind_as_render_target will appear in the textures buffer
-            void bind_as_rendertarget() const;
+            void bind_as_render_target() const;
 
             /// @brief unbind as render target, restores buffer that was active before mousetrap::MultisampledRenderTexture::bind_as_rendertarget was called
-            void unbind_as_rendertarget() const;
+            void unbind_as_render_target() const;
 
             /// @brief create as texture of given size with all pixels set to RGBA(0, 0, 0, 0)
             /// @param width x-dimension

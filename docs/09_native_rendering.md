@@ -941,8 +941,81 @@ This signal handler uses native OpenGL functions, which we have so far avoided. 
 
 With our newfound ability to manually implement how rendering takes place, we can perform one of the more complex tasks: rendering to a texture. This is achieved by \a{RenderTexture}, which is an object than can both be used as a texture, and can be bound as the current render target, meaning anything that would trigger shapes being displayed on screen will instead write into the textures memory.
 
-Mousetrap offers two classes that can be used as render texture, `RenderTexture` and `MultisampledRenderTexture`. Both work in the exact same way, though the latter will perform [multisampling anti aliasing](https://learnopengl.com/Advanced-OpenGL/Anti-Aliasing), which causes jagged edges to look smoother. In return, `MultiSampledRenderTexture` takes about 2.5 times the memory of `RenderTexture`, and should only be used sparingly. 
+Mousetrap offers two classes that can be used as render texture, `RenderTexture` and `MultisampledRenderTexture`. Both work in the exact same way, though the latter will perform [multisampling anti aliasing (MSAA)](https://learnopengl.com/Advanced-OpenGL/Anti-Aliasing), which causes jagged edges to look smoother. In return, `MultiSampledRenderTexture` takes about 2.5 times the memory of `RenderTexture`, and should thus be used sparingly. 
 
+### Creating a Render Texture
+
+We first need to instantiate and allocate our render texture:
+
+```cpp
+auto render_texture = RenderTexture();
+render_texture.create(400, 300);
+
+// or, if we want MSAA:
+
+auto render_texture = MultisampledRenderTexture();
+render_texture.create(400, 300);
+```
+
+This creates a render texture with a resolution of 400x300 pixels. To render to this texture, we will need to modify the signal handler for the `render` signal. To bind the current render texture as the render target, we use `RenderTexture::bind_as_render_target`. After this call, any  rendering will be pasted into the render textures buffer, as opposed to the buffer owned by the `RenderArea`, which will be shown on screen. Afterwards, `RenderTexture::unbind_as_render_target` switches the active buffer back to what it was before `bind_as_render_target` was called. After this call, any rendering will instead be pasted onto the `RenderArea`s framebuffer.
+
+In general, rendering to a texture will look like this:
+
+```cpp
+static auto render_texture = RenderTexture();
+render_texture.create(400, 300);
+
+static auto render_area = RenderArea();
+render_area.connect_signal_render([](RenderArea* area, GdkGLContext*)
+{
+    // render to render texture
+    {
+        // bind texture for rendering
+        render_texture.bind_as_render_target();
+        
+        // clear textures buffer with RGBA(0, 0, 0, 0); 
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        
+        /* rendering to texture happens here */
+ 
+        // flush to texture
+        glFlush();
+        
+        // unbind textue from rendering
+        render_texture.unbind_as_render_target();
+    }
+    
+    // now, render to screen, not to a texture
+    {
+        // clear screens framebuffer
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+    
+        // set blend mode to default
+        glEnable(GL_BLEND);
+        set_current_blend_mode(BlendMode::NORMAL);
+    
+        /* rendering to texture happens here */
+    
+        // flush to screen
+        glFlush();
+    }
+
+    // signal that the RenderAreas framebuffer was updated
+    return true;
+});
+```
+
+Where the two `{}` blocks where added for stylistic emphasis.
+
+## Native Rendering: A Practical Example
+
+The concepts discussed in the latter part of this chapter require knowledge about OpenGL and rendering in general. The `RenderTask`-based architecture may seem unusual to someone more used to the regular render-loop-based structure of libraries like [SFML](https://www.sfml-dev.org/tutorials/2.5/graphics-draw.php) or [SDL](http://www.libsdl.org/), though it is superior when used with signal-architecture. Much like we register signal handlers to later be triggered by signals, we register render tasks to later be rendered when needed.
+
+One of the most common application of render textures is applying a shader to the entire screen. Usually, when we render multiple shapes individually, we have no way to access the final composite image. Fragment shaders do not have access to the current state of the framebuffer, though they do have access to textures.
+
+In this example, we will be building a render 
 
 
 
