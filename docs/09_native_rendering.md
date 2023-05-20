@@ -838,7 +838,7 @@ window.set_child(aspect_frame);
 ```
 \how_to_generate_this_image_end
 
-In summary, while we do not have control over the `in` and `out` variables of either shader type, we have full control of the uniforms, giving us all the flexibility we need to accomplish complex shader tasks.
+In summary, while we do not have control over the `in` and `out` variables of either shader type, we have full control over uniforms, giving us all the flexibility we need to accomplish complex shader tasks.
 
 ---
 
@@ -904,4 +904,42 @@ If left unspecified, `RenderTask` will use `BlendMode::NORMAL`, which represents
 
 ---
 
-## Render
+## The Render Signal
+
+For most purposes, we do not need to connect to signal `render` of `RenderArea`. This signal is emitted once per frame, right before the internal framebuffer is "flushed", meaning the state of viewports framebuffer is send to the monitor to be displayed for the user. The default handler for signal `render` handles clearing the framebuffer, blending, and rendering all the registered `RenderTask`s. Once we connect a new signal handler, we will have to do all of this ourself.
+
+To reproduce the behavior of the default signal handler, we would implement the handler for signal `render` like this:
+
+```cpp
+static auto render_area = RenderArea();
+render_area.connect_signal_render([](RenderArea* area, GdkGLContext*)
+{
+    // clear framebuffer
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // set blend mode to default
+    glEnable(GL_BLEND);
+    set_current_blend_mode(BlendMode::NORMAL);
+
+    // render all tasks
+    area->render_render_tasks();
+
+    // flush to screen
+    glFlush();
+
+    // signal that the framebuffer was updated
+    return true;
+});
+```
+
+Where `RenderArea::render_render_tasks` was used to call \link mousetrap::RenderTask::render `RenderTask::render`\endlink for all registered render tasks.
+
+This signal handler uses native OpenGL functions, which we have so far avoided. OpenGL functions should only be called within the handler for `render`, as this is the only time we can be sure that a valid OpenGL context is bound and ready to be used.
+
+## Rendering to a Texture
+
+With our newfound ability to manually implement how rendering takes place, we can perform one of the more complex tasks, rendering to a texture. This is achieved by \a{RenderTexture}, which is an object than can both be used as a texture, and can be bound as the current render target, meaning anything that would trigger shapes being displayed on screen will instead write into the textures memory.
+
+
+

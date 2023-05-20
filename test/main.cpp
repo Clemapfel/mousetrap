@@ -181,7 +181,7 @@ int main()
 
         auto& window = state->main_window;
 
-        auto render_area = RenderArea();
+        static auto render_area = RenderArea();
 
         static auto shader = Shader();
         shader.create_from_string(ShaderType::FRAGMENT, R"(
@@ -206,6 +206,25 @@ int main()
         task.set_uniform_rgba("_color_rgba", RGBA(1, 0, 1, 1));
 
         render_area.add_render_task(task);
+
+        render_area.connect_signal_render([](RenderArea* area, GdkGLContext*)
+        {
+            // clear framebuffer
+            glClearColor(0, 0, 0, 0);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            // set blend mode to default
+            glEnable(GL_BLEND);
+            set_current_blend_mode(BlendMode::NORMAL);
+
+            // render all tasks
+            //area->render_render_tasks();
+
+            // flush to screen
+            glFlush();
+
+            return false;
+        });
 
         auto aspect_frame = AspectFrame(1);
         aspect_frame.set_child(render_area);

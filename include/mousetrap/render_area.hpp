@@ -63,6 +63,9 @@ namespace mousetrap
             /// @brief unregister all render tasks
             void clear_render_tasks();
 
+            /// @brief trigger the `render` function of all registered render tasks
+            void render_render_tasks();
+
             /// @brief notify the area that a re-render should be done as soon as possible
             void queue_render();
 

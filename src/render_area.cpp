@@ -164,7 +164,16 @@ namespace mousetrap
         }
 
         glFlush();
-        return FALSE;
+        return TRUE;
+    }
+
+    void RenderArea::render_render_tasks()
+    {
+        for (auto* internal : *(_internal->tasks))
+        {
+            auto task = RenderTask(internal);
+            task.render();
+        }
     }
 
     void RenderArea::queue_render()
