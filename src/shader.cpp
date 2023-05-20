@@ -13,45 +13,73 @@
 
 namespace mousetrap
 {
-    Shader::Shader()
+    namespace detail
     {
-        if (_noop_program_id == 0)
+        DECLARE_NEW_TYPE(ShaderInternal, shader_internal, SHADER_INTERNAL)
+
+        static void shader_internal_finalize(GObject* object)
         {
-            _noop_fragment_shader_id = compile_shader(noop_fragment_shader_code, ShaderType::FRAGMENT);
-            _noop_vertex_shader_id = compile_shader(noop_vertex_shader_code, ShaderType::VERTEX);
-            _noop_program_id = link_program(_noop_fragment_shader_id, _noop_vertex_shader_id);
+            auto* self = MOUSETRAP_SHADER_INTERNAL(object);
+            G_OBJECT_CLASS(shader_internal_parent_class)->finalize(object);
+
+            if (self->fragment_shader_id != 0 and self->fragment_shader_id != ShaderInternal::noop_fragment_shader_id)
+                glDeleteShader(self->fragment_shader_id);
+
+            if (self->vertex_shader_id != 0 and self->vertex_shader_id != ShaderInternal::noop_vertex_shader_id)
+                glDeleteShader(self->vertex_shader_id);
+
+            if (self->program_id != 0 and self->program_id != ShaderInternal::noop_program_id)
+                glDeleteProgram(self->program_id);
         }
 
-        _program_id = _noop_program_id;
-        _fragment_shader_id = _noop_fragment_shader_id;
-        _vertex_shader_id = _noop_vertex_shader_id;
+        DEFINE_NEW_TYPE_TRIVIAL_INIT(ShaderInternal, shader_internal, SHADER_INTERNAL)
+        DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(ShaderInternal, shader_internal, SHADER_INTERNAL)
+
+        static ShaderInternal* shader_internal_new()
+        {
+            auto* self = (ShaderInternal*) g_object_new(shader_internal_get_type(), nullptr);
+            shader_internal_init(self);
+
+            self->program_id = detail::ShaderInternal::noop_program_id;
+            self->fragment_shader_id = detail::ShaderInternal::noop_fragment_shader_id;
+            self->vertex_shader_id = detail::ShaderInternal::noop_vertex_shader_id;
+
+            return self;
+        }
+    }
+    
+    Shader::Shader()
+    {
+        using namespace detail;
+
+        if (ShaderInternal::noop_program_id == 0)
+        {
+            ShaderInternal::noop_fragment_shader_id = compile_shader(noop_fragment_shader_code, ShaderType::FRAGMENT);
+            ShaderInternal::noop_vertex_shader_id = compile_shader(noop_vertex_shader_code, ShaderType::VERTEX);
+            ShaderInternal::noop_program_id = link_program(ShaderInternal::noop_fragment_shader_id, ShaderInternal::noop_vertex_shader_id);
+        }
+
+        _internal = detail::shader_internal_new();
     }
 
     Shader::~Shader()
     {
-        if (_fragment_shader_id != 0 and _fragment_shader_id != _noop_fragment_shader_id)
-            glDeleteShader(_fragment_shader_id);
-
-        if (_vertex_shader_id != 0 and _vertex_shader_id != _noop_vertex_shader_id)
-            glDeleteShader(_vertex_shader_id);
-
-        if (_program_id != 0 and _program_id != _noop_program_id)
-            glDeleteProgram(_program_id);
+        g_object_unref(_internal);
     }
 
     bool Shader::create_from_string(ShaderType type, const std::string& code)
     {
         if (type == ShaderType::FRAGMENT)
-            _fragment_shader_id = compile_shader(code, type);
+            _internal->fragment_shader_id = compile_shader(code, type);
         else
-            _vertex_shader_id = compile_shader(code, type);
+            _internal->vertex_shader_id = compile_shader(code, type);
 
-        _program_id = link_program(_fragment_shader_id, _vertex_shader_id);
+        _internal->program_id = link_program(_internal->fragment_shader_id, _internal->vertex_shader_id);
 
         if (
-            (type == ShaderType::FRAGMENT and _fragment_shader_id == 0) or
-            (type == ShaderType::VERTEX and _vertex_shader_id == 0) or
-            _program_id == 0
+            (type == ShaderType::FRAGMENT and _internal->fragment_shader_id == 0) or
+            (type == ShaderType::VERTEX and _internal->vertex_shader_id == 0) or
+            _internal->program_id == 0
         )
             return false;
         else
@@ -78,17 +106,17 @@ namespace mousetrap
 
     GLNativeHandle Shader::get_program_id() const
     {
-        return _program_id;
+        return _internal->program_id;
     }
 
     GLNativeHandle Shader::get_vertex_shader_id() const
     {
-        return _vertex_shader_id;
+        return _internal->vertex_shader_id;
     }
 
     GLNativeHandle Shader::get_fragment_shader_id() const
     {
-        return _fragment_shader_id;
+        return _internal->fragment_shader_id;
     }
 
     GLNativeHandle Shader::compile_shader(const std::string& source, ShaderType shader_type)
@@ -146,12 +174,12 @@ namespace mousetrap
             int info_length = 0;
             int max_length = info_length;
 
-            glGetProgramiv(_program_id, GL_INFO_LOG_LENGTH, &max_length);
+            glGetProgramiv(_internal->program_id, GL_INFO_LOG_LENGTH, &max_length);
 
             auto log = std::vector<char>();
             log.resize(max_length);
 
-            glGetProgramInfoLog(_program_id, max_length, &info_length, log.data());
+            glGetProgramInfoLog(_internal->program_id, max_length, &info_length, log.data());
 
             for (auto c: log)
                 str << c;
@@ -202,7 +230,7 @@ namespace mousetrap
 
     int Shader::get_uniform_location(const std::string& str) const
     {
-        return glGetUniformLocation(_program_id, str.c_str());
+        return glGetUniformLocation(_internal->program_id, str.c_str());
     }
 
     int Shader::get_vertex_position_location()
@@ -218,5 +246,15 @@ namespace mousetrap
     int Shader::get_vertex_texture_coordinate_location()
     {
         return 2;
+    }
+
+    Shader::operator GObject*() const
+    {
+        return G_OBJECT(_internal);
+    }
+
+    Shader::Shader(detail::ShaderInternal* internal)
+    {
+        _internal = g_object_ref(internal);
     }
 }

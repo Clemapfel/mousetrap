@@ -27,6 +27,7 @@ namespace mousetrap
             delete self->_transforms;
 
             g_object_unref(self->_shape);
+            g_object_unref(self->_shader);
         }
 
         DEFINE_NEW_TYPE_TRIVIAL_INIT(RenderTaskInternal, render_task_internal, RENDER_TASK_INTERNAL)
@@ -38,7 +39,14 @@ namespace mousetrap
             render_task_internal_init(self);
 
             self->_shape = (detail::ShapeInternal*) shape.operator GObject*();
-            self->_shader = shader;
+
+            if (self->noop_shader == nullptr)
+                self->noop_shader = new Shader();
+
+            if (shader == nullptr)
+                self->_shader = (detail::ShaderInternal*) self->noop_shader->operator GObject*();
+            else
+                self->_shader = (detail::ShaderInternal*) shader->operator GObject*();
 
             self->_floats = new std::map<std::string, float>();
             self->_ints = new std::map<std::string, int>();
@@ -51,13 +59,9 @@ namespace mousetrap
             self->_transform = transform;
             self->_blend_mode = blend_mode;
 
-            if (self->noop_shader == nullptr)
-                self->noop_shader = new Shader();
-
-            if (self->_shader == nullptr)
-                self->_shader = self->noop_shader;
-
             g_object_ref(self->_shape);
+            g_object_ref(self->_shader);
+
             return self;
         }
     }
@@ -79,36 +83,37 @@ namespace mousetrap
 
     void RenderTask::render() const
     {
-        auto* shader = _internal->_shader;
+        auto shader = Shader(_internal->_shader);
 
-        glUseProgram(shader->get_program_id());
+        glUseProgram(shader.get_program_id());
 
         for (auto& pair : *_internal->_floats)
-            shader->set_uniform_float(pair.first, pair.second);
+            shader.set_uniform_float(pair.first, pair.second);
 
         for (auto& pair : *_internal->_ints)
-            shader->set_uniform_int(pair.first, pair.second);
+            shader.set_uniform_int(pair.first, pair.second);
 
         for (auto& pair : *_internal->_uints)
-            shader->set_uniform_uint(pair.first, pair.second);
+            shader.set_uniform_uint(pair.first, pair.second);
 
         for (auto& pair : *_internal->_vec2s)
-            shader->set_uniform_vec2(pair.first, pair.second);
+            shader.set_uniform_vec2(pair.first, pair.second);
 
         for (auto& pair : *_internal->_vec3s)
-            shader->set_uniform_vec3(pair.first, pair.second);
+            shader.set_uniform_vec3(pair.first, pair.second);
 
         for (auto& pair : *_internal->_vec4s)
-            shader->set_uniform_vec4(pair.first, pair.second);
+            shader.set_uniform_vec4(pair.first, pair.second);
 
         for (auto& pair :*_internal-> _transforms)
-            shader->set_uniform_transform(pair.first, pair.second);
+            shader.set_uniform_transform(pair.first, pair.second);
 
         glEnable(GL_BLEND);
         set_current_blend_mode(_internal->_blend_mode);
 
         auto shape = Shape(_internal->_shape);
-        shape.render(*shader, _internal->_transform);
+        shape.render(shader, _internal->_transform);
+
         set_current_blend_mode(BlendMode::NORMAL);
     }
 

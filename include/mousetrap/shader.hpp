@@ -8,6 +8,7 @@
 #include <string>
 #include <mousetrap/gl_common.hpp>
 #include <mousetrap/gl_transform.hpp>
+#include <mousetrap/signal_emitter.hpp>
 
 namespace mousetrap
 {
@@ -21,8 +22,27 @@ namespace mousetrap
         VERTEX = GL_VERTEX_SHADER
     };
 
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        struct _ShaderInternal
+        {
+            GObject parent;
+
+            GLNativeHandle program_id;
+            GLNativeHandle fragment_shader_id;
+            GLNativeHandle vertex_shader_id;
+
+            static inline size_t noop_program_id;
+            static inline size_t noop_fragment_shader_id;
+            static inline size_t noop_vertex_shader_id;
+        };
+        using ShaderInternal = _ShaderInternal;
+    }
+    #endif
+
     /// @brief shader, holds the OpenGL shader program, a vertex and a fragment shader
-    struct Shader
+    class Shader : public SignalEmitter
     {
         public:
             /// @brief construct, holds default shader program for both fragment and vertex
@@ -30,6 +50,12 @@ namespace mousetrap
 
             /// @brief destruct, frees GPU-side memory
             ~Shader();
+
+            /// @brief construct from internal \internal
+            Shader(detail::ShaderInternal*);
+
+            /// @brief expose as GObject \internal
+            operator GObject*() const override;
 
             /// @brief get the native OpenGL id of the shader program
             /// @return id
@@ -156,13 +182,7 @@ namespace mousetrap
             [[nodiscard]] GLNativeHandle compile_shader(const std::string&, ShaderType shader_type);
             [[nodiscard]] GLNativeHandle link_program(GLNativeHandle fragment_id, GLNativeHandle vertex_id);
 
-            GLNativeHandle _program_id,
-            _fragment_shader_id,
-            _vertex_shader_id;
-
-            static inline size_t _noop_program_id,
-            _noop_fragment_shader_id,
-            _noop_vertex_shader_id;
+            detail::ShaderInternal* _internal = nullptr;
     };
 }
 

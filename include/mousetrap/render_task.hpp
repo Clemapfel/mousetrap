@@ -22,7 +22,7 @@ namespace mousetrap
             GObject parent;
 
             detail::ShapeInternal* _shape = nullptr;
-            const Shader* _shader = nullptr;
+            detail::ShaderInternal* _shader = nullptr;
             GLTransform _transform;
             BlendMode _blend_mode;
 
