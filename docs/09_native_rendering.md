@@ -939,7 +939,11 @@ This signal handler uses native OpenGL functions, which we have so far avoided. 
 
 ## Rendering to a Texture
 
-With our newfound ability to manually implement how rendering takes place, we can perform one of the more complex tasks, rendering to a texture. This is achieved by \a{RenderTexture}, which is an object than can both be used as a texture, and can be bound as the current render target, meaning anything that would trigger shapes being displayed on screen will instead write into the textures memory.
+With our newfound ability to manually implement how rendering takes place, we can perform one of the more complex tasks: rendering to a texture. This is achieved by \a{RenderTexture}, which is an object than can both be used as a texture, and can be bound as the current render target, meaning anything that would trigger shapes being displayed on screen will instead write into the textures memory.
+
+Mousetrap offers two classes that can be used as render texture, `RenderTexture` and `MultisampledRenderTexture`. Both work in the exact same way, though the latter will perform [multisampling anti aliasing](https://learnopengl.com/Advanced-OpenGL/Anti-Aliasing), which causes jagged edges to look smoother. In return, `MultiSampledRenderTexture` takes about 2.5 times the memory of `RenderTexture`, and should only be used sparingly. 
+
+
 
 
 
