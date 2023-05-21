@@ -64,6 +64,11 @@ namespace mousetrap
     {
         return G_OBJECT(operator NativeWidget());
     }
+
+    Widget::operator NativeWidget() const
+    {
+        return _internal->native;
+    }
     
     NativeObject Widget::get_internal() const
     {

@@ -40,11 +40,11 @@ namespace mousetrap
             /// @brief dtor
             ~EventController();
 
-            /// @brief expose as GObject \for_internal_use_only
-            operator GObject*() const override;
+            /// @brief expose as native object
+            operator NativeObject() const override;
 
-            /// @brief expose as GtkEventController \for_internal_use_only
-            operator GtkEventController*() const;
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief set propagation phase
             /// @param phase

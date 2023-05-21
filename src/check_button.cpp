@@ -9,30 +9,44 @@
 namespace mousetrap
 {
     CheckButton::CheckButton()
-        : WidgetImplementation<GtkCheckButton>(GTK_CHECK_BUTTON(gtk_check_button_new())),
+        : Widget(gtk_check_button_new()),
           CTOR_SIGNAL(CheckButton, activate),
           CTOR_SIGNAL(CheckButton, toggled)
-    {}
+    {
+        _internal = GTK_CHECK_BUTTON(operator NativeWidget());
+    }
+
+    CheckButton::CheckButton(detail::CheckButtonInternal* internal)
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(CheckButton, activate),
+          CTOR_SIGNAL(CheckButton, toggled)
+    {
+        _internal = g_object_ref(internal);
+    }
+
+    CheckButton::~CheckButton()
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject CheckButton::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
 
     #if GTK_MINOR_VERSION >= 8
 
     void CheckButton::set_child(const Widget& child)
     {
-        _child = &child;
-        WARN_IF_SELF_INSERTION(CheckButton::set_child, this, _child);
+        auto* ptr = &child;
+        WARN_IF_SELF_INSERTION(CheckButton::set_child, this, ptr);
 
-        gtk_check_button_set_child(get_native(), child.operator GtkWidget*());
+        gtk_check_button_set_child(GTK_CHECK_BUTTON(operator NativeWidget()), child.operator GtkWidget*());
     }
 
     void CheckButton::remove_child()
     {
-        _child = nullptr;
-        gtk_check_button_set_child(get_native(), nullptr);
-    }
-
-    Widget* CheckButton::get_child() const
-    {
-        return const_cast<Widget*>(_child);
+        gtk_check_button_set_child(GTK_CHECK_BUTTON(operator NativeWidget()), nullptr);
     }
 
     #endif
@@ -42,22 +56,22 @@ namespace mousetrap
         switch (state)
         {
             case CheckButtonState::ACTIVE:
-                gtk_check_button_set_active(get_native(), TRUE);
+                gtk_check_button_set_active(GTK_CHECK_BUTTON(operator NativeWidget()), TRUE);
                 return;
             case CheckButtonState::INACTIVE:
-                gtk_check_button_set_active(get_native(), FALSE);
+                gtk_check_button_set_active(GTK_CHECK_BUTTON(operator NativeWidget()), FALSE);
                 return;
             case CheckButtonState::INCONSISTENT:
-                gtk_check_button_set_inconsistent(get_native(), true);
+                gtk_check_button_set_inconsistent(GTK_CHECK_BUTTON(operator NativeWidget()), true);
         }
     }
 
     CheckButtonState CheckButton::get_state() const
     {
-        if (gtk_check_button_get_inconsistent(get_native()))
+        if (gtk_check_button_get_inconsistent(GTK_CHECK_BUTTON(operator NativeWidget())))
             return CheckButtonState::INCONSISTENT;
         else
-            return gtk_check_button_get_active(get_native()) ? CheckButtonState::ACTIVE : CheckButtonState::INACTIVE;
+            return gtk_check_button_get_active(GTK_CHECK_BUTTON(operator NativeWidget())) ? CheckButtonState::ACTIVE : CheckButtonState::INACTIVE;
     }
 
     bool CheckButton::get_active() const

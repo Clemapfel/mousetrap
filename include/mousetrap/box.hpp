@@ -11,9 +11,11 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class Box;
     namespace detail
     {
         using BoxInternal = GtkBox;
+        DEFINE_INTERNAL_MAPPING(Box);
     }
     #endif
 
@@ -31,8 +33,8 @@ namespace mousetrap
             /// @param internal
             Box(detail::BoxInternal*);
 
-            /// @copydoc SignalEmitter::get_native
-            operator NativeObject() const override;
+            /// @brief destructor
+            ~Box();
 
             /// @copydoc SignalEmitter::get_internal
             NativeObject get_internal() const;

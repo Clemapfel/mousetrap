@@ -20,12 +20,10 @@ namespace mousetrap
 
     /// \todo REMOVE THIS
     #ifdef UNDEF
-    /// @brief get orientation
-    /// @return orientation
+    /// @copydoc Box::get_orientation
     Orientation get_orientation() const;
 
-    /// @brief set orientation
-    /// @param orientation
+    /// @copydoc Box::set_orientation
     void set_orientation(Orientation orientation);
     #endif
 

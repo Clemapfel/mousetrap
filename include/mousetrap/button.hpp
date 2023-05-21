@@ -15,12 +15,21 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class Button;
+    namespace detail
+    {
+        using ButtonInternal = GtkButton;
+        DEFINE_INTERNAL_MAPPING(Button);
+    }
+    #endif
+
     /// @brief button, triggers action or signal when clicked
     /// \signals
     /// \signal_clicked{Button}
     /// \signal_activate{Button}
     /// \widget_signals{Button}
-    class Button : public WidgetImplementation<GtkButton>,
+    class Button : public Widget,
         HAS_SIGNAL(Button, activate),
         HAS_SIGNAL(Button, clicked)
     {
@@ -28,8 +37,15 @@ namespace mousetrap
             /// @brief construct
             Button();
 
-            /// @brief construct with label
-            Button(const std::string&);
+            /// @brief destruct
+            ~Button();
+
+            /// @brief construct from internal
+            /// @param internal
+            Button(detail::ButtonInternal*);
+
+            /// @copydoc SignalEmitter::get_internal
+            NativeObject get_internal() const;
 
             /// @brief set whether button should have a black outline
             /// @param b
@@ -54,14 +70,10 @@ namespace mousetrap
             /// @brief remove child
             void remove_child();
 
-            /// @brief get widget used as the buttons label
-            /// @return widget
-            Widget* get_child() const;
-
             /// @brief set action triggered when the button is activated, if the action is disabled the button is also disabled automatically
             void set_action(const Action&);
 
         private:
-            const Widget* _child = nullptr;
+            detail::ButtonInternal* _internal = nullptr;
     };
 }

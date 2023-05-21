@@ -14,23 +14,37 @@ namespace mousetrap
     Box::Box(Orientation orientation)
         : Widget(gtk_box_new((GtkOrientation) orientation, 0))
     {
-        _internal = GTK_BOX(get_native());
+        _internal = GTK_BOX(operator NativeWidget());
     }
 
-    Box::Bo
+    Box::Box(detail::BoxInternal* internal)
+        : Widget(GTK_WIDGET(internal))
+    {
+        _internal = g_object_ref(_internal);
+    }
+    
+    Box::~Box()
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject Box::get_internal() const 
+    {
+        return G_OBJECT(_internal);
+    }
 
     void Box::push_back(const Widget& widget)
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Box::push_back, this, ptr);
-        gtk_box_append(GTK_BOX(get_native()), widget.operator GtkWidget*());
+        gtk_box_append(GTK_BOX(operator NativeWidget()), widget.operator NativeWidget());
     }
 
     void Box::push_front(const Widget& widget)
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Box::push_back, this, ptr);
-        gtk_box_prepend(GTK_BOX(get_native()), widget.operator GtkWidget*());
+        gtk_box_prepend(GTK_BOX(operator NativeWidget()), widget.operator NativeWidget());
     }
 
     void Box::insert_after(const Widget& to_append, const Widget& after)
@@ -38,21 +52,21 @@ namespace mousetrap
         auto* ptr = &to_append;
         WARN_IF_SELF_INSERTION(Box::push_back, this, ptr);
         gtk_box_insert_child_after(
-            GTK_BOX(get_native()),
-            to_append.operator GtkWidget*(),
-            after.operator GtkWidget*()
+            GTK_BOX(operator NativeWidget()),
+            to_append.operator NativeWidget(),
+            after.operator NativeWidget()
         );
     }
 
     void Box::remove(const Widget& widget)
     {
-        gtk_box_remove(GTK_BOX(get_native()), widget.operator GtkWidget *());
+        gtk_box_remove(GTK_BOX(operator NativeWidget()), widget.operator GtkWidget *());
     }
 
     void Box::clear()
     {
-        std::vector<GtkWidget*> to_remove;
-        GtkWidget* current = gtk_widget_get_first_child(GTK_WIDGET(get_native()));
+        std::vector<NativeWidget> to_remove;
+        NativeWidget current = gtk_widget_get_first_child(GTK_WIDGET(operator NativeWidget()));
         while (current != nullptr)
         {
             to_remove.push_back(current);
@@ -60,18 +74,18 @@ namespace mousetrap
         }
 
         for (auto* w : to_remove)
-            gtk_box_remove(GTK_BOX(get_native()), w);
+            gtk_box_remove(GTK_BOX(operator NativeWidget()), w);
     }
 
     void Box::set_homogeneous(bool b)
     {
-        gtk_box_set_homogeneous(GTK_BOX(get_native()), b);
+        gtk_box_set_homogeneous(GTK_BOX(operator NativeWidget()), b);
     }
 
     size_t Box::get_n_items()
     {
         size_t i = 0;
-        auto* child = gtk_widget_get_first_child(GTK_WIDGET(get_native()));
+        auto* child = gtk_widget_get_first_child(GTK_WIDGET(operator NativeWidget()));
         while(child != nullptr)
         {
             child = gtk_widget_get_next_sibling(child);
@@ -83,7 +97,7 @@ namespace mousetrap
 
     bool Box::get_homogeneous() const
     {
-        return gtk_box_get_homogeneous(GTK_BOX(get_native()));
+        return gtk_box_get_homogeneous(GTK_BOX(operator NativeWidget()));
     }
 
     void Box::set_spacing(float spacing)
@@ -91,7 +105,7 @@ namespace mousetrap
         if (spacing < 0)
             log::critical("In Box::set_spacing: Spacing cannot be negative");
 
-        gtk_box_set_spacing(GTK_BOX(get_native()), spacing);
+        gtk_box_set_spacing(GTK_BOX(operator NativeWidget()), spacing);
     }
 
     IMPLEMENT_ORIENTABLE(Box);

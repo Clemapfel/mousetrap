@@ -37,12 +37,7 @@ namespace mousetrap
             bool busy;
         };
         using ApplicationInternal = _ApplicationInternal;
-
-        template<>
-        struct InternalMapping<Application>
-        {
-            using value = ApplicationInternal;
-        };
+        DEFINE_INTERNAL_MAPPING(Application);
     }
     #endif
 
@@ -64,7 +59,7 @@ namespace mousetrap
             Application(detail::ApplicationInternal* internal);
 
             /// @brief destroy action, should only be called at the very end of <tt>main</tt>
-            virtual ~Application();
+            ~Application();
 
             /// @copydoc SignalEmitter::get_native
             operator NativeObject() const override;

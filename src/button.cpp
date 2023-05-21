@@ -9,62 +9,68 @@
 namespace mousetrap
 {
     Button::Button()
-        : WidgetImplementation<GtkButton>(GTK_BUTTON(gtk_button_new())),
+        : Widget(gtk_button_new()),
           CTOR_SIGNAL(Button, activate),
           CTOR_SIGNAL(Button, clicked)
-    {}
-
-    Button::Button(const std::string& label)
-        : Button()
     {
-        auto* widget = gtk_label_new(label.c_str());
-        gtk_label_set_use_markup(GTK_LABEL(widget), true);
-        gtk_button_set_child(get_native(), widget);
+        _internal = GTK_BUTTON(operator NativeWidget());
+    }
+    
+    Button::Button(detail::ButtonInternal* internal) 
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Button, activate),
+          CTOR_SIGNAL(Button, clicked)
+    {
+        _internal = g_object_ref(internal);
+    }
+    
+    Button::~Button() 
+    {
+        g_object_unref(_internal);
     }
 
+    NativeObject Button::get_internal() const 
+    {
+        return G_OBJECT(_internal);
+    }
+   
     void Button::set_is_circular(bool b)
     {
         if (b and not get_is_circular())
-            gtk_widget_add_css_class(GTK_WIDGET(get_native()), "circular");
+            gtk_widget_add_css_class(GTK_WIDGET(operator NativeWidget()), "circular");
         else if (not b and get_is_circular())
-            gtk_widget_remove_css_class(GTK_WIDGET(get_native()), "circular");
+            gtk_widget_remove_css_class(GTK_WIDGET(operator NativeWidget()), "circular");
     }
 
     bool Button::get_is_circular() const
     {
-        return gtk_widget_has_css_class(GTK_WIDGET(get_native()), "circular");
+        return gtk_widget_has_css_class(GTK_WIDGET(operator NativeWidget()), "circular");
     }
 
     void Button::set_has_frame(bool b)
     {
-        gtk_button_set_has_frame(get_native(), b);
+        gtk_button_set_has_frame(GTK_BUTTON(operator NativeWidget()), b);
     }
 
     bool Button::get_has_frame() const
     {
-        return gtk_button_get_has_frame(get_native());
+        return gtk_button_get_has_frame(GTK_BUTTON(operator NativeWidget()));
     }
 
     void Button::set_child(const Widget& widget)
     {
-        _child = &widget;
-        WARN_IF_SELF_INSERTION(Button::push_back, this, _child);
-        gtk_button_set_child(get_native(), widget.operator GtkWidget*());
+        auto* ptr = &widget;
+        WARN_IF_SELF_INSERTION(Button::push_back, this, ptr);
+        gtk_button_set_child(GTK_BUTTON(operator NativeWidget()), widget.operator GtkWidget*());
     }
 
     void Button::remove_child()
     {
-        _child = nullptr;
-        gtk_button_set_child(get_native(), nullptr);
-    }
-
-    Widget* Button::get_child() const
-    {
-        return const_cast<Widget*>(_child);
+        gtk_button_set_child(GTK_BUTTON(operator NativeWidget()), nullptr);
     }
 
     void Button::set_action(const Action& action)
     {
-        gtk_actionable_set_action_name(GTK_ACTIONABLE(get_native()), ("app."+ action.get_id()).c_str());
+        gtk_actionable_set_action_name(GTK_ACTIONABLE(operator NativeWidget()), ("app."+ action.get_id()).c_str());
     }
 }

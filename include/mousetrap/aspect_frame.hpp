@@ -10,9 +10,11 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class AspectFrame;
     namespace detail
     {
         using AspectFrameInternal = GtkAspectFrame;
+        DEFINE_INTERNAL_MAPPING(AspectFrame);
     }
     #endif
 
@@ -32,8 +34,8 @@ namespace mousetrap
             /// @param internal
             AspectFrame(detail::AspectFrameInternal*);
 
-            /// @copydoc SignalEmitter::get_native
-            operator NativeObject() const override;
+            /// @brief dtor
+            ~AspectFrame();
 
             /// @copydoc SignalEmitter::get_internal
             NativeObject get_internal() const;

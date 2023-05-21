@@ -26,18 +26,37 @@ namespace mousetrap
         INCONSISTENT = -1
     };
 
+    #ifndef DOXYGEN
+    class CheckButton;
+    namespace detail
+    {
+        using CheckButtonInternal = GtkCheckButton;
+        DEFINE_INTERNAL_MAPPING(CheckButton);
+    }
+    #endif
+
     /// @brief check button, displays a boolean state as a checkmark
     /// \signals
     /// \signal_activate{CheckButton}
     /// \signal_toggled{CheckButton}
     /// \widget_signals{CheckButton}
-    class CheckButton : public WidgetImplementation<GtkCheckButton>,
+    class CheckButton : public Widget,
         HAS_SIGNAL(CheckButton, activate),
         HAS_SIGNAL(CheckButton, toggled)
     {
         public:
             /// @brief construct button
             CheckButton();
+
+            /// @brief construct from internal
+            /// @param internal
+            CheckButton(detail::CheckButtonInternal*);
+
+            /// @brief destructor
+            ~CheckButton();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief set state, this emits the toggled signal
             /// @param state
@@ -60,13 +79,9 @@ namespace mousetrap
             /// @brief remove widget
             void remove_child();
 
-            /// @brief get widget that is displayed next to the button, or nullptr if no such widget was set
-            /// @return widget
-            Widget* get_child() const;
-
             #endif
 
         private:
-            const Widget* _child = nullptr;
+            detail::CheckButtonInternal* _internal = nullptr;
     };
 }

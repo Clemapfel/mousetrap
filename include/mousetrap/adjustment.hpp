@@ -20,7 +20,7 @@ namespace mousetrap
     namespace detail
     {
         using AdjustmentInternal = GtkAdjustment;
-        DEFINE_INTERNAL_MAPPING(Adjustment, AdjustmentInternal)
+        DEFINE_INTERNAL_MAPPING(Adjustment)
     }
     #endif
 
@@ -36,6 +36,9 @@ namespace mousetrap
             /// @brief default ctor
             Adjustment();
 
+            /// @brief default dtor
+            ~Adjustment();
+
             /// @brief create from gtk adjustment \for_internal_use_only
             /// @param native
             Adjustment(detail::AdjustmentInternal* native);
@@ -47,32 +50,11 @@ namespace mousetrap
             /// @param increment minimum step increment
             Adjustment(float current, float lower, float upper, float increment);
 
-            /// @brief dtor
-            ~Adjustment();
-
             /// @copydoc SignalEmitter::get_native
             operator NativeObject() const override;
 
             /// @copydoc SignalEmitter::get_internal
             NativeObject get_internal() const;
-
-            /// @brief copy ctor delete
-            Adjustment(const Adjustment&) = delete;
-
-            /// @brief copy assignment deleted
-            Adjustment& operator=(const Adjustment&) = delete;
-
-            /// @brief move ctor, safely transfers ownership of the internal adjustment
-            /// @param other rvalue reference to other
-            Adjustment(Adjustment&&) noexcept;
-
-            /// @brief move assignment, safely transfers ownership of the internal adjustment
-            /// @param other rvalue reference to other
-            /// @return reference to self after assignment
-            Adjustment& operator=(Adjustment&&) noexcept;
-
-            /// @brief expose gtk adjustment \for_internal_use_only
-            explicit operator GtkAdjustment*() const;
 
             /// @brief get lower bound
             /// @return float

@@ -23,7 +23,8 @@
     #include "../../docs/doxygen.inl"
 #endif
 
-namespace mousetrap {
+namespace mousetrap
+{
     /// @brief result of tick callback of widget, determines whether the tick callback should be removed
     enum class TickCallbackResult : bool
     {
@@ -93,7 +94,7 @@ namespace mousetrap {
             NativeObject get_internal() const;
 
             /// @brief expose as GtkWidget, this is the only function that needs to be implemented in oder for an object to act as a widget
-            explicit virtual operator NativeWidget() const = 0;
+            explicit virtual operator NativeWidget() const;
 
             /// @brief activate the widget, if it is activatable. This will also trigger any associated animations or signals
             void activate();

@@ -19,6 +19,10 @@ namespace mousetrap
         static void application_internal_finalize(GObject* object)
         {
             auto* self = MOUSETRAP_APPLICATION_INTERNAL(object);
+
+            for (auto& pair : (*self->actions))
+                g_object_unref(pair.second);
+
             delete self->actions;
             G_OBJECT_CLASS(application_internal_parent_class)->finalize(object);
         }
@@ -65,9 +69,6 @@ namespace mousetrap
     Application::~Application()
     {
         g_object_unref(_internal);
-
-        for (auto& pair : (*_internal->actions))
-            g_object_unref(pair.second);
     }
 
     Application::operator NativeObject() const

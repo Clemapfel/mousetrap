@@ -22,12 +22,12 @@ namespace mousetrap
             using value = std::nullptr_t;
         };
 
-        #define DEFINE_INTERNAL_MAPPING(From, To) \
+        #define DEFINE_INTERNAL_MAPPING(From) \
         template<>                         \
         struct InternalMapping<From>       \
         {                                  \
-            using value = To;              \
-        }; \
+            using value = detail::From##Internal;    \
+        };
     }
 
     #ifndef DOXYGEN
@@ -42,12 +42,7 @@ namespace mousetrap
 
         struct _SignalEmitterInternal;
         using SignalEmitterInternal = _SignalEmitterInternal;
-
-        template<>
-        struct InternalMapping<SignalEmitter>
-        {
-            using internal = detail::SignalEmitterInternal;
-        };
+        DEFINE_INTERNAL_MAPPING(SignalEmitter);
     }
     #endif
 
@@ -83,10 +78,7 @@ namespace mousetrap
             virtual explicit operator NativeObject() const = 0;
 
             /// @brief expose internally managed object, \for_internal_use_only
-            NativeObject get_internal() const;
-
-            /// @brief expose as NativeObject, this is the GLib instance that signals are emitted on
-            virtual NativeObject get_native() const final;
+            virtual NativeObject get_internal() const;
 
         protected:
             /// @brief destructor

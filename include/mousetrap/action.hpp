@@ -44,8 +44,7 @@ namespace mousetrap
             bool enabled;
         };
         using ActionInternal = _ActionInternal;
-
-        DEFINE_INTERNAL_MAPPING(Action, ActionInternal);
+        DEFINE_INTERNAL_MAPPING(Action);
     }
     #endif
 

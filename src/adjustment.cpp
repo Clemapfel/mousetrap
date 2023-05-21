@@ -13,6 +13,11 @@ namespace mousetrap
         : Adjustment(0, 0, 0, 0)
     {}
 
+    Adjustment::~Adjustment()
+    {
+        g_object_unref(_internal);
+    }
+
     Adjustment::Adjustment(detail::AdjustmentInternal* in)
         : CTOR_SIGNAL(Adjustment, value_changed), CTOR_SIGNAL(Adjustment, properties_changed)
     {
@@ -22,6 +27,8 @@ namespace mousetrap
     Adjustment::Adjustment(float current, float lower, float upper, float increment)
         : Adjustment(gtk_adjustment_new(current, lower, upper, increment, 0, glm::distance(lower, upper)))
     {
+        _internal = GTK_ADJUSTMENT(get_native());
+
         if (upper < lower)
         {
             std::stringstream str;
@@ -37,18 +44,6 @@ namespace mousetrap
         }
     }
 
-    Adjustment::~Adjustment()
-    {
-        g_object_unref(_internal);
-    }
-
-    Adjustment::Adjustment(Adjustment&& other) noexcept
-        : CTOR_SIGNAL(Adjustment, value_changed), CTOR_SIGNAL(Adjustment, properties_changed)
-    {
-        _internal = other._internal;
-        other._internal = nullptr;
-    }
-
     Adjustment::operator NativeObject() const
     {
         return G_OBJECT(_internal);
@@ -57,13 +52,6 @@ namespace mousetrap
     NativeObject Adjustment::get_internal() const
     {
         return operator NativeObject();
-    }
-
-    Adjustment& Adjustment::operator=(Adjustment&& other) noexcept
-    {
-        _internal = other._internal;
-        other._internal = nullptr;
-        return *this;
     }
 
     float Adjustment::get_lower() const

@@ -45,6 +45,11 @@ namespace mousetrap
         g_object_ref(_internal);
     }
 
+    Action::~Action()
+    {
+        g_object_unref(_internal);
+    }
+
     Action::operator NativeObject() const
     {
         return G_OBJECT(_internal->g_action);
@@ -72,12 +77,6 @@ namespace mousetrap
             instance->stateful_f(self);
 
         delete self;
-    }
-
-    Action::~Action()
-    {
-        if (G_IS_OBJECT(_internal))
-            g_object_unref(_internal);
     }
 
     void Action::on_action_change_state(GSimpleAction*, GVariant* variant, detail::ActionInternal* instance)
