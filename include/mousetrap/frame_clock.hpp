@@ -25,7 +25,7 @@ namespace mousetrap
         HAS_SIGNAL(FrameClock, paint)
     {
         public:
-            /// @brief construct from GdkFrameClock \internal. Use the callback of widget::add_tick_callback to get an initialized mousetrap::FrameClock
+            /// @brief construct from GdkFrameClock \for_internal_use_only. Use the callback of widget::add_tick_callback to get an initialized mousetrap::FrameClock
             /// @param clock
             FrameClock(GdkFrameClock* clock);
 
@@ -47,7 +47,7 @@ namespace mousetrap
             /// @return self after mutation
             FrameClock& operator=(FrameClock&& other) noexcept;
 
-            /// @brief expose as GObject \internal
+            /// @brief expose as GObject \for_internal_use_only
             operator GObject*() const;
 
             /// @brief get duration of one frame

@@ -93,7 +93,7 @@ namespace mousetrap
             /// @return vector, in GL coordinates ([-1, 1], [-1, 1]) with origin at (0, 0)
             Vector2f to_gl_coordinates(Vector2f widget_space_coordinate);
 
-            /// @brief expose internal \internal
+            /// @brief expose internal \for_internal_use_only
             GObject* get_internal() const;
 
         private:

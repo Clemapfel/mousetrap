@@ -104,7 +104,7 @@ namespace mousetrap
             /// @brief dtor, deallocated vertex buffer gpu-side
             ~Shape();
 
-            /// @brief construct from internal, \internal
+            /// @brief construct from internal, \for_internal_use_only
             /// @param internal
             Shape(detail::ShapeInternal*);
 

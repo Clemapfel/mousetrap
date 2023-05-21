@@ -29,7 +29,7 @@ namespace mousetrap
             /// @param path absolute path
             FileDescriptor(const FilePath& path);
 
-            /// @brief construct from GFile \internal
+            /// @brief construct from GFile \for_internal_use_only
             /// @param file GFile
             FileDescriptor(GFile*);
 
@@ -54,7 +54,7 @@ namespace mousetrap
             /// @return reference to self after assignment
             FileDescriptor& operator=(FileDescriptor&& other);
 
-            /// @brief expose as GFile \internal
+            /// @brief expose as GFile \for_internal_use_only
             operator GFile*() const;
 
             /// @brief create for given path

@@ -39,7 +39,7 @@ namespace mousetrap
             /// @brief destruct
             ~Music();
 
-            /// @brief expose gobject \internal
+            /// @brief expose gobject \for_internal_use_only
             operator GObject*() const override;
 
             /// @brief create from file

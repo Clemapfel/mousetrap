@@ -112,14 +112,14 @@ namespace mousetrap
             /// @param action acton to trigger
             void add_icon(const Icon&, const Action&);
 
-            /// @brief expose as GMenuModel \internal
+            /// @brief expose as GMenuModel \for_internal_use_only
             operator GMenuModel*() const;
 
-            /// @brief expose a GObject \internal
+            /// @brief expose a GObject \for_internal_use_only
             operator GObject*() const override;
 
         protected:
-            /// @brief get list of registered widgets \internal
+            /// @brief get list of registered widgets \for_internal_use_only
             /// @return map with internal id to widget mapping
             [[nodiscard]] std::unordered_map<std::string, GtkWidget*> get_widgets() const;
 

@@ -35,7 +35,7 @@ namespace mousetrap
     /// @brief log domain
     using LogDomain = const char*;
 
-    /// @brief domain for errors inside mousetrap \internal
+    /// @brief domain for errors inside mousetrap \for_internal_use_only
     constexpr const char* MOUSETRAP_DOMAIN = "mousetrap";
 
     /// @brief default user domain if no domain is specified

@@ -51,10 +51,10 @@ namespace mousetrap
             /// @brief destruct, frees GPU-side memory
             ~Shader();
 
-            /// @brief construct from internal \internal
+            /// @brief construct from internal \for_internal_use_only
             Shader(detail::ShaderInternal*);
 
-            /// @brief expose as GObject \internal
+            /// @brief expose as GObject \for_internal_use_only
             operator GObject*() const override;
 
             /// @brief get the native OpenGL id of the shader program

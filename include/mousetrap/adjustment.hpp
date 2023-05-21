@@ -16,12 +16,11 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class Adjustment;
     namespace detail
     {
-        struct _AdjustmentInternal
-        {
-            GtkAdjustment* native;
-        };
+        using AdjustmentInternal = GtkAdjustment;
+        DEFINE_INTERNAL_MAPPING(Adjustment, AdjustmentInternal)
     }
     #endif
 
@@ -37,9 +36,9 @@ namespace mousetrap
             /// @brief default ctor
             Adjustment();
 
-            /// @brief create from gtk adjustment \internal
+            /// @brief create from gtk adjustment \for_internal_use_only
             /// @param native
-            Adjustment(GtkAdjustment* native);
+            Adjustment(detail::AdjustmentInternal* native);
 
             /// @brief create adjustment
             /// @param current current value, clamped to [lower, upper]
@@ -51,8 +50,11 @@ namespace mousetrap
             /// @brief dtor
             ~Adjustment();
 
-            /// @brief expose a gobject, \internal
-            operator GObject*() const override;
+            /// @copydoc SignalEmitter::get_native
+            operator NativeObject() const override;
+
+            /// @copydoc SignalEmitter::get_internal
+            NativeObject get_internal() const;
 
             /// @brief copy ctor delete
             Adjustment(const Adjustment&) = delete;
@@ -69,7 +71,7 @@ namespace mousetrap
             /// @return reference to self after assignment
             Adjustment& operator=(Adjustment&&) noexcept;
 
-            /// @brief expose gtk adjustment \internal
+            /// @brief expose gtk adjustment \for_internal_use_only
             explicit operator GtkAdjustment*() const;
 
             /// @brief get lower bound
@@ -105,6 +107,6 @@ namespace mousetrap
             void set_increment(float new_value);
 
         private:
-            GtkAdjustment* _native;
+            detail::AdjustmentInternal* _internal = nullptr;
     };
 }

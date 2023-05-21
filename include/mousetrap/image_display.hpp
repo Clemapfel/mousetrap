@@ -30,7 +30,7 @@ namespace mousetrap
             /// @brief destructor
             ~ImageDisplay();
 
-            /// @brief construct from GtkImage \internal
+            /// @brief construct from GtkImage \for_internal_use_only
             /// @param image GtkImage instance
             ImageDisplay(GtkImage*);
 

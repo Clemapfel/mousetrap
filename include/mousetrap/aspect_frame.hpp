@@ -9,10 +9,17 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        using AspectFrameInternal = GtkAspectFrame;
+    }
+    #endif
+
     /// @brief container widget that assures childs size conforms to given aspect ratio
     /// \signals
     /// \widget_signals{AspectFrame}
-    class AspectFrame : public WidgetImplementation<GtkAspectFrame>
+    class AspectFrame : public Widget
     {
         public:
             /// @brief construct
@@ -20,6 +27,16 @@ namespace mousetrap
             /// @param x_align horizontal alignment of child, in [0, 1] where 0 for left-most, 1 for right-most
             /// @param y_align vertical alignment of child, in [0, 1] where 0 for top-most, 1 for bottom-most
             AspectFrame(float ratio, float x_align = 0.5, float y_align = 0.5);
+
+            /// @brief construct from internal \internal
+            /// @param internal
+            AspectFrame(detail::AspectFrameInternal*);
+
+            /// @copydoc SignalEmitter::get_native
+            operator NativeObject() const override;
+
+            /// @copydoc SignalEmitter::get_internal
+            NativeObject get_internal() const;
 
             /// @brief set ratio, width / height
             /// @param ratio new ratio as fraction
@@ -57,6 +74,6 @@ namespace mousetrap
             void remove_child();
 
         private:
-            const Widget* _child = nullptr;
+            detail::AspectFrameInternal* _internal = nullptr;
     };
 }

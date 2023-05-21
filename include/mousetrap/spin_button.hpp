@@ -49,7 +49,7 @@ namespace mousetrap
             /// @param orientation
             SpinButton(float min, float max, float step, Orientation = Orientation::HORIZONTAL);
 
-            /// @brief construct as thin wrapper \internal
+            /// @brief construct as thin wrapper \for_internal_use_only
             /// @param internal
             SpinButton(detail::SpinButtonInternal* internal);
 

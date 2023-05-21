@@ -38,7 +38,7 @@ namespace mousetrap
             /// @brief construct as texture of size 0x0
             Texture();
 
-            /// @brief construct from already allocated GPU-side texture \internal
+            /// @brief construct from already allocated GPU-side texture \for_internal_use_only
             Texture(GLNativeHandle);
 
             /// @brief destruct, frees GPU-side memory
@@ -110,7 +110,7 @@ namespace mousetrap
             /// @return handle
             GLNativeHandle get_native_handle() const;
 
-            /// @brief expose as gobject, \internal
+            /// @brief expose as gobject, \for_internal_use_only
             operator GObject*() const override;
 
         private:

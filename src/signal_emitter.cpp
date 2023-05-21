@@ -33,12 +33,22 @@ namespace mousetrap
         }
     }
 
+    NativeObject SignalEmitter::get_native() const
+    {
+        return operator NativeObject();
+    }
+
+    NativeObject SignalEmitter::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
     void SignalEmitter::initialize()
     {
         if (_internal == nullptr)
         {
             _internal = detail::signal_emitter_internal_new();
-            detail::attach_ref_to(operator GObject*(), _internal);
+            detail::attach_ref_to(operator NativeObject(), _internal);
         }
     }
 
@@ -55,7 +65,7 @@ namespace mousetrap
         auto it = _internal->signal_handlers->find(signal_id);
         if (it == _internal->signal_handlers->end())
         {
-            log::warning("In Widget::set_signal_blocked: no signal with id \"" + signal_id + "\" connected.", MOUSETRAP_DOMAIN);
+            log::critical("In Widget::set_signal_blocked: no signal with id \"" + signal_id + "\" connected.", MOUSETRAP_DOMAIN);
             return;
         }
 
@@ -63,7 +73,7 @@ namespace mousetrap
         {
             if (not it->second.is_blocked)
             {
-                g_signal_handler_block(operator GObject*(), it->second.id);
+                g_signal_handler_block(operator NativeObject(), it->second.id);
                 it->second.is_blocked = true;
             }
         }
@@ -71,7 +81,7 @@ namespace mousetrap
         {
             if (it->second.is_blocked)
             {
-                g_signal_handler_unblock(operator GObject*(), it->second.id);
+                g_signal_handler_unblock(operator NativeObject(), it->second.id);
                 it->second.is_blocked = false;
             }
         }
@@ -85,24 +95,8 @@ namespace mousetrap
         if (it == _internal->signal_handlers->end())
             return;
 
-        g_signal_handler_disconnect(operator GObject*(), it->second.id);
+        g_signal_handler_disconnect(operator NativeObject(), it->second.id);
     }
-
-    /*
-    void SignalEmitter::new_signal(const std::string& signal_id)
-    {
-        auto handler = g_signal_newv(signal_id.c_str(),
-                             G_TYPE_FROM_INSTANCE(operator GObject*()),
-                      (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS),
-                       NULL,
-                       NULL,
-                       NULL,
-                       NULL,
-                       G_TYPE_NONE ,
-                       0,
-                       NULL);
-    }
-     */
 
     std::vector<std::string> SignalEmitter::get_all_signal_names()
     {

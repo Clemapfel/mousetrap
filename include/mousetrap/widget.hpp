@@ -37,33 +37,27 @@ namespace mousetrap {
     /// @brief native widget type, non-owning pointer to GtkWidget
     using NativeWidget = GtkWidget*;
 
-    /// @brief \only_used_in_julia_binding
-    struct AbstractWidget
-    {};
-
     #ifndef DOXYGEN
-    template <typename GtkWidget_t>
-    struct WidgetImplementation;
     struct EventController;
-
     class Clipboard;
-
     class Widget;
 
-    namespace detail {
+    namespace detail
+    {
         struct _WidgetInternal
         {
             GObject parent;
+            GtkWidget* native;
             std::function<TickCallbackResult(GdkFrameClock*)> tick_callback;
-            guint tick_callback_id = -1;
-            GtkWidget* tooltip_widget = nullptr;
+            guint tick_callback_id;
+            GtkWidget* tooltip_widget;
         };
         using WidgetInternal = _WidgetInternal;
     }
     #endif
 
     /// @brief Widget, super class of all renderable entities
-    class Widget : public SignalEmitter, public AbstractWidget,
+    class Widget : public SignalEmitter,
         HAS_SIGNAL(Widget, realize),
         HAS_SIGNAL(Widget, unrealize),
         HAS_SIGNAL(Widget, destroy),
@@ -92,11 +86,14 @@ namespace mousetrap {
             /// @brief move assignment, safely transfers widget-level properties
             Widget& operator=(Widget&&) = delete;
 
-            /// @brief expose as GtkWidget, this is the only virtual function a class has to override to inherit all widget functionality
-            virtual operator NativeWidget() const = 0;
+            /// @brief implement signal emitter
+            explicit operator NativeObject() const override;
 
-            /// @brief expose as GObject \internal
-            operator GObject*() const override;
+            /// @copydoc SignalEmitter::get_internal
+            NativeObject get_internal() const;
+
+            /// @brief expose as GtkWidget, this is the only function that needs to be implemented in oder for an object to act as a widget
+            explicit virtual operator NativeWidget() const = 0;
 
             /// @brief activate the widget, if it is activatable. This will also trigger any associated animations or signals
             void activate();
@@ -339,60 +336,15 @@ namespace mousetrap {
             bool get_hide_on_overflow() const;
 
         protected:
-            /// @brief default ctor, protected. Only inheriting classes should call this
-            Widget();
+            /// @brief ctor protected. Only inheriting classes should call this
+            /// @param widget GtkWidget instance
+            Widget(NativeWidget widget);
 
         private:
-            void initialize();
             detail::WidgetInternal* _internal = nullptr;
 
             static gboolean tick_callback_wrapper(GtkWidget*, GdkFrameClock*, detail::WidgetInternal* instance);
             static gboolean on_query_tooltip(GtkWidget*, gint x, gint y, gboolean, GtkTooltip* tooltip, detail::WidgetInternal* instance);
-    };
-
-    /// @brief wrapper around native GTK4 widgets \internal
-    template<typename GtkWidget_t>
-    class WidgetImplementation : public Widget
-    {
-        public:
-            /// @brief copy ctor deleted
-            WidgetImplementation(const WidgetImplementation<GtkWidget_t>&) = delete;
-
-            /// @brief copy assignment deleted
-            WidgetImplementation<GtkWidget_t>& operator=(const WidgetImplementation<GtkWidget_t>&) const = delete;
-
-            /// @brief move ctor, safely transfers ownership
-            /// @param other
-            WidgetImplementation(WidgetImplementation<GtkWidget_t>&& other);
-
-            /// @brief move assignment, safely transfers ownership
-            /// @param other
-            WidgetImplementation<GtkWidget_t>& operator=(WidgetImplementation<GtkWidget_t>&& other) noexcept;
-
-            /// @brief expose as native GTK4 widget \internal
-            virtual operator GtkWidget_t*() const;
-
-            /// @brief implement widget operator
-            operator NativeWidget() const override;
-
-        protected:
-            /// @brief construct from native widget \internal
-            /// @throw fatal error if supplied pointer does not point to a valid GTK4 GtkWidget
-            WidgetImplementation(GtkWidget_t*);
-
-            /// @brief dtor protected \internal
-            ~WidgetImplementation();
-
-            /// @brief get pointer to native widget \internal
-            /// @return pointer
-            GtkWidget_t* get_native() const;
-
-            /// @brief override native pointer safely \internal
-            /// @param new_pointer
-            void override_native(GtkWidget* new_pointer);
-
-        private:
-            GtkWidget* _native;
     };
 };
 

@@ -66,7 +66,7 @@ namespace mousetrap
             /// @brief default ctor deleted, use FileDescriptor::create_monitor
             FileMonitor() = delete;
 
-            /// @brief expose as GObject \internal
+            /// @brief expose as GObject \for_internal_use_only
             operator GObject*() const override;
 
             /// @brief cancel the file monitor, cannot be undone

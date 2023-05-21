@@ -23,6 +23,7 @@ namespace mousetrap
     using ApplicationID = std::string;
 
     #ifndef DOXYGEN
+    class Application;
     namespace detail
     {
         struct _ApplicationInternal
@@ -36,6 +37,12 @@ namespace mousetrap
             bool busy;
         };
         using ApplicationInternal = _ApplicationInternal;
+
+        template<>
+        struct InternalMapping<Application>
+        {
+            using value = ApplicationInternal;
+        };
     }
     #endif
 
@@ -52,12 +59,22 @@ namespace mousetrap
             /// @param id valid application id, see
             Application(const ApplicationID& id);
 
-            /// @brief get id
-            /// @return id
-            ApplicationID get_id() const;
+            /// @brief construct from internal
+            /// @param internal
+            Application(detail::ApplicationInternal* internal);
 
             /// @brief destroy action, should only be called at the very end of <tt>main</tt>
             virtual ~Application();
+
+            /// @copydoc SignalEmitter::get_native
+            operator NativeObject() const override;
+
+            /// @copydoc SignalEmitter::get_internal
+            NativeObject get_internal() const;
+
+            /// @brief get id
+            /// @return id
+            ApplicationID get_id() const;
 
             /// @brief start the main render loop
             /// @returns 1 on error, 0 otherwise
@@ -77,18 +94,6 @@ namespace mousetrap
 
             /// @brief undo a previous call to mousetrap::Application::mark_as_busy
             void unmark_as_busy();
-
-            /// @brief expose as GObject for signal handling \internal
-            explicit operator GObject*() const override;
-
-            /// @brief expose as GApplication \internal
-            explicit operator GApplication*() const;
-
-            /// @brief expose as GtkApplication \internal
-            explicit operator GtkApplication*() const;
-
-            /// @brief expose as GActionMap \internal
-            explicit operator GActionMap*() const;
 
             /// @brief add an action to application, see the manual page on actions for details
             /// @param action pointer to action, the user is responsible for making sure the action stays in scope

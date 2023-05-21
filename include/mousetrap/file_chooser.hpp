@@ -44,7 +44,7 @@ namespace mousetrap
             /// @param name
             void set_name(const std::string&);
 
-            /// @brief expose as GtkFileFilter \internal
+            /// @brief expose as GtkFileFilter \for_internal_use_only
             operator GtkFileFilter*() const;
 
             /// @brief add allowed file pattern, as a shell-style glob

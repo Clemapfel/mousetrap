@@ -17,4 +17,28 @@ namespace mousetrap
         /// @brief oriented along the y axis, top to bottom
         VERTICAL = GTK_ORIENTATION_VERTICAL
     };
+
+    /// \todo REMOVE THIS
+    #ifdef UNDEF
+    /// @brief get orientation
+    /// @return orientation
+    Orientation get_orientation() const;
+
+    /// @brief set orientation
+    /// @param orientation
+    void set_orientation(Orientation orientation);
+    #endif
+
+    #ifndef DOXYGEN
+        #define IMPLEMENT_ORIENTABLE(T) \
+        void T::set_orientation(Orientation orientation) \
+        { \
+            gtk_orientable_set_orientation(GTK_ORIENTABLE(operator NativeObject()), (GtkOrientation) orientation); \
+        } \
+        \
+        Orientation T::get_orientation() const \
+        { \
+            return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(operator NativeObject()));  \
+        }
+    #endif
 }

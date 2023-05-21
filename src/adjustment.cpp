@@ -9,19 +9,14 @@
 
 namespace mousetrap
 {
-    Adjustment::operator GtkAdjustment*() const
-    {
-        return _native;
-    }
-
     Adjustment::Adjustment()
         : Adjustment(0, 0, 0, 0)
     {}
 
-    Adjustment::Adjustment(GtkAdjustment* in)
+    Adjustment::Adjustment(detail::AdjustmentInternal* in)
         : CTOR_SIGNAL(Adjustment, value_changed), CTOR_SIGNAL(Adjustment, properties_changed)
     {
-        _native = g_object_ref(in);
+        _internal = g_object_ref(in);
     }
 
     Adjustment::Adjustment(float current, float lower, float upper, float increment)
@@ -44,90 +39,64 @@ namespace mousetrap
 
     Adjustment::~Adjustment()
     {
-        if (_native != nullptr)
-            g_object_unref(_native);
+        g_object_unref(_internal);
     }
 
     Adjustment::Adjustment(Adjustment&& other) noexcept
         : CTOR_SIGNAL(Adjustment, value_changed), CTOR_SIGNAL(Adjustment, properties_changed)
     {
-        _native = other._native;
-        other._native = nullptr;
+        _internal = other._internal;
+        other._internal = nullptr;
     }
 
-    Adjustment::operator GObject*() const
+    Adjustment::operator NativeObject() const
     {
-        return G_OBJECT(_native);
+        return G_OBJECT(_internal);
     }
-
-    /*
-    Adjustment::Adjustment(const Adjustment& other)
-        : CTOR_SIGNAL(Adjustment, value_changed), CTOR_SIGNAL(Adjustment, properties_changed)
+    
+    NativeObject Adjustment::get_internal() const
     {
-        _native = g_object_ref(gtk_adjustment_new(
-            other.get_value(),
-            other.get_lower(),
-            other.get_upper(),
-            other.get_increment(),
-            glm::distance(other.get_upper(), other.get_lower()),
-            0
-        ));
+        return operator NativeObject();
     }
-     */
 
     Adjustment& Adjustment::operator=(Adjustment&& other) noexcept
     {
-        _native = other._native;
-        other._native = nullptr;
+        _internal = other._internal;
+        other._internal = nullptr;
         return *this;
     }
-
-    /*
-    Adjustment& Adjustment::operator=(const Adjustment& other)
-    {
-        _native = g_object_ref(gtk_adjustment_new(
-        other.get_value(),
-        other.get_lower(),
-        other.get_upper(),
-        other.get_increment(),
-        glm::distance(other.get_upper(), other.get_lower()),
-        0
-        ));
-        return *this;
-    }
-     */
 
     float Adjustment::get_lower() const
     {
-        return gtk_adjustment_get_lower(_native);
+        return gtk_adjustment_get_lower(_internal);
     }
 
     float Adjustment::get_increment() const
     {
-        return gtk_adjustment_get_minimum_increment(_native);
+        return gtk_adjustment_get_minimum_increment(_internal);
     }
 
     float Adjustment::get_upper() const
     {
-        return gtk_adjustment_get_upper(_native);
+        return gtk_adjustment_get_upper(_internal);
     }
 
     float Adjustment::get_value() const
     {
-        return gtk_adjustment_get_value(_native);
+        return gtk_adjustment_get_value(_internal);
     }
 
     void Adjustment::set_value(float value)
     {
-        gtk_adjustment_set_value(_native, value);
+        gtk_adjustment_set_value(_internal, value);
     }
 
     void Adjustment::set_lower(float value)
     {
-        gtk_adjustment_set_lower(_native, value);
+        gtk_adjustment_set_lower(_internal, value);
 
-        auto lower = gtk_adjustment_get_lower(_native);
-        auto upper = gtk_adjustment_get_upper(_native);
+        auto lower = gtk_adjustment_get_lower(_internal);
+        auto upper = gtk_adjustment_get_upper(_internal);
 
         if (upper < lower)
         {
@@ -139,10 +108,10 @@ namespace mousetrap
 
     void Adjustment::set_upper(float value)
     {
-        gtk_adjustment_set_upper(_native, value);
+        gtk_adjustment_set_upper(_internal, value);
 
-        auto lower = gtk_adjustment_get_lower(_native);
-        auto upper = gtk_adjustment_get_upper(_native);
+        auto lower = gtk_adjustment_get_lower(_internal);
+        auto upper = gtk_adjustment_get_upper(_internal);
 
         if (upper < lower)
         {
@@ -161,6 +130,6 @@ namespace mousetrap
             log::warning(str.str(), MOUSETRAP_DOMAIN);
         }
 
-        gtk_adjustment_set_step_increment(_native, value);
+        gtk_adjustment_set_step_increment(_internal, value);
     }
 }

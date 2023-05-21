@@ -6,19 +6,36 @@
 #pragma once
 
 #include <mousetrap/widget.hpp>
-#include <mousetrap/orientable.hpp>
+#include <mousetrap/orientation.hpp>
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        using BoxInternal = GtkBox;
+    }
+    #endif
+
     /// @brief container widget that arranges each of its children in series
     /// \signals
     /// \widget_signals{Box}
-    class Box : public WidgetImplementation<GtkBox>, public Orientable
+    class Box : public Widget
     {
         public:
             /// @brief construct
             /// @param orientation orientation, if horizontal, widgets will be arranged left to right, if vertical, widgets will be arranged top to bottom
             Box(Orientation = Orientation::HORIZONTAL);
+
+            /// @brief construct from internal
+            /// @param internal
+            Box(detail::BoxInternal*);
+
+            /// @copydoc SignalEmitter::get_native
+            operator NativeObject() const override;
+
+            /// @copydoc SignalEmitter::get_internal
+            NativeObject get_internal() const;
 
             /// @brief add a widget to the end of the box
             /// @param widget
@@ -60,34 +77,15 @@ namespace mousetrap
             /// @return size_t
             size_t get_n_items();
 
-            /// @copydoc mousetrap::Orientable::get_orientation
-            Orientation get_orientation() const override;
+            /// @brief get orientation
+            /// @return orientation
+            Orientation get_orientation() const;
 
-            /// @copydoc mousetrap::Orientable::set_orientation
-            void set_orientation(Orientation) override;
+            /// @brief set orientation
+            /// @param orientation
+            void set_orientation(Orientation orientation);
+
+        private:
+            detail::BoxInternal* _internal = nullptr;
     };
-
-
-    /// @brief convenience constructor of box
-    /// @param any amount of widgets
-    /// @reutrns Box with Orientation::HORIZONTAL
-    template<typename... Widgets>
-    Box hbox(const Widgets&... widgets)
-    {
-        auto out = Box(Orientation::HORIZONTAL);
-        (out.push_back(widgets), ...);
-        return out;
-    }
-
-    /// @brief convenience constructor of box
-    /// @param any amount of widgets
-    /// @returns Box with Orientation::HORIZONTAL
-    template<typename... Widgets>
-    Box vbox(const Widgets&... widgets)
-    {
-        auto out = Box(Orientation::VERTICAL);
-        (out.push_back(widgets), ...);
-        return out;
-    }
-
 }

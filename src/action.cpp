@@ -45,6 +45,16 @@ namespace mousetrap
         g_object_ref(_internal);
     }
 
+    Action::operator NativeObject() const
+    {
+        return G_OBJECT(_internal->g_action);
+    }
+
+    NativeObject Action::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
     void Action::update_application()
     {
         _internal->application->remove_action(_internal->id);
@@ -133,16 +143,6 @@ namespace mousetrap
     const std::vector<ShortcutTriggerID>& Action::get_shortcuts() const
     {
         return _internal->shortcuts;
-    }
-
-    Action::operator GAction*() const
-    {
-        return G_ACTION(_internal->g_action);
-    }
-
-    Action::operator GObject*() const
-    {
-        return G_OBJECT(_internal->g_action);
     }
 
     ActionID Action::get_id() const

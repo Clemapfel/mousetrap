@@ -82,7 +82,7 @@ namespace mousetrap
                     bool get_is_resizable() const;
 
                 protected:
-                    /// @brief construct as thin wrapper \internal
+                    /// @brief construct as thin wrapper \for_internal_use_only
                     /// @param native native GtkColumnViewColumn
                     Column(GtkColumnViewColumn*);
 

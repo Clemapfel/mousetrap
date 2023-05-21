@@ -43,8 +43,9 @@ namespace mousetrap
 
             bool enabled;
         };
-
         using ActionInternal = _ActionInternal;
+
+        DEFINE_INTERNAL_MAPPING(Action, ActionInternal);
     }
     #endif
 
@@ -61,6 +62,10 @@ namespace mousetrap
             /// @param id string, usually of the form `scope.action_name`
             /// @param application
             Action(const std::string& id, Application* application);
+
+            /// @brief create from internal
+            /// @param internal
+            Action(detail::ActionInternal* internal);
 
             /// @brief dtor
             ~Action();
@@ -80,6 +85,12 @@ namespace mousetrap
 
             /// @brief move assignment deleted, actions should not be moved
             Action& operator=(Action&&) noexcept = delete;
+
+            /// @copydoc SignalEmitter::get_native
+            operator NativeObject() const override;
+
+            /// @copydoc SignalEmitter::get_internal
+            NativeObject get_internal() const;
 
             /// @brief create action as stateless, given function is executed when action is triggered
             /// @tparam Function_t lambda or static function with signature `() -> void`
@@ -130,12 +141,6 @@ namespace mousetrap
             /// @return vector of shortcut triggers
             const std::vector<ShortcutTriggerID>& get_shortcuts() const;
 
-            /// @brief cast to GAction \internal
-            explicit operator GAction*() const;
-
-            /// @brief expose as GObject \internal
-            operator GObject*() const override;
-
             /// @brief set whether triggering the action will execute the registered function
             /// @param is_enabled
             void set_enabled(bool is_enabled);
@@ -147,11 +152,6 @@ namespace mousetrap
             /// @brief get whether the action is stateful
             /// @return true if action was set as stateful, false otherwise
             bool get_is_stateful() const;
-
-        protected:
-            /// @brief init from floating internal
-            /// @param internal
-            Action(detail::ActionInternal* internal);
 
         private:
             detail::ActionInternal* _internal = nullptr;

@@ -39,7 +39,7 @@ namespace mousetrap
             /// @brief has no public constructor, use Widget::get_clipboard to create a clipboard
             Clipboard() = delete;
 
-            /// @brief expose as GdkClipboard \internal
+            /// @brief expose as GdkClipboard \for_internal_use_only
             operator GdkClipboard*();
 
             /// @brief check if the clipboard contains a string

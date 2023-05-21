@@ -27,6 +27,8 @@ namespace mousetrap
 
         static ApplicationInternal* application_internal_new(const std::string& id)
         {
+            log::initialize();
+
             auto* native = gtk_application_new(id.c_str(), (GApplicationFlags) gint32(0));
 
             auto* self = (ApplicationInternal*) g_object_new(application_internal_get_type(), nullptr);
@@ -41,25 +43,22 @@ namespace mousetrap
         }
     }
 
-    static void test()
-    {
-        std::cout << "Also called" << std::endl;
-    }
-    
     Application::Application(const std::string& id)
         : CTOR_SIGNAL(Application, activate),
           CTOR_SIGNAL(Application, shutdown)
     {
-        log::initialize();
-
         if (not g_application_id_is_valid(id.c_str()))
             log::critical("In Application::Application: id " + id + " is not a valid application id", MOUSETRAP_DOMAIN);
 
         _internal = detail::application_internal_new(id);
+        connect_signal("startup", detail::initialize_opengl);
+    }
 
-        if (not G_IS_OBJECT(_internal))
-            log::warning("TODO");
-
+    Application::Application(detail::ApplicationInternal* internal)
+        : CTOR_SIGNAL(Application, activate),
+          CTOR_SIGNAL(Application, shutdown)
+    {
+        _internal = g_object_ref(internal);
         connect_signal("startup", detail::initialize_opengl);
     }
 
@@ -69,6 +68,16 @@ namespace mousetrap
 
         for (auto& pair : (*_internal->actions))
             g_object_unref(pair.second);
+    }
+
+    Application::operator NativeObject() const
+    {
+        return G_OBJECT(_internal->native);
+    }
+
+    NativeObject Application::get_internal() const
+    {
+        return G_OBJECT(_internal);
     }
 
     ApplicationID Application::get_id() const
@@ -118,35 +127,15 @@ namespace mousetrap
             g_application_unmark_busy(G_APPLICATION(_internal->native));
     }
 
-    Application::operator GObject*() const
-    {
-        return G_OBJECT(_internal->native);
-    }
-
-    Application::operator GApplication*() const
-    {
-        return G_APPLICATION(_internal->native);
-    }
-
-    Application::operator GtkApplication*() const
-    {
-        return GTK_APPLICATION(_internal->native);
-    }
-
-    Application::operator GActionMap*() const
-    {
-        return G_ACTION_MAP(_internal->native);
-    }
-
     void Application::add_action(const Action& action)
     {
-        if (action.operator GAction *() == nullptr)
+        if (G_ACTION(action.operator NativeObject()) == nullptr)
             log::warning("In Application::add_action: Attempting to add action `" + action.get_id() + "` to application, but the actions behavior was not set yet. Call Action::set_function or Action::set_stateful_function first");
 
         auto inserted = _internal->actions->insert({action.get_id(), action._internal}).first->second;
         g_action_map_add_action(G_ACTION_MAP(_internal->native), G_ACTION(inserted->g_action));
 
-        auto* app = operator GtkApplication*();
+        auto* app = GTK_APPLICATION(_internal->native);
 
         auto accels = std::vector<const char*>();
         for (auto& s : inserted->shortcuts)
@@ -165,7 +154,7 @@ namespace mousetrap
         if (not has_action(id))
             return;
 
-        auto* self = operator GActionMap*();
+        auto* self = G_ACTION_MAP(_internal->native);
         _internal->actions->erase(id);
         g_action_map_remove_action(self, ("app." + id).c_str());
     }

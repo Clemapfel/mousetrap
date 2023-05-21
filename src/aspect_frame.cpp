@@ -9,8 +9,10 @@
 namespace mousetrap
 {
     AspectFrame::AspectFrame(float ratio, float x_align, float y_align)
-        : WidgetImplementation<GtkAspectFrame>(GTK_ASPECT_FRAME(gtk_aspect_frame_new(x_align, y_align, ratio, false)))
+        : Widget(gtk_aspect_frame_new(x_align, y_align, ratio, false))
     {
+        _internal = GTK_ASPECT_FRAME(Widget::get_native());
+
         if (ratio <= 0)
             log::critical("In AspectFrame::AspectFrame: Ratio " + std::to_string(ratio) + " cannot not be 0 or negative", MOUSETRAP_DOMAIN);
 
@@ -23,20 +25,15 @@ namespace mousetrap
 
     void AspectFrame::set_child(const Widget& child)
     {
-        _child = &child;
-        WARN_IF_SELF_INSERTION(AspectFrame::set_child, this, _child);
+        const Widget* child_ptr = &child;
+        WARN_IF_SELF_INSERTION(AspectFrame::set_child, this, child_ptr);
 
-        gtk_aspect_frame_set_child(get_native(), child.operator NativeWidget());
-    }
-
-    Widget* AspectFrame::get_child() const
-    {
-        return const_cast<Widget*>(_child);
+        gtk_aspect_frame_set_child(GTK_ASPECT_FRAME(get_native()), child.operator NativeWidget());
     }
 
     void AspectFrame::remove_child()
     {
-        gtk_aspect_frame_set_child(get_native(), nullptr);
+        gtk_aspect_frame_set_child(GTK_ASPECT_FRAME(get_native()), nullptr);
     }
 
     void AspectFrame::set_ratio(float new_ratio)
@@ -44,7 +41,7 @@ namespace mousetrap
         if (new_ratio <= 0)
             log::critical("In AspectFrame::set_ratio: Ratio " + std::to_string(new_ratio) + " cannot not be 0 or negative", MOUSETRAP_DOMAIN);
 
-        gtk_aspect_frame_set_ratio(get_native(), new_ratio);
+        gtk_aspect_frame_set_ratio(GTK_ASPECT_FRAME(get_native()), new_ratio);
     }
 
     void AspectFrame::set_child_x_alignment(float x)
@@ -52,7 +49,7 @@ namespace mousetrap
         if (x < 0 or x > 1)
             log::warning("In AspectFrame::set_child_x_alignment: Specified child x-alignment " + std::to_string(x) + " is outside [0, 1] ", MOUSETRAP_DOMAIN);
 
-        gtk_aspect_frame_set_xalign(get_native(), x);
+        gtk_aspect_frame_set_xalign(GTK_ASPECT_FRAME(get_native()), x);
     }
 
     void AspectFrame::set_child_y_alignment(float x)
@@ -60,21 +57,21 @@ namespace mousetrap
         if (x < 0 or x > 1)
             log::warning("In AspectFrame::set_child_x_alignment: Specified child y-alignment " + std::to_string(x) + " is outside [0, 1] ", MOUSETRAP_DOMAIN);
 
-        gtk_aspect_frame_set_yalign(get_native(), x);
+        gtk_aspect_frame_set_yalign(GTK_ASPECT_FRAME(get_native()), x);
     }
 
     float AspectFrame::get_ratio() const
     {
-        return gtk_aspect_frame_get_ratio(get_native());
+        return gtk_aspect_frame_get_ratio(GTK_ASPECT_FRAME(get_native()));
     }
 
     float AspectFrame::get_child_x_alignment() const
     {
-        return gtk_aspect_frame_get_xalign(get_native());
+        return gtk_aspect_frame_get_xalign(GTK_ASPECT_FRAME(get_native()));
     }
 
     float AspectFrame::get_child_y_alignment() const
     {
-        return gtk_aspect_frame_get_yalign(get_native());
+        return gtk_aspect_frame_get_yalign(GTK_ASPECT_FRAME(get_native()));
     }
 }

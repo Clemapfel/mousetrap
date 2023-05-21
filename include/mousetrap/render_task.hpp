@@ -51,7 +51,7 @@ namespace mousetrap
             /// @param blend_mode blend_mode to set before rendering the shape, normal alpha-blending if unspecified
             explicit RenderTask(const Shape& shape, const Shader* shader = nullptr, const GLTransform& transform = GLTransform(), BlendMode blend_mode = BlendMode::NORMAL);
 
-            /// @brief create from gobject \internal
+            /// @brief create from gobject \for_internal_use_only
             RenderTask(detail::RenderTaskInternal*);
 
             /// @brief destructor
@@ -151,7 +151,7 @@ namespace mousetrap
             /// @brief perform the render step to the currently bound framebuffer
             void render() const;
 
-            /// @brief expose as GObject \internal
+            /// @brief expose as GObject \for_internal_use_only
             operator GObject*() const override;
 
         private:
