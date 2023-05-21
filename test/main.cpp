@@ -181,49 +181,19 @@ int main()
 
         auto& window = state->main_window;
 
-        static auto render_area = RenderArea();
-
-        static auto shader = Shader();
-        shader.create_from_string(ShaderType::FRAGMENT, R"(
-            #version 330
-
-            in vec4 _vertex_color;
-            in vec2 _texture_coordinates;
-            in vec3 _vertex_position;
-
-            out vec4 _fragment_color;
-
-            uniform vec4 _color_rgba;
-
-            void main()
-            {
-                _fragment_color = _color_rgba;
-            }
-        )");
+        auto render_area = RenderArea();
 
         static auto shape = Shape::Rectangle({-1, -1}, {2, 2});
-        static auto task = RenderTask(shape, &shader);
+        static auto task = RenderTask(shape);
         task.set_uniform_rgba("_color_rgba", RGBA(1, 0, 1, 1));
 
         render_area.add_render_task(task);
+        static auto* test = (detail::InternalMapping<RenderArea>::internal*) render_area.get_internal();
 
-        render_area.connect_signal_render([](RenderArea* area, GdkGLContext*)
+        render_area.connect_signal_resize([](RenderArea*, int32_t width, int32_t height)
         {
-            // clear framebuffer
-            glClearColor(0, 0, 0, 0);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            // set blend mode to default
-            glEnable(GL_BLEND);
-            set_current_blend_mode(BlendMode::NORMAL);
-
-            // render all tasks
-            //area->render_render_tasks();
-
-            // flush to screen
-            glFlush();
-
-            return false;
+            auto area = RenderArea(test);
+            std::cout << (&area)->get_allocation().size.x << std::endl;
         });
 
         auto aspect_frame = AspectFrame(1);

@@ -84,11 +84,12 @@ namespace mousetrap
         DEFINE_NEW_TYPE_TRIVIAL_INIT(RenderAreaInternal, render_area_internal, RENDER_AREA_INTERNAL)
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(RenderAreaInternal, render_area_internal, RENDER_AREA_INTERNAL)
 
-        static RenderAreaInternal* render_area_internal_new()
+        static RenderAreaInternal* render_area_internal_new(GtkGLArea* area)
         {
             auto* self = (RenderAreaInternal*) g_object_new(render_area_internal_get_type(), nullptr);
             render_area_internal_init(self);
 
+            self->native = area;
             self->tasks = new std::vector<detail::RenderTaskInternal*>();
             return self;
         }
@@ -99,7 +100,7 @@ namespace mousetrap
           CTOR_SIGNAL(RenderArea, render),
           CTOR_SIGNAL(RenderArea, resize)
     {
-        _internal = detail::render_area_internal_new();
+        _internal = detail::render_area_internal_new(get_native());
         detail::attach_ref_to(G_OBJECT(get_native()), _internal);
 
         gtk_gl_area_set_auto_render(get_native(), TRUE);
@@ -113,6 +114,23 @@ namespace mousetrap
 
     RenderArea::~RenderArea()
     {}
+
+    RenderArea::RenderArea(detail::RenderAreaInternal* internal)
+        : WidgetImplementation<GtkGLArea>(GTK_GL_AREA(internal->native)),
+          CTOR_SIGNAL(RenderArea, render),
+          CTOR_SIGNAL(RenderArea, resize)
+    {
+        _internal = internal;
+        g_object_ref(_internal);
+
+        gtk_gl_area_set_auto_render(get_native(), TRUE);
+        gtk_widget_set_size_request(GTK_WIDGET(get_native()), 1, 1);
+
+        connect_signal("realize", on_realize, _internal);
+        connect_signal("render", on_render, _internal);
+        connect_signal("resize", on_resize, _internal);
+        connect_signal("create-context", on_create_context, _internal);
+    }
 
     void RenderArea::add_render_task(RenderTask task)
     {
@@ -211,5 +229,10 @@ namespace mousetrap
         out *= 2;
 
         return out;
+    }
+
+    GObject* RenderArea::get_internal() const
+    {
+        return G_OBJECT(_internal);
     }
 }

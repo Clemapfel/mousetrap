@@ -27,14 +27,22 @@ namespace mousetrap
     }
 
     #ifndef DOXYGEN
+    class RenderArea;
     namespace detail
     {
         struct _RenderAreaInternal
         {
             GObject parent;
+            GtkGLArea* native;
             std::vector<detail::RenderTaskInternal*>* tasks;
         };
         using RenderAreaInternal = _RenderAreaInternal;
+
+        template<>
+        struct InternalMapping<RenderArea>
+        {
+            using internal = RenderAreaInternal;
+        };
     }
     #endif
 
@@ -55,6 +63,9 @@ namespace mousetrap
 
             /// @brief destructor
             ~RenderArea();
+
+            /// @brief constructo from internal
+            RenderArea(detail::RenderAreaInternal*);
 
             /// @brief add render task
             /// @param task allocated render task, this object will take ownership of the task
@@ -81,6 +92,9 @@ namespace mousetrap
             /// @param widget_space_coordinate Widget-space coordinates([0, width], [0, height]) with origin at (0.5 * width, 0.5 * height)
             /// @return vector, in GL coordinates ([-1, 1], [-1, 1]) with origin at (0, 0)
             Vector2f to_gl_coordinates(Vector2f widget_space_coordinate);
+
+            /// @brief expose internal \internal
+            GObject* get_internal() const;
 
         private:
             static void on_realize(GtkWidget* area, detail::RenderAreaInternal*);

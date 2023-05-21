@@ -20,6 +20,12 @@ namespace mousetrap
         SignalComponent& operator=(const SignalComponent&) = delete;
     };
 
+    namespace detail
+    {
+        template<typename T>
+        struct InternalMapping {};
+    }
+
     #define SPLAT(...) __VA_ARGS__
 
     #define CTOR_SIGNAL(T, signal_name) \
