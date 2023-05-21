@@ -263,7 +263,11 @@ If we want to use something more complex than just simple text, we can register 
 
 ### Tick Callback
 
-\todo this section is not yet complete
+During `Application::run` in our `main.cpp`, the composited image shown inside a `Window` on screen is updated in accordance with the monitors refresh rate. For a 60hz monitor, the image is updated 60 times per seconds. The time in-between two updates is called a **frame**. This terminology is borrowed from frame-by-frame animation, where each part of a fluid movement is a static image.
+
+Often, we want to do a task exactly once per frame. `Widget` offers this functionality, which is called a **tick callback**. Using `Widget::set_tick_callback` we can register an arbitrary function to be called exactly once per frame, when that widget is drawn. 
+
+The handler function has the signature `(FrameClock, (Data_t) -> TickCallbackResult)`, and we connect a function like so:
 
 ```cpp
 auto widget = // ...
@@ -272,6 +276,10 @@ grid.set_tick_callback([](FrameClock clock) -> TickCallbackResult{
     return TickCallbackResult::CONTINUE;
 });
 ```
+
+Where returning `TickCallback::DISCONTINUE`, the widget will immediately disconnect the handler, meaning from this point onwards the functio will no longer ber invoked once per frame. Returning `TickCallback::CONTINUE`, conversely, means the tick callback will continue.
+
+`FrameClock` holds information about the duration of the last frame. With `FrameClock::get_time_since_last_frame`, we can access the exact duration as a \a{Time}. We should always use this measurement as opposed to assuming that each frame is exactly 1/60th of a second long. Frame length often varies, sometimes significantly.
 
 ---
 

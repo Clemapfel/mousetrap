@@ -1013,9 +1013,11 @@ Where the two `{}` blocks where added for stylistic emphasis.
 
 The concepts discussed in the latter part of this chapter require knowledge about OpenGL and rendering in general. The `RenderTask`-based architecture may seem unusual to someone more used to the regular render-loop-based structure of libraries like [SFML](https://www.sfml-dev.org/tutorials/2.5/graphics-draw.php) or [SDL](http://www.libsdl.org/), though it is superior when used with signal-architecture. Much like we register signal handlers to later be triggered by signals, we register render tasks to later be rendered when needed.
 
-One of the most common application of render textures is applying a shader to the entire screen. Usually, when we render multiple shapes individually, we have no way to access the final composite image. Fragment shaders do not have access to the current state of the framebuffer, though they do have access to textures.
+\todo this section is not yet complete
 
-In this example, we will be building a render 
+```
+
+
 
 
 
