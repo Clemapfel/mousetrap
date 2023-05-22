@@ -36,15 +36,35 @@ namespace mousetrap
     }
     
     Notebook::Notebook()
-        : WidgetImplementation<GtkNotebook>(GTK_NOTEBOOK(gtk_notebook_new())),
+        : Widget(gtk_notebook_new()),
           CTOR_SIGNAL(Notebook, page_added),
           CTOR_SIGNAL(Notebook, page_reordered),
           CTOR_SIGNAL(Notebook, page_removed),
           CTOR_SIGNAL(Notebook, page_selection_changed)
     {
-        gtk_notebook_popup_disable(get_native());
-        _internal = detail::notebook_internal_new(get_native());
-        detail::attach_ref_to(G_OBJECT(get_native()), _internal);
+        gtk_notebook_popup_disable(GTK_NOTEBOOK(operator NativeWidget()));
+        _internal = detail::notebook_internal_new(GTK_NOTEBOOK(operator NativeWidget()));
+        detail::attach_ref_to(G_OBJECT(GTK_NOTEBOOK(operator NativeWidget())), _internal);
+    }
+    
+    Notebook::Notebook(detail::NotebookInternal* internal)
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Notebook, page_added),
+          CTOR_SIGNAL(Notebook, page_reordered),
+          CTOR_SIGNAL(Notebook, page_removed),
+          CTOR_SIGNAL(Notebook, page_selection_changed)
+    {
+        _internal = g_object_ref(_internal);
+    }
+
+    Notebook::~Notebook()
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject Notebook::get_internal() const
+    {
+        return G_OBJECT(_internal);
     }
 
     size_t Notebook::push_front(const Widget& child_widget, const Widget& label_widget)
@@ -57,7 +77,7 @@ namespace mousetrap
         }
 
         auto out = gtk_notebook_prepend_page(
-            get_native(),
+            GTK_NOTEBOOK(operator NativeWidget()),
             child_widget.operator GtkWidget*(),
             label_widget.operator GtkWidget*()
         );
@@ -68,7 +88,7 @@ namespace mousetrap
         }
 
         gtk_notebook_set_tab_reorderable(
-            get_native(),
+            GTK_NOTEBOOK(operator NativeWidget()),
             child_widget.operator GtkWidget*(),
             _internal->tabs_reorderable
         );
@@ -86,7 +106,7 @@ namespace mousetrap
         }
 
         auto out = gtk_notebook_append_page(
-            get_native(),
+            GTK_NOTEBOOK(operator NativeWidget()),
             child_widget.operator GtkWidget*(),
             label_widget.operator GtkWidget*()
         );
@@ -95,7 +115,7 @@ namespace mousetrap
             std::cerr << "[ERROR] In Notebook::push_back: Failed to insert page" << std::endl;
 
         gtk_notebook_set_tab_reorderable(
-            get_native(),
+            GTK_NOTEBOOK(operator NativeWidget()),
             child_widget.operator GtkWidget *(),
             _internal->tabs_reorderable
         );
@@ -115,7 +135,7 @@ namespace mousetrap
         int pos = new_position >= get_n_pages() ? -1 : new_position;
 
         auto out = gtk_notebook_insert_page(
-            get_native(),
+            GTK_NOTEBOOK(operator NativeWidget()),
             child_widget.operator GtkWidget*(),
             label_widget.operator GtkWidget*(),
             pos
@@ -125,7 +145,7 @@ namespace mousetrap
             log::critical("In Notebook::insert: Failed to insert page", MOUSETRAP_DOMAIN);
 
         gtk_notebook_set_tab_reorderable(
-            get_native(),
+            GTK_NOTEBOOK(operator NativeWidget()),
             child_widget.operator GtkWidget*(),
             _internal->tabs_reorderable
         );
@@ -136,80 +156,80 @@ namespace mousetrap
     void Notebook::remove(size_t position)
     {
         int pos = position >= get_n_pages() ? -1 : position;
-        gtk_notebook_remove_page(get_native(), pos);
+        gtk_notebook_remove_page(GTK_NOTEBOOK(operator NativeWidget()), pos);
     }
 
     void Notebook::next_page()
     {
-        gtk_notebook_next_page(get_native());
+        gtk_notebook_next_page(GTK_NOTEBOOK(operator NativeWidget()));
     }
 
     void Notebook::previous_page()
     {
-        gtk_notebook_prev_page(get_native());
+        gtk_notebook_prev_page(GTK_NOTEBOOK(operator NativeWidget()));
     }
 
     void Notebook::goto_page(size_t i)
     {
-        gtk_notebook_set_current_page(get_native(), i >= get_n_pages() ? -1 : i);
+        gtk_notebook_set_current_page(GTK_NOTEBOOK(operator NativeWidget()), i >= get_n_pages() ? -1 : i);
     }
 
     int32_t Notebook::get_current_page() const
     {
-        return gtk_notebook_get_current_page(get_native());
+        return gtk_notebook_get_current_page(GTK_NOTEBOOK(operator NativeWidget()));
     }
 
     size_t Notebook::get_n_pages() const
     {
-        return gtk_notebook_get_n_pages(get_native());
+        return gtk_notebook_get_n_pages(GTK_NOTEBOOK(operator NativeWidget()));
     }
 
     bool Notebook::get_is_scrollable() const
     {
-        return gtk_notebook_get_scrollable(get_native());
+        return gtk_notebook_get_scrollable(GTK_NOTEBOOK(operator NativeWidget()));
     }
 
     void Notebook::set_is_scrollable(bool b)
     {
-        gtk_notebook_set_scrollable(get_native(), b);
+        gtk_notebook_set_scrollable(GTK_NOTEBOOK(operator NativeWidget()), b);
     }
 
     bool Notebook::get_has_border() const
     {
-        return gtk_notebook_get_show_border(get_native());
+        return gtk_notebook_get_show_border(GTK_NOTEBOOK(operator NativeWidget()));
     }
 
     void Notebook::set_has_border(bool b)
     {
-        gtk_notebook_set_show_border(get_native(), b);
+        gtk_notebook_set_show_border(GTK_NOTEBOOK(operator NativeWidget()), b);
     }
 
     void Notebook::set_tabs_visible(bool b)
     {
-        gtk_notebook_set_show_tabs(get_native(), b);
+        gtk_notebook_set_show_tabs(GTK_NOTEBOOK(operator NativeWidget()), b);
     }
 
     bool Notebook::get_tabs_visible() const
     {
-        return gtk_notebook_get_show_tabs(get_native());
+        return gtk_notebook_get_show_tabs(GTK_NOTEBOOK(operator NativeWidget()));
     }
 
     void Notebook::set_tab_position(RelativePosition position)
     {
-        gtk_notebook_set_tab_pos(get_native(), (GtkPositionType) position);
+        gtk_notebook_set_tab_pos(GTK_NOTEBOOK(operator NativeWidget()), (GtkPositionType) position);
     }
 
     RelativePosition Notebook::get_tab_position() const
     {
-        return (RelativePosition) gtk_notebook_get_tab_pos(get_native());
+        return (RelativePosition) gtk_notebook_get_tab_pos(GTK_NOTEBOOK(operator NativeWidget()));
     }
 
     void Notebook::set_quick_change_menu_enabled(bool b)
     {
         if (b)
-            gtk_notebook_popup_enable(get_native());
+            gtk_notebook_popup_enable(GTK_NOTEBOOK(operator NativeWidget()));
         else
-            gtk_notebook_popup_disable(get_native());
+            gtk_notebook_popup_disable(GTK_NOTEBOOK(operator NativeWidget()));
 
         _internal->popup_enabled = b;
     }
@@ -221,9 +241,9 @@ namespace mousetrap
 
     void Notebook::set_tabs_reorderable(bool b)
     {
-        auto* pages = gtk_notebook_get_pages(get_native());
+        auto* pages = gtk_notebook_get_pages(GTK_NOTEBOOK(operator NativeWidget()));
         for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(pages)); ++i)
-            gtk_notebook_set_tab_reorderable(get_native(),
+            gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(operator NativeWidget()),
                 gtk_notebook_page_get_child(GTK_NOTEBOOK_PAGE(g_list_model_get_item(G_LIST_MODEL(pages), i))),
                 b
             );

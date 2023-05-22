@@ -39,13 +39,24 @@ namespace mousetrap
     {
         _internal = detail::music_internal_new();
     }
+
+    Music::Music(detail::MusicInternal* internal)
+        : CTOR_SIGNAL(Music, play)
+    {
+        _internal = g_object_ref(internal);
+    }
     
     Music::~Music()
     {
         g_object_unref(_internal);
     }
+
+    NativeObject Music::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
     
-    Music::operator GObject*() const
+    Music::operator NativeObject() const
     {
         return G_OBJECT(_internal);   
     }

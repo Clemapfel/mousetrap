@@ -56,7 +56,7 @@ namespace mousetrap
             ~CheckButton();
 
             /// @brief expose internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief set state, this emits the toggled signal
             /// @param state

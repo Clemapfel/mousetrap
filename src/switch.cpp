@@ -7,17 +7,36 @@
 namespace mousetrap
 {
     Switch::Switch()
-        : WidgetImplementation<GtkSwitch>(GTK_SWITCH(gtk_switch_new())),
+        : Widget(gtk_switch_new()),
           CTOR_SIGNAL(Switch, activate)
-    {}
+    {
+        _internal = GTK_SWITCH(Widget::operator NativeWidget());
+    }
+
+    Switch::Switch(detail::SwitchInternal* internal)
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Switch, activate)
+    {
+        _internal = g_object_ref(internal);
+    }
+
+    Switch::~Switch()
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject Switch::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
 
     bool Switch::get_active() const
     {
-        return gtk_switch_get_active(get_native());
+        return gtk_switch_get_active(GTK_SWITCH(_internal));
     }
 
     void Switch::set_active(bool b)
     {
-        gtk_switch_set_active(get_native(), b);
+        gtk_switch_set_active(GTK_SWITCH(_internal), b);
     }
 }

@@ -140,7 +140,6 @@ set(MOUSETRAP_HEADER_FILES
         include/mousetrap/music.hpp
         include/mousetrap/music.hpp
         include/mousetrap/notebook.hpp
-        include/mousetrap/orientable.hpp
         include/mousetrap/orientation.hpp
         include/mousetrap/overlay.hpp
         include/mousetrap/pan_event_controller.hpp
@@ -160,7 +159,6 @@ set(MOUSETRAP_HEADER_FILES
         include/mousetrap/scroll_event_controller.hpp
         include/mousetrap/scrollbar.hpp
         include/mousetrap/scrolled_window.hpp
-        include/mousetrap/selectable.hpp
         include/mousetrap/selection_model.hpp
         include/mousetrap/separator.hpp
         include/mousetrap/shader.hpp
@@ -253,7 +251,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/paned.cpp
     src/pinch_zoom_event_controller.cpp
     src/popover.cpp
-    src/popover_menu_button.cpp
+        src/popover_button.cpp
     src/progress_bar.cpp
     src/render_area.cpp
     src/render_task.cpp
@@ -286,7 +284,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/widget.cpp
     src/window.cpp
     src/action.cpp
-        test/shape_showcase.hpp)
+        test/shape_showcase.hpp src/popover_menu.cpp)
 
 add_library(mousetrap SHARED
     ${MOUSETRAP_HEADER_FILES}

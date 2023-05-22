@@ -54,6 +54,7 @@ namespace mousetrap
             GtkWidget* tooltip_widget;
         };
         using WidgetInternal = _WidgetInternal;
+        DEFINE_INTERNAL_MAPPING(Widget);
     }
     #endif
 
@@ -71,27 +72,22 @@ namespace mousetrap
         friend struct WidgetImplementation;
 
         public:
+            /// @brief construct from internal
+            Widget(detail::WidgetInternal*);
+
             /// @brief default dtor
             virtual ~Widget();
 
-            /// @brief copy ctor deleted
             Widget(const Widget&) = delete;
-
-            /// @brief copy assignment deleted
             Widget& operator=(const Widget&) const = delete;
-
-            /// @brief move ctor, safely transfers widget-level properties
-            /// @param other
             Widget(Widget&& other) = delete;
-
-            /// @brief move assignment, safely transfers widget-level properties
             Widget& operator=(Widget&&) = delete;
 
             /// @brief implement signal emitter
             explicit operator NativeObject() const override;
 
             /// @copydoc SignalEmitter::get_internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief expose as GtkWidget, this is the only function that needs to be implemented in oder for an object to act as a widget
             explicit virtual operator NativeWidget() const;

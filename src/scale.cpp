@@ -33,11 +33,28 @@ namespace mousetrap
     }
     
     Scale::Scale(float min, float max, float step, Orientation orientation)
-        : WidgetImplementation<GtkScale>(GTK_SCALE(gtk_scale_new_with_range((GtkOrientation) orientation, min, max, step))),
+        : Widget(gtk_scale_new_with_range((GtkOrientation) orientation, min, max, step)),
           CTOR_SIGNAL(Scale, value_changed)
     {
-        gtk_scale_set_draw_value(get_native(), false);
-        _internal = detail::scale_internal_new(get_native());
+        _internal = detail::scale_internal_new(GTK_SCALE(operator NativeWidget()));
+        gtk_scale_set_draw_value(GTK_SCALE(operator NativeWidget()), false);
+    }
+    
+    Scale::Scale(detail::ScaleInternal* internal)
+        : Widget(GTK_WIDGET(internal->native)),
+          CTOR_SIGNAL(Scale, value_changed)
+    {
+        _internal = g_object_ref(internal);
+    }
+    
+    Scale::~Scale() 
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject Scale::get_internal() const
+    {
+        return G_OBJECT(_internal);
     }
 
     Adjustment* Scale::get_adjustment()
@@ -52,77 +69,77 @@ namespace mousetrap
 
     float Scale::get_lower() const
     {
-        return gtk_adjustment_get_lower(gtk_range_get_adjustment(GTK_RANGE(get_native())));
+        return gtk_adjustment_get_lower(gtk_range_get_adjustment(GTK_RANGE(GTK_SCALE(operator NativeWidget()))));
     }
 
     float Scale::get_increment() const
     {
-        return gtk_adjustment_get_minimum_increment(gtk_range_get_adjustment(GTK_RANGE(get_native())));
+        return gtk_adjustment_get_minimum_increment(gtk_range_get_adjustment(GTK_RANGE(GTK_SCALE(operator NativeWidget()))));
     }
 
     float Scale::get_upper() const
     {
-        return gtk_adjustment_get_upper(gtk_range_get_adjustment(GTK_RANGE(get_native())));
+        return gtk_adjustment_get_upper(gtk_range_get_adjustment(GTK_RANGE(GTK_SCALE(operator NativeWidget()))));
     }
 
     float Scale::get_value() const
     {
-        return gtk_adjustment_get_value(gtk_range_get_adjustment(GTK_RANGE(get_native())));
+        return gtk_adjustment_get_value(gtk_range_get_adjustment(GTK_RANGE(GTK_SCALE(operator NativeWidget()))));
     }
 
     void Scale::set_value(float value)
     {
-        gtk_adjustment_set_value(gtk_range_get_adjustment(GTK_RANGE(get_native())), value);
+        gtk_adjustment_set_value(gtk_range_get_adjustment(GTK_RANGE(GTK_SCALE(operator NativeWidget()))), value);
     }
 
     void Scale::set_lower(float value)
     {
-        gtk_adjustment_set_lower(gtk_range_get_adjustment(GTK_RANGE(get_native())), value);
+        gtk_adjustment_set_lower(gtk_range_get_adjustment(GTK_RANGE(GTK_SCALE(operator NativeWidget()))), value);
     }
 
     void Scale::set_upper(float value)
     {
-        gtk_adjustment_set_upper(gtk_range_get_adjustment(GTK_RANGE(get_native())), value);
+        gtk_adjustment_set_upper(gtk_range_get_adjustment(GTK_RANGE(GTK_SCALE(operator NativeWidget()))), value);
     }
 
     void Scale::set_increment(float value)
     {
-        gtk_adjustment_set_step_increment(gtk_range_get_adjustment(GTK_RANGE(get_native())), value);
+        gtk_adjustment_set_step_increment(gtk_range_get_adjustment(GTK_RANGE(GTK_SCALE(operator NativeWidget()))), value);
     }
 
     void Scale::set_should_draw_value(bool b)
     {
-        gtk_scale_set_draw_value(get_native(), b);
+        gtk_scale_set_draw_value(GTK_SCALE(operator NativeWidget()), b);
     }
 
     bool Scale::get_should_draw_value() const
     {
-        return gtk_scale_get_draw_value(get_native());
+        return gtk_scale_get_draw_value(GTK_SCALE(operator NativeWidget()));
     }
 
     void Scale::set_has_origin(bool b)
     {
-        gtk_scale_set_has_origin(get_native(), b);
+        gtk_scale_set_has_origin(GTK_SCALE(operator NativeWidget()), b);
     }
 
     bool Scale::get_has_origin() const
     {
-        return gtk_scale_get_has_origin(get_native());
+        return gtk_scale_get_has_origin(GTK_SCALE(operator NativeWidget()));
     }
 
     void Scale::add_mark(float at, RelativePosition pos, const std::string& label)
     {
-        gtk_scale_add_mark(get_native(), at, (GtkPositionType) pos, label.empty() ? nullptr : label.c_str());
+        gtk_scale_add_mark(GTK_SCALE(operator NativeWidget()), at, (GtkPositionType) pos, label.empty() ? nullptr : label.c_str());
     }
 
     void Scale::clear_marks()
     {
-        gtk_scale_clear_marks(get_native());
+        gtk_scale_clear_marks(GTK_SCALE(operator NativeWidget()));
     }
 
     void Scale::reset_format_value_function()
     {
-        gtk_scale_set_format_value_func(get_native(), nullptr, nullptr, nullptr);
+        gtk_scale_set_format_value_func(GTK_SCALE(operator NativeWidget()), nullptr, nullptr, nullptr);
     }
 
     char* Scale::on_format_value(GtkScale* scale, double value, detail::ScaleInternal* instance)
@@ -133,11 +150,11 @@ namespace mousetrap
 
     void Scale::set_orientation(Orientation orientation)
     {
-        gtk_orientable_set_orientation(GTK_ORIENTABLE(get_native()), (GtkOrientation) orientation);
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(GTK_SCALE(operator NativeWidget())), (GtkOrientation) orientation);
     }
 
     Orientation Scale::get_orientation() const
     {
-        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(get_native()));
+        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(GTK_SCALE(operator NativeWidget())));
     }
 }

@@ -23,6 +23,9 @@ namespace mousetrap
             auto* self = (RenderTextureInternal*) g_object_new(render_texture_internal_get_type(), nullptr);
             render_texture_internal_init(self);
 
+            glGenFramebuffers(1, &self->framebuffer_handle);
+            glBindFramebuffer(GL_FRAMEBUFFER, self->framebuffer_handle);
+
             return self;
         }
     }
@@ -31,15 +34,22 @@ namespace mousetrap
         : Texture()
     {
         _internal = detail::render_texture_internal_new();
-        glGenFramebuffers(1, &_internal->framebuffer_handle);
-        glBindFramebuffer(GL_FRAMEBUFFER, _internal->framebuffer_handle);
-
         detail::attach_ref_to(Texture::operator GObject*(), _internal);
+    }
+
+    RenderTexture::RenderTexture(detail::RenderTextureInternal* internal)
+    {
+        _internal = g_object_ref(internal);
     }
 
     RenderTexture::~RenderTexture()
     {
-        // noop, internal attached to texture
+        g_object_unref(_internal);
+    }
+
+    NativeObject RenderTexture::get_internal() const
+    {
+        return G_OBJECT(_internal);
     }
 
     RenderTexture::RenderTexture(RenderTexture&& other)

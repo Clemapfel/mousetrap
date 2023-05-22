@@ -7,25 +7,31 @@
 
 namespace mousetrap
 {
-    SelectionModel::operator GObject*() const
+    SelectionModel::operator NativeObject() const
     {
         return G_OBJECT(operator GtkSelectionModel*());
     }
 
     SelectionModel::operator GtkSelectionModel*() const
     {
-        return _native;
+        return GTK_SELECTION_MODEL(_internal);
     }
 
-    SelectionModel::SelectionModel(GtkSelectionModel* model)
-        : _native(model), CTOR_SIGNAL(SelectionModel, selection_changed)
+    SelectionModel::SelectionModel(detail::SelectionModelInternal* internal)
+        : _internal(internal),
+          CTOR_SIGNAL(SelectionModel, selection_changed)
     {
-        g_object_ref(_native);
+        g_object_ref(_internal);
     }
 
     SelectionModel::~SelectionModel()
     {
-        g_object_unref(_native);
+        g_object_unref(_internal);
+    }
+
+    NativeObject SelectionModel::get_internal() const
+    {
+        return G_OBJECT(_internal);
     }
 
     std::vector<size_t> SelectionModel::get_selection()
@@ -59,14 +65,14 @@ namespace mousetrap
     }
 
     MultiSelectionModel::MultiSelectionModel(GListModel* model)
-            : SelectionModel(GTK_SELECTION_MODEL(gtk_multi_selection_new(model)))
+        : SelectionModel((detail::SelectionModelInternal*) GTK_SELECTION_MODEL(gtk_multi_selection_new(model)))
     {}
 
     SingleSelectionModel::SingleSelectionModel(GListModel* model)
-            : SelectionModel(GTK_SELECTION_MODEL(gtk_single_selection_new(model)))
+        : SelectionModel((detail::SelectionModelInternal*) GTK_SELECTION_MODEL(gtk_single_selection_new(model)))
     {}
 
     NoSelectionModel::NoSelectionModel(GListModel* model)
-            : SelectionModel(GTK_SELECTION_MODEL(gtk_no_selection_new(model)))
+        : SelectionModel((detail::SelectionModelInternal*) GTK_SELECTION_MODEL(gtk_no_selection_new(model)))
     {}
 }

@@ -39,19 +39,34 @@ namespace mousetrap
         BOTTOM_RIGHT = GTK_CORNER_BOTTOM_RIGHT
     };
 
+    #ifndef DOXYGEN
+    class ScrolledWindow;
+    namespace detail
+    {
+        using ScrolledWindowInternal = GtkScrolledWindow;
+        DEFINE_INTERNAL_MAPPING(ScrolledWindow);
+    }
+    #endif
+
     /// @brief viewport that shows part of a widget, controllable by user interaction
     /// \signals
     /// \signal_scroll_child{ScrolledWindow}
     /// \widget_signals{ScrolledWindow}
-    class ScrolledWindow : public WidgetImplementation<GtkScrolledWindow>,
+    class ScrolledWindow : public Widget,
         HAS_SIGNAL(ScrolledWindow, scroll_child)
     {
         public:
             /// @brief create
             ScrolledWindow();
 
+            /// @brief create from internal
+            ScrolledWindow(detail::ScrolledWindowInternal*);
+
             /// @brief destroy
             ~ScrolledWindow();
+
+            /// @brief destructor
+            NativeObject get_internal() const;
 
             /// @brief should the windows height be that of its child
             /// @param b if true, window listens to size, false otherwise
@@ -103,19 +118,11 @@ namespace mousetrap
 
             /// @brief get adjument that controls the horizontal scrollbar
             /// @return adjustment
-            Adjustment& get_horizontal_adjustment();
-
-            /// @brief get adjustment for the horizontal scrollbar
-            /// @return adjustment, const
-            const Adjustment& get_horizontal_adjustment() const;
+            Adjustment get_horizontal_adjustment();
 
             /// @brief get adjustment that controls the vertical scrollbar
             /// @return adjustment
-            Adjustment& get_vertical_adjustment();
-
-            /// @brief get adjustment that controls vertical scrollbar
-            /// @return adjustment, const
-            const Adjustment& get_vertical_adjustment() const;
+            Adjustment get_vertical_adjustment();
 
             /// @brief set whether kinetic scrolling is recognized by the default event handler
             /// @param b true if enabled, false otherwise
@@ -137,9 +144,7 @@ namespace mousetrap
             Widget* get_child() const;
 
         private:
-            const Widget* _child = nullptr;
-            Adjustment* _h_adjustment = nullptr;
-            Adjustment* _v_adjustment = nullptr;
+            detail::ScrolledWindowInternal* _internal = nullptr;
     };
 }
 

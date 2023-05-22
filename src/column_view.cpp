@@ -153,11 +153,23 @@ namespace mousetrap
     ///
 
     ColumnView::ColumnView(SelectionMode mode)
-        : WidgetImplementation<GtkColumnView>(GTK_COLUMN_VIEW(gtk_column_view_new(nullptr))),
+        : Widget(gtk_column_view_new(nullptr)),
           CTOR_SIGNAL(ColumnView, activate)
     {
-        _internal = detail::column_view_internal_new(get_native(), mode);
-        detail::attach_ref_to(G_OBJECT(get_native()), _internal->native);
+        _internal = detail::column_view_internal_new(GTK_COLUMN_VIEW(Widget::operator NativeWidget()), mode);
+        detail::attach_ref_to(G_OBJECT(GTK_COLUMN_VIEW(Widget::operator NativeWidget())), _internal->native);
+    }
+
+    ColumnView::ColumnView(detail::ColumnViewInternal* internal)
+        : Widget(GTK_WIDGET(internal->native)),
+          CTOR_SIGNAL(ColumnView, activate)
+    {
+        _internal = g_object_ref(internal);
+    }
+
+    ColumnView::~ColumnView()
+    {
+        g_object_unref(_internal);
     }
 
     GtkColumnViewColumn* ColumnView::new_column(const std::string& title)
@@ -173,32 +185,32 @@ namespace mousetrap
     ColumnView::Column ColumnView::push_back_column(const std::string& title)
     {
         auto* column = new_column(title);
-        gtk_column_view_append_column(get_native(), column);
+        gtk_column_view_append_column(GTK_COLUMN_VIEW(operator NativeWidget()), column);
         return Column(column);
     }
 
     ColumnView::Column ColumnView::push_front_column(const std::string& title)
     {
         auto* column = new_column(title);
-        gtk_column_view_insert_column(get_native(), 0, column);
+        gtk_column_view_insert_column(GTK_COLUMN_VIEW(operator NativeWidget()), 0, column);
         return Column(column);
     }
 
     ColumnView::Column ColumnView::insert_column(size_t i, const std::string& title)
     {
         auto* column = new_column(title);
-        gtk_column_view_insert_column(get_native(), i, column);
+        gtk_column_view_insert_column(GTK_COLUMN_VIEW(operator NativeWidget()), i, column);
         return Column(column);
     }
 
     void ColumnView::remove_column(const Column& column)
     {
-        gtk_column_view_remove_column(get_native(), column._native);
+        gtk_column_view_remove_column(GTK_COLUMN_VIEW(operator NativeWidget()), column._native);
     }
 
     ColumnView::Column ColumnView::get_column_at(size_t column_i)
     {
-        auto* model = gtk_column_view_get_columns(get_native());
+        auto* model = gtk_column_view_get_columns(GTK_COLUMN_VIEW(operator NativeWidget()));
         if (column_i > g_list_model_get_n_items(model))
             log::critical("In ColumnView::get_column_at: Index " + std::to_string(column_i) + " out of bounds for a ColumnView with " + std::to_string(g_list_model_get_n_items(model)) + " columns");
 
@@ -207,7 +219,7 @@ namespace mousetrap
 
     ColumnView::Column ColumnView::get_column_with_title(const std::string& title)
     {
-        auto* model = gtk_column_view_get_columns(get_native());
+        auto* model = gtk_column_view_get_columns(GTK_COLUMN_VIEW(operator NativeWidget()));
         for (size_t i = 0; i < g_list_model_get_n_items(model); ++i)
         {
             auto* out = GTK_COLUMN_VIEW_COLUMN(g_list_model_get_item(model, i));
@@ -221,7 +233,7 @@ namespace mousetrap
 
     bool ColumnView::has_column_with_title(const std::string& title)
     {
-        auto* model = gtk_column_view_get_columns(get_native());
+        auto* model = gtk_column_view_get_columns(GTK_COLUMN_VIEW(operator NativeWidget()));
         for (size_t i = 0; i < g_list_model_get_n_items(model); ++i)
         {
             if (gtk_column_view_column_get_title(GTK_COLUMN_VIEW_COLUMN(g_list_model_get_item(model, i))) == title)
@@ -233,7 +245,7 @@ namespace mousetrap
 
     size_t ColumnView::get_n_columns() const
     {
-        return g_list_model_get_n_items(gtk_column_view_get_columns(get_native()));
+        return g_list_model_get_n_items(gtk_column_view_get_columns(GTK_COLUMN_VIEW(operator NativeWidget())));
     }
 
     void ColumnView::set_widget(const Column& column, size_t row_i, const Widget& widget)
@@ -260,32 +272,32 @@ namespace mousetrap
 
     void ColumnView::set_enable_rubberband_selection(bool b)
     {
-        gtk_column_view_set_enable_rubberband(get_native(), b);
+        gtk_column_view_set_enable_rubberband(GTK_COLUMN_VIEW(operator NativeWidget()), b);
     }
 
     bool ColumnView::get_enable_rubberband_selection() const
     {
-        return gtk_column_view_get_enable_rubberband(get_native());
+        return gtk_column_view_get_enable_rubberband(GTK_COLUMN_VIEW(operator NativeWidget()));
     }
 
     void ColumnView::set_show_row_separators(bool b)
     {
-        gtk_column_view_set_show_row_separators(get_native(), true);
+        gtk_column_view_set_show_row_separators(GTK_COLUMN_VIEW(operator NativeWidget()), true);
     }
 
     bool ColumnView::get_show_row_separators() const
     {
-        return gtk_column_view_get_show_row_separators(get_native());
+        return gtk_column_view_get_show_row_separators(GTK_COLUMN_VIEW(operator NativeWidget()));
     }
 
     void ColumnView::set_show_column_separators(bool b)
     {
-        gtk_column_view_set_show_column_separators(get_native(), b);
+        gtk_column_view_set_show_column_separators(GTK_COLUMN_VIEW(operator NativeWidget()), b);
     }
 
     bool ColumnView::get_show_column_separators() const
     {
-        return gtk_column_view_get_show_column_separators(get_native());
+        return gtk_column_view_get_show_column_separators(GTK_COLUMN_VIEW(operator NativeWidget()));
     }
 
     SelectionModel* ColumnView::get_selection_model()
@@ -300,11 +312,11 @@ namespace mousetrap
 
     void ColumnView::set_is_reorderable(bool b)
     {
-        gtk_column_view_set_reorderable(get_native(), b);
+        gtk_column_view_set_reorderable(GTK_COLUMN_VIEW(operator NativeWidget()), b);
     }
 
     bool ColumnView::get_is_reorderable() const
     {
-        return gtk_column_view_get_reorderable(get_native());
+        return gtk_column_view_get_reorderable(GTK_COLUMN_VIEW(operator NativeWidget()));
     }
 }

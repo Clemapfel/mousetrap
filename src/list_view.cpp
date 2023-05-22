@@ -184,15 +184,17 @@ namespace mousetrap::detail
 namespace mousetrap
 {
     ListView::ListView(Orientation orientation, SelectionMode mode)
-        : WidgetImplementation<GtkListView>(GTK_LIST_VIEW(gtk_list_view_new(nullptr, nullptr))),
+        : Widget(gtk_list_view_new(nullptr, nullptr)),
           CTOR_SIGNAL(ListView, activate)
     {
-        _internal = detail::list_view_internal_new(get_native(), orientation, mode);
+        _internal = detail::list_view_internal_new(GTK_LIST_VIEW(operator NativeWidget()), orientation, mode);
         detail::attach_ref_to(G_OBJECT(_internal->list_view), _internal);
     }
 
     ListView::~ListView()
-    {}
+    {
+        g_object_unref(_internal);
+    }
 
     ListView::Iterator ListView::push_back(const Widget& widget, Iterator it)
     {
@@ -355,11 +357,11 @@ namespace mousetrap
 
     void ListView::set_orientation(Orientation orientation)
     {
-        gtk_orientable_set_orientation(GTK_ORIENTABLE(get_native()), (GtkOrientation) orientation);
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(GTK_LIST_VIEW(operator NativeWidget())), (GtkOrientation) orientation);
     }
 
     Orientation ListView::get_orientation() const
     {
-        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(get_native()));
+        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(GTK_LIST_VIEW(operator NativeWidget())));
     }
 }

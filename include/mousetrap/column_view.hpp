@@ -13,6 +13,7 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class ColumnView;
     namespace detail
     {
         struct _ColumnViewInternal
@@ -26,6 +27,7 @@ namespace mousetrap
             GtkSelectionMode selection_mode;
         };
         using ColumnViewInternal = _ColumnViewInternal;
+        DEFINE_INTERNAL_MAPPING(ColumnView);
     }
     #endif
 
@@ -33,7 +35,7 @@ namespace mousetrap
     /// \signals
     /// \signal_activate{ColumnView}
     /// \widget_signals{ColumnView}
-    class ColumnView : public WidgetImplementation<GtkColumnView>, public Selectable,
+    class ColumnView : public Widget,
         HAS_SIGNAL(ColumnView, activate)
     {
         public:
@@ -91,7 +93,18 @@ namespace mousetrap
             };
 
         public:
+            /// @brief construct
+            /// @param mode selection mode, governs how many rows can be selected at one time
             ColumnView(SelectionMode mode = SelectionMode::NONE);
+
+            /// @brief construct from internal
+            ColumnView(detail::ColumnViewInternal*);
+
+            /// @brief destructor
+            ~ColumnView();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief add a column to the end of the column view
             /// @param title header name for the column
@@ -195,7 +208,7 @@ namespace mousetrap
 
             /// @brief expose the selection model
             /// @return selection model
-            SelectionModel* get_selection_model() override;
+            SelectionModel* get_selection_model();
 
             /// @brief get number of rows
             /// @return size_t

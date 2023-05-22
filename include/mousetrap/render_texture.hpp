@@ -9,6 +9,7 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class RenderTexture;
     namespace detail
     {
         struct _RenderTextureInternal
@@ -18,6 +19,7 @@ namespace mousetrap
             GLint before_buffer;
         };
         using RenderTextureInternal = _RenderTextureInternal;
+        DEFINE_INTERNAL_MAPPING(RenderTexture);
     }
     #endif
 
@@ -28,8 +30,14 @@ namespace mousetrap
             /// @brief construct as empty texture of size 0x0
             RenderTexture();
 
-            /// @brief destruct, frees GPU-side objects
+            /// @brief construct from internal
+            RenderTexture(detail::RenderTextureInternal*);
+
+            /// @brief destructor
             ~RenderTexture();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief copy ctor deleted
             RenderTexture(const RenderTexture&) = delete;

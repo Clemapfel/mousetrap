@@ -75,79 +75,118 @@ namespace mousetrap
         }
     }
 
-    DropDown::DropDown()
-        : WidgetImplementation<GtkDropDown>(GTK_DROP_DOWN(gtk_drop_down_new(nullptr, nullptr)))
+    namespace detail
     {
-        _list_factory = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
-        g_signal_connect(_list_factory, "bind", G_CALLBACK(on_list_factory_bind), this);
-        g_signal_connect(_list_factory, "unbind", G_CALLBACK(on_list_factory_unbind), this);
+        DECLARE_NEW_TYPE(DropDownInternal, drop_down_internal, DROP_DOWN_INTERNAL)
+        DEFINE_NEW_TYPE_TRIVIAL_INIT(DropDownInternal, drop_down_internal, DROP_DOWN_INTERNAL)
 
-        _label_factory = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
-        g_signal_connect(_label_factory, "bind", G_CALLBACK(on_label_factory_bind), this);
-        g_signal_connect(_label_factory, "unbind", G_CALLBACK(on_label_factory_unbind), this);
+        static void drop_down_internal_finalize(GObject* object)
+        {
+            auto* self = MOUSETRAP_DROP_DOWN_INTERNAL(object);
+            G_OBJECT_CLASS(drop_down_internal_parent_class)->finalize(object);
 
-        _model = g_list_store_new(G_TYPE_OBJECT);
+            g_object_unref(self->list_factory);
+            g_object_unref(self->label_factory);
+            g_object_unref(self->model);
+        }
 
-        gtk_drop_down_set_model(get_native(), G_LIST_MODEL(_model));
-        gtk_drop_down_set_factory(get_native(), GTK_LIST_ITEM_FACTORY(_label_factory));
-        gtk_drop_down_set_list_factory(get_native(), GTK_LIST_ITEM_FACTORY(_list_factory));
+        DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(DropDownInternal, drop_down_internal, DROP_DOWN_INTERNAL)
 
-        g_object_ref(_model);
-        g_object_ref(_list_factory);
-        g_object_ref(_label_factory);
+        static DropDownInternal* drop_down_internal_new(GtkDropDown* native)
+        {
+            auto* self = (DropDownInternal*) g_object_new(drop_down_internal_get_type(), nullptr);
+            drop_down_internal_init(self);
 
-        g_signal_connect(get_native(), "notify::selected-item", G_CALLBACK(on_selected_item_changed), this);
+            self->native = native;
+            self->list_factory = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
+            self->label_factory = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());;
+            self->model = g_list_store_new(G_TYPE_OBJECT);
+
+            g_object_ref(self->list_factory);
+            g_object_ref(self->label_factory);
+            g_object_ref(self->model);
+
+            return self;
+        }
+    }
+
+    DropDown::DropDown()
+        : Widget(gtk_drop_down_new(nullptr, nullptr))
+    {
+        _internal = detail::drop_down_internal_new(GTK_DROP_DOWN(Widget::operator NativeWidget()));
+
+        g_signal_connect(_internal->list_factory, "bind", G_CALLBACK(on_list_factory_bind), _internal);
+        g_signal_connect(_internal->list_factory, "unbind", G_CALLBACK(on_list_factory_unbind), _internal);
+
+        g_signal_connect(_internal->label_factory, "bind", G_CALLBACK(on_label_factory_bind), _internal);
+        g_signal_connect(_internal->label_factory, "unbind", G_CALLBACK(on_label_factory_unbind), _internal);
+
+        gtk_drop_down_set_model(GTK_DROP_DOWN(Widget::operator NativeWidget()), G_LIST_MODEL(_internal->model));
+        gtk_drop_down_set_factory(GTK_DROP_DOWN(Widget::operator NativeWidget()), GTK_LIST_ITEM_FACTORY(_internal->label_factory));
+        gtk_drop_down_set_list_factory(GTK_DROP_DOWN(Widget::operator NativeWidget()), GTK_LIST_ITEM_FACTORY(_internal->list_factory));
+
+        g_signal_connect(GTK_DROP_DOWN(Widget::operator NativeWidget()), "notify::selected-item", G_CALLBACK(on_selected_item_changed), this);
+    }
+    
+    DropDown::DropDown(detail::DropDownInternal* internal)
+        : Widget(GTK_WIDGET(internal->native))
+    {
+        _internal = g_object_ref(internal);
     }
 
     DropDown::~DropDown()
     {
-        g_object_unref(_model);
-        g_object_unref(_list_factory);
-        g_object_unref(_label_factory);
+        g_object_unref(_internal);
     }
 
-    void DropDown::on_list_factory_bind(GtkSignalListItemFactory* self, void* object, DropDown*)
+    NativeObject DropDown::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
+    void DropDown::on_list_factory_bind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal* internal)
     {
         auto* item = GTK_LIST_ITEM(object);
         auto* dropdown_item = detail::G_DROP_DOWN_ITEM(gtk_list_item_get_item(item));
         gtk_list_item_set_child(item, dropdown_item->list_widget);
     }
 
-    void DropDown::on_list_factory_unbind(GtkSignalListItemFactory* self, void* object, DropDown*)
+    void DropDown::on_list_factory_unbind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal* internal)
     {
-        auto* item = GTK_LIST_ITEM(object);
-        //gtk_list_item_set_child(item, nullptr);
+        // noop
     }
 
-    void DropDown::on_label_factory_bind(GtkSignalListItemFactory* self, void* object, DropDown*)
+    void DropDown::on_label_factory_bind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal* internal)
     {
         auto* item = GTK_LIST_ITEM(object);
         auto* dropdown_item = detail::G_DROP_DOWN_ITEM(gtk_list_item_get_item(item));
         gtk_list_item_set_child(item, dropdown_item->label_widget);
     }
 
-    void DropDown::on_label_factory_unbind(GtkSignalListItemFactory* self, void* object, DropDown*)
+    void DropDown::on_label_factory_unbind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal* internal)
     {
-        auto* item = GTK_LIST_ITEM(object);
-        //gtk_list_item_set_child(item, nullptr);
+        // noop
     }
 
-    void DropDown::on_selected_item_changed(GtkDropDown* self, void*, DropDown* instance)
+    void DropDown::on_selected_item_changed(GtkDropDown* self, void*, detail::DropDownInternal* internal)
     {
         auto i = gtk_drop_down_get_selected(self);
-        auto* item = detail::G_DROP_DOWN_ITEM(g_list_model_get_item(G_LIST_MODEL(instance->_model), i));
+        auto* item = detail::G_DROP_DOWN_ITEM(g_list_model_get_item(G_LIST_MODEL(internal->model), i));
         if (item->function != nullptr)
-            (*item->function)(instance);
+        {
+            auto dropdown = DropDown(internal);
+            (*item->function)(&dropdown);
+        }
     }
 
     void DropDown::remove(ItemID id)
     {
-        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_model)); ++i)
+        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_internal->model)); ++i)
         {
-            auto* item = detail::G_DROP_DOWN_ITEM(g_list_model_get_item(G_LIST_MODEL(_model), i));
+            auto* item = detail::G_DROP_DOWN_ITEM(g_list_model_get_item(G_LIST_MODEL(_internal->model), i));
             if (item->id == id._value)
             {
-                g_list_store_remove(_model, i);
+                g_list_store_remove(_internal->model, i);
                 return;
             }
         }
@@ -155,22 +194,22 @@ namespace mousetrap
 
     void DropDown::set_show_arrow(bool b)
     {
-        gtk_drop_down_set_show_arrow(get_native(), b);
+        gtk_drop_down_set_show_arrow(GTK_DROP_DOWN(Widget::operator NativeWidget()), b);
     }
 
     bool DropDown::get_show_arrow() const
     {
-        return gtk_drop_down_get_show_arrow(get_native());
+        return gtk_drop_down_get_show_arrow(GTK_DROP_DOWN(Widget::operator NativeWidget()));
     }
 
     void DropDown::set_selected(DropDown::ItemID id)
     {
-        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_model)); ++i)
+        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_internal->model)); ++i)
         {
-            auto* item = detail::G_DROP_DOWN_ITEM(g_list_model_get_item(G_LIST_MODEL(_model), i));
+            auto* item = detail::G_DROP_DOWN_ITEM(g_list_model_get_item(G_LIST_MODEL(_internal->model), i));
             if (item->id == id._value)
             {
-                gtk_drop_down_set_selected(get_native(), i);
+                gtk_drop_down_set_selected(GTK_DROP_DOWN(Widget::operator NativeWidget()), i);
                 return;
             }
         }
@@ -180,7 +219,7 @@ namespace mousetrap
 
     DropDown::ItemID DropDown::get_selected() const
     {
-        auto* item = g_list_model_get_item(G_LIST_MODEL(_model), gtk_drop_down_get_selected(get_native()));
+        auto* item = g_list_model_get_item(G_LIST_MODEL(_internal->model), gtk_drop_down_get_selected(GTK_DROP_DOWN(Widget::operator NativeWidget())));
         if (item == nullptr)
             return DropDown::ItemID{size_t(-1)};
         else
@@ -189,7 +228,7 @@ namespace mousetrap
 
     DropDown::ItemID DropDown::get_item_at(size_t index) const
     {
-        auto* item = g_list_model_get_item(G_LIST_MODEL(_model), index);
+        auto* item = g_list_model_get_item(G_LIST_MODEL(_internal->model), index);
         if (item == nullptr)
             return DropDown::ItemID{size_t(-1)};
         else

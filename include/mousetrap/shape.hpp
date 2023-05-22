@@ -42,6 +42,7 @@ namespace mousetrap
     };
 
     #ifndef DOXYGEN
+    class Shape;
     namespace detail
     {
         struct VertexInfo
@@ -91,6 +92,7 @@ namespace mousetrap
             const TextureObject* texture = nullptr;
         };
         using ShapeInternal = _ShapeInternal;
+        DEFINE_INTERNAL_MAPPING(Shape);
     }
     #endif
 
@@ -107,6 +109,9 @@ namespace mousetrap
             /// @brief construct from internal, \for_internal_use_only
             /// @param internal
             Shape(detail::ShapeInternal*);
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief copy ctor, allocates new vertex array with identical vertex data
             /// @param other
@@ -351,7 +356,7 @@ namespace mousetrap
             const TextureObject* get_texture() const;
 
             /// @brief expose as GObject
-            operator GObject*() const override;
+            operator NativeObject() const override;
 
         private:
             void update_position() const;

@@ -66,12 +66,21 @@ namespace mousetrap
             GtkFileFilter* _native;
     };
 
+    #ifndef DOXYGEN
+    class FileChooser;
+    namespace detail
+    {
+        using FileChooserInternal = GtkFileChooserNative;
+        DEFINE_INTERNAL_MAPPING(FileChooser);
+    }
+    #endif
+
     /// @brief native file chooser dialog
     /// @todo replace with GtkFileDialog once GTK4.10 stable releases
     /// \signals
     /// \signal_response{FileChooser}
     /// \widget_signals{FileChooser}
-    class FileChooser : public WidgetImplementation<GtkFileChooserNative>,
+    class FileChooser : public Widget,
         HAS_SIGNAL(FileChooser, response)
     {
         public:
@@ -81,6 +90,16 @@ namespace mousetrap
             /// @param accept_label label for the button that confirms the users choice
             /// @param cancel_label label for the button that aborts the users choice
             FileChooser(FileChooserAction action, const std::string& title, const std::string& accept_label = "Accept", const std::string& cancel_label = "Cancel");
+
+            /// @brief construct from internal
+            /// @param internal
+            FileChooser(detail::FileChooserInternal* internal);
+
+            /// @brief destructor
+            ~FileChooser();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief set label for button that confirms users choice
             /// @param label
@@ -165,5 +184,8 @@ namespace mousetrap
             /// @brief get currently entered name in the file selector
             /// @return name, may be empty
             std::string get_current_name() const;
+
+        private:
+            detail::FileChooseInternal* _internal = nullptr;
     };
 }

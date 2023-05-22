@@ -42,11 +42,20 @@ namespace mousetrap
         WORD_OR_CHAR = PANGO_WRAP_WORD_CHAR
     };
 
+    #ifndef DOXYGEN
+    class Label;
+    namespace detail
+    {
+        using LabelInternal = GtkLabel;
+        DEFINE_INTERNAL_MAPPING(Label);
+    }
+    #endif
+
     /// @brief widget displaying text, supports pango attribute syntax
     /// @see https://docs.gtk.org/Pango/pango_markup.html
     /// \signals
     /// \widget_signals{Label}
-    class Label : public WidgetImplementation<GtkLabel>
+    class Label : public Widget
     {
         public:
             /// @brief construct as empty
@@ -55,6 +64,15 @@ namespace mousetrap
             /// @brief construct from string
             /// @param formatted_string
             Label(const std::string& formatted_string);
+
+            /// @brief create from internal
+            Label(detail::LabelInternal*);
+
+            /// @brief destructor
+            ~Label();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief set text
             /// @param formatted_string
@@ -127,5 +145,8 @@ namespace mousetrap
             /// @brief get whether the user can highight thex text with the cursor
             /// @return true if selection is possible, false otherwise
             bool get_selectable() const;
+
+        private:
+            detail::LabelInternal* _internal = nullptr;
     };
 }

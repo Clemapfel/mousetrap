@@ -9,14 +9,32 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class Overlay;
+    namespace detail
+    {
+        using OverlayInternal = GtkOverlay;
+        DEFINE_INTERNAL_MAPPING(Overlay),
+    }
+    #endif
+
     /// @brief a widget that allows to display multiple widgets above a common child
     /// \signals
     /// \widget_signals{Overlay}
-    class Overlay : public WidgetImplementation<GtkOverlay>
+    class Overlay : public Widget
     {
         public:
             /// @brief construct empty
             Overlay();
+
+            /// @brief construct from internal
+            Overlay(detail::OverlayInternal*);
+
+            /// @brief destructor
+            ~Overlay();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief set the bottom-most widget
             /// @param widget
@@ -24,10 +42,6 @@ namespace mousetrap
 
             /// @brief remove the bottom-most widget
             void remove_child();
-
-            /// @brief get the bottom-most widget
-            /// @return widget
-            Widget* get_child() const;
 
             /// @brief add a widget on top
             /// @param widget
@@ -40,7 +54,7 @@ namespace mousetrap
             void remove_overlay(const Widget& widget);
 
         private:
-            const Widget* _child = nullptr;
+            detail::OverlayInternal* _internal = nullptr;
     };
 }
 

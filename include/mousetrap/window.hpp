@@ -13,7 +13,15 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
     class Application;
+    class Window;
+    namespace detail
+    {
+        using WindowInternal = GtkWindow;
+        DEFINE_INTERNAL_MAPPING(Window);
+    }
+    #endif
 
     /// @brief window, registered to an application
     /// \signals
@@ -21,7 +29,7 @@ namespace mousetrap
     /// \signal_activate_default_widget{Window}
     /// \signal_activate_focused_widget{Window}
     /// \widget_signals{Window}
-    class Window : public WidgetImplementation<GtkWindow>,
+    class Window : public Widget,
         HAS_SIGNAL(Window, close_request),
         HAS_SIGNAL(Window, activate_default_widget),
         HAS_SIGNAL(Window, activate_focused_widget)
@@ -33,6 +41,15 @@ namespace mousetrap
             /// @brief construct
             /// @param application
             Window(Application& application);
+
+            /// @brief construct from internal
+            Window(detail::WindowInternal*);
+
+            /// @brief destructor
+            ~Window();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief link with application
             /// @param application
@@ -67,10 +84,6 @@ namespace mousetrap
             /// @brief remove child
             void remove_child();
 
-            /// @brief get child
-            /// @return widget
-            Widget* get_child() const;
-
             /// @brief set whether the window should be destroyed if its parent window is destroyed, true by default
             /// @param b true if it should also be destroyed, false if not
             void set_destroy_with_parent(bool);
@@ -94,9 +107,6 @@ namespace mousetrap
             /// @brief replace the titlebar custom widget with the default
             void remove_titlebar_widget();
 
-            /// @brief get custom titlebar widget, or nullptr if there is not widget or the titlebar widget was not set via mousetrap::Window::set_titlebar_widget
-            Widget* get_titlebar_widget() const;
-
             /// @brief set whether the window should be modal. A modal window prevents users from interacting with any other open application window
             /// @param b true if window should be modal, false otherwise
             void set_is_modal(bool);
@@ -107,7 +117,7 @@ namespace mousetrap
 
             /// @brief set whether this window should always be shown on top of the partner window
             /// @param partner other window, self will be shown above partner
-            void set_transient_for(Window* partner);
+            void set_transient_for(Window& partner);
 
             /// @brief set whether the window has a titlebar
             /// @param b true if window should have a titlebar, false othterwise
@@ -141,13 +151,7 @@ namespace mousetrap
             /// @param widget
             void set_default_widget(const Widget& widget);
 
-            /// @brief get default widget
-            /// @return widget, may be nullptr
-            Widget* get_default_widget() const;
-
         private:
-            const Widget* _child = nullptr;
-            const Widget* _titlebar_widget = nullptr;
-            const Widget* _default_widget = nullptr;
+            detail::WindowInternal* _internal = nullptr;
     };
 }

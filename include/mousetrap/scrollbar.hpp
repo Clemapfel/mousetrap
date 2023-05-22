@@ -10,34 +10,45 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class Scrollbar;
+    namespace detail
+    {
+        using ScrollbarInternal = GtkScrollbar;
+        DEFINE_INTERNAL_MAPPING(Scrollbar);
+    }
+    #endif
+
     /// @brief a scrollbar, allows users to scroll a window or range using the scrollwheel or cursor
     /// \signals
     /// \widget_signals{Scrollbar}
-    class Scrollbar : public WidgetImplementation<GtkScrollbar>, public Orientable
+    class Scrollbar : public Widget
     {
         public:
             /// @brief construct
             /// @param orientation
             Scrollbar(Orientation);
 
+            /// @brief construct from internal
+            Scrollbar(detail::ScrollbarInternal*);
+
             /// @brief destroy
             ~Scrollbar();
 
+            /// @brief expose internal
+            NativeObject get_internal() const override;
+
             /// @brief expose adjustment, modifying it will modify the scrollbar. Connect to the adjustments events if you want to monitor the scrollbars state
             /// @returns adjustment
-            Adjustment& get_adjustment();
-
-            /// @brief expose adjustment as const reference
-            /// @returns adjustment, const
-            const Adjustment& get_adjustment() const;
+            Adjustment get_adjustment() const;
 
             /// @copydoc mousetrap::Orientable::set_orientation
-            void set_orientation(Orientation) override;
+            void set_orientation(Orientation);
 
             /// @copydoc mousetrap::Orientable::get_orientation
-            Orientation get_orientation() const override;
+            Orientation get_orientation() const;
 
         private:
-            Adjustment* _adjustment = nullptr;
+           detail::ScrollbarInternal* _internal = nullptr;
     };
 }

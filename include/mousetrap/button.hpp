@@ -45,7 +45,7 @@ namespace mousetrap
             Button(detail::ButtonInternal*);
 
             /// @copydoc SignalEmitter::get_internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief set whether button should have a black outline
             /// @param b

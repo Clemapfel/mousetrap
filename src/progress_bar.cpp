@@ -7,62 +7,78 @@
 namespace mousetrap
 {
     ProgressBar::ProgressBar()
-        : WidgetImplementation<GtkProgressBar>(GTK_PROGRESS_BAR(gtk_progress_bar_new()))
+        : Widget(gtk_progress_bar_new())
     {}
+    
+    ProgressBar::ProgressBar(detail::ProgressBarInternal* internal) 
+        : Widget(GTK_WIDGET(internal))
+    {
+        _internal = g_object_ref(internal);
+    }
 
+    ProgressBar::~ProgressBar() 
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject ProgressBar::get_internal() const 
+    {
+        return G_OBJECT(_internal);
+    }
+    
     void ProgressBar::pulse()
     {
-        gtk_progress_bar_pulse(get_native());
+        gtk_progress_bar_pulse(GTK_PROGRESS_BAR(operator NativeWidget()));
     }
 
     void ProgressBar::set_fraction(float v)
     {
         v = glm::clamp<float>(v, 0, 1);
-        gtk_progress_bar_set_fraction(get_native(), v);
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(operator NativeWidget()), v);
     }
 
     float ProgressBar::get_fraction() const
     {
-        return gtk_progress_bar_get_fraction(get_native());
+        return gtk_progress_bar_get_fraction(GTK_PROGRESS_BAR(operator NativeWidget()));
     }
 
     bool ProgressBar::get_is_inverted() const
     {
-        return gtk_progress_bar_get_inverted(get_native());
+        return gtk_progress_bar_get_inverted(GTK_PROGRESS_BAR(operator NativeWidget()));
     }
 
     void ProgressBar::set_is_inverted(bool b)
     {
-        gtk_progress_bar_set_inverted(get_native(), b);
+        gtk_progress_bar_set_inverted(GTK_PROGRESS_BAR(operator NativeWidget()), b);
     }
 
     void ProgressBar::set_text(const std::string& text)
     {
-        gtk_progress_bar_set_text(get_native(), text.c_str());
+        gtk_progress_bar_set_text(GTK_PROGRESS_BAR(operator NativeWidget()), text.c_str());
     }
 
     std::string ProgressBar::get_text() const
     {
-        return gtk_progress_bar_get_text(get_native());
+        return gtk_progress_bar_get_text(GTK_PROGRESS_BAR(operator NativeWidget()));
     }
 
     void ProgressBar::set_show_text_or_percentage(bool b)
     {
-        gtk_progress_bar_set_show_text(get_native(), b);
+        gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(operator NativeWidget()), b);
     }
 
     bool ProgressBar::get_show_text_or_percentage() const
     {
-        return gtk_progress_bar_get_show_text(get_native());
+        return gtk_progress_bar_get_show_text(GTK_PROGRESS_BAR(operator NativeWidget()));
     }
 
     void ProgressBar::set_orientation(Orientation orientation)
     {
-        gtk_orientable_set_orientation(GTK_ORIENTABLE(get_native()), (GtkOrientation) orientation);
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(GTK_PROGRESS_BAR(operator NativeWidget())), (GtkOrientation) orientation);
     }
 
     Orientation ProgressBar::get_orientation() const
     {
-        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(get_native()));
+        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(GTK_PROGRESS_BAR(operator NativeWidget())));
     }
 }

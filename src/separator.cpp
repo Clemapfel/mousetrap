@@ -8,7 +8,7 @@
 namespace mousetrap
 {
     Separator::Separator(float opacity, Orientation orientation)
-        : WidgetImplementation<GtkSeparator>(GTK_SEPARATOR(gtk_separator_new((GtkOrientation) orientation)))
+        : Widget(gtk_separator_new((GtkOrientation) orientation))
     {
         if (orientation == Orientation::HORIZONTAL)
             set_expand_horizontally(true);
@@ -17,14 +17,30 @@ namespace mousetrap
 
         set_opacity(opacity);
     }
+    
+    Separator::Separator(detail::SeparatorInternal* internal)
+        : Widget(GTK_WIDGET(internal))
+    {
+        _internal = g_object_ref(internal);
+    }
+    
+    Separator::~Separator() 
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject Separator::get_internal() const 
+    {
+        return G_OBJECT(_internal);
+    }
 
     void Separator::set_orientation(Orientation orientation)
     {
-        gtk_orientable_set_orientation(GTK_ORIENTABLE(get_native()), (GtkOrientation) orientation);
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(_internal), (GtkOrientation) orientation);
     }
 
     Orientation Separator::get_orientation() const
     {
-        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(get_native()));
+        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(_internal));
     }
 }

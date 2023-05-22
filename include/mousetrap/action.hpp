@@ -89,7 +89,7 @@ namespace mousetrap
             operator NativeObject() const override;
 
             /// @copydoc SignalEmitter::get_internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief create action as stateless, given function is executed when action is triggered
             /// @tparam Function_t lambda or static function with signature `() -> void`

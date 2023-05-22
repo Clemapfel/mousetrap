@@ -55,6 +55,17 @@ namespace mousetrap
         detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
     }
 
+    Widget::Widget(detail::WidgetInternal* internal)
+        : _internal(internal),
+          CTOR_SIGNAL(Widget, realize),
+          CTOR_SIGNAL(Widget, unrealize),
+          CTOR_SIGNAL(Widget, destroy),
+          CTOR_SIGNAL(Widget, hide),
+          CTOR_SIGNAL(Widget, show),
+          CTOR_SIGNAL(Widget, map),
+          CTOR_SIGNAL(Widget, unmap)
+    {}
+
     Widget::~Widget()
     {
         g_object_unref(_internal);

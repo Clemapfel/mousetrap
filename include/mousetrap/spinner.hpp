@@ -8,14 +8,32 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class Spinner;
+    namespace detail
+    {
+        using SpinnerInternal = GtkSpinner;
+        DEFINE_INTERNAL_MAPPING(Spinner);
+    }
+    #endif
+
     /// @brief spinning "loading" icon, signifies a task is being executed continously, see also mousetrap::ProgressBar
     /// \signals
     /// \widget_signals{Spinner}
-    class Spinner : public WidgetImplementation<GtkSpinner>
+    class Spinner : public Widget
     {
         public:
             /// @brief construct
             Spinner();
+
+            /// @brief create from internal
+            Spinner(detail::SpinnerInternal*);
+
+            /// @brief destructor
+            ~Spinner();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief set whether the icon should be spinning
             /// @param b true if icon should spin, false otherwise
@@ -30,5 +48,8 @@ namespace mousetrap
 
             /// @brief stop the spinning animation, does nothing if not currently spinning
             void stop();
+
+        private:
+            detail::SpinnerInternal* _internal = nullptr;
     };
 }

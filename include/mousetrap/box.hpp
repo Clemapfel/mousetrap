@@ -37,7 +37,7 @@ namespace mousetrap
             ~Box();
 
             /// @copydoc SignalEmitter::get_internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief add a widget to the end of the box
             /// @param widget

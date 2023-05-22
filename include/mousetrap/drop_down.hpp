@@ -13,10 +13,29 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class DropDown;
+    namespace detail
+    {
+        struct _DropDownInternal
+        {
+            GObject parent;
+
+            GtkDropDown* native;
+
+            GtkSignalListItemFactory* list_factory;
+            GtkSignalListItemFactory* label_factory;
+            GListStore* model;
+        };
+        using DropDownInternal = _DropDownInternal;
+        DEFINE_INTERNAL_MAPPING(DropDown);
+    }
+    #endif
+
     /// @brief drop down menu, present a popup with a list of items
     /// \signals
     /// \widget_signals{DropDown}
-    class DropDown : public WidgetImplementation<GtkDropDown>
+    class DropDown : public Widget
     {
         public:
             /// @brief id of an item, keep track of this to refer to items after initialization
@@ -27,8 +46,15 @@ namespace mousetrap
             /// @brief construct as empty
             DropDown();
 
+            /// @brief construct from internal
+            /// @param internal
+            DropDown(detail::DropDownInternal*);
+
             /// @brief destructor
             ~DropDown();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief add an item with an accompanying action to the end of the drop down
             /// @tparam Function_t function or lambda with signature `(DropDown, (Data_t)) -> void`
@@ -118,17 +144,15 @@ namespace mousetrap
             ItemID get_item_at(size_t index) const;
 
         private:
-            static void on_list_factory_bind(GtkSignalListItemFactory* self, void* object, DropDown*);
-            static void on_label_factory_bind(GtkSignalListItemFactory* self, void* object, DropDown*);
+            static void on_list_factory_bind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal*);
+            static void on_label_factory_bind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal*);
 
-            static void on_list_factory_unbind(GtkSignalListItemFactory* self, void* object, DropDown*);
-            static void on_label_factory_unbind(GtkSignalListItemFactory* self, void* object, DropDown*);
+            static void on_list_factory_unbind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal*);
+            static void on_label_factory_unbind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal*);
 
-            static void on_selected_item_changed(GtkDropDown*, void*, DropDown*);
+            static void on_selected_item_changed(GtkDropDown*, void*, detail::DropDownInternal* internal);
 
-            GtkSignalListItemFactory* _list_factory;
-            GtkSignalListItemFactory* _label_factory;
-            GListStore* _model;
+            detail::DropDownInternal* _internal = nullptr;
 
             static inline size_t _current_id = 0;
             bool assert_label_is_not_self(const std::string& scope, const Widget&, const Widget&);

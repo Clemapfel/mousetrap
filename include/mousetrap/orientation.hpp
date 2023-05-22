@@ -18,15 +18,6 @@ namespace mousetrap
         VERTICAL = GTK_ORIENTATION_VERTICAL
     };
 
-    /// \todo REMOVE THIS
-    #ifdef UNDEF
-    /// @copydoc Box::get_orientation
-    Orientation get_orientation() const;
-
-    /// @copydoc Box::set_orientation
-    void set_orientation(Orientation orientation);
-    #endif
-
     #ifndef DOXYGEN
         #define IMPLEMENT_ORIENTABLE(T) \
         void T::set_orientation(Orientation orientation) \

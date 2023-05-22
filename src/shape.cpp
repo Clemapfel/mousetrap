@@ -159,6 +159,11 @@ namespace mousetrap
         return *this;
     }
 
+    NativeObject Shape::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
     void Shape::initialize()
     {
         _internal->vertex_data->clear();

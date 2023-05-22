@@ -14,23 +14,33 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class Stack;
+    class StackSidebar;
+    class StackSwitcher;
     namespace detail
     {
         struct _StackInternal
         {
             GObject parent;
             GtkStack* native;
-            SelectionModel* selection_model;
+            SelectionModelInternal* selection_model;
             std::map<std::string, std::reference_wrapper<const Widget>>* children;
         };
         using StackInternal = _StackInternal;
+        DEFINE_INTERNAL_MAPPING(Stack);
+
+        using StackSidebarInternal = GtkStackSidebar;
+        DEFINE_INTERNAL_MAPPING(StackSidebar);
+
+        using StackSwitcherInternal = GtkStackSwitcher;
+        DEFINE_INTERNAL_MAPPING(StackSwitcher);
     }
     #endif
 
     /// @brief displays exactly one of multiple widgets. Use mousetrap::StackSwitcher and mousetrap::StackSidebar to allow a user to switch them through the GUI
     /// \signals
     /// \widget_signals{Stack}
-    class Stack : public WidgetImplementation<GtkStack>, public Selectable
+    class Stack : public Widget
     {
         /// @brief id of a stack page, the id is the title of the page and may be used to display the name of that stack page
         using ID = std::string;
@@ -39,13 +49,20 @@ namespace mousetrap
             /// @brief construct
             Stack();
 
+            /// @brief construct from internal
+            Stack(detail::StackInternal*);
+
             /// @brief destruct
             ~Stack();
 
-            using WidgetImplementation<GtkStack>::operator GtkStack*;
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @copydoc mousetrap::Selectable::get_selection_model
-            SelectionModel* get_selection_model() override;
+            SelectionModel get_selection_model();
+
+            /// @brief expose as GtkStack
+            operator GtkStack*() const;
 
             /// @brief add a page to the stack
             /// @param widget may be nullptr to create an empty page
@@ -120,23 +137,47 @@ namespace mousetrap
     /// @brief widget to choose page of stack, uses page id as label
     /// \signals
     /// \widget_signals{StackSidebar}
-    class StackSidebar : public WidgetImplementation<GtkStackSidebar>
+    class StackSidebar : public Widget
     {
         public:
             /// @brief construct
             /// @param stack stack to control
             StackSidebar(const Stack&);
+
+            /// @brief construct from internal
+            StackSidebar(detail::StackSidebarInternal*);
+
+            /// @brief destructor
+            ~StackSidebar();
+
+            // @brief expose internal
+            NativeObject get_internal() const;
+
+        private:
+            detail::StackSidebarInternal* _internal;
     };
 
     /// @brief widget to choose page of stack, uses page id as label
     /// \signals
     /// \widget_signals{StackSwitcher}
-    class StackSwitcher : public WidgetImplementation<GtkStackSwitcher>
+    class StackSwitcher : public Widget
     {
         public:
             /// @brief construct
             /// @param stack stack to control
             StackSwitcher(const Stack&);
+
+            /// @brief construct from internal
+            StackSwitcher(detail::StackSwitcherInternal*);
+
+            /// @brief destructor
+            ~StackSwitcher();
+
+            // @brief expose internal
+            NativeObject get_internal() const;
+
+        private:
+            detail::StackSwitcherInternal* _internal;
     };
 }
 

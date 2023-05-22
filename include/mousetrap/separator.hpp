@@ -9,10 +9,18 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        using SeparatorInternal = GtkSeparator;
+        DEFINE_INTERNAL_MAPPING(Separator);
+    }
+    #endif
+
     /// @brief non-container widget that fills it's area with a dark color, used mousetrap::Widget::set_opacity to make it invisible
     /// \signals
     /// \widget_signals{Separator}
-    class Separator : public WidgetImplementation<GtkSeparator>, public Orientable
+    class Separator : public Widget
     {
         public:
             /// @brief construct
@@ -20,10 +28,22 @@ namespace mousetrap
             /// @param orientation if horizontal, expands horizontally by default, if vertical, expands vertically by default
             Separator(float opacity = 1, Orientation = Orientation::HORIZONTAL);
 
+            /// @brief construct from internal
+            Separator(detail::SeparatorInternal*);
+
+            /// @brief destructor
+            ~Separator();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
+
             /// @copydoc mousetrap::Orientable::set_orientation
-            void set_orientation(Orientation) override;
+            void set_orientation(Orientation);
 
             /// @copydoc mousetrap::Orientable::get_orientation
-            Orientation get_orientation() const override;
+            Orientation get_orientation() const;
+
+        private:
+            detail::SeparatorInternal* _internal = nullptr;
     };
 }

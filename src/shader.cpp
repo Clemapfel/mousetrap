@@ -11,10 +11,8 @@
 #include <fstream>
 #include <sstream>
 
-namespace mousetrap
-{
-    namespace detail
-    {
+namespace mousetrap {
+    namespace detail {
         DECLARE_NEW_TYPE(ShaderInternal, shader_internal, SHADER_INTERNAL)
 
         static void shader_internal_finalize(GObject* object)
@@ -33,6 +31,7 @@ namespace mousetrap
         }
 
         DEFINE_NEW_TYPE_TRIVIAL_INIT(ShaderInternal, shader_internal, SHADER_INTERNAL)
+
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(ShaderInternal, shader_internal, SHADER_INTERNAL)
 
         static ShaderInternal* shader_internal_new()
@@ -47,7 +46,7 @@ namespace mousetrap
             return self;
         }
     }
-    
+
     Shader::Shader()
     {
         using namespace detail;
@@ -62,9 +61,19 @@ namespace mousetrap
         _internal = detail::shader_internal_new();
     }
 
+    Shader::Shader(detail::ShaderInternal* internal)
+    {
+        _internal = g_object_ref(internal);
+    }
+
     Shader::~Shader()
     {
         g_object_unref(_internal);
+    }
+
+    NativeObject Shader::get_internal() const
+    {
+        return G_OBJECT(_internal);
     }
 
     bool Shader::create_from_string(ShaderType type, const std::string& code)
@@ -77,9 +86,9 @@ namespace mousetrap
         _internal->program_id = link_program(_internal->fragment_shader_id, _internal->vertex_shader_id);
 
         if (
-            (type == ShaderType::FRAGMENT and _internal->fragment_shader_id == 0) or
-            (type == ShaderType::VERTEX and _internal->vertex_shader_id == 0) or
-            _internal->program_id == 0
+        (type == ShaderType::FRAGMENT and _internal->fragment_shader_id == 0) or
+        (type == ShaderType::VERTEX and _internal->vertex_shader_id == 0) or
+        _internal->program_id == 0
         )
             return false;
         else
@@ -133,7 +142,7 @@ namespace mousetrap
         {
             std::stringstream str;
             str << "In Shader::compile_shader: compilation failed:\n"
-                      << source << "\n\n";
+                << source << "\n\n";
 
             int info_length = 0;
             int max_length = info_length;
@@ -145,7 +154,7 @@ namespace mousetrap
 
             glGetShaderInfoLog(id, max_length, &info_length, log.data());
 
-            for (auto c: log)
+            for (auto c:log)
                 str << c;
 
             log::critical(str.str(), MOUSETRAP_DOMAIN);
@@ -181,7 +190,7 @@ namespace mousetrap
 
             glGetProgramInfoLog(_internal->program_id, max_length, &info_length, log.data());
 
-            for (auto c: log)
+            for (auto c:log)
                 str << c;
 
             log::critical(str.str(), MOUSETRAP_DOMAIN);
@@ -248,13 +257,8 @@ namespace mousetrap
         return 2;
     }
 
-    Shader::operator GObject*() const
+    Shader::operator NativeObject() const
     {
         return G_OBJECT(_internal);
-    }
-
-    Shader::Shader(detail::ShaderInternal* internal)
-    {
-        _internal = g_object_ref(internal);
     }
 }

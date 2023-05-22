@@ -10,11 +10,20 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class Revealer;
+    namespace detail
+    {
+        using RevealerInternal = GtkRevealer;
+        DEFINE_INTERNAL_MAPPING(Revealer);
+    }
+    #endif
+
     /// @brief widget that contains exactly one child and animates the process of hiding / showing it
     /// \signals
     /// \signal_revealed{Revealer}
     /// \widget_signals{Revealer}
-    class Revealer : public WidgetImplementation<GtkRevealer>,
+    class Revealer : public Widget,
         HAS_SIGNAL(Revealer, revealed)
     {
         public:
@@ -22,16 +31,21 @@ namespace mousetrap
             /// @param transition_type which animation style to use
             Revealer(RevealerTransitionType transition_type = RevealerTransitionType::CROSSFADE);
 
+            /// @brief construct from internal
+            Revealer(detail::RevealerInternal*);
+
+            /// @brief destructor
+            ~Revealer();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
+
             /// @brief set child
             /// @param widget
             void set_child(const Widget& widget);
 
             /// @brief remove child
             void remove_child();
-
-            /// @brief get child
-            /// @return child
-            Widget* get_child() const;
 
             /// @brief set whether the child is shown. If the state changes, the animation is played
             /// @param b false if the child should be hidden, true otherwise
@@ -58,6 +72,6 @@ namespace mousetrap
             Time get_transition_duration() const;
 
         private:
-            const Widget* _child = nullptr;
+            detail::RevealerInternal* _internal = nullptr;
     };
 }

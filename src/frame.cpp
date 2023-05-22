@@ -9,9 +9,26 @@
 namespace mousetrap
 {
     Frame::Frame()
-        : WidgetImplementation<GtkFrame>(GTK_FRAME(gtk_frame_new("")))
+        : Widget(gtk_frame_new(""))
     {
+        _internal = GTK_FRAME(Widget::operator NativeWidget());
         remove_label_widget();
+    }
+    
+    Frame::Frame(detail::FrameInternal* internal) 
+        : Widget(GTK_WIDGET(internal))
+    {
+        _internal = g_object_ref(internal);
+    }
+    
+    Frame::~Frame()
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject Frame::get_internal() const 
+    {
+        return G_OBJECT(_internal);
     }
 
     void Frame::set_child(const Widget& in)
@@ -19,18 +36,12 @@ namespace mousetrap
         auto ptr = &in;
         WARN_IF_SELF_INSERTION(Frame::set_child, this, ptr);
 
-        _child = ptr;
-        gtk_frame_set_child(get_native(), in.operator GtkWidget *());
-    }
-
-    Widget* Frame::get_child() const
-    {
-        return const_cast<Widget*>(_child);
+        gtk_frame_set_child(GTK_FRAME(operator NativeWidget()), in.operator GtkWidget *());
     }
 
     void Frame::remove_child()
     {
-        gtk_frame_set_child(get_native(), nullptr);
+        gtk_frame_set_child(GTK_FRAME(operator NativeWidget()), nullptr);
     }
 
     void Frame::set_label_widget(const Widget& widget)
@@ -38,27 +49,21 @@ namespace mousetrap
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Frame::set_label_widget, this, ptr);
 
-        _label_widget = ptr;
-        gtk_frame_set_label_widget(get_native(), widget.operator GtkWidget*());
-    }
-
-    Widget* Frame::get_label_widget() const
-    {
-        return const_cast<Widget*>(_label_widget);
+        gtk_frame_set_label_widget(GTK_FRAME(operator NativeWidget()), widget.operator GtkWidget*());
     }
 
     void Frame::remove_label_widget()
     {
-        gtk_frame_set_label_widget(get_native(), nullptr);
+        gtk_frame_set_label_widget(GTK_FRAME(operator NativeWidget()), nullptr);
     }
 
     void Frame::set_label_x_alignment(float x)
     {
-        gtk_frame_set_label_align(get_native(), x);
+        gtk_frame_set_label_align(GTK_FRAME(operator NativeWidget()), x);
     }
 
     float Frame::get_label_x_alignment() const
     {
-        return gtk_frame_get_label_align(get_native());
+        return gtk_frame_get_label_align(GTK_FRAME(operator NativeWidget()));
     }
 }

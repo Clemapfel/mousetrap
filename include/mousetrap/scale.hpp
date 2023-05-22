@@ -19,6 +19,7 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class Scale;
     namespace detail
     {
         struct _ScaleInternal
@@ -29,6 +30,7 @@ namespace mousetrap
             std::function<std::string(float)> formatting_function;
         };
         using ScaleInternal = _ScaleInternal;
+        DEFINE_INTERNAL_MAPPING(Scale);
     }
     #endif
 
@@ -36,7 +38,7 @@ namespace mousetrap
     /// \signals
     /// \signal_value_changed{Scale}
     /// \widget_signals{Scale}
-    class Scale : public WidgetImplementation<GtkScale>, public Orientable,
+    class Scale : public Widget,
         HAS_SIGNAL(Scale, value_changed)
     {
         public:
@@ -46,6 +48,15 @@ namespace mousetrap
             /// @param step minimum step increment
             /// @param orientation orientation of the slider bar
             Scale(float min, float max, float step, Orientation orientation = Orientation::HORIZONTAL);
+
+            /// @brief construct from internal
+            Scale(detail::ScaleInternal*);
+
+            /// @brief destructor
+            ~Scale();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief get adjustment
             /// @returns reference to adjustment, modifying it modifies the scale
@@ -130,10 +141,10 @@ namespace mousetrap
             void reset_format_value_function();
 
             /// @copydoc mousetrap::Orientable::set_orientation
-            void set_orientation(Orientation) override;
+            void set_orientation(Orientation);
 
             /// @copydoc mousetrap::Orientable::get_orientation
-            Orientation get_orientation() const override;
+            Orientation get_orientation() const;
 
         private:
             detail::ScaleInternal* _internal = nullptr;

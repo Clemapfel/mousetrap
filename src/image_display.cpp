@@ -15,6 +15,7 @@ namespace mousetrap
         struct _ImageDisplayInternal
         {
             GObject parent;
+            GtkImage* native;
             Vector2ui size;
         };
 
@@ -23,10 +24,11 @@ namespace mousetrap
         DEFINE_NEW_TYPE_TRIVIAL_FINALIZE(ImageDisplayInternal, image_display_internal, IMAGE_DISPLAY_INTERNAL)
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(ImageDisplayInternal, image_display_internal, IMAGE_DISPLAY_INTERNAL)
 
-        static ImageDisplayInternal* image_display_internal_new()
+        static ImageDisplayInternal* image_display_internal_new(GtkImage* image)
         {
             auto* self = (ImageDisplayInternal*) g_object_new(image_display_internal_get_type(), nullptr);
             image_display_internal_init(self);
+            self->native = image;
             self->size = {0, 0};
             return self;
         }
@@ -36,15 +38,26 @@ namespace mousetrap
     {
         if (_internal == nullptr)
         {
-            _internal = detail::image_display_internal_new();
+            _internal = detail::image_display_internal_new(GTK_IMAGE(operator NativeWidget()));
             g_object_ref(_internal);
-            detail::attach_ref_to(G_OBJECT(get_native()), _internal);
+            detail::attach_ref_to(G_OBJECT(GTK_IMAGE(operator NativeWidget())), _internal);
         }
     }
 
+    ImageDisplay::ImageDisplay(detail::ImageDisplayInternal* internal) 
+        : Widget(GTK_WIDGET(internal->native))
+    {
+        _internal = g_object_ref(_internal);
+    }
+    
     ImageDisplay::~ImageDisplay()
     {
         g_object_unref(_internal);
+    }
+
+    NativeObject ImageDisplay::get_internal() const 
+    {
+        return G_OBJECT(_internal);
     }
     
     void ImageDisplay::update_size(size_t width, size_t height)
@@ -54,14 +67,14 @@ namespace mousetrap
     }
 
     ImageDisplay::ImageDisplay()
-        : WidgetImplementation<GtkImage>(GTK_IMAGE(gtk_image_new()))
+        : Widget(gtk_image_new())
     {
         initialize();
         update_size(0, 0);
     }
 
     ImageDisplay::ImageDisplay(GtkImage* image)
-        : WidgetImplementation<GtkImage>(image)
+        : Widget(GTK_WIDGET(image))
     {
         initialize();
         update_size(0, 0);
@@ -95,14 +108,14 @@ namespace mousetrap
 
     void ImageDisplay::create_from_image(const Image& image)
     {
-        gtk_image_clear(get_native());
-        gtk_image_set_from_pixbuf(get_native(), image.operator GdkPixbuf*());
+        gtk_image_clear(GTK_IMAGE(operator NativeWidget()));
+        gtk_image_set_from_pixbuf(GTK_IMAGE(operator NativeWidget()), image.operator GdkPixbuf*());
         _internal->size = image.get_size();
     }
 
     void ImageDisplay::create_from_file(const std::string& path)
     {
-        gtk_image_clear(get_native());
+        gtk_image_clear(GTK_IMAGE(operator NativeWidget()));
 
         GError* error = nullptr;
         auto* pixbuf = gdk_pixbuf_new_from_file(path.c_str(), &error);
@@ -113,7 +126,7 @@ namespace mousetrap
             g_error_free(error);
         }
 
-        gtk_image_set_from_pixbuf(get_native(), pixbuf);
+        gtk_image_set_from_pixbuf(GTK_IMAGE(operator NativeWidget()), pixbuf);
 
         _internal->size.x = gdk_pixbuf_get_width(pixbuf);
         _internal->size.y = gdk_pixbuf_get_height(pixbuf);
@@ -126,7 +139,7 @@ namespace mousetrap
         auto size = icon.get_size() * Vector2ui(icon.get_scale());
         update_size(size.x, size.y);
 
-        gtk_image_set_from_paintable(get_native(), GDK_PAINTABLE(icon.operator GtkIconPaintable*()));
+        gtk_image_set_from_paintable(GTK_IMAGE(operator NativeWidget()), GDK_PAINTABLE(icon.operator GtkIconPaintable*()));
     }
 
     void ImageDisplay::create_as_file_preview(const FileDescriptor& file)
@@ -137,14 +150,14 @@ namespace mousetrap
 
         if (pixbuf_maybe != nullptr)
         {
-            gtk_image_set_from_pixbuf(get_native(), pixbuf_maybe);
+            gtk_image_set_from_pixbuf(GTK_IMAGE(operator NativeWidget()), pixbuf_maybe);
             g_object_unref(pixbuf_maybe);
             update_size(0, 0);
         }
         else
         {
             auto* icon = g_content_type_get_icon(file.query_info(G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE).c_str());
-            gtk_image_set_from_gicon(get_native(), G_ICON(icon));
+            gtk_image_set_from_gicon(GTK_IMAGE(operator NativeWidget()), G_ICON(icon));
             update_size(gdk_pixbuf_get_width(pixbuf_maybe), gdk_pixbuf_get_height(pixbuf_maybe));
             g_object_unref(icon);
         }
@@ -152,7 +165,7 @@ namespace mousetrap
 
     void ImageDisplay::clear()
     {
-        gtk_image_clear(get_native());
+        gtk_image_clear(GTK_IMAGE(operator NativeWidget()));
     }
 
     void ImageDisplay::set_scale(int scale)
@@ -160,6 +173,6 @@ namespace mousetrap
         if (scale < -1)
             scale = -1;
 
-        gtk_image_set_pixel_size(get_native(), scale);
+        gtk_image_set_pixel_size(GTK_IMAGE(operator NativeWidget()), scale);
     }
 }

@@ -9,14 +9,32 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class Fixed;
+    namespace detail
+    {
+        using FixedInternal = GtkFixed;
+        DEFINE_INTERNAL_MAPPING(Fixed);
+    }
+    #endif
+
     /// @brief container that positions a widget at a specific pixel position
     /// \signals
     /// \widget_signals{Fixed}
-    class Fixed : public WidgetImplementation<GtkFixed>
+    class Fixed : public Widget
     {
         public:
             /// @brief construct
             Fixed();
+
+            /// @brief construct from internal
+            Fixed(detail::FixedInternal*);
+
+            /// @brief destructor
+            ~Fixed();
+
+            /// @brief get internal
+            NativeObject get_internal() const override;
 
             /// @brief add child at specified position
             /// @param widget
@@ -36,5 +54,8 @@ namespace mousetrap
             /// @param widget
             /// @return position top left corner, in pixels
             Vector2f get_child_position(const Widget& widget);
+
+        private:
+            detail::FixedInternal* _internal = nullptr;
     };
 }

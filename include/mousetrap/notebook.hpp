@@ -15,6 +15,7 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class Notebook;
     namespace detail
     {
         struct _NotebookInternal
@@ -25,6 +26,7 @@ namespace mousetrap
             bool tabs_reorderable = false;
         };
         using NotebookInternal = _NotebookInternal;
+        DEFINE_INTERNAL_MAPPING(Notebook);
     }
     #endif
 
@@ -35,7 +37,7 @@ namespace mousetrap
     /// \signal_page_removed{Notebook}
     /// \signal_page_selection_changed{Notebook}
     /// \widget_signals{Notebook}
-    class Notebook : public WidgetImplementation<GtkNotebook>,
+    class Notebook : public Widget,
         HAS_SIGNAL(Notebook, page_added),
         HAS_SIGNAL(Notebook, page_reordered),
         HAS_SIGNAL(Notebook, page_removed),
@@ -44,6 +46,15 @@ namespace mousetrap
         public:
             /// @brief construct empty
             Notebook();
+
+            /// @brief construct from internal
+            Notebook(detail::NotebookInternal*);
+
+            /// @brief destructor
+            ~Notebook();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief add a page to start of the notebook
             /// @param child_widget widget to display as the pages content, may be nullptr

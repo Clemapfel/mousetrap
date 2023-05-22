@@ -23,6 +23,7 @@ namespace mousetrap
     };
 
     #ifndef DOXYGEN
+    class Shader;
     namespace detail
     {
         struct _ShaderInternal
@@ -38,6 +39,7 @@ namespace mousetrap
             static inline size_t noop_vertex_shader_id;
         };
         using ShaderInternal = _ShaderInternal;
+        DEFINE_INTERNAL_MAPPING(Shader);
     }
     #endif
 
@@ -54,8 +56,11 @@ namespace mousetrap
             /// @brief construct from internal \for_internal_use_only
             Shader(detail::ShaderInternal*);
 
+            /// @brief expose internal
+            NativeObject get_internal() const;
+
             /// @brief expose as GObject \for_internal_use_only
-            operator GObject*() const override;
+            operator NativeObject() const override;
 
             /// @brief get the native OpenGL id of the shader program
             /// @return id

@@ -60,9 +60,19 @@ namespace mousetrap
         *_internal->size = {width, height};
     }
 
+    Texture::Texture(detail::TextureInternal* internal)
+    {
+        _internal = g_object_ref(internal);
+    }
+
     Texture::~Texture()
     {
         g_object_unref(_internal);
+    }
+
+    NativeObject Texture::get_internal() const
+    {
+        return G_OBJECT(_internal);
     }
 
     void Texture::create(size_t width, size_t height)

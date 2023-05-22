@@ -96,15 +96,15 @@ namespace mousetrap
     }
 
     RenderArea::RenderArea()
-        : WidgetImplementation<GtkGLArea>(GTK_GL_AREA(gtk_gl_area_new())),
+        : Widget(gtk_gl_area_new()),
           CTOR_SIGNAL(RenderArea, render),
           CTOR_SIGNAL(RenderArea, resize)
     {
-        _internal = detail::render_area_internal_new(get_native());
-        detail::attach_ref_to(G_OBJECT(get_native()), _internal);
+        _internal = detail::render_area_internal_new(GTK_GL_AREA(operator NativeWidget()));
+        detail::attach_ref_to(G_OBJECT(GTK_GL_AREA(operator NativeWidget())), _internal);
 
-        gtk_gl_area_set_auto_render(get_native(), TRUE);
-        gtk_widget_set_size_request(GTK_WIDGET(get_native()), 1, 1);
+        gtk_gl_area_set_auto_render(GTK_GL_AREA(operator NativeWidget()), TRUE);
+        gtk_widget_set_size_request(GTK_WIDGET(GTK_GL_AREA(operator NativeWidget())), 1, 1);
 
         connect_signal("realize", on_realize, _internal);
         connect_signal("render", on_render, _internal);
@@ -116,15 +116,15 @@ namespace mousetrap
     {}
 
     RenderArea::RenderArea(detail::RenderAreaInternal* internal)
-        : WidgetImplementation<GtkGLArea>(GTK_GL_AREA(internal->native)),
+        : Widget(GTK_WIDGET(internal->native)),
           CTOR_SIGNAL(RenderArea, render),
           CTOR_SIGNAL(RenderArea, resize)
     {
         _internal = internal;
         g_object_ref(_internal);
 
-        gtk_gl_area_set_auto_render(get_native(), TRUE);
-        gtk_widget_set_size_request(GTK_WIDGET(get_native()), 1, 1);
+        gtk_gl_area_set_auto_render(GTK_GL_AREA(operator NativeWidget()), TRUE);
+        gtk_widget_set_size_request(GTK_WIDGET(GTK_GL_AREA(operator NativeWidget())), 1, 1);
 
         connect_signal("realize", on_realize, _internal);
         connect_signal("render", on_render, _internal);
@@ -196,13 +196,13 @@ namespace mousetrap
 
     void RenderArea::queue_render()
     {
-        gtk_gl_area_queue_render(get_native());
-        gtk_widget_queue_draw(GTK_WIDGET(get_native()));
+        gtk_gl_area_queue_render(GTK_GL_AREA(operator NativeWidget()));
+        gtk_widget_queue_draw(GTK_WIDGET(GTK_GL_AREA(operator NativeWidget())));
     }
 
     void RenderArea::make_current()
     {
-        gtk_gl_area_make_current(get_native());
+        gtk_gl_area_make_current(GTK_GL_AREA(operator NativeWidget()));
     }
 
     Vector2f RenderArea::from_gl_coordinates(Vector2f in)

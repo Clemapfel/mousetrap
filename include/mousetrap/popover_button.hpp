@@ -17,13 +17,37 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class PopoverButton;
+    namespace detail
+    {
+        struct _PopoverButtonInternal
+        {
+            GObject parent;
+            GtkMenuButton* native;
+            detail::PopoverMenuInternal* menu;
+        };
+        using PopoverButtonInternal = GtkMenuButton;
+        DEFINE_INTERNAL_MAPPING(PopoverButton);
+    }
+    #endif
+
     /// @brief popover menu button, if pressed, shows it's attached popover or popover menu automatically
-    class PopoverButton : public WidgetImplementation<GtkMenuButton>,
+    class PopoverButton : public Widget,
         HAS_SIGNAL(PopoverButton, activate)
     {
         public:
             /// @brief construct with no child or popover attached
             PopoverButton();
+
+            /// @brief construct from internal
+            PopoverButton(detail::PopoverButtonInternal*);
+
+            /// @brief destructor
+            ~PopoverButton();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief set the label widget of the button
             /// @param widget can be nullptr
@@ -86,9 +110,6 @@ namespace mousetrap
             bool get_is_circular() const;
 
         private:
-            const Widget* _child = nullptr;
-
-            Popover* _popover = nullptr;
-            PopoverMenu* _popover_menu = nullptr;
+            detail::PopoverButtonInternal* _internal = nullptr;
     };
 }

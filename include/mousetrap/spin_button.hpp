@@ -29,6 +29,7 @@ namespace mousetrap
             std::function<float(const SpinButton*, const std::string&)> text_to_value_function;
         };
         using SpinButtonInternal = _SpinButtonInternal;
+        DEFINE_INTERNAL_MAPPING(SpinButton);
     }
     #endif
 
@@ -37,7 +38,7 @@ namespace mousetrap
     /// \signal_value_changed{SpinButton}
     /// \signal_wrapped{SpinButton}
     /// \widget_signals{SpinButton}
-    class SpinButton : public WidgetImplementation<GtkSpinButton>, public Orientable,
+    class SpinButton : public Widget, public Orientable,
         HAS_SIGNAL(SpinButton, value_changed),
         HAS_SIGNAL(SpinButton, wrapped)
     {
@@ -52,6 +53,12 @@ namespace mousetrap
             /// @brief construct as thin wrapper \for_internal_use_only
             /// @param internal
             SpinButton(detail::SpinButtonInternal* internal);
+
+            /// @brief destructor
+            ~SpinButton();
+
+            /// @breif expose internal
+            NativeObject get_internal() const override;
 
             /// @brief get orientation
             /// @return mousetrap::Orientation

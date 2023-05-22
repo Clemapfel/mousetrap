@@ -8,10 +8,19 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class HeaderBar;
+    namespace detail
+    {
+        using HeaderBarInternal = GtkHeaderBar;
+        DEFINE_INTERNAL_MAPPING(HeaderBar);
+    }
+    #endif
+
     /// @brief widget that is usually used in the decoration of a window
     /// \signals
     /// \widget_signals{HeaderBar}
-    class HeaderBar : public WidgetImplementation<GtkHeaderBar>
+    class HeaderBar : public Widget
     {
         public:
             /// @brief construct
@@ -20,6 +29,15 @@ namespace mousetrap
             /// @brief construct
             /// @param layout_string see Headerbar::set_layout
             HeaderBar(const std::string& layout_string);
+
+            /// @brief construct from internal
+            HeaderBar(detail::HeaderBarInternal*);
+
+            /// @brief destructor
+            ~HeaderBar();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief set layout from config string, see https://docs.gtk.org/gtk4/method.HeaderBar.set_decoration_layout.html
             /// @param layout_string
@@ -32,10 +50,6 @@ namespace mousetrap
             /// @brief set widget that will appear as the header bars title, usually in the center
             /// @param widget
             void set_title_widget(const Widget& widget);
-
-            /// @brief get widget that will appear as the header bars title, usually in the center
-            /// @return widget, may be nullptr
-            Widget* get_title_widget() const;
 
             /// @brief remove the titlebar widget
             void remove_title_widget();
@@ -61,6 +75,6 @@ namespace mousetrap
             void remove(const Widget& widget);
 
         private:
-            const Widget* _title_widget = nullptr;
+            detail::HeaderBarInternal* _internal = nullptr;
     };
 }

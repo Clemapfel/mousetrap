@@ -13,16 +13,35 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class Expander;
+    namespace detail
+    {
+        using ExpanderInternal = GtkExpander;
+        DEFINE_INTERNAL_MAPPING(Expander);
+    }
+    #endif
+
     /// @brief collapsible list widget, hides the child until clicked, usually display and arrow next to the label
     /// \signals
     /// \signal_activate{Expander}
     /// \widget_signals{Expander}
-    class Expander : public WidgetImplementation<GtkExpander>,
+    class Expander : public Widget,
         HAS_SIGNAL(Expander, activate)
     {
         public:
             /// @brief expand
             Expander();
+
+            /// @brief construct from internal
+            /// @param internal
+            Expander(detail::ExpanderInternal* internal);
+
+            /// @brief destructor
+            ~Expander();
+
+            /// @brief expose internal object
+            NativeObject get_internal() const override;
 
             /// @brief set child widget, this is the widget that will be hidden when collapsed
             /// @param widget
@@ -31,20 +50,12 @@ namespace mousetrap
             /// @brief remove child widget
             void remove_child();
 
-            /// @brief get child widget
-            /// @return widget
-            Widget* get_child() const;
-
             /// @brief set label widget, this label will always be displayed
             /// @param widget
             void set_label_widget(const Widget&);
 
             /// @brief remove label widget
             void remove_label_widget();
-
-            /// @brief get label widget
-            /// @return widget
-            Widget* get_label_widget() const;
 
             /// @brief get whether expander is expanded
             /// @return false if child widget is currently hidden, true otherwise
@@ -55,7 +66,6 @@ namespace mousetrap
             void set_expanded(bool);
 
         private:
-            const Widget* _child = nullptr;
-            const Widget* _label_widget = nullptr;
+            detail::ExpanderInternal* _internal = nullptr;
     };
 }

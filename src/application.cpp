@@ -76,6 +76,11 @@ namespace mousetrap
         return G_OBJECT(_internal->native);
     }
 
+    Application::operator GtkApplication*() const
+    {
+        return _internal->native;
+    }
+
     NativeObject Application::get_internal() const
     {
         return G_OBJECT(_internal);

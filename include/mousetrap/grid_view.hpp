@@ -16,10 +16,12 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class GridView;
     namespace detail
     {
         struct _GridViewInternal;
         using GridViewInternal = _GridViewInternal;
+        DEFINE_INTERNAL_MAPPING(GridView);
     }
     #endif
 
@@ -27,7 +29,7 @@ namespace mousetrap
     /// \signals
     /// \signal_activate{GridView}
     /// \widget_signals{GridView}
-    class GridView : public WidgetImplementation<GtkGridView>, public Orientable, public Selectable,
+    class GridView : public Widget,
         HAS_SIGNAL(GridView, activate)
     {
         public:
@@ -35,6 +37,15 @@ namespace mousetrap
             /// @param orientation if horizontal, widgets will be arranged left to right, if vertical, widgets will be arranged top to bottom
             /// @param selection_mode
             GridView(Orientation orientation = Orientation::VERTICAL, SelectionMode selection_mode = SelectionMode::NONE);
+
+            /// @brief construct from internal
+            GridView(detail::GridViewInternal*);
+
+            /// @brief destructor
+            ~GridView();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief add widget to the left if orientation is horizontal, to the top if vertical
             /// @param widget

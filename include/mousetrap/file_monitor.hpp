@@ -45,6 +45,7 @@ namespace mousetrap
     };
 
     #ifndef DOXYGEN
+    class FileMonitor;
     namespace detail
     {
         struct _FileMonitorInternal
@@ -54,6 +55,7 @@ namespace mousetrap
             std::function<void(FileMonitorEvent event, FileDescriptor self, FileDescriptor other)>* f;
         };
         using FileMonitorInternal = _FileMonitorInternal;
+        DEFINE_INTERNAL_MAPPING(FileMonitor);
     }
     #endif
 
@@ -66,8 +68,17 @@ namespace mousetrap
             /// @brief default ctor deleted, use FileDescriptor::create_monitor
             FileMonitor() = delete;
 
+            /// @brief construct form internal
+            FileMonitor(detail::FileMonitorInternal*);
+
+            /// @brief destructor
+            ~FileMonitor();
+
             /// @brief expose as GObject \for_internal_use_only
-            operator GObject*() const override;
+            operator NativeObject() const override;
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief cancel the file monitor, cannot be undone
             void cancel();

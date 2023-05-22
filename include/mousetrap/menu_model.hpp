@@ -29,6 +29,7 @@ namespace mousetrap
             bool has_widget_in_toplevel = false;
         };
         using MenuModelInternal = _MenuModelInternal;
+        DEFINE_INTERNAL_MAPPING(MenuModel);
     }
     #endif
 
@@ -45,8 +46,14 @@ namespace mousetrap
             /// @brief construct as emtpy
             MenuModel();
 
+            /// @brief construct from internal
+            MenuModel(detail::MenuModelInternal*);
+
             /// @brief destruct
             ~MenuModel();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief add an action to the model
             /// @param label label to be used
@@ -112,11 +119,11 @@ namespace mousetrap
             /// @param action acton to trigger
             void add_icon(const Icon&, const Action&);
 
-            /// @brief expose as GMenuModel \for_internal_use_only
-            operator GMenuModel*() const;
-
             /// @brief expose a GObject \for_internal_use_only
-            operator GObject*() const override;
+            operator NativeObject() const override;
+
+            /// @brief expose as GMenuModel
+            operator GMenuModel*() const;
 
         protected:
             /// @brief get list of registered widgets \for_internal_use_only

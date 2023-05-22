@@ -8,24 +8,28 @@
 namespace mousetrap
 {
     Scrollbar::Scrollbar(Orientation orientation)
-        : WidgetImplementation<GtkScrollbar>((GTK_SCROLLBAR(gtk_scrollbar_new((GtkOrientation) orientation, nullptr))))
+        : Widget(gtk_scrollbar_new((GtkOrientation) orientation, nullptr))
+    {}
+
+    Scrollbar::Scrollbar(detail::ScrollbarInternal* internal)
+        : Widget(GTK_WIDGET(internal))
     {
-        _adjustment = new Adjustment(gtk_scrollbar_get_adjustment(get_native()));
+        _internal = g_object_ref(internal);
     }
 
     Scrollbar::~Scrollbar()
     {
-        delete _adjustment;
+        g_object_unref(_internal);
     }
 
-    Adjustment& Scrollbar::get_adjustment()
+    NativeObject Scrollbar::get_internal() const
     {
-        return *_adjustment;
+        return G_OBJECT(_internal);
     }
 
-    const Adjustment& Scrollbar::get_adjustment() const
+    Adjustment Scrollbar::get_adjustment() const
     {
-        return *_adjustment;
+        return Adjustment(gtk_scrollbar_get_adjustment(_internal));
     }
 
     void Scrollbar::set_orientation(Orientation orientation)

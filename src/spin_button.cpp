@@ -34,42 +34,51 @@ namespace mousetrap
     }
 
     SpinButton::SpinButton(float min, float max, float step, Orientation orientation)
-        : WidgetImplementation<GtkSpinButton>(GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(min, max, step))),
+        : Widget(gtk_spin_button_new_with_range(min, max, step)),
           CTOR_SIGNAL(SpinButton, value_changed),
           CTOR_SIGNAL(SpinButton, wrapped)
     {
-        _internal = detail::spin_button_internal_new(get_native());
-        detail::attach_ref_to(G_OBJECT(get_native()), _internal);
+        _internal = detail::spin_button_internal_new(GTK_SPIN_BUTTON(Widget::operator NativeWidget()));
+        detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
         set_orientation(orientation);
     }
 
     SpinButton::SpinButton(detail::SpinButtonInternal* internal)
-        : WidgetImplementation<GtkSpinButton>(internal->native),
+        : Widget(GTK_WIDGET(internal->native)),
           CTOR_SIGNAL(SpinButton, value_changed),
           CTOR_SIGNAL(SpinButton, wrapped)
     {
-        _internal = internal;
-        // detail::attach_ref_to(G_OBJECT(get_native()), _internal);
+        _internal = g_object_ref(internal);
+    }
+
+    SpinButton::~SpinButton()
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject SpinButton::get_internal() const
+    {
+        return G_OBJECT(_internal);
     }
 
     void SpinButton::set_n_digits(size_t n)
     {
-        gtk_spin_button_set_digits(get_native(), n);
+        gtk_spin_button_set_digits(_internal->native, n);
     }
 
     size_t SpinButton::get_n_digits() const
     {
-        return gtk_spin_button_get_digits(get_native());
+        return gtk_spin_button_get_digits(_internal->native);
     }
 
     void SpinButton::set_should_wrap(bool b)
     {
-        gtk_spin_button_set_wrap(get_native(), b);
+        gtk_spin_button_set_wrap(_internal->native, b);
     }
 
     bool SpinButton::get_should_wrap() const
     {
-        return gtk_spin_button_get_wrap(get_native());
+        return gtk_spin_button_get_wrap(_internal->native);
     }
 
     Adjustment* SpinButton::get_adjustment()
@@ -87,72 +96,72 @@ namespace mousetrap
         if (v < 0)
             v = 0;
 
-        gtk_spin_button_set_climb_rate(get_native(), v);
+        gtk_spin_button_set_climb_rate(_internal->native, v);
     }
 
     float SpinButton::get_acceleration_rate() const
     {
-        return gtk_spin_button_get_climb_rate(get_native());
+        return gtk_spin_button_get_climb_rate(_internal->native);
     }
 
     void SpinButton::set_should_snap_to_ticks(bool b)
     {
-        gtk_spin_button_set_snap_to_ticks(get_native(), b);
+        gtk_spin_button_set_snap_to_ticks(_internal->native, b);
     }
 
     bool SpinButton::get_should_snap_to_ticks() const
     {
-        return gtk_spin_button_get_snap_to_ticks(get_native());
+        return gtk_spin_button_get_snap_to_ticks(_internal->native);
     }
 
     void SpinButton::set_allow_only_numeric(bool b)
     {
-        gtk_spin_button_set_numeric(get_native(), b);
+        gtk_spin_button_set_numeric(_internal->native, b);
     }
 
     bool SpinButton::get_allow_only_numeric() const
     {
-        return gtk_spin_button_get_numeric(get_native());
+        return gtk_spin_button_get_numeric(_internal->native);
     }
 
     float SpinButton::get_lower() const
     {
-        return gtk_adjustment_get_lower(gtk_spin_button_get_adjustment(get_native()));
+        return gtk_adjustment_get_lower(gtk_spin_button_get_adjustment(_internal->native));
     }
 
     float SpinButton::get_increment() const
     {
-        return gtk_adjustment_get_minimum_increment(gtk_spin_button_get_adjustment(get_native()));
+        return gtk_adjustment_get_minimum_increment(gtk_spin_button_get_adjustment(_internal->native));
     }
 
     float SpinButton::get_upper() const
     {
-        return gtk_adjustment_get_upper(gtk_spin_button_get_adjustment(get_native()));
+        return gtk_adjustment_get_upper(gtk_spin_button_get_adjustment(_internal->native));
     }
 
     float SpinButton::get_value() const
     {
-        return gtk_adjustment_get_value(gtk_spin_button_get_adjustment(get_native()));
+        return gtk_adjustment_get_value(gtk_spin_button_get_adjustment(_internal->native));
     }
 
     void SpinButton::set_value(float value)
     {
-        gtk_adjustment_set_value(gtk_spin_button_get_adjustment(get_native()), value);
+        gtk_adjustment_set_value(gtk_spin_button_get_adjustment(_internal->native), value);
     }
 
     void SpinButton::set_lower(float value)
     {
-        gtk_adjustment_set_lower(gtk_spin_button_get_adjustment(get_native()), value);
+        gtk_adjustment_set_lower(gtk_spin_button_get_adjustment(_internal->native), value);
     }
 
     void SpinButton::set_upper(float value)
     {
-        gtk_adjustment_set_upper(gtk_spin_button_get_adjustment(get_native()), value);
+        gtk_adjustment_set_upper(gtk_spin_button_get_adjustment(_internal->native), value);
     }
 
     void SpinButton::set_increment(float value)
     {
-        gtk_adjustment_set_step_increment(gtk_spin_button_get_adjustment(get_native()), value);
+        gtk_adjustment_set_step_increment(gtk_spin_button_get_adjustment(_internal->native), value);
     }
 
     void SpinButton::reset_text_to_value_function()
@@ -204,11 +213,11 @@ namespace mousetrap
 
     void SpinButton::set_orientation(Orientation orientation)
     {
-        gtk_orientable_set_orientation(GTK_ORIENTABLE(get_native()), (GtkOrientation) orientation);
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(_internal->native), (GtkOrientation) orientation);
     }
 
     Orientation SpinButton::get_orientation() const
     {
-        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(get_native()));
+        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(_internal->native));
     }
 }

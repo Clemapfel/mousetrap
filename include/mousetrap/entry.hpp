@@ -14,18 +14,37 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class Entry;
+    namespace detail
+    {
+        using EntryInternal = GtkEntry;
+        DEFINE_INTERNAL_MAPPING(Entry);
+    }
+    #endif
+
     /// @brief a single-line text entry
     /// \signals
     /// \signal_activate{Entry}
     /// \signal_text_changed{Entry}
     /// \widget_signals{Entry}
-    class Entry : public WidgetImplementation<GtkEntry>,
+    class Entry : public Widget,
         HAS_SIGNAL(Entry, activate),
         HAS_SIGNAL(Entry, text_changed)
     {
         public:
             /// @brief construct
             Entry();
+
+            /// @brief construct from internal
+            /// @param internal
+            Entry(detail::EntryInternal*);
+
+            /// @brief destructor
+            ~Entry();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief get currently displayed test
             /// @returns string
@@ -71,5 +90,8 @@ namespace mousetrap
 
             /// @brief remove icon at the end of entry
             void remove_secondary_icon();
+
+        private:
+            detail::EntryInternal* _internal = nullptr;
     };
 }

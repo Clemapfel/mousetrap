@@ -14,13 +14,22 @@
 
 namespace mousetrap
 {
+    #infdef DOXYGEN
+    class ToggleButton;
+    namespace detail
+    {
+        using ToggleButtonInternal = GtkToggleButton;
+        DEFINE_INTERNAL_MAPPING(ToggleButton);
+    }
+    #endif
+
     /// @brief toggle button, allows the user to manipulate a state
     /// \signals
     /// \signal_toggled{ToggleButton}
     /// \signal_activate{ToggleButton}
     /// \signal_clicked{ToggleButton}
     /// \widget_signals{ToggleButton}
-    class ToggleButton : public WidgetImplementation<GtkToggleButton>,
+    class ToggleButton : public Widget,
         HAS_SIGNAL(ToggleButton, toggled),
         HAS_SIGNAL(ToggleButton, activate),
         HAS_SIGNAL(ToggleButton, clicked)
@@ -28,6 +37,15 @@ namespace mousetrap
         public:
             /// @brief construct
             ToggleButton();
+
+            /// @brief construct from internal
+            ToggleButton(detail::ToggleButtonInternal*);
+
+            /// @brief destructor
+            ~ToggleButton();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief get whether the button is pressed in
             /// @return true if active, false otherwise
@@ -43,10 +61,6 @@ namespace mousetrap
 
             /// @brief remove label widget
             void remove_child();
-
-            /// @brief get widget used as the label for the button
-            /// @return child
-            Widget* get_child() const;
 
             /// @brief set whether the button should have rounded corners and a black outline
             /// @param b true if outline visible, false otherwise
@@ -65,7 +79,7 @@ namespace mousetrap
             bool get_is_circular() const;
 
         private:
-            const Widget* _child = nullptr;
+            detail::ToggleButtonInternal* _internal = nullptr;
     };
 }
 

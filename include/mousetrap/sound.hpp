@@ -15,6 +15,7 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class Sound;
     namespace detail
     {
         struct _SoundInternal
@@ -23,6 +24,7 @@ namespace mousetrap
             sf::Sound* native;
         };
         using SoundInternal = _SoundInternal;
+        DEFINE_INTERNAL_MAPPING(Sound);
     }
     #endif
 
@@ -52,8 +54,14 @@ namespace mousetrap
             /// @brief destruct
             ~Sound();
 
+            /// @brief construct from internal
+            Sound(detail::SoundInternal*);
+
             /// @brief expose internal
-            operator GObject*() const override;
+            NativeObject get_internal() const;
+
+            /// @brief expose internal
+            operator NativeObject() const override;
 
             /// @brief construct from buffer
             /// @param buffer

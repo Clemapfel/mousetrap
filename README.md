@@ -4,15 +4,14 @@ GTK4 is extremely powerful, well-optimized, and utterly inscrutable. Mousetrap a
 in an easy-to-use, easy-to-understand new coat. Mousetrap empowers user to create applications and widgets within a few minutes, as opposed requiring weeks of studying and days of implementation.
 
 ## Features
-+ For Linux, MacOS & Windows
++ Builds Apps for Linux, MacOS & Windows
 + C++-Side Garbage-Collection for Widgets
 + Fully abstracted, SFML-like native Rendering
 + Powerful Image Processing Capabilities
-+ Events TODO
 
 ## Advantages over GTK
 + Allow connecting C++ Lambdas to Signals
-+ Every Widget, no matter how complex, is created with a One-Liner
++ Every Widget, no matter how complex, is initialized with a signle line
 + Abstracted OpenGL interface
 + Audio Playback
 + Step-by-Step Manual and Introduction, written for Beginners

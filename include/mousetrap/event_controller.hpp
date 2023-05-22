@@ -44,7 +44,7 @@ namespace mousetrap
             operator NativeObject() const override;
 
             /// @brief expose internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief set propagation phase
             /// @param phase

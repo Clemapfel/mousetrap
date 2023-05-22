@@ -54,7 +54,7 @@ namespace mousetrap
             operator NativeObject() const override;
 
             /// @copydoc SignalEmitter::get_internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief get lower bound
             /// @return float

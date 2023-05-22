@@ -17,18 +17,25 @@ namespace mousetrap
     {
         struct _ImageDisplayInternal;
         using ImageDisplayInternal = _ImageDisplayInternal;
+        DEFINE_INTERNAL_MAPPING(ImageDisplay);
     }
     #endif
 
     /// @brief widget that display an iamge
-    class ImageDisplay : public WidgetImplementation<GtkImage>
+    class ImageDisplay : public Widget
     {
         public:
             /// @brief default ctor, initialize as 0x0 image
             ImageDisplay();
 
+            /// @brief create from internal
+            ImageDisplay(detail::ImageDisplayInternal*);
+
             /// @brief destructor
             ~ImageDisplay();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief construct from GtkImage \for_internal_use_only
             /// @param image GtkImage instance
@@ -75,6 +82,7 @@ namespace mousetrap
 
         private:
             detail::ImageDisplayInternal* _internal = nullptr;
+
             void update_size(size_t, size_t);
             void initialize();
     };

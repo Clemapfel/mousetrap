@@ -38,7 +38,7 @@ namespace mousetrap
             ~AspectFrame();
 
             /// @copydoc SignalEmitter::get_internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief set ratio, width / height
             /// @param ratio new ratio as fraction

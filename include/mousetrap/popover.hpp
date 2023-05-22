@@ -10,16 +10,34 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class PopoverInternal;
+    namespace detail
+    {
+        using PopoverInternal = GtkPopover;
+        DEFINE_INTERNAL_MAPPING(Popover);
+    }
+    #endif
+
     /// @brief widget container that adds a popover to any other widget. Can be hidden fully and controlled manually
     /// \signals
     /// \signal_closed{Popover}
     /// \widget_signals{Popover}
-    class Popover : public WidgetImplementation<GtkPopover>,
+    class Popover : public Widget,
         HAS_SIGNAL(Popover, closed)
     {
         public:
             /// @brief construct with no child
             Popover();
+
+            /// @brief construct from internal
+            Popover(detail::PopoverInternal*);
+
+            /// @brief destructor
+            ~Popover();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief reveal the popover, does nothing if already revealed
             void popup();
@@ -36,10 +54,6 @@ namespace mousetrap
 
             /// @brief remove child
             void remove_child();
-
-            /// @brief get child
-            /// @return child
-            Widget* get_child() const;
 
             /// @brief attach popover to another widget, that widget will become the popovers anchor
             /// @param widget
@@ -70,6 +84,6 @@ namespace mousetrap
             bool get_has_base_arrow() const;
 
         private:
-            const Widget* _child = nullptr;
+            detail::PopoverInternal* _internal = nullptr;
     };
 }

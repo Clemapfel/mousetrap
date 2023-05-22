@@ -19,11 +19,13 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class ListView;
     namespace detail
     {
         struct _ListViewItem;
         struct _ListViewInternal;
         using ListViewInternal = _ListViewInternal;
+        DEFINE_INTERNAL_MAPPING(ListView);
     }
     #endif
 
@@ -31,7 +33,7 @@ namespace mousetrap
     /// \signals
     /// \signal_activate{ListView}
     /// \widget_signals{ListView}
-    class ListView : public WidgetImplementation<GtkListView>, public Orientable, public Selectable,
+    class ListView : public Widget,
         HAS_SIGNAL(ListView, activate)
     {
         public:
@@ -47,8 +49,14 @@ namespace mousetrap
             /// @param selection_mode
             ListView(Orientation orientation = Orientation::HORIZONTAL, SelectionMode selection_mode = SelectionMode::NONE);
 
+            /// @brief construct from internal
+            ListView(detail::ListViewInternal*);
+
             /// @brief dtor
             ~ListView();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief add widget to the back of the list
             /// @param widget

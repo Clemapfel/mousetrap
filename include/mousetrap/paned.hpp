@@ -10,15 +10,33 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class Paned;
+    namespace detail
+    {
+        using PanedInternal = GtkPaned;
+        DEFINE_INTERNAL_MAPPING(Paned);
+    }
+    #endif
+
     /// @brief paned, displays two children with a draggable area in between, dragging the area resizes the respective two widgets
     /// \signals
     /// \widget_signals{Paned}
-    class Paned : public WidgetImplementation<GtkPaned>, public Orientable
+    class Paned : public Widget, public Orientable
     {
         public:
             /// @brief construct empty
             /// @brief orientation Orientation of the two child widgets, if horizontal: left-right, if vertical: top-bottom
             Paned(Orientation);
+
+            /// @brief construct from internal
+            Paned(detail::PanedInternal*);
+
+            /// @brief expose paned
+            ~Paned();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief get the current position of the draggable separator bar
             /// @return position in local widget space, in pixels
@@ -32,10 +50,6 @@ namespace mousetrap
             /// @brief set start child
             /// @param widget
             void set_start_child(const Widget&);
-
-            /// @brief get start child
-            /// @return child
-            Widget* get_start_child() const;
 
             /// @brief set whether the start child will increase in size if the separator bar is dragged away from it
             /// @param b true if enabled, false otherwise
@@ -56,10 +70,6 @@ namespace mousetrap
             /// @brief set end child
             /// @param widget
             void set_end_child(const Widget&);
-
-            /// @brief get end child
-            /// @return child
-            Widget* get_end_child() const;
 
             /// @brief set whether the end child will increase in size if the separator bar is dragged away from it
             /// @param b true if enabled, false otherwise
@@ -92,8 +102,7 @@ namespace mousetrap
             Orientation get_orientation() const override;
 
         private:
-            const Widget* _start_child = nullptr;
-            const Widget* _end_child = nullptr;
+            detail::PanedInternal* _internal = nullptr;
     };
 }
 

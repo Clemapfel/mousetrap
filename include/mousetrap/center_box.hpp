@@ -36,7 +36,7 @@ namespace mousetrap
             ~CenterBox();
 
             /// @copydoc SignalEmitter::get_internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief if orientation is horizontal, set widget to the left of the center, top of the center otherwise
             /// @param widget

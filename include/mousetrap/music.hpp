@@ -14,6 +14,7 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class Music;
     namespace detail
     {
         struct _MusicInternal
@@ -22,9 +23,9 @@ namespace mousetrap
             sf::Music* native;
         };
         using MusicInternal = _MusicInternal;
+        DEFINE_INTERNAL_MAPPING(Music);
     }
     #endif
-
 
     /// @brief longform sound, streamed directly from disk if possible
     /// \signals
@@ -36,11 +37,17 @@ namespace mousetrap
             /// @brief construct
             Music();
 
+            /// @brief construct from internal
+            Music(detail::MusicInternal*);
+
             /// @brief destruct
             ~Music();
 
+            /// @brief expose internal
+            NativeObject get_internal() const override;
+
             /// @brief expose gobject \for_internal_use_only
-            operator GObject*() const override;
+            operator NativeObject() const override;
 
             /// @brief create from file
             /// @param path absolute path

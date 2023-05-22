@@ -32,6 +32,21 @@ namespace mousetrap
         g_signal_connect(_internal->native, "changed", G_CALLBACK(on_changed), _internal);
     }
 
+    FileMonitor::FileMonitor(detail::FileMonitorInternal* internal)
+    {
+        _internal = g_object_ref(internal);
+    }
+
+    FileMonitor::~FileMonitor()
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject FileMonitor::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
     void FileMonitor::on_changed(GFileMonitor* self, GFile* file, GFile* other, GFileMonitorEvent event, detail::FileMonitorInternal* instance)
     {
         if (not (*instance->f))

@@ -8,20 +8,44 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class MenuBar;
+    namespace detail
+    {
+        struct _MenuBarInternal
+        {
+            GObject parent;
+            GtkPopoverMenuBar* native;
+            detail::MenuModelInternal* model;
+        };
+        using MenuBarInternal = _MenuBarInternal;
+        DEFINE_INTERNAL_MAPPING(MenuBar);
+    }
+    #endif
+
     /// @brief display menu as a menubar
     /// \signals
     /// \widget_signals{MenuBar}
-    class MenuBar : public WidgetImplementation<GtkPopoverMenuBar>
+    class MenuBar : public Widget
     {
         public:
             /// @brief create from menu model
             /// @param menu_model
             MenuBar(const MenuModel& menu_model);
 
+            /// @brief create from internal
+            MenuBar(detail::MenuBarInternal*);
+
+            /// @brief destructor
+            ~MenuBar();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
+
         protected:
             void refresh_widgets();
 
         private:
-            const MenuModel* _model = nullptr;
+            detail::MenuBarInternal* _internal = nullptr;
     };
 }

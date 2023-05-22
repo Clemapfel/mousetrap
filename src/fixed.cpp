@@ -8,31 +8,47 @@
 namespace mousetrap
 {
     Fixed::Fixed()
-    : WidgetImplementation<GtkFixed>(GTK_FIXED(gtk_fixed_new()))
+        : Widget(gtk_fixed_new())
     {}
+    
+    Fixed::Fixed(detail::FixedInternal* internal) 
+        : Widget(GTK_WIDGET(internal))
+    {
+        _internal = g_object_ref(internal);
+    }
+    
+    Fixed::~Fixed() noexcept 
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject Fixed::get_internal() const 
+    {
+        return G_OBJECT(_internal);
+    }
 
     void Fixed::add_child(const Widget& widget, Vector2f pos)
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Fixed::add_child, this, ptr);
 
-        gtk_fixed_put(get_native(), widget.operator GtkWidget *(), pos.x, pos.y);
+        gtk_fixed_put(GTK_FIXED(operator NativeWidget()), widget.operator GtkWidget *(), pos.x, pos.y);
     }
 
     void Fixed::remove_child(const Widget& widget)
     {
-        gtk_fixed_remove(get_native(), widget.operator GtkWidget*());
+        gtk_fixed_remove(GTK_FIXED(operator NativeWidget()), widget.operator GtkWidget*());
     }
 
     void Fixed::set_child_position(const Widget& widget, Vector2f pos)
     {
-        gtk_fixed_move(get_native(), widget.operator GtkWidget*(), pos.x, pos.y);
+        gtk_fixed_move(GTK_FIXED(operator NativeWidget()), widget.operator GtkWidget*(), pos.x, pos.y);
     }
 
     Vector2f Fixed::get_child_position(const Widget& widget)
     {
         double x, y;
-        gtk_fixed_get_child_position(get_native(), widget.operator GtkWidget*(), &x, &y);
+        gtk_fixed_get_child_position(GTK_FIXED(operator NativeWidget()), widget.operator GtkWidget*(), &x, &y);
         return Vector2f(x, y);
     }
 }

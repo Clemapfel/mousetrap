@@ -127,11 +127,28 @@ namespace mousetrap::detail
 namespace mousetrap
 {
     GridView::GridView(Orientation orientation, SelectionMode mode)
-        : WidgetImplementation<GtkGridView>(GTK_GRID_VIEW(gtk_grid_view_new(nullptr, nullptr))),
+        : Widget(gtk_grid_view_new(nullptr, nullptr)),
           CTOR_SIGNAL(GridView, activate)
     {
-        _internal =  detail::grid_view_internal_new(get_native(), orientation, mode);
+        _internal =  detail::grid_view_internal_new(GTK_GRID_VIEW(operator NativeWidget()), orientation, mode);
         detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
+    }
+    
+    GridView::GridView(detail::GridViewInternal* internal) 
+        : Widget(GTK_WIDGET(internal->native)),
+          CTOR_SIGNAL(GridView, activate)
+    {
+        _internal = g_object_ref(_internal);
+    }
+    
+    GridView::~GridView()
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject GridView::get_internal() const 
+    {
+        return G_OBJECT(_internal);
     }
 
     void GridView::push_back(const Widget& widget)
@@ -228,11 +245,11 @@ namespace mousetrap
 
     void GridView::set_orientation(Orientation orientation)
     {
-        gtk_orientable_set_orientation(GTK_ORIENTABLE(get_native()), (GtkOrientation) orientation);
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(GTK_GRID_VIEW(operator NativeWidget())), (GtkOrientation) orientation);
     }
 
     Orientation GridView::get_orientation() const
     {
-        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(get_native()));
+        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(GTK_GRID_VIEW(operator NativeWidget())));
     }
 }

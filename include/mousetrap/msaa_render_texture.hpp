@@ -10,6 +10,8 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class MultisampledRenderTexture;
     namespace detail
     {
         struct _MultisampledRenderTextureInternal
@@ -29,7 +31,9 @@ namespace mousetrap
             GLNativeHandle screen_texture = 0;
         };
         using MultisampledRenderTextureInternal = _MultisampledRenderTextureInternal;
+        DEFINE_INTERNAL_MAPPING(MultisampledRenderTexture);
     }
+    #endif
 
     /// @brief render texture that utilizes a multi-sampled buffer, which renders the resulting image anti-aliased
     class MultisampledRenderTexture : public TextureObject, public SignalEmitter
@@ -39,8 +43,14 @@ namespace mousetrap
             /// @param n_samples number of MSAA samples, usually 2, 4, 8 or 16
             MultisampledRenderTexture(size_t n_samples = 8);
 
+            /// @brief construct from internal
+            MultisampledRenderTexture(detail::MultisampledRenderTextureInternal*);
+
             /// @brief destruct, frees all related OpenGL objects
             virtual ~MultisampledRenderTexture();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief bind for use as a texture, usually called automatically during mousetrap::Shape::render
             void bind() const override;

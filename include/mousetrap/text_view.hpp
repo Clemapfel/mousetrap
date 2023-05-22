@@ -13,13 +13,22 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class TextView;
+    namespace detail
+    {
+        using TextViewInternal = GtkTextView;
+        DEFINE_INTERNAL_MAPPING(TextView);
+    }
+    #endif
+
     /// @brief multi-line text entry
     /// @todo expose widget-insertion interface and additional signals: https://docs.gtk.org/gtk4/class.TextView.html
     /// \signals
     /// \signal_text_changed{TextView}
     /// \signal_undo{TextView}
     /// \signal_redo{TextView}
-    class TextView : public WidgetImplementation<GtkTextView>,
+    class TextView : public Widget,
         HAS_SIGNAL(TextView, text_changed),
         HAS_SIGNAL(TextView, undo),
         HAS_SIGNAL(TextView, redo)
@@ -27,6 +36,15 @@ namespace mousetrap
         public:
             /// @brief construct
             TextView();
+
+            /// @brief construct from internal
+            TextView(detail::TextViewInternal*);
+
+            /// @brief destructor
+            ~TextView();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief get current text
             /// @return text
@@ -105,5 +123,8 @@ namespace mousetrap
             /// @brief get bottom margin of the text, minimum distance between the top of the widget and the top of the first line of text
             /// @return distance in pixels
             float get_bottom_margin() const;
+
+        private:
+            detail::TextViewInternal* _internal = nullptr;
     };
 }

@@ -41,8 +41,14 @@ namespace mousetrap
             /// @brief construct from already allocated GPU-side texture \for_internal_use_only
             Texture(GLNativeHandle);
 
+            /// @brief construct from internal
+            Texture(detail::TextureInternal*);
+
             /// @brief destruct, frees GPU-side memory
-            virtual ~Texture();
+            ~Texture();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief copy ctor deleted
             Texture(const Texture&) = delete;

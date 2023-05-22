@@ -20,16 +20,34 @@ namespace mousetrap
         DISCRETE = GTK_LEVEL_BAR_MODE_DISCRETE
     };
 
+    #ifndef DOXYGEN
+    class LevelBar;
+    namespace detail
+    {
+        using LevelBarInternal = GtkLevelBar;
+        DEFINE_INTERNAL_MAPPING(LevelBar);
+    }
+    #endif
+
     /// @brief level bar to indicate a value as a fraction of a whole
     /// \signals
     /// \widget_signals{LevelBar}
-    class LevelBar : public WidgetImplementation<GtkLevelBar>, public Orientable
+    class LevelBar : public Widget
     {
         public:
             /// @brief construct
             /// @param min minimum value
             /// @param max maximum value
             LevelBar(float min, float max);
+
+            /// @brief construct from internal
+            LevelBar(detail::LevelBarInternal*);
+
+            /// @brief destructor
+            ~LevelBar();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
 
             /// @brief add a marker to the part of the bar that corresponds to a value
             /// @param name text to display
@@ -80,10 +98,13 @@ namespace mousetrap
             /// @return value
             float get_value() const;
 
-            /// @copydoc mousetrap::Orientable::get_orientation
-            Orientation get_orientation() const override;
+            /// @copydoc Box::get_orientation
+            Orientation get_orientation() const;
 
-            /// @copydoc mousetrap::Orientable::set_orientation
-            void set_orientation(Orientation orientation) override;
+            /// @copydoc Box::set_orientation
+            void set_orientation(Orientation orientation);
+
+        private:
+            detail::LevelBarInternal* _internal = nullptr;
     };
 }

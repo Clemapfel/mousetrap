@@ -64,8 +64,11 @@ namespace mousetrap
             /// @copydoc SignalEmitter::get_native
             operator NativeObject() const override;
 
+            /// @brief expose as GtkApplication
+            operator GtkApplication*() const;
+
             /// @copydoc SignalEmitter::get_internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief get id
             /// @return id

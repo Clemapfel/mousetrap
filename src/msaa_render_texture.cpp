@@ -32,7 +32,6 @@ namespace mousetrap
         {
             auto* self = MOUSETRAP_MULTISAMPLED_RENDER_TEXTURE_INTERNAL(object);
             G_OBJECT_CLASS(multisampled_render_texture_internal_parent_class)->finalize(object);
-
             multisampled_render_texture_internal_free(self);
         }
 
@@ -52,6 +51,21 @@ namespace mousetrap
     {
         _internal = detail::multisampled_render_texture_internal_new();
         _internal->n_samples = n_samples;
+    }
+
+    MultisampledRenderTexture::MultisampledRenderTexture(detail::MultisampledRenderTextureInternal* internal)
+    {
+        _internal = g_object_ref(_internal);
+    }
+
+    MultisampledRenderTexture::~MultisampledRenderTexture()
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject MultisampledRenderTexture::get_internal() const
+    {
+        return G_OBJECT(_internal);
     }
 
     void MultisampledRenderTexture::create(size_t width, size_t height)
@@ -86,16 +100,6 @@ namespace mousetrap
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _internal->screen_texture, 0);	// we only need a color buffer
 
         glBindFramebuffer(GL_FRAMEBUFFER, before);
-    }
-
-    void MultisampledRenderTexture::free()
-    {
-        detail::multisampled_render_texture_internal_free(_internal);
-    }
-
-    MultisampledRenderTexture::~MultisampledRenderTexture()
-    {
-        free();
     }
 
     void MultisampledRenderTexture::bind_as_render_target() const

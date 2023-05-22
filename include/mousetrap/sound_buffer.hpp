@@ -4,12 +4,27 @@
 
 #pragma once
 
+#include <mousetrap/signal_emitter.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class SoundBuffer;
+    namespace detail
+    {
+        struct _SoundBufferInternal
+        {
+            GObject parent;
+            sf::SoundBuffer* native;
+        };
+        using SoundBufferInternal = _SoundBufferInternal;
+        DEFINE_INTERNAL_MAPPING(SoundBuffer);
+    }
+    #endif
+
     /// @brief buffer holding sound data in ram
-    class SoundBuffer
+    class SoundBuffer : public SignalEmitter
     {
         public:
             /// @brief bit depths of the data
@@ -18,8 +33,17 @@ namespace mousetrap
             /// @brief construct as empty buffer
             SoundBuffer();
 
+            /// @brief construct from internal
+            SoundBuffer(detail::SoundBufferInternal*);
+
             /// @brief destruct, frees data
             virtual ~SoundBuffer();
+
+            /// @brief expose internal
+            NativeObject get_internal() const override;
+
+            /// @brief expose a gobject
+            operator NativeObject() const override;
 
             /// @brief create as silence
             /// @param sample_count total number of samples
@@ -49,6 +73,6 @@ namespace mousetrap
             operator sf::SoundBuffer*() const;
 
         private:
-            sf::SoundBuffer* _data = nullptr;
+            detail::SoundBufferInternal* _internal = nullptr;
     };
 }

@@ -27,6 +27,15 @@ namespace mousetrap
         MULTIPLE = GTK_SELECTION_MULTIPLE,
     };
 
+    #ifndef DOXYGEN
+    class SelectionModel;
+    namespace detail
+    {
+        using SelectionModelInternal = GtkSelectionModel;
+        DEFINE_INTERNAL_MAPPING(SelectionModel);
+    }
+    #endif
+
     /// @brief selection model, provides interface and signals for selectable widgets
     /// \signals
     /// \signal_selection_changed{SelectionModel}
@@ -34,8 +43,8 @@ namespace mousetrap
         HAS_SIGNAL(SelectionModel, selection_changed)
     {
         public:
-            /// @brief construct from GtkSelectionModel, for interal use only. Use <tt>get_selection_model</tt> to acquire a selection model from a selectable widget
-            SelectionModel(GtkSelectionModel*);
+            /// @brief construct from internal, for interal use only. Use <tt>get_selection_model</tt> to acquire a selection model from a selectable widget
+            SelectionModel(detail::SelectionModelInternal*);
 
             /// @brief default ctor deleted. Use <tt>get_selection_model</tt> to acquire a selection model from a selectable widget
             SelectionModel() = delete;
@@ -43,11 +52,14 @@ namespace mousetrap
             /// @brief destruct
             ~SelectionModel();
 
+            /// @brief expose internal
+            NativeObject get_internal() const;
+
             /// @brief expose as GtkSelectionModel \for_internal_use_only
             operator GtkSelectionModel*() const;
 
             /// @brief expose as GObject \for_internal_use_only
-            operator GObject*() const override;
+            operator NativeObject() const override;
 
             /// @brief get indices of selected items
             /// @return vector of indices, may be empty
@@ -69,7 +81,7 @@ namespace mousetrap
             void unselect(size_t i);
 
         protected:
-            GtkSelectionModel* _native;
+            detail::SelectionModelInternal* _internal = nullptr;
     };
 
     /// @brief selection model implementation for mousetrap::SelectionMode::MULTIPLE

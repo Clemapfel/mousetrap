@@ -9,14 +9,32 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class ProgressBar;
+    namespace detail
+    {
+        using ProgressBarInternal = GtkProgressBar;
+        DEFINE_INTERNAL_MAPPING(ProgressBar);
+    }
+    #endif
+
     /// @brief widget that displays progress
     /// \signals
     /// \widget_signals{ProgressBar}
-    class ProgressBar : public WidgetImplementation<GtkProgressBar>, public Orientable
+    class ProgressBar : public Widget
     {
         public:
             /// @brief construct
             ProgressBar();
+
+            /// @brief construct from internal
+            ProgressBar(detail::ProgressBarInternal*);
+
+            /// @brief destructor
+            ~ProgressBar();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief trigger a pulse animation that communicates that work is being done
             void pulse();
@@ -53,9 +71,12 @@ namespace mousetrap
             bool get_show_text_or_percentage() const;
 
             /// @brief set orientation
-            Orientation get_orientation() const override;
+            Orientation get_orientation() const;
 
             /// @copydoc mousetrap::Orientable::set_orientation
-            void set_orientation(Orientation) override;
+            void set_orientation(Orientation);
+
+        private:
+            detail::ProgressBarInternal* _internal = nullptr;
     };
 }

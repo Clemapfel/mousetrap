@@ -7,23 +7,57 @@
 
 namespace mousetrap
 {
-    MenuBar::MenuBar(const MenuModel& model)
-    : WidgetImplementation<GtkPopoverMenuBar>(GTK_POPOVER_MENU_BAR(gtk_popover_menu_bar_new_from_model(model.operator GMenuModel*()))
-    )
+    namespace detail
     {
-        _model = &model;
+        DECLARE_NEW_TYPE(MenuBarInternal, menu_bar_internal, MENU_BAR_INTERNAL)
+        DEFINE_NEW_TYPE_TRIVIAL_INIT(MenuBarInternal, menu_bar_internal, MENU_BAR_INTERNAL)
+
+        static void menu_bar_internal_finalize(GObject* object)
+        {
+            auto* self = MOUSETRAP_MENU_BAR_INTERNAL(object);
+            G_OBJECT_CLASS(menu_bar_internal_parent_class)->finalize(object);
+            g_object_unref(self->model);
+        }
+
+        DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(MenuBarInternal, menu_bar_internal, MENU_BAR_INTERNAL)
+
+        static MenuBarInternal* menu_bar_internal_new(GtkPopoverMenuBar* native, detail::MenuModelInternal* model)
+        {
+            auto* self = (MenuBarInternal*) g_object_new(menu_bar_internal_get_type(), nullptr);
+            menu_bar_internal_init(self);
+
+            self->native = native;
+            self->model = model;
+
+            g_object_ref(self->model);
+            return self;
+        }
+    }
+    
+    MenuBar::MenuBar(const MenuModel& model)
+        : Widget(gtk_popover_menu_bar_new_from_model(model.operator GMenuModel*()))
+    {
+        _internal = detail::menu_bar_internal_new(GTK_POPOVER_MENU_BAR(Widget::operator NativeWidget()), (detail::MenuModelInternal*) model.get_internal());
         refresh_widgets();
     }
-
+    
+    MenuBar::MenuBar(detail::MenuBarInternal* internal)
+        : Widget(GTK_WIDGET(internal->native))
+    {
+        _internal = g_object_ref(internal);
+    }
+    
     void MenuBar::refresh_widgets()
     {
-        if (_model->_internal->has_widget_in_toplevel)
+        auto model = MenuModel(_internal->model);
+
+        if (model._internal->has_widget_in_toplevel)
             log::warning("In MenuBar::refresh_widgets: MenuModel contains a widget added with MenuModel::add_widget. These cannot be displayed, instead add the widget to a new menu model and add it as a submenu to the MenuBars menu model.", MOUSETRAP_DOMAIN);
             // TODO clarify this
 
-        for (auto& pair : _model->get_widgets())
+        for (auto& pair : model.get_widgets())
         {
-            if (gtk_popover_menu_bar_add_child(get_native(), pair.second, pair.first.c_str()) != TRUE)
+            if (gtk_popover_menu_bar_add_child(GTK_POPOVER_MENU_BAR(Widget::operator NativeWidget()), pair.second, pair.first.c_str()) != TRUE)
             {
                 continue;
 

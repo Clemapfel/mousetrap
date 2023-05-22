@@ -44,8 +44,21 @@ namespace mousetrap
        detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
     }
 
+    MenuModel::MenuModel(detail::MenuModelInternal* internal)
+        : CTOR_SIGNAL(MenuModel, items_changed)
+    {
+        _internal = g_object_ref(internal);
+    }
+
     MenuModel::~MenuModel()
-    {}
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject MenuModel::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
 
     void MenuModel::add_action(const std::string& label, const Action& action)
     {
@@ -143,6 +156,11 @@ namespace mousetrap
         return G_MENU_MODEL(_internal->native);
     }
 
+    MenuModel::operator NativeObject() const
+    {
+        return G_OBJECT(_internal->native);
+    }
+
     std::unordered_map<std::string, GtkWidget*> MenuModel::get_widgets() const
     {
         auto out = std::unordered_map<std::string, GtkWidget*>(*_internal->id_to_widget);
@@ -152,10 +170,5 @@ namespace mousetrap
                 out.insert(pair);
 
         return out;
-    }
-
-    MenuModel::operator GObject*() const
-    {
-        return G_OBJECT(_internal->native);
     }
 }

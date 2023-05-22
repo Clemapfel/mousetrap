@@ -44,7 +44,18 @@ namespace mousetrap
         g_object_unref(_internal);
     }
 
-    Sound::operator GObject*() const
+    Sound::Sound(detail::SoundInternal* internal)
+        : CTOR_SIGNAL(Sound, play)
+    {
+        _internal = g_object_ref(internal);
+    }
+
+    NativeObject Sound::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
+    Sound::operator NativeObject() const
     {
         return G_OBJECT(_internal);
     }
