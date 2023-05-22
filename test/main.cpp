@@ -13,7 +13,8 @@ int main()
     auto app = Application("mousetrap.test");
     app.connect_signal_activate([](Application& app)
     {
-
+        auto window = Window(app);
+        window.present();
     });
 
     return app.run();

@@ -3,60 +3,32 @@
 
 #include <iostream>
 
-namespace mousetrap
-{
-    namespace detail
-    {
-        DECLARE_NEW_TYPE(HasSignalActivateInternal, has_signal_activate_internal, HAS_SIGNAL_ACTIVATE_INTERNAL)
-        DEFINE_NEW_TYPE_TRIVIAL_INIT(HasSignalActivateInternal, has_signal_activate_internal, HAS_SIGNAL_ACTIVATE_INTERNAL)
-
-        static void has_signal_activate_internal_finalize(GObject* object)
-        {
-            auto* self = MOUSETRAP_HAS_SIGNAL_ACTIVATE_INTERNAL(object);
-            G_OBJECT_CLASS(has_signal_activate_internal_parent_class)->finalize(object);
-            std::cout << "called" << std::endl;
-        }
-
-        DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(HasSignalActivateInternal, has_signal_activate_internal, HAS_SIGNAL_ACTIVATE_INTERNAL)
-
-        HasSignalActivateInternal* has_signal_activate_internal_new(NativeObject instance)
-        {
-            auto* self = (HasSignalActivateInternal*) g_object_new(has_signal_activate_internal_get_type(), nullptr);
-            has_signal_activate_internal_init(self);
-
-            self->instance = instance;
-            self->function = nullptr;
-            self->is_blocked = false;
-            return self;
-        }
-    }
-}
+#define DEFINE_SIGNAL(CamelCase, snake_case, CAPS_CASE, g_signal_id, return_t, ...) \
+DECLARE_NEW_TYPE(HasSignal##CamelCase##Internal, has_signal_##snake_case##_internal, HAS_SIGNAL_##CAPS_CASE##_INTERNAL) \
+DEFINE_NEW_TYPE_TRIVIAL_INIT(HasSignal##CamelCase##Internal, has_signal_##snake_case##_internal, HAS_SIGNAL_##CAPS_CASE##_INTERNAL) \
+\
+static void has_signal_##snake_case##_internal_finalize(GObject* object) \
+{ \
+    auto* self = MOUSETRAP_HAS_SIGNAL_##CAPS_CASE##_INTERNAL(object); \
+    G_OBJECT_CLASS(has_signal_##snake_case##_internal_parent_class)->finalize(object); \
+} \
+\
+DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(HasSignal##CamelCase##Internal, has_signal_##snake_case##_internal, HAS_SIGNAL_##CAPS_CASE##_INTERNAL) \
+\
+HasSignal##CamelCase##Internal* has_signal_##snake_case##_internal_new(NativeObject instance) \
+{ \
+    auto* self = (HasSignal##CamelCase##Internal*) g_object_new(has_signal_##snake_case##_internal_get_type(), nullptr); \
+    has_signal_##snake_case##_internal_init(self); \
+    \
+    self->instance = instance; \
+    self->function = nullptr; \
+    self->is_blocked = false; \
+    return self; \
+} \
 
 namespace mousetrap::detail
 {
-    #define DEFINE_SIGNAL(CamelCase, snake_case, CAPS_CASE, g_signal_id, return_t, ...) \
-        DECLARE_NEW_TYPE(CamelCase, snake_case, CAPS_CASE)                         \
-                                                                                   \
-        static void snake_case##_finalize(GObject* object) \
-        {                                                                                                        \
-            auto* self = MOUSETRAP_##CAPS_CASE(object);                         \
-            G_OBJECT_CLASS(snake_case##_parent_class)->finalize(object);       \
-        }                                                                           \
-        \
-        DEFINE_NEW_TYPE_TRIVIAL_INIT(CamelCase, snake_case, CAPS_CASE) \
-        DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(CamelCase, snake_case, CAPS_CASE) \
-        \
-        CamelCase* snake_case##_new(void* instance) \
-        { \
-            auto* self = (CamelCase*) g_object_new(snake_case##_get_type(), nullptr); \
-            snake_case##_init(self); \
-            self->instance = instance; \
-            self->function = nullptr; \
-            self->blocked = false; \
-            return self; \
-        }
-
-    DEFINE_SIGNAL(_Activate, _activate, _ACTIVATE, "activate", void);
+    DEFINE_SIGNAL(Activate, activate, ACTIVATE, "activate", void);
     DEFINE_SIGNAL(Startup, startup, STARTUP, "startup", void);
     DEFINE_SIGNAL(Shutdown, shutdown, SHUTDOWN, "shutdown", void);
     DEFINE_SIGNAL(Update, update, UPDATE, "update", void);

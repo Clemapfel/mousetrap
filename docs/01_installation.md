@@ -152,7 +152,7 @@ int main()
     auto app = Application("test.app");
     
     // initialization
-    app.connect_signal_activate([](Application* app)
+    app.connect_signal_activate([](Application& app)
     {
         // create window
         auto window = Window(*app);

@@ -11,106 +11,6 @@
 
 namespace mousetrap
 {
-    #define return_t void
-
-    namespace detail
-    {
-        struct _HasSignalActivateInternal
-        {
-            GObject parent;
-            NativeObject instance;
-            std::function<return_t(void*)> function;
-            bool is_blocked;
-        };
-        using HasSignalActivateInternal = _HasSignalActivateInternal;
-        HasSignalActivateInternal* has_signal_activate_internal_new(NativeObject instance);
-    }
-
-    template <typename T>
-    class has_signal_activate
-    {
-        private:
-            detail::HasSignalActivateInternal* _internal = nullptr;
-            T* _instance = nullptr;
-
-            static return_t wrapper(void*, detail::HasSignalActivateInternal* internal)
-            {
-                auto temp = T((typename detail::InternalMapping<T>::value*) internal->instance);
-                if (internal->function and not internal->is_blocked)
-                    return internal->function((void*) &temp);
-            }
-
-            void initialize()
-            {
-                if (_internal == nullptr)
-                {
-                    _internal = detail::has_signal_activate_internal_new(_instance->get_internal());
-                    detail::attach_ref_to(_internal->instance, _internal);
-                }
-            }
-
-        protected:
-            has_signal_activate(T* instance)
-                : _instance(instance)
-            {}
-
-            ~has_signal_activate() = default;
-
-        public:
-            const char* signal_id = "activate";
-
-            template <typename Function_t, typename Data_t>
-            void connect_signal_activate(Function_t f, Data_t data)
-            {
-                initialize();
-                _internal->function = [f, data](void* instance) -> return_t
-                {
-                    return f(*((T*) instance), data);
-                };
-
-                T((typename detail::InternalMapping<T>::value*) _internal->instance).connect_signal(signal_id, wrapper, _internal);
-            }
-
-            template <typename Function_t>
-            void connect_signal_activate(Function_t f)
-            {
-                initialize();
-                _internal->function = [f](void* instance) -> return_t
-                {
-                    return f(*((T*) instance));                                                                                                    \
-
-                };
-
-                T((typename detail::InternalMapping<T>::value*) _internal->instance).connect_signal(signal_id, wrapper, _internal);
-            }
-
-            void set_signal_activate_blocked(bool b)
-            {
-                initialize();
-                _internal->is_blocked = b;
-            }
-
-            bool get_signal_activate_blocked() const
-            {
-                initialize();
-                return _internal->is_blocked;
-            }
-
-            return_t emit_signal_activate()
-            {
-                initialize();
-                wrapper(nullptr, _internal);
-            }
-
-            void disconnect_signal_activate()
-            {
-                T((typename detail::InternalMapping<T>::value*) _internal->instance).disconnect_signal(signal_id);
-            }
-    };
-}
-
-namespace mousetrap
-{
     /// @brief base class of all signal components
     struct SignalComponent
     {
@@ -129,108 +29,104 @@ namespace mousetrap
     #define HAS_SIGNAL(T, signal_name) \
         public SIGNAL_CLASS_NAME(signal_name)<T>
 
-    #define SIGNAL_INTERNAL_PRIVATE_CLASS_NAME(CamelCase) _##CamelCase
-    #define SIGNAL_INTERNAL_CLASS_NAME(CamelCase) CamelCase
+    #define SIGNAL_INTERNAL_PRIVATE_CLASS_NAME(CamelCase) _HasSignal##CamelCase##Internal
+    #define SIGNAL_INTERNAL_CLASS_NAME(CamelCase) HasSignal##CamelCase##Internal
     #define SIGNAL_CLASS_NAME(snake_case) has_signal_##snake_case
 
     #define DECLARE_SIGNAL(CamelCase, snake_case, CAPS_CASE, g_signal_id, return_t) \
-    \
     namespace detail \
     { \
         struct SIGNAL_INTERNAL_PRIVATE_CLASS_NAME(CamelCase) \
         { \
             GObject parent; \
-            void* instance; \
+            NativeObject instance; \
             std::function<return_t(void*)> function; \
-            bool blocked; \
+            bool is_blocked; \
         }; \
         using SIGNAL_INTERNAL_CLASS_NAME(CamelCase) = SIGNAL_INTERNAL_PRIVATE_CLASS_NAME(CamelCase); \
-        SIGNAL_INTERNAL_CLASS_NAME(CamelCase)* snake_case##_new(void* instance); \
+        SIGNAL_INTERNAL_CLASS_NAME(CamelCase)* has_signal_##snake_case##_internal_new(NativeObject instance); \
     } \
     \
-    template<typename T> \
-    class SIGNAL_CLASS_NAME(snake_case) : protected SignalComponent \
+    template <typename T> \
+    class SIGNAL_CLASS_NAME(snake_case) \
     { \
         private: \
-            detail::SIGNAL_INTERNAL_CLASS_NAME(CamelCase)* _internal = nullptr;               \
-            T* _instance = nullptr;                                                                        \
+            detail::SIGNAL_INTERNAL_CLASS_NAME(CamelCase)* _internal = nullptr; \
+            T* _instance = nullptr; \
             \
             static return_t wrapper(void*, detail::SIGNAL_INTERNAL_CLASS_NAME(CamelCase)* internal) \
             { \
-                if (G_IS_OBJECT(internal) and not internal->blocked and internal->function) \
-                    return internal->function(internal->instance); \
-                else \
-                    return return_t(); \
+                auto temp = T((typename detail::InternalMapping<T>::value*) internal->instance); \
+                if (internal->function and not internal->is_blocked) \
+                    return internal->function((void*) &temp); \
             } \
             \
-            void initialize()  \
+            void initialize() \
             { \
                 if (_internal == nullptr) \
                 { \
-                    _internal = detail::snake_case##_new((void*) _instance); \
-                    detail::attach_ref_to(_instance->operator GObject*(), _internal);\
-                    g_object_ref(_internal);                                                                    \
-                }                                                                        \
-            }\
+                    _internal = detail::has_signal_##snake_case##_internal_new(_instance->get_internal()); \
+                    detail::attach_ref_to(_internal->instance, _internal); \
+                } \
+            } \
         \
         protected: \
             SIGNAL_CLASS_NAME(snake_case)(T* instance) \
                 : _instance(instance) \
             {} \
-                                                                                    \
-            ~SIGNAL_CLASS_NAME(snake_case)()                                        \
-            {                                      \
-                if (_internal != nullptr)                                           \
-                    g_object_unref(_internal);\
-            }\
+            \
+            ~SIGNAL_CLASS_NAME(snake_case)() = default; \
         \
         public: \
-            static inline constexpr const char* signal_id = g_signal_id; \
+            const char* signal_id = g_signal_id; \
             \
-            template<typename Function_t, typename Data_t> \
+            template <typename Function_t, typename Data_t> \
             void connect_signal_##snake_case(Function_t f, Data_t data) \
             { \
-                initialize();                                                                    \
-                _internal->function = [f, data](void* instance) -> return_t { \
-                    return f((T*) instance, data); \
+                initialize(); \
+                _internal->function = [f, data](void* instance) -> return_t \
+                { \
+                    return f(*((T*) instance), data); \
                 }; \
-                ((T*) _internal->instance)->connect_signal(signal_id, wrapper, _internal); \
+            \
+                T((typename detail::InternalMapping<T>::value*) _internal->instance).connect_signal(signal_id, wrapper, _internal); \
             } \
             \
-            template<typename Function_t> \
+            template <typename Function_t> \
             void connect_signal_##snake_case(Function_t f) \
             { \
-                initialize();                                                                    \
-                _internal->function = [f](void* instance) -> return_t { \
-                    return f((T*) instance); \
+                initialize(); \
+                _internal->function = [f](void* instance) -> return_t \
+                { \
+                    return f(*((T*) instance)); \
                 }; \
-                ((T*) _internal->instance)->connect_signal(signal_id, wrapper, _internal); \
+                \
+                T((typename detail::InternalMapping<T>::value*) _internal->instance).connect_signal(signal_id, wrapper, _internal); \
             } \
             \
-            void set_signal_##snake_case##_blocked(bool b) \
+            void set_signal_activate_blocked(bool b) \
             { \
-                initialize();                                                                    \
-                _internal->blocked = b; \
+                initialize(); \
+                _internal->is_blocked = b; \
             } \
             \
             bool get_signal_##snake_case##_blocked() const \
             { \
-                initialize();                                                                    \
-                return _internal->blocked; \
+                initialize(); \
+                return _internal->is_blocked; \
             } \
             \
             return_t emit_signal_##snake_case() \
             { \
-                initialize();                                                                    \
-                return wrapper(nullptr, _internal); \
+                initialize(); \
+                wrapper(nullptr, _internal); \
             } \
             \
-            void disconnect_signal_##snake_case() \
+            void disconnect_signal_activate() \
             { \
-                initialize();                                                                    \
-                ((T*) _internal->instance)->disconnect_signal(signal_id); \
+                T((typename detail::InternalMapping<T>::value*) _internal->instance).disconnect_signal(signal_id); \
             } \
-    };
+    }; 
 
     #define DECLARE_SIGNAL_MANUAL(CamelCase, snake_case, CAPS_CASE, g_signal_id, return_t, arg_list, arg_name_only_list) \
     \
@@ -241,7 +137,7 @@ namespace mousetrap
             GObject parent;                                                                                         \
             void* instance;                                                                                         \
             std::function<return_t(void*, arg_list)> function;                                                             \
-            bool blocked;\
+            bool is_blocked;\
         };                                                                                                           \
         using SIGNAL_INTERNAL_CLASS_NAME(CamelCase) = SIGNAL_INTERNAL_PRIVATE_CLASS_NAME(CamelCase); \
         SIGNAL_INTERNAL_CLASS_NAME(CamelCase)* snake_case##_new(void* instance); \
@@ -256,7 +152,7 @@ namespace mousetrap
                                                                                                                     \
             static return_t wrapper(void*, arg_list, detail::SIGNAL_INTERNAL_CLASS_NAME(CamelCase)* internal)  \
             {                                                                                                       \
-                if (G_IS_OBJECT(internal) and not internal->blocked and internal->function) \
+                if (G_IS_OBJECT(internal) and not internal->is_blocked and internal->function) \
                     return internal->function(internal->instance, arg_name_only_list);                                        \
                 else                                                                                                \
                     return return_t();\
@@ -309,13 +205,13 @@ namespace mousetrap
             void set_signal_##snake_case##_blocked(bool b)                                                               \
             {                                                                                                            \
                 initialize();                                                                                            \
-                _internal->blocked = b;\
+                _internal->is_blocked = b;\
             }                                                                                                            \
                                                                                                                          \
             bool get_signal_##snake_case##_blocked() const                                                               \
             {                                                                                                            \
                 initialize();                                                                                            \
-                return _internal->blocked;\
+                return _internal->is_blocked;\
             }                                                                                                            \
                                                                                                                          \
             return_t emit_signal_##snake_case(arg_list)                                                                  \
@@ -335,16 +231,16 @@ namespace mousetrap
     using UnusedArgument_t = void*;
     
     /// @see
-    DECLARE_SIGNAL(_Activate, _activate, _ACTIVATE, "activate", void);
+    DECLARE_SIGNAL(Activate, activate, ACTIVATE, "activate", void);
     /// @class has_signal_activate
     /// @brief \signal_activate_brief
     /// @tparam T instance type
     ///
     /// @fn void has_signal_activate::connect_signal_activate(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_activate::connect_signal_activate(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_activate::emit_signal_activate()
     /// \signal_emit_brief
@@ -370,10 +266,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_startup::connect_signal_startup(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_startup::connect_signal_startup(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_startup::emit_signal_startup()
     /// \signal_emit_brief
@@ -399,10 +295,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_shutdown::connect_signal_shutdown(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_shutdown::connect_signal_shutdown(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_shutdown::emit_signal_shutdown()
     /// \signal_emit_brief
@@ -425,10 +321,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_update::connect_signal_update(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_update::connect_signal_update(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_update::emit_signal_update()
     /// \signal_emit_brief
@@ -454,10 +350,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_paint::connect_signal_paint(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_paint::connect_signal_paint(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_paint::emit_signal_paint()
     /// \signal_emit_brief
@@ -483,10 +379,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_realize::connect_signal_realize(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_realize::connect_signal_realize(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_realize::emit_signal_realize()
     /// \signal_emit_brief
@@ -512,10 +408,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_unrealize::connect_signal_unrealize(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_unrealize::connect_signal_unrealize(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_unrealize::emit_signal_unrealize()
     /// \signal_emit_brief
@@ -538,10 +434,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_destroy::connect_signal_destroy(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_destroy::connect_signal_destroy(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_destroy::emit_signal_destroy()
     /// \signal_emit_brief
@@ -564,10 +460,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_hide::connect_signal_hide(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_hide::connect_signal_hide(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_hide::emit_signal_hide()
     /// \signal_emit_brief
@@ -593,10 +489,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_show::connect_signal_show(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_show::connect_signal_show(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_show::emit_signal_show()
     /// \signal_emit_brief
@@ -622,10 +518,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_map::connect_signal_map(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_map::connect_signal_map(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_map::emit_signal_map()
     /// \signal_emit_brief
@@ -651,10 +547,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_unmap::connect_signal_unmap(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_unmap::connect_signal_unmap(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_unmap::emit_signal_unmap()
     /// \signal_emit_brief
@@ -690,10 +586,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_close_request::connect_signal_close_request(Function_t)
-    /// \signal_connect{(T*) -> mousetrap::WindowCloseRequestResult}
+    /// \signal_connect{(T&) -> mousetrap::WindowCloseRequestResult}
     ///
     /// @fn void has_signal_close_request::connect_signal_close_request(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> mousetrap::WindowCloseRequestResult}
+    /// \signal_connect_data{(T&, Data_t) -> mousetrap::WindowCloseRequestResult}
     ///
     /// @fn void has_signal_close_request::emit_signal_close_request()
     /// \signal_emit_brief
@@ -719,10 +615,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_activate_default_widget::connect_signal_activate_default_widget(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_activate_default_widget::connect_signal_activate_default_widget(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_activate_default_widget::emit_signal_activate_default_widget()
     /// \signal_emit_brief
@@ -748,10 +644,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_activate_focused_widget::connect_signal_activate_focused_widget(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_activate_focused_widget::connect_signal_activate_focused_widget(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_activate_focused_widget::emit_signal_activate_focused_widget()
     /// \signal_emit_brief
@@ -777,10 +673,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_clicked::connect_signal_clicked(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_clicked::connect_signal_clicked(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_clicked::emit_signal_clicked()
     /// \signal_emit_brief
@@ -806,10 +702,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_toggled::connect_signal_toggled(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_toggled::connect_signal_toggled(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_toggled::emit_signal_toggled()
     /// \signal_emit_brief
@@ -835,10 +731,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_text_changed::connect_signal_text_changed(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_text_changed::connect_signal_text_changed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_text_changed::emit_signal_text_changed()
     /// \signal_emit_brief
@@ -864,10 +760,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_undo::connect_signal_undo(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_undo::connect_signal_undo(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_undo::emit_signal_undo()
     /// \signal_emit_brief
@@ -893,10 +789,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_redo::connect_signal_redo(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_redo::connect_signal_redo(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_redo::emit_signal_redo()
     /// \signal_emit_brief
@@ -925,10 +821,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_selection_changed::connect_signal_selection_changed(Function_t)
-    /// \signal_connect{(T*, int32_t position, int32_t n_items) -> void}
+    /// \signal_connect{(T&, int32_t position, int32_t n_items) -> void}
     ///
     /// @fn void has_signal_selection_changed::connect_signal_selection_changed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, int32_t position, int32_t n_items, Data_t) -> void}
+    /// \signal_connect_data{(T&, int32_t position, int32_t n_items, Data_t) -> void}
     ///
     /// @fn void has_signal_selection_changed::emit_signal_selection_changed(int32_t position, int32_t n_items)
     /// \signal_emit_brief
@@ -963,10 +859,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_key_pressed::connect_signal_key_pressed(Function_t)
-    /// \signal_connect{(T*, KeyValue key_value, KeyCode key_code, ModifierState modifiers) -> bool}
+    /// \signal_connect{(T&, KeyValue key_value, KeyCode key_code, ModifierState modifiers) -> bool}
     ///
     /// @fn void has_signal_key_pressed::connect_signal_key_pressed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, KeyValue key_value, KeyCode key_code, ModifierState modifiers, Data_t) -> bool}
+    /// \signal_connect_data{(T&, KeyValue key_value, KeyCode key_code, ModifierState modifiers, Data_t) -> bool}
     ///
     /// @fn void has_signal_key_pressed::emit_signal_key_pressed(KeyValue keyval, KeyCode keycode, ModifierState modifier)
     /// \signal_emit_brief
@@ -998,10 +894,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_key_released::connect_signal_key_released(Function_t)
-    /// \signal_connect{(T*, KeyValue key_value, KeyCode key_code, ModifierState modifiers) -> void}
+    /// \signal_connect{(T&, KeyValue key_value, KeyCode key_code, ModifierState modifiers) -> void}
     ///
     /// @fn void has_signal_key_released::connect_signal_key_released(Function_t, Data_t)
-    /// \signal_connect_data{(T*, KeyValue key_value, KeyCode key_code, ModifierState modifiers, Data_t) -> void}
+    /// \signal_connect_data{(T&, KeyValue key_value, KeyCode key_code, ModifierState modifiers, Data_t) -> void}
     ///
     /// @fn void has_signal_key_released::emit_signal_key_released(KeyValue keyval, KeyCode keycode, ModifierState modifier)
     /// \signal_emit_brief
@@ -1034,10 +930,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_modifiers_changed::connect_signal_modifiers_changed(Function_t)
-    /// \signal_connect{(T*, KeyValue key_value, KeyCode key_code, ModifierState modifier) -> bool}
+    /// \signal_connect{(T&, KeyValue key_value, KeyCode key_code, ModifierState modifier) -> bool}
     ///
     /// @fn void has_signal_modifiers_changed::connect_signal_modifiers_changed(Function_t, Data_t)
-    /// \signal_connect_data{(T* KeyValue key_value, KeyCode key_code, ModifierState modifier, Data_t) -> bool}
+    /// \signal_connect_data{(T& KeyValue key_value, KeyCode key_code, ModifierState modifier, Data_t) -> bool}
     ///
     /// @fn void has_signal_modifiers_changed::emit_signal_modifiers_changed(KeyValue keyval, KeyCode keycode, ModifierState modifier)
     /// \signal_emit_brief
@@ -1069,10 +965,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_motion_enter::connect_signal_motion_enter(Function_t)
-    /// \signal_connect{(T*, double x, double y) -> void}
+    /// \signal_connect{(T&, double x, double y) -> void}
     ///
     /// @fn void has_signal_motion_enter::connect_signal_motion_enter(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double x, double y, Data_t) -> void}
+    /// \signal_connect_data{(T&, double x, double y, Data_t) -> void}
     ///
     /// @fn void has_signal_motion_enter::emit_signal_motion_enter(double x, double y)
     /// \signal_emit_brief
@@ -1103,10 +999,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_motion::connect_signal_motion(Function_t)
-    /// \signal_connect{(T*, double x, double y) -> void}
+    /// \signal_connect{(T&, double x, double y) -> void}
     ///
     /// @fn void has_signal_motion::connect_signal_motion(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double x, double y, Data_t) -> void}
+    /// \signal_connect_data{(T&, double x, double y, Data_t) -> void}
     ///
     /// @fn void has_signal_motion::emit_signal_motion(double x, double y)
     /// \signal_emit_brief
@@ -1134,10 +1030,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_motion_leave::connect_signal_motion_leave(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_motion_leave::connect_signal_motion_leave(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_motion_leave::emit_signal_motion_leave()
     /// \signal_emit_brief
@@ -1166,10 +1062,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_click_pressed::connect_signal_click_pressed(Function_t)
-    /// \signal_connect{(T*, int32_t n_presses, double x, double y) -> void}
+    /// \signal_connect{(T&, int32_t n_presses, double x, double y) -> void}
     ///
     /// @fn void has_signal_click_pressed::connect_signal_click_pressed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, int32_t n_presses, double x, double y, Data_t) -> void}
+    /// \signal_connect_data{(T&, int32_t n_presses, double x, double y, Data_t) -> void}
     ///
     /// @fn void has_signal_click_pressed::emit_signal_click_pressed(int32_t n_press, double x, double y)
     /// \signal_emit_brief
@@ -1201,10 +1097,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_click_released::connect_signal_click_released(Function_t)
-    /// \signal_connect{(T*, int32_t n_presses, double x, double y) -> void}
+    /// \signal_connect{(T&, int32_t n_presses, double x, double y) -> void}
     ///
     /// @fn void has_signal_click_released::connect_signal_click_released(Function_t, Data_t)
-    /// \signal_connect_data{(T*, int32_t n_presses, double x, double y, Data_t) -> void}
+    /// \signal_connect_data{(T&, int32_t n_presses, double x, double y, Data_t) -> void}
     ///
     /// @fn void has_signal_click_released::emit_signal_click_released(int32_t n_press, double x, double y)
     /// \signal_emit_brief
@@ -1233,10 +1129,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_click_stopped::connect_signal_click_stopped(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_click_stopped::connect_signal_click_stopped(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_click_stopped::emit_signal_click_stopped()
     /// \signal_emit_brief
@@ -1265,10 +1161,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_kinetic_scroll_decelerate::connect_signal_kinetic_scroll_decelerate(Function_t)
-    /// \signal_connect{(T*, double x_velocity, double y_velocity) -> void}
+    /// \signal_connect{(T&, double x_velocity, double y_velocity) -> void}
     ///
     /// @fn void has_signal_kinetic_scroll_decelerate::connect_signal_kinetic_scroll_decelerate(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double x_velocity, double y_velocity, Data_t) -> void}
+    /// \signal_connect_data{(T&, double x_velocity, double y_velocity, Data_t) -> void}
     ///
     /// @fn void has_signal_kinetic_scroll_decelerate::emit_signal_kinetic_scroll_decelerate(double x_velocity, double y_velocity)
     /// \signal_emit_brief
@@ -1296,10 +1192,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_scroll_begin::connect_signal_scroll_begin(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_scroll_begin::connect_signal_scroll_begin(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_scroll_begin::emit_signal_scroll_begin()
     /// \signal_emit_brief
@@ -1328,10 +1224,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_scroll::connect_signal_scroll(Function_t)
-    /// \signal_connect{(T*, double delta_x, double delta_y) -> void}
+    /// \signal_connect{(T&, double delta_x, double delta_y) -> void}
     ///
     /// @fn void has_signal_scroll::connect_signal_scroll(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double delta_x, double delta_y, Data_t) -> void}
+    /// \signal_connect_data{(T&, double delta_x, double delta_y, Data_t) -> void}
     ///
     /// @fn void has_signal_scroll::emit_signal_scroll(double delta_x, double delta_y)
     /// \signal_emit_brief
@@ -1359,10 +1255,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_scroll_end::connect_signal_scroll_end(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_scroll_end::connect_signal_scroll_end(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_scroll_end::emit_signal_scroll_end()
     /// \signal_emit_brief
@@ -1388,10 +1284,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_focus_gained::connect_signal_focus_gained(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_focus_gained::connect_signal_focus_gained(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     //
     /// @fn void has_signal_focus_gained::emit_signal_focus_gained()
     /// \signal_emit_brief
@@ -1417,10 +1313,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_focus_lost::connect_signal_focus_lost(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_focus_lost::connect_signal_focus_lost(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_focus_lost::emit_signal_focus_lost()
     /// \signal_emit_brief
@@ -1449,10 +1345,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_drag_begin::connect_signal_drag_begin(Function_t)
-    /// \signal_connect{(T*, double start_x, double start_y) -> void}
+    /// \signal_connect{(T&, double start_x, double start_y) -> void}
     ///
     /// @fn void has_signal_drag_begin::connect_signal_drag_begin(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double start_x, double start_y, Data_t) -> void}
+    /// \signal_connect_data{(T&, double start_x, double start_y, Data_t) -> void}
     ///
     /// @fn void has_signal_drag_begin::emit_signal_drag_begin(double start_x, double start_y)
     /// \signal_emit_brief
@@ -1483,10 +1379,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_drag::connect_signal_drag(Function_t)
-    /// \signal_connect{(T*, double offset_x, double offset_y) -> void}
+    /// \signal_connect{(T&, double offset_x, double offset_y) -> void}
     ///
     /// @fn void has_signal_drag::connect_signal_drag(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double offset_x, double offset_y, Data_t) -> void}
+    /// \signal_connect_data{(T&, double offset_x, double offset_y, Data_t) -> void}
     ///
     /// @fn void has_signal_drag::emit_signal_drag(double offset_x, double offset_y)
     /// \signal_emit_brief
@@ -1517,10 +1413,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_drag_end::connect_signal_drag_end(Function_t)
-    /// \signal_connect{(T*, double offset_x, double offset_y) -> void}
+    /// \signal_connect{(T&, double offset_x, double offset_y) -> void}
     ///
     /// @fn void has_signal_drag_end::connect_signal_drag_end(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double offset_x, double offset_y, Data_t) -> void}
+    /// \signal_connect_data{(T&, double offset_x, double offset_y, Data_t) -> void}
     ///
     /// @fn void has_signal_drag_end::emit_signal_drag_end(double offset_x, double offset_y)
     /// \signal_emit_brief
@@ -1551,10 +1447,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_scale_changed::connect_signal_scale_changed(Function_t)
-    /// \signal_connect{(T*, double scale) -> void}
+    /// \signal_connect{(T&, double scale) -> void}
     ///
     /// @fn void has_signal_scale_changed::connect_signal_scale_changed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double scale, Data_t) -> void}
+    /// \signal_connect_data{(T&, double scale, Data_t) -> void}
     ///
     /// @fn void has_signal_scale_changed::emit_signal_scale_changed(double scale)
     /// \signal_emit_brief
@@ -1584,10 +1480,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_rotation_changed::connect_signal_rotation_changed(Function_t)
-    /// \signal_connect{(T*, double angle_absolute_radians, double angle_delta_radians) -> void}
+    /// \signal_connect{(T&, double angle_absolute_radians, double angle_delta_radians) -> void}
     ///
     /// @fn void has_signal_rotation_changed::connect_signal_rotation_changed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double angle_absolute_radians, double angle_delta_radians, Data_t) -> void}
+    /// \signal_connect_data{(T&, double angle_absolute_radians, double angle_delta_radians, Data_t) -> void}
     ///
     /// @fn void has_signal_rotation_changed::emit_signal_rotation_changed(double angle_absolute_radians, double angle_delta_radians)
     /// \signal_emit_brief
@@ -1616,10 +1512,10 @@ namespace mousetrap
     /// @see mousetrap::has_signal_value_changed
     ///
     /// @fn void has_signal_properties_changed::connect_signal_properties_changed(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_properties_changed::connect_signal_properties_changed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_properties_changed::emit_signal_properties_changed()
     /// \signal_emit_brief
@@ -1645,10 +1541,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_value_changed::connect_signal_value_changed(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_value_changed::connect_signal_value_changed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_value_changed::emit_signal_value_changed()
     /// \signal_emit_brief
@@ -1674,10 +1570,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_render::connect_signal_render(Function_t)
-    /// \signal_connect{(T*, GdkGLContext* context) -> bool}
+    /// \signal_connect{(T&, GdkGLContext* context) -> bool}
     ///
     /// @fn void has_signal_render::connect_signal_render(Function_t, Data_t)
-    /// \signal_connect_data{(T*, GdkGLContext* context, Data_t) -> bool}
+    /// \signal_connect_data{(T&, GdkGLContext* context, Data_t) -> bool}
     ///
     /// @fn void has_signal_render::emit_signal_render()
     /// \signal_emit_brief
@@ -1706,10 +1602,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_resize::connect_signal_resize(Function_t)
-    /// \signal_connect{(T*, int32_t width, int32_t height) -> void}
+    /// \signal_connect{(T&, int32_t width, int32_t height) -> void}
     ///
     /// @fn void has_signal_resize::connect_signal_resize(Function_t, Data_t)
-    /// \signal_connect_data{(T*, int32_t width, int32_t height, Data_t) -> void}
+    /// \signal_connect_data{(T&, int32_t width, int32_t height, Data_t) -> void}
     ///
     /// @fn void has_signal_resize::emit_signal_resize(int32_t width, int32_t height)
     /// \signal_emit_brief
@@ -1740,10 +1636,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_page_added::connect_signal_page_added(Function_t)
-    /// \signal_connect{(T*, UnusedArgument_t _, uint32_t page_index) -> void}
+    /// \signal_connect{(T&, UnusedArgument_t _, uint32_t page_index) -> void}
     ///
     /// @fn void has_signal_page_added::connect_signal_page_added(Function_t, Data_t)
-    /// \signal_connect_data{(T*, UnusedArgument_t _, uint32_t page_index, Data_t) -> void}
+    /// \signal_connect_data{(T&, UnusedArgument_t _, uint32_t page_index, Data_t) -> void}
     ///
     /// @fn void has_signal_page_added::emit_signal_page_added(UnusedArgument_t _, uint32_t page_index)
     /// \signal_emit_brief
@@ -1774,10 +1670,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_page_removed::connect_signal_page_removed(Function_t)
-    /// \signal_connect{(T*, UnusedArgument_t _, uint32_t page_index) -> void}
+    /// \signal_connect{(T&, UnusedArgument_t _, uint32_t page_index) -> void}
     ///
     /// @fn void has_signal_page_removed::connect_signal_page_removed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, UnusedArgument_t _, uint32_t page_index, Data_t) -> void}
+    /// \signal_connect_data{(T&, UnusedArgument_t _, uint32_t page_index, Data_t) -> void}
     ///
     /// @fn void has_signal_page_removed::emit_signal_page_removed(UnusedArgument_t _, uint32_t page_index)
     /// \signal_emit_brief
@@ -1808,10 +1704,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_page_reordered::connect_signal_page_reordered(Function_t)
-    /// \signal_connect{(T*, UnusedArgument_t _, uint32_t page_index) -> void}
+    /// \signal_connect{(T&, UnusedArgument_t _, uint32_t page_index) -> void}
     ///
     /// @fn void has_signal_page_reordered::connect_signal_page_reordered(Function_t, Data_t)
-    /// \signal_connect_data{(T*, UnusedArgument_t _, uint32_t page_index, Data_t) -> void}
+    /// \signal_connect_data{(T&, UnusedArgument_t _, uint32_t page_index, Data_t) -> void}
     ///
     /// @fn void has_signal_page_reordered::emit_signal_page_reordered(UnusedArgument_t _, uint32_t page_index)
     /// \signal_emit_brief
@@ -1842,10 +1738,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_page_selection_changed::connect_signal_page_selection_changed(Function_t)
-    /// \signal_connect{(T*, UnusedArgument_t _, uint32_t page_index) -> void}
+    /// \signal_connect{(T&, UnusedArgument_t _, uint32_t page_index) -> void}
     ///
     /// @fn void has_signal_page_selection_changed::connect_signal_page_selection_changed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, UnusedArgument_t _, uint32_t page_index, Data_t) -> void}
+    /// \signal_connect_data{(T&, UnusedArgument_t _, uint32_t page_index, Data_t) -> void}
     ///
     /// @fn void has_signal_page_selection_changed::emit_signal_page_selection_changed(GtkWidget* _, uint32_t page_index)
     /// \signal_emit_brief
@@ -1873,10 +1769,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_wrapped::connect_signal_wrapped(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_wrapped::connect_signal_wrapped(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_wrapped::emit_signal_wrapped()
     /// \signal_emit_brief
@@ -1902,10 +1798,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_response::connect_signal_response(Function_t)
-    /// \signal_connect{(T*, int response_id) -> void}
+    /// \signal_connect{(T&, int response_id) -> void}
     ///
     /// @fn void has_signal_response::connect_signal_response(Function_t, Data_t)
-    /// \signal_connect_data{(T*, int response_id, Data_t) -> void}
+    /// \signal_connect_data{(T&, int response_id, Data_t) -> void}
     ///
     /// @fn void has_signal_response::emit_signal_response(int response)
     /// \signal_emit_brief
@@ -1935,10 +1831,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_pressed::connect_signal_pressed(Function_t)
-    /// \signal_connect{(T*, double x, double y) -> void}
+    /// \signal_connect{(T&, double x, double y) -> void}
     ///
     /// @fn void has_signal_pressed::connect_signal_pressed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double x, double y, Data_t) -> void}
+    /// \signal_connect_data{(T&, double x, double y, Data_t) -> void}
     ///
     /// @fn void has_signal_pressed::emit_signal_pressed(int32_t n_press, double x, double y)
     /// \signal_emit_brief
@@ -1966,10 +1862,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_press_cancelled::connect_signal_press_cancelled(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_press_cancelled::connect_signal_press_cancelled(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_press_cancelled::emit_signal_press_cancelled()
     /// \signal_emit_brief
@@ -2014,10 +1910,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_pan::connect_signal_pan(Function_t)
-    /// \signal_connect{(T*, PanDirection direction, double offset) -> void}
+    /// \signal_connect{(T&, PanDirection direction, double offset) -> void}
     ///
     /// @fn void has_signal_pan::connect_signal_pan(Function_t, Data_t)
-    /// \signal_connect_data{(T*, PanDirection direction, double offset, Data_t) -> void}
+    /// \signal_connect_data{(T&, PanDirection direction, double offset, Data_t) -> void}
     ///
     /// @fn void has_signal_pan::emit_signal_pan(int32_t n_press, double x, double y)
     /// \signal_emit_brief
@@ -2048,10 +1944,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_swipe::connect_signal_swipe(Function_t)
-    /// \signal_connect{(T*, double x_velocity, double y_velocity) -> void}
+    /// \signal_connect{(T&, double x_velocity, double y_velocity) -> void}
     ///
     /// @fn void has_signal_swipe::connect_signal_swipe(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double x_velocity, double y_velocity, Data_t) -> void}
+    /// \signal_connect_data{(T&, double x_velocity, double y_velocity, Data_t) -> void}
     ///
     /// @fn void has_signal_swipe::emit_signal_swipe(int32_t n_press, double x, double y)
     /// \signal_emit_brief
@@ -2082,10 +1978,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_stylus_down::connect_signal_stylus_down(Function_t)
-    /// \signal_connect{(T*, double x, double y) -> void}
+    /// \signal_connect{(T&, double x, double y) -> void}
     ///
     /// @fn void has_signal_stylus_down::connect_signal_stylus_down(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double x, double y, Data_t) -> void}
+    /// \signal_connect_data{(T&, double x, double y, Data_t) -> void}
     ///
     /// @fn void has_signal_stylus_down::emit_signal_stylus_down(double x, double y)
     /// \signal_emit_brief
@@ -2116,10 +2012,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_stylus_up::connect_signal_stylus_up(Function_t)
-    /// \signal_connect{(T*, double x, double y) -> void}
+    /// \signal_connect{(T&, double x, double y) -> void}
     ///
     /// @fn void has_signal_stylus_up::connect_signal_stylus_up(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double x, double y, Data_t) -> void}
+    /// \signal_connect_data{(T&, double x, double y, Data_t) -> void}
     ///
     /// @fn void has_signal_stylus_up::emit_signal_stylus_up(double x, double y)
     /// \signal_emit_brief
@@ -2150,10 +2046,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_proximity::connect_signal_proximity(Function_t)
-    /// \signal_connect{(T*, double x, double y) -> void}
+    /// \signal_connect{(T&, double x, double y) -> void}
     ///
     /// @fn void has_signal_proximity::connect_signal_proximity(Function_t, Data_t)
-    /// \signal_connect_data{(T*, double x, double y, Data_t) -> void}
+    /// \signal_connect_data{(T&, double x, double y, Data_t) -> void}
     ///
     /// @fn void has_signal_proximity::emit_signal_proximity(double x, double y)
     /// \signal_emit_brief
@@ -2236,10 +2132,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_scroll_child::connect_signal_scroll_child(Function_t)
-    /// \signal_connect{(T*, ScrollType scroll_type, bool is_horizontal) -> void}
+    /// \signal_connect{(T&, ScrollType scroll_type, bool is_horizontal) -> void}
     ///
     /// @fn void has_signal_scroll_child::connect_signal_scroll_child(Function_t, Data_t)
-    /// \signal_connect_data{(T*, ScrollType scroll_type, bool is_horizontal, Data_t) -> void}
+    /// \signal_connect_data{(T&, ScrollType scroll_type, bool is_horizontal, Data_t) -> void}
     ///
     /// @fn void has_signal_scroll_child::emit_signal_scroll_child(ScrollType scroll_type, bool is_horizontal)
     /// \signal_emit_brief
@@ -2267,10 +2163,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_closed::connect_signal_closed(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_closed::connect_signal_closed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_closed::emit_signal_closed()
     /// \signal_emit_brief
@@ -2296,10 +2192,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_play::connect_signal_play(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_play::connect_signal_play(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_play::emit_signal_play()
     /// \signal_emit_brief
@@ -2325,10 +2221,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_stop::connect_signal_stop(Function_t)
-    /// \signal_connect{(T*) -> void}
+    /// \signal_connect{(T&) -> void}
     ///
     /// @fn void has_signal_stop::connect_signal_stop(Function_t, Data_t)
-    /// \signal_connect_data{(T*, Data_t) -> void}
+    /// \signal_connect_data{(T&, Data_t) -> void}
     ///
     /// @fn void has_signal_stop::emit_signal_stop()
     /// \signal_emit_brief
@@ -2357,10 +2253,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_items_changed::connect_signal_items_changed(Function_t)
-    /// \signal_connect{(T*, int32_t position, int32_t n_removed, int32_t n_added) -> void}
+    /// \signal_connect{(T&, int32_t position, int32_t n_removed, int32_t n_added) -> void}
     ///
     /// @fn void has_signal_items_changed::connect_signal_items_changed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, int32_t position, int32_t n_removed, int32_t n_added, Data_t) -> void}
+    /// \signal_connect_data{(T&, int32_t position, int32_t n_removed, int32_t n_added, Data_t) -> void}
     ///
     /// @fn void has_signal_items_changed::emit_signal_items_changed(int32_t position, int32_t n_removed, int32_t n_added)
     /// \signal_emit_brief
@@ -2389,10 +2285,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_revealed::connect_signal_revealed(Function_t)
-    /// \signal_connect{(T*, UnusedArgument_t) -> void}
+    /// \signal_connect{(T&, UnusedArgument_t) -> void}
     ///
     /// @fn void has_signal_revealed::connect_signal_revealed(Function_t, Data_t)
-    /// \signal_connect_data{(T*, UnusedArgument_t, Data_t) -> void}
+    /// \signal_connect_data{(T&, UnusedArgument_t, Data_t) -> void}
     ///
     /// @fn void has_signal_revealed::emit_signal_revealed(UnusedArgument_t)
     /// \signal_emit_brief
@@ -2419,10 +2315,10 @@ namespace mousetrap
     /// @tparam T instance type
     ///
     /// @fn void has_signal_activated::connect_signal_activated(Function_t)
-    /// \signal_connect{(T*, UnusedArgument_t) -> void}
+    /// \signal_connect{(T&, UnusedArgument_t) -> void}
     ///
     /// @fn void has_signal_activated::connect_signal_activated(Function_t, Data_t)
-    /// \signal_connect_data{(T*, UnusedArgument_t, Data_t) -> void}
+    /// \signal_connect_data{(T&, UnusedArgument_t, Data_t) -> void}
     ///
     /// @fn void has_signal_activated::emit_signal_activated(UnusedArgument_t)
     /// \signal_emit_brief

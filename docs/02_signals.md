@@ -30,7 +30,7 @@ using namespace mousetrap;
 auto button = Button();
 
 // create signal handler
-auto on_signal_clicked = [](Button* button) -> void {
+auto on_signal_clicked = [](Button& button) -> void {
     std::cout << "clicked" << std::endl;
 }
 
@@ -49,14 +49,14 @@ using namespace mousetrap;
 int main()
 {
     auto app = Application("test.app");
-    app.connect_signal_activate([](Application* app)
+    app.connect_signal_activate([](Application& app)
     {
         auto window = Window(*app);
 
         // start of snippet
         auto button = Button();
         
-        auto auto on_signal_clicked = [](Button* button) -> void {
+        auto auto on_signal_clicked = [](Button& button) -> void {
             std::cout << "clicked" << std::endl;
         }
         
