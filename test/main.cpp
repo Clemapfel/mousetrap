@@ -5,6 +5,7 @@
 #include <mousetrap/application.hpp>
 #include <mousetrap/window.hpp>
 #include <mousetrap/label.hpp>
+#include <mousetrap/motion_event_controller.hpp>
 
 using namespace mousetrap;
 
@@ -14,6 +15,13 @@ int main()
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
+
+        auto motion_controller = MotionEventController();
+        motion_controller.connect_signal_motion([](MotionEventController*, double x, double y){
+            std::cout << x << " " << y << std::endl;
+        });
+
+        window.add_controller(motion_controller);
         window.present();
     });
 

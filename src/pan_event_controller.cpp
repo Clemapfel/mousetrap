@@ -13,11 +13,11 @@ namespace mousetrap
 
     Orientation PanEventController::get_orientation() const
     {
-        return (Orientation) gtk_gesture_pan_get_orientation(GTK_GESTURE_PAN(_native));
+        return (Orientation) gtk_gesture_pan_get_orientation(GTK_GESTURE_PAN(get_internal()));
     }
 
     void PanEventController::set_orientation(Orientation orientation)
     {
-        gtk_gesture_pan_set_orientation(GTK_GESTURE_PAN(_native), (GtkOrientation) orientation);
+        gtk_gesture_pan_set_orientation(GTK_GESTURE_PAN(get_internal()), (GtkOrientation) orientation);
     }
 }

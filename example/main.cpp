@@ -13,7 +13,6 @@ int main()
         auto window = Window(*app);
 
         // create label
-        auto label = Label("Hello World");
         label.set_margin(75);
 
         // add label to window

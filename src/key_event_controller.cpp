@@ -16,7 +16,7 @@ namespace mousetrap
     bool KeyEventController::should_shortcut_trigger_trigger(const ShortcutTriggerID& shortcut)
     {
         auto* trigger = gtk_shortcut_trigger_parse_string(shortcut.c_str());
-        auto* event = gtk_event_controller_get_current_event(_native);
+        auto* event = gtk_event_controller_get_current_event(GTK_EVENT_CONTROLLER(get_internal()));
         bool out = gtk_shortcut_trigger_trigger(trigger, event, false);
         g_object_unref(trigger);
         return out;

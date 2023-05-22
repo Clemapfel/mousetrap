@@ -17,7 +17,7 @@ namespace mousetrap
 
     size_t StylusEventController::get_hardware_id() const
     {
-        auto* device = gtk_gesture_stylus_get_device_tool(GTK_GESTURE_STYLUS(_native));
+        auto* device = gtk_gesture_stylus_get_device_tool(GTK_GESTURE_STYLUS(get_internal()));
         if (device == nullptr)
             return 0;
 
@@ -26,7 +26,7 @@ namespace mousetrap
 
     ToolType StylusEventController::get_device_type() const
     {
-        auto* device = gtk_gesture_stylus_get_device_tool(GTK_GESTURE_STYLUS(_native));
+        auto* device = gtk_gesture_stylus_get_device_tool(GTK_GESTURE_STYLUS(get_internal()));
         if (device == nullptr)
             return ToolType::UNKNOWN;
 
@@ -36,7 +36,7 @@ namespace mousetrap
     bool StylusEventController::has_axis(DeviceAxis axis) const
     {
         double value;
-        return gtk_gesture_stylus_get_axis(GTK_GESTURE_STYLUS(_native), (GdkAxisUse) axis, &value);
+        return gtk_gesture_stylus_get_axis(GTK_GESTURE_STYLUS(get_internal()), (GdkAxisUse) axis, &value);
     }
 
     std::string device_axis_to_string(DeviceAxis axis)
@@ -73,7 +73,7 @@ namespace mousetrap
     double StylusEventController::get_axis_value(DeviceAxis axis) const
     {
         double value;
-        auto has = gtk_gesture_stylus_get_axis(GTK_GESTURE_STYLUS(_native), (GdkAxisUse) axis, &value);
+        auto has = gtk_gesture_stylus_get_axis(GTK_GESTURE_STYLUS(get_internal()), (GdkAxisUse) axis, &value);
 
         if (has)
             return value;

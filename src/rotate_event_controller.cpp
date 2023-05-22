@@ -13,6 +13,6 @@ namespace mousetrap
 
     Angle RotateEventController::get_angle_delta()
     {
-        return radians(gtk_gesture_rotate_get_angle_delta(GTK_GESTURE_ROTATE(_native)));
+        return radians(gtk_gesture_rotate_get_angle_delta(GTK_GESTURE_ROTATE(get_internal())));
     }
 }

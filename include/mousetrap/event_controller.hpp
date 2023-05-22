@@ -30,6 +30,15 @@ namespace mousetrap
         TARGET = GTK_PHASE_TARGET
     };
 
+    #ifndef DOXYGEN
+    class EventController;
+    namespace detail
+    {
+        using EventControllerInternal = GtkEventController;
+        DEFINE_INTERNAL_MAPPING(EventController);
+    }
+    #endif
+
     /// @brief event controller
     class EventController : public SignalEmitter
     {
@@ -56,7 +65,9 @@ namespace mousetrap
 
         protected:
             EventController(GtkEventController*);
-            GtkEventController* _native;
+
+        private:
+            detail::EventControllerInternal* _internal = nullptr;
     };
 
     /// @brief id of a mouse button

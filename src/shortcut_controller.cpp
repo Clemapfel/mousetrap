@@ -24,17 +24,17 @@ namespace mousetrap
                 std::cerr << "[ERROR] In ShortcutController::add_action: Unable to parse trigger `" << s << "` for action `" << id << "`" << std::endl;
                 return;
             }
-            gtk_shortcut_controller_add_shortcut(GTK_SHORTCUT_CONTROLLER(_native), gtk_shortcut_new(trigger, shortcut_action));
+            gtk_shortcut_controller_add_shortcut(GTK_SHORTCUT_CONTROLLER(get_internal()), gtk_shortcut_new(trigger, shortcut_action));
         }
     }
 
     void ShortcutController::set_scope(ShortcutScope scope)
     {
-        gtk_shortcut_controller_set_scope(GTK_SHORTCUT_CONTROLLER(_native), (GtkShortcutScope) scope);
+        gtk_shortcut_controller_set_scope(GTK_SHORTCUT_CONTROLLER(get_internal()), (GtkShortcutScope) scope);
     }
 
     ShortcutScope ShortcutController::get_scope()
     {
-        return (ShortcutScope) gtk_shortcut_controller_get_scope(GTK_SHORTCUT_CONTROLLER(_native));
+        return (ShortcutScope) gtk_shortcut_controller_get_scope(GTK_SHORTCUT_CONTROLLER(get_internal()));
     }
 }

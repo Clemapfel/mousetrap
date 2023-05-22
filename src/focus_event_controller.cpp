@@ -14,11 +14,11 @@ namespace mousetrap
 
     bool FocusEventController::self_is_focused()
     {
-        return gtk_event_controller_focus_contains_focus(GTK_EVENT_CONTROLLER_FOCUS(_native));
+        return gtk_event_controller_focus_contains_focus(GTK_EVENT_CONTROLLER_FOCUS(get_internal()));
     }
 
     bool FocusEventController::self_or_child_is_focused()
     {
-        return gtk_event_controller_focus_is_focus(GTK_EVENT_CONTROLLER_FOCUS(_native));
+        return gtk_event_controller_focus_is_focus(GTK_EVENT_CONTROLLER_FOCUS(get_internal()));
     }
 }

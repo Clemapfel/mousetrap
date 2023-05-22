@@ -13,6 +13,6 @@ namespace mousetrap
 
     float PinchZoomEventController::get_scale_delta()
     {
-        return gtk_gesture_zoom_get_scale_delta(GTK_GESTURE_ZOOM(_native));
+        return gtk_gesture_zoom_get_scale_delta(GTK_GESTURE_ZOOM(get_internal()));
     }
 }

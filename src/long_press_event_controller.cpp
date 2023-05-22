@@ -14,11 +14,11 @@ namespace mousetrap
 
     void LongPressEventController::set_delay_factor(float v)
     {
-        gtk_gesture_long_press_set_delay_factor(GTK_GESTURE_LONG_PRESS(_native), v);
+        gtk_gesture_long_press_set_delay_factor(GTK_GESTURE_LONG_PRESS(get_internal()), v);
     }
 
     float LongPressEventController::get_delay_factor() const
     {
-        return gtk_gesture_long_press_get_delay_factor(GTK_GESTURE_LONG_PRESS(_native));
+        return gtk_gesture_long_press_get_delay_factor(GTK_GESTURE_LONG_PRESS(get_internal()));
     }
 }

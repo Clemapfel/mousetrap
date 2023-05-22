@@ -140,7 +140,7 @@ namespace mousetrap
             bool is_blocked;\
         };                                                                                                           \
         using SIGNAL_INTERNAL_CLASS_NAME(CamelCase) = SIGNAL_INTERNAL_PRIVATE_CLASS_NAME(CamelCase); \
-        SIGNAL_INTERNAL_CLASS_NAME(CamelCase)* snake_case##_new(void* instance); \
+        SIGNAL_INTERNAL_CLASS_NAME(CamelCase)* has_signal_##snake_case##_internal_new(NativeObject instance); \
     }                                                                                                               \
                                                                                                                     \
     template<typename T>                                                                                            \
@@ -162,7 +162,7 @@ namespace mousetrap
             {                                                                                                       \
                 if (_internal == nullptr)                                                                           \
                 {                                                                    \
-                    _internal = detail::snake_case##_new((void*) _instance); \
+                    _internal = detail::has_signal_##snake_case##_internal_new((NativeObject) _instance); \
                     detail::attach_ref_to(_instance->operator GObject*(), _internal);  \
                     g_object_ref(_internal);                                                                    \
                 }       \
