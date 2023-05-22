@@ -9,14 +9,32 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class Grid;
+    namespace detail
+    {
+        using GridInternal = GtkGrid;
+        DEFINE_INTERNAL_MAPPING(Grid);
+    }
+    #endif
+
     /// @brief displays widgets in a grid, one widget may take up more than one cell
     /// \signals
     /// \widget_signals{Grid}
-    class Grid : public WidgetImplementation<GtkGrid>, public Orientable
+    class Grid : public Widget
     {
         public:
             /// @brief construct
             Grid();
+
+            /// @brief construct from internal
+            Grid(detail::GridInternal*);
+
+            /// @brief destructor
+            ~Grid();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief insert widget a position
             /// @param widget
@@ -88,9 +106,12 @@ namespace mousetrap
             bool get_columns_homogenous() const;
 
             /// @copydoc mousetrap::Orientable::get_orientation
-            Orientation get_orientation() const override;
+            Orientation get_orientation() const;
 
             /// @copydoc mousetrap::Orientable::set_orientation
-            void set_orientation(Orientation) override;
+            void set_orientation(Orientation);
+
+        private:
+            detail::GridInternal* _internal = nullptr;
     };
 }

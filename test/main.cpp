@@ -2,6 +2,23 @@
 // Created by clem on 4/12/23.
 //
 
+#include <mousetrap.hpp>
+using namespace mousetrap;
+
+int main()
+{
+    auto app = Application("mousetrap.test");
+    app.connect_signal_activate([](Application*)
+    {
+        auto window = Window();
+        window.present();
+    });
+
+    app.run();
+}
+
+#if false
+
 #include <mousetrap/window.hpp>
 #include <mousetrap/header_bar.hpp>
 #include <mousetrap/scrolled_window.hpp>
@@ -10,7 +27,6 @@
 #include <mousetrap/button.hpp>
 #include <mousetrap/application.hpp>
 
-#include "signals_chapter.hpp"
 #include "motion_controller_test.hpp"
 #include "paned_test.hpp"
 #include "sound_test.hpp"
@@ -212,3 +228,5 @@ int main()
 
     return app.run();
 }
+
+#endif

@@ -11,7 +11,7 @@ namespace mousetrap
             return f(value, d);
         };
 
-        gtk_scale_set_format_value_func(get_native(), (GtkScaleFormatValueFunc) on_format_value, this, (GDestroyNotify) nullptr);
+        gtk_scale_set_format_value_func(_internal->native, (GtkScaleFormatValueFunc) on_format_value, this, (GDestroyNotify) nullptr);
     }
 
     template<typename Function_t>
@@ -21,6 +21,6 @@ namespace mousetrap
             return f(value);
         };
 
-        gtk_scale_set_format_value_func(get_native(), (GtkScaleFormatValueFunc) on_format_value, this, (GDestroyNotify) nullptr);
+        gtk_scale_set_format_value_func(_internal->native, (GtkScaleFormatValueFunc) on_format_value, this, (GDestroyNotify) nullptr);
     }
 }

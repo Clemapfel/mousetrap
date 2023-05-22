@@ -20,7 +20,7 @@ namespace mousetrap
             auto* self = MOUSETRAP_STACK_INTERNAL(object);
             G_OBJECT_CLASS(stack_internal_parent_class)->finalize(object);
             delete self->children;
-            delete self->selection_model;
+            g_object_unref(self->selection_model);
         }
 
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(StackInternal, stack_internal, STACK_INTERNAL)
@@ -49,7 +49,7 @@ namespace mousetrap
         _internal = g_object_ref(internal);
     }
     
-    StackSidebar::~StackSidebar() noexcept 
+    StackSidebar::~StackSidebar()
     {
         g_object_unref(_internal);
     }
@@ -74,7 +74,7 @@ namespace mousetrap
         _internal = g_object_ref(internal);
     }
 
-    StackSwitcher::~StackSwitcher() noexcept
+    StackSwitcher::~StackSwitcher()
     {
         g_object_unref(_internal);
     }
@@ -219,6 +219,11 @@ namespace mousetrap
     bool Stack::get_should_interpolate_size() const
     {
         return gtk_stack_get_interpolate_size(_internal->native);
+    }
+
+    Stack::operator GtkStack*() const
+    {
+        return _internal->native;
     }
 }
 

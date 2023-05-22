@@ -34,6 +34,11 @@ namespace mousetrap
         g_object_unref(_internal);
     }
 
+    NativeObject AspectFrame::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
     void AspectFrame::set_child(const Widget& child)
     {
         const Widget* child_ptr = &child;

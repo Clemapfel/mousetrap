@@ -14,7 +14,7 @@
 
 namespace mousetrap
 {
-    #infdef DOXYGEN
+    #ifndef DOXYGEN
     class ToggleButton;
     namespace detail
     {

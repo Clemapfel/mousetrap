@@ -22,6 +22,16 @@ namespace mousetrap
         _internal = g_object_ref(internal);
     }
 
+    Paned::~Paned()
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject Paned::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
     void Paned::set_position(int v)
     {
         gtk_paned_set_position(GTK_PANED(operator NativeWidget()), v);

@@ -16,6 +16,20 @@ namespace mousetrap
           CTOR_SIGNAL(Window, activate_focused_widget)
     {}
 
+    Window::Window(detail::WindowInternal* internal)
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Window, close_request),
+          CTOR_SIGNAL(Window, activate_default_widget),
+          CTOR_SIGNAL(Window, activate_focused_widget)
+    {
+        _internal = g_object_ref(internal);
+    }
+
+    Window::~Window()
+    {
+        g_object_unref(_internal);
+    }
+
     Window::Window(Application& app)
         : Widget(gtk_application_window_new(app.operator GtkApplication*())),
           CTOR_SIGNAL(Window, close_request),
@@ -23,6 +37,11 @@ namespace mousetrap
           CTOR_SIGNAL(Window, activate_focused_widget)
     {
         gtk_application_add_window(app.operator GtkApplication*(), GTK_WINDOW(_internal));
+    }
+
+    NativeObject Window::get_internal() const
+    {
+        return G_OBJECT(_internal);
     }
 
     void Window::set_application(Application& app)

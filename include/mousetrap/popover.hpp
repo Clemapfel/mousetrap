@@ -11,7 +11,7 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
-    class PopoverInternal;
+    class Popover;
     namespace detail
     {
         using PopoverInternal = GtkPopover;

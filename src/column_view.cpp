@@ -172,6 +172,11 @@ namespace mousetrap
         g_object_unref(_internal);
     }
 
+    NativeObject ColumnView::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
     GtkColumnViewColumn* ColumnView::new_column(const std::string& title)
     {
         auto* factory = gtk_signal_list_item_factory_new();

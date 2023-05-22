@@ -23,9 +23,9 @@ namespace mousetrap
         return G_OBJECT(_native);
     }
 
-    EventController::operator GtkEventController*() const
+    NativeObject EventController::get_internal() const
     {
-        return _native;
+        return operator GObject*();
     }
 
     void EventController::set_propagation_phase(PropagationPhase phase)

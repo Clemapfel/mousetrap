@@ -111,7 +111,7 @@ namespace mousetrap
             Shape(detail::ShapeInternal*);
 
             /// @brief expose internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief copy ctor, allocates new vertex array with identical vertex data
             /// @param other

@@ -139,10 +139,6 @@ namespace mousetrap
             /// @brief remove child
             void remove_child();
 
-            /// @brief get the windows child
-            /// @returns child
-            Widget* get_child() const;
-
         private:
             detail::ScrolledWindowInternal* _internal = nullptr;
     };

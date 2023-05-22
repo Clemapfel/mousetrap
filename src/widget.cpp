@@ -359,13 +359,13 @@ namespace mousetrap
 
     void Widget::add_controller(const EventController& controller)
     {
-        gtk_widget_add_controller(operator NativeWidget(), controller.operator GtkEventController*());
+        gtk_widget_add_controller(operator NativeWidget(), GTK_EVENT_CONTROLLER(controller.operator NativeObject()));
         gtk_widget_set_focusable(operator NativeWidget(), true);
     }
 
     void Widget::remove_controller(const EventController& controller)
     {
-        gtk_widget_remove_controller(operator NativeWidget(), controller.operator GtkEventController*());
+        gtk_widget_remove_controller(operator NativeWidget(), GTK_EVENT_CONTROLLER(controller.operator NativeObject()));
     }
 
     void Widget::set_is_focusable(bool b)

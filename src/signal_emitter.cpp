@@ -33,11 +33,6 @@ namespace mousetrap
         }
     }
 
-    NativeObject SignalEmitter::get_native() const
-    {
-        return operator NativeObject();
-    }
-
     NativeObject SignalEmitter::get_internal() const
     {
         return G_OBJECT(_internal);

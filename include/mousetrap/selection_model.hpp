@@ -53,7 +53,7 @@ namespace mousetrap
             ~SelectionModel();
 
             /// @brief expose internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief expose as GtkSelectionModel \for_internal_use_only
             operator GtkSelectionModel*() const;

@@ -57,7 +57,7 @@ namespace mousetrap
             Shader(detail::ShaderInternal*);
 
             /// @brief expose internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief expose as GObject \for_internal_use_only
             operator NativeObject() const override;

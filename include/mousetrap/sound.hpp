@@ -58,7 +58,7 @@ namespace mousetrap
             Sound(detail::SoundInternal*);
 
             /// @brief expose internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief expose internal
             operator NativeObject() const override;

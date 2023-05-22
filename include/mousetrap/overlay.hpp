@@ -14,7 +14,7 @@ namespace mousetrap
     namespace detail
     {
         using OverlayInternal = GtkOverlay;
-        DEFINE_INTERNAL_MAPPING(Overlay),
+        DEFINE_INTERNAL_MAPPING(Overlay);
     }
     #endif
 

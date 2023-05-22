@@ -64,7 +64,7 @@ namespace mousetrap
         _internal = g_object_ref(internal);
     }
     
-    FileChooser::~FileChooser() noexcept 
+    FileChooser::~FileChooser()
     {
         g_object_unref(_internal);
     }
@@ -123,7 +123,7 @@ namespace mousetrap
 
     void FileChooser::set_transient_for(Window* window)
     {
-        gtk_native_dialog_set_transient_for(GTK_NATIVE_DIALOG(GTK_FILE_CHOOSER_NATIVE(operator NativeWidget())), window != nullptr ? window->operator GtkWindow*() : nullptr);
+        gtk_native_dialog_set_transient_for(GTK_NATIVE_DIALOG(GTK_FILE_CHOOSER_NATIVE(operator NativeWidget())), window != nullptr ? GTK_WINDOW(window->get_internal()) : nullptr);
     }
 
     void FileChooser::set_can_select_multiple(bool b)

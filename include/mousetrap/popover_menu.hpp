@@ -9,6 +9,7 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class PopoverMenu;
     namespace detail
     {
         struct _PopoverMenuInternal

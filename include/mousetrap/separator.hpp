@@ -10,6 +10,7 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class Separator;
     namespace detail
     {
         using SeparatorInternal = GtkSeparator;

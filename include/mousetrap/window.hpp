@@ -49,7 +49,7 @@ namespace mousetrap
             ~Window();
 
             /// @brief expose internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief link with application
             /// @param application

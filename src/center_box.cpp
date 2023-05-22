@@ -26,6 +26,11 @@ namespace mousetrap
         g_object_unref(_internal);
     }
 
+    NativeObject CenterBox::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
     void CenterBox::set_start_child(const Widget& widget)
     {
         auto* ptr = &widget;

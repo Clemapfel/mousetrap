@@ -25,6 +25,11 @@ namespace mousetrap
         g_object_unref(_internal);
     }
 
+    NativeObject ScrolledWindow::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
     void ScrolledWindow::set_propagate_natural_height(bool b)
     {
         gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(_internal), b);
@@ -116,11 +121,6 @@ namespace mousetrap
     void ScrolledWindow::set_kinetic_scrolling_enabled(bool b)
     {
         gtk_scrolled_window_set_kinetic_scrolling(GTK_SCROLLED_WINDOW(_internal), b);
-    }
-
-    Widget* ScrolledWindow::get_child() const
-    {
-        return const_cast<Widget*>(_child);
     }
 
     void ScrolledWindow::set_child(const Widget& child)

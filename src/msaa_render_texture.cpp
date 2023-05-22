@@ -136,4 +136,19 @@ namespace mousetrap
     {
         return G_OBJECT(_internal);
     }
+
+    void MultisampledRenderTexture::free()
+    {
+        if (_internal->buffer != 0)
+            glDeleteFramebuffers(1, &_internal->buffer);
+
+        if (_internal->msaa_color_buffer_texture != 0)
+            glDeleteTextures(1, &_internal->msaa_color_buffer_texture);
+
+        if (_internal->intermediate_buffer != 0)
+            glDeleteFramebuffers(1, &_internal->intermediate_buffer);
+
+        if (_internal->screen_texture != 0)
+            glDeleteTextures(1, &_internal->screen_texture);
+    }
 }

@@ -124,17 +124,17 @@ namespace mousetrap
 
             /// @brief expose the selection model, connect to its signals to monitor list item selection
             /// @return point to selection model, the instance is owned by the list view
-            SelectionModel* get_selection_model() override;
+            SelectionModel* get_selection_model();
 
             /// @brief get number of itmes in list and all sub lists
             /// @return n items
             size_t get_n_items() const;
 
             /// @copydoc mousetrap::Orientable::set_orientation
-            void set_orientation(Orientation) override;
+            void set_orientation(Orientation);
 
             /// @copydoc mousetrap::Orientable::get_orientation
-            Orientation get_orientation() const override;
+            Orientation get_orientation() const;
 
         private:
             detail::ListViewInternal* _internal = nullptr;

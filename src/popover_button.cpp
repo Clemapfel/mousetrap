@@ -10,6 +10,37 @@
 
 namespace mousetrap
 {
+    namespace detail
+    {
+        DECLARE_NEW_TYPE(PopoverButtonInternal, popover_button_internal, POPOVER_BUTTON_INTERNAL)
+        DEFINE_NEW_TYPE_TRIVIAL_INIT(PopoverButtonInternal, popover_button_internal, POPOVER_BUTTON_INTERNAL)
+
+        static void popover_button_internal_finalize(GObject* object)
+        {
+            auto* self = MOUSETRAP_POPOVER_BUTTON_INTERNAL(object);
+            G_OBJECT_CLASS(popover_button_internal_parent_class)->finalize(object);
+
+            if (self->menu != nullptr)
+                g_object_unref(self->menu);
+
+            if (self->popover != nullptr)
+                g_object_unref(self->popover);
+        }
+
+        DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(PopoverButtonInternal, popover_button_internal, POPOVER_BUTTON_INTERNAL)
+
+        static PopoverButtonInternal* popover_button_internal_new(GtkMenuButton* native)
+        {
+            auto* self = (PopoverButtonInternal*) g_object_new(popover_button_internal_get_type(), nullptr);
+            popover_button_internal_init(self);
+
+            self->native = native;
+            self->menu = nullptr;
+
+            return self;
+        }
+    }
+    
     PopoverButton::PopoverButton()
         : Widget(gtk_menu_button_new()),
           CTOR_SIGNAL(PopoverButton, activate)
@@ -31,7 +62,7 @@ namespace mousetrap
 
     NativeObject PopoverButton::get_internal() const 
     {
-        g_object_unref(_internal);
+        return G_OBJECT(_internal);
     }
     
     void PopoverButton::set_child(const Widget& child)
@@ -41,19 +72,12 @@ namespace mousetrap
 
         gtk_menu_button_set_child(GTK_MENU_BUTTON(operator NativeWidget()), child.operator GtkWidget*());
 
-        if (_popover_menu != nullptr)
-            _popover_menu->refresh_widgets();
+        PopoverMenu(_internal->menu).refresh_widgets();
     }
 
     void PopoverButton::remove_child()
     {
-        _child = nullptr;
         gtk_menu_button_set_child(GTK_MENU_BUTTON(operator NativeWidget()), nullptr);
-    }
-
-    Widget* PopoverButton::get_child() const
-    {
-        return const_cast<Widget*>(_child);
     }
 
     void PopoverButton::set_popover_position(RelativePosition type)
@@ -68,23 +92,24 @@ namespace mousetrap
 
     void PopoverButton::set_popover(Popover& popover)
     {
-        _popover = &popover;
-        _popover_menu = nullptr;
+        _internal->menu = nullptr;
+        _internal->popover = (detail::PopoverInternal*) popover.get_internal();
         gtk_menu_button_set_popover(GTK_MENU_BUTTON(operator NativeWidget()), popover.operator GtkWidget*());
     }
 
     void PopoverButton::set_popover_menu(PopoverMenu& popover_menu)
     {
-        _popover = nullptr;
-        _popover_menu = &popover_menu;
+        _internal->menu = (detail::PopoverMenuInternal*) popover_menu.get_internal();;
+        _internal->popover = nullptr;
 
         gtk_menu_button_set_popover(GTK_MENU_BUTTON(operator NativeWidget()), popover_menu.operator GtkWidget*());
-        _popover_menu->refresh_widgets();
+        PopoverMenu(_internal->menu).refresh_widgets();
     }
 
     void PopoverButton::remove_popover()
     {
-        _popover_menu = nullptr;
+        _internal->menu = nullptr;
+        _internal->popover = nullptr;
         gtk_menu_button_set_popover(GTK_MENU_BUTTON(operator NativeWidget()), nullptr);
     }
 

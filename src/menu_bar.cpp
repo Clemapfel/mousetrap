@@ -46,6 +46,16 @@ namespace mousetrap
     {
         _internal = g_object_ref(internal);
     }
+
+    MenuBar::~MenuBar()
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject MenuBar::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
     
     void MenuBar::refresh_widgets()
     {

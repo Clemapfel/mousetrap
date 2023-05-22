@@ -13,6 +13,7 @@
 namespace mousetrap
 {
     #ifndef DOXYGEN
+    class ImageDisplay;
     namespace detail
     {
         struct _ImageDisplayInternal;

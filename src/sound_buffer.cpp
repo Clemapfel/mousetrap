@@ -51,6 +51,11 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
+    SoundBuffer::operator NativeObject() const
+    {
+        return G_OBJECT(_internal);
+    }
+
     bool SoundBuffer::create_from_file(const std::string& path)
     {
         return _internal->native->loadFromFile(path);

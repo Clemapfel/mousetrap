@@ -191,9 +191,21 @@ namespace mousetrap
         detail::attach_ref_to(G_OBJECT(_internal->list_view), _internal);
     }
 
+    ListView::ListView(detail::ListViewInternal* internal)
+        : Widget(GTK_WIDGET(internal->list_view)),
+          CTOR_SIGNAL(ListView, activate)
+    {
+        _internal = g_object_ref(internal);
+    }
+
     ListView::~ListView()
     {
         g_object_unref(_internal);
+    }
+
+    NativeObject ListView::get_internal() const
+    {
+        return G_OBJECT(_internal);
     }
 
     ListView::Iterator ListView::push_back(const Widget& widget, Iterator it)

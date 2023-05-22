@@ -27,7 +27,7 @@ namespace mousetrap
             f(instance, data);
         });
 
-        g_list_store_append(_model, item);
+        g_list_store_append(_internal->model, item);
         return ItemID{id};
     }
 
@@ -46,7 +46,7 @@ namespace mousetrap
             f(instance);
         });
 
-        g_list_store_append(_model, item);
+        g_list_store_append(_internal->model, item);
         return ItemID{id};
     }
 
@@ -65,7 +65,7 @@ namespace mousetrap
             f(instance, data);
         });
 
-        g_list_store_prepend(_model, item);
+        g_list_store_prepend(_internal->model, item);
         return ItemID{id};
     }
 
@@ -84,7 +84,7 @@ namespace mousetrap
             f(instance);
         });
 
-        g_list_store_prepend(_model, item);
+        g_list_store_prepend(_internal->model, item);
         return ItemID{id};
     }
 
@@ -93,7 +93,7 @@ namespace mousetrap
     {
         assert_label_is_not_self("insert", list_widget, label_widget);
 
-        if (i >= g_list_model_get_n_items(G_LIST_MODEL(_model)))
+        if (i >= g_list_model_get_n_items(G_LIST_MODEL(_internal->model)))
             return push_back(list_widget, label_widget, f_in, data_in);
 
         auto id = _current_id++;
@@ -106,7 +106,7 @@ namespace mousetrap
             f(instance, data);
         });
 
-        g_list_store_insert(_model, i, item);
+        g_list_store_insert(_internal->model, i, item);
         return ItemID{id};
     }
 
@@ -115,7 +115,7 @@ namespace mousetrap
     {
         assert_label_is_not_self("insert", list_widget, label_widget);
 
-        if (i >= g_list_model_get_n_items(G_LIST_MODEL(_model)))
+        if (i >= g_list_model_get_n_items(G_LIST_MODEL(_internal->model)))
             return push_back(list_widget, label_widget, f_in);
 
         auto id = _current_id++;
@@ -128,7 +128,7 @@ namespace mousetrap
             f(instance);
         });
 
-        g_list_store_insert(_model, i, item);
+        g_list_store_insert(_internal->model, i, item);
         return ItemID{id};
     }
 }

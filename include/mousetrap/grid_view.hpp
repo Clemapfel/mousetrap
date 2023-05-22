@@ -97,7 +97,7 @@ namespace mousetrap
 
             /// @brief get selection model
             /// @return pointer to selection model
-            SelectionModel* get_selection_model() override;
+            SelectionModel* get_selection_model();
 
             /// @brief set whether an <tt>activated</tt> signal should be emitted when the user selects the item, as opposed to selecting and activating the item
             /// @param enable true to enable, false otherwise
@@ -108,10 +108,10 @@ namespace mousetrap
             bool get_single_click_activate() const;
 
             /// @copydoc mousetrap::Orientable::set_orientation
-            void set_orientation(Orientation orientation) override;
+            void set_orientation(Orientation orientation);
 
             /// @copydoc mousetrap::Orientable::get_orientation
-            Orientation get_orientation() const override;
+            Orientation get_orientation() const;
 
         private:
            detail::GridViewInternal* _internal = nullptr;

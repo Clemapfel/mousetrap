@@ -25,9 +25,10 @@ namespace mousetrap
         {
             GObject parent;
             GtkMenuButton* native;
+            detail::PopoverInternal* popover;
             detail::PopoverMenuInternal* menu;
         };
-        using PopoverButtonInternal = GtkMenuButton;
+        using PopoverButtonInternal = _PopoverButtonInternal;
         DEFINE_INTERNAL_MAPPING(PopoverButton);
     }
     #endif
@@ -55,10 +56,6 @@ namespace mousetrap
 
             /// @brief remove child
             void remove_child();
-
-            /// @brief get the label widget of the button
-            /// @return widget
-            Widget* get_child() const;
 
             /// @brief attach a popover to the button, the button will take care of showing / hiding the popover
             /// @param popover Popover or nullptr to remove any popover or popover menu

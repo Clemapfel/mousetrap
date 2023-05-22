@@ -186,6 +186,6 @@ namespace mousetrap
             std::string get_current_name() const;
 
         private:
-            detail::FileChooseInternal* _internal = nullptr;
+            detail::FileChooserInternal* _internal = nullptr;
     };
 }
