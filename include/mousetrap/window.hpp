@@ -36,9 +36,6 @@ namespace mousetrap
     {
         public:
             /// @brief construct
-            Window();
-
-            /// @brief construct
             /// @param application
             Window(Application& application);
 

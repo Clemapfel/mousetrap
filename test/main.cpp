@@ -2,19 +2,18 @@
 // Created by clem on 4/12/23.
 //
 
-#include <mousetrap.hpp>
+#include <mousetrap/application.hpp>
+#include <mousetrap/window.hpp>
+#include <mousetrap/label.hpp>
+
 using namespace mousetrap;
 
 int main()
 {
     auto app = Application("mousetrap.test");
-    app.connect_signal_activate([](Application* app)
+    app.connect_signal_activate([](Application& app)
     {
-        auto window = Window(*app);
-        auto label = Label("test");
 
-        window.set_child(label);
-        window.present();
     });
 
     return app.run();

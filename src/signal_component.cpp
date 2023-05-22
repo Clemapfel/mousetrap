@@ -1,11 +1,36 @@
-
-
-
-
 #include <mousetrap/signal_component.hpp>
 #include <mousetrap/log.hpp>
 
 #include <iostream>
+
+namespace mousetrap
+{
+    namespace detail
+    {
+        DECLARE_NEW_TYPE(HasSignalActivateInternal, has_signal_activate_internal, HAS_SIGNAL_ACTIVATE_INTERNAL)
+        DEFINE_NEW_TYPE_TRIVIAL_INIT(HasSignalActivateInternal, has_signal_activate_internal, HAS_SIGNAL_ACTIVATE_INTERNAL)
+
+        static void has_signal_activate_internal_finalize(GObject* object)
+        {
+            auto* self = MOUSETRAP_HAS_SIGNAL_ACTIVATE_INTERNAL(object);
+            G_OBJECT_CLASS(has_signal_activate_internal_parent_class)->finalize(object);
+            std::cout << "called" << std::endl;
+        }
+
+        DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(HasSignalActivateInternal, has_signal_activate_internal, HAS_SIGNAL_ACTIVATE_INTERNAL)
+
+        HasSignalActivateInternal* has_signal_activate_internal_new(NativeObject instance)
+        {
+            auto* self = (HasSignalActivateInternal*) g_object_new(has_signal_activate_internal_get_type(), nullptr);
+            has_signal_activate_internal_init(self);
+
+            self->instance = instance;
+            self->function = nullptr;
+            self->is_blocked = false;
+            return self;
+        }
+    }
+}
 
 namespace mousetrap::detail
 {
@@ -31,7 +56,7 @@ namespace mousetrap::detail
             return self; \
         }
 
-    DEFINE_SIGNAL(Activate, activate, ACTIVATE, "activate", void);
+    DEFINE_SIGNAL(_Activate, _activate, _ACTIVATE, "activate", void);
     DEFINE_SIGNAL(Startup, startup, STARTUP, "startup", void);
     DEFINE_SIGNAL(Shutdown, shutdown, SHUTDOWN, "shutdown", void);
     DEFINE_SIGNAL(Update, update, UPDATE, "update", void);

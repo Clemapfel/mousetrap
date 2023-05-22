@@ -10,13 +10,14 @@
 namespace mousetrap
 {
     Window::Window(Application& app)
-    : Widget(gtk_application_window_new(app.operator GtkApplication*())),
-      CTOR_SIGNAL(Window, close_request),
-      CTOR_SIGNAL(Window, activate_default_widget),
-      CTOR_SIGNAL(Window, activate_focused_widget)
+        : Widget(gtk_application_window_new(app.operator GtkApplication*())),
+          CTOR_SIGNAL(Window, close_request),
+          CTOR_SIGNAL(Window, activate_default_widget),
+          CTOR_SIGNAL(Window, activate_focused_widget)
     {
         _internal = GTK_WINDOW(Widget::operator NativeWidget());
         gtk_application_add_window(app.operator GtkApplication*(), GTK_WINDOW(_internal));
+        g_object_ref(_internal);
     }
 
     Window::Window(detail::WindowInternal* internal)

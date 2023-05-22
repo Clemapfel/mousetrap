@@ -17,7 +17,7 @@ namespace mousetrap
         _internal = g_object_ref(internal);
     }
     
-    Fixed::~Fixed() noexcept 
+    Fixed::~Fixed()
     {
         g_object_unref(_internal);
     }

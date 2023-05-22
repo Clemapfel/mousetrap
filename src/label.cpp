@@ -14,7 +14,9 @@ namespace mousetrap
     Label::Label(const std::string& str)
         : Widget(gtk_label_new(str.c_str()))
     {
-        gtk_label_set_use_markup(GTK_LABEL(operator NativeWidget()), true);
+        gtk_label_set_use_markup(GTK_LABEL(Widget::operator NativeWidget()), true);
+        _internal = GTK_LABEL(Widget::operator NativeWidget());
+        g_object_ref(_internal);
     }
     
     Label::Label(detail::LabelInternal* internal)
@@ -23,7 +25,7 @@ namespace mousetrap
         _internal = g_object_ref(internal);
     }
 
-    Label::~Label() noexcept
+    Label::~Label()
     {
         g_object_unref(_internal);
     }

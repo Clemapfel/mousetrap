@@ -18,7 +18,7 @@ namespace mousetrap
         _internal = g_object_ref(internal);
     }
 
-    Spinner::~Spinner() noexcept
+    Spinner::~Spinner()
     {
         g_object_unref(_internal);
     }

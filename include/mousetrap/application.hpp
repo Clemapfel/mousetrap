@@ -46,8 +46,8 @@ namespace mousetrap
     /// \signal_activate{Application}
     /// \signal_shutdown{Application}
     class Application : public SignalEmitter,
-        HAS_SIGNAL(Application, activate),
-        HAS_SIGNAL(Application, shutdown)
+        public has_signal_activate<Application>
+        //HAS_SIGNAL(Application, shutdown),
     {
         public:
             /// @brief construct new action

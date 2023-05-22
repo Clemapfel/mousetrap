@@ -12,7 +12,7 @@ namespace mousetrap
         _internal = g_object_ref(internal);
     }
     
-    LevelBar::~LevelBar() noexcept 
+    LevelBar::~LevelBar()
     {
         g_object_unref(_internal);
     }

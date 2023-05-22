@@ -7,6 +7,107 @@
 #include <cstddef>
 #include <functional>
 #include <mousetrap/gtk_common.hpp>
+#include <mousetrap/signal_emitter.hpp>
+
+namespace mousetrap
+{
+    #define return_t void
+
+    namespace detail
+    {
+        struct _HasSignalActivateInternal
+        {
+            GObject parent;
+            NativeObject instance;
+            std::function<return_t(void*)> function;
+            bool is_blocked;
+        };
+        using HasSignalActivateInternal = _HasSignalActivateInternal;
+        HasSignalActivateInternal* has_signal_activate_internal_new(NativeObject instance);
+    }
+
+    template <typename T>
+    class has_signal_activate
+    {
+        private:
+            detail::HasSignalActivateInternal* _internal = nullptr;
+            T* _instance = nullptr;
+
+            static return_t wrapper(void*, detail::HasSignalActivateInternal* internal)
+            {
+                auto temp = T((typename detail::InternalMapping<T>::value*) internal->instance);
+                if (internal->function and not internal->is_blocked)
+                    return internal->function((void*) &temp);
+            }
+
+            void initialize()
+            {
+                if (_internal == nullptr)
+                {
+                    _internal = detail::has_signal_activate_internal_new(_instance->get_internal());
+                    detail::attach_ref_to(_internal->instance, _internal);
+                }
+            }
+
+        protected:
+            has_signal_activate(T* instance)
+                : _instance(instance)
+            {}
+
+            ~has_signal_activate() = default;
+
+        public:
+            const char* signal_id = "activate";
+
+            template <typename Function_t, typename Data_t>
+            void connect_signal_activate(Function_t f, Data_t data)
+            {
+                initialize();
+                _internal->function = [f, data](void* instance) -> return_t
+                {
+                    return f(*((T*) instance), data);
+                };
+
+                T((typename detail::InternalMapping<T>::value*) _internal->instance).connect_signal(signal_id, wrapper, _internal);
+            }
+
+            template <typename Function_t>
+            void connect_signal_activate(Function_t f)
+            {
+                initialize();
+                _internal->function = [f](void* instance) -> return_t
+                {
+                    return f(*((T*) instance));                                                                                                    \
+
+                };
+
+                T((typename detail::InternalMapping<T>::value*) _internal->instance).connect_signal(signal_id, wrapper, _internal);
+            }
+
+            void set_signal_activate_blocked(bool b)
+            {
+                initialize();
+                _internal->is_blocked = b;
+            }
+
+            bool get_signal_activate_blocked() const
+            {
+                initialize();
+                return _internal->is_blocked;
+            }
+
+            return_t emit_signal_activate()
+            {
+                initialize();
+                wrapper(nullptr, _internal);
+            }
+
+            void disconnect_signal_activate()
+            {
+                T((typename detail::InternalMapping<T>::value*) _internal->instance).disconnect_signal(signal_id);
+            }
+    };
+}
 
 namespace mousetrap
 {
@@ -234,7 +335,7 @@ namespace mousetrap
     using UnusedArgument_t = void*;
     
     /// @see
-    DECLARE_SIGNAL(Activate, activate, ACTIVATE, "activate", void);
+    DECLARE_SIGNAL(_Activate, _activate, _ACTIVATE, "activate", void);
     /// @class has_signal_activate
     /// @brief \signal_activate_brief
     /// @tparam T instance type
