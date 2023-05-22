@@ -40,8 +40,9 @@ namespace mousetrap
     MenuModel::MenuModel()
         : CTOR_SIGNAL(MenuModel, items_changed)
     {
-       _internal = detail::menu_model_internal_new();
-       detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
+        _internal = detail::menu_model_internal_new();
+        detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
+        g_object_ref(_internal);
     }
 
     MenuModel::MenuModel(detail::MenuModelInternal* internal)

@@ -23,10 +23,13 @@ in an easy-to-use, easy-to-understand new coat. Mousetrap empowers user to creat
 To create a new application, only the following is necessary:
 
 ```cpp
+#include <mousetrap.hpp>
+using namespace mousetrap;
+
 int main()
 {
     auto app = Application("hello.world");
-    app.connect_signal_activate([](Application*)
+    app.connect_signal_activate([](Application&)
     {
         auto window = Window(app);
         window.present()
@@ -37,16 +40,14 @@ int main()
 ```
 ---
 
-#### Creating a TreeView
+#### Creating a Nested List
 
-In GTK4, creating a `GtkTreeView` will take dozens of lines and will use up to 6 different classes. In mousetrap, it just takes one:
+In GTK4, creating a `GtkTreeView` will take dozens of lines of code and more than 6 separator classes from GTK, Gio and Glib. In mousetrap, it can be initialized with a single line:
 
 ```cpp
 auto tree_view = TreeListView();
 tree_view.push_back(Label("new element"));
 ```
-\todo figure
-
 ---
 
 #### Adding a Keyboard Shortcut Action
@@ -62,26 +63,17 @@ shortcut_action.set_shortcut("<Control>t");
 
 #### OpenGL Rendering 
 
-Initialization of the OpenGL state and rendering is fully automatic, you just need to pick which shape you want to render, that's it:
+Rendering native shapes is fully abstracted, users will not have to call a single line of native OpenGL code to render custom shapes:
 
 ```cpp
 auto canvas = RenderArea();
-auto circle = Shape();
+auto circle = Shape::Circle({0, 0}, 0.5);
 circle.as_circle({0, 0}, 0.5);
 canvas.add_render_task(circle);
 ```
-\todo figure
+![](docs/resources/render_area_circle_normalized.png)
 
-The following shapes are already implemented: point, triangle, rectangle, circle, ellipse, line, line-strap, convex polygon, rectangle frame, circular ring, elliptic ring, wireframe
-
-Also supported: Shaders, Transforms, Textures, RenderTexture, Multisample Anti Aliasing
-
----
-
-#### Adding a Widget to a Menu
-
-```cpp
-```
+Mousetrap offers [a huge variety of pre-defined shapes](docs/09_native_rendering.md#shapes), as well as fully abstracted object to create and compile shaders, apply spatial transforms, load and display texture, and even render to a anti-aliased texture.
 
 ---
 
@@ -93,6 +85,9 @@ music.create_from_file("example.wav");
 music.play();
 ```
 ---
+
+
+This behavior would cause a deadlock in native GTK4.
 
 ## Documentation
 

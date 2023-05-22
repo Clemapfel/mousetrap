@@ -11,7 +11,9 @@ namespace mousetrap
     Popover::Popover()
         : Widget(gtk_popover_new()),
           CTOR_SIGNAL(Popover, closed)
-    {}
+    {
+        _internal = g_object_ref_sink(GTK_POPOVER(Widget::operator NativeWidget()));
+    }
     
     Popover::Popover(detail::PopoverInternal* internal)
         : Widget(GTK_WIDGET(internal)),

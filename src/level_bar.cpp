@@ -4,7 +4,9 @@ namespace mousetrap
 {
     LevelBar::LevelBar(float min, float max)
         : Widget(gtk_level_bar_new_for_interval(min, max))
-    {}
+    {
+        g_object_ref_sink(GTK_LEVEL_BAR(Widget::operator NativeWidget()));
+    }
     
     LevelBar::LevelBar(detail::LevelBarInternal* internal) 
         : Widget(GTK_WIDGET(internal))

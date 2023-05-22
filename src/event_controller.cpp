@@ -11,6 +11,7 @@ namespace mousetrap
     EventController::EventController(GtkEventController* controller)
     {
         _internal = (detail::EventControllerInternal*) controller;
+        g_object_ref_sink(_internal);
     }
 
     EventController::~EventController()

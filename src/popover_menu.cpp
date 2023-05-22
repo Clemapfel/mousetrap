@@ -45,6 +45,7 @@ namespace mousetrap
             GTK_POPOVER_MENU(operator NativeWidget()),
             (detail::MenuModelInternal*) model.get_internal()
         );
+        g_object_ref(_internal);
         refresh_widgets();
     }
 

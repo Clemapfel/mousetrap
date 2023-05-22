@@ -35,6 +35,7 @@ namespace mousetrap
     {
         _internal = detail::render_texture_internal_new();
         detail::attach_ref_to(Texture::operator GObject*(), _internal);
+        g_object_ref(_internal);
     }
 
     RenderTexture::RenderTexture(detail::RenderTextureInternal* internal)

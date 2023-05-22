@@ -9,6 +9,7 @@ namespace mousetrap
     HeaderBar::HeaderBar()
         : Widget(gtk_header_bar_new())
     {
+        _internal = g_object_ref_sink(GTK_HEADER_BAR(Widget::operator NativeWidget()));
         gtk_header_bar_set_title_widget(GTK_HEADER_BAR(Widget::operator NativeWidget()), nullptr);
     }
 

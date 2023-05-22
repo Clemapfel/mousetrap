@@ -147,8 +147,8 @@ namespace mousetrap
             static void on_list_factory_bind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal*);
             static void on_label_factory_bind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal*);
 
-            static void on_list_factory_unbind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal*);
-            static void on_label_factory_unbind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal*);
+            static void on_list_factory_teardown(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal*);
+            static void on_label_factory_teardown(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal*);
 
             static void on_selected_item_changed(GtkDropDown*, void*, detail::DropDownInternal* internal);
 

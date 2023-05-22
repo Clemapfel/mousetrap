@@ -11,7 +11,7 @@ namespace mousetrap
     Frame::Frame()
         : Widget(gtk_frame_new(""))
     {
-        _internal = GTK_FRAME(Widget::operator NativeWidget());
+        _internal = g_object_ref_sink(GTK_FRAME(Widget::operator NativeWidget()));
         remove_label_widget();
     }
     

@@ -9,19 +9,10 @@
 
 namespace mousetrap
 {
-    Adjustment::Adjustment()
-        : Adjustment(0, 0, 0, 0)
-    {}
-
-    Adjustment::~Adjustment()
-    {
-        g_object_unref(_internal);
-    }
-
     Adjustment::Adjustment(detail::AdjustmentInternal* in)
-        : CTOR_SIGNAL(Adjustment, value_changed), CTOR_SIGNAL(Adjustment, properties_changed)
+    : CTOR_SIGNAL(Adjustment, value_changed), CTOR_SIGNAL(Adjustment, properties_changed)
     {
-        _internal = g_object_ref(in);
+        _internal = g_object_ref_sink(in);
     }
 
     Adjustment::Adjustment(float current, float lower, float upper, float increment)
@@ -40,6 +31,15 @@ namespace mousetrap
             str << "In Adjustment:Adjustment: " << increment << " is not a valid increment, increment has to be positive";
             log::warning(str.str(), MOUSETRAP_DOMAIN);
         }
+    }
+
+    Adjustment::Adjustment()
+        : Adjustment(0, 0, 0, 0)
+    {}
+
+    Adjustment::~Adjustment()
+    {
+        g_object_unref(_internal);
     }
 
     Adjustment::operator NativeObject() const

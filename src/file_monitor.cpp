@@ -29,6 +29,7 @@ namespace mousetrap
         : _internal(detail::file_monitor_internal_new(native))
     {
         detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
+        g_object_ref_sink(_internal);
         g_signal_connect(_internal->native, "changed", G_CALLBACK(on_changed), _internal);
     }
 

@@ -39,6 +39,7 @@ namespace mousetrap
           CTOR_SIGNAL(SpinButton, wrapped)
     {
         _internal = detail::spin_button_internal_new(GTK_SPIN_BUTTON(Widget::operator NativeWidget()));
+        g_object_ref(_internal);
         detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
         set_orientation(orientation);
     }

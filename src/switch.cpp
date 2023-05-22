@@ -11,6 +11,7 @@ namespace mousetrap
           CTOR_SIGNAL(Switch, activate)
     {
         _internal = GTK_SWITCH(Widget::operator NativeWidget());
+        g_object_ref(_internal);
     }
 
     Switch::Switch(detail::SwitchInternal* internal)

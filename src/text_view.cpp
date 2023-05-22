@@ -11,7 +11,9 @@ namespace mousetrap
           CTOR_SIGNAL(TextView, text_changed),
           CTOR_SIGNAL(TextView, undo),
           CTOR_SIGNAL(TextView, redo)
-    {}
+    {
+        _internal = g_object_ref(GTK_TEXT_VIEW(Widget::operator NativeWidget()));
+    }
     
     TextView::TextView(detail::TextViewInternal* internal)
         : Widget(GTK_WIDGET(internal)),

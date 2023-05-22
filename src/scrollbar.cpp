@@ -9,7 +9,9 @@ namespace mousetrap
 {
     Scrollbar::Scrollbar(Orientation orientation)
         : Widget(gtk_scrollbar_new((GtkOrientation) orientation, nullptr))
-    {}
+    {
+        _internal = g_object_ref_sink(GTK_SCROLLBAR(Widget::operator NativeWidget()));
+    }
 
     Scrollbar::Scrollbar(detail::ScrollbarInternal* internal)
         : Widget(GTK_WIDGET(internal))

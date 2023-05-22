@@ -12,6 +12,8 @@ namespace mousetrap
         : Widget(gtk_revealer_new()),
           CTOR_SIGNAL(Revealer, revealed)
     {
+        _internal = g_object_ref(GTK_REVEALER(Widget::operator NativeWidget()));
+
         gtk_revealer_set_reveal_child(GTK_REVEALER(operator NativeWidget()), true);
         set_transition_type(type);
     }

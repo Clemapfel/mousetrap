@@ -40,6 +40,7 @@ namespace mousetrap
         : Widget(gtk_stack_sidebar_new())
     {
         _internal = GTK_STACK_SIDEBAR(Widget::operator NativeObject());
+        g_object_ref(_internal);
         gtk_stack_sidebar_set_stack(_internal, stack.operator GtkStack*());
     }
     
@@ -65,6 +66,7 @@ namespace mousetrap
     : Widget(gtk_stack_sidebar_new())
     {
         _internal = GTK_STACK_SWITCHER(Widget::operator NativeObject());
+        g_object_ref(_internal);
         gtk_stack_switcher_set_stack(_internal, stack.operator GtkStack*());
     }
 
@@ -91,6 +93,7 @@ namespace mousetrap
     {
         _internal = detail::stack_internal_new(GTK_STACK(operator NativeWidget()));
         detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
+        g_object_ref(_internal);
     }
     
     Stack::Stack(detail::StackInternal* internal)

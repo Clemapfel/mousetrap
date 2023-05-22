@@ -38,6 +38,7 @@ namespace mousetrap
         : Widget(gtk_popover_menu_bar_new_from_model(model.operator GMenuModel*()))
     {
         _internal = detail::menu_bar_internal_new(GTK_POPOVER_MENU_BAR(Widget::operator NativeWidget()), (detail::MenuModelInternal*) model.get_internal());
+        g_object_ref(_internal);
         refresh_widgets();
     }
     

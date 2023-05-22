@@ -12,7 +12,7 @@ namespace mousetrap
           CTOR_SIGNAL(Entry, activate),
           CTOR_SIGNAL(Entry, text_changed)
     {
-        _internal = GTK_ENTRY(Widget::operator NativeWidget());
+        _internal = g_object_ref_sink(GTK_ENTRY(Widget::operator NativeWidget()));
     }
     
     Entry::Entry(detail::EntryInternal* internal)

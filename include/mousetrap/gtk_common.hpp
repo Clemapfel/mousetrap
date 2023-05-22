@@ -28,7 +28,6 @@ namespace mousetrap::detail
             g_object_remove_toggle_ref(parent, (GToggleNotify) toggle_notify_ref<T>, attachment);
 
         g_object_unref(G_OBJECT(attachment));
-        std::cout << "unref: " << attachment << std::endl;
     }
 
     template<typename T>
@@ -58,7 +57,6 @@ namespace mousetrap::detail
     template<typename T>
     static void attach_ref_to(GObject* parent, T* attachment)
     {
-        std::cout << "ref: " << attachment << std::endl;
         g_object_add_toggle_ref(parent, (GToggleNotify) toggle_notify_ref<T>, attachment);
     }
 

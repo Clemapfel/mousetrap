@@ -77,6 +77,9 @@ namespace mousetrap::detail
         auto* self = MOUSETRAP_GRID_VIEW_INTERNAL(object);
         G_OBJECT_CLASS(grid_view_internal_parent_class)->finalize(object);
         delete self->selection_model;
+
+        g_object_unref(self->factory);
+        g_object_unref(self->list_store);
     }
 
     DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(GridViewInternal, grid_view_internal, GRID_VIEW_INTERNAL)
@@ -120,6 +123,9 @@ namespace mousetrap::detail
         gtk_grid_view_set_factory(self->native, GTK_LIST_ITEM_FACTORY(self->factory));
         gtk_orientable_set_orientation(GTK_ORIENTABLE(self->native), self->orientation);
 
+        g_object_ref(self->factory);
+        g_object_ref(self->list_store);
+
         return self;
     }
 }
@@ -132,6 +138,7 @@ namespace mousetrap
     {
         _internal =  detail::grid_view_internal_new(GTK_GRID_VIEW(operator NativeWidget()), orientation, mode);
         detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
+        g_object_ref(_internal);
     }
     
     GridView::GridView(detail::GridViewInternal* internal) 

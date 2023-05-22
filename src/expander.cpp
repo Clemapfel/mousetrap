@@ -12,7 +12,7 @@ namespace mousetrap
         : Widget(gtk_expander_new(nullptr)),
           CTOR_SIGNAL(Expander, activate)
     {
-        _internal = GTK_EXPANDER(Widget::operator NativeWidget());
+        _internal = g_object_ref_sink(GTK_EXPANDER(Widget::operator NativeWidget()));
     }
     
     Expander::Expander(detail::ExpanderInternal* internal) 

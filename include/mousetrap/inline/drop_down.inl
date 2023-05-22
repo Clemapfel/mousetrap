@@ -9,7 +9,7 @@ namespace mousetrap
     namespace detail
     {
         struct _DropDownItem;
-        _DropDownItem* drop_down_item_new(size_t id, const Widget* in, const Widget* label, DropDown* owner, std::function<void(DropDown*)> f);
+        _DropDownItem* drop_down_item_new(size_t id, const Widget* in, const Widget* label, std::function<void(DropDown&)> f);
     }
 
     template<typename Function_t, typename Data_t>
@@ -23,7 +23,7 @@ namespace mousetrap
         &list_widget,
         &label_widget,
         this,
-        [f = f_in, data = data_in](DropDown* instance){
+        [f = f_in, data = data_in](DropDown& instance){
             f(instance, data);
         });
 
@@ -41,8 +41,7 @@ namespace mousetrap
         id,
         &list_widget,
         &label_widget,
-        this,
-        [f = f_in](DropDown* instance){
+        [f = f_in](DropDown& instance){
             f(instance);
         });
 
@@ -60,8 +59,7 @@ namespace mousetrap
         id,
         &list_widget,
         &label_widget,
-        this,
-        [f = f_in, data = data_in](DropDown* instance){
+        [f = f_in, data = data_in](DropDown& instance){
             f(instance, data);
         });
 
@@ -79,8 +77,7 @@ namespace mousetrap
         id,
         &list_widget,
         &label_widget,
-        this,
-        [f = f_in](DropDown* instance){
+        [f = f_in](DropDown& instance){
             f(instance);
         });
 
@@ -101,8 +98,7 @@ namespace mousetrap
         id,
         &list_widget,
         &label_widget,
-        this,
-        [f = f_in, data = data_in](DropDown* instance){
+        [f = f_in, data = data_in](DropDown& instance){
             f(instance, data);
         });
 
@@ -123,8 +119,7 @@ namespace mousetrap
         id,
         &list_widget,
         &label_widget,
-        this,
-        [f = f_in](DropDown* instance){
+        [f = f_in](DropDown& instance){
             f(instance);
         });
 

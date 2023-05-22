@@ -54,7 +54,7 @@ namespace mousetrap
         : Widget(GTK_WIDGET(gtk_file_chooser_native_new(title.c_str(), nullptr, (GtkFileChooserAction) action, accept_label.c_str(), cancel_label.c_str()))),
           CTOR_SIGNAL(FileChooser, response)
     {
-        _internal = GTK_FILE_CHOOSER_NATIVE(Widget::operator NativeWidget());
+        _internal = g_object_ref_sink(GTK_FILE_CHOOSER_NATIVE(Widget::operator NativeWidget()));
     }
     
     FileChooser::FileChooser(detail::FileChooserInternal* internal) 

@@ -11,6 +11,8 @@ namespace mousetrap
     Paned::Paned(Orientation orientation)
         : Widget(gtk_paned_new((GtkOrientation) orientation))
     {
+        _internal = g_object_ref_sink(GTK_PANED(Widget::operator NativeWidget()));
+
         set_start_child_resizable(true);
         set_end_child_resizable(true);
         set_has_wide_handle(true);

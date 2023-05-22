@@ -45,6 +45,7 @@ namespace mousetrap
         gtk_notebook_popup_disable(GTK_NOTEBOOK(operator NativeWidget()));
         _internal = detail::notebook_internal_new(GTK_NOTEBOOK(operator NativeWidget()));
         detail::attach_ref_to(G_OBJECT(GTK_NOTEBOOK(operator NativeWidget())), _internal);
+        g_object_ref(_internal);
     }
     
     Notebook::Notebook(detail::NotebookInternal* internal)

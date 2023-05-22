@@ -34,6 +34,7 @@ namespace mousetrap
     SoundBuffer::SoundBuffer()
     {
         _internal = detail::sound_buffer_internal_new();
+        g_object_ref(_internal);
     }
 
     SoundBuffer::SoundBuffer(detail::SoundBufferInternal* internal)

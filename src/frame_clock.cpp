@@ -21,8 +21,7 @@ namespace mousetrap
 
     FrameClock::~FrameClock()
     {
-        if (_native != nullptr)
-            g_object_unref(_native);
+        g_object_unref(_native);
     }
 
     FrameClock::FrameClock(FrameClock&& other) noexcept

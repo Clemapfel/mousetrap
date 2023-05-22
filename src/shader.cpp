@@ -59,6 +59,7 @@ namespace mousetrap {
         }
 
         _internal = detail::shader_internal_new();
+        g_object_ref(_internal);
     }
 
     Shader::Shader(detail::ShaderInternal* internal)

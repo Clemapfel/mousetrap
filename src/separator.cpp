@@ -10,6 +10,8 @@ namespace mousetrap
     Separator::Separator(float opacity, Orientation orientation)
         : Widget(gtk_separator_new((GtkOrientation) orientation))
     {
+        _internal = g_object_ref_sink(GTK_SEPARATOR(Widget::operator NativeWidget()));
+
         if (orientation == Orientation::HORIZONTAL)
             set_expand_horizontally(true);
         else

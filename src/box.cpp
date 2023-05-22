@@ -15,6 +15,7 @@ namespace mousetrap
         : Widget(gtk_box_new((GtkOrientation) orientation, 0))
     {
         _internal = GTK_BOX(operator NativeWidget());
+        g_object_ref_sink(_internal);
     }
 
     Box::Box(detail::BoxInternal* internal)

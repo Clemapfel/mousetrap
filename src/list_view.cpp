@@ -92,6 +92,10 @@ namespace mousetrap::detail
         auto* self = MOUSETRAP_LIST_VIEW_INTERNAL(object);
         G_OBJECT_CLASS(list_view_internal_parent_class)->finalize(object);
         delete self->selection_model;
+
+        g_object_unref(self->root);
+        g_object_unref(self->tree_list_model);
+        g_object_unref(self->factory);
     }
 
     DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(ListViewInternal, list_view_internal, LIST_VIEW_INTERNAL)
@@ -176,6 +180,10 @@ namespace mousetrap::detail
         gtk_list_view_set_model(self->list_view, self->selection_model->operator GtkSelectionModel*());
         gtk_list_view_set_factory(self->list_view, GTK_LIST_ITEM_FACTORY(self->factory));
         gtk_orientable_set_orientation(GTK_ORIENTABLE(self->list_view), self->orientation);
+
+        g_object_ref(self->root);
+        g_object_ref(self->tree_list_model);
+        g_object_ref(self->factory);
 
         return self;
     }

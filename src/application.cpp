@@ -48,8 +48,8 @@ namespace mousetrap
     }
 
     Application::Application(const std::string& id)
-        : CTOR_SIGNAL(Application, activate)//,
-          //CTOR_SIGNAL(Application, shutdown)
+        : CTOR_SIGNAL(Application, activate),
+          CTOR_SIGNAL(Application, shutdown)
     {
         if (not g_application_id_is_valid(id.c_str()))
             log::critical("In Application::Application: id " + id + " is not a valid application id", MOUSETRAP_DOMAIN);
@@ -59,8 +59,8 @@ namespace mousetrap
     }
 
     Application::Application(detail::ApplicationInternal* internal)
-        : CTOR_SIGNAL(Application, activate)//,
-          //CTOR_SIGNAL(Application, shutdown)
+        : CTOR_SIGNAL(Application, activate),
+          CTOR_SIGNAL(Application, shutdown)
     {
         _internal = g_object_ref(internal);
         connect_signal("startup", detail::initialize_opengl);
@@ -68,8 +68,7 @@ namespace mousetrap
 
     Application::~Application()
     {
-        if (G_IS_OBJECT(_internal))
-            g_object_unref(_internal);
+        g_object_unref(_internal);
     }
 
     Application::operator NativeObject() const

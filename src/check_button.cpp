@@ -14,6 +14,7 @@ namespace mousetrap
           CTOR_SIGNAL(CheckButton, toggled)
     {
         _internal = GTK_CHECK_BUTTON(operator NativeWidget());
+        g_object_ref_sink(_internal);
     }
 
     CheckButton::CheckButton(detail::CheckButtonInternal* internal)

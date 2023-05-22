@@ -8,7 +8,10 @@ namespace mousetrap
 {
     ProgressBar::ProgressBar()
         : Widget(gtk_progress_bar_new())
-    {}
+    {
+        _internal = GTK_PROGRESS_BAR(operator NativeWidget());
+        g_object_ref(_internal);
+    }
     
     ProgressBar::ProgressBar(detail::ProgressBarInternal* internal) 
         : Widget(GTK_WIDGET(internal))

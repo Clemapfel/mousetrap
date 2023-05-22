@@ -16,7 +16,7 @@ namespace mousetrap
     {
         gtk_label_set_use_markup(GTK_LABEL(Widget::operator NativeWidget()), true);
         _internal = GTK_LABEL(Widget::operator NativeWidget());
-        g_object_ref(_internal);
+        g_object_ref_sink(_internal);
     }
     
     Label::Label(detail::LabelInternal* internal)

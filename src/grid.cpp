@@ -12,7 +12,7 @@ namespace mousetrap
     Grid::Grid()
         : Widget(gtk_grid_new())
     {
-        _internal = GTK_GRID(Widget::operator NativeWidget());
+        _internal = g_object_ref_sink(GTK_GRID(Widget::operator NativeWidget()));
     }
     
     Grid::Grid(detail::GridInternal* internal)

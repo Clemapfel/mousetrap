@@ -13,8 +13,7 @@ namespace mousetrap
 {
     Image::~Image()
     {
-        if (G_IS_OBJECT(_data))
-            g_object_unref(_data);
+        g_object_unref(_data);
     }
 
     Image::Image(GdkPixbuf* pixbuf)
@@ -48,7 +47,6 @@ namespace mousetrap
 
         if (G_IS_OBJECT(other._data))
             g_object_ref(other._data);
-
 
         _data = other._data;
         _size = other._size;

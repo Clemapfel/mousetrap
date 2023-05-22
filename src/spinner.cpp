@@ -10,6 +10,7 @@ namespace mousetrap
         : Widget(gtk_spinner_new())
     {
         _internal = GTK_SPINNER(Widget::operator NativeWidget());
+        g_object_ref_sink(_internal);
     }
     
     Spinner::Spinner(detail::SpinnerInternal* internal)

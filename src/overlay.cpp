@@ -10,7 +10,9 @@ namespace mousetrap
 {
     Overlay::Overlay()
         : Widget(gtk_overlay_new())
-    {}
+    {
+        _internal = g_object_ref_sink(GTK_OVERLAY(Widget::operator NativeWidget()));
+    }
     
     Overlay::Overlay(detail::OverlayInternal* internal)
         : Widget(GTK_WIDGET(internal))

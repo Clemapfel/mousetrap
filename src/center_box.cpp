@@ -12,6 +12,8 @@ namespace mousetrap
         : Widget(gtk_center_box_new())
     {
         _internal = GTK_CENTER_BOX(operator NativeWidget());
+        g_object_ref_sink(_internal);
+
         gtk_orientable_set_orientation(GTK_ORIENTABLE(operator NativeWidget()), (GtkOrientation) orientation);
     }
     

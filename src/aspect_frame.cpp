@@ -12,6 +12,7 @@ namespace mousetrap
         : Widget(gtk_aspect_frame_new(x_align, y_align, ratio, false))
     {
         _internal = GTK_ASPECT_FRAME(operator NativeWidget());
+        g_object_ref_sink(_internal);
 
         if (ratio <= 0)
             log::critical("In AspectFrame::AspectFrame: Ratio " + std::to_string(ratio) + " cannot not be 0 or negative", MOUSETRAP_DOMAIN);

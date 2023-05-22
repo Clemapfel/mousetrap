@@ -34,7 +34,19 @@ namespace mousetrap
     
     Clipboard::Clipboard(detail::ClipboardInternal* internal) 
         : _internal(internal)
-    {}
+    {
+        g_object_ref(_internal);
+    }
+
+    Clipboard::~Clipboard()
+    {
+        g_object_unref(_internal);
+    }
+
+    NativeObject Clipboard::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
 
     Clipboard::operator GdkClipboard*()
     {

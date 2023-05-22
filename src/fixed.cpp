@@ -9,7 +9,9 @@ namespace mousetrap
 {
     Fixed::Fixed()
         : Widget(gtk_fixed_new())
-    {}
+    {
+        _internal = g_object_ref_sink(GTK_FIXED(Widget::operator NativeWidget()));
+    }
     
     Fixed::Fixed(detail::FixedInternal* internal) 
         : Widget(GTK_WIDGET(internal))

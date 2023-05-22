@@ -37,6 +37,7 @@ namespace mousetrap
         : CTOR_SIGNAL(Sound, play)
     {
         _internal = detail::sound_internal_new();
+        g_object_ref(_internal);
     }
 
     Sound::~Sound()

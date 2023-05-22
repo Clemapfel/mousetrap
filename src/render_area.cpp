@@ -102,6 +102,7 @@ namespace mousetrap
     {
         _internal = detail::render_area_internal_new(GTK_GL_AREA(operator NativeWidget()));
         detail::attach_ref_to(G_OBJECT(GTK_GL_AREA(operator NativeWidget())), _internal);
+        g_object_ref(_internal);
 
         gtk_gl_area_set_auto_render(GTK_GL_AREA(operator NativeWidget()), TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(GTK_GL_AREA(operator NativeWidget())), 1, 1);
@@ -113,15 +114,16 @@ namespace mousetrap
     }
 
     RenderArea::~RenderArea()
-    {}
+    {
+        g_object_unref(_internal);
+    }
 
     RenderArea::RenderArea(detail::RenderAreaInternal* internal)
         : Widget(GTK_WIDGET(internal->native)),
           CTOR_SIGNAL(RenderArea, render),
           CTOR_SIGNAL(RenderArea, resize)
     {
-        _internal = internal;
-        g_object_ref(_internal);
+        _internal = g_object_ref(internal);
 
         gtk_gl_area_set_auto_render(GTK_GL_AREA(operator NativeWidget()), TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(GTK_GL_AREA(operator NativeWidget())), 1, 1);

@@ -69,6 +69,7 @@ namespace mousetrap
     RenderTask::RenderTask(const Shape& shape, const Shader* shader, const GLTransform& transform, BlendMode blend_mode)
     {
         _internal = detail::render_task_internal_new(shape, shader, transform, blend_mode);
+        g_object_ref(_internal);
     }
 
     RenderTask::RenderTask(detail::RenderTaskInternal* internal)

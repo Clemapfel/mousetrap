@@ -39,6 +39,15 @@ namespace mousetrap
             /// @brief has no public constructor, use Widget::get_clipboard to create a clipboard
             Clipboard() = delete;
 
+            /// @brief construct from internal
+            Clipboard(detail::ClipboardInternal*);
+
+            /// @brief destructor
+            ~Clipboard();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
+
             /// @brief expose as GdkClipboard \for_internal_use_only
             operator GdkClipboard*();
 
@@ -99,10 +108,6 @@ namespace mousetrap
         protected:
             /// @brief constructor from widget, usually a window
             Clipboard(const Widget*);
-
-            /// @brief construct as thin wrapper from internal
-            /// @param internal
-            Clipboard(detail::ClipboardInternal*);
 
         private:
             detail::ClipboardInternal* _internal = nullptr;

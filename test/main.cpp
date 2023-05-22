@@ -6,6 +6,8 @@
 #include <mousetrap/window.hpp>
 #include <mousetrap/label.hpp>
 #include <mousetrap/motion_event_controller.hpp>
+#include <mousetrap/box.hpp>
+#include <mousetrap/drop_down.hpp>
 
 using namespace mousetrap;
 
@@ -16,12 +18,18 @@ int main()
     {
         auto window = Window(app);
 
-        auto motion_controller = MotionEventController();
-        motion_controller.connect_signal_motion([](MotionEventController*, double x, double y){
-            std::cout << x << " " << y << std::endl;
+        auto dropdown = DropDown();
+        dropdown.push_back(Label("first"), Label("first"), [](DropDown& dd){
+            std::cout << dd.get_selected()._value << std::endl;
+            std::cout << "first" << std::endl;
         });
 
-        window.add_controller(motion_controller);
+        dropdown.push_back(Label("second"), Label("second"), [](DropDown& dd){
+            std::cout << dd.get_selected()._value << std::endl;
+            std::cout << "second" << std::endl;
+        });
+
+        window.set_child(dropdown);
         window.present();
     });
 

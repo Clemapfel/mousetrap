@@ -61,6 +61,7 @@ namespace mousetrap
     Shape::Shape()
     {
         _internal = detail::shape_internal_new();
+        g_object_ref(_internal);
     }
 
     Shape::~Shape()

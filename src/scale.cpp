@@ -37,6 +37,7 @@ namespace mousetrap
           CTOR_SIGNAL(Scale, value_changed)
     {
         _internal = detail::scale_internal_new(GTK_SCALE(operator NativeWidget()));
+        g_object_ref(_internal);
         gtk_scale_set_draw_value(GTK_SCALE(operator NativeWidget()), false);
     }
     

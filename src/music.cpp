@@ -38,6 +38,7 @@ namespace mousetrap
         : CTOR_SIGNAL(Music, play)
     {
         _internal = detail::music_internal_new();
+        g_object_ref(_internal);
     }
 
     Music::Music(detail::MusicInternal* internal)

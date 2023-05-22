@@ -42,12 +42,15 @@ namespace mousetrap
     Texture::Texture()
     {
         _internal = detail::texture_internal_new();
+        g_object_ref(_internal);
         glGenTextures(1, &_internal->native_handle);
     }
 
     Texture::Texture(GLNativeHandle handle)
     {
         _internal = detail::texture_internal_new();
+        g_object_ref(_internal);
+
         _internal->native_handle = handle;
 
         glBindTexture(GL_TEXTURE_2D, handle);

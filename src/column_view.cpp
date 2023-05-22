@@ -158,6 +158,7 @@ namespace mousetrap
     {
         _internal = detail::column_view_internal_new(GTK_COLUMN_VIEW(Widget::operator NativeWidget()), mode);
         detail::attach_ref_to(G_OBJECT(GTK_COLUMN_VIEW(Widget::operator NativeWidget())), _internal->native);
+        g_object_ref(_internal);
     }
 
     ColumnView::ColumnView(detail::ColumnViewInternal* internal)

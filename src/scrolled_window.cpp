@@ -11,7 +11,9 @@ namespace mousetrap
     ScrolledWindow::ScrolledWindow()
         : Widget(gtk_scrolled_window_new()),
           CTOR_SIGNAL(ScrolledWindow, scroll_child)
-    {}
+    {
+        _internal = g_object_ref_sink(GTK_SCROLLED_WINDOW(Widget::operator NativeWidget()));
+    }
     
     ScrolledWindow::ScrolledWindow(detail::ScrolledWindowInternal* internal)
         : Widget(GTK_WIDGET(internal)), 
