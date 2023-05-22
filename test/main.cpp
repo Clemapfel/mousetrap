@@ -8,13 +8,16 @@ using namespace mousetrap;
 int main()
 {
     auto app = Application("mousetrap.test");
-    app.connect_signal_activate([](Application*)
+    app.connect_signal_activate([](Application* app)
     {
-        auto window = Window();
+        auto window = Window(*app);
+        auto label = Label("test");
+
+        window.set_child(label);
         window.present();
     });
 
-    app.run();
+    return app.run();
 }
 
 #if false
