@@ -15,13 +15,13 @@ namespace mousetrap::detail
     DEFINE_NEW_TYPE_TRIVIAL_INIT(ActionInternal, action_internal, ACTION_INTERNAL)
     DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(ActionInternal, action_internal, ACTION_INTERNAL)
 
-    static ActionInternal* action_internal_new(const std::string& in, Application* app)
+    static ActionInternal* action_internal_new(const std::string& in, Application& app)
     {
         auto* self = (ActionInternal*) g_object_new(action_internal_get_type(), nullptr);
         action_internal_init(self);
 
         self->id = in;
-        self->application = app;
+        self->application = (detail::ApplicationInternal*) app.get_internal();
         self->shortcuts = {};
         self->g_action = nullptr;
         self->g_state = nullptr;
@@ -34,7 +34,7 @@ namespace mousetrap::detail
 
 namespace mousetrap
 {
-    Action::Action(const std::string& id, Application* app)
+    Action::Action(const std::string& id, Application& app)
         : Action(detail::action_internal_new(id, app))
     {}
 
@@ -62,42 +62,39 @@ namespace mousetrap
 
     void Action::update_application()
     {
-        _internal->application->remove_action(_internal->id);
-        _internal->application->add_action(*this);
+        auto app = Application(_internal->application);
+        app.remove_action(_internal->id);
+        app.add_action(*this);
     }
 
     void Action::on_action_activate(GSimpleAction*, GVariant* variant, detail::ActionInternal* instance)
     {
-        auto* self = new Action(instance);
+        auto self = Action(instance);
 
         if (instance->stateless_f)
             instance->stateless_f(self);
 
         if (instance->stateful_f)
             instance->stateful_f(self);
-
-        delete self;
     }
 
     void Action::on_action_change_state(GSimpleAction*, GVariant* variant, detail::ActionInternal* instance)
     {
-        auto* self = new Action(instance);
+        auto self = Action(instance);
 
         if (instance->stateless_f)
             instance->stateless_f(self);
 
         if (instance->stateful_f)
             instance->stateful_f(self);
-
-        delete self;
     }
 
     void Action::activate()
     {
         if (_internal->stateless_f)
-            (_internal->stateless_f)(this);
+            (_internal->stateless_f)(*this);
         else if (_internal->stateful_f)
-            (_internal->stateful_f)(this);
+            (_internal->stateful_f)(*this);
 
         if (not _internal->stateful_f and not _internal->stateless_f)
             log::warning("In Action::activate: Activating action with id " + get_id() + ", but set_function or setstateful_function has not been called yet", MOUSETRAP_DOMAIN);

@@ -26,11 +26,12 @@ namespace mousetrap
     class Application;
     namespace detail
     {
+        struct _ApplicationInternal;
         struct _ActionInternal
         {
             GObject parent;
 
-            Application* application;
+            detail::_ApplicationInternal* application;
             ActionID id;
             std::vector<ShortcutTriggerID> shortcuts;
 
@@ -38,8 +39,8 @@ namespace mousetrap
             GSimpleAction* g_action;
             GVariant* g_state;
 
-            std::function<void(Action*)> stateless_f;
-            std::function<void(Action*)> stateful_f;
+            std::function<void(Action&)> stateless_f;
+            std::function<void(Action&)> stateful_f;
 
             bool enabled;
         };
@@ -60,7 +61,7 @@ namespace mousetrap
             /// @brief construct an action with immutable id
             /// @param id string, usually of the form `scope.action_name`
             /// @param application
-            Action(const std::string& id, Application* application);
+            Action(const std::string& id, Application& application);
 
             /// @brief create from internal
             /// @param internal

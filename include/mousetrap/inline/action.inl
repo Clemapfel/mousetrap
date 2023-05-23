@@ -14,7 +14,7 @@ namespace mousetrap
     template<typename Function_t>
     void Action::set_function(Function_t function)
     {
-        _internal->stateless_f = [f = std::function<void(Action*)>(function)](Action* action){
+        _internal->stateless_f = [f = std::function<void(Action&)>(function)](Action& action){
             f(action);
         };
 
@@ -33,7 +33,7 @@ namespace mousetrap
     template<typename Function_t, typename Data_t>
     void Action::set_function(Function_t function, Data_t data)
     {
-        _internal->stateless_f = [f = std::function<void(Action*, Data_t)>(function), d = data](Action* action){
+        _internal->stateless_f = [f = std::function<void(Action&, Data_t)>(function), d = data](Action& action){
             f(action, d);
         };
 
@@ -53,7 +53,7 @@ namespace mousetrap
     template<typename Function_t>
     void Action::set_stateful_function(Function_t function, bool initial_state)
     {
-        _internal->stateful_f = [this, f = std::function<bool(Action*, bool)>(function)](Action* action) -> void
+        _internal->stateful_f = [this, f = std::function<bool(Action&, bool)>(function)](Action& action) -> void
         {
             auto result = f(action, g_variant_get_boolean(g_action_get_state(G_ACTION(_internal->g_action))));
             g_action_change_state(G_ACTION(_internal->g_action), g_variant_new_boolean(result));
@@ -76,7 +76,7 @@ namespace mousetrap
     template<typename Function_t, typename Data_t>
     void Action::set_stateful_function(Function_t function, Data_t data, bool initial_state)
     {
-        _internal->stateful_f = [this, f = std::function<bool(Action*, bool)>(function), d = data](Action* action) -> void
+        _internal->stateful_f = [this, f = std::function<bool(Action&, bool)>(function), d = data](Action& action) -> void
         {
             auto result = f(action, g_variant_get_boolean(g_action_get_state(G_ACTION(_internal->g_action))), d);
             g_action_change_state(G_ACTION(_internal->g_action), g_variant_new_boolean(result));

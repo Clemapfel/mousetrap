@@ -9,48 +9,49 @@
 #include <mousetrap/box.hpp>
 #include <mousetrap/drop_down.hpp>
 #include <mousetrap/button.hpp>
+#include <mousetrap/action.hpp>
+#include <mousetrap/popover_menu.hpp>
+#include <mousetrap/popover_button.hpp>
 
 using namespace mousetrap;
 
 int main()
 {
     auto app = Application("test.app");
-    app.connect_signal_activate([](Application& app) -> void
+    app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
 
-        // declare buttons
-        static auto button_01 = Button();
-        static auto button_02 = Button();
-
-        // connect handlers
-        button_01.connect_signal_clicked([](Button& self){
-            std::cout << "01 clicked" << std::endl;
-
-            self.set_signal_clicked_blocked(true);
-            button_02.emit_signal_clicked();
-            self.set_signal_clicked_blocked(false);
+        // create two actions
+        auto action_01 = Action("example.menu_model_action_01", app);
+        action_01.set_function([](Action&){
+            std::cout << "01 triggered" << std::endl;
         });
 
-        button_02.connect_signal_clicked([](Button& self){
-            std::cout << "02 clicked" << std::endl;
-
-            std::cout << button_01.get_signal_clicked_blocked() << std::endl;
-            self.set_signal_clicked_blocked(true);
-            button_01.emit_signal_clicked();
-            self.set_signal_clicked_blocked(false);
+        auto action_02 = Action("example.menu_model_action_02", app);
+        action_02.set_function([](Action&){
+            std::cout << "02 triggered" << std::endl;
         });
 
-        // create a container so we can put both buttons into the window
-        auto box = Box(Orientation::HORIZONTAL);
-        box.push_back(button_01);
-        box.push_back(button_02);
-        box.set_margin(75);
+        // create model
+        auto model = MenuModel();
 
-        window.set_child(box);
+        // add actions to model
+        model.add_action("Action 01", action_01);
+        model.add_action("Action 02", action_02);
+
+        // create view, GUI elements that display the model
+        auto popover_menu = PopoverMenu(model);
+        auto popover_menu_button = PopoverButton();
+        popover_menu_button.set_popover_menu(popover_menu);
+
+        // add button to window
+        popover_menu_button.set_margin(75);
+        window.set_child(popover_menu_button);
         window.present();
     });
 
+    // start main loop
     return app.run();
 }
 
