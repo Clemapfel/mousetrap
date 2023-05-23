@@ -12,6 +12,15 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class FocusEventController;
+    namespace detail
+    {
+        using FocusEventControllerInternal = EventControllerInternal;
+        DEFINE_INTERNAL_MAPPING(FocusEventController);
+    }
+    #endif
+
     /// @brief event controller that triggers when focus is moved to the widget
     /// \signals
     /// \signal_focus_gained{FocusEventController}
@@ -23,6 +32,9 @@ namespace mousetrap
         public:
             /// @brief construct
             FocusEventController();
+
+            /// @brief construct from internal
+            FocusEventController(detail::FocusEventControllerInternal*);
 
             /// @brief get whether focus is contained within self or any child
             /// @return bool

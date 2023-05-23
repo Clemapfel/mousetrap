@@ -12,6 +12,12 @@ namespace mousetrap
           CTOR_SIGNAL(FocusEventController, focus_lost)
     {}
 
+    FocusEventController::FocusEventController(detail::FocusEventControllerInternal* internal)
+        : EventController(internal),
+          CTOR_SIGNAL(FocusEventController, focus_gained),
+          CTOR_SIGNAL(FocusEventController, focus_lost)
+    {}
+
     bool FocusEventController::self_is_focused()
     {
         return gtk_event_controller_focus_contains_focus(GTK_EVENT_CONTROLLER_FOCUS(get_internal()));

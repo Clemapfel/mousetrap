@@ -12,6 +12,15 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class ClickEventController;
+    namespace detail
+    {
+        using ClickEventControllerInternal = EventControllerInternal;
+        DEFINE_INTERNAL_MAPPING(ClickEventController);
+    }
+    #endif
+
     /// @brief event controller handles button pressed
     /// \signals
     /// \signal_click_pressed{ClickEventController}
@@ -25,5 +34,9 @@ namespace mousetrap
         public:
             /// @brief construct controller, needs to be connected to a widget to function
             ClickEventController();
+
+            /// @brief construct from internal
+            ClickEventController(detail::ClickEventControllerInternal*);
+
     };
 }

@@ -13,6 +13,15 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class KeyEventController;
+    namespace detail
+    {
+        using KeyEventControllerInternal = EventControllerInternal;
+        DEFINE_INTERNAL_MAPPING(KeyEventController);
+    }
+    #endif
+
     /// @brief event controller that handles keystrokes
     /// \signals
     /// \signal_key_pressed{KeyEventController}
@@ -26,6 +35,9 @@ namespace mousetrap
         public:
             /// @brief construct, needs to be connected to widget to start emitting events
             KeyEventController();
+
+            /// @brief construct from internal
+            KeyEventController(detail::KeyEventControllerInternal*);
 
             /// @brief test whether the current event of the controller is consistent with the shortcut identified via the argument
             /// @param shortcut shortcut trigger as string

@@ -162,7 +162,7 @@ set(MOUSETRAP_HEADER_FILES
         include/mousetrap/selection_model.hpp
         include/mousetrap/separator.hpp
         include/mousetrap/shader.hpp
-        include/mousetrap/shortcut_controller.hpp
+        include/mousetrap/shortcut_event_controller.hpp
         include/mousetrap/signal_component.hpp
         include/mousetrap/signal_emitter.hpp
         include/mousetrap/sound.hpp
@@ -266,7 +266,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/separator.cpp
     src/shader.cpp
     src/shape.cpp
-    src/shortcut_controller.cpp
+        src/shortcut_event_controller.cpp
     src/signal_component.cpp
     src/signal_emitter.cpp
     src/sound.cpp

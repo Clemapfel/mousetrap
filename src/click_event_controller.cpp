@@ -12,4 +12,11 @@ namespace mousetrap
           CTOR_SIGNAL(ClickEventController, click_released),
           CTOR_SIGNAL(ClickEventController, click_stopped)
     {}
+
+    ClickEventController::ClickEventController(detail::ClickEventControllerInternal* internal)
+        : SingleClickGesture(GTK_GESTURE_SINGLE(internal)),
+          CTOR_SIGNAL(ClickEventController, click_pressed),
+          CTOR_SIGNAL(ClickEventController, click_released),
+          CTOR_SIGNAL(ClickEventController, click_stopped)
+    {}
 }

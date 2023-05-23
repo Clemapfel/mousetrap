@@ -12,4 +12,11 @@ namespace mousetrap
           CTOR_SIGNAL(MotionEventController, motion),
           CTOR_SIGNAL(MotionEventController, motion_leave)
     {}
+
+    MotionEventController::MotionEventController(detail::MotionEventControllerInternal* internal)
+        : EventController(internal),
+          CTOR_SIGNAL(MotionEventController, motion_enter),
+          CTOR_SIGNAL(MotionEventController, motion),
+          CTOR_SIGNAL(MotionEventController, motion_leave)
+    {}
 }

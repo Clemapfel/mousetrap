@@ -12,6 +12,15 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class ScrollEventController;
+    namespace detail
+    {
+        using ScrollEventControllerInternal = EventControllerInternal;
+        DEFINE_INTERNAL_MAPPING(ScrollEventController);
+    }
+    #endif
+    
     /// @brief event controller that handles the scrollbar, usually on a mouse
     /// \signals
     /// \signal_kinetic_scroll_decelerate{ScrollEventController}
@@ -29,5 +38,8 @@ namespace mousetrap
             /// @param emit_vertical should vertical scrolling trigger events
             /// @param emit_horizontal should horizontal scrolling trigger evets
             ScrollEventController(bool emit_vertical = true, bool emit_horizontal = true);
+
+            /// @brief construct from internal
+            ScrollEventController(detail::ScrollEventControllerInternal*);
     };
 }

@@ -11,6 +11,11 @@ namespace mousetrap
           CTOR_SIGNAL(PanEventController, pan)
     {}
 
+    PanEventController::PanEventController(detail::PanEventControllerInternal* internal)
+        : EventController(GTK_EVENT_CONTROLLER(internal)),
+          CTOR_SIGNAL(PanEventController, pan)
+    {}
+
     Orientation PanEventController::get_orientation() const
     {
         return (Orientation) gtk_gesture_pan_get_orientation(GTK_GESTURE_PAN(get_internal()));

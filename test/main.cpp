@@ -18,18 +18,13 @@ int main()
     {
         auto window = Window(app);
 
-        auto dropdown = DropDown();
-        dropdown.push_back(Label("first"), Label("first"), [](DropDown& dd){
-            std::cout << dd.get_selected()._value << std::endl;
-            std::cout << "first" << std::endl;
+        auto motion_controller = MotionEventController();
+        motion_controller.connect_signal_motion([](MotionEventController& controller, double x, double y){
+            std::cout << controller.get_internal() << std::endl;
+            std::cout << x << " " << y << std::endl;
         });
 
-        dropdown.push_back(Label("second"), Label("second"), [](DropDown& dd){
-            std::cout << dd.get_selected()._value << std::endl;
-            std::cout << "second" << std::endl;
-        });
-
-        window.set_child(dropdown);
+        window.add_controller(motion_controller);
         window.present();
     });
 

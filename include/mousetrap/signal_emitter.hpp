@@ -17,10 +17,7 @@ namespace mousetrap
     {
         /// @brief template meta function that associates types with their internal types \for_internal_use_only
         template<typename T>
-        struct InternalMapping
-        {
-            using value = std::nullptr_t;
-        };
+        struct InternalMapping {};
 
         #define DEFINE_INTERNAL_MAPPING(From) \
         template<>                         \

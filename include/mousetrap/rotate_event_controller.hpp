@@ -13,6 +13,15 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class RotateEventController;
+    namespace detail
+    {
+        using RotateEventControllerInternal = EventControllerInternal;
+        DEFINE_INTERNAL_MAPPING(RotateEventController);
+    }
+    #endif
+    
     /// @brief event controller handling touch rotation, or "turn" events
     /// \signals
     /// \signal_rotation_changed{RotateEventController}
@@ -22,6 +31,9 @@ namespace mousetrap
         public:
             /// @brief construct, needs to be attached to a widget to start emitting events
             RotateEventController();
+
+            /// @brief construct from internal
+            RotateEventController(detail::RotateEventControllerInternal*);
 
             /// @brief get difference between angle at the start of the gesture and the angle currently
             /// @returns angle

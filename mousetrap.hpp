@@ -76,7 +76,7 @@
 #include <mousetrap/separator.hpp>
 #include <mousetrap/shader.hpp>
 #include <mousetrap/shape.hpp>
-#include <mousetrap/shortcut_controller.hpp>
+#include <mousetrap/shortcut_event_controller.hpp>
 #include <mousetrap/signal_component.hpp>
 #include <mousetrap/signal_emitter.hpp>
 #include <mousetrap/sound.hpp>

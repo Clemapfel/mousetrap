@@ -126,9 +126,105 @@ namespace mousetrap
             { \
                 T((typename detail::InternalMapping<T>::value*) _internal->instance).disconnect_signal(signal_id); \
             } \
-    }; 
+    };
 
     #define DECLARE_SIGNAL_MANUAL(CamelCase, snake_case, CAPS_CASE, g_signal_id, return_t, arg_list, arg_name_only_list) \
+    namespace detail \
+    { \
+        struct SIGNAL_INTERNAL_PRIVATE_CLASS_NAME(CamelCase) \
+        { \
+            GObject parent; \
+            NativeObject instance; \
+            std::function<return_t(void*, arg_list)> function; \
+            bool is_blocked; \
+        }; \
+        using SIGNAL_INTERNAL_CLASS_NAME(CamelCase) = SIGNAL_INTERNAL_PRIVATE_CLASS_NAME(CamelCase); \
+        SIGNAL_INTERNAL_CLASS_NAME(CamelCase)* has_signal_##snake_case##_internal_new(NativeObject instance); \
+    } \
+    \
+    template <typename T> \
+    class SIGNAL_CLASS_NAME(snake_case) \
+    { \
+        private: \
+            detail::SIGNAL_INTERNAL_CLASS_NAME(CamelCase)* _internal = nullptr; \
+            T* _instance = nullptr; \
+            \
+            static return_t wrapper(void*, arg_list, detail::SIGNAL_INTERNAL_CLASS_NAME(CamelCase)* internal) \
+            { \
+                auto temp = T((typename detail::InternalMapping<T>::value*) internal->instance); \
+                if (internal->function and not internal->is_blocked) \
+                    return internal->function((void*) &temp, arg_name_only_list); \
+            } \
+            \
+            void initialize() \
+            { \
+                if (_internal == nullptr) \
+                { \
+                    _internal = detail::has_signal_##snake_case##_internal_new(_instance->get_internal()); \
+                    detail::attach_ref_to(_internal->instance, _internal); \
+                } \
+            } \
+        \
+        protected: \
+            SIGNAL_CLASS_NAME(snake_case)(T* instance) \
+                : _instance(instance) \
+            {} \
+            \
+            ~SIGNAL_CLASS_NAME(snake_case)() = default; \
+        \
+        public: \
+            const char* signal_id = g_signal_id; \
+            \
+            template <typename Function_t, typename Data_t> \
+            void connect_signal_##snake_case(Function_t f, Data_t data) \
+            { \
+                initialize(); \
+                _internal->function = [f, data](void* instance, arg_list) -> return_t \
+                { \
+                    return f(*((T*) instance), arg_name_only_list, data); \
+                }; \
+            \
+                T((typename detail::InternalMapping<T>::value*) _internal->instance).connect_signal(signal_id, wrapper, _internal); \
+            } \
+            \
+            template <typename Function_t> \
+            void connect_signal_##snake_case(Function_t f) \
+            { \
+                initialize(); \
+                _internal->function = [f](void* instance, arg_list) -> return_t \
+                { \
+                    return f(*((T*) instance), arg_name_only_list); \
+                }; \
+                \
+                T((typename detail::InternalMapping<T>::value*) _internal->instance).connect_signal(signal_id, wrapper, _internal); \
+            } \
+            \
+            void set_signal_activate_blocked(bool b) \
+            { \
+                initialize(); \
+                _internal->is_blocked = b; \
+            } \
+            \
+            bool get_signal_##snake_case##_blocked() const \
+            { \
+                initialize(); \
+                return _internal->is_blocked; \
+            } \
+            \
+            return_t emit_signal_##snake_case(arg_list) \
+            { \
+                initialize(); \
+                wrapper(nullptr, arg_name_only_list, _internal); \
+            } \
+            \
+            void disconnect_signal_activate() \
+            { \
+                T((typename detail::InternalMapping<T>::value*) _internal->instance).disconnect_signal(signal_id); \
+            } \
+    };
+
+    /*
+    #define _DECLARE_SIGNAL_MANUAL(CamelCase, snake_case, CAPS_CASE, g_signal_id, return_t, arg_list, arg_name_only_list) \
     \
     namespace detail \
     {                                                                                                               \
@@ -226,6 +322,7 @@ namespace mousetrap
                 ((T*) _internal->instance)->disconnect_signal(signal_id);\
             }\
     }\
+     */
 
     /// @brief an argument of this type should not be interacted with
     using UnusedArgument_t = void*;

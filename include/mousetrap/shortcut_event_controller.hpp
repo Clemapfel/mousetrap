@@ -25,12 +25,26 @@ namespace mousetrap
         GLOBAL = GTK_SHORTCUT_SCOPE_GLOBAL
     };
 
+    #ifndef DOXYGEN
+    class ShortcutEventController;
+    namespace detail
+    {
+        using ShortcutEventControllerInternal = EventControllerInternal;
+        DEFINE_INTERNAL_MAPPING(ShortcutEventController);
+    }
+    #endif
+
     /// @brief event controller that manages shortcuts, you do not need to connect to any signals of this class
-    class ShortcutController : public EventController
+    class ShortcutEventController : public EventController
     {
         public:
             /// @brief construct
-            ShortcutController();
+            ShortcutEventController();
+
+            /// @brief construct from internal
+            ShortcutEventController(detail::ShortcutEventControllerInternal*);
+
+            /// @brief construct from internal
 
             /// @brief add action, if the action has a shortcut and it is registered with the application, shortcut controller will activate the action when the shortcut is pressed
             /// @param action

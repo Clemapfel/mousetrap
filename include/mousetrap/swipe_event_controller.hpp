@@ -9,6 +9,15 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class SwipeEventController;
+    namespace detail
+    {
+        using SwipeEventControllerInternal = EventControllerInternal;
+        DEFINE_INTERNAL_MAPPING(SwipeEventController);
+    }
+    #endif
+    
     /// @brief event controller that listens for long press gestures
     /// \signals
     /// \signal_swipe{SwipeEventController}
@@ -19,6 +28,9 @@ namespace mousetrap
             /// @brief construct
             /// @param orientation
             SwipeEventController(Orientation);
+
+            /// @brief construct from internal
+            SwipeEventController(detail::SwipeEventControllerInternal*);
 
             /// @brief get current swipe velocity
             /// @return 2D velocity

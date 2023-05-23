@@ -12,6 +12,15 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class MotionEventController;
+    namespace detail
+    {
+        using MotionEventControllerInternal = EventControllerInternal;
+        DEFINE_INTERNAL_MAPPING(MotionEventController);
+    }
+    #endif
+    
     /// @brief handles cursor motion events
     /// \signals
     /// \signal_motion_enter{MotionEventController}
@@ -25,5 +34,8 @@ namespace mousetrap
         public:
             /// @brief ctor, needs to be connected to a widget to start emitting events
             MotionEventController();
+
+            /// @brief construct from internal
+            MotionEventController(detail::MotionEventControllerInternal*);
     };
 }

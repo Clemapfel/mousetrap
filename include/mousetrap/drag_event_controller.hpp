@@ -13,6 +13,15 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class DragEventController;
+    namespace detail
+    {
+        using DragEventControllerInternal = EventControllerInternal;
+        DEFINE_INTERNAL_MAPPING(DragEventController);
+    }
+    #endif
+
     /// @brief event controller, handles click-dragging
     /// \signals
     /// \signal_drag_begin{DragEventController}
@@ -26,6 +35,9 @@ namespace mousetrap
         public:
             /// @brief construct, needs to be connected to a widget to start signal emission
             DragEventController();
+
+            /// @brief construct from internal
+            DragEventController(detail::DragEventControllerInternal*);
 
             /// @brief get initial position for currently active drag
             Vector2f get_start_position();

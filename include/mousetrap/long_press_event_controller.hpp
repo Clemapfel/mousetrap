@@ -8,6 +8,15 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class LongPressEventController;
+    namespace detail
+    {
+        using LongPressEventControllerInternal = EventControllerInternal;
+        DEFINE_INTERNAL_MAPPING(LongPressEventController);
+    }
+    #endif
+
     /// @brief event controller that listens for long press gestures
     /// \signals
     /// \signal_pressed{LongPressEventController}
@@ -19,6 +28,9 @@ namespace mousetrap
         public:
             /// @brief construct
             LongPressEventController();
+
+            /// @brief construct from internal
+            LongPressEventController(detail::LongPressEventControllerInternal*);
 
             /// @brief set the amount of time that has to pass until a long press is registered
             /// @param factor multiplier with the standard duration, 1 means no modification, 2 means twice as long of a delay, 0.5 half as a long

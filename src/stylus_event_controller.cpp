@@ -15,6 +15,14 @@ namespace mousetrap
             CTOR_SIGNAL(StylusEventController, motion)
     {}
 
+    StylusEventController::StylusEventController(detail::StylusEventControllerInternal* internal)
+        : SingleClickGesture(GTK_GESTURE_SINGLE(internal)),
+          CTOR_SIGNAL(StylusEventController, stylus_down),
+          CTOR_SIGNAL(StylusEventController, stylus_up),
+          CTOR_SIGNAL(StylusEventController, proximity),
+          CTOR_SIGNAL(StylusEventController, motion)
+    {}
+
     size_t StylusEventController::get_hardware_id() const
     {
         auto* device = gtk_gesture_stylus_get_device_tool(GTK_GESTURE_STYLUS(get_internal()));

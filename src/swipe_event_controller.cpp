@@ -11,6 +11,11 @@ namespace mousetrap
           CTOR_SIGNAL(SwipeEventController, swipe)
     {}
 
+    SwipeEventController::SwipeEventController(detail::SwipeEventControllerInternal* internal)
+        : SingleClickGesture(GTK_GESTURE_SINGLE(internal)),
+          CTOR_SIGNAL(SwipeEventController, swipe)
+    {}
+
     Vector2f SwipeEventController::get_velocty() const
     {
         double x, y;

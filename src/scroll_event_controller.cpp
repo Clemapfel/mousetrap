@@ -23,4 +23,12 @@ namespace mousetrap
         CTOR_SIGNAL(ScrollEventController, scroll),
         CTOR_SIGNAL(ScrollEventController, scroll_end)
     {}
+
+    ScrollEventController::ScrollEventController(detail::ScrollEventControllerInternal* internal)
+        : EventController(internal),
+          CTOR_SIGNAL(ScrollEventController, kinetic_scroll_decelerate),
+          CTOR_SIGNAL(ScrollEventController, scroll_begin),
+          CTOR_SIGNAL(ScrollEventController, scroll),
+          CTOR_SIGNAL(ScrollEventController, scroll_end)
+    {}
 }

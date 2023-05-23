@@ -78,6 +78,15 @@ namespace mousetrap
     /// @return string
     std::string device_axis_to_string(DeviceAxis);
 
+    #ifndef DOXYGEN
+    class StylusEventController;
+    namespace detail
+    {
+        using StylusEventControllerInternal = EventControllerInternal;
+        DEFINE_INTERNAL_MAPPING(StylusEventController);
+    }
+    #endif
+    
     /// @brief handles events emitted by a touchpad stylus
     /// @todo expose high resolution motion history: https://docs.gtk.org/gtk4/method.GestureStylus.get_backlog.html
     /// \signals
@@ -94,6 +103,9 @@ namespace mousetrap
         public:
             /// @brief construct
             StylusEventController();
+
+            /// @brief construct from internal
+            StylusEventController(detail::StylusEventControllerInternal*);
 
             /// @brief get hardware id of stylus
             /// @return id, or 0 if ID is unknown

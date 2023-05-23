@@ -11,6 +11,11 @@ namespace mousetrap
           CTOR_SIGNAL(RotateEventController, rotation_changed)
     {}
 
+    RotateEventController::RotateEventController(detail::RotateEventControllerInternal* internal)
+        : EventController(internal),
+          CTOR_SIGNAL(RotateEventController, rotation_changed)
+    {}
+
     Angle RotateEventController::get_angle_delta()
     {
         return radians(gtk_gesture_rotate_get_angle_delta(GTK_GESTURE_ROTATE(get_internal())));

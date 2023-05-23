@@ -12,6 +12,12 @@ namespace mousetrap
          CTOR_SIGNAL(LongPressEventController, press_cancelled)
     {}
 
+    LongPressEventController::LongPressEventController(detail::LongPressEventControllerInternal* internal)
+        : SingleClickGesture(GTK_GESTURE_SINGLE(internal)),
+          CTOR_SIGNAL(LongPressEventController, pressed),
+          CTOR_SIGNAL(LongPressEventController, press_cancelled)
+    {}
+
     void LongPressEventController::set_delay_factor(float v)
     {
         gtk_gesture_long_press_set_delay_factor(GTK_GESTURE_LONG_PRESS(get_internal()), v);
