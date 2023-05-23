@@ -13,155 +13,68 @@ module mousetrap
     end
 
     """
-        module detail
-            using CxxWrap
-            function __init__() @initcxx end
-            @wrapmodule("./libjulia_binding.so")
-        end
-    end
+    # TypedFunction
+
+    Object used to invoke an arbitrary function using the given signature. This wrapper will automatically convert any arguments and return values to the given types unless absolutely impossible, at which point an assertion error will be triggered on construction
+
+    ### Example
+
+    ```jl
+    f(x::Integer) = return string(x)
+
+    # possible signature
+    as_typed = TypedFunction(f, Int64, (Integer,))
+    as_typed(12) # returns 12, because "12" will be converted to given return type, Int64
+    ```
     """
-end
+    mutable struct TypedFunction
 
-abstract type TypedFunction end
+        _apply::Function
+        _return_t::Type
+        _arg_ts::Tuple
 
-function match_return_type(f::Function, return_type::Type, arg_ts...)
+        function TypedFunction(f::Function, return_t::Type, arg_ts::Tuple)
 
-    actual_return_types = Base.return_types(f, arg_ts)
-    for arg_t in arg_ts
+            actual_return_ts = Base.return_types(f, arg_ts)
+            for arg_t in arg_ts
 
-        match_found = false
-        for type in actual_return_types
-             if type <: return_type || !empty(Base.return_types(Base.convert, (Type{return_type}, type)))
-                match_found = true
-                break;
+                match_found = false
+                for type in actual_return_ts
+                     if type <: return_t || !isempty(Base.return_types(Base.convert, (Type{return_t}, type)))
+                        match_found = true
+                        break;
+                    end
+                end
+
+                if !match_found
+                     signature = "("
+                     for i in 1:length(arg_ts)
+                        signature = signature * string(arg_ts[i]) * ((i < length(arg_ts)) ? ", " : ")")
+                     end
+                     signature = signature * " -> $return_t"
+                     throw(AssertionError("Object is not invokable as function with signature `$signature`"))
+                end
             end
-        end
 
-        if !match_found
-             signature = "("
-             for i in 1:length(arg_ts)
-                signature = signature * string(arg_ts[i]) * ((i < length(arg_ts)) ? ", " : ")")
-             end
-             signature = signature * " -> $return_type"
-             throw(AssertionError("Object is not invokable as function with signature `$signature`"))
+            return new(f, return_t, arg_ts)
         end
     end
-end
+    export TypedFunction
 
-### 0 Arg
+    (instance::TypedFunction)(args...) = Base.convert(instance._return_t, instance._apply([Base.convert(instance._arg_ts[i], args[i]) for i in 1:length(args)]...))
 
-mutable struct _TypedFunction0{Return_t} <: TypedFunction
-
-    apply::Function
-
-    function _TypedFunction0(f::Function, return_type::Type)
-        match_return_type(f, return_type)
-        return new{return_type}(f);
-    end
-end
-function (typed::_TypedFunction0{Return_t})() where {Return_t}
-    return typed.apply()
-end
-
-### 1 Arg
-
-mutable struct _TypedFunction1{Return_t, Arg1_t} <: TypedFunction
-
-    apply::Function
-
-    function _TypedFunction1(f::Function, return_type::Type, arg1_type::Type)
-        match_return_type(f, return_type, arg1_type)
-        return new{return_type, arg1_type}(f);
+    module detail
+        using CxxWrap
+        function __init__() @initcxx end
+        @wrapmodule("./libjulia_binding.so")
     end
 end
 
-function (typed::_TypedFunction1{Return_t, Arg1_t})(arg1) where {Return_t, Arg1_t}
-     typed.apply(Base.convert(Arg1_t, arg1))
+function test_f(x::Integer)
+    println(x)
+    return x
 end
-
-### 2 Arg
-
-mutable struct _TypedFunction2{Return_t, Arg1_t, Arg2_t} <: TypedFunction
-
-    apply::Function
-
-    function _TypedFunction2(f::Function, return_type::Type, arg1_type::Type, arg2_type::Type)
-        match_return_type(f, return_type, arg1_type, arg2_type)
-        return new{return_type, arg1_type, arg2_type}(f);
-    end
-end
-
-function (typed::_TypedFunction2{Return_t, Arg1_t, Arg2_t})(arg1, arg2) where {Return_t, Arg1_t, Arg2_t}
-     typed.apply(
-        Base.convert(Arg1_t, arg1),
-        Base.convert(Arg2_t, arg2)
-     )
-end
-
-### 3 Arg
-
-mutable struct _TypedFunction3{Return_t, Arg1_t, Arg2_t, Arg3_t} <: TypedFunction
-
-    apply::Function
-
-    function _TypedFunction3(f::Function, return_type::Type, arg1_type::Type, arg2_type::Type, arg3_type::Type)
-        match_return_type(f, return_type, arg1_type, arg2_type, arg3_type)
-        return new{return_type, arg1_type, arg2_type, arg3_type}(f);
-    end
-end
-
-function (typed::_TypedFunction3{Return_t, Arg1_t, Arg2_t})(arg1, arg2, arg3) where {Return_t, Arg1_t, Arg2_t, Arg3_t}
-     typed.apply(
-        Base.convert(Arg1_t, arg1),
-        Base.convert(Arg2_t, arg2),
-        Base.convert(Arg3_t, arg3)
-     )
-end
-
-### 4 Arg
-
-mutable struct _TypedFunction4{Return_t, Arg1_t, Arg2_t, Arg3_t, Arg4_t} <: TypedFunction
-
-    apply::Function
-
-    function _TypedFunction4(f::Function, return_type::Type, arg1_type::Type, arg2_type::Type, arg3_type::Type, arg4_type::Type)
-        match_return_type(f, return_type, arg1_type, arg2_type, arg3_type, arg4_type)
-        return new{return_type, arg1_type, arg2_type, arg3_type, arg4_type}(f);
-    end
-end
-
-function (typed::_TypedFunction4{Return_t, Arg1_t, Arg2_t})(arg1, arg2, arg3, arg4) where {Return_t, Arg1_t, Arg2_t, Arg3_t, Arg4_t}
-     typed.apply(
-        Base.convert(Arg1_t, arg1),
-        Base.convert(Arg2_t, arg2),
-        Base.convert(Arg3_t, arg3),
-        Base.convert(Arg4_t, arg4)
-     )
-end
-
-forward_as_typed_function(f::Function, return_type) = return _TypedFunction0(f, return_type, )
-forward_as_typed_function(f::Function, return_type, arg1_type) = return _TypedFunction1(f, return_type, arg1_type)
-forward_as_typed_function(f::Function, return_type, arg1_type, arg2_type) = return _TypedFunction2(f, return_type, arg1_type, arg2_type)
-forward_as_typed_function(f::Function, return_type, arg1_type, arg2_type, arg3_type) = return _TypedFunction3(f, return_type, arg1_type, arg2_type, arg3_type)
-forward_as_typed_function(f::Function, return_type, arg1_type, arg2_type, arg3_type, arg4_type) = return _TypedFunction4(f, return_type, arg1_type, arg2_type, arg3_type, arg4_type)
-
-yes_f(x, y, z) = return 1234
-forward_as_typed_function(yes_f, Any, Any, Any, Any)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+mousetrap.detail.invoke_test(test_f);
 
 
 
