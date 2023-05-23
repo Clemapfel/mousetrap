@@ -71,6 +71,22 @@ namespace mousetrap
         g_object_unref(_internal);
     }
 
+    Application::Application(Application&& other) noexcept
+        : CTOR_SIGNAL(Application, activate),
+          CTOR_SIGNAL(Application, shutdown)
+    {
+        _internal = g_object_ref(other._internal);
+    }
+
+    Application& Application::operator=(Application&& other) noexcept
+    {
+        if (&other == this)
+            return *this;
+
+        _internal = g_object_ref(other._internal);
+        return *this;
+    }
+
     Application::operator NativeObject() const
     {
         return G_OBJECT(_internal->native);

@@ -61,6 +61,18 @@ namespace mousetrap
             /// @brief destroy action, should only be called at the very end of <tt>main</tt>
             ~Application();
 
+            /// @brief copy ctor
+            Application(const Application&) = delete;
+
+            /// @brief move ctor
+            Application(Application&&) noexcept;
+
+            /// @brief copy assignment
+            Application& operator=(const Application&) = delete;
+
+            /// @brief move assignment
+            Application& operator=(Application&&) noexcept;
+
             /// @copydoc SignalEmitter::get_native
             operator NativeObject() const override;
 

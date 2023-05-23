@@ -134,10 +134,10 @@ namespace mousetrap
             return_t emit_signal_##snake_case() \
             { \
                 initialize(); \
-                wrapper(nullptr, _internal); \
+                return wrapper(nullptr, _internal); \
             } \
             \
-            void disconnect_signal_activate() \
+            void disconnect_signal_##snake_case() \
             { \
                 T((typename detail::InternalMapping<T>::value*) _internal->instance).disconnect_signal(signal_id); \
             } \
@@ -231,10 +231,10 @@ namespace mousetrap
             return_t emit_signal_##snake_case(arg_list) \
             { \
                 initialize(); \
-                wrapper(nullptr, arg_name_only_list, _internal); \
+                return wrapper(nullptr, arg_name_only_list, _internal); \
             } \
             \
-            void disconnect_signal_activate() \
+            void disconnect_signal_##snake_case() \
             { \
                 T((typename detail::InternalMapping<T>::value*) _internal->instance).disconnect_signal(signal_id); \
             } \

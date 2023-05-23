@@ -3,13 +3,17 @@
 //
 
 #include <mousetrap.hpp>
+
 #include <jlcxx/jlcxx.hpp>
 #include "julia_interface.cpp"
 
 using namespace mousetrap;
 
+/// @brief log domain for julia-specific mousetrap log messages
 static inline const char* JULIA_DOMAIN = "mousetrap_jl";
 
+/// @brief print last julia exception as mousetrap log entry, does not cause runtime to end
+/// @param domain_name name of the current function, will be used for the error message
 static void forward_last_exception(const std::string& domain_name)
 {
     auto* exception_maybe = jl_exception_occurred();
@@ -24,20 +28,65 @@ static void forward_last_exception(const std::string& domain_name)
 }
 
 #define add_type_method(Type, id) method(#id, &Type::id)
+#define add_constructor(arg_type) constructor<arg_type>(false)
+#define add_constructor_with_finalizer(arg_type) constructor<arg_type>(false)
+
 #define declare_is_subtype_of(A, B) template<> struct jlcxx::SuperType<A> { typedef B type; };
 #define make_not_mirrored(Name) template<> struct jlcxx::IsMirroredType<Name> : std::false_type {};
 #define add_enum(Name) add_bits<Name>(#Name, jlcxx::julia_type("CppEnum"))
 #define add_enum_value(EnumName, PREFIX, VALUE_NAME) set_const(std::string(#PREFIX) + "_" + std::string(#VALUE_NAME),  EnumName::VALUE_NAME)
 
+/// @brief signal activate
+template<typename T, typename Wrapper_t>
+void add_signal_activate(Wrapper_t& type)
+{
+    type.method("connect_signal_activate", [](T& instance, jl_function_t* f, jl_value_t* data)
+    {
+        instance.connect_signal_activate([](T& instance, jl_value_t* data){
+
+            auto* typed_f = jl_eval_string(R"(
+                return mousetrap.TypedFunction(f, Cvoid, (mousetrap.Application, Any,))
+            )");
+
+            auto* out = jl_calln(typed_f, jlcxx::box(instance), data);
+            forward_last_exception("invoke_test");
+            return out;
+        }, data);
+    });
+}
+
+/// @brief mousetrap::Application
+make_not_mirrored(detail::ApplicationInternal);
+static void implement_application(jlcxx::Module& module)
+{
+    module.add_type<Application>("Application")
+        .add_constructor(const std::string&)
+        .add_type_method(Application, run)
+        .add_type_method(Application, get_id)
+    ;
+    /*
+    module.method("application_new", [](std::string id) -> void* {
+        auto* out = new Application(id);
+        (*out).connect_signal_activate([](Application& app){
+            auto window = Window(app);
+            window.present();
+        });
+    });
+
+    module.method("application_run", [](void* in){
+        return static_cast<Application*>(in)->run();
+    });
+
+    module.method("application_get_id", [](void* in){
+        return static_cast<Application*>(in)->get_id();
+    });
+    */
+
+
+}
+
+// main
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
 {
-    module.method("invoke_test", [](jl_function_t* f){
-        auto* typed_f = jl_eval_string(R"(
-            (f, x) -> mousetrap.TypedFunction(f, Integer, (Integer,))(x)
-        )");
-
-        auto* out = jl_calln(typed_f, f, jl_box_uint64(1234));
-        forward_last_exception("invoke_test");
-        return out;
-    });
+    implement_application(module);
 }

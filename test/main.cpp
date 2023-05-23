@@ -18,41 +18,15 @@ using namespace mousetrap;
 int main()
 {
     auto app = Application("test.app");
-    app.connect_signal_activate([](Application& app)
+    auto app2 = std::move(app);
+    app2.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
-
-        // create two actions
-        auto action_01 = Action("example.menu_model_action_01", app);
-        action_01.set_function([](Action&){
-            std::cout << "01 triggered" << std::endl;
-        });
-
-        auto action_02 = Action("example.menu_model_action_02", app);
-        action_02.set_function([](Action&){
-            std::cout << "02 triggered" << std::endl;
-        });
-
-        // create model
-        auto model = MenuModel();
-
-        // add actions to model
-        model.add_action("Action 01", action_01);
-        model.add_action("Action 02", action_02);
-
-        // create view, GUI elements that display the model
-        auto popover_menu = PopoverMenu(model);
-        auto popover_menu_button = PopoverButton();
-        popover_menu_button.set_popover_menu(popover_menu);
-
-        // add button to window
-        popover_menu_button.set_margin(75);
-        window.set_child(popover_menu_button);
         window.present();
     });
 
     // start main loop
-    return app.run();
+    return app2.run();
 }
 
 #if false

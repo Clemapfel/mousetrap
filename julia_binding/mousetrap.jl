@@ -1,16 +1,6 @@
 module mousetrap
 
-    """
-    export all enum instances into current module
-    """
-    macro export_enum(enum)
-        quote
-            export $enum
-            for i in instances($enum)
-                export i
-            end
-        end
-    end
+    ### TypedFunction.jl
 
     """
     # TypedFunction
@@ -63,18 +53,69 @@ module mousetrap
 
     (instance::TypedFunction)(args...) = Base.convert(instance._return_t, instance._apply([Base.convert(instance._arg_ts[i], args[i]) for i in 1:length(args)]...))
 
+    ### Detail.jl
+
     module detail
         using CxxWrap
         function __init__() @initcxx end
         @wrapmodule("./libjulia_binding.so")
     end
+
+    ### Common.jl
+
+    macro export_function(name, type)
+        mousetrap.eval(:(export $name))
+        return :($name(x::$type) = detail.$name(x._internal))
+    end
+
+    macro export_signal_emitter(name)
+        mousetrap.eval(:(export $name))
+        return quote
+            struct $name <: SignalEmitter
+                _internal::detail.$name
+            end
+        end
+    end
+
+    macro export_widget(name)
+        mousetrap.eval(:(export $name))
+        quote
+            struct $name <: SignalEmitter
+                _internal::detail.$name
+            end
+        end
+    end
+
+    ### SignalEmitter.jl
+
+    """
+    """
+    abstract type SignalEmitter end
+
+    ### Application.jl
+
+    @export_signal_emitter(Application)
+    @doc "TODO" Application
+
+    Application(id::String) = Application(detail.Application(id))
+
+    @export_function(run, Application)
+    @doc "TODO" run
+
+    @export_function(get_id, Application)
+    @doc "TODO" get_id
+
+    for n in names(mousetrap) println(n, " ", typeof(getproperty(mousetrap, n))) end
 end
 
-function test_f(x::Vector)
-    println(x)
-    return x
-end
-mousetrap.detail.invoke_test(test_f);
+using .mousetrap;
+
+println(@doc Application)
+
+app = Application("test.id")
+mousetrap.run(app)
+
+
 
 
 
