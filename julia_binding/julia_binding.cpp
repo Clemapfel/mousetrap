@@ -34,8 +34,6 @@ static inline jl_value_t* jl_safe_calln(jl_function_t* function, T... args)
 
 static jl_value_t* invoke_julia_function(void*, jl_value_t* f)
 {
-    //std::cout << "call" << std::endl;
-    //return f;
 }
 
 template<typename T>
