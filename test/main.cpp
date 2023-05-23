@@ -8,23 +8,46 @@
 #include <mousetrap/motion_event_controller.hpp>
 #include <mousetrap/box.hpp>
 #include <mousetrap/drop_down.hpp>
+#include <mousetrap/button.hpp>
 
 using namespace mousetrap;
 
 int main()
 {
-    auto app = Application("mousetrap.test");
-    app.connect_signal_activate([](Application& app)
+    auto app = Application("test.app");
+    app.connect_signal_activate([](Application& app) -> void
     {
         auto window = Window(app);
 
-        auto motion_controller = MotionEventController();
-        motion_controller.connect_signal_motion([](MotionEventController& controller, double x, double y){
-            std::cout << controller.get_internal() << std::endl;
-            std::cout << x << " " << y << std::endl;
+        // declare buttons
+        static auto button_01 = Button();
+        static auto button_02 = Button();
+
+        // connect handlers
+        button_01.connect_signal_clicked([](Button& self){
+            std::cout << "01 clicked" << std::endl;
+
+            self.set_signal_clicked_blocked(true);
+            button_02.emit_signal_clicked();
+            self.set_signal_clicked_blocked(false);
         });
 
-        window.add_controller(motion_controller);
+        button_02.connect_signal_clicked([](Button& self){
+            std::cout << "02 clicked" << std::endl;
+
+            std::cout << button_01.get_signal_clicked_blocked() << std::endl;
+            self.set_signal_clicked_blocked(true);
+            button_01.emit_signal_clicked();
+            self.set_signal_clicked_blocked(false);
+        });
+
+        // create a container so we can put both buttons into the window
+        auto box = Box(Orientation::HORIZONTAL);
+        box.push_back(button_01);
+        box.push_back(button_02);
+        box.set_margin(75);
+
+        window.set_child(box);
         window.present();
     });
 

@@ -65,8 +65,17 @@ namespace mousetrap
             { \
                 if (_internal == nullptr) \
                 { \
-                    _internal = detail::has_signal_##snake_case##_internal_new(_instance->get_internal()); \
-                    detail::attach_ref_to(_internal->instance, _internal); \
+                    auto* internal_maybe = detail::get_data<detail::SIGNAL_INTERNAL_CLASS_NAME(CamelCase)>(_instance->get_internal(), g_signal_id); \
+                    if (internal_maybe == nullptr)                                  \
+                    {\
+                        _internal = detail::has_signal_##snake_case##_internal_new(_instance->get_internal()); \
+                        detail::attach_ref_to(_internal->instance, _internal);          \
+                        detail::set_data<detail::SIGNAL_INTERNAL_CLASS_NAME(CamelCase)>(_instance->get_internal(), g_signal_id, _internal);                                                           \
+                    }                                                               \
+                    else                                                            \
+                        _internal = internal_maybe;                                 \
+                                                                                    \
+                    g_object_ref(_internal);\
                 } \
             } \
         \
@@ -75,7 +84,11 @@ namespace mousetrap
                 : _instance(instance) \
             {} \
             \
-            ~SIGNAL_CLASS_NAME(snake_case)() = default; \
+            ~SIGNAL_CLASS_NAME(snake_case)() \
+            { \
+                if (_internal != nullptr)   \
+                    g_object_unref(_internal);  \
+            } \
         \
         public: \
             const char* signal_id = g_signal_id; \
@@ -104,7 +117,7 @@ namespace mousetrap
                 T((typename detail::InternalMapping<T>::value*) _internal->instance).connect_signal(signal_id, wrapper, _internal); \
             } \
             \
-            void set_signal_activate_blocked(bool b) \
+            void set_signal_##snake_case##_blocked(bool b) \
             { \
                 initialize(); \
                 _internal->is_blocked = b; \
@@ -112,7 +125,9 @@ namespace mousetrap
             \
             bool get_signal_##snake_case##_blocked() const \
             { \
-                initialize(); \
+                if (_internal == nullptr) \
+                    return true; \
+                \
                 return _internal->is_blocked; \
             } \
             \
@@ -199,7 +214,7 @@ namespace mousetrap
                 T((typename detail::InternalMapping<T>::value*) _internal->instance).connect_signal(signal_id, wrapper, _internal); \
             } \
             \
-            void set_signal_activate_blocked(bool b) \
+            void set_signal_##snake_case##_blocked(bool b) \
             { \
                 initialize(); \
                 _internal->is_blocked = b; \
@@ -207,7 +222,9 @@ namespace mousetrap
             \
             bool get_signal_##snake_case##_blocked() const \
             { \
-                initialize(); \
+                if (_internal == nullptr) \
+                    return true; \
+                \
                 return _internal->is_blocked; \
             } \
             \
