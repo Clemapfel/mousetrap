@@ -8,6 +8,21 @@
 
 using namespace mousetrap;
 
+static inline const char* JULIA_DOMAIN = "mousetrap_jl";
+
+static void forward_last_exception(const std::string& domain_name)
+{
+    auto* exception_maybe = jl_exception_occurred();
+    if (exception_maybe)
+    {
+        static auto* exception_to_string = jl_eval_string(R"(
+            (exception) -> string(typeof(exception)) * ": " * exception.msg
+        )");
+        auto str = std::string(jl_string_ptr(jl_calln(exception_to_string, exception_maybe)));
+        log::critical("In " + domain_name + ": " + str, JULIA_DOMAIN);
+    }
+}
+
 #define add_type_method(Type, id) method(#id, &Type::id)
 #define declare_is_subtype_of(A, B) template<> struct jlcxx::SuperType<A> { typedef B type; };
 #define make_not_mirrored(Name) template<> struct jlcxx::IsMirroredType<Name> : std::false_type {};
@@ -22,14 +37,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
         )");
 
         auto* out = jl_calln(typed_f, f, jl_box_uint64(1234));
-
-        auto* exception_maybe = jl_exception_occurred();
-        if (exception_maybe)
-        {
-            log::critical("In invoke_test: julia exception occurred:");
-            jl_throw(exception_maybe);
-        }
-
+        forward_last_exception("invoke_test");
         return out;
     });
 }

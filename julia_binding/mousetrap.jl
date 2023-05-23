@@ -70,7 +70,7 @@ module mousetrap
     end
 end
 
-function test_f(x::Integer)
+function test_f(x::Vector)
     println(x)
     return x
 end
