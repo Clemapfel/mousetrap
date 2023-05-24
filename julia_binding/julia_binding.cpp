@@ -9,6 +9,8 @@
 
 using namespace mousetrap;
 
+// ### COMMON
+
 /// @brief log domain for julia-specific mousetrap log messages
 static inline const char* JULIA_DOMAIN = "mousetrap_jl";
 
@@ -38,6 +40,8 @@ static void jl_println(jl_value_t* value)
     jl_call1(println, value);
 }
 
+// ### CXX WRAP COMMON
+
 #define add_type(Type) add_type<Type>(std::string("_") + #Type)
 #define add_type_method(Type, id) method(#id, &Type::id)
 #define add_constructor(arg_type) constructor<arg_type>(false)
@@ -48,28 +52,33 @@ static void jl_println(jl_value_t* value)
 #define add_enum(Name) add_bits<Name>(#Name, jlcxx::julia_type("CppEnum"))
 #define add_enum_value(EnumName, PREFIX, VALUE_NAME) set_const(std::string(#PREFIX) + "_" + std::string(#VALUE_NAME),  EnumName::VALUE_NAME)
 
+// ### SIGNAL COMPONENTS
 
-#define DEFINE_ADD_SIGNAL(T, snake_case, return_t) \
-method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
-{ \
-    instance.connect_signal_##snake_case([](T& instance, jl_function_t* task) { \
-        return jlcxx::unbox<return_t>(jl_safe_call(("T::emit_signal" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(instance))); \
-    }, task); \
-}) \
-.method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
-    instance.disconnect_signal_##snake_case(); \
-}) \
-.method("set_signal_" + std::string(#snake_case) + "_blocked", [](T& instance, bool b){ \
-    instance.set_signal_##snake_case##_blocked(b); \
-}) \
-.method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
-    return instance.get_signal_##snake_case##_blocked(); \
-}) \
-.method("emit_signal_" + std::string(#snake_case), [](T& instance) { \
-    return instance.emit_signal_##snake_case(); \
-}); \
+#define DEFINE_ADD_SIGNAL(snake_case, return_t) \
+template<typename T, typename Arg_t>                               \
+void add_signal_##snake_case(Arg_t type) {\
+type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    { \
+        instance.connect_signal_##snake_case([](T& instance, jl_function_t* task) { \
+            return jlcxx::unbox<return_t>(jl_safe_call(("T::emit_signal" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(instance))); \
+        }, task); \
+    }) \
+    .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
+        instance.disconnect_signal_##snake_case(); \
+    }) \
+    .method("set_signal_" + std::string(#snake_case) + "_blocked", [](T& instance, bool b){ \
+        instance.set_signal_##snake_case##_blocked(b); \
+    }) \
+    .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
+        return instance.get_signal_##snake_case##_blocked(); \
+    }) \
+    .method("emit_signal_" + std::string(#snake_case), [](T& instance) { \
+        return instance.emit_signal_##snake_case(); \
+    });                                                \
+}
 
-
+DEFINE_ADD_SIGNAL(activate, void)
+DEFINE_ADD_SIGNAL(shutdown, void)
 
 /// @brief mousetrap::Application
 static void implement_application(jlcxx::Module& module)
@@ -89,8 +98,8 @@ static void implement_application(jlcxx::Module& module)
         //.add_type_method(Application, has_action)
     ;
 
-    application.add_signal(Application, activate, void)
-
+    add_signal_activate<Application>(application);
+    add_signal_shutdown<Application>(application);
 }
 
 // main
