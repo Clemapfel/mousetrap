@@ -48,11 +48,28 @@ static void jl_println(jl_value_t* value)
 #define add_enum(Name) add_bits<Name>(#Name, jlcxx::julia_type("CppEnum"))
 #define add_enum_value(EnumName, PREFIX, VALUE_NAME) set_const(std::string(#PREFIX) + "_" + std::string(#VALUE_NAME),  EnumName::VALUE_NAME)
 
-struct SignalData
-{
-    jl_function_t* function;
-    jl_value_t* data;
-};
+
+#define DEFINE_ADD_SIGNAL(T, snake_case, return_t) \
+method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+{ \
+    instance.connect_signal_##snake_case([](T& instance, jl_function_t* task) { \
+        return jlcxx::unbox<return_t>(jl_safe_call(("T::emit_signal" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(instance))); \
+    }, task); \
+}) \
+.method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
+    instance.disconnect_signal_##snake_case(); \
+}) \
+.method("set_signal_" + std::string(#snake_case) + "_blocked", [](T& instance, bool b){ \
+    instance.set_signal_##snake_case##_blocked(b); \
+}) \
+.method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
+    return instance.get_signal_##snake_case##_blocked(); \
+}) \
+.method("emit_signal_" + std::string(#snake_case), [](T& instance) { \
+    return instance.emit_signal_##snake_case(); \
+}); \
+
+
 
 /// @brief mousetrap::Application
 static void implement_application(jlcxx::Module& module)
@@ -72,12 +89,8 @@ static void implement_application(jlcxx::Module& module)
         //.add_type_method(Application, has_action)
     ;
 
-    application.method("connect_signal_activate", [](Application& instance, jl_function_t* task)
-    {
-        instance.connect_signal_activate([](Application& instance, jl_function_t* task) {
-            jl_safe_call("Application::emit_signal_activate", task, jlcxx::box<Application&>(instance));
-        }, task);
-    });
+    application.add_signal(Application, activate, void)
+
 }
 
 // main
