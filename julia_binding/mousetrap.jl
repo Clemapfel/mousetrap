@@ -69,8 +69,9 @@ module mousetrap
         try
             f(args...)
         catch e
-            print(stderr, "In " * scope * ": ")
-            Base.showerror(stderr, e)
+            printstyled(stderr, "[ERROR] "; bold = true, color = :red)
+            printstyled(stderr, "In " * scope * ": "; bold = true)
+            Base.showerror(stderr, e, catch_backtrace())
             print(stderr, "\n");
         end
     end
@@ -120,6 +121,8 @@ module mousetrap
     @document get_id "TODO"
     const get_id = detail.get_id
 
+####### signal_components.jl
+
     struct SignalTask
         f::TypedFunction
         data
@@ -130,14 +133,12 @@ module mousetrap
         task.f(x, task.data)
     end
 
-    function connect_signal_activate(x, f, data )
-        task = SignalTask(
-            TypedFunction(f, Cvoid, (Application, Any)),
-            data
-        )
-        detail.connect_signal_activate(x, task)
+    function connect_signal_activate(x::T, f, data) where {T}
+        detail.connect_signal_activate(x, SignalTask(TypedFunction(f, Cvoid, (Application, Any)), data))
     end
-    connect_signal_activate(x, f) = connect_signal_activate(x, f, nothing)
+    function connect_signal_activate(x::T, f) where {T}
+        detail.connect_signal_activate(x, SignalTask(TypedFunction(f, Cvoid, (Application,)), nothing))
+    end
     export connect_signal_activate
 end
 
@@ -145,7 +146,7 @@ using .mousetrap;
 
 app = Application("test.app")
 
-function on_activate_f(app, _)
+function on_activate_f(app::Application, data)
     detail.test_initialize(app)
 end
 mousetrap.connect_signal_activate(app, on_activate_f, nothing)

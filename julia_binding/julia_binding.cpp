@@ -38,6 +38,7 @@ static void jl_println(jl_value_t* value)
     jl_call1(println, value);
 }
 
+#define add_type(Type) add_type<Type>(std::string("_") + #Type)
 #define add_type_method(Type, id) method(#id, &Type::id)
 #define add_constructor(arg_type) constructor<arg_type>(false)
 #define add_constructor_with_finalizer(arg_type) constructor<arg_type>(false)
@@ -56,7 +57,7 @@ struct SignalData
 /// @brief mousetrap::Application
 static void implement_application(jlcxx::Module& module)
 {
-    auto application = module.add_type<Application>("Application")
+    auto application = module.add_type(Application)
         .add_constructor(const std::string&)
         .add_type_method(Application, run)
         .add_type_method(Application, quit)
