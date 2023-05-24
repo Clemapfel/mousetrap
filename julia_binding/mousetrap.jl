@@ -42,7 +42,7 @@ module mousetrap
                         signature = signature * string(arg_ts[i]) * ((i < length(arg_ts)) ? ", " : ")")
                      end
                      signature = signature * " -> $return_t"
-                     throw(AssertionError("Object is not invokable as function with signature `$signature`"))
+                     throw(AssertionError("Object $f is not invokable as function with signature `$signature`"))
                 end
             end
 
@@ -65,7 +65,7 @@ module mousetrap
 
 ####### common.jl
 
-    function safe_call(scope::String, f, args...)
+    function safe_call(scope, f, args...)
         try
             f(args...)
         catch e
@@ -90,9 +90,10 @@ module mousetrap
 
     macro export_signal_emitter(name)
         mousetrap.eval(:(export $name))
+        internal_name = Symbol("_" * "$name")
         return quote
             struct $name <: SignalEmitter
-                _internal::detail.$name
+                _internal::detail.$internal_name
             end
         end
     end
@@ -115,17 +116,23 @@ module mousetrap
 ####### application.jl
 
     @document Application "TODO"
-    const Application = detail.Application
+    @export_signal_emitter Application
+    Application(id::String) = Application(detail._Application(id))
     export Application
 
+    @document run "TODO"
+    Base.run(x::Application) = detail.run(x._internal)
+    export run
+
     @document get_id "TODO"
-    const get_id = detail.get_id
+    @export_function get_id Application
+
 
 ####### signal_components.jl
 
     struct SignalTask
         f::TypedFunction
-        data
+        data::Any
     end
     export SignalTask
 
@@ -133,11 +140,15 @@ module mousetrap
         task.f(x, task.data)
     end
 
-    function connect_signal_activate(x::T, f, data) where {T}
-        detail.connect_signal_activate(x, SignalTask(TypedFunction(f, Cvoid, (Application, Any)), data))
-    end
     function connect_signal_activate(x::T, f) where {T}
-        detail.connect_signal_activate(x, SignalTask(TypedFunction(f, Cvoid, (Application,)), nothing))
+        detail.connect_signal_activate(x._internal, function(x)
+            (TypedFunction(f, Cvoid, (T,)))(T(x[]))
+        end)
+    end
+    function connect_signal_activate(x::T, f, data::Data_t) where {T, Data_t}
+        detail.connect_signal_activate(x._internal, function(x)
+            (TypedFunction(f, Cvoid, (T, Data_t)))(T(x[]), data)
+        end)
     end
     export connect_signal_activate
 end
@@ -146,11 +157,11 @@ using .mousetrap;
 
 app = Application("test.app")
 
-function on_activate_f(app::Application, data)
-    detail.test_initialize(app)
-end
-mousetrap.connect_signal_activate(app, on_activate_f, nothing)
-mousetrap.detail.run(app)
+connect_signal_activate(app, function(app::Application, data)
+    mousetrap.detail.test_initialize(app._internal)
+    println(data)
+end, 1234)
+run(app)
 
 
 
