@@ -330,16 +330,40 @@ namespace mousetrap
             /// @param widget GtkWidget instance
             Widget(NativeWidget widget);
 
-            template<typename Widget_t>
-            Widget(Widget_t& widget)
-                : Widget(widget.operator NativeWidget())
-            {}
-
         private:
             detail::WidgetInternal* _internal = nullptr;
 
             static gboolean tick_callback_wrapper(GtkWidget*, GdkFrameClock*, detail::WidgetInternal* instance);
             static gboolean on_query_tooltip(GtkWidget*, gint x, gint y, gboolean, GtkTooltip* tooltip, detail::WidgetInternal* instance);
+    };
+
+    #define COMPOUND_WIDGET_REQUIRED_FUNCTION as_widget
+
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        struct CompoundWidgetSuper
+        {
+            virtual Widget& COMPOUND_WIDGET_REQUIRED_FUNCTION() = 0;
+
+            virtual operator Widget&() const final;
+            virtual operator const Widget&() const final;
+            virtual operator Widget&() final;
+            virtual operator const Widget&() final;
+        };
+    }
+    #endif
+
+    /// @brief Class users can inherit from for their own object to be treated as a widget
+    class CompoundWidget
+    #ifndef DOXYGEN
+        : public detail::CompoundWidgetSuper
+    #endif
+    {
+        protected:
+            /// @brief Expose the top-level widget. This is the only function objects need to implement in order to be able to be treated as a widget
+            /// @return top-level widget of a collection of widgets
+            virtual Widget& COMPOUND_WIDGET_REQUIRED_FUNCTION() = 0;
     };
 };
 

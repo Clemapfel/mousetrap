@@ -2053,10 +2053,10 @@ While we could create 5 individual widgets for every element of `GridView`, this
 We first create a class like so:
 
 ```cpp
-class CompoundWidget
+class LabeledChild
 {
     public:
-        CompoundWidget(size_t id);
+        LabeledChild(size_t id);
         
     private:
         Separator _separator;
@@ -2067,13 +2067,13 @@ class CompoundWidget
 };
 ```
 
-All the widgets are private fields of the compound widget. This means, as long as an instance of `CompoundWidget` exists, the 5 widgets it contains will be kept in memory, but other objects cannot directly access the components individually.
+All the widgets are private fields of the compound widget. This means, as long as an instance of `LabeledChild` exists, the 5 widgets it contains will be kept in memory, but other objects cannot directly access the components individually.
 
 We usually define how a compound widget is assembled in its constructor:
 
 ```cpp
 // define constructor
-CompoundWidget(size_t id)
+LabeledChild(size_t id)
     : _label(std::to_string(id))
 {
     _overlay.set_child(_separator);
@@ -2093,26 +2093,26 @@ The entire `Overlay` is first inserted into a `Frame`, then that frame is set as
 We can now initialize our compound widget and add it to a window, right?
 
 ```cpp
-auto instance = CompoundWidget(0);
+auto instance = LabeledChild(0);
 window.set_child(compound_widget);
 ```
 ```
-/home/mousetrap/test/main.cpp:201:26: error: non-const lvalue reference to type 'mousetrap::Widget' cannot bind to a value of unrelated type 'CompoundWidget'
+/home/mousetrap/test/main.cpp:201:26: error: non-const lvalue reference to type 'mousetrap::Widget' cannot bind to a value of unrelated type 'LabeledChild'
         window.set_child(instance);
                          ^~~~~~~~
 ```
 No, we cannot. 
 
-As the error states, `CompoundWidget` cannot bind to a reference of type `mousetrap::Widget`.  For this to work, we need to **declare it to be a widget**.
+As the error states, `LabeledChild` cannot bind to a reference of type `mousetrap::Widget`.  For this to work, we need to **declare it to be a widget**.
 
-This is accomplished by inheriting from mousetrap::Widget:
+This is accomplished by inheriting from \a{CompoundWidget}:
 
 ```cpp
-class CompoundWidget : public Widget    // inherit
+class LabeledChild : public CompoundWidget
 {
     public:
         // ctor
-        CompoundWidget(size_t id);
+        LabeledChild(size_t id);
         
         // function required by `Widget`
         operator NativeWidget() const override;
@@ -2126,25 +2126,18 @@ class CompoundWidget : public Widget    // inherit
 };
 ```
 
-We now need to modify our constructor, as it will have to also construct its parent class, `Widget`. We modify the constructor as follows:
+Inherting from this class requires us to implement the pure virtual function `Widget& as_widget()`. This is only thing we need to do in order for our class to be able to be treated as a `Widget`
 
 ```cpp
-// define constructor
-CompoundWidget(size_t id)
-    : Widget(_aspect_frame),
-      _label(std::to_string(id))
+Widget& as_widget()
 {
-    _overlay.set_child(_separator);
-    _overlay.add_overlay(_label);
-    
-    _frame.set_child(_overlay);
-    _aspect_frame.set_child(_frame);
+    return _aspect_frame;
 }
 ```
 
 The returned value should be the **top-level** widget of our compound widget. All other parts of a compound widget are contained in the top-level widget, and the top-level widget is not contained in any other widget.
 
-Writing out example `CompoundWidget` like this may make the widget order clearer:
+Writing out example `LabeledChild` like this may make the widget order clearer:
 
 ```cpp
 AspectFrame \
@@ -2156,17 +2149,17 @@ AspectFrame \
 
 Where each line ending in `\` is a widget container. A widget being indented means it is a child of the widget above.
 
-We see that `AspectFrame` is the only widget that is not also a child of another widget. Therefore, `AspectFrame` is the top-level widget, hence the definition of `operator NativeWidget() const` above.
+We see that `AspectFrame` is the only widget that is not also a child of another widget. Therefore, `AspectFrame` is the top-level widget, hence the definition of `as_widget` above.
 
 Putting it all together:
 
 ```cpp
-/// compound_widget.hpp
-struct CompoundWidget : public Widget
+/// labeled_child.hpp
+struct LabeledChild : public CompoundWidget
 {
     public:
-        CompoundWidget(size_t id)
-        : _label(std::to_string(id))
+        LabeledChild(size_t id)
+            : _label(std::to_string(id))
         {
             _overlay.set_child(_separator);
             _overlay.add_overlay(_label);
@@ -2176,10 +2169,12 @@ struct CompoundWidget : public Widget
             _aspect_frame.set_margin(10);
         }
 
-        operator NativeWidget() const override {
+    protected:
+        Widget& as_widget()
+        {
             return _aspect_frame;
         }
-
+        
     private:
         Separator _separator;
         Label _label;
@@ -2189,15 +2184,15 @@ struct CompoundWidget : public Widget
 };
 
 /// main.cpp
-auto instance = CompoundWidget(0);
+auto instance = LabeledChild(0);
 window.set_child(instance);
 ```
 
 \image html compound_widget.png
 
-In this example, `CompoundWidget` is fairly simple. In practice, applications can have dozens if not hundreds of different compound widget, all made up of an even larger number of native widgets. Mousetrap has no issues having thousands of widgets in memory and on screen at the same time.
+In this example, `LabeledChild` is fairly simple. In practice, applications can have dozens if not hundreds of different compound widget, all made up of an even larger number of native widgets, which mousetrap will handle just fine.
 
 Indeed, an entire application will usually be one, giant compound widget, with a `Window` as the top-level widget.
 
-In any case, `operator NativeWidget() const` is the glue that binds our custom objects to the pre-built way mousetrap allows widgets to be used. Once it is implemented (by simply returning the top-level widget), everything works as expected.
+In any case, inherting from `CompuondWidget` and implementing `Widget& as_widget()` is the glue that binds our custom objects to the pre-built way mousetrap allows widgets to be used. Once it is implemented (by simply returning the top-level widget), everything works as expected.
 

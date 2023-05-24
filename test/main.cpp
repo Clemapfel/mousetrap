@@ -18,18 +18,23 @@
 
 using namespace mousetrap;
 
-class CompoundWidget : public Widget    // inherit
+class Child : public CompoundWidget
 {
     public:
-        CompoundWidget(size_t id)
-            : Widget(_aspect_frame),
-             _label(std::to_string(id))
+        Child(size_t id)
+            : _label(std::to_string(id))
         {
             _overlay.set_child(_separator);
             _overlay.add_overlay(_label);
 
             _frame.set_child(_overlay);
             _aspect_frame.set_child(_frame);
+        }
+
+    protected:
+        Widget& get_top_level() override
+        {
+            return _aspect_frame;
         }
 
     private:
@@ -48,7 +53,7 @@ int main()
     {
         auto window = Window(app);
 
-        auto instance = CompoundWidget(1234);
+        auto instance = Child(1234);
         window.set_child(instance);
         window.present();
     });
