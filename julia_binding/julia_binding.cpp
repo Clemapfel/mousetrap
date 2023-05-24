@@ -37,52 +37,54 @@ static void forward_last_exception(const std::string& domain_name)
 #define add_enum_value(EnumName, PREFIX, VALUE_NAME) set_const(std::string(#PREFIX) + "_" + std::string(#VALUE_NAME),  EnumName::VALUE_NAME)
 
 /// @brief signal activate
-template<typename T, typename Wrapper_t>
+template<typename Wrapper_t>
 void add_signal_activate(Wrapper_t& type)
 {
-    type.method("connect_signal_activate", [](T& instance, jl_function_t* f, jl_value_t* data)
+    type.method("connect_signal_activate", [](Application& instance, jl_function_t* f, jl_value_t* data)
     {
-        instance.connect_signal_activate([](T& instance, jl_value_t* data){
+        instance.connect_signal_activate([](Application& instance, jl_value_t* data) {
 
             auto* typed_f = jl_eval_string(R"(
-                return mousetrap.TypedFunction(f, Cvoid, (mousetrap.Application, Any,))
+                return mousetrap.TypedFunction(f, Cvoid, (mousetrap.SignalEmitter, Any,))
             )");
 
-            auto* out = jl_calln(typed_f, jlcxx::box(instance), data);
-            forward_last_exception("invoke_test");
+            auto* out = jl_calln(typed_f, jlcxx::box<Application>(instance), data);
+            forward_last_exception("connect_signal_activate");
             return out;
         }, data);
     });
 }
 
 /// @brief mousetrap::Application
-make_not_mirrored(detail::ApplicationInternal);
 static void implement_application(jlcxx::Module& module)
 {
-    module.add_type<Application>("Application")
+    auto application = module.add_type<Application>("Application")
         .add_constructor(const std::string&)
         .add_type_method(Application, run)
-        .add_type_method(Application, get_id)
+        .add_type_method(Application, quit)
+        .add_type_method(Application, hold)
+        .add_type_method(Application, release)
+        .add_type_method(Application, mark_as_busy)
+        .add_type_method(Application, unmark_as_busy)
+        //.add_type_method(Application, add_action)
+        //.add_type_method(Application, remove_action)
+        //.add_type_method(Application, get_action)
+        //.add_type_method(Application, has_action)
     ;
-    /*
-    module.method("application_new", [](std::string id) -> void* {
-        auto* out = new Application(id);
-        (*out).connect_signal_activate([](Application& app){
-            auto window = Window(app);
-            window.present();
-        });
+
+    application.method("connect_signal_activate", [](Application& instance, jl_function_t* f, jl_value_t* data)
+    {
+        instance.connect_signal_activate([](Application& instance, jl_value_t* data) {
+
+            auto* typed_f = jl_eval_string(R"(
+                return mousetrap.TypedFunction(f, Cvoid, (mousetrap.SignalEmitter, Any,))
+            )");
+
+            auto* out = jl_calln(typed_f, jlcxx::box<Application>(instance), data);
+            forward_last_exception("connect_signal_activate");
+            return out;
+        }, data);
     });
-
-    module.method("application_run", [](void* in){
-        return static_cast<Application*>(in)->run();
-    });
-
-    module.method("application_get_id", [](void* in){
-        return static_cast<Application*>(in)->get_id();
-    });
-    */
-
-
 }
 
 // main

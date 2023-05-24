@@ -197,9 +197,4 @@ namespace mousetrap
         else
             return Action(it->second);
     }
-
-    void Application::set_menubar(MenuModel* model)
-    {
-        gtk_application_set_menubar(_internal->native, model->operator GMenuModel*());
-    }
 }

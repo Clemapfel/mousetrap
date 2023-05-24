@@ -39,9 +39,7 @@ namespace mousetrap
     {
         public:
             /// @brief id of an item, keep track of this to refer to items after initialization
-            using ItemID = struct {
-                size_t _value;
-            };
+            using ItemID = size_t;
 
             /// @brief construct as empty
             DropDown();
@@ -136,7 +134,7 @@ namespace mousetrap
 
             /// @brief get the id of the currently selected item
             /// @return id
-            ItemID get_selected() const;
+            DropDown::ItemID get_selected() const;
 
             /// @brief get the id of the item at specified position in the drop down
             /// @param index

@@ -61,13 +61,13 @@ namespace mousetrap
             /// @brief destroy action, should only be called at the very end of <tt>main</tt>
             ~Application();
 
-            /// @brief copy ctor
+            /// @brief copy ctor delete
             Application(const Application&) = delete;
 
             /// @brief move ctor
             Application(Application&&) noexcept;
 
-            /// @brief copy assignment
+            /// @brief copy assignment deleted
             Application& operator=(const Application&) = delete;
 
             /// @brief move assignment
@@ -122,10 +122,6 @@ namespace mousetrap
             /// @param id
             /// @return true if action with id is registered, false otherwise
             bool has_action(const ActionID& id);
-
-            /// @brief set the model used for the applications menubar, this should be called during emission of the <tt>startup</tt> signal
-            /// @param model
-            void set_menubar(MenuModel* model);
 
         private:
             detail::ApplicationInternal* _internal = nullptr;

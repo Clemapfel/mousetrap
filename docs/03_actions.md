@@ -299,4 +299,3 @@ By using `Action` instead of a regular function, we are also given an  automated
 
 ---
 
-Hopefully this chapter convinced readers about how `Action` is the superior software pattern when writing application functionality. If nothing else, readers should take care to use `Action` as often as possible. Once their project grows to barely managable size, they will be thankful that they made this choice early enough for it to pay off later on.

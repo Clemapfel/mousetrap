@@ -9,7 +9,7 @@ In this chapter, we will learn:
 ---
 <details><summary><b><tt>main.cpp</tt> for this chapter</b></summary>
 
-Snippets from this section can be run using the following main.cpp:
+Code snippets from this section can be run using the following `main.cpp`:
 
 ```cpp
 #include <mousetrap.hpp>
@@ -18,11 +18,11 @@ using namespace mousetrap;
 int main()
 {
     auto app = Application("example.app");
-    app.connect_signal_activate([](Application* app)
+    app.connect_signal_activate([](Application& app)
     {
         auto window = Window(*app);
         
-        // add snippet here
+        // snippet here
       
         window.set_child(/* widget from snippet */);
         window.present();
@@ -36,11 +36,11 @@ int main()
 
 ## What is a widget?
 
-When creating a GUI, widgets are the central element to any and all applications. In general, a widget is anything that can be rendered on screen. Often wigdets are **interactable**, which means that the user can trigger behavior by interacting with the widget. In the case of `Button`, the widget is rendered to screen as a filled rectangle and it is interactable because the user can click that rectangle to trigger an animation and emit signal `clicked`.
+Widgets are the central element to any and all GUI applications. In general, a widget is anything that can be rendered on screen. Often, wigdets are **interactable**, which means that the user can trigger behavior operating the widget with a peripheral such as a keyboard, mouse, or touchscreen. For example, `Button` from previous chapters is a widget. It is rendered on screen as a rectangle that, when clicked, triggers behavior connected to it via signal `clicked`. `clicked` is specific to `Button`, but all widgets share some common signals.
 
 ## Widget Signals
 
-All widgets are signal emitters, but not all signal emitters are widgets. As such, all widgets share a number of signals:
+All widgets are signal emitters, but not all signal emitters are widgets. As such, all widgets share the following signals:
 
 \signals
 \signal_realize{Widget}
@@ -51,23 +51,25 @@ All widgets are signal emitters, but not all signal emitters are widgets. As suc
 \signal_map{Widget}
 \signal_unmap{Widget}
 
-From this point onwards, any widget also has these signals. For example, if we want to trigger behavior when a `Button` is first shown, we connect to that signal like so:
+From this point onwards, we will only mentiond widget-specific signals, though we should be aware that any object inherting from \a{Widget}, also inherits these signals.
+
+If we want to trigger behavior when a `Button` is first shown, we would connect to that signal like so:
 
 ```cpp
 auto button = Button();
-button.connect_signal_show([](Widget* self)
+button.connect_signal_show([](Widget& self)
 {
     std::cout << "button shown" << std::endl;
 });
 ```
 
-Where the first argument of this signal, is a `Widget*` (**not** a `Button*`). Signals that all widgets share use `Widget*`. For class-specific signals, such as signal `clicked` for `Button`, the first argument is `Button*`.
+Where the first argument of this signal, is a `Widget&` (**not** a `Button&`). Signals that all widgets share use `Widget&`. For class-specific signals, such as signal `clicked` for `Button`, the first argument is `Button&`. If we are unsure about the exact signature of a widget, we can check the \link mousetrap::Button corresponding objects documentation\endlink.
 
-For each widget type we can check their table of signals as described in the [chapter on signals](02_signals.md#checking-signal-signature).
+---
 
 ## Widget Properties
 
-All widgets share common properties that govern how they behave when the container they are in changes size, or at what position they will appear. Any function in this section can be called for any widget class.
+All widgets share common properties that govern how they behave when attempting to allocate an area on screen. This includes both the location and size of that area. 
 
 ### Size Request
 
@@ -79,30 +81,30 @@ Some widgets can contain other widgets. For example, `Window` has a single **chi
 
 In general, if widget `A` is inside of widget `B`, for example by calling `A.set_child(B)`, then we say `B` is `A`s **child**, and `A` is `B`s **parent**.
 
-Each widget that is not a window has exactly one parent. The number of children varies per widget, `Window` and `Button` have exactly on child, while other widgets may have a any number of children, or no children at all.
+Each widget that is not a window has exactly one parent, while the number of children varies between widgets. `Window` and `Button` have exactly on child, while other widgets may have a any number of children, or no children at all.
 
 \collapsible_note_end
 
-One property used for determinening the widgets size is its **size request**. This is the minimum amount of space the widget has to take up, expressed as a \{Vector2f}, its minimum width and height (in pixels).
+One property used during size allocation is a widgets **size request**. This is a \a{Vector2f}, which holds the minimum width and height, in pixels. 
 
-For example, a widget that displays a string of text that is 60px wide and 15px tall, would have to have a size request of `{60, 15}` in order to display the text without cropping. This size is usually chosen dynamically, but we can manual control it using `Widget::set_size_request`. For an empty widget, the default size request is `{0, 0}`.
+By default, all widgets size request is `{0, 0}`. A `0` in for either width or height signals to the layout manager that it should automatically determine the widget size. By calling `Widget::set_size_request` and setting width, height, or both to a specific value, the layout manager will make sure that widget will always at least allocate that amount of space. 
 
-Setting either the width or height of the size-request to `0` signals to the layout manager that the widget should automatically choose that part of the size request.
-
-Manipulating the size request like this is also called **size-hinting**.
+Manipulating the size request to influence a widgets minimum size is also called **size-hinting**.
 
 ### Accessing Widget Size
 
 We can query information about a widgets current and target size using multiple functions:
 
-`Widget::get_allocation` returns a \link mousetrap::Rectangle rectangle\endlink, which holds the current widgets position and its current size, both  in pixels. This size may or may not be equal to what we size-hinted the widget to.
+`Widget::get_allocation` returns a \link mousetrap::Rectangle rectangle\endlink, which holds the current widgets position and its current size, both  in pixels. 
 
 ```cpp
 auto position = widget.get_allocation().top_left;
 auto size = widget.get_allocation().size;
 ```
 
-To access a widgets size-request (not the actual size), we use `Widget::get_size_request`:
+This size may or may not be equal to what we size-hinted the widget to, as size-hinting only determines the widgets minimum size. The layout manager is free to allocate a size larger than that.
+
+To access a widgets size-request, as opposed to the actual size, we use `Widget::get_size_request`:
 
 ```cpp
 auto size_request = widget.get_size_request();
@@ -110,26 +112,23 @@ auto size_request = widget.get_size_request();
 
 If we have not yet size-hinted the widget, this size will be `{0, 0}`.
 
-Lastly, we can query the widgets **minimum possible size**, that is the size that is has to occupy no matter what, using `Widget::get_preferred_size`. This size is of course influenced on whether we size-hinted the widget.
-
-The object returned by `get_preferred_size` also holds information about the size the widget would allocate naturally, if given infinite amount of space. This is called the **natural size**.
-
-We access the minimum and natural size like so:
+Lastly, `Widget::get_natural_size` will access the size preferred by the layout manager. This size will always be equal to or larger than the size request.
 
 ```cpp
-auto minimum_size = widget.get_preferred_size().minimum_size;
-auto preferred_size = widget.get_preferred_size().natural_size;
+auto preferred_size = widget.get_natural_size();
 ```
 
-Layout management is very complex and the algorithm behind managing the size of all widgets is highly sophisiticated. All that users of mousetrap need to understand is how to influence this algorithm, not how exactly it works.
+When trying to predict the size a widget will have at a point where the widget is not yet allocated, `get_natural_size` will give use the best measurement. Once the widget is realized, `get_allocation`  will gives us the exact value.
 
-On top of a widgets size request, a widgets target allocated size depends on a number of other variables:
+Layout management is very complex and the algorithm behind managing the size of the totality of all widgets is highly sophisiticated. Users of mousetrap are not requireed to understand this exact mechanism, only how to influence it.
+
+On top of a widgets size request, a widgets target final allocated size depends on a number of other variables:
 
 ### Margin
 
 Any widget has four margins: `start`, `end`, `top` and `bottom`. Usually, these correspond to empty space left, right, above, and below the widget respectively. Margins are unaffected by the widgets original size and expansion, they are simply added to the corresponding side of the widget. In this way, they work similar to the [css properties of the same name](https://www.w3schools.com/css/css_margin.asp), though in mousetrap, margins cannot be negative.
 
-We use `Widget::set_margin_start`, `Widget::set_margin_end`, `Widget::set_margin_top` and `Widget::set_margin_bottom` to control each individual margin. Mousetrap also provides the convenience functions `Widget::set_margin_horizontal` and `Widget::set_margin_vertical`, which sets both `start` and `end', or `top` and `bottom` at the same time respectively.
+We use `Widget::set_margin_start`, `Widget::set_margin_end`, `Widget::set_margin_top` and `Widget::set_margin_bottom` to control each individual margin. Mousetrap also provides the convenience functions `Widget::set_margin_horizontal` and `Widget::set_margin_vertical`, which sets both `start` and `end`, or `top` and `bottom` at the same time.
 
 Lastly `Widget::set_margin` sets all fours margins to the same value:
 
@@ -148,9 +147,9 @@ Margins are used extensively in UI design. They make an application look more pr
 
 ### Expansion
 
-In previous chapters, we may have noticed that if we scale the window from our previous `main.cpp`s, the widget inside may or may not scale along with it. This is called **expansion**, which is a property of all widgets.
+In previous chapters, we may have noticed that resizing the window may sometimes cause the widgets inside it to resize accordingly. Whether or not a widget will follow the size of its parent is called **expansion**, which is a property of all widgets.
 
-We can specify whether a widget should expand along the vertical or horizontal axis using `Widget::set_expand_horizontally` and `Widget::set_expand_vertically`, which take a single boolean as its argument. `Widget::set_expand` sets both properties to the same value at the same time.
+We can specify whether a widget should expand along the vertical or horizontal axis using `Widget::set_expand_horizontally` and `Widget::set_expand_vertically`, which take a single boolean as its argument. `Widget::set_expand` sets both properties to the same value.
 
 ```cpp
 auto widget = // ...
@@ -161,15 +160,16 @@ widget.set_expand_vertically(true);
 widget.set_expand(true)
 ```
 
-When `set_expand` is set to `true`, the widgets maximum size is essentially infinite. If it is set to `false`, the widget will not expand past its natural size.
+When `set_expand` is set to `true`, the widgets maximum width and/or height is essentially infinite. If it is set to `false`, the widget will not expand past its natural size.
 
 ### Alignment
 
-Widget **alignment** governs how one or more widgets behave when grouped together, for example if they are all children of the same container widget.
+Widget **alignment** governs how one or more widgets behave when grouped together, usually because they are all children of the same parent. In this context, the parent is called a **widget container**.
 
-An example: a `Button` size-hinted to 100x100 pixels has expansion disabled (`set_expand` was set to `false`). It has a margin of 0 and is placed inside a `Window`. When we scale the window, the button will not change size. *Alignment*, then, governs **where in the window the button is positioned**.
+An example: a `Button` size-hinted to 100x100 pixels has expansion disabled (`set_expand` was set to `false`). It has a margin of 0 and is placed inside a `Window`. When we scale the window, the button will not change size. Alignment, then, governs **where in the window the button is positioned**.
 
-We can set alignment for the horizontal and vertical axis separately, using `Widget::set_horizontal_alignment` and `Widget::set_vertical_alignment`, which both take an enum value of type \a{Alignment} as their only argument. This enum has three possible values:
+We can set alignment for the horizontal and vertical axis separately, using `Widget::set_horizontal_alignment` and `Widget::set_vertical_alignment`, which both take an enum value of type \a{Alignment} as their only argument. This enum has three possible values, whose meaning depends on whether we use this value for horizontal or vertical alignment:
+
 + `Alignment::START`: left if horizontal, top if vertical
 + `Alignment::END`: right if horizontal, bottom if vertical
 + `Alignment::CENTER`: center of axis, regardless of orientation
@@ -190,36 +190,40 @@ For our example, the button would take on these locations based on which enum va
 
 Using alignment, size-hinting, and expansion, we can fully control where and at what size widgets appear on-screen.
 
+---
+
 ### Visibility
 
 Once a widgets allocated area enters the visible area on screen, it is **shown** (which we can track using the `shown` signal). Once it leaves the visible area, it is **hidden** (emitting `hide`).
 
-`Widget::set_visible` sets the widgets visibility based on the boolean argument. Other than this, it behaves exactly as `Widget::show` and `Widget::hide`. If we hide a widget that is currently shown, it will disappear and its allocated size will be 0.
+`Widget::set_visible` sets the widgets visibility based on the boolean argument. Other than this, it behaves exactly as `Widget::show` and `Widget::hide`. If we hide a widget that is currently shown, it and all its children will disappear, their allocated size will become 0.
 
-One way to make a widget invisible, without hiding it, is to control its **opacity**. Using `Widget::set_opacity`, if we set the opacity to 0, all other properties of the widget, including its size allocation and intractability are kept. It remains shown. The only thing that changes is the opacity of is that the graphical part element, which is now fully transparent and thus invisible to the user.
+One way to make a widget **invisible without hiding it**, is to control its **opacity**. Using `Widget::set_opacity` we can set a widgets opacity to 0. This retains all other properties of the widget, including its size allocation and intractability. The widget remains `show`n, the only thing that changes is that the widgets graphical element will now appear fully transparent.
+
+---
 
 ### Cursor Type
 
-Each widget has a property governing what the user's cursor will look like while in the widgets allocated area. By default, this is a simple arrow. A widget intended for text-entry would want the cursor to be a [caret](https://en.wikipedia.org/wiki/Caret_navigation), while a clickable widget would likely want a pointer cursor.
+Each widget has a property governing what the user's cursor will look like while it is hovering inside the widgets allocated area. By default, the cursor is a simple arrow. A widget intended for text-entry would want the cursor to be a [caret](https://en.wikipedia.org/wiki/Cursor_(user_interface)), while a clickable widget would likely want a [pointer](https://en.wikipedia.org/wiki/Cursor_(user_interface)#Pointer).
 
-We can manually choose the cursor type using `Widget::set_cursor`, by setting it to one of the following values, all of which are part of the enum \a{CursorType}:
+Some widgets already set the cursor to an appropriate shape automatically. Regardless of whether a widget does this, we can manually choose the cursor type by calling `Widget::set_cursor`, which takes a value of the \a{CusorType} enum:
 
 | `CursorType` value  | Appearance                                                                             |
 |---------------------|----------------------------------------------------------------------------------------|
 | `NONE`              | no visible cursor                                                                      |
-| `DEFAULT`           | small arrow, this is the default value widgets                                         |
+| `DEFAULT`           | small arrow, this is the default for most widgets                                      |
 | `POINTER`           | a hand, indicates that widget can be interacted with by pressing the mouse button once |
-| `HELP`              | question mark, instructs user to open a help dialog                                   |
+| `HELP`              | question mark, instructs user to open a help dialog                                    |
 | `CONTEXT_MENU`      | pointer with `...` to indicate clicking will open a context menu                       |
 | `PROGRESS`          | pointer with a small "currently loading" icon                                          |
 | `WAIT`              | instructs user to wait for an action to finish                                         |
 | `CELL`              | used when interacting with a table                                                     | 
-| `CROSSHAIR`         | cross-hair shaped cursor, used for precise selections                                  |
-| `TEXT`              | text-entry cursor                                                                      | 
-| `MOVE`              | four-pointed arrow, used to move around object                                         |
+| `CROSSHAIR`         | crosshair shaped cursor, used for precise selections                                   |
+| `TEXT`              | caret                                                                                  | 
+| `MOVE`              | four-pointed arrow, indicates that the currently selected object can be moved freely   |
 | `GRAB`              | open hand, not yet grabbing                                                            |
 | `GRABBING`          | closed hand, currently grabbing                                                        |
-| `ALL_SCROLL`        | four-direction scroll                                                                  |
+| `ALL_SCROLL`        | four-directional scroll                                                                |
 | `ZOOM_IN`           | lens, usually with a plus icon                                                         |
 | `ZOOM_OUT`          | lens, usually with a minus icon                                                        |
 | `COLUMN_RESIZE`     | left-right arrow                                                                       | 
@@ -240,7 +244,7 @@ auto button = Button();
 button.set_cursor(CursorType::POINTER);
 ```
 
-The exact look of each pointer type will depend on the user's operating system and UI theme. To choose a fully custom cursor, we use `Widget::set_cursor_from_pixel`, which takes an `Image`. We will learn more about \a{Image} in the [chapter on image and sound](07_image_and_sound.md). Until then, this is how we set a cursor from a `.png` file on disk:
+The exact look of each pointer type will depend on the user's operating system and UI theme. To choose a fully custom cursor, we use `Widget::set_cursor_from_image`, which takes an `Image`. We will learn more about \a{Image} in the [chapter on image and sound](07_image_and_sound.md). Until then, this is how we set a cursor from a `.png` file on disk:
 
 ```cpp
 auto widget = //...
@@ -249,9 +253,13 @@ widget.set_cursor_from_image(Image("/path/to/image.png"), {0, 0});
 
 Where `"/path/to/image.png"` is the absolute path to the image file. `{0, 0}` is the cursor anchor, in pixels, which controls which part of the pixel is aligned with the conceptual center of the cursor.
 
+---
+
 ### Tooltip
 
-Each widget can optionally have a **tooltip**. This is a little window that opens when the cursor hovers over a widgets allocated area for enough time. Tooltips are usually reserved to simple text message, which we can set directly using `Widget::set_tooltip_text`:
+Each widget can optionally have a **tooltip**. This is a little window that opens when the cursor hovers over a widgets allocated area for enough time. The exact duration is decided by the users OS, we do not have control over it. 
+
+Tooltips are usually a simple text message. For a case like this, we can set the text directly using `Widget::set_tooltip_text`:
 
 ```cpp
 auto open_file_button = Button();
@@ -261,54 +269,58 @@ open_file_button.set_tooltip_text("Click to Open");
 
 If we want to use something more complex than just simple text, we can register an arbitrarily complex widget as a tooltip by calling `Widget::set_tooltip_widget`. As a matter of style, this widget should not be intractable, though there is no mechanism in place to enforce this.
 
+---
+
 ### Tick Callback
 
-During `Application::run` in our `main.cpp`, the composited image shown inside a `Window` on screen is updated in accordance with the monitors refresh rate. For a 60hz monitor, the image is updated 60 times per seconds. The time in-between two updates is called a **frame**. This terminology is borrowed from frame-by-frame animation, where each part of a fluid movement is a static image.
+During `Application::run` in our `main.cpp`, the composited image shown inside a `Window` on screen is updated in accordance with the monitor's refresh rate. For a 60hz monitor, the image is updated 60 times per seconds. The time in-between two updates is called a **frame**. This terminology is borrowed from [frame-by-frame animation](https://en.wikipedia.org/wiki/Key_frame), where each part of a fluid movement is a static image.
 
-Often, we want to do a task exactly once per frame. `Widget` offers this functionality, which is called a **tick callback**. Using `Widget::set_tick_callback` we can register an arbitrary function to be called exactly once per frame, when that widget is drawn. 
+Often, we want to trigger a function exactly once per frame. `Widget` offers registering a function for this purpose, in which case it is called a **tick callback**. Using `Widget::set_tick_callback` we can register an arbitrary function to be called exactly once per frame, right before the widget is drawn.
 
-The handler function has the signature `(FrameClock, (Data_t) -> TickCallbackResult)`, and we connect a function like so:
+The handler function has the signature `(FrameClock, (Data_t) -> TickCallbackResult)`. We connect a function like so:
 
 ```cpp
 auto widget = // ...
-grid.set_tick_callback([](FrameClock clock) -> TickCallbackResult{
-    std::cout << "Time since last render: " << clock.get_time_since_last_frame().as_seconds() << std::endl;
+widget.set_tick_callback([](FrameClock clock) -> TickCallbackResult {
+    // do anything here
     return TickCallbackResult::CONTINUE;
 });
 ```
 
-Where returning `TickCallback::DISCONTINUE`, the widget will immediately disconnect the handler, meaning from this point onwards the functio will no longer ber invoked once per frame. Returning `TickCallback::CONTINUE`, conversely, means the tick callback will continue.
+Where returning `TickCallbackResult::DISCONTINUE` will immediately disconnect the handler, meaning from this point onwards the tick callback will be freed and no longer invoked once per frame. Returning `TickCallback::CONTINUE`, conversely, means the tick callback will continue until the next frame.
 
-`FrameClock` holds information about the duration of the last frame. With `FrameClock::get_time_since_last_frame`, we can access the exact duration as a \a{Time}. We should always use this measurement as opposed to assuming that each frame is exactly 1/60th of a second long. Frame length often varies, sometimes significantly.
+\a{FrameClock} holds information about the duration of the last frame. With `FrameClock::get_time_since_last_frame`, we can access the exact duration as a \a{Time}. We should always use this measurement as opposed to assuming that each frame is exactly 1/60th of a second. Frame length often varies, sometimes significantly.
+
+---
 
 ---
 
 ## Window
 
-Windows are central to any application, as such, \a{Window} s constructor takes an `Application*` (pointer to `Application` instance). Once all windows of an application are closed, the application usually exists, though we can prevent this using \a{Application::hold}.
+For our first widget, we have \a{Window}. Windows are central to any application, as such, `Window` and `Application` are inherently connected. We cannot create a `Window` without an application. If all windows are closed, the underlying application usually exists, though we can prevent this using \a{Application::hold}.
 
-Windows are widgets, though they occupy somewhat of a special place. A `Window` cannot be the child of any other widget, it is **top-level**.
-This means that any and all widgets are children of a `Window`, usually indirectly, as a `Window` can only contain a single widget, which we set using `Window::set_child`.
-In most cases, this child will itself be a container widget that can have any number of children.
+While windows are widget, they occupy somewhat of a special place. A `Window` cannot be the child of any other widget, it is **top-level**.
 
-`Window` has three signals (on top of those inherited from `Widget`) that we can connect to:
+This means that any and all widgets are direct or indirect children of a `Window`. `Window` can only have one direct child, which we set using `Window::set_child`.
+
+`Window` has three signals (on top of those inherited from `Widget`):
 
 \signals
 \signal_close_request{Window}
 \signal_activate_default_widget{Window}
 \signal_activate_focused_widget{Window}
 
-`activate_default_widget` is emitted when the default widget is activated. This is a widget designated as such via `Window::set_default_widget`. If the user presses the enter key while the window is shown, this widget will emit its `activate` signal. This is useful for small message dialogs that have, for example, an "ok" and "cancel" button. By making the "ok" button the default widget, the user can simply press enter to confirm, as opposed to having to move the mouse to physically click on the button.
+`activate_default_widget` is emitted when the default widge,  designated as such via `Window::set_default_widget`, emits its `activate` signal. Users can trigger the default widget by pressing enter while the widget is shown. This is useful for small message dialogs that have, for example, an "ok" and "cancel" button. By making the "ok" button the default widget, the user can simply press enter to confirm, making it so they do not have to operate the mouse.
 
-Another of `Window`s signals,  `activate_focused_widget` is emitted when the widget that currently *holds input focus* is activated. We will learn what input focus is in the [chapter on event handling](05_events.md), for now, simply note that this signal exists.
+Another of `Window`s signals,  `activate_focused_widget` is emitted when the widget that currently *holds input focus* is activated. We will about input focus [chapter on event handling](05_events.md), for now, we simply note that this signal exists.
 
-Lastly, we have signal `close_request`, which requires some explanation.
+Lastly, we have signal `close_request`:
 
 ### Close Request
 
-When the window manager, which is the part of the user's operating system that deals with window layout and lifetime, request a window to close, the window does not immediately close. Instead, `Window` emits `close_request`, which we can connect to. This signal can be conceptualized as the window asking "should I really close right now?". If no signal handler is connected, the window does, which is the default behavior. If we do connect a signal handler, we can not only trigger custom behavior, but we can also **prevent closing of the window**.
+When the window manager, which is the part of the user's operating system that deals with window layout and lifetime, request a window to close, the window does not immediately close. Instead, `Window` emits `close_request`, which we can connect to. This signal can be conceptualized as the window asking "should I really close right now?". If no signal handler is connected, the window closes immediately. This is the default behavior. If we do connect a signal handler, we can trigger custom behavior and prevent the window from closing.
 
-We recall the signature of `close_request` to be `(Window*, (Data_t)) -> WindowCloseRequestResult`. This return type, \a{WindowCloseRequestResult} is an enum with two values `ALLOW_CLOSE` and `PREVENT_CLOSE`. Depending on which of the two is returned, the window does or does close when requested.
+We recall that the signature of `close_request` is `(Window&, (Data_t)) -> WindowCloseRequestResult`. This return type, \a{WindowCloseRequestResult} is an enum with two values `ALLOW_CLOSE` and `PREVENT_CLOSE`. Depending on which of the two is returned, the window does or does close when requested.
 
 For example, to prevent a `Window` instance from closing until a global flag is set, we can do the following:
 
@@ -316,7 +328,7 @@ For example, to prevent a `Window` instance from closing until a global flag is 
 auto window = Window(// ...
 
 static bool should_close = false;
-window.connect_signal_close_request([](Window*){
+window.connect_signal_close_request([](Window&){
 
     std::cout << "Window is attempting to close" << std::endl;
     
@@ -329,10 +341,10 @@ window.connect_signal_close_request([](Window*){
 
 ### Opening / Closing a Window
 
-When we create a `Window` instance, it will be initially hidden. In this way, none of its widgets will be realized or shown, and the user has no way to know that the window exists. A `Window`s lifetime only begins once we call `Window::present`. This essentially opens the window and shows it to the user. We've seen this in our `main.cpp`:
+When we create a `Window` instance, it will be initially hidden. None of its widgets will be realized or shown, and the user has no way to know that the window exists. A `Window`s lifetime only begins once we call `Window::present`. This opens the window and shows it to the user. We've seen this in our previous `main.cpp`:
 
 ```cpp
-app.connect_signal_activate([](Application* app)
+app.connect_signal_activate([](Application& app)
 {
     // main window
     auto window = Window(*app);
@@ -344,30 +356,11 @@ app.connect_signal_activate([](Application* app)
 });
 ```
 
-This is the case for all windows. For example, if we wanted to open another window only when a button in the main window is pressed, we can do the following:
-
-```cpp
-// in app.connect_signal_activate
-
-auto main_window = Window(*app);
-static auto secondary_window = Window(*app);
-
-auto button = Button();
-button.connect_signal_clicked([](Button*){
-    secondary_window.present();
-});
-main_window.set_child(button);
-
-main_window.present();
-```
-
-Where we declared `secondary_window` to be `static`, such that we can safely reference it from inside the lambda.
-
 Conversely, if we want a window to go back to its initial state, where it is hidden from the user, we call `Window::hide`. If we want to close the window permanently, unrealizing all widgets inside it, we use `Window::close`.
 
 ### Window Properties
 
-Other than the signals, we can set some basic properties of any `Window`:
+Other than the signals, we can change s properties of any `Window`:
 
 #### Title
 
@@ -379,19 +372,19 @@ When dealing with multiple windows, we can influence the way two windows interac
 
 By setting `Window::set_modal` to true, if the window is revealed, **all other windows of the application will be deactivated**, preventing user interaction with them. This also freezes animations, it essentially pauses all other windows. The most common use-case for this is for dialogs, for example if the user requests to close the application, it is common to open a small dialog requesting the user to confirm exiting the application. While this dialog is shown, the main window should be paused until the user chooses an action.
 
-Using `Window::set_transient_for`, we can make sure a window will always be on top of another. `A.set_transient_for(B)` will make it so, while `A` overlaps `B` on the user's desktop, `A` will always be shown on top. This is again useful for message dialogs, if the dialog is not transient for the main window it could appear "behind" the main window, being essentially invisible to the user.
+Using `Window::set_transient_for`, we can make sure a window will always be shown in front of another. `A.set_transient_for(B)` will make it so, while `A` overlaps `B` on the user's desktop, `A` will be shown in front of `B`. 
 
 #### HeaderBar
 
-The part on top of a window is called the **header bar**. By default, it will show the window title and a minimize-, maximize- and close-button. We can completely hide the header bar using `Window::set_is_decorated`, though this is rarely recommended.
+The part on top of a window is called the **header bar**. By default, it will show the window title and a minimize-, maximize- and close-button. We can completely hide the header bar using `Window::set_is_decorated`.
 
-All `Window`s have space for one more widget other than its child. To set it, we use `Window::set_titlebar_widget`. This will usually be a \a{HeaderBar}, though any widget can be inserted this way.
+All `Window`s have space for one more widget (other than its child), which we insert using `Window::set_titlebar_widget`. This will usually be a \a{HeaderBar}, though any widget can be inserted this way.
 
-`HeaderBar` is a widget that has three areas where other widgets can be inserted, at the front (left of the title), at the end (right of the title), or as the title. This gives us full flexibility, we can put whatever we want anywhere in a window's header bar.
+`HeaderBar` is a widget that has three areas where other widgets can be inserted, at the front (left of the title), at the end (right of the title), or as the title. 
 
-An alternative way of formatting the `HeaderBar` is with **header bar layouts**, which is supplied to `HeaderBar::set_layout`.
+An alternative way of formatting the `HeaderBar` is with **header bar layouts**, which is a string supplied to `HeaderBar::set_layout`.
 
-Layout is a string that is a list of button IDs. The four valid IDs are:
+This is a list of button IDs. Valid IDs are restricted to:
 
 + `maximize`: Maximize Button
 + `minimize`: Minimize Button
@@ -425,15 +418,17 @@ window.set_titlebar_widget(HeaderBar(":close"));
 
 ---
 
+---
+
 ## Label
 
-In contention for being *the* most used widget, `Label`s are important to understand. A `Label` displays static text. It is initialized as one would expect:
+In contention for being *the* most used widget, `Label`s are important to understand. A `Label` displays static text, which is not interactable. It is initialized as one would expect:
 
 ```cpp
 auto label = Label("text");
 ```
 
-To change a `Label`s text after initialization, we use `Label::set_text`. By default, a label will be a single-line of text, though it can also be used to display multi-line text. If this is the case, we have some extra options to choose how that text is formatted:
+To change a `Label`s text after initialization, we use `Label::set_text`. Most of the time, this will be a signle line of text or a word. If we supply multiple lines of text for `Label`, we can choose from some additional formatting options:
 
 ### Justify Mode
 
@@ -448,64 +443,64 @@ Where the fifth mode is `JustifyMode::NONE` which arranges all text in exactly o
 
 ### Wrapping
 
-Wrapping determines after which character in the text, a line break is inserted if the text's width exceeds that of the `Label`s parent widget. For wrapping to happen at all, the `JustifyMode` has to not be set to anything **other** than `JustifyMode::NONE`.
+Wrapping determines where a line break is inserted if the text's width exceeds that of the `Label`s parent widget. For wrapping to happen at all, the `JustifyMode` has to be set to anything **other** than `JustifyMode::NONE`.
 
-Wrapping mode are values of the enum \a{LabelWrapMode}, which has the following values:
+Wrapping mode are values of the enum \a{LabelWrapMode}:
 
-| `LabelWrapMode` | Meaning                                                 | Example                 |
-|-----------------|---------------------------------------------------------|-------------------------|
-| `NONE`          | no wrapping                                             | `"humane mousetrap"`    |
-| `ONLY_ON_WORD`  | line will only be split between two words               | `"humane\nmousetrap"`   |
-| `ONLY_ON_CHAR`  | line will only be split between syllables, adding a `-` | `"hu-\nmane mousetrap"` |
-| `WORD_OR_CHAR`  | line will be split between words and/or syllables       | see above               |
+| `LabelWrapMode` value  | Meaning                                                 | Example                 |
+|------------------------|---------------------------------------------------------|-------------------------|
+| `NONE`                 | no wrapping                                             | `"humane mousetrap"`    |
+| `ONLY_ON_WORD`         | line will only be split between two words               | `"humane\nmousetrap"`   |
+| `ONLY_ON_CHAR`         | line will only be split between syllables, adding a `-` | `"hu-\nmane mousetrap"` |
+| `WORD_OR_CHAR`         | line will be split between words and/or syllables       | see above               |
 
 Where `\n` is the newline character.
 
-By default, once text wrapping is enabled by setting the `JustifyMode` to something other than `JustifyMode::NONE`, `LabelWrapMode::WORD_OR_CHAR` is used as the wrap mode.
-
 ### Ellipsize Mode
 
-If a line is too long for the available space **and wrapping is disabled**, **ellipsizing** will take place. The corresponding enum `EllipsizeMode` has four possible value:
+If a line is too long for the available space and wrapping is disabled, **ellipsizing** will take place. The corresponding enum `EllipsizeMode` has four possible value:
 
-| `EllipsizeMode` | Meaning                                                 | Example                     |
-|-----------------|---------------------------------------------------------|-----------------------------|
-| `NONE`          | text will not be ellipsized                             | `"Humane mousetrap engineer"` |
-| `START`         | text starts with `...`, showing only the last few words | `"...engineer"`               |
-| `END`           | text ends with `...`, showing only the first few words  | `"Humane mousetrap..."`       |
-| `MIDDLE`        | "..." in the center, shows start and beginning           | `"Humane...engineer"`         |
+| `EllipsizeMode` value | Meaning                                                  | Example                     |
+|-----------------------|----------------------------------------------------------|-----------------------------|
+| `NONE`                | text will not be ellipsized                              | `"Humane mousetrap engineer"` |
+| `START`               | starts with `...`, showing only the last few words       | `"...engineer"`               |
+| `END`                 | ends with `...`, showing only the first few words        | `"Humane mousetrap..."`       |
+| `MIDDLE`              | `...` in the center, shows start and beginning           | `"Humane...engineer"`         |
 
 ### Markup
 
-Labels support **markup**, which allows users to change properties about individual words or characters in a way very similar to formatting html. Markup in mousetrap uses [Pango attributes](https://docs.gtk.org/Pango/pango_markup.html), which allows for the following markup properties:
+Labels support **markup**, which allows users to change properties about individual words or characters in a way very similar to text formatting html. Markup in mousetrap uses [Pango attributes](https://docs.gtk.org/Pango/pango_markup.html), which allows for styles including the following:
 
-| `tag`        | Label String              | Result                  |
-|--------------|---------------------------|-------------------------|
-| `b`          | `<b>bold</b>`             | <b>bold</b>             |
-| `i`          | `<i>italic</i>`           | <i>italic</i>           |
-| `u`          | `<u>underline</u>`        | <u>underline</u>        |
-| `s`          | `<s>strikethrough</s>`    | <s>strike-through</s>    |
-| `tt`         | `<tt>inline_code</tt>`    | <tt>inline_code</tt>    |
-| `small`      | `<small>small</small>`    | <small>small</small>    |
-| `big`        | `<big>big</big>`          | <h3>big</h3>            |
-| `sub`        | `x<sub>subscript</sub>`   | x<sub>subscript</sub>   |
+| Tag          | Example                  | Result                  |
+|--------------|--------------------------|-------------------------|
+| `b`          | `<b>bold</b>`            | <b>bold</b>             |
+| `i`          | `<i>italic</i>`          | <i>italic</i>           |
+| `u`          | `<u>underline</u>`       | <u>underline</u>        |
+| `s`          | `<s>strikethrough</s>`   | <s>strike-through</s>    |
+| `tt`         | `<tt>inline_code</tt>`   | <tt>inline_code</tt>    |
+| `small`      | `<small>small</small>`   | <small>small</small>    |
+| `big`        | `<big>big</big>`         | <h3>big</h3>            |
+| `sub`        | `x<sub>subscript</sub>`  | x<sub>subscript</sub>   |
 | `sup`        | `x<sup>superscript</sup>` | x<sup>superscript</sup> |
-| `&#` and `;` | `&#129700;`               | 🪤                      | 
+| `&#` and `;` | `&#129700;`              | 🪤                      | 
 
-Where in the last row, we used the [decimal html code](https://www.compart.com/en/unicode/U+1FAA4) for the mousetrap emoji that Unicode provides.
+Where in the last row, we used the [decimal html code](https://www.compart.com/en/unicode/U+1FAA4) for the mousetrap emoji provided by unicode.
 
 \note Pango only accepts the **decimal** code, not hexadecimal. For example, the mousetrap emoji has the decimal code `129700`, while its hexadecimal code is `x1FAA4`. To use this emote in text, we thus use `&#129700;`, **not** `&#x1FAA4;`. The latter will not work.
 
-\note All `<`, `>` will be parsed as style tags when escaped with `\`. To prevent this, simply us `&lt;` (less-than) and `&gt;` (greater-than) instead of `<` and `>`. For example, we would write the formula `x < y` as `"x &lt; y"`.
+\note All `<`, `>` will be parsed as style tags, regardless of whether they are escaped. To display them as characters, we us `&lt;` (less-than) and `&gt;` (greater-than) instead of `<` and `>`. For example, we would `x < y` as `"x &lt; y"`.
 
-For things like color, different fonts, and many more options, [consult the Pango documentation](https://docs.gtk.org/Pango/pango_markup.html).
+Pango also supports colors, different fonts, text direction, and more. For these, we can [consult the Pango documentation](https://docs.gtk.org/Pango/pango_markup.html) directly.
+
+---
 
 ---
 
 ## Box
 
-\a{Box} is the simplest multi-widget container in mousetrap and is used extensively in almost any application. A box aligns its children horizontally or vertically, depending on whether we pass \a{Orientation::HORIZONTAL} or \a{Orientation::VERTICAL} to its constructor. We can change the orientation of a box after construction using `set_orientation`.
+\a{Box} is a multi-widget container, which aligns its children horizontally or vertically, depending on whether we pass \a{Orientation::HORIZONTAL} or \a{Orientation::VERTICAL} to its constructor. We can change the orientation of a box after construction using `set_orientation`.
 
-We can add widgets to the start, end, and after any other widget already inside the box using `Box::push_front`, `Box::push_back` and `Box::insert_after`, respectively:
+TO add widgets to the start or end of the box, we use `Box::push_front`, `Box::push_back`, respectively, which take a `Widget&`. 
 
 ```cpp
 auto box = Box(Orientation::HORIZONTAL);
@@ -526,13 +521,15 @@ box.insert_after(center, start);
 
 \image html box_start_center_end.png
 
-Between any two children is an optional space, which we can specify using `Box::set_spacing`. This spacing is unrelated to the margins of its child widgets and will be applied between any two consecutive children, but not before the very first and after the very last child.
+Between any two children, an optional space will be inserted once we set `Box::set_spacing`. By default, this spacing is `0`.
+
+---
 
 ## CenterBox
 
-\a{CenterBox} is a container that has exactly three children, situated around a centered child. `CenterBox` prioritizes keeping the designated center child centered at all costs, making it a better choice for a layout where symmetry is desired.
+\a{CenterBox} is a container that has exactly three children. `CenterBox` prioritizes keeping the designated center child centered at all costs, making it a good choice when symmetry is desired.
 
-We use `CenterBox::set_start_child`, `CenterBox::set_center_child`, and `CenterBox::set_end_child` to choose the corresponding child widget.
+We use `CenterBox::set_start_child`, `CenterBox::set_center_child`, and `CenterBox::set_end_child` to specify the corresponding child widget.
 
 ```cpp
 auto center_box = CenterBox(Orientation::HORIZONTAL);
@@ -543,7 +540,7 @@ center_box.set_end_child(Label("end"));
 
 \image html center_box.png
 
-`CenterBox` is orientable, meaning it also supplies `set_orientation` to choose the preferred layout.
+`CenterBox` is orientable, meaning it also supplies `set_orientation` , just like `Box`.
 
 ---
 
@@ -572,14 +569,13 @@ separator.set_size_request({
 });
 ```
 
-This will render as a 3-pixel high line that expands horizontally.
+This will render as a line that has a height of `3` px at all times, but will expand horizontally.
 
 ---
 
 ## ImageDisplay
 
-\a{ImageDisplay} is used to display static images. It works by taking image data in RAM, deep-copying it into the graphics card memory,
-then using it to display the image on screen.
+\a{ImageDisplay} is used to display static images.
 
 Assuming we have an image at the absolute path `/resources/image.png`, we can create an `ImageDisplay` like so:
 
@@ -612,22 +608,22 @@ The following image formats are supported by `ImageDisplay`:
 
 After realization, we cannot change the contents of `ImageDisplay` directly. If the file on disk changes, `ImageDisplay` remains unchanged. If we want to update `ImageDisplay`, we need to call `create_from_file` manually again.
 
-By default, `ImageDisplay` behaves just like any other widget, in that it scales freely, which, in case of a raster-based image, may distort the image. To prevent this, we can call `display.set_expand(false)` which prevents expansion of the widget, then size-hint it like so:
+By default, `ImageDisplay` behaves just like any other widget, in that it scales freely. If the underlying image was [raster-based](https://en.wikipedia.org/wiki/Raster_graphics), it may be blurred or distorted. To prevent this, we can call `display.set_expand(false)` which prevents expansion of the widget, then size-hint it:
 
 ```cpp
 display.set_expand(false);
 display.set_size_request(display.get_size());
 ```
 
-Where `ImageDisplay::get_size` returns the original resolution of the image it was created from. For example, for an `.png` file of size 75x35 px, this display would always be exactly 75x35 pixels on screen, meaning it is displayed at 1:1 resolution, avoiding any artifacting due to scaling.
+Where `ImageDisplay::get_size` returns the original resolution of the image it was created from. For example, for a `.png` file of size 75x35 px, `display` would always be exactly 75x35 pixels on screen, meaning the image is displayed at 1:1 resolution.
 
 ---
 
 ## Button
 
-We've seen `Button` in the previous chapter, it is one of the simplest and inuitive widgets, both for the user and developer.
+Familiar from previous chapters, \a{Button} is commonly used to trigger behavior.
 
-\a{Button} has the following signals:
+It has the following signals:
 
 \signals
 \signal_activate{Button}
@@ -672,35 +668,42 @@ Where the above shown buttons have the following properties:
 | 02 | false | false |
 | 03 | true | true |
 
-Buttons are ideal to trigger run-through `Action`s, which are action that do a single thing, then immediately exit. In a situation like this, we prefer [creating an `Action` and associating it with the button](03_actions.md) using `Button::set_action`. This is more scalable than connecting to signal `clicked`, though the latter certainly has its uses. For example, when the resulting behavior is unique to that button and does not appear anywhere else in our application, `connect_signal_clicked` should be used over `Action`.
-
 ---
 
 ## ToggleButton
 
-`ToggleButton` is a specialized form of `Button`. It supports most of `Button`s methods/signals, including signal `clicked`, `set_child`, `set_has_frame` and `set_is_circular`.
-Unique to `ToggleButton` is that, if clicked, the button will **remain pressed**. When clicked again, it returns to being unpressed. Anytime the internal state of the `ToggleButton` changes, the `toggled` signal will be emitted.
+`ToggleButton` is a specialized form of `Button`. It supports most of `Button`s methods / signals, including `set_child`, `set_has_frame`, `set_is_circular` and signal `clicked`.
+
+Unique to `ToggleButton` is that, if clicked, the button will **remain pressed**. When clicked again, it returns to being unpressed. Anytime the state of the `ToggleButton` changes, `toggled` will be emitted. In this way, `ToggleButton` can be used to track a boolean state.
 
 \signals
 \signal_toggled{ToggleButton}
 \signal_activate{ToggleButton}
 \signal_clicked{ToggleButton}
 
-In this way, `ToggleButton` can be used to track a boolean state.
-
 To check whether the button is currently toggled, we use `ToggleButton::get_active`, which returns `true` if the button is currently pressed, `false` otherwise.
+
+```cpp
+auto toggle_button = ToggleButton();
+toggle_button.connect_signal_clicked([](ToggleButton& instance) -> void {
+    if (instance.get_active())
+        std::cout << "pressed" << std::endl;
+    else
+        std::cout << "released" << std::endl;
+});
+```
 
 ---
 
 ## CheckButton
 
-\{CheckButton} is almost identical to `ToggleButton` in function, but not appearance. `CheckButton` is an empty box in which a checkmark appears when it is toggled. Just like before, we query whether it is pressed by calling `CheckButton::get_active`.
+\{CheckButton} is almost identical to `ToggleButton` in function -  but not appearance. `CheckButton` is an empty box in which a checkmark appears when it is toggled. Just like before, we query whether it is pressed by calling `CheckButton::get_active`.
 
 \signals
 \signal_activate{CheckButton}
 \signal_toggled{CheckButton}
 
-`CheckButton` can be in one of three states, as opposed to two, all of which are represented by the enum \a{CheckButtonState}. The button can either be `ACTIVE`, `INACTIVE`, or `INCONSISTENT`. This changes the appearance of the button:
+`CheckButton` can be in one of **three** states, which are represented by the enum \a{CheckButtonState}. The button can either be `ACTIVE`, `INACTIVE`, or `INCONSISTENT`. This changes the appearance of the button:
 
 \image html check_button_states.png
 
@@ -741,13 +744,13 @@ window.set_child(box);
 ```
 \how_to_generate_this_image_end
 
-Note that `CheckButton::get_active` will only return true if the current state is specifically `CheckButtonState::ACTIVE`. Otherwise, `get_active` will return false. `toggled` is emitted whenever the state changes, regardless of which state the `CheckButton` was in.
+Note that `CheckButton::get_active` will only return `true` if the current state is specifically `CheckButtonState::ACTIVE`. `toggled` is emitted whenever the state changes, regardless of which state the `CheckButton` was in.
 
 ---
 
 ## Switch
 
-As the last widget intended to convey a boolean state to the user, we have \a{Switch}, which has the appearance similar to a light switch. It can be clicked or dragged in order to change its state. `Switch` does not emit `toggled`, instead we connect to the `activate` signal, which is emitted anytime the switch is flicked to either side.
+As the last widget intended to convey a boolean state to the user, we have \a{Switch}, which has the appearance similar to a light switch. `Switch` does not emit `toggled`, instead, we connect to the `activate` signal, which is emitted anytime the switch is operated.
 
 \signals
 \signals_activate{Switch}
@@ -783,7 +786,7 @@ state->main_window.set_child(box);
 ```
 \how_to_generate_this_image_end
 
-Almost identical to `ToggleButton` in function, `Switch` should be preferred for applications where the boolean-indicating widget does not need a label, as `Switch` does not provide `set_child`.
+---
 
 ---
 
@@ -791,7 +794,7 @@ Almost identical to `ToggleButton` in function, `Switch` should be preferred for
 
 From widgets conveying a boolean state, we will now move on to widgets conveying a discrete number. These let the user choose a value from a **range**, which, in mousetrap, is represented by a signal emitter called \a{Adjustment}.
 
-In general, a range has a **lower and upper value**. For example, the range `[0, 2]` has the `lower` of `0` and `upper` of `2`. A second property is the **step increment**, which is the minimum difference between two adjacent values in the range. For example, if our range is still `[0, 2]` and the step increment is `0.5`, then that includes the numbers `{0, 0.5, 1, 1.5, 2}`. If the step increment is `0.01`, `[0,2]` includes the numbers  `{0, 0.01, 0.02, ..., 1.98, 2.00}`.
+In general, a range has a lower and upper value. For example, the range `[0, 2]` has the `lower` of `0` and `upper` of `2`. A second property is the **step increment**, which is the minimum difference between two adjacent values in the range. For example, if the range is `[0, 2]` and the step increment is `0.5`, then the user can choose from the numbers `{0, 0.5, 1, 1.5, 2}`. If the step increment is `0.01`, `[0,2]` includes the numbers  `{0, 0.01, 0.02, ..., 1.98, 2.00}`.
 
 Turning to the actual `Adjustment` class, it has four properties
 
@@ -800,7 +803,7 @@ Turning to the actual `Adjustment` class, it has four properties
 + `increment`: step increment
 + `value`: current value, in `[lower, upper]`
 
-For example, expressing the previous range of `[0, 2]` with step increment `0.5`, we create an `Adjustment` like so:
+For example, expressing the previous range like so:
 
 ```cpp
 auto adjustment = Adjustment(
@@ -813,7 +816,7 @@ auto adjustment = Adjustment(
 
 Which will have the value of `1` on initialization.
 
-We usually do not need to create our own `Adjustment`, rather, it is provided by a number of widgets. Notable about this is that the widget and its adjustment **are automatically kept in synch**. If we change any property of the `Adjustment`, the widget will change its appearance accordingly.
+We usually do not need to create our own `Adjustment`, rather, it is provided by a number of widgets. Notable about this is that the widget and its adjustment linked internally. If we change any property of the `Adjustment`, the widget will change its appearance accordingly.
 
 Adjustment has two signals:
 
@@ -821,7 +824,7 @@ Adjustment has two signals:
 \signal_value_changed{Adjustment}
 \signal_properties_changed{Adjustment}
 
-We can connect to `value_changed` to monitor the value property of an `Adjustment` (and thus whatever widget is controlled by it), while `properties_changed` is emitted when one of upper, lower or step increment changes, usually by calling `Adjustment::set_upper`, `Adjustment::set_lower` and/or `Adjustment::set_increment`.
+We can connect to `value_changed` to monitor the value property of an `Adjustment` (and thus whatever widget is controlled by it), while `properties_changed` is emitted when one of `upper`, `lower` or `step increment` changes.
 
 ---
 
@@ -855,9 +858,9 @@ window.set_child(box);
 ```
 \how_to_generate_this_image_end
 
-`SpinButton` is used to pick an exact value from a range. The user can click the rectangular area and manually enter a value using the keyboard, or they can increase or decrease the current value by the step increment of the `SpinButton`s adjustment by pressing the plus or minus button, which are positioned according to the `SpinButton`s orientation.
+`SpinButton` is used to pick an exact value from a range. The user can click the rectangular area and manually enter a value using the keyboard, or they can increase or decrease the current value by the step increment of the `SpinButton`s adjustment by pressing the plus or minus button.
 
-We supply the properties of the range underlying the `SpinButton` in its constructor:
+We supply the properties of the range underlying the `SpinButton` to its constructor:
 
 ```cpp
 // create SpinButton with range [0, 2] and increment 0.5
@@ -874,7 +877,7 @@ If we want to check any of the properties of the  `SpinButton`s range, we can ei
 
 Only the latter of which needs explanation, as we recognize `value_changed` from `Adjustment`.
 
-When the user reaches one end of the `SpinButton`s range, which, for a range of `[0, 2]` would be either the value `0` or `2`, if the user attempts to increase or decrease the value further, nothing will happen. However, if we set `SpinButton::set_can_wrap` to `true`, the value will wrap all the way around. For example, trying to increase the value while it is `2`, the value will jump to `0`, and vice versa.
+When the user reaches one end of the `SpinButton`s range, which, for a range of `[0, 2]` would be either the value `0` or `2`, if the user attempts to increase or decrease the value further, nothing will happen. However, if we set `SpinButton::set_can_wrap` to `true`, the value will wrap around to the opposite side of the range. For example, trying to increase the value while it is `2`, it would jump to `0`, and vice-versa.
 
 ---
 
@@ -903,7 +906,7 @@ state->main_window.set_child(box);
 ```
 \how_to_generate_this_image_end
 
-\a{Scale}, just like `SpinButton`, is a widget that allows a user to choose a value from the underlying `Adjustment`. This is done by click-dragging the knob of the scale, or clicking anywhere on its rail. In this way, it is usually harder to pick an exact decimal value on a `Scale` as opposed to a `SpinButton`, though we can aid in this task by displaying the exact value next to the scale. This has to first be enabled using `Scale::set_should_draw_value`:
+\a{Scale}, just like `SpinButton`, is a widget that allows a user to choose a value from the underlying `Adjustment`. This is done by click-dragging the knob of the scale, or clicking anywhere on its rail. In this way, it is usually harder to pick an exact decimal value on a `Scale` as opposed to a `SpinButton`. We can aid in this task by displaying the exact value next to the scale, which is enabled with `Scale::set_should_draw_value`:
 
 \image html scale_with_value.png
 \how_to_generate_this_image_begin
@@ -931,21 +934,21 @@ state->main_window.set_child(box);
 \how_to_generate_this_image_end
 
 
-`Scale`supports most of `SpinButton`s functions, including querying information about its underlying range and orienting it.
+`Scale`supports most of `SpinButton`s functions, including querying information about its underlying range and settings the orientation.
 
 ---           
 
 ## ScrollBar
 
-Similar to `Scale`, \a{ScrollBar} is used to pick a value on a floating-point scale. It is often used as a way to choose which part of a widget should be shown on screen. For an already-automated way of doing this to control which part of a larger widget to show, see `ScrolledWindow`.
+Similar to `Scale`, \a{ScrollBar} is used to pick a value from an adjustment. It is often used as a way to choose which part of a widget should be shown on screen. For an already automated way of doing this, see `ScrolledWindow`.
 
 ---
 
 ## LevelBar
 
-\a{LevelBar} is used to display a fraction, often used to indicate the level of something, for example the volume of a playback device.
+\a{LevelBar} is used to display a fraction to indicate the level of something, for example the volume of a playback device.
 
-To create a `LevelBar`, we need to specify the minimum and maximum value of the range we wish to display. We can then set the current value using `LevelBar::set_value`, which takes the absolute current value. The resulting fraction is computed automatically based on the upper and lower limit we supplied to the constructor:
+To create a `LevelBar`, we need to specify the minimum and maximum value of the range we wish to display. We can then set the current value using `LevelBar::set_value`. The resulting fraction is computed automatically, based on the upper and lower limit we supplied to the constructor:
 
 ```cpp
 // create level for range [0, 2]
@@ -987,15 +990,17 @@ window.set_child(box);
 ```
 \how_to_generate_this_image_end
 
-The bar can also be used to display a discrete value (a range only consisting of integers), in which case the bar will be shown segmented. We can set the `LevelBar`s mode using `LevelBar::set_mode`, which takes either `LevelBarMode::CONTINUOUS` or `LevelBarMode::DISCRETE` as its argument.
+The bar can also be used to display a value from a range only consisting of integers, in which case the bar will be shown segmented. We can set the `LevelBar`s mode using `LevelBar::set_mode`, which takes either `LevelBarMode::CONTINUOUS` or `LevelBarMode::DISCRETE` as its argument.
 
 ---
 
 ## ProgressBar
 
-A specialized case of indicating a continuous value is that of a **progress bar**. A progress bar is used to show how much of a task is currently complete. This is most commonly used during a multi-second loading animation, for example during the startup phase of an application. As more and more resources are loaded, the progress bar fills, which communicates to the user how long they will have to wait.
+A specialized case of indicating a continuous value is that of a **progress bar**. A progress bar is used to show how much of a task is currently complete. This is most commonly used during a multi-second loading animation, for example during the startup phase of an application. As more and more resources are loaded, the progress bar fills, which communicates to the user how long they will have to wait, and that progress is being made.
 
-`ProgressBar` is built for this exactly this purpose. It does not have an upper or lower bound, they are fixed at `[0, 1]`. We can set the current fraction using `ProgressBar::set_fraction`. `ProgressBar` has a special animation trigger, which makes the bar "pulse". This is supposed to communicate to the user some progress was made. To trigger this pulse animation by simply calling `ProgressBar::pulse`. Note that this does not change the currently displayed fraction of the progress bar, it only plays the animation.
+\a{ProgressBar} is built for this exact purpose. It does not have an upper or lower bound, as its range is fixed to `[0, 1]`. We can set the current fraction using `ProgressBar::set_fraction`. 
+
+`ProgressBar` has a special animation trigger, which makes the bar "pulse", which is usually done everytime the fraction changes. We have to manually trigger this pulse animation using `ProgressBar::pulse`. Note that this does not change the currently displayed fraction of the progress bar, it only plays an animation.
 
 \image html progress_bar.png
 
@@ -1019,9 +1024,11 @@ window.set_child(box);
 ```
 \how_to_generate_this_image_end
 
+---
+
 ## Spinner
 
-To signal progress where we do not have an exact fraction, we can use the \a{Spinner} widget. It simply displays an animated spinning icon, communicating progress. Using `Spinner::set_is_spinning`, we can control whether the animation is currently playing or not.
+To signal progress while we do not have an exact fraction, we can use the \a{Spinner} widget. It simply displays an animated spinning icon. Using `Spinner::set_is_spinning`, we can control whether the animation is currently playing.
 
 \image html spinner.png
 
@@ -1035,15 +1042,17 @@ window.set_child(spinner);
 
 ---
 
+---
+
 ## Entry
 
-We've learned how to choose a widget allowing a boolean and discrete value to be shown/entered. We will now move on to inputting **text**, which is central to many desktop applications. \a{Entry} is the widget of choice for single-line text entry.
+Text entry is central to many application. Mousetrap offers two widgets that allow the user to type freely. \a{Entry} is the widget of choice for **single-line text entry**.
 
-`Entry` is an area that, when clicked, allows the user to type freely. This current text is stored in an internal text buffer. We can access or modify the buffers content with `Entry::get_text` and `Entry::set_text`, respectively. `set_text` fully overrides the buffer, losing any data contained therein.
+`Entry` is an area that, when clicked, allows the user to type freely. The currently displayed text is stored in an internal text buffer. We can access or modify the buffers content with `Entry::get_text` and `Entry::set_text`, respectively.
 
-While we could control the size of an `Entry` using size-hinting, a less manual way is `Entry::set_max_length`, which takes an integer representing the number of characters that the prompts should make space for. For example, `entry.set_max_length(15)` will resize the entry such that it is wide enough to show 15 characters at the current font size.
+While we could control the size of an `Entry` using size-hinting, a better way is `Entry::set_max_length`, which takes an integer representing the number of characters that the prompts should make space for. For example, `entry.set_max_length(15)` will resize the entry such that it is wide enough to show 15 characters at the current font size.
 
-`Entry` supports "password mode", which is when each character typed is replaced with a dot or otherwise made unreadable. This is to prevent a third bad actor reading entered passwords on our users screen. We can enter this mode with `Entry::set_text_visible`, where `false` is password-mode and `true` is regular mode.
+`Entry` supports "password mode", which is when each character typed is replaced with a dot. This is to prevent a third party looking at a user screen and seeing what they typed. To enter password mode, we set `Entry::set_text_visible` to `false`.
 
 \image html entry_password_mode.png
 
@@ -1067,15 +1076,17 @@ window.set_child(box);
 ```
 \how_to_generate_this_image_end
 
-Lastly, `Entry` is *activatable*. Users usually do this by pressing the enter key while the cursor is inside the `Entry`. This does not cause any behavior initially, but we can connect to the `activate` signal of `Entry` to choose a custom function to be called.
+Lastly, `Entry` is **activatable**. Users usually do this by pressing the enter key while the cursor is inside the `Entry`. This does not cause any behavior initially, but we can connect to the `activate` signal of `Entry` to choose a custom function to be called.
 
-Other than `activate`, `Entry` has one more signal `text_changed`, which is emitted whenever the internal buffer changes, including when set programmatically using `set_text`.
+Other than `activate`, `Entry` has one more signal, `text_changed`, which is emitted whenever the internal buffer changes.
 
 \signals
 \signal_activate{Entry}
 \signal_text_changed{Entry}
 
-Note that the user cannot insert a newline character using the enter key. As such, `Entry` should exclusively be used for text prompts which are exactly one line. For multi-line text entry, we should use the next widget instead.
+Note that the user cannot insert a newline character using the enter key. `Entry` should exclusively be used for text prompts which have no line breaks. For multi-line text entry, we should use the next widget instead.
+
+---
 
 ## TextView
 
@@ -1092,49 +1103,47 @@ Much like `Label`, we can set how the text aligns horizontally using `TextView::
 
 ---
 
+---
+
 ## Dropdown
 
-Sometimes, we want users to be able to pick a value from a **set list of values**, which may or may not be numeric. \a{DropDown} allows for this.
+We sometimes want users to be able to pick a value from a **set list of values**, which may or may not be numeric. \a{DropDown} allows for this.
 
-When the `DropDown` is clicked, a window presents the user with a list of items. The user can click on any of these, at which point the dropdown will invoke the corresponding function for that item, which is set using \{DropDown::push_back}. This function takes three arguments:
+When the `DropDown` is clicked, a window presents the user with a list of items. The user can click on any of these, at which point the dropdown will invoke the corresponding function for that item, which is set during \a{DropDown::push_back}. This function takes three arguments:
 
 + **list label**: widget displayed inside the dropdown window
 + **selected label**: widget displayed once one of the items is selected
-+ **callback**: function with signature `(DropDown*, (Data_t)) -> void`, which is invoked when a selection is made
++ **callback**: function with signature `(DropDown&, (Data_t)) -> void`, which is invoked when a selection is made
 
-We usually want both labels to be an actual `Label`, though technically any widget can be used as the list and selected label.
-
-As an example, consider the following snippet:
+We usually want both labels to be an actual `Label`, though any widget can be used as the list or selected label.
 
 ```cpp
 auto dropdown = DropDown();
 dropdown.push_back(
     Label("List Label"), // list label
     Label("Selected Label"), // selected label
-    [](DropDown*) { std::cout << "selected" << std::endl; } // callback
+    [](DropDown&) { std::cout << "selected" << std::endl; } // callback
 );
 ```
 
 \image dropdown_hello_world.png
 
-Here, we created a dropdown and added a single item. The item has the list label `"List Label"`, which is displayed in the dropdown window when the user is making a selection. Once the user clicks this label, the callback will be invoked, which in this case simply prints `"selected"`. Lastly, we specified `"Selected Label"` to be the widget displayed once an element was selected.
-
-\note When a `DropDown` is realized, the callback of whatever the first item we added is invoked exactly once
+Here, we created a dropdown and added a single item. The item has the list label `"List Label"`, and the selected label `"Selected Label"`. When this item is selected, the lambda will be invoked, which here simply prints `selected` to the console.
 
 In praxis, we would want the callback to mutate some global property to keep track of which item is selected. Alternatively, we can query which item is currently selected by calling `DropDown::get_selected`. This function returns an **item ID**, which is obtained when we call `DropDown::push_back`:
 
 ```cpp
 auto dropdown = DropDown();
-auto id_01 = dropdown.push_back(Label("01"), Label("Option 01"), [](DropDown*){});
-auto id_02 = dropdown.push_back(Label("02"), Label("Option 02"), [](DropDown*){});
+auto id_01 = dropdown.push_back(Label("01"), Label("Option 01"), [](DropDown&){});
+auto id_02 = dropdown.push_back(Label("02"), Label("Option 02"), [](DropDown&){});
 
 // check if selected item is 01
 bool item_01_selected = dropdown.get_selected() == id_01;
 ```
 
-Where `[](DropDown*){}` is a lambda that simply does nothing (but still conforms to the `(DropDown*, (Data_t)) -> void` signature).
+Where `[](DropDown&){}` is a lambda that simply does nothing (but still conforms to the `(DropDown&, (Data_t)) -> void` signature).
 
-Using item IDs or each item's callback, we can trigger custom behavior whenever the user changes their selection to one of the dropdown items.
+---
 
 ---
 
@@ -1168,7 +1177,7 @@ window.set_child(box);
 ```
 \how_to_generate_this_image_end
 
-Using `Frame::set_label_widget`, we can furthermore choose a label widget, which will be displayed above the child widget of the frame. This will usually be a `Label`, though `set_label_widget` accepts any kind of widget.
+Using `Frame::set_label_widget`, we can furthermore choose a widget to be displayed above the child widget of the frame. This will usually be a `Label`, though `set_label_widget` accepts any kind of widget.
 
 `Frame` is rarely necessary, but will make GUIs seem more aesthetically pleasing and polished.
 
@@ -1176,9 +1185,9 @@ Using `Frame::set_label_widget`, we can furthermore choose a label widget, which
 
 ## AspectFrame
 
-Not to be confused with `Frame`, \{AspectFrame} adds no graphical element to its singular child. Instead, the singular child widget added with `AspectFrame::set_child` will be forced to stay in a certain **aspect ratio**, its width to height ratio will stay constant regardless of the size allocation of the `AspectFrame`s parent.
+Not to be confused with `Frame`, \a{AspectFrame} adds no graphical element to its singular child. Instead, the widget added with `AspectFrame::set_child` will be forced to allocate a size that conforms to a specific **aspect ratio**. That is, its width-to-height ratio will stay constant.
 
-We choose the aspect ratio either in `AspectFrame`s constructor or with `AspectFrame::set_ratio`, both of which accept a floating point ratio calculated as `width / height`. For example, if we want to force a widget to keep an aspect ratio of 4:3:
+We choose the aspect ratio in `AspectFrame`s constructor, though we can later adjust it using `AspectFrame::set_ratio`. Both of these functions accept a floating point ratio calculated as `width / height`. For example, if we want to force a widget to keep an aspect ratio of 4:3, we would do:
 
 ```cpp
 auto child_widget = // ...
@@ -1187,51 +1196,6 @@ aspect_frame.set_child(child_widget);
 ```
 
 Where we wrote `4.f / 3` instead of `4 / 3` because in C++, the latter would trigger [integer division](https://en.wikipedia.org/wiki/Division_(mathematics)#Of_integers) resulting in a ratio of `1` (instead of the intended `1.333...`).
-
----
-
-## Overlay
-
-So far, all widget containers have aligned their children such that they do not overlap. To render a widget on top of another, we have to use \a{Overlay}.
-
-`Overlay` has one "base" widget, which is at the conceptual bottom of the overlay. We set this widget using `Overlay::set_child`. We can then add any number of widgets on top of the base widget using `Overlay::add_overlay`:
-
-\image html overlay_two_buttons.png
-
-\how_to_generate_this_image_begin
-```cpp
- auto lower = Button();
-lower.set_horizontal_alignment(Alignment::START);
-lower.set_vertical_alignment(Alignment::START);
-
-auto upper = Button();
-upper.set_horizontal_alignment(Alignment::END);
-upper.set_vertical_alignment(Alignment::END);
-
-for (auto* button : {&lower, &upper})
-    button->set_size_request({50, 50});
-
-auto overlay = Overlay();
-overlay.set_child(Separator());
-overlay.add_overlay(lower);
-overlay.add_overlay(upper);
-
-auto aspect_frame = AspectFrame(1);
-aspect_frame.set_child(overlay);
-
-aspect_frame.set_margin(10);
-window.set_child(aspect_frame);
-```
-\how_to_generate_this_image_end
-
-By default, `Overlay` will allocate exactly as much space as the base widget (set with `Overlay::set_child`) does. If one of the overlaid widgets takes up more space than the base widget, it will be truncated. We can avoid this by supplying a second argument to `Overlay::add_overlay`, which is a boolean indicated whether the overlay widget should be included in the entire container's size allocation. That is, if the overlaid widget is larger than the base widget, the `Overlay` will resize itself such that the entire overlaid widget is visible.
-
-```cpp
-overlay.add_overlay(overlay_widget, true); 
-    // resize if overlay_widget allocates more space than child
-``` 
-
-When one interactable widget is shown partially overlapping another, only the top-most widget can be interacted with by the user. If we want the user to be able to access a lower layer, we need to make any widget on top non-interactable, either by calling `Widget::hide` or `Widget::set_can_respond_to_input(false)`.
 
 ---
 
@@ -1244,7 +1208,7 @@ One of the most common applications for animations is that of hiding or showing 
 To address this, mousetrap offers \a{Revealer}, which plays an animation to reveal or hide a widget.
 `Revealer` always has exactly one child, set with `Revealer::set_child`. `Revealer` itself has no graphical element, it acts just like a `Box` with a single child.
 
-To trigger the `Revealer`s animation and change whether the child widget is currently visible, we call `Revealer::set_revealed` which takes a boolean as its argument. If the widget goes from hidden to shown or shown to hidden, the animation will play with no further interaction needed.
+To trigger the `Revealer`s animation and change whether the child widget is currently visible, we call `Revealer::set_revealed` which takes a boolean as its argument. If the widget goes from hidden to shown or shown to hidden, the animation will play.
 
 Once the animation is done, signal `revealed` will be emitted:
 
@@ -1263,7 +1227,7 @@ revealer.set_child(// ...
 revealer.set_transition_duration(seconds(1));
 ```
 
-Where `seconds` returns a `mousetrap::Time`.
+Where `seconds` returns a \a{Time}.
 
 Apart from the speed, we also have a choice of animation **type**, represented by the enum \a{RevealerTransitionType}. Animations include a simple cross-fade, sliding, swinging, or `NONE`, which instantly shows or hides the widget. For more information on the look of the animation, see the \link mousetrap::RevealerTransitionType related documentation page\endlink.
 
@@ -1295,13 +1259,60 @@ window.set_child(frame);
 
 We set the `Expander`s child widget with `Expander::set_child`. We will furthermore want to specify a label widget, which is the widget shown next to the small arrow.  Set with`Expander::set_label_widget`, this widget will usually be a `Label`, though, again, any arbitrarily complex widget can be used.
 
-Note that `Expander` should not be used for the purpose of large nested list, for example those displaying a file system tree. A purpose-built widget for this already exists. It is called `ListView` and we will learn how to use it later in this chapter.
+Note that `Expander` should not be used for the purpose of large nested list, for example those displaying a file system tree. A purpose-built widget for this already exists, it is called `ListView` and we will learn how to use it later in this chapter.
+
+---
+
+## Overlay
+
+So far, all widget containers have aligned their children such that they do not overlap. In cases where we do want overlapping to happen, we have to use \a{Overlay}.
+
+`Overlay` has one "base" widget, which is at the conceptual bottom of the overlay. We set this widget using `Overlay::set_child`. We can then add any number of widgets on top of the base widget using `Overlay::add_overlay`:
+
+\image html overlay_two_buttons.png
+
+\how_to_generate_this_image_begin
+```cpp
+ auto lower = Button();
+lower.set_horizontal_alignment(Alignment::START);
+lower.set_vertical_alignment(Alignment::START);
+
+auto upper = Button();
+upper.set_horizontal_alignment(Alignment::END);
+upper.set_vertical_alignment(Alignment::END);
+
+for (auto* button : {&lower, &upper})
+    button->set_size_request({50, 50});
+
+auto overlay = Overlay();
+overlay.set_child(Separator());
+overlay.add_overlay(lower);
+overlay.add_overlay(upper);
+
+auto aspect_frame = AspectFrame(1);
+aspect_frame.set_child(overlay);
+
+aspect_frame.set_margin(10);
+window.set_child(aspect_frame);
+```
+\how_to_generate_this_image_end
+
+Where the position and size of overlayed widgets depend on their expansion and alignment properties.
+
+By default, `Overlay` will allocate exactly as much space as the base widget (set with `Overlay::set_child`) does. If one of the overlaid widgets takes up more space than the base widget, it will be truncated. We can avoid this by supplying a second argument to `Overlay::add_overlay`, which is a boolean indicated whether the overlay widget should be included in the entire container's size allocation. That is, if the overlaid widget is larger than the base widget, the `Overlay` will resize itself such that the entire overlaid widget is visible.
+
+```cpp
+overlay.add_overlay(overlay_widget, true); 
+// resize if overlay_widget allocates more space than child
+``` 
+
+When one interactable widget is shown partially overlapping another, only the top-most widget can be interacted with by the user. If we want the user to be able to access a lower layer, we need to make any widget on top non-interactable, either by calling `Widget::hide` or `Widget::set_can_respond_to_input(false)`.
 
 ---
 
 ## Paned
 
-\a{Paned} is a widget that always has exactly two children. Between the two children, a visual barrier is drawn. The user can click on this barrier and drag it horizontally or vertically, depending on the orientation of the `Paned`. This gives the user the option to resize how much of a shared space two widgets allocated.
+\a{Paned} is a widget that always has exactly two children. Between the two children, a visual barrier is drawn. The user can click on this barrier and drag it horizontally or vertically, depending on the orientation of the `Paned`. This gives the user the option to resize how much of a shared space one of the two widgets allocates.
 
 \image html paned_centered.png
 
@@ -1332,7 +1343,7 @@ Assuming the `Paned`s orientation is `Orientation::HORIZONTAL`, we can set the c
 
 Resizable means that if the `Paned` changes size, the child should change size with it.
 
-Shrinkable sets whether the side of the `Paned` can be made smaller than the allocated size of that side's child widget. If set to `true`, the user can drag the `Paned`s barrier, such that one of the widgets is partially or completely hidden, regardless of its size allocation.
+Shrinkable sets whether the side of the `Paned` can be made smaller than the allocated size of that side's child widget. If set to `true`, the user can drag the `Paned`s barrier, such that one of the widgets is partially or completely hidden:
 
 \image html paned_shrinkable.png
 
@@ -1366,7 +1377,7 @@ state->main_window.set_child(paned);
 
 ## ScrolledWindow
 
-By default, most containers will allocate a size that is equal to or exceeds the largest preferred size of its children. For example, if we create a widget that has a preferred size of 5000x1000 px and use it as the child of a `Window`, the `Window` will attempt to allocate 5000x1000 pixels on screen, making the window far larger than most screens can display. In situations like these, we should instead use a \a{ScrolledWindow}, which allows users to only view part of a larger widget:
+By default, most containers will allocate a size that is equal to or exceeds the largest natural size of its children. For example, if we create a widget that has a natural size of 5000x1000 px and use it as the child of a `Window`, the `Window` will attempt to allocate 5000x1000 pixels on screen, making the window far larger than most screens can display. In situations like these, we should instead use a \a{ScrolledWindow}, which allows users to only view part of a larger widget:
 
 ```cpp
 auto child = Separator();
@@ -1378,6 +1389,8 @@ scrolled_window.set_child(child);
 state->main_window.set_child(scrolled_window
 ```
 \image html scrolled_window.png
+
+Note that `ScrolledWindow` is not a physcial window, instead it is a container widget with a single child.
 
 Without the `ScrolledWindow`, the `Separator` child widget would force the outer `Window` to allocate 5000x5000 pixels, as we size-hinted it to be that size. By using `ScrolledWindow`, the `Window` is free to allocate any size, retaining resizability. The end-user can influence which area of the larger widget is currently visible by operating the scrollbars inherent to `ScrolledWindow`.
 

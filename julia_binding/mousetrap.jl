@@ -1,6 +1,6 @@
 module mousetrap
 
-    ### TypedFunction.jl
+####### typed_function.jl
 
     """
     # TypedFunction
@@ -51,9 +51,11 @@ module mousetrap
     end
     export TypedFunction
 
-    (instance::TypedFunction)(args...) = Base.convert(instance._return_t, instance._apply([Base.convert(instance._arg_ts[i], args[i]) for i in 1:length(args)]...))
+    function (instance::TypedFunction)(args...)
+        return Base.convert(instance._return_t, instance._apply([Base.convert(instance._arg_ts[i], args[i]) for i in 1:length(args)]...))
+    end
 
-    ### Detail.jl
+####### detail.jl
 
     module detail
         using CxxWrap
@@ -61,7 +63,14 @@ module mousetrap
         @wrapmodule("./libjulia_binding.so")
     end
 
-    ### Common.jl
+####### common.jl
+
+    """
+    Change the docstring of an object to given string
+    """
+    macro document(name, string)
+        :(@doc $string $name)
+    end
 
     macro export_function(name, type)
         mousetrap.eval(:(export $name))
@@ -86,34 +95,55 @@ module mousetrap
         end
     end
 
-    ### SignalEmitter.jl
+####### signal_emitter.jl
 
-    """
-    """
+    @document SignalEmitter "TODO"
     abstract type SignalEmitter end
+    export SignalEmitter
 
-    ### Application.jl
+####### application.jl
 
+    @document Application "TODO"
     @export_signal_emitter(Application)
-    @doc "TODO" Application
-
     Application(id::String) = Application(detail.Application(id))
 
+    @document run "TODO"
     @export_function(run, Application)
-    @doc "TODO" run
 
+    @document quit "TODO"
+    @export_function(quit, Application)
+    
+    @document hold "TODO"
+    @export_function(hold, Application)
+    
+    @document release "TODO"
+    @export_function(release, Application)
+    
+    @document mark_as_busy "TODO"
+    @export_function(mark_as_busy, Application)
+
+    @document unmark_as_busy "TODO"
+    @export_function(unmark_as_busy, Application)
+    
+    @document get_id "TODO"
     @export_function(get_id, Application)
-    @doc "TODO" get_id
 
-    for n in names(mousetrap) println(n, " ", typeof(getproperty(mousetrap, n))) end
+    @document add_action "TODO"
+    # TODO: add_action
+
+    @document remove_action "TODO"
+    # TODO: remove_action
+
+    @document get_action "TODO"
+    # TODO: get_action
+
+    @document has_action "TODO"
+    # TODO: has_action
 end
 
 using .mousetrap;
 
 println(@doc Application)
-
-app = Application("test.id")
-mousetrap.run(app)
 
 
 

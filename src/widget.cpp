@@ -406,13 +406,22 @@ namespace mousetrap
         return gtk_widget_get_realized(operator NativeWidget());
     }
 
-    Widget::preferred_size Widget::get_preferred_size() const
+    Vector2f Widget::get_natural_size() const
     {
-        auto min = gtk_requisition_new();
-        auto nat = gtk_requisition_new();
-        gtk_widget_get_preferred_size(operator NativeWidget(), min, nat);
+        auto minimum = gtk_requisition_new();
+        auto natural = gtk_requisition_new();
+        gtk_widget_get_preferred_size(operator NativeWidget(), minimum, natural);
 
-        return Widget::preferred_size{{min->width, min->height}, {nat->width, nat->height}};
+        return {natural->width, natural->height};
+    }
+
+    Vector2f Widget::get_minimum_size() const
+    {
+        auto minimum = gtk_requisition_new();
+        auto natural = gtk_requisition_new();
+        gtk_widget_get_preferred_size(operator NativeWidget(), minimum, natural);
+
+        return {minimum->width, minimum->height};
     }
 
     Rectangle Widget::get_allocation() const

@@ -22,6 +22,14 @@ int main()
     app2.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
+
+        auto dropdown = DropDown();
+        auto id_01 = dropdown.push_back(Label("01"), Label("Option 01"), [](DropDown&){});
+        auto id_02 = dropdown.push_back(Label("02"), Label("Option 02"), [](DropDown&){});
+
+         bool item_01_selected = dropdown.get_selected() == id_01;
+
+         window.set_child(dropdown);
         window.present();
     });
 

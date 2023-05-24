@@ -187,7 +187,7 @@ namespace mousetrap
         for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_internal->model)); ++i)
         {
             auto* item = detail::G_DROP_DOWN_ITEM(g_list_model_get_item(G_LIST_MODEL(_internal->model), i));
-            if (item->id == id._value)
+            if (item->id == id)
             {
                 g_list_store_remove(_internal->model, i);
                 return;
@@ -210,14 +210,14 @@ namespace mousetrap
         for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_internal->model)); ++i)
         {
             auto* item = detail::G_DROP_DOWN_ITEM(g_list_model_get_item(G_LIST_MODEL(_internal->model), i));
-            if (item->id == id._value)
+            if (item->id == id)
             {
                 gtk_drop_down_set_selected(_internal->native, i);
                 return;
             }
         }
 
-        log::critical("In DropDown::set_selected: No item with ID " + std::to_string(id._value), MOUSETRAP_DOMAIN);
+        log::critical("In DropDown::set_selected: No item with ID " + std::to_string(id), MOUSETRAP_DOMAIN);
     }
 
     DropDown::ItemID DropDown::get_selected() const
@@ -241,10 +241,10 @@ namespace mousetrap
     bool DropDown::assert_label_is_not_self(const std::string& scope, const Widget& label01, const Widget& label02)
     {
         bool log_warning = false;
-        if (label01.operator NativeWidget() == this->operator NativeWidget()) //label01 != nullptr and (label01->operator GtkWidget*() == this->operator GtkWidget*()))
+        if (label01.operator NativeWidget() == this->operator NativeWidget())
             log_warning = true;
 
-        if (label02.operator NativeWidget() == this->operator NativeWidget()) //(label02 != nullptr and (label02->operator GtkWidget*() == this->operator GtkWidget*()))
+        if (label02.operator NativeWidget() == this->operator NativeWidget())
             log_warning = true;
 
         if (log_warning)

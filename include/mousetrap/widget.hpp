@@ -274,19 +274,12 @@ namespace mousetrap
             /// @return true if realized, false otherwise
             bool get_is_realized();
 
-            /// @brief widget size allocation
-            using preferred_size = struct
-            {
-                /// @brief minimum possible size
-                Vector2f minimum_size;
+            /// @brief get minimum size, this will always be equal to or larger than the size request
+            /// @return widget and height, in pixels
+            Vector2f get_minimum_size() const;
 
-                /// @brief preferred size without expansion
-                Vector2f natural_size;
-            };
-
-            /// @brief get preferred size allocation
-            /// @return anonymous struct res where res.minimum size is the minimum possible size, res.natural_size is the preferred size of widget
-            preferred_size get_preferred_size() const;
+            /// @brief get natural size, this is the intended size of the widget if no expansion or clipping occurrs
+            Vector2f get_natural_size() const;
 
             /// @brief get allocated size as rectangle
             /// @return rectangle
