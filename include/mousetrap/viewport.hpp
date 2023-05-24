@@ -40,30 +40,30 @@ namespace mousetrap
     };
 
     #ifndef DOXYGEN
-    class ScrolledWindow;
+    class Viewport;
     namespace detail
     {
-        using ScrolledWindowInternal = GtkScrolledWindow;
-        DEFINE_INTERNAL_MAPPING(ScrolledWindow);
+        using ViewportInternal = GtkScrolledWindow;
+        DEFINE_INTERNAL_MAPPING(Viewport);
     }
     #endif
 
     /// @brief viewport that shows part of a widget, controllable by user interaction
     /// \signals
-    /// \signal_scroll_child{ScrolledWindow}
-    /// \widget_signals{ScrolledWindow}
-    class ScrolledWindow : public Widget,
-        HAS_SIGNAL(ScrolledWindow, scroll_child)
+    /// \signal_scroll_child{Viewport}
+    /// \widget_signals{Viewport}
+    class Viewport : public Widget,
+        HAS_SIGNAL(Viewport, scroll_child)
     {
         public:
             /// @brief create
-            ScrolledWindow();
+            Viewport();
 
             /// @brief create from internal
-            ScrolledWindow(detail::ScrolledWindowInternal*);
+            Viewport(detail::ViewportInternal*);
 
             /// @brief destroy
-            ~ScrolledWindow();
+            ~Viewport();
 
             /// @brief destructor
             NativeObject get_internal() const;
@@ -140,7 +140,7 @@ namespace mousetrap
             void remove_child();
 
         private:
-            detail::ScrolledWindowInternal* _internal = nullptr;
+            detail::ViewportInternal* _internal = nullptr;
     };
 }
 

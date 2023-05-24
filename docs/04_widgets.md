@@ -940,7 +940,7 @@ state->main_window.set_child(box);
 
 ## ScrollBar
 
-Similar to `Scale`, \a{ScrollBar} is used to pick a value from an adjustment. It is often used as a way to choose which part of a widget should be shown on screen. For an already automated way of doing this, see `ScrolledWindow`.
+Similar to `Scale`, \a{ScrollBar} is used to pick a value from an adjustment. It is often used as a way to choose which part of a widget should be shown on screen. For an already automated way of doing this, see `Viewport`.
 
 ---
 
@@ -1375,61 +1375,61 @@ state->main_window.set_child(paned);
 
 ---
 
-## ScrolledWindow
+## Viewport
 
-By default, most containers will allocate a size that is equal to or exceeds the largest natural size of its children. For example, if we create a widget that has a natural size of 5000x1000 px and use it as the child of a `Window`, the `Window` will attempt to allocate 5000x1000 pixels on screen, making the window far larger than most screens can display. In situations like these, we should instead use a \a{ScrolledWindow}, which allows users to only view part of a larger widget:
+By default, most containers will allocate a size that is equal to or exceeds the largest natural size of its children. For example, if we create a widget that has a natural size of 5000x1000 px and use it as the child of a `Window`, the `Window` will attempt to allocate 5000x1000 pixels on screen, making the window far larger than most screens can display. In situations like these, we should instead use a \a{Viewport}, which allows users to only view part of a larger widget:
 
 ```cpp
 auto child = Separator();
 child.set_size_request({5000, 5000});
 
-auto scrolled_window = ScrolledWindow();
-scrolled_window.set_child(child);
+auto viewport = Viewport();
+viewport.set_child(child);
 
-state->main_window.set_child(scrolled_window
+state->main_window.set_child(viewport
 ```
-\image html scrolled_window.png
+\image html viewport.png
 
-Note that `ScrolledWindow` is not a physcial window, instead it is a container widget with a single child.
-
-Without the `ScrolledWindow`, the `Separator` child widget would force the outer `Window` to allocate 5000x5000 pixels, as we size-hinted it to be that size. By using `ScrolledWindow`, the `Window` is free to allocate any size, retaining resizability. The end-user can influence which area of the larger widget is currently visible by operating the scrollbars inherent to `ScrolledWindow`.
+Without the `Viewport`, the `Separator` child widget would force the outer `Window` to allocate 5000x5000 pixels, as we size-hinted it to be that size. By using `Viewport`, the `Window` is free to allocate any size, retaining resizability. The end-user can influence which area of the larger widget is currently visible by operating the scrollbars inherent to `Viewport`.
 
 ### Size Propagation
 
-By default, `ScrolledWindow` will disregard the size of its child and simply allocate an area based on its `ScrolledWindow`s properties only. We can override this behavior by forcing `ScrolledWindow` to **propagate** the width or height of its child.
+By default, `Viewport` will disregard the size of its child and simply allocate an area based on the `Viewport`s properties only. We can override this behavior by forcing `Viewport` to **propagate** the width or height of its child.
 
-By calling `ScrolledWindow::set_propagate_natural_width(true)`, `ScrolledWindow` will assume the width of its child. Conversely, calling `ScrolledWindow::set_propagate_natural_width(true)` forces the window to allocate space equal to the height of its child.
+By calling `Viewport::set_propagate_natural_width(true)`, `Viewport` will assume the width of its child. Conversely, calling `Viewport::set_propagate_natural_width(true)` forces the window to allocate space equal to the height of its child. A viewport that has both of these set to true will behave exaclty like a box with a single child.
 
 ### Scrollbar Policy
 
-`ScrolledWindow` has two scrollbars, controlling the horizontal and vertical position. If we want to trigger behavior in addition to changing which part of the child widget `ScrolledWindow` displays, we can access each scrollbars `Adjustment` using `ScrolledWindow::get_horizontal_adjustment` and `ScrolledWindow::get_vertical_adjustment` respectively, then connect to the `Adjustment`s signals.
+`Viewport` has two scrollbars, controlling the horizontal and vertical position. If we want to trigger behavior in addition to changing which part of the child widget `Viewport` displays, we can access each scrollbars `Adjustment` using `Viewport::get_horizontal_adjustment` and `Viewport::get_vertical_adjustment` respectively, then connect to the `Adjustment`s signals.
 
-By default, once the cursor enters `ScrolledWindow`, both scrollbars will reveal themselves. If the cursor moves outside the `ScrolledWindow`, the scrollbars will hide again.
+By default, once the cursor enters `Viewport`, both scrollbars will reveal themselves. If the cursor moves outside the `Viewport`, the scrollbars will hide again.
 
-This behavior is controlled by the windows **scrollbar policy**, represented by the \a{ScrollbarVisibilityPolicy} enum:
+This behavior is controlled by the viewports **scrollbar policy**, represented by the \a{ScrollbarVisibilityPolicy} enum:
 
 + `NEVER`: scrollbar is hidden permanently
 + `ALWAYS`: scrollbar is always shown, does not hide itself
 + `AUTOMATIC`: default behavior, see above
 
-We can set the policy for each scrollbar individually using `ScrolledWindow::set_horizontal_scrollbar_policy` and `ScrolledWIndow::set_vertical_scrollbar_policy`.
+We can set the policy for each scrollbar individually using `Viewport::set_horizontal_scrollbar_policy` and `Viewport::set_vertical_scrollbar_policy`.
 
 ### Scrollbar Position
 
-Lastly, we can customize the location of both scrollbars at the same time using `ScrolledWindow::set_scrollbar_placement`, which takes one of the following values:
+Lastly, we can customize the location of both scrollbars at the same time using `Viewport::set_scrollbar_placement`, which takes one of the following values:
 
 + `CornerPlacement::TOP_LEFT`: horizontal scrollbar at the top, vertical scrollbar on the left
 + `CornerPlacement::TOP_RIGHT`: horizontal at the top, vertical on the right
 + `CornerPlacement::BOTTOM_LEFT`: horizontal at the bottom, vertical on the left
 + `CornerPlacement::BOTTOM_RIGHT`: horizontal at the bottom, vertical on the right
 
-With this, scrollbar policy, size propagation, and being able to access the adjustment of each scrollbar individually, we have full control over every aspect of `ScrolledWindow`.
+With this, scrollbar policy, size propagation, and being able to access the adjustment of each scrollbar individually, we have full control over every aspect of `Viewport`.
 
 ---
 
 ## Popovers
 
-A \a{Popover} is a special kind of window. It is always **[modal](#modality--transience)**. Rather than having the normal window decoration with a close button and title, `Popover` closes dynamically or on demand. Showing the popover is called **pop up**, closing the popover is called **pop down**, `Popover` correspondingly has `Popover::popup` and `Popover::popdown` to trigger this behavior.
+A \a{Popover} is a special kind of window. It is always [modal](#modality--transience). Rather than having the normal window decoration with a close button and title, `Popover` closes dynamically (or when requested by the application). 
+
+Showing the popover is called **popup**, closing the popover is called **popdown**, `Popover` correspondingly has `Popover::popup` and `Popover::popdown` to trigger this behavior.
 
 \image html popover.png
 
@@ -1451,15 +1451,15 @@ window.set_child(aspect_frame);
 ```
 \how_to_generate_this_image_end
 
-Popovers can only be while they are **attached** to another widget. We use `Popover::attach_to` to specify this widget, while `Popover::set_child` chooses which widget to display inside the popover. Like `Window`, `Popover` always has exactly one child.
+Popovers can only be shown while they are **attached** to another widget. We use `Popover::attach_to` to specify this widget, while `Popover::set_child` chooses which widget to display inside the popover. Like `Window`, `Popover` always has exactly one child.
 
-Manually calling `popup` or `popdown` to show/hide the `Popover` can be a tedious process. Luckily, mousetrap offers a widget that fully automates this process for us.
+Manually calling `popup` or `popdown` to show / hide the `Popover` can be finnicky. To address this, mousetrap offers a widget that fully automates this process for us.
 
 ## PopoverButton
 
-Like `Button`, `PopoverButton` has a single child, can be circular, and has the `activate` signals. `PopoverButton`s purpose is usually to simply show or hide a `Popover`.
+Like `Button`, `PopoverButton` has a single child, can be circular, and has the `activate` signals. Instead of triggering behavior, `PopoverButton`s purpose is to reveal and hide a `Popover`.
 
-We first create the `Popover`, then connect it to the button using `PopoverButton::set_popover`. We do not use `Popover::attach_to`.
+We first create the `Popover`, then connect it to the button using `PopoverButton::set_popover`.
 
 ```cpp
 auto popover = Popover();
@@ -1488,13 +1488,13 @@ window.set_child(aspect_frame);
 ```
 \how_to_generate_this_image_end
 
-For 90% of cases, this is the way to go when we want to use a `Popover`. It is easy to set up and we don't have to manually control the popover position, or when to show or hide it.
+For 90% of cases, this is the way to go when we want to use a `Popover`. It is easy to set up and we don't have to manually control the popover position or when to show / hide it. 
 
-The arrow character next to the `PopoverButton`s child indicates to the user that clicking it will reveal a popover. We can suppress this arrow by setting `PopoverButton::set_always_show_arrow` to `false`.
+The arrow character next to the `PopoverButton`s child indicates to the user that clicking it will reveal a popover. We can hide this arrow by setting `PopoverButton::set_always_show_arrow` to `false`.
 
-`PopoverButton` lets us control the relative position of the popover by setting `PopoverButton::set_popover_position` to one of the following: `RelativePosition::ABOVE`, `RelativePosition::LEFT_OF`, `RelativePosition::RIGHT_OF`, `RelativePosition::BELOW`, which will place the popover above, left of, right of or below the button respectively.
+We will see one more use of `PopoverButton` in the [chapter on menus](06_menus.md), where we use it to control `PopoverMenu`, a specialized form of `Popover` that shows a menu instead of an arbitrary widget.
 
-We will see one more use of `PopoverButton` in the [chapter on menus](06_menus.md), where we use `PopoverMenu`, a specialized form of `Popover` that shows a menu instead of an arbitrary widget child.
+---
 
 ---
 
@@ -1502,16 +1502,16 @@ We will see one more use of `PopoverButton` in the [chapter on menus](06_menus.m
 
 We will now move on to **selectable widgets**, which tend to be the most complex and powerful widgets in mousetrap.
 
-All selectable widgets have some things in common: They a) are widget containers supporting multiple children and b) provide `get_selection_model`, which returns a \{SelectioModel} representing the currently selected widget.
+All selectable widgets have some things in common: They a) are widget containers supporting multiple children and b) provide `get_selection_model`, which returns a \a{SelectioModel}. This model contains information about which of the widgets children is currently selected.
 
-`SelectionModel` is not a widget, though it is a signal emitter. Similar to `Adjustment`, it is bound to a certain widget. Changing the widget updates the `SelectionModel`, changing the `SelectionModel` updates the widget. We usually do not construct `SelectionModel` directly, instead we access the underlying `SelectionModel` once we instanced a selectable widget.
+`SelectionModel` is not a widget, but it is a signal emitter. Similar to `Adjustment`, it is internally linked with its corresponding selectable widget. Changing the widget updates the `SelectionModel`, changing the `SelectionModel` updates the widget. We usually do not construct `SelectionModel` directly, instead, we access the underlying `SelectionModel` once we instanced a selectable widget.
 
 `SelectionModel` provides signal `selection_changed`, which is emitted whenever the internal state of the `SelectionModel` changes.
 
 \signals
 \signal_selection_changed{SelectionModel}
 
-The signal provides two arguments, `position`, which is the newly selected item, and `n_items`, which is the new number of currently selected items.
+The signal provides two arguments, `position`, which is the position newly selected item, and `n_items`, which is the new number of currently selected items.
 
 The latter is necessary because `SelectionModel`s can have one of three internal **selection modes**, represented by the enum \a{SelectionMode}:
 
@@ -1561,13 +1561,13 @@ Where the blue border indicates that the 4th element (with label `"03"`) is curr
 
 When creating the `ListView`, the first argument to its constructor is the \a{Orientation}, while the second is the underlying `SelectionModel`s mode. If left unspecified, `SelectionMode::NONE` is used.
 
-Much like `Box`, `ListView` supports `ListView::push_back`, `ListView::push_front` and `ListView::insert` to insert any widget at the specified position.
+Much like `Box`, `ListView` supports `ListView::push_back`, `ListView::push_front`, along with `ListView::insert` to insert any widget at the specified position.
 
-`ListView` can be requested to automatically show separator in between to items. To show these, we simply call `ListView::set_show_separators(true)`.
+`ListView` can be requested to automatically show separators in-between two items by calling `ListView::set_show_separators(true)`.
 
 ### Nested Trees
 
-By default, `ListView` displays its children in a linear list, either horizontally or vertically. `ListView` also supports **nested lists**, sometimes call a tree view:
+By default, `ListView` displays its children in a linear list, either horizontally or vertically. `ListView` also supports **nested lists**, sometimes called a **tree view**:
 
 \image html list_view_nested.png
 
@@ -1606,7 +1606,7 @@ window.set_child(frame);
 
 Here, we have a triple nested list. The outer list has the items `outer item #01`, `outer item #02` and `outer item #03`. `outer item #02` is itself a list, with two children `inner item #01` and `inner item #02`, the latter of which is also a list with a single item.
 
-When `ListView::push_back` is called, it returns an **iterator**. When we supply this iterator as the second argument to any of the widget-inserting functions, such as `ListView::push_back`, the new child will be inserted into a nested list start at the item the iterator was created from. If no iterator is specified, the item will be inserted in the top-level list.
+When `ListView::push_back` is called, it returns an **iterator**. When we supply this iterator as the second argument to any of the widget-inserting functions, such as `ListView::push_back`, the new child will be inserted as a child to the item the iterator points to. If no iterator is specified, the item will be inserted in the top-level list.
 
 ```cpp
 auto it_01 = list_view.push_back(/* outer item #01 */);
@@ -1620,7 +1620,7 @@ auto it_02 = list_view.push_back(/* outer item #02 */);
 auto it_03 = list_view.push_back(/* outer item #03 */);
 ```
 
-This means if we only want to show items in a simple, non-nested list, we can ignore the iterator return value completely.
+This means, if we only want to show items in a simple, non-nested list, we can ignore the iterator return value completely.
 
 ### Reacting to Selection
 
@@ -1630,13 +1630,13 @@ In order to react to the user selecting a new item in our `ListView` (if its sel
 auto list_view = ListView(Orientation::HORIZONTAL, SelectionMode::SINGLE);
 
 list_view.get_selection_model()->connect_signal_selection_changed(
-    [](SelectionModel*, int32_t item_i, int32_t n_items){
+    [](SelectionModel&, int32_t item_i, int32_t n_items){
         std::cout << "selected: " << item_i << std::endl;
     }
 );
 ```
 
-This process will be the same for any of the selectable widgets, as all of them provide `get_selection_model`, which returns a pointer to the underlying `SelectionModel`.
+This way of accessing the `SelectionModel`, then connecting to one of its signals to monitor the underlying widget will be the same for any of the selectable widgets, as all of them provide `get_selection_model`, which returns a `SelectionModel*`.
 
 ---
 
@@ -1677,7 +1677,9 @@ window.set_child(grid_view);
 ```
 \how_to_generate_this_image_end
 
-Items are dynamically allocated to rows and columns based on the space available to the `GridView` and the size of the children. We can use `GridView::set_min_n_columns` and `GridView::set_max_n_columns` to force one of either row or columns (depending on `Orientation`) to adhere to the given limit, which gives us more control over how the children are arranged.
+Items are dynamically allocated to rows and columns based on the space available to the `GridView` and the number of children.
+
+We can use `GridView::set_min_n_columns` and `GridView::set_max_n_columns` to force one of either row or columns (depending on `Orientation`) to adhere to the given limit, which gives us more control over how the children are arranged.
 
 Other than this, `GridView` supports the same functions as `ListView`, including `push_front`, `push_back`, `insert`, `get_selection_model`, `set_show_separators`, etc.
 
@@ -1685,7 +1687,7 @@ Other than this, `GridView` supports the same functions as `ListView`, including
 
 ## Column View
 
-\a{ColumnView} is used to display widgets as a table, which is split into rows and columns, the latter of which have a title.
+\a{ColumnView} is used to display widgets as a table, which is split into rows and columns. Each column has a title.
 
 To fill our `ColumnView`, we first instance it, then allocate a number of columns:
 
@@ -1696,7 +1698,7 @@ column_view.push_back_column("Column 02");
 column_view.push_back_column("Column 03");
 ```
 
-To add a column at a later point, either to the start, end or at a specific position, we use `ColumnView::push_front_column`, `ColumnView::push_back_column`, or `ColumnView::insert_column`, respectively. Each of these functions takes as their argument the title used for the column.
+To add a column at a later point, either to the start, end, or at a specific position, we use `ColumnView::push_front_column`, `ColumnView::push_back_column`, or `ColumnView::insert_column`, respectively. Each of these functions takes as their argument the title used for the column.
 
 Once we have all our columns set up, we can add child widgets either by using \a{ColumnView::set_widget} or the convenience function `push_back_row`, which adds a row of widgets to the end of the table:
 
@@ -1724,13 +1726,13 @@ column_view.set_show_column_separators(true);
 column_view.set_expand(true);
 
 for (auto* column : {&col1, &col2, &col3})
-column->set_is_resizable(true);
+    column->set_is_resizable(true);
 
 window.set_child(column_view);
 ```
 \how_to_generate_this_image_end
 
-Here, we use `Label`s as items in the `ColumnView`, but any arbitrarily complex widget can be used. Rows or columns do not require one specific widget type, we put any type of widget wherever we want.
+Here, we use `Label`s as items in the `ColumnView`, but any arbitrarily complex widget can be used. Rows or columns do not require one specific widget type, we can put any type of widget at whatever position we want.
 
 ---
 
@@ -1786,7 +1788,7 @@ Each widget on the grid has four properties, it's **x-index**, **y-index**, **wi
 
 For example, in the above figure, the widget labeled `00` has x- and y-index `0` and a width and height of `1`. The widget next to it, labeled `03` has an x-index `1`, y-index of `0`, a width of `2` and a height of `1`.
 
-To add a widget to a grid, we need to provide the widget the position and size in the grid:
+To add a widget to a grid, we need to provide the widget along with its desired position and size in the grid:
 
 ```cpp
 grid.insert(
@@ -1801,19 +1803,19 @@ Where `width` and `height` are optional, with `1` being the default value for bo
 
 When a widget is added to a column or row not yet present in the grid, it is added automatically. Valid x- and y-indices are 0-based (`{0, 1, 2, ...}`), while width and height have to be a multiple of 1 (`{1, 2, ...}`).
 
-Note that it is our responsibility to make sure a widgets position and size do not overlap with that of another widget. If carelessly inserted, one widget may obscure another, though in some cases this behavior may also be intentional.
+Note that it is our responsibility to make sure a widgets position and size do not overlap with that of another widget. If carelessly inserted, one widget may obscure another, though in some cases this behavior may also be desirable.
 
-`Grid::set_columns_homogenous` and `Grid::set_rows_homogenous` specify whether the `Grid` should allocate the exact same width for all columns or height for all rows, respectively.
+`Grid::set_columns_homogenous` and `Grid::set_rows_homogenous` specifies whether the `Grid` should allocate the exact same width for all columns, or height for all rows, respectively.
 
 Lastly, we can choose the spacing between each cell using `Grid::set_row_spacing` and `Grid::set_column_spacing`.
 
-`Grid` can be seen as a more flexible version of `GridView`. It also arranges arbitrary widgets in columns and rows, but, unlike with `GridView`, in `Grid` a widget can occupy more than one row / column.
+`Grid` can be seen as a more flexible version of `GridView`. It also arranges arbitrary widgets in columns and rows, but, unlike with `GridView`, in `Grid` a widget can occupy more than one row / column, and we have to manually specify the position and size of each of its children.
 
 ---
 
 ## Stack
 
-\a{Stack} is a selectable widget that can only ever display exactly one child. We register a number of widgets with the `Stack`. All widget except the selected on will be hidden, while the selected widget will occupy the entire allocated space of the `Stack`:
+\a{Stack} is a selectable widget that can only ever display exactly one child at a time, though we register any number of widgets first. All widget except the selected on will be hidden, while the selected widget will occupy the entire allocated space of the `Stack`:
 
 ```cpp
 auto stack = Stack();
@@ -1827,13 +1829,13 @@ auto page_02_id = stack.add_child(page_02, "Page 02");
 stack.set_visible_child(page_01_id);
 ```
 
-Adding a widget with `Stack::add_child` will return the **stack ID** of that page. To make a specific widget be the currently shown widget, we use `Stack::set_visible_child`, which takes the stack ID we obtained.
+Adding a widget with `Stack::add_child` will return the **ID** of that page. To make a specific widget be the currently shown widget, we use `Stack::set_visible_child`, which takes this ID.
 
-We see above that `Stack::add_child` takes a second argument, which is the **page title**. This title is not used in the stack itself, rather, it is used for two widgets made to exclusively interact with the stack. These widgets are made to make selecting a specific stacks page easy on both the user and developer. If we use any of these two widgets, we will rarely have to manually select the visible child.
+We see above that `Stack::add_child` takes a second argument, which is the **page title**. This title is not used in the stack itself, rather, it is used by two widgets made exclusively to interact with a `Stack`. These widgets facilitate the user being able to choose which stack page to display, as `Stack` itself has no way of user interaction.
 
 ### StackSwitcher
 
-\a{StackSwitcher} presents the user with a row of buttons, each of which use the corresponding stack child's title:
+\a{StackSwitcher} presents the user with a row of buttons, each of which use the corresponding stack pages title:
 
 ```cpp
 auto stack = Stack();
@@ -1952,13 +1954,13 @@ Other than this visual component, its purpose is identical to that of `StackSwit
 
 ### Transition Animation
 
-When switching selecting a different page of the stack, regardless of how that selection was triggered, an animation transitioning from one page to the other plays. Similar to `Revealer`, we can influence the type and speed of animation in multiple ways:
+When changing which of the stacks pages is currently shown, regardless of how that selection was triggered, an animation transitioning from one page to the other plays. Similar to `Revealer`, we can influence the type and speed of animation in multiple ways:
 
-+ `Stack::set_transition_duration` governs how long the animation will take until it is complete
-+ `Stack::set_interpolate_size`, if set to `true`, makes it such that while the transition animation plays, the stack will change from the size of the previous child to the size of the current child. If set to `false`, this size-change happens instantly
++ `Stack::set_transition_duration` governs how long the animation will take, thus influencing its speed
++ `Stack::set_interpolate_size`, if set to `true`, makes it such that while the transition animation plays, the stack will change from the size of the previous child to the size of the current child gradually. If set to `false`, this size change happens instantly
 + `Stack::set_animation_type` governs the type of animation
 
-Mousetrap provides a large number of different animation, which are represented by the enum \a{StackTransitionType}. These include cross-fading, sliding, and rotating between pages. For a full list of animation types, see the \link mousetrap::StackTransitionType corresponding documentation page\endlink.
+Mousetrap provides a large number of different animation, which are represented by the enum \a{StackTransitionType}. These include cross-fading, sliding, and rotating between pages. For a full list of animation types, see the \link mousetrap::StackTransitionType corresponding documentation page\endlink, as `Stack` offers an even larger selection of animations than `Revealer`.
 
 ---
 
@@ -2001,10 +2003,10 @@ window.set_child(notebook);
 
 We see that each notebook page has a tab with a title. This title widget will usually be a `Label`, though it can be any arbitrarily complex widget. When adding a page using `Notebook::push_back`, the first argument is the widget that should be used as the page, while the second argument is the widget that should be used as the label.
 
-`Notebook` sports some additional features. Setting `Notebook::set_is_scrollable` to `true` allows users to change between pages by scrolling.
-When `Notebook::set_tabs_reorderable` is set to `true`, the user can drag and drop pages to reorder them in any order they wish. Users can even **drag pages from one notebook to another**. In this way, `Notebook` is like a `Stack` with a number of complex features already implemented for us.
+`Notebook` sports some additional features. Setting `Notebook::set_is_scrollable` to `true` allows users to change between pages by scrolling with the mouse or touchscreen.
+When `Notebook::set_tabs_reorderable` is set to `true`, the user can drag and drop pages to reorder them in any order they wish. Users can even **drag pages from one notebook to another**. 
 
-`Notebook` has a number of custom signals that reflect these multiple modes of interaction, these are in addition to all the signals offered by the underlying `SelectionModel`, which, just like with all selectable widgets, we obtain using `get_selection_model`.
+`Notebook` has a number of custom signals that reflect these multiple modes of interaction:
 
 \signals
 \signal_page_added{Notebook}
@@ -2015,14 +2017,14 @@ When `Notebook::set_tabs_reorderable` is set to `true`, the user can drag and dr
 Where `_` is an unused argument. For example, we would connect to `page_selection_changed` like so:
 
 ```cpp
-notebook.connect_signal_page_selection_changed([](Notebook*, void*, int32_t page_index){
+notebook.connect_signal_page_selection_changed([](Notebook&, void*, int32_t page_index){
     std::cout << "Selected Page is now: " << page_index << std::endl;
 });
 ```
 
 \todo refactor notebook signals to remove unused argument
 
-Note that `Notebook` does not provide `get_selection_model`. Use the `page_selection_changed` signal to monitor page selection, and `Notebook::goto_page` to manually switch between pages instead.
+Note that `Notebook` does not provide `get_selection_model`. We use the `page_selection_changed` signal to monitor page selection, and `Notebook::goto_page` to manually switch between pages.
 
 ---
 
@@ -2065,28 +2067,28 @@ class CompoundWidget
 };
 ```
 
-All the widgets are private fields of the compound widget. This means, as long as an instance of `CompoundWidget` exists, the 5 widgets it contains will be kept in memory, but other objects cannot directly access the components.
+All the widgets are private fields of the compound widget. This means, as long as an instance of `CompoundWidget` exists, the 5 widgets it contains will be kept in memory, but other objects cannot directly access the components individually.
 
 We usually define how a compound widget is assembled in its constructor:
 
 ```cpp
 // define constructor
 CompoundWidget(size_t id)
-: _label(std::to_string(id))
+    : _label(std::to_string(id))
 {
-_overlay.set_child(_separator);
-_overlay.add_overlay(_label);
+    _overlay.set_child(_separator);
+    _overlay.add_overlay(_label);
 
-_frame.set_child(_overlay);
-_aspect_frame.set_child(_frame);
+    _frame.set_child(_overlay);
+    _aspect_frame.set_child(_frame);
 }
 ```
 
-This constructor sets up all the widget like we discussed before.
+This constructor sets up the structure we discussed before.
 
-The lowermost layer of the `Overlay` is the `Separator`, which will act as the background for the compound widget. On top of it, a `Label` added. We set the string of the label based on the ID given to the constructor.
+The lowermost layer of the `Overlay` is the `Separator`, which will act as the background for the compound widget. On top of it, a `` is added. We set the string of the label based on the ID given to the constructor.
 
-The entire `Overlay` is first inserted into a `Frame`, then that frame is set as child of our `AspectFrame`, which has a ratio of `1`, keeping it square at all times.
+The entire `Overlay` is first inserted into a `Frame`, then that frame is set as the child of our `AspectFrame`, which has a ratio of `1`, keeping it square at all times.
 
 We can now initialize our compound widget and add it to a window, right?
 
@@ -2099,9 +2101,11 @@ window.set_child(compound_widget);
         window.set_child(instance);
                          ^~~~~~~~
 ```
-No, we cannot. As the error states, `CompoundWidget` cannot bind to a reference of type `mousetrap::Widget`.  For this to work, we need to declare `CompoundWidget` to be a widget.
+No, we cannot. 
 
-This is accomplished by simply **inheriting from mousetrap::Widget**:
+As the error states, `CompoundWidget` cannot bind to a reference of type `mousetrap::Widget`.  For this to work, we need to **declare it to be a widget**.
+
+This is accomplished by inheriting from mousetrap::Widget:
 
 ```cpp
 class CompoundWidget : public Widget    // inherit
@@ -2122,14 +2126,19 @@ class CompoundWidget : public Widget    // inherit
 };
 ```
 
-Inheriting from `Widget` requires us to implement a single pure virtual function: `operator NativeWidget() const`, which we mark as `override`. Once this function is implemented, mousetrap is able to treat that object as a widget, allowing us to treat the compound widget as a single instance of `Widget`.
-
-We implement this function as follows:
+We now need to modify our constructor, as it will have to also construct its parent class, `Widget`. We modify the constructor as follows:
 
 ```cpp
-CompoundWidget::operator NativeWidget() const 
+// define constructor
+CompoundWidget(size_t id)
+    : Widget(_aspect_frame),
+      _label(std::to_string(id))
 {
-     return _aspect_frame;
+    _overlay.set_child(_separator);
+    _overlay.add_overlay(_label);
+    
+    _frame.set_child(_overlay);
+    _aspect_frame.set_child(_frame);
 }
 ```
 

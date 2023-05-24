@@ -70,7 +70,7 @@
 #include <mousetrap/scale_mode.hpp>
 #include <mousetrap/scroll_event_controller.hpp>
 #include <mousetrap/scrollbar.hpp>
-#include <mousetrap/scrolled_window.hpp>
+#include <mousetrap/viewport.hpp>
 #include <mousetrap/selectable.hpp>
 #include <mousetrap/selection_model.hpp>
 #include <mousetrap/separator.hpp>

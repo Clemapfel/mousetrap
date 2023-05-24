@@ -12,8 +12,33 @@
 #include <mousetrap/action.hpp>
 #include <mousetrap/popover_menu.hpp>
 #include <mousetrap/popover_button.hpp>
+#include <mousetrap/list_view.hpp>
+
+#include <mousetrap.hpp>
 
 using namespace mousetrap;
+
+class CompoundWidget : public Widget    // inherit
+{
+    public:
+        CompoundWidget(size_t id)
+            : Widget(_aspect_frame),
+             _label(std::to_string(id))
+        {
+            _overlay.set_child(_separator);
+            _overlay.add_overlay(_label);
+
+            _frame.set_child(_overlay);
+            _aspect_frame.set_child(_frame);
+        }
+
+    private:
+        Separator _separator;
+        Label _label;
+        Frame _frame;
+        Overlay _overlay;
+        AspectFrame _aspect_frame = AspectFrame(1);
+};
 
 int main()
 {
@@ -23,13 +48,8 @@ int main()
     {
         auto window = Window(app);
 
-        auto dropdown = DropDown();
-        auto id_01 = dropdown.push_back(Label("01"), Label("Option 01"), [](DropDown&){});
-        auto id_02 = dropdown.push_back(Label("02"), Label("Option 02"), [](DropDown&){});
-
-         bool item_01_selected = dropdown.get_selected() == id_01;
-
-         window.set_child(dropdown);
+        auto instance = CompoundWidget(1234);
+        window.set_child(instance);
         window.present();
     });
 

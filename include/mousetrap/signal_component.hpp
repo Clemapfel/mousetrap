@@ -2185,7 +2185,7 @@ namespace mousetrap
     /// @fn has_signal_proximity::has_signal_proximity
     /// \signal_ctor
 
-    /// @brief type of scroll, used by mousetrap::ScrolledWindow `scroll_child` signal
+    /// @brief type of scroll, used by mousetrap::Viewport `scroll_child` signal
     enum class ScrollType
     {
         /// @brief no scrolling

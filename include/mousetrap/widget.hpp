@@ -90,7 +90,7 @@ namespace mousetrap
             NativeObject get_internal() const override;
 
             /// @brief expose as GtkWidget, this is the only function that needs to be implemented in oder for an object to act as a widget
-            explicit virtual operator NativeWidget() const;
+            virtual operator NativeWidget() const;
 
             /// @brief activate the widget, if it is activatable. This will also trigger any associated animations or signals
             void activate();
@@ -329,6 +329,11 @@ namespace mousetrap
             /// @brief ctor protected. Only inheriting classes should call this
             /// @param widget GtkWidget instance
             Widget(NativeWidget widget);
+
+            template<typename Widget_t>
+            Widget(Widget_t& widget)
+                : Widget(widget.operator NativeWidget())
+            {}
 
         private:
             detail::WidgetInternal* _internal = nullptr;

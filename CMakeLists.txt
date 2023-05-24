@@ -158,7 +158,7 @@ set(MOUSETRAP_HEADER_FILES
         include/mousetrap/scale_mode.hpp
         include/mousetrap/scroll_event_controller.hpp
         include/mousetrap/scrollbar.hpp
-        include/mousetrap/scrolled_window.hpp
+        include/mousetrap/viewport.hpp
         include/mousetrap/selection_model.hpp
         include/mousetrap/separator.hpp
         include/mousetrap/shader.hpp
@@ -261,7 +261,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/scale.cpp
     src/scroll_event_controller.cpp
     src/scrollbar.cpp
-    src/scrolled_window.cpp
+        src/viewport.cpp
     src/selection_model.cpp
     src/separator.cpp
     src/shader.cpp
