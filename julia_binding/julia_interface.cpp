@@ -41,3 +41,11 @@ static inline jl_value_t* jl_calln(jl_function_t* function, T... args)
     std::array<jl_value_t*, sizeof...(T)> wrapped = {args...};
     return jl_call(function, wrapped.data(), wrapped.size());
 }
+
+template<typename... T>
+static inline jl_value_t* jl_safe_call(const char* scope, jl_function_t* function, T... args)
+{
+    static auto* safe_call = jl_eval_string("return mousetrap.safe_call");
+    std::array<jl_value_t*, sizeof...(T)+2> wrapped = {jl_box_string(scope), function, args...};
+    return jl_call(safe_call, wrapped.data(), wrapped.size());
+}

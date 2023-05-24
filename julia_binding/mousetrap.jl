@@ -65,6 +65,16 @@ module mousetrap
 
 ####### common.jl
 
+    function safe_call(scope::String, f, args...)
+        try
+            f(args...)
+        catch e
+            print(stderr, "In " * scope * ": ")
+            Base.showerror(stderr, e)
+            print(stderr, "\n");
+        end
+    end
+
     """
     Change the docstring of an object to given string
     """
@@ -104,49 +114,42 @@ module mousetrap
 ####### application.jl
 
     @document Application "TODO"
-    @export_signal_emitter(Application)
-    Application(id::String) = Application(detail.Application(id))
+    const Application = detail.Application
+    export Application
 
-    @document run "TODO"
-    @export_function(run, Application)
-
-    @document quit "TODO"
-    @export_function(quit, Application)
-    
-    @document hold "TODO"
-    @export_function(hold, Application)
-    
-    @document release "TODO"
-    @export_function(release, Application)
-    
-    @document mark_as_busy "TODO"
-    @export_function(mark_as_busy, Application)
-
-    @document unmark_as_busy "TODO"
-    @export_function(unmark_as_busy, Application)
-    
     @document get_id "TODO"
-    @export_function(get_id, Application)
+    const get_id = detail.get_id
 
-    @document add_action "TODO"
-    # TODO: add_action
+    struct SignalTask
+        f::TypedFunction
+        data
+    end
+    export SignalTask
 
-    @document remove_action "TODO"
-    # TODO: remove_action
+    function (task::SignalTask)(x)
+        task.f(x, task.data)
+    end
 
-    @document get_action "TODO"
-    # TODO: get_action
-
-    @document has_action "TODO"
-    # TODO: has_action
+    function connect_signal_activate(x, f, data )
+        task = SignalTask(
+            TypedFunction(f, Cvoid, (Application, Any)),
+            data
+        )
+        detail.connect_signal_activate(x, task)
+    end
+    connect_signal_activate(x, f) = connect_signal_activate(x, f, nothing)
+    export connect_signal_activate
 end
 
 using .mousetrap;
 
-println(@doc Application)
+app = Application("test.app")
 
-
-
+function on_activate_f(app, _)
+    detail.test_initialize(app)
+end
+mousetrap.connect_signal_activate(app, on_activate_f, nothing)
+mousetrap.detail.run(app)
 
 
 
