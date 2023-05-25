@@ -5,15 +5,17 @@ module mousetrap
     """
     # TypedFunction
 
-    Object used to invoke an arbitrary function using the given signature. This wrapper will automatically convert any arguments and return values to the given types unless absolutely impossible, at which point an assertion error will be triggered on construction
+    Object used to invoke an arbitrary function using the given signature. This wrapper 
+    will automatically convert any arguments and return values to the given types 
+    unless impossible, at which point an assertion error will be thrown on instantiation. 
+    In this way, it can be used to assert a functions signature at compile time.
 
     ### Example
 
-    ```jl
-    f(x::Integer) = return string(x)
-
-    # possible signature
-    as_typed = TypedFunction(f, Int64, (Integer,))
+    ```julia
+    as_typed = TypedFunction(Int64, (Integer,)) do(x::Integer)
+        return string(x)
+    end
     as_typed(12) # returns 12, because "12" will be converted to given return type, Int64
     ```
     """
@@ -85,9 +87,61 @@ module mousetrap
         :(@doc $string $name)
     end
 
-    macro export_function(type, name)
+    macro _export_function_arg0(type, name)
         mousetrap.eval(:(export $name))
         return :($name(x::$type) = detail.$name(x._internal))
+    end
+
+    macro _export_function_arg1(type, name, arg1_name, arg1_type)
+        mousetrap.eval(:(export $name))
+        return :($name(x::$type, $arg1_name::$arg1_type) = detail.$name(x._internal, $arg1_name))
+    end
+
+    macro _export_function_arg2(type, name, arg1_name, arg1_type, arg2_name, arg2_type)
+        mousetrap.eval(:(export $name))
+        return :($name(
+            x::$type,
+            $arg1_name::$arg1_type,
+            $arg2_name::$arg2_type
+        ) = detail.$name(x._internal, $arg1_name, $arg2_name))
+    end
+
+    macro _export_function_arg3(type, name, arg1_name, arg1_type, arg2_name, arg2_type, arg3_name, arg3_type)
+        mousetrap.eval(:(export $name))
+        return :($name(
+            x::$type,
+            $arg1_name::$arg1_type,
+            $arg2_name::$arg2_type,
+            $arg3_name::$arg3_type
+        ) = detail.$name(x._internal, $arg1_name, $arg2_name, $arg3_name))
+    end
+
+    macro _export_function_arg4(type, name, arg1_name, arg1_type, arg2_name, arg2_type, arg3_name, arg3_type)
+        mousetrap.eval(:(export $name))
+        return :($name(
+            x::$type,
+            $arg1_name::$arg1_type,
+            $arg2_name::$arg2_type,
+            $arg3_name::$arg3_type,
+            $arg4_name::$arg4_type
+        ) = detail.$name(x._internal, $arg1_name, $arg2_name, $arg3_name, $arg4_name))
+    end
+
+     macro export_function(type, name, args...)
+
+        @assert (length(args) == 0) || (length(args) % 2 == 0)
+
+        if length(args) == 0
+            return :(@_export_function_arg0($type, $name))
+        elseif length(args) == 2
+            return :(@_export_function_arg1($type, $name, $(args[1]), $(args[2])))
+        elseif length(args) == 4
+            return :(@_export_function_arg2($type, $name, $(args[1]), $(args[2]), $(args[3]), $(args[4])))
+        elseif length(args) == 6
+            return :(@_export_function_arg3($type, $name, $(args[1]), $(args[2]), $(args[3]), $(args[4]), $(args[5]), $(args[6])))
+        elseif length(args) == 8
+            return :(@_export_function_arg4($type, $name, $(args[1]), $(args[2]), $(args[3]), $(args[4]), $(args[5]), $(args[6]), $(args[7]), $(args[8])))
+        end
     end
 
     macro export_signal_emitter(name)
@@ -183,12 +237,155 @@ module mousetrap
         return out
     end
 
-    # TODO: @document to generate documentation for all signals
+    # TODO: documentation for all signal-related methods
 
 ####### forward_declarations.jl
 
     @export_signal_emitter Application
     @export_signal_emitter Action
+    
+###### vector.jl
+
+    using StaticArrays
+
+    """
+    # Vector2{T}
+
+    ## Public Fields
+    x::T
+    y::T
+    """
+    const Vector2{T} = SVector{2, T}
+    export Vector2
+
+    function Base.getproperty(v::Vector2{T}, symbol::Symbol) where T
+        if symbol == :x
+            return v[1]
+        elseif symbol == :y
+            return v[2]
+        else
+            throw(ErrorException("type Vector2 has no field " * string(symbol)))
+        end
+    end
+
+    function Base.setproperty(v::Vector2{T}, symbol::Symbol, value) where T
+        if symbol == :x
+            v[1] = convert(T, value)
+        elseif symbol == :y
+            v[2] = convert(T, value)
+        else
+            throw(ErrorException("type Vector2 has no field " * string(symbol)))
+        end
+    end
+
+    const Vector2f = Vector2{Cfloat}
+    export Vector2f
+    
+    const Vector2i = Vector2{Cint}
+    export Vector2i
+    
+    const Vector2ui = Vector2{Csize_t}
+    export Vector2ui
+
+    """
+    # Vector3{T}
+
+    ## Public Fields
+    x::T
+    y::T
+    z::T
+    """
+    const Vector3{T} = SVector{3, T}
+    export Vector3
+
+    function Base.getproperty(v::Vector3{T}, symbol::Symbol) where T
+        if symbol == :x
+            return v[1]
+        elseif symbol == :y
+            return v[2]
+        elseif symbol == :z
+            return v[3]
+        else
+            throw(ErrorException("type Vector3 has no field " * string(symbol)))
+        end
+    end
+
+    function Base.setproperty(v::Vector2{T}, symbol::Symbol, value) where T
+        if symbol == :x
+            v[1] = convert(T, value)
+        elseif symbol == :y
+            v[2] = convert(T, value)
+        elseif symbol == :z
+            v[3] = convert(T, value)
+        else
+            throw(ErrorException("type Vector2 has no field " * string(symbol)))
+        end
+    end
+    
+    const Vector3f = Vector3{Cfloat}
+    export Vector3f
+    
+    const Vector3i = Vector3{Cint}
+    export Vector3i
+    
+    const Vector3ui = Vector3{Csize_t}
+    export Vector3ui
+
+    """
+    # Vector4{T}
+
+    ## Public Fields
+    x::T
+    y::T
+    z::T
+    """
+    const Vector4{T} = SVector{4, T}
+    export Vector4
+
+    function Base.getproperty(v::Vector4{T}, symbol::Symbol) where T
+        if symbol == :x
+            return v[1]
+        elseif symbol == :y
+            return v[2]
+        elseif symbol == :z
+            return v[3]
+        elseif symbol == :w
+            return v[4]
+        else
+            throw(ErrorException("type Vector4 has no field " * string(symbol)))
+        end
+    end
+
+    function Base.setproperty(v::Vector2{T}, symbol::Symbol, value) where T
+        if symbol == :x
+            v[1] = convert(T, value)
+        elseif symbol == :y
+            v[2] = convert(T, value)
+        elseif symbol == :z
+            v[3] = convert(T, value)
+        elseif symbol == :w
+            v[4] = convert(T, value)
+        else
+            throw(ErrorException("type Vector2 has no field " * string(symbol)))
+        end
+    end
+    
+    const Vector4f = Vector4{Cfloat}
+    export Vector4f
+    
+    const Vector4i = Vector4{Cint}
+    export Vector4i
+    
+    const Vector4ui = Vector4{Csize_t}
+    export Vector4ui
+
+####### widget.jl
+
+    @document Widget "TODO"
+    abstract type Widget end
+    export Widget
+    
+    
 
 ####### action.jl
 
@@ -229,16 +426,19 @@ module mousetrap
     @export_function Action get_state
 
     @document set_state "TODO"
-    @export_function Action set_state
+    @export_function Action set_state state Bool
 
     @document add_shortcut "TODO"
-    @export_function Action add_shortcut
+    @export_function Action add_shortcut shortcut String
 
     @document clear_shortcuts "TODO"
     @export_function Action clear_shortcuts
 
+    @document get_shortcuts "TODO"
+    @export_function Action get_shortcuts
+
     @document set_enabled "TODO"
-    @export_function Action set_enabled
+    @export_function Action set_enabled b Bool
 
     @document get_enabled "TODO"
     @export_function Action get_enabled
@@ -291,6 +491,11 @@ module mousetrap
 
     @add_signal(Application, activate)
     @add_signal(Application, shutdown)
+    
+####### window.jl
+
+    @document Window "TODO"
+    
 end
 
 ####### main.jl
@@ -305,11 +510,11 @@ connect_signal_activate(app, function(app::Application, data)
     mousetrap.detail.test_initialize(app._internal)
 
     action = Action("test.action", app)
-    #add_shortcut(action, "m")
-    #add_shortcut(action, "<Control>c")
-    set_state(action, true)
-    println(get_shortcuts(action))
     set_function(action, (x::Action, data) -> println(get_(x), " ", data), 1234)
+
+    add_shortcut(action, "m")
+    add_shortcut(action, "<Control>c")
+    println(get_shortcuts(action))
     activate(action)
 end, 1234)
 

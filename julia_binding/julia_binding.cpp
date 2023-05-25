@@ -77,8 +77,18 @@ type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_fun
 
 DEFINE_ADD_SIGNAL(activate, void)
 DEFINE_ADD_SIGNAL(shutdown, void)
+DEFINE_ADD_SIGNAL(close_request, bool)
+DEFINE_ADD_SIGNAL(activate_default_widget, void)
+DEFINE_ADD_SIGNAL(activate_focused_widget, void)
 
 //DEFINE_ADD_SIGNAL_MANUAL(activated, void)
+
+// ### WIDGET
+
+static void implement_widget(jlcxx::Module& module)
+{
+
+}
 
 // ### APPLICATION
 
@@ -146,6 +156,7 @@ static void implement_action(jlcxx::Module& module)
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
 {
+    // order matters
     implement_action(module);
     implement_application(module);
 
