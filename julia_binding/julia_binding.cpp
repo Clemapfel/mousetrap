@@ -41,7 +41,7 @@ static inline jl_value_t* jl_safe_call(const char* scope, jl_function_t* functio
 
 #define add_type(Type) add_type<Type>(std::string("_") + #Type)
 #define add_type_method(Type, id) method(#id, &Type::id)
-#define add_constructor(arg_type) constructor<arg_type>(false)
+#define add_constructor(...) constructor<__VA_ARGS__>(false)
 #define add_constructor_with_finalizer(arg_type) constructor<arg_type>(false)
 
 #define declare_is_subtype_of(A, B) template<> struct jlcxx::SuperType<A> { typedef B type; };
@@ -76,7 +76,8 @@ type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_fun
 
 DEFINE_ADD_SIGNAL(activate, void)
 DEFINE_ADD_SIGNAL(shutdown, void)
-DEFINE_ADD_SIGNAL(activated, void)
+
+//DEFINE_ADD_SIGNAL_MANUAL(activated, void)
 
 // ### APPLICATION
 
@@ -91,10 +92,14 @@ static void implement_application(jlcxx::Module& module)
         .add_type_method(Application, mark_as_busy)
         .add_type_method(Application, unmark_as_busy)
         .add_type_method(Application, get_id)
-        //.add_type_method(Application, add_action)
-        //.add_type_method(Application, remove_action)
-        //.add_type_method(Application, get_action)
-        //.add_type_method(Application, has_action)
+        .add_type_method(Application, add_action)
+        .add_type_method(Application, remove_action)
+        .add_type_method(Application, has_action)
+        .method("get_action", [](Application& instance, const std::string& id) {
+
+            static auto* action_ctor = jl_eval_string("return mousetrap.Action");
+            return jl_safe_call("Application::get_action", action_ctor, jlcxx::box<Action>(instance.get_action(id)));
+        })
     ;
 
     add_signal_activate<Application>(application);
@@ -105,7 +110,32 @@ static void implement_application(jlcxx::Module& module)
 
 static void implement_action(jlcxx::Module& module)
 {
-    auto action = module.add_type(Action);
+    auto action = module.add_type(Action)
+        .add_constructor(const std::string&, Application&)
+        .add_type_method(Action, get_id)
+        .add_type_method(Action, set_state)
+        .add_type_method(Action, get_state)
+        .add_type_method(Action, activate)
+        .add_type_method(Action, add_shortcut)
+        .add_type_method(Action, get_shortcuts)
+        .add_type_method(Action, clear_shortcuts)
+        .add_type_method(Action, set_enabled)
+        .add_type_method(Action, get_enabled)
+        .add_type_method(Action, get_is_stateful);
+
+    action.method("set_function", [](Action& action, jl_function_t* task) {
+        action.set_function([](Action& action, jl_function_t* task){
+            jl_safe_call("Action::activate", task, jlcxx::box<Action&>(action));
+        }, task);
+    });
+
+    action.method("set_stateful_function", [](Action& action, jl_function_t* task, bool initial_state) {
+        action.set_stateful_function([](Action& action, bool state, jl_function_t* task) -> bool {
+            return jl_unbox_bool(jl_safe_call("Action::activate", task, jlcxx::box<Action&>(action)));
+        }, task);
+    });
+
+    // TODO add_signal_activated<Action>(action);
 }
 
 // ### MAIN
@@ -113,6 +143,7 @@ static void implement_action(jlcxx::Module& module)
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
 {
     implement_application(module);
+    implement_action(module);
 
     module.method("test_initialize", [](Application& app){
         auto window = Window(app);

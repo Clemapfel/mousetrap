@@ -74,11 +74,11 @@ namespace mousetrap
             /// @return ActionID
             ActionID get_id() const;
 
-            /// @brief copy ctor deleted, actions should not be duplicated
-            Action(const Action&) = delete;
+            /// @brief copy ctor delete
+            Action(const Action&);
 
-            /// @brief move ctor deleted, actions should not be moved
-            Action(Action&&) noexcept = delete;
+            /// @brief move ctor
+            Action(Action&&) noexcept;
 
             /// @brief copy assignment deleted, actions should not be duplicated
             Action& operator=(const Action&) = delete;
@@ -93,13 +93,13 @@ namespace mousetrap
             NativeObject get_internal() const override;
 
             /// @brief create action as stateless, given function is executed when action is triggered
-            /// @tparam Function_t lambda or static function with signature `() -> void`
+            /// @tparam Function_t lambda or static function with signature `(Action&) -> void`
             /// @param f function
             template<typename Function_t>
             void set_function(Function_t f);
 
             /// @brief create action as stateless, given function is executed when action is triggered
-            /// @tparam Function_t lambda or static function with signature `(Data_t) -> void`
+            /// @tparam Function_t lambda or static function with signature `(Action&, Data_t) -> void`
             /// @tparam Data_t arbitrary data type
             /// @param f function
             /// @param data data
@@ -107,14 +107,14 @@ namespace mousetrap
             void set_function(Function_t f, Data_t data);
 
             /// @brief create action as stateful, given function is executed when action is triggered
-            /// @tparam Function_t lambda or static function with signature `(bool) -> bool`
+            /// @tparam Function_t lambda or static function with signature `(Action&, bool) -> bool`
             /// @param f function
             /// @param initial_state state of the action on initialization
             template<typename Function_t>
             void set_stateful_function(Function_t f, bool initial_state = false);
 
             /// @brief create action as stateful, given function is executed when action is triggered
-            /// @tparam Function_t lambda or static function with signature `(bool, Data_t) -> bool`
+            /// @tparam Function_t lambda or static function with signature `(Action&, bool, Data_t) -> bool`
             /// @param f function
             /// @param data data
             /// @param initial_state state of the action on initialization
@@ -140,6 +140,10 @@ namespace mousetrap
             /// @brief get shortcuts for action
             /// @return vector of shortcut triggers
             const std::vector<ShortcutTriggerID>& get_shortcuts() const;
+
+            /// @brief reset all shortcuts
+            /// @param action
+            void clear_shortcuts();
 
             /// @brief set whether triggering the action will execute the registered function
             /// @param is_enabled

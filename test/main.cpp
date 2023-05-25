@@ -32,7 +32,7 @@ class Child : public CompoundWidget
         }
 
     protected:
-        Widget& get_top_level() override
+        Widget& as_widget() override
         {
             return _aspect_frame;
         }
@@ -52,6 +52,14 @@ int main()
     app2.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
+
+        auto action = Action("test", app);
+        action.set_function([](Action&){
+            std::cout << "println" << std::endl;
+        });
+        app.add_action(action);
+        auto test = app.get_action(action.get_id());
+        test.activate();
 
         auto instance = Child(1234);
         window.set_child(instance);

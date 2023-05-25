@@ -118,16 +118,6 @@ module mousetrap
 
 ####### signal_components.jl
 
-    struct SignalTask
-        f::TypedFunction
-        data::Any
-    end
-    export SignalTask
-
-    function (task::SignalTask)(x)
-        task.f(x, task.data)
-    end
-
     macro add_signal(T, snake_case)
 
         out = Expr(:block)
@@ -191,6 +181,49 @@ module mousetrap
         return out
     end
 
+    # TODO: @document to generate documentation for all signals
+
+####### action.jl
+
+    @document Action "TODO"
+    @export_signal_emitter Action
+    Action(id::String, app::Application) = detail._Action(id, app._internal)
+
+    @document activate
+    @export_function Action activate
+
+    function set_function(action::Action, f, data::Data_t) where Data_t
+        detail.set_function(action._internal, TypedFunction(Cvoid, (detail._Action, Data_t)) do (x::detail._Action)
+            f(Action(x), data)
+        end)
+    end
+
+    @document get_id
+    @export_function Action get_id
+
+    @document get_state
+    @export_function Action get_state
+
+    @document set_state
+    @export_function Action set_state
+
+    @document add_shortcut
+    @export_function Action add_shortcut
+
+    @document clear_shortcuts
+    @export_function Action clear_shortcuts
+
+    @document set_enabled
+    @export_function Action set_enabled
+
+    @document get_enabled
+    @export_function Action get_enabled
+
+    @document get_is_stateful
+    @export_function Action get_is_stateful
+
+    @add_signal(Action, activated)
+
 ####### application.jl
 
     @document Application "TODO"
@@ -217,6 +250,20 @@ module mousetrap
     @document unmark_as_busy "TODO"
     @export_function Application unmark_as_busy
 
+    @document add_action "TODO"
+    add_action(app::Application, action::Action) = detail.add_action(app._internal, action._internal)
+    export add_action
+
+    @document get_action "TODO"
+    get_action(app::Application, id::String) = return detail.get_action(app._internal, id)
+    export get_action
+
+    @document remove_action "TODO"
+    @export_function Application remove_action
+
+    @document has_action "TODO"
+    @export_function Application has_action
+
     @add_signal(Application, activate)
     @add_signal(Application, shutdown)
 end
@@ -229,7 +276,10 @@ app = Application("test.app")
 
 connect_signal_activate(app, function(app::Application, data)
     mousetrap.detail.test_initialize(app._internal)
-    println(data)
+
+    action = Action("test.action", app)
+    set_function(action, (x::Action, data) -> println(get_id(x), " ", data), 1234)
+    activate(action)
 end, 1234)
 
 run(app)
