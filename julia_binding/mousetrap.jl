@@ -83,7 +83,7 @@ module mousetrap
         :(@doc $string $name)
     end
 
-    macro export_function(name, type)
+    macro export_function(type, name)
         mousetrap.eval(:(export $name))
         return :($name(x::$type) = detail.$name(x._internal))
     end
@@ -145,7 +145,7 @@ module mousetrap
         push!(out.args, esc(:(
             function $connect_signal_name(x::$T, f, data) where Data_t
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, Cvoid, ($T,)))($T(x[]), data)
+                    (TypedFunction(f, Cvoid, ($T, Any)))($T(x[]), data)
                 end)
             end
         )))
@@ -196,24 +196,38 @@ module mousetrap
     @document Application "TODO"
     @export_signal_emitter Application
     Application(id::String) = Application(detail._Application(id))
-    export Application
+
+    import Base.run
 
     @document run "TODO"
-    Base.run(x::Application) = detail.run(x._internal)
-    export run
+    run(x::Application) = mousetrap.detail.run(x._internal)
 
-    @document get_id "TODO"
-    @export_function get_id Application
+    @document quit "TODO"
+    @export_function Application quit
+
+    @document hold "TODO"
+    @export_function Application hold
+
+    @document release "TODO"
+    @export_function Application release
+
+    @document mark_as_busy "TODO"
+    @export_function Application mark_as_busy
+
+    @document unmark_as_busy "TODO"
+    @export_function Application unmark_as_busy
 
     @add_signal(Application, activate)
     @add_signal(Application, shutdown)
 end
 
+####### main.jl
+
 using .mousetrap;
 
 app = Application("test.app")
 
-connect_signal_activate(app, function(app::Application)
+connect_signal_activate(app, function(app::Application, data)
     mousetrap.detail.test_initialize(app._internal)
     println(data)
 end, 1234)

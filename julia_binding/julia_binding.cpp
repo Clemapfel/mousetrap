@@ -71,11 +71,12 @@ type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_fun
     }) \
     .method("emit_signal_" + std::string(#snake_case), [](T& instance) { \
         return instance.emit_signal_##snake_case(); \
-    });                                                \
+    }); \
 }
 
 DEFINE_ADD_SIGNAL(activate, void)
 DEFINE_ADD_SIGNAL(shutdown, void)
+DEFINE_ADD_SIGNAL(activated, void)
 
 // ### APPLICATION
 
@@ -100,7 +101,15 @@ static void implement_application(jlcxx::Module& module)
     add_signal_shutdown<Application>(application);
 }
 
-// main
+// ### ACTION
+
+static void implement_action(jlcxx::Module& module)
+{
+    auto action = module.add_type(Action);
+}
+
+// ### MAIN
+
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
 {
     implement_application(module);
