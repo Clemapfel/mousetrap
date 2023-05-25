@@ -42,7 +42,7 @@ module mousetrap
                         signature = signature * string(arg_ts[i]) * ((i < length(arg_ts)) ? ", " : ")")
                      end
                      signature = signature * " -> $return_t"
-                     throw(AssertionError("Object $f is not invokable as function with signature `$signature`"))
+                     throw(AssertionError("Object `$f` is not invokable as function with signature `$signature`"))
                 end
             end
 
@@ -62,6 +62,8 @@ module mousetrap
         function __init__() @initcxx end
         @wrapmodule("./libjulia_binding.so")
     end
+
+    #const CRef = CxxWrap.CxxCore.
 
 ####### common.jl
 
@@ -183,43 +185,65 @@ module mousetrap
 
     # TODO: @document to generate documentation for all signals
 
+####### forward_declarations.jl
+
+    @export_signal_emitter Application
+    @export_signal_emitter Action
+
 ####### action.jl
 
     @document Action "TODO"
-    @export_signal_emitter Action
-    Action(id::String, app::Application) = detail._Action(id, app._internal)
+    Action(id::String, app::Application) = Action(detail._Action(id, app._internal.cpp_object))
 
-    @document activate
+    Base.show(io::IO, x::Action) = print(io, "Application(" * get_id(x) * ")")
+
+    @document activate "TODO"
     @export_function Action activate
 
-    function set_function(action::Action, f, data::Data_t) where Data_t
-        detail.set_function(action._internal, TypedFunction(Cvoid, (detail._Action, Data_t)) do (x::detail._Action)
-            f(Action(x), data)
+    @document set_function "TODO"
+    function set_function(action::Action, f)
+        detail.set_function(action._internal, function(instance_ref)
+            TypedFunction(f, Cvoid, (Action,))(Action(instance_ref[]))
         end)
     end
 
-    @document get_id
+    function set_function(action::Action, f, data::Data_t) where Data_t
+        detail.set_function(action._internal, function(instance_ref)
+            TypedFunction(f, Cvoid, (Action, Data_t))(Action(instance_ref[]), data)
+        end)
+    end
+    export set_function
+
+    @document set_stateful_function "TODO"
+    function set_stateful_function(action::Action, f; initial_state = true)
+        detail.set_stateful_function(action._internal, function(instance_ref, state)
+            TypedFunction(f, Bool, (Action, Bool))(Action(instance_ref[]), state)
+        end, initial_state)
+    end
+    export set_stateful_function
+
+    @document get_id "TODO"
     @export_function Action get_id
 
-    @document get_state
+    @document get_state "TODO"
     @export_function Action get_state
 
-    @document set_state
+    @document set_state "TODO"
     @export_function Action set_state
 
-    @document add_shortcut
+    @document add_shortcut "TODO"
     @export_function Action add_shortcut
 
-    @document clear_shortcuts
+    @document clear_shortcuts "TODO"
     @export_function Action clear_shortcuts
 
-    @document set_enabled
+    @document set_enabled "TODO"
     @export_function Action set_enabled
 
-    @document get_enabled
+    @document get_enabled "TODO"
     @export_function Action get_enabled
 
-    @document get_is_stateful
+    @document get_is_stateful "TODO"
     @export_function Action get_is_stateful
 
     @add_signal(Action, activated)
@@ -227,8 +251,9 @@ module mousetrap
 ####### application.jl
 
     @document Application "TODO"
-    @export_signal_emitter Application
     Application(id::String) = Application(detail._Application(id))
+
+    Base.show(io::IO, x::Application) = print(io, "Application(" * get_id(x) * ")")
 
     import Base.run
 
@@ -274,11 +299,17 @@ using .mousetrap;
 
 app = Application("test.app")
 
+println(methods(mousetrap.detail.add_shortcut))
+
 connect_signal_activate(app, function(app::Application, data)
     mousetrap.detail.test_initialize(app._internal)
 
     action = Action("test.action", app)
-    set_function(action, (x::Action, data) -> println(get_id(x), " ", data), 1234)
+    #add_shortcut(action, "m")
+    #add_shortcut(action, "<Control>c")
+    set_state(action, true)
+    println(get_shortcuts(action))
+    set_function(action, (x::Action, data) -> println(get_(x), " ", data), 1234)
     activate(action)
 end, 1234)
 

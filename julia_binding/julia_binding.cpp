@@ -39,10 +39,11 @@ static inline jl_value_t* jl_safe_call(const char* scope, jl_function_t* functio
 
 // ### CXX WRAP COMMON
 
+#define USE_FINALIZERS false
+
 #define add_type(Type) add_type<Type>(std::string("_") + #Type)
 #define add_type_method(Type, id) method(#id, &Type::id)
-#define add_constructor(...) constructor<__VA_ARGS__>(false)
-#define add_constructor_with_finalizer(arg_type) constructor<arg_type>(false)
+#define add_constructor(...) constructor<__VA_ARGS__>(USE_FINALIZERS)
 
 #define declare_is_subtype_of(A, B) template<> struct jlcxx::SuperType<A> { typedef B type; };
 #define make_not_mirrored(Name) template<> struct jlcxx::IsMirroredType<Name> : std::false_type {};
@@ -92,6 +93,7 @@ static void implement_application(jlcxx::Module& module)
         .add_type_method(Application, mark_as_busy)
         .add_type_method(Application, unmark_as_busy)
         .add_type_method(Application, get_id)
+
         .add_type_method(Application, add_action)
         .add_type_method(Application, remove_action)
         .add_type_method(Application, has_action)
@@ -111,7 +113,9 @@ static void implement_application(jlcxx::Module& module)
 static void implement_action(jlcxx::Module& module)
 {
     auto action = module.add_type(Action)
-        .add_constructor(const std::string&, Application&)
+        .constructor( [](const std::string& id, void* app_ptr){
+            return new Action(id, *((Application*) app_ptr));
+        }, USE_FINALIZERS)
         .add_type_method(Action, get_id)
         .add_type_method(Action, set_state)
         .add_type_method(Action, get_state)
@@ -131,7 +135,7 @@ static void implement_action(jlcxx::Module& module)
 
     action.method("set_stateful_function", [](Action& action, jl_function_t* task, bool initial_state) {
         action.set_stateful_function([](Action& action, bool state, jl_function_t* task) -> bool {
-            return jl_unbox_bool(jl_safe_call("Action::activate", task, jlcxx::box<Action&>(action)));
+            return jl_unbox_bool(jl_safe_call("Action::activate", task, jlcxx::box<Action&>(action), jl_box_bool(state)));
         }, task);
     });
 
@@ -142,8 +146,8 @@ static void implement_action(jlcxx::Module& module)
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
 {
-    implement_application(module);
     implement_action(module);
+    implement_application(module);
 
     module.method("test_initialize", [](Application& app){
         auto window = Window(app);
