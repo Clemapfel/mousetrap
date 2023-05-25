@@ -107,11 +107,89 @@ module mousetrap
         end
     end
 
+    import Base: *
+    *(x::Symbol, y::Symbol) = return Symbol(string(x) * string(y))
+
 ####### signal_emitter.jl
 
     @document SignalEmitter "TODO"
     abstract type SignalEmitter end
     export SignalEmitter
+
+####### signal_components.jl
+
+    struct SignalTask
+        f::TypedFunction
+        data::Any
+    end
+    export SignalTask
+
+    function (task::SignalTask)(x)
+        task.f(x, task.data)
+    end
+
+    macro add_signal(T, snake_case)
+
+        out = Expr(:block)
+
+        connect_signal_name = :connect_signal_ * snake_case
+        
+        push!(out.args, esc(:(
+            function $connect_signal_name(x::$T, f)
+                detail.$connect_signal_name(x._internal, function(x)
+                    (TypedFunction(f, Cvoid, ($T,)))($T(x[]))
+                end)
+            end
+        )))
+        
+        push!(out.args, esc(:(
+            function $connect_signal_name(x::$T, f, data) where Data_t
+                detail.$connect_signal_name(x._internal, function(x)
+                    (TypedFunction(f, Cvoid, ($T,)))($T(x[]), data)
+                end)
+            end
+        )))
+
+        disconnect_signal_name = :disconnect_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $disconnect_signal_name(x::$T)
+                detail.$disconnect_signal_name(x._internal)
+            end
+        )))
+
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $set_signal_blocked_name(x::$T, b::Bool)
+                detail.$set_signal_blocked_name(x._internal, b)
+            end
+        )))
+        
+        get_signal_blocked_name = :get_signal_ * snake_case * :_blocked
+        
+        push!(out.args, esc(:(
+            function $get_signal_blocked_name(x::$T)
+                return detail.$get_signal_blocked_name(x._internal)
+            end
+        )))
+        
+        emit_signal_name = :emit_signal_ * snake_case
+        
+        push!(out.args, esc(:(
+            function $emit_signal_name(x::$T)
+                return detail.$emit_signal_name(x._internal)
+            end        
+        )))
+        
+        push!(out.args, esc(:(export $connect_signal_name)))
+        push!(out.args, esc(:(export $disconnect_signal_name)))
+        push!(out.args, esc(:(export $set_signal_blocked_name)))
+        push!(out.args, esc(:(export $get_signal_blocked_name)))
+        push!(out.args, esc(:(export $emit_signal_name)))
+
+        return out
+    end
 
 ####### application.jl
 
@@ -127,40 +205,19 @@ module mousetrap
     @document get_id "TODO"
     @export_function get_id Application
 
-
-####### signal_components.jl
-
-    struct SignalTask
-        f::TypedFunction
-        data::Any
-    end
-    export SignalTask
-
-    function (task::SignalTask)(x)
-        task.f(x, task.data)
-    end
-
-    function connect_signal_activate(x::T, f) where {T}
-        detail.connect_signal_activate(x._internal, function(x)
-            (TypedFunction(f, Cvoid, (T,)))(T(x[]))
-        end)
-    end
-    function connect_signal_activate(x::T, f, data::Data_t) where {T, Data_t}
-        detail.connect_signal_activate(x._internal, function(x)
-            (TypedFunction(f, Cvoid, (T, Data_t)))(T(x[]), data)
-        end)
-    end
-    export connect_signal_activate
+    @add_signal(Application, activate)
+    @add_signal(Application, shutdown)
 end
 
 using .mousetrap;
 
 app = Application("test.app")
 
-connect_signal_activate(app, function(app::Application, data)
+connect_signal_activate(app, function(app::Application)
     mousetrap.detail.test_initialize(app._internal)
     println(data)
 end, 1234)
+
 run(app)
 
 

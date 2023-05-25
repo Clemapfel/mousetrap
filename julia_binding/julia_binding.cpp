@@ -5,39 +5,36 @@
 #include <mousetrap.hpp>
 
 #include <jlcxx/jlcxx.hpp>
-#include "julia_interface.cpp"
 
 using namespace mousetrap;
 
 // ### COMMON
 
-/// @brief log domain for julia-specific mousetrap log messages
-static inline const char* JULIA_DOMAIN = "mousetrap_jl";
-
-/// @brief print last julia exception as mousetrap log entry, does not cause runtime to end
-/// @param domain_name name of the current function, will be used for the error message
-static void forward_last_exception(const std::string& domain_name)
+static inline jl_value_t* jl_box_string(const std::string& in)
 {
-    auto* exception_maybe = jl_exception_occurred();
-    if (exception_maybe)
-    {
-        static auto* exception_to_string = jl_eval_string(R"(
-            (exception) -> string(typeof(exception)) * ": " * exception.msg
-        )");
-
-        auto* exception = jl_calln(exception_to_string, exception_maybe);
-        if (exception)
-        {
-            auto* str = jl_string_ptr(exception);
-            log::critical("In " + domain_name + ": " + (str ? std::string(str) : "ERROR"), JULIA_DOMAIN);
-        }
-    }
+    static auto* string = jl_get_global(jl_base_module, jl_symbol("string"));
+    return jl_call1(string, (jl_value_t*) jl_symbol(in.c_str()));
 }
 
 static void jl_println(jl_value_t* value)
 {
     static auto* println = jl_get_function(jl_base_module, "println");
     jl_call1(println, value);
+}
+
+template<typename... T>
+static inline jl_value_t* jl_calln(jl_function_t* function, T... args)
+{
+    std::array<jl_value_t*, sizeof...(T)> wrapped = {args...};
+    return jl_call(function, wrapped.data(), wrapped.size());
+}
+
+template<typename... T>
+static inline jl_value_t* jl_safe_call(const char* scope, jl_function_t* function, T... args)
+{
+    static auto* safe_call = jl_eval_string("return mousetrap.safe_call");
+    std::array<jl_value_t*, sizeof...(T)+2> wrapped = {jl_box_string(scope), function, args...};
+    return jl_call(safe_call, wrapped.data(), wrapped.size());
 }
 
 // ### CXX WRAP COMMON
@@ -60,7 +57,7 @@ void add_signal_##snake_case(Arg_t type) {\
 type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
     { \
         instance.connect_signal_##snake_case([](T& instance, jl_function_t* task) { \
-            return jlcxx::unbox<return_t>(jl_safe_call(("T::emit_signal" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(instance))); \
+            return jlcxx::unbox<return_t>(jl_safe_call(("emit_signal_" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(instance))); \
         }, task); \
     }) \
     .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
@@ -80,7 +77,8 @@ type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_fun
 DEFINE_ADD_SIGNAL(activate, void)
 DEFINE_ADD_SIGNAL(shutdown, void)
 
-/// @brief mousetrap::Application
+// ### APPLICATION
+
 static void implement_application(jlcxx::Module& module)
 {
     auto application = module.add_type(Application)

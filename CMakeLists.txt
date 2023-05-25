@@ -353,7 +353,6 @@ if (MOUSETRAP_BUILD_JULIA_BINDING)
 
     add_library("${PROJECT_PREFIX}julia_binding" SHARED
         julia_binding/julia_binding.cpp
-        julia_binding/julia_interface.cpp
     )
 
     target_link_libraries("${PROJECT_PREFIX}julia_binding" PUBLIC

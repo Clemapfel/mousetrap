@@ -23,11 +23,6 @@ static inline bool jl_assert_type(jl_value_t* value, const std::string& type)
     return jl_isa(value, type_v);
 }
 
-static inline jl_value_t* jl_box_string(const std::string& in)
-{
-    static auto* string = jl_get_global(jl_base_module, jl_symbol("string"));
-    return jl_call1(string, (jl_value_t*) jl_symbol(in.c_str()));
-}
 
 static inline void jl_throw_exception(const std::string& message)
 {
@@ -35,17 +30,3 @@ static inline void jl_throw_exception(const std::string& message)
     jl_throw( jl_call1(exception, jl_box_string(message)));
 }
 
-template<typename... T>
-static inline jl_value_t* jl_calln(jl_function_t* function, T... args)
-{
-    std::array<jl_value_t*, sizeof...(T)> wrapped = {args...};
-    return jl_call(function, wrapped.data(), wrapped.size());
-}
-
-template<typename... T>
-static inline jl_value_t* jl_safe_call(const char* scope, jl_function_t* function, T... args)
-{
-    static auto* safe_call = jl_eval_string("return mousetrap.safe_call");
-    std::array<jl_value_t*, sizeof...(T)+2> wrapped = {jl_box_string(scope), function, args...};
-    return jl_call(safe_call, wrapped.data(), wrapped.size());
-}
