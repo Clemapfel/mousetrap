@@ -28,13 +28,13 @@ namespace mousetrap
         : CTOR_SIGNAL(FrameClock, update),
           CTOR_SIGNAL(FrameClock, paint)
     {
-        _native = other._native;
+        _native = g_object_ref(other._native);
         other._native = nullptr;
     }
 
     FrameClock& FrameClock::operator=(FrameClock&& other) noexcept
     {
-        _native = other._native;
+        _native = g_object_ref(other._native);
         other._native = nullptr;
         return *this;
     }

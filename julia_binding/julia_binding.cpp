@@ -133,6 +133,14 @@ static void implement_widget(jlcxx::Module& m)
     m.widget_method(set_vertical_alignment, int alignment, (Alignment) alignment);
     m.widget_method(set_alignment, int alignment, (Alignment) alignment);
 
+    m.method("get_horizontal_alignment", [](void* widget) -> int{
+        return (int) ((Widget*) widget)->get_horizontal_alignment();
+    });
+
+    m.method("get_vertical_alignment", [](void* widget) -> int {
+        return (int) ((Widget*) widget)->get_vertical_alignment();
+    });
+
     m.widget_method(set_opacity, float opacity, opacity);
     m.widget_method_no_args(get_opacity);
 
@@ -218,7 +226,18 @@ static void implement_widget(jlcxx::Module& m)
     m.widget_method(set_hide_on_overflow, bool b, b);
     m.widget_method_no_args(get_hide_on_overflow);
 
-    // TODO tick callback
+    m.add_type(FrameClock)
+        .constructor([](void* instance){
+            return new FrameClock((GdkFrameClock*) instance);
+        }, USE_FINALIZERS)
+        // TODO
+    ;
+
+    m.method("set_tick_callback", [](void* widget, jl_function_t* task) {
+        ((Widget*) widget)->set_tick_callback([](FrameClock clock, jl_function_t* task) -> TickCallbackResult {
+            return (TickCallbackResult) jl_unbox_bool(jl_calln(jlcxx::box<FrameClock&>(clock), task));
+        }, task);
+    });
     m.widget_method_no_args(remove_tick_callback);
 
     // TODO: get clipboard

@@ -33,14 +33,14 @@ namespace mousetrap
             ~FrameClock();
 
             /// @brief copy ctor deleted
-            FrameClock(const FrameClock&) = delete;
+            FrameClock(const FrameClock&);
 
             /// @brief move ctor, safely transfers ownership
             /// @param other
             FrameClock(FrameClock&& other) noexcept;
 
             /// @brief copy assignment deleted
-            FrameClock& operator=(const FrameClock&) = delete;
+            FrameClock& operator=(const FrameClock&);
 
             /// @brief move assignment, safely transfers ownership
             /// @param other

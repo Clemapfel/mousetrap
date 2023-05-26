@@ -65,8 +65,6 @@ module mousetrap
         @wrapmodule("./libjulia_binding.so")
     end
 
-    #const CRef = CxxWrap.CxxCore.
-
 ####### common.jl
 
     function safe_call(scope, f, args...)
@@ -76,15 +74,20 @@ module mousetrap
             printstyled(stderr, "[ERROR] "; bold = true, color = :red)
             printstyled(stderr, "In " * scope * ": "; bold = true)
             Base.showerror(stderr, e, catch_backtrace())
-            print(stderr, "\n");
+            print(stderr, "\n" = detail.CURSOR_TYPE
         end
     end
 
-    """
-    Change the docstring of an object to given string
-    """
     macro document(name, string)
         :(@doc $string $name)
+    end
+
+    macro export_enum(enum)
+        out = Expr(:block)
+        for instance in instances(eval(enum))
+            push!(out.args, :(export $(Symbol(instance))))
+        end
+        return out
     end
 
     macro _export_function_arg0(type, name)
@@ -166,6 +169,9 @@ module mousetrap
     import Base: *
     *(x::Symbol, y::Symbol) = return Symbol(string(x) * string(y))
 
+    import Base: clamp
+    clamp(x::AbstractFloat, lower::AbstractFloat, upper::AbstractFloat) = if x < lower return lower elseif x > upper return upper else return x end
+
 ####### signal_emitter.jl
 
     @document SignalEmitter "TODO"
@@ -243,7 +249,8 @@ module mousetrap
 
     @export_signal_emitter Application
     @export_signal_emitter Action
-    
+    @export_signal_emitter FrameClock
+
 ###### vector.jl
 
     using StaticArrays
@@ -385,16 +392,12 @@ module mousetrap
     abstract type Widget end
     export Widget
 
-    @enum begin
-        en
-    end
-
     macro define_set_margin(which)
         name = Symbol("set_margin_" * string(which))
         mousetrap.eval(:(export $name))
         return :(
             function $name(x::Widget, margin::Number)
-                detail.$name(x._internal.cpp_object, convert(CFloat, margin));
+                detail.$name(x._internal.cpp_object, convert(Cfloat, margin) = detail.CURSOR_TYPE
             end
         )
     end
@@ -420,52 +423,282 @@ module mousetrap
     @document set_margin "TODO"
     @define_set_margin(Symbol(""))
     
-    @document get_margin_top
+    @document get_margin_top "TODO"
     get_margin_top(widget) = return detail.get_margin_top(widget._internal.cpp_object)
     export get_margin_top
     
-    @document get_margin_bottom
+    @document get_margin_bottom "TODO"
     get_margin_bottom(widget) = return detail.get_margin_top(widget._internal.cpp_object)
     export get_margin_bottom
 
-    @document get_margin_start
+    @document get_margin_start "TODO"
     get_margin_start(widget) = return detail.get_margin_top(widget._internal.cpp_object)
     export get_margin_start
 
-    @document get_margin_end
+    @document get_margin_end "TODO"
     get_margin_end(widget) = return detail.get_margin_top(widget._internal.cpp_object)
     export get_margin_end
 
-    @document set_expand_horizontally
+    @document set_expand_horizontally "TODO"
     function set_expand_horizontally(widget::Widget, b::Bool)
         detail.set_expand_horizontally(widget._internal.cpp_object, b)
     end
     export set_expand_horizontally
     
-    @document set_expand_vertically
+    @document set_expand_vertically "TODO"
     function set_expand_vertically(widget::Widget, b::Bool)
         detail.set_expand_vertically(widget._internal.cpp_object, b)
     end
     export set_expand_vertically
     
-    @document set_expand
+    @document set_expand "TODO"
     function set_expand(widget::Widget, b::Bool)
         detail.set_expand(widget._internal.cpp_object, b)
     end
     export set_expand
     
-    @document set_expand_horizontally
+    @document set_expand_horizontally "TODO"
     function get_expand_horizontally(widget::Widget, b::Bool)
         return detail.get_expand_horizontally(widget._internal.cpp_object)
     end
     export set_expand_horizontally
     
-    @document set_expand_vertically
+    @document set_expand_vertically "TODO"
     function set_expand_vertically(widget::Widget, b::Bool)
         return detail.set_expand_vertically(widget._internal.cpp_object)
     end
     export set_expand_vertically
+
+    @document Alignment "TODO"
+    @enum Alignment begin
+        ALIGNMENT_START = detail.ALIGNMENT_START
+        ALIGNMENT_CENTER = detail.ALIGNMENT_CENTER
+        ALIGNMENT_END = detail.ALIGNMENT_END
+    end
+    @export_enum Alignment
+
+    @document ALIGNMENT_START "TODO"
+    @document ALIGNMENT_CENTER "TODO"
+    @document ALIGNMENT_END "TODO"
+
+    @document set_horizontal_alignment "TODO"
+    function set_horizontal_alignment(widget::Widget, alignment::Alignment)
+        detail.set_horizontal_alignment(widget._internal.cpp_object, Cint(alignment))
+    end
+    export set_horizontal_alignment
+
+    @document set_vertical_alignment "TODO"
+    function set_vertical_alignment(widget::Widget, alignment::Alignment)
+        detail.set_vertical_alignment(widget._internal.cpp_object, Cint(alignment))
+    end
+    export set_vertical_alignment
+
+    @document set_alignment "TODO"
+    function set_alignment(widget::Widget, alignment::Alignment)
+        detail.set_alignment(widget._internal.cpp_object, Cint(alignment))
+    end
+    export set_alignment
     
+    @document get_vertical_alignment "TODO"
+    get_vertical_alignment(widget::Widget) = return Alignment(detail.get_vertical_alignment(widget._internal.cpp_object))
+    export get_vertical_alignment
+    
+    @document get_horizontal_alignment "TODO"
+    get_vertical_alignment(widget::Widget) = return Alignment(detail.get_vertical_alignment(widget._internal.cpp_object))
+    export get_horizontal_alignment
+
+    @document set_opacity "TODO"
+    set_opacity(widget::Widget, x::Number) = detail.set_opacity(widget._internal.cpp_object, Cfloat(clamp(x, 0, 1)))
+    export set_opacity
+    
+    @document get_opacity "TODO"
+    get_opacity(widget::Widget) = return detail.get_opacity(widget._internal.cpp_object)
+    export get_opacity
+    
+    @document get_is_visible "TODO"
+    get_is_visible(widget::Widget) = return detail.get_is_visible(widget._internal.cpp_object)
+    export get_is_visible
+    
+    @document set_is_visible "TODO"
+    set_is_visible(widget::Widget, b::Bool) = detail.set_is_visible(widget._internal.cpp_object, b)
+    export set_is_visible
+    
+    @document set_tooltip_text "TODO"
+    set_tooltip_text(widget::Widget, text::String) = detail.set_tooltip_text(widget._internal.cpp_object, text)
+    export set_tooltip_text
+    
+    @document set_tooltip_widget "TODO"
+    set_tooltip_widget(parent::Widget, tooltip::Widget) = detail.set_tooltip_widget(parent._internal.cpp_object, tooltip._internal.cpp_object)
+    export set_tooltip_widget
+    
+    @document remove_tooltip_widget "TODO"
+    remove_tooltip_widget(widget::Widget) = detail.remove_tooltip_widget(parent._internal.cpp_object)
+    export remove_tooltip_widget
+
+    @document CursorType "TODO"
+    @enum CursorType begin
+        CURSOR_TYPE_NONE = detail.CURSOR_TYPE_NONE
+        CURSOR_TYPE_DEFAULT = detail.CURSOR_TYPE_DEFAULT
+        CURSOR_TYPE_HELP = detail.CURSOR_TYPE_HELP
+        CURSOR_TYPE_POINTER = detail.CURSOR_TYPE_POINTER
+        CURSOR_TYPE_CONTEXT_MENU = detail.CURSOR_TYPE_CONTEXT_MENU
+        CURSOR_TYPE_PROGRESS = detail.CURSOR_TYPE_PROGRESS
+        CURSOR_TYPE_WAIT = detail.CURSOR_TYPE_WAIT
+        CURSOR_TYPE_CELL = detail.CURSOR_TYPE_CELL
+        CURSOR_TYPE_CROSSHAIR = detail.CURSOR_TYPE_CROSSHAIR
+        CURSOR_TYPE_TEXT = detail.CURSOR_TYPE_TEXT
+        CURSOR_TYPE_MOVE = detail.CURSOR_TYPE_MOVE
+        CURSOR_TYPE_NOT_ALLOWED = detail.CURSOR_TYPE_NOT_ALLOWED
+        CURSOR_TYPE_GRAB = detail.CURSOR_TYPE_GRAB
+        CURSOR_TYPE_GRABBING = detail.CURSOR_TYPE_GRABBING
+        CURSOR_TYPE_ALL_SCROLL = detail.CURSOR_TYPE_ALL_SCROLL
+        CURSOR_TYPE_ZOOM_IN = detail.CURSOR_TYPE_ZOOM_IN
+        CURSOR_TYPE_ZOOM_OUT = detail.CURSOR_TYPE_ZOOM_OUT
+        CURSOR_TYPE_COLUMN_RESIZE = detail.CURSOR_TYPE_COLUMN_RESIZE
+        CURSOR_TYPE_ROW_RESIZE = detail.CURSOR_TYPE_ROW_RESIZE
+        CURSOR_TYPE_NORTH_RESIZE = detail.CURSOR_TYPE_NORTH_RESIZE
+        CURSOR_TYPE_NORTH_EAST_RESIZE = detail.CURSOR_TYPE_NORTH_EAST_RESIZE
+        CURSOR_TYPE_EAST_RESIZE = detail.CURSOR_TYPE_EAST_RESIZE
+        CURSOR_TYPE_SOUTH_EAST_RESIZE = detail.CURSOR_TYPE_SOUTH_EAST_RESIZE
+        CURSOR_TYPE_SOUTH_RESIZE = detail.CURSOR_TYPE_SOUTH_RESIZE
+        CURSOR_TYPE_SOUTH_WEST_RESIZE = detail.CURSOR_TYPE_SOUTH_WEST_RESIZE
+        CURSOR_TYPE_WEST_RESIZE = detail.CURSOR_TYPE_WEST_RESIZE
+        CURSOR_TYPE_NORTH_WEST_RESIZE = detail.CURSOR_TYPE_NORTH_WEST_RESIZE
+    end
+    @export_enum CursorType
+
+    @document CURSOR_TYPE_NONE = "TODO"
+    @document CURSOR_TYPE_DEFAULT = "TODO"
+    @document CURSOR_TYPE_HELP = "TODO"
+    @document CURSOR_TYPE_POINTER = "TODO"
+    @document CURSOR_TYPE_CONTEXT_MENU = "TODO"
+    @document CURSOR_TYPE_PROGRESS = "TODO"
+    @document CURSOR_TYPE_WAIT = "TODO"
+    @document CURSOR_TYPE_CELL = "TODO"
+    @document CURSOR_TYPE_CROSSHAIR = "TODO"
+    @document CURSOR_TYPE_TEXT = "TODO"
+    @document CURSOR_TYPE_MOVE = "TODO"
+    @document CURSOR_TYPE_NOT_ALLOWED = "TODO"
+    @document CURSOR_TYPE_GRAB = "TODO"
+    @document CURSOR_TYPE_GRABBING = "TODO"
+    @document CURSOR_TYPE_ALL_SCROLL = "TODO"
+    @document CURSOR_TYPE_ZOOM_IN = "TODO"
+    @document CURSOR_TYPE_ZOOM_OUT = "TODO"
+    @document CURSOR_TYPE_COLUMN_RESIZE = "TODO"
+    @document CURSOR_TYPE_ROW_RESIZE = "TODO"
+    @document CURSOR_TYPE_NORTH_RESIZE = "TODO"
+    @document CURSOR_TYPE_NORTH_EAST_RESIZE = "TODO"
+    @document CURSOR_TYPE_EAST_RESIZE = "TODO"
+    @document CURSOR_TYPE_SOUTH_EAST_RESIZE = "TODO"
+    @document CURSOR_TYPE_SOUTH_RESIZE = "TODO"
+    @document CURSOR_TYPE_SOUTH_WEST_RESIZE = "TODO"
+    @document CURSOR_TYPE_WEST_RESIZE = "TODO"
+    @document CURSOR_TYPE_NORTH_WEST_RESIZE = "TODO"
+
+    @document set_cursor "TODO"
+    set_cursor(widget::Widget, cursor_type::CursorType) = detail.set_cursor(widget._internal.cpp_object, Cint(cursor_type))
+    export set_cursor
+
+    @document set_cursor_from_image
+    # TODO: set_cursor_from_image(widget::Widget, image::Image, alignment::Vector2f)
+    export set_cursor_from_image
+
+    @document hide
+    hide(widget::Widget) = detail.hide(widget._internal.cpp_object)
+    export hide
+
+    @document show
+    show(widget::Widget) = detail.hide(widget._internal.cpp_object)
+    export show
+
+    @document add_controller
+    # TODO: add_controller(widget::Widget, controller::EventController)
+    export add_controller
+
+    @document remove_controller
+    # TODO: remove_controller(widget::Widget, controller::EventController)
+    export remove_controller
+
+    @document set_is_focusable
+    set_is_focusable(widget::Widget, b::Bool) = detail.set_is_focusable(widget._internal.cpp_object, b)
+    export set_is_focusable
+
+    @document get_is_focusable
+    get_is_focusable(widget::Widget) = return detail.get_is_focusable(widget._internal.cpp_object)
+    export get_is_focusable
+
+    @document grab_focus
+    grab_focus(widget::Widget) = detail.grab_focus(widget._internal.cpp_object)
+    export grab_focus
+
+    @document get_has_focus
+    get_has_focus(widget::Widget) = detail.get_has_focus(widget._internal.cpp_object)
+    export get_has_focus
+
+    @document set_focus_on_click
+    set_focus_on_click(widget::Widget, b::Bool) = detail.set_focus_on_click(widget._internal.cpp_object, b)
+    export set_focus_on_click
+
+    @document get_focus_on_click
+    get_focus_on_click(widget::Widget) = return detail.get_focus_on_click(widget._internal.cpp_object)
+    export get_focus_on_click
+
+    @document get_is_realized
+    get_is_realized(widget::Widget) = return detail.get_is_realized(widget._internal.cpp_object)
+    export get_is_realized
+
+    @document get_minimum_size
+    get_minimum_size(widget::Widget) ::Vector2f = return detail.get_minimum_size(widget._internal.cpp_object)
+    export get_minimum_size
+
+    @document get_natural_size
+    get_natural_size(widget::Widget) ::Vector2f = return detail.get_natural_size(widget._internal.cpp_object)
+    export get_natural_size
+
+    @document get_position
+    get_position(widget::Widget) ::Vector2f = return detail.get_position(widget._internal.cpp_object)
+    export get_position
+
+    @document get_allocated_size
+    get_allocated_size(widget::Widget) ::Vector2f = return detail.get_allocated_size(widget._internal.cpp_object)
+    export get_allocated_size
+
+    @document unparent
+    unparent(widget::Widget) = detail.unparent(widget._internal.cpp_object)
+    export unparent
+
+    @document set_can_respond_to_input
+    set_can_respond_to_input(widget::Widget, b::Bool) = detail.set_can_respond_to_input(widget._internal.cpp_object, b)
+    export set_can_respond_to_input
+
+    @document get_can_respond_to_input
+    get_can_respond_to_input(widget::Widget) = return detail.get_can_respond_to_input(widget._internal.cpp_object)
+    export get_can_respond_to_input
+
+    @document set_hide_on_overflow
+    set_hide_on_overflow(widget::Widget, b::Bool) = detail.set_hide_on_overflow(widget._internal.cpp_object, b)
+    export set_hide_on_overflow
+
+    @document get_hide_on_overflow
+    get_hide_on_overflow(widget::Widget) = return detail.get_hide_on_overflow(widget._internal.cpp_object)
+    export get_hide_on_overflow
+
+    @document get_clipboard
+    # TODO get_clipboard(widget::Widget) ::Clipboard = Clipboard(detail.get_clipboard(widget._internal.cpp_object))
+    export get_clipboard
+
+####### tick_callback.jl
+
+    @document FrameClock "TODO"
+
+    @document set_tick_callback "TODO"
+    function set_tick_callback(widget::Widget, f, data)
+    end
+    export set_tick_callback
+
+    @document remove_tick_callback "TODO"
+    remove_tick_callback(widget::Widget) = detail.remove_tick_callback(widget._internal.cpp_object)
+    export remove_tick_callback
 
 ####### action.jl
 
