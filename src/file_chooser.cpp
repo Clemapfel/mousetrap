@@ -140,7 +140,7 @@ namespace mousetrap
         }
     #else
         FileChooser::FileChooser(FileChooserAction action, const std::string& title)
-            : _internal(detail::file_chooser_internal_new(G_OBJECT(gtk_file_dialog_new()), (GtkFileChooserAction) action))
+            : _internal(detail::file_chooser_internal_new(G_OBJECT(gtk_file_dialog_new()), action))
         {
             g_object_ref(_internal);
             gtk_file_dialog_set_title(_internal->native, title.c_str());
@@ -193,7 +193,7 @@ namespace mousetrap
 
             if (error != nullptr)
             {
-                log::critical(std::string("In FileChooser::present: ") + error->message);
+                log::critical(std::string("In FileChooser::present: ") + error->message, MOUSETRAP_DOMAIN);
                 g_error_free(error);
             }
 
@@ -205,6 +205,66 @@ namespace mousetrap
 
             gtk_native_dialog_show(GTK_NATIVE_DIALOG(_internal->native));
             _internal->currently_shown = true;
+        #else
+            auto action = _internal->action;
+            if (action == FileChooserAction::OPEN_FILE)
+            {
+                gtk_file_dialog_open(
+                    _internal->native,
+                    nullptr,
+                    nullptr,
+                    (GAsyncReadyCallback) on_file_dialog_ready_callback,
+                    _internal
+                );
+            }
+            else if (action == FileChooserAction::OPEN_MULTIPLE_FILES)
+            {
+                gtk_file_dialog_open_multiple(
+                    _internal->native,
+                    nullptr,
+                    nullptr,
+                    (GAsyncReadyCallback) on_file_dialog_ready_callback,
+                    _internal
+                );
+            }
+            else if (action == FileChooserAction::SAVE)
+            {
+                gtk_file_dialog_save(
+                _internal->native,
+                nullptr,
+                nullptr,
+                (GAsyncReadyCallback) on_file_dialog_ready_callback,
+                _internal
+                );
+            }
+            else if (action == FileChooserAction::SELECT_FOLDER)
+            {
+                gtk_file_dialog_select_folder(
+                    _internal->native,
+                    nullptr,
+                    nullptr,
+                    (GAsyncReadyCallback) on_file_dialog_ready_callback,
+                    _internal
+                );
+            }
+            else if (action == FileChooserAction::SELECT_MULTIPLE_FOLDERS)
+            {
+                gtk_file_dialog_select_multiple_folders(
+                    _internal->native,
+                    nullptr,
+                    nullptr,
+                    (GAsyncReadyCallback) on_file_dialog_ready_callback,
+                    _internal
+                );
+            }
+
+        #endif
+    }
+
+    void FileChooser::cancel()
+    {
+        #if USE_NATIVE_FILE_CHOOSER
+            gtk_native_dialog_hide(GTK_NATIVE_DIALOG(_internal->native));
         #else
 
         #endif
@@ -329,7 +389,52 @@ namespace mousetrap
         }
     }
     #else
+    void FileChooser::on_file_dialog_ready_callback(GtkFileDialog* self, GAsyncResult* result, detail::FileChooserInternal* internal)
+    {
+        GError* error = nullptr;
+        std::vector<FileDescriptor> files;
+        if (internal->action == FileChooserAction::OPEN_FILE)
+        {
+            files.emplace_back(gtk_file_dialog_open_finish(self, result, &error));
+        }
+        else if (internal->action == FileChooserAction::OPEN_MULTIPLE_FILES)
+        {
+            auto* list = gtk_file_dialog_open_multiple_finish(self, result, &error);
+            for (size_t i = 0; i < g_list_model_get_n_items(list); ++i)
+                files.emplace_back(G_FILE(g_list_model_get_item(list, i)));
+        }
+        else if (internal->action == FileChooserAction::SAVE)
+        {
+            files.emplace_back(gtk_file_dialog_save_finish(self, result, &error));
+        }
+        else if (internal->action == FileChooserAction::SELECT_FOLDER)
+        {
+            files.emplace_back(gtk_file_dialog_select_folder_finish(self, result, &error));
+        }
+        else if (internal->action == FileChooserAction::SELECT_MULTIPLE_FOLDERS)
+        {
+            auto* list = gtk_file_dialog_select_multiple_folders_finish(self, result, &error);
+            for (size_t i = 0; i < g_list_model_get_n_items(list); ++i)
+                files.emplace_back(G_FILE(g_list_model_get_item(list, i)));
+        }
 
+        if (error != nullptr)
+        {
+            if (error->code == 2) // dismissed by user
+            {
+                if (internal->on_cancel != nullptr and (*internal->on_cancel))
+                    (*internal->on_cancel)();
+            }
+            else
+                log::critical(std::string("In FileChooser::on_file_dialog_ready_callback: ") + error->message, MOUSETRAP_DOMAIN);
+
+            g_error_free(error);
+            return;
+        }
+
+        if (internal->on_accept != nullptr and (*internal->on_accept))
+            (*internal->on_accept)(files);
+    }
     #endif
 }
 

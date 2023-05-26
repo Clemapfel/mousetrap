@@ -79,7 +79,7 @@ namespace mousetrap
     class FileChooser;
     namespace detail
     {
-        #define USE_NATIVE_FILE_CHOOSER true //GTK_MINOR_VERSION < 10
+        #define USE_NATIVE_FILE_CHOOSER false //GTK_MINOR_VERSION < 10
 
         struct _FileChooserInternal
         {
@@ -166,6 +166,9 @@ namespace mousetrap
             /// @brief present the dialog to the user
             void present();
 
+            /// @brief abort the current process, the cancel callback will be invoked
+            void cancel();
+
             /// @brief set whether the dialogs window is modal
             /// @param b true if it should be modal, false otherwise
             void set_is_modal(bool b);
@@ -209,6 +212,8 @@ namespace mousetrap
 
             #if USE_NATIVE_FILE_CHOOSER
                 static void on_native_dialog_response(GtkNativeDialog*, gint id, detail::FileChooserInternal* internal);
+            #else
+                static void on_file_dialog_ready_callback(GtkFileDialog*, GAsyncResult* result, detail::FileChooserInternal* internal);
             #endif
     };
 

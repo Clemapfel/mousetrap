@@ -16,7 +16,7 @@ namespace mousetrap
     {}
 
     FileDescriptor::FileDescriptor(GFile* file)
-    : _native(file)
+        : _native(file)
     {
         if (_native != nullptr)
             g_object_ref(file);

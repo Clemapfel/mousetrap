@@ -82,7 +82,7 @@ int main()
         auto filter = FileFilter("*.hpp");
         filter.add_allowed_suffix(".hpp");
 
-        auto native = FileChooser(FileChooserAction::OPEN_MULTIPLE_FILES, "test");
+        static auto native = FileChooser(FileChooserAction::SELECT_MULTIPLE_FOLDERS, "test");
         native.set_initial_file(FileDescriptor("/home/clem/Workspace/mousetrap/julia_binding/julia_binding.cpp"));
         native.set_initial_filter(filter);
         native.on_accept([](const std::vector<FileDescriptor>& files){
@@ -94,10 +94,12 @@ int main()
             std::cout << "cancel" << std::endl;
         });
 
-        native.present();
+        auto button = Button();
+        button.connect_signal_clicked([](Button&){
+           native.present();
+        });
 
-        auto instance = Child(1234);
-        window.set_child(instance);
+        window.set_child(button);
         window.present();
     });
 
