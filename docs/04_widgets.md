@@ -95,12 +95,7 @@ Manipulating the size request to influence a widgets minimum size is also called
 
 We can query information about a widgets current and target size using multiple functions:
 
-`Widget::get_allocation` returns a \link mousetrap::Rectangle rectangle\endlink, which holds the current widgets position and its current size, both  in pixels. 
-
-```cpp
-auto position = widget.get_allocation().top_left;
-auto size = widget.get_allocation().size;
-```
+`Widget::get_allocated_size` and `Widget::get_position` return the current size and position of a widget, in pixels. These values are only available once a widget is realized.
 
 This size may or may not be equal to what we size-hinted the widget to, as size-hinting only determines the widgets minimum size. The layout manager is free to allocate a size larger than that.
 
@@ -196,7 +191,7 @@ Using alignment, size-hinting, and expansion, we can fully control where and at 
 
 Once a widgets allocated area enters the visible area on screen, it is **shown** (which we can track using the `shown` signal). Once it leaves the visible area, it is **hidden** (emitting `hide`).
 
-`Widget::set_visible` sets the widgets visibility based on the boolean argument. Other than this, it behaves exactly as `Widget::show` and `Widget::hide`. If we hide a widget that is currently shown, it and all its children will disappear, their allocated size will become 0.
+`Widget::set_is_visible` sets the widgets visibility based on the boolean argument. Other than this, it behaves exactly as `Widget::show` and `Widget::hide`. If we hide a widget that is currently shown, it and all its children will disappear, their allocated size will become 0.
 
 One way to make a widget **invisible without hiding it**, is to control its **opacity**. Using `Widget::set_opacity` we can set a widgets opacity to 0. This retains all other properties of the widget, including its size allocation and intractability. The widget remains `show`n, the only thing that changes is that the widgets graphical element will now appear fully transparent.
 

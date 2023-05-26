@@ -207,11 +207,11 @@ namespace mousetrap
 
             /// @brief set whether the widget should be hidden
             /// @param b false if hidden, true otherwise
-            void set_visible(bool b);
+            void set_is_visible(bool b);
 
             /// @brief get whether the widget is hidden
             /// @return false if hidden, true otherwise
-            bool get_visible();
+            bool get_is_visible();
 
             /// @brief set text displayed as a tooltip when the user hovers over the widget
             /// @param text
@@ -279,11 +279,16 @@ namespace mousetrap
             Vector2f get_minimum_size() const;
 
             /// @brief get natural size, this is the intended size of the widget if no expansion or clipping occurrs
+            /// @return widget and height, in pixels
             Vector2f get_natural_size() const;
 
-            /// @brief get allocated size as rectangle
-            /// @return rectangle
-            Rectangle get_allocation() const;
+            /// @brief get position
+            /// @return position, in pixels
+            Vector2f get_position() const;
+
+            /// @brief get allocated size
+            /// @return widget and height, in pixels
+            Vector2f get_allocated_size() const;
 
             /// @brief remove the widget from the container it is in, if any
             void unparent();
@@ -319,7 +324,7 @@ namespace mousetrap
 
             /// @brief set whether a child widget inside this widget should be cutoff when it leaves this widgets boundary
             /// @param b true if child shut be cutoff, true if it should be fully visible
-            void set_hide_on_overflow(bool);
+            void set_hide_on_overflow(bool b);
 
             /// @brief get whether a child widget inside this widget should be cutoff when it leaves this widgets boundary
             /// @return true if child shut be cutoff, true if it should be fully visible

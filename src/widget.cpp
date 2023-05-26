@@ -243,12 +243,12 @@ namespace mousetrap
         gtk_widget_set_tooltip_markup(operator NativeWidget(), text.c_str());
     }
 
-    void Widget::set_visible(bool b)
+    void Widget::set_is_visible(bool b)
     {
         gtk_widget_set_visible(operator NativeWidget(), b);
     }
 
-    bool Widget::get_visible()
+    bool Widget::get_is_visible()
     {
         return gtk_widget_get_visible(operator NativeWidget());
     }
@@ -424,16 +424,22 @@ namespace mousetrap
         return {minimum->width, minimum->height};
     }
 
-    Rectangle Widget::get_allocation() const
+    Vector2f Widget::get_position() const
     {
         GtkAllocation* allocation = new GtkAllocation();
         gtk_widget_get_allocation(operator NativeWidget(), allocation);
 
-        auto out = Rectangle{
-            {allocation->x, allocation->y},
-            {allocation->width, allocation->height}
-        };
+        Vector2f out = {allocation->x, allocation->y};
+        delete allocation;
+        return out;
+    }
 
+    Vector2f Widget::get_allocated_size() const
+    {
+        GtkAllocation* allocation = new GtkAllocation();
+        gtk_widget_get_allocation(operator NativeWidget(), allocation);
+
+        Vector2f out = {allocation->width, allocation->height};
         delete allocation;
         return out;
     }

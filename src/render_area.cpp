@@ -214,17 +214,17 @@ namespace mousetrap
         out += 0.5;
         out.y = 1 - out.y;
 
-        auto allocation = this->get_allocation();
-        return {out.x * allocation.size.x, out.y * allocation.size.y};
+        auto size = this->get_allocated_size();
+        return {out.x * size.x, out.y * size.y};
     }
 
     Vector2f RenderArea::to_gl_coordinates(Vector2f in)
     {
         auto out = in;
 
-        auto allocation = this->get_allocation();
-        out.x /= (allocation.size.x);
-        out.y /= (allocation.size.y);
+        auto size = this->get_allocated_size();
+        out.x /= size.x;
+        out.y /= size.y;
 
         out.y = 1 - out.y;
         out -= 0.5;

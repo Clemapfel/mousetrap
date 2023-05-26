@@ -268,7 +268,7 @@ module mousetrap
         end
     end
 
-    function Base.setproperty(v::Vector2{T}, symbol::Symbol, value) where T
+    function Base.setproperty!(v::Vector2{T}, symbol::Symbol, value) where T
         if symbol == :x
             v[1] = convert(T, value)
         elseif symbol == :y
@@ -310,7 +310,7 @@ module mousetrap
         end
     end
 
-    function Base.setproperty(v::Vector2{T}, symbol::Symbol, value) where T
+    function Base.setproperty!(v::Vector2{T}, symbol::Symbol, value) where T
         if symbol == :x
             v[1] = convert(T, value)
         elseif symbol == :y
@@ -356,7 +356,7 @@ module mousetrap
         end
     end
 
-    function Base.setproperty(v::Vector2{T}, symbol::Symbol, value) where T
+    function Base.setproperty!(v::Vector2{T}, symbol::Symbol, value) where T
         if symbol == :x
             v[1] = convert(T, value)
         elseif symbol == :y
@@ -384,7 +384,87 @@ module mousetrap
     @document Widget "TODO"
     abstract type Widget end
     export Widget
+
+    @enum begin
+        en
+    end
+
+    macro define_set_margin(which)
+        name = Symbol("set_margin_" * string(which))
+        mousetrap.eval(:(export $name))
+        return :(
+            function $name(x::Widget, margin::Number)
+                detail.$name(x._internal.cpp_object, convert(CFloat, margin));
+            end
+        )
+    end
+
+    @document set_margin_top "TODO"
+    @define_set_margin(top)
+
+    @document set_margin_bottom "TODO"
+    @define_set_margin(bottom)
+
+    @document set_margin_left "TODO"
+    @define_set_margin(left)
+
+    @document set_margin_right "TODO"
+    @define_set_margin(right)
+
+    @document set_margin_horizontal "TODO"
+    @define_set_margin(horizontal)
+
+    @document set_margin_vertical "TODO"
+    @define_set_margin(vertical)
+
+    @document set_margin "TODO"
+    @define_set_margin(Symbol(""))
     
+    @document get_margin_top
+    get_margin_top(widget) = return detail.get_margin_top(widget._internal.cpp_object)
+    export get_margin_top
+    
+    @document get_margin_bottom
+    get_margin_bottom(widget) = return detail.get_margin_top(widget._internal.cpp_object)
+    export get_margin_bottom
+
+    @document get_margin_start
+    get_margin_start(widget) = return detail.get_margin_top(widget._internal.cpp_object)
+    export get_margin_start
+
+    @document get_margin_end
+    get_margin_end(widget) = return detail.get_margin_top(widget._internal.cpp_object)
+    export get_margin_end
+
+    @document set_expand_horizontally
+    function set_expand_horizontally(widget::Widget, b::Bool)
+        detail.set_expand_horizontally(widget._internal.cpp_object, b)
+    end
+    export set_expand_horizontally
+    
+    @document set_expand_vertically
+    function set_expand_vertically(widget::Widget, b::Bool)
+        detail.set_expand_vertically(widget._internal.cpp_object, b)
+    end
+    export set_expand_vertically
+    
+    @document set_expand
+    function set_expand(widget::Widget, b::Bool)
+        detail.set_expand(widget._internal.cpp_object, b)
+    end
+    export set_expand
+    
+    @document set_expand_horizontally
+    function get_expand_horizontally(widget::Widget, b::Bool)
+        return detail.get_expand_horizontally(widget._internal.cpp_object)
+    end
+    export set_expand_horizontally
+    
+    @document set_expand_vertically
+    function set_expand_vertically(widget::Widget, b::Bool)
+        return detail.set_expand_vertically(widget._internal.cpp_object)
+    end
+    export set_expand_vertically
     
 
 ####### action.jl
@@ -504,17 +584,15 @@ using .mousetrap;
 
 app = Application("test.app")
 
-println(methods(mousetrap.detail.add_shortcut))
-
 connect_signal_activate(app, function(app::Application, data)
     mousetrap.detail.test_initialize(app._internal)
 
     action = Action("test.action", app)
-    set_function(action, (x::Action, data) -> println(get_(x), " ", data), 1234)
+    set_function(action, (x::Action, data) -> println(get_id(x), " ", data), 1234)
 
     add_shortcut(action, "m")
     add_shortcut(action, "<Control>c")
-    println(get_shortcuts(action))
+    #println(get_shortcuts(action))
     activate(action)
 end, 1234)
 

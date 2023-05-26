@@ -37,6 +37,14 @@ static inline jl_value_t* jl_safe_call(const char* scope, jl_function_t* functio
     return jl_call(safe_call, wrapped.data(), wrapped.size());
 }
 
+// ### BOX
+
+static jl_value_t* box_vector2f(Vector2f in)
+{
+    static auto* ctor = jl_eval_string("mousetrap.Vector2f");
+    return jl_calln(ctor, jl_box_float32(in.x), jl_box_float32(in.y));
+}
+
 // ### CXX WRAP COMMON
 
 #define USE_FINALIZERS false
@@ -85,8 +93,135 @@ DEFINE_ADD_SIGNAL(activate_focused_widget, void)
 
 // ### WIDGET
 
-static void implement_widget(jlcxx::Module& module)
+#define widget_method(name, arg_list, arg_name_list) \
+method(#name, [](void* widget, arg_list) { \
+    return ((Widget*) widget)->name(arg_name_list); \
+})
+
+#define widget_method_no_args(name) \
+method(#name, [](void* widget) { \
+    return ((Widget*) widget)->name(); \
+})
+
+static void implement_widget(jlcxx::Module& m)
 {
+    m.widget_method_no_args(activate);
+
+    m.widget_method(set_margin_top, float margin, margin);
+    m.widget_method(set_margin_bottom, float margin, margin);
+    m.widget_method(set_margin_start, float margin, margin);
+    m.widget_method(set_margin_end, float margin, margin);
+    m.widget_method(set_margin_horizontal, float margin, margin);
+    m.widget_method(set_margin_vertical, float margin, margin);
+    m.widget_method(set_margin, float margin, margin);
+    m.widget_method_no_args(get_margin_top);
+    m.widget_method_no_args(get_margin_bottom);
+    m.widget_method_no_args(get_margin_start);
+    m.widget_method_no_args(get_margin_end);
+
+    m.widget_method(set_expand_horizontally, bool b, b);
+    m.widget_method(set_expand_vertically, bool b, b);
+    m.widget_method(set_expand, bool b, b);
+    m.widget_method_no_args(get_expand_horizontally);
+    m.widget_method_no_args(get_expand_vertically);
+
+    m.set_const("ALIGNMENT_START", Alignment::START);
+    m.set_const("ALIGNMENT_END", Alignment::END);
+    m.set_const("ALIGNMENT_CENTER", Alignment::CENTER);
+
+    m.widget_method(set_horizontal_alignment, int alignment, (Alignment) alignment);
+    m.widget_method(set_vertical_alignment, int alignment, (Alignment) alignment);
+    m.widget_method(set_alignment, int alignment, (Alignment) alignment);
+
+    m.widget_method(set_opacity, float opacity, opacity);
+    m.widget_method_no_args(get_opacity);
+
+    m.widget_method(set_is_visible, bool b, b);
+    m.widget_method_no_args(get_is_visible);
+
+    m.widget_method(set_tooltip_text, const std::string& text, text);
+    m.method("set_tooltip_widget", [](void* parent, void* tooltip){
+        ((Widget*) parent)->set_tooltip_widget(*((Widget*) tooltip));
+    });
+    m.widget_method_no_args(remove_tooltip_widget);
+
+    #define set_cursor_type(VALUE) set_const("CURSOR_TYPE_" + std::string(#VALUE), CursorType::VALUE)
+
+    m.set_cursor_type(NONE);
+    m.set_cursor_type(DEFAULT);
+    m.set_cursor_type(HELP);
+    m.set_cursor_type(POINTER);
+    m.set_cursor_type(CONTEXT_MENU);
+    m.set_cursor_type(PROGRESS);
+    m.set_cursor_type(WAIT);
+    m.set_cursor_type(CELL);
+    m.set_cursor_type(CROSSHAIR);
+    m.set_cursor_type(TEXT);
+    m.set_cursor_type(MOVE);
+    m.set_cursor_type(NOT_ALLOWED);
+    m.set_cursor_type(GRAB);
+    m.set_cursor_type(GRABBING);
+    m.set_cursor_type(ALL_SCROLL);
+    m.set_cursor_type(ZOOM_IN);
+    m.set_cursor_type(ZOOM_OUT);
+    m.set_cursor_type(COLUMN_RESIZE);
+    m.set_cursor_type(ROW_RESIZE);
+    m.set_cursor_type(NORTH_RESIZE);
+    m.set_cursor_type(NORTH_EAST_RESIZE);
+    m.set_cursor_type(EAST_RESIZE);
+    m.set_cursor_type(SOUTH_EAST_RESIZE);
+    m.set_cursor_type(SOUTH_RESIZE);
+    m.set_cursor_type(SOUTH_WEST_RESIZE);
+    m.set_cursor_type(WEST_RESIZE);
+    m.set_cursor_type(NORTH_WEST_RESIZE);
+    m.set_cursor_type(HORIZONTAL_RESIZE);
+    m.set_cursor_type(VERTICAL_RESIZE);
+    
+    m.widget_method(set_cursor, int type, (CursorType) type);
+    // TODO: set_cursor_from_image
+    
+    m.widget_method_no_args(hide);
+    m.widget_method_no_args(show);
+    
+    // TODO: add_controller
+    // TODO: remove_controller
+    
+    m.widget_method(set_is_focusable, bool b, b);
+    m.widget_method_no_args(get_is_focusable);
+    m.widget_method_no_args(grab_focus);
+    m.widget_method_no_args(get_has_focus);
+    m.widget_method(set_focus_on_click, bool b, b);
+    m.widget_method_no_args(get_focus_on_click);
+    m.widget_method_no_args(get_is_realized);
+
+    m.method("get_minimum_size", [](void* widget) {
+        return box_vector2f(((Widget*) widget)->get_minimum_size());
+    });
+
+    m.method("get_natural_size", [](void* widget) {
+        return box_vector2f(((Widget*) widget)->get_natural_size());
+    });
+
+    m.method("get_position", [](void* widget) {
+        return box_vector2f(((Widget*) widget)->get_position());
+    });
+
+    m.method("get_allocated_size", [](void* widget) {
+        return box_vector2f(((Widget*) widget)->get_allocated_size());
+    });
+
+    m.widget_method_no_args(unparent);
+
+    m.widget_method(set_can_respond_to_input, bool b, b);
+    m.widget_method_no_args(get_can_respond_to_input);
+
+    m.widget_method(set_hide_on_overflow, bool b, b);
+    m.widget_method_no_args(get_hide_on_overflow);
+
+    // TODO tick callback
+    m.widget_method_no_args(remove_tick_callback);
+
+    // TODO: get clipboard
 
 }
 
