@@ -61,6 +61,41 @@ int main()
         auto test = app.get_action(action.get_id());
         test.activate();
 
+        /*
+        auto* dialog = gtk_file_dialog_new();
+        gtk_file_dialog_open(
+            GTK_FILE_DIALOG(dialog),
+            nullptr,
+            nullptr, nullptr, nullptr
+        );
+
+        auto* native = gtk_file_chooser_native_new(
+            "test",
+            GTK_WINDOW(gtk_window_new()),
+            GTK_FILE_CHOOSER_ACTION_OPEN,
+            nullptr,
+            nullptr
+        );
+        gtk_native_dialog_show(GTK_NATIVE_DIALOG(native));
+        */
+
+        auto filter = FileFilter("*.hpp");
+        filter.add_allowed_suffix(".hpp");
+
+        auto native = FileChooser(FileChooserAction::OPEN_MULTIPLE_FILES, "test");
+        native.set_initial_file(FileDescriptor("/home/clem/Workspace/mousetrap/julia_binding/julia_binding.cpp"));
+        native.set_initial_filter(filter);
+        native.on_accept([](const std::vector<FileDescriptor>& files){
+            for (auto& file : files)
+                std::cout << file.get_path() << std::endl;
+        });
+
+        native.on_cancel([](){
+            std::cout << "cancel" << std::endl;
+        });
+
+        native.present();
+
         auto instance = Child(1234);
         window.set_child(instance);
         window.present();

@@ -6,6 +6,8 @@
 
 #include <jlcxx/jlcxx.hpp>
 
+#include <string>
+
 using namespace mousetrap;
 
 // ### COMMON

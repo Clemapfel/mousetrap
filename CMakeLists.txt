@@ -360,6 +360,10 @@ if (MOUSETRAP_BUILD_JULIA_BINDING)
         JlCxx::cxxwrap_julia
     )
 
+    target_compile_features("${PROJECT_PREFIX}julia_binding" PUBLIC
+        cxx_std_17
+    )
+
     set(JULIA_BINDING_DIRECTORY "${CMAKE_SOURCE_DIR}/julia_binding")
 
     set_target_properties("${PROJECT_PREFIX}julia_binding" PROPERTIES

@@ -18,14 +18,20 @@ namespace mousetrap
     /// @brief type of action for file chooser dialog, determines layout and choice type
     enum class FileChooserAction
     {
-        /// @brief open file, can accept with one or more files selected
-        OPEN = GTK_FILE_CHOOSER_ACTION_OPEN,
+        /// @brief open single file
+        OPEN_FILE = GTK_FILE_CHOOSER_ACTION_OPEN,
+
+        /// @brief open multiple fies
+        OPEN_MULTIPLE_FILES = GTK_FILE_CHOOSER_ACTION_OPEN + 128,
 
         /// @brief save to a path, adds path entry
         SAVE = GTK_FILE_CHOOSER_ACTION_SAVE,
 
-        /// @brief select folder, similar to file but only folders are shown
-        SELECT_FOLDER = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER
+        /// @brief select single folder
+        SELECT_FOLDER = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+
+        /// @brief select multiple folders
+        SELECT_MULTIPLE_FOLDERS = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER + 128
     };
 
     /// @brief filter, can be selected by the user, only files that pass the filter will be displayed in file chooser
@@ -35,6 +41,9 @@ namespace mousetrap
             /// @brief construct
             /// @param name name of the filter
             FileFilter(const std::string& name);
+
+            /// @brief destructor
+            ~FileFilter();
 
             /// @brief get filter name
             /// @return name
@@ -70,26 +79,46 @@ namespace mousetrap
     class FileChooser;
     namespace detail
     {
-        using FileChooserInternal = GtkFileChooserNative;
+        #define USE_NATIVE_FILE_CHOOSER true //GTK_MINOR_VERSION < 10
+
+        struct _FileChooserInternal
+        {
+            GObject parent;
+
+            #if USE_NATIVE_FILE_CHOOSER
+                GtkFileChooserNative* native;
+            #else
+                GtkFileDialog* native;
+            #endif
+
+            FileChooserAction action;
+
+            GFile* initial_file;
+            GFile* initial_folder;
+
+            std::vector<GtkFileFilter*>* filters;
+            GtkFileFilter* initial_filter;
+
+            std::string* initial_name;
+            bool currently_shown;
+
+            std::function<void(const std::vector<FileDescriptor>&)>* on_accept;
+            std::function<void()>* on_cancel;
+        };
+        using FileChooserInternal = _FileChooserInternal;
         DEFINE_INTERNAL_MAPPING(FileChooser);
     }
     #endif
 
     /// @brief native file chooser dialog
-    /// @todo replace with GtkFileDialog once GTK4.10 stable releases
-    /// \signals
-    /// \signal_response{FileChooser}
-    /// \widget_signals{FileChooser}
-    class FileChooser : public Widget,
-        HAS_SIGNAL(FileChooser, response)
+    /// \note The graphical element of this widget changes depending on the installed GTK4 version. For GTK4.10+ GtkFileDialog is used, for older version, the now deprecated GtkFileChooserNative is used
+    class FileChooser : public SignalEmitter
     {
         public:
             /// @brief construct
             /// @param action type of action, determines formatting of the file chooser
             /// @param title title of the window, may be empty
-            /// @param accept_label label for the button that confirms the users choice
-            /// @param cancel_label label for the button that aborts the users choice
-            FileChooser(FileChooserAction action, const std::string& title, const std::string& accept_label = "Accept", const std::string& cancel_label = "Cancel");
+            FileChooser(FileChooserAction action, const std::string& title);
 
             /// @brief construct from internal
             /// @param internal
@@ -101,6 +130,31 @@ namespace mousetrap
             /// @brief expose internal
             NativeObject get_internal() const override;
 
+            /// @brief expose native
+            operator NativeObject() const override;
+
+            /// @brief register callback to be called when user has made a selection
+            /// @param function function with signature `(const std::vector<FileDescriptor>&, Data_t) -> void`
+            /// @param data arbitrary data
+            template<typename Function_t, typename Data_t>
+            void on_accept(Function_t function, Data_t data);
+
+            /// @brief register callback to be called when user has made a selection
+            /// @param function function with signature `(const std::vector<FileDescriptor>&) -> void`
+            template<typename Function_t>
+            void on_accept(Function_t function);
+
+            /// @brief register callback to be called when user has made a selection
+            /// @param function function with signature `(Data_t) -> void`
+            /// @param data arbitrary data
+            template<typename Function_t, typename Data_t>
+            void on_cancel(Function_t function, Data_t data);
+
+            /// @brief register callback to be called when user has made a selection
+            /// @param function function with signature `() -> void`
+            template<typename Function_t>
+            void on_cancel(Function_t function);
+
             /// @brief set label for button that confirms users choice
             /// @param label
             void set_accept_label(const std::string& label);
@@ -109,41 +163,16 @@ namespace mousetrap
             /// @return label
             std::string get_accept_label() const;
 
-            /// @brief set label for button that aborts dialog
-            /// @param label
-            void set_cancel_label(const std::string& label);
-
-            /// @brief get label for button that aborts dialog
-            /// @return label
-            std::string get_cancel_label() const;
-
             /// @brief present the dialog to the user
-            void show();
-
-            /// @brief hide the dialog, this does not cause the "response" signal to be emitted
-            void hide();
-
-            /// @brief get whether dialog is currently presented to the user
-            bool get_is_shown() const;
+            void present();
 
             /// @brief set whether the dialogs window is modal
             /// @param b true if it should be modal, false otherwise
-            void set_is_modal(bool);
+            void set_is_modal(bool b);
 
             /// @brief get whether the dialogs window is modal
             /// @return true if modal, false otherwise
             bool get_is_modal() const;
-
-            /// @brief set whether dialog should be transient for another window. If transient, dialog will always be shown on top
-            void set_transient_for(Window* window);
-
-            /// @brief set whether the user can select more than one file or directory at the same time
-            /// @param b true if multiple selection should be allowed, false otherwise
-            void set_can_select_multiple(bool b);
-
-            /// @brief get whether the user can select more than one file or directory at the same time
-            /// @return true if multiple selection is allowed, false otherwise
-            bool get_can_select_multiple() const;
 
             /// @brief set the type of action, determines formatting of the file chooser
             /// @param action
@@ -153,39 +182,69 @@ namespace mousetrap
             /// @return action
             FileChooserAction get_file_chooser_action() const;
 
-            /// @brief get currently selected file(s)
-            /// @return vector of files, may be empty
-            [[nodiscard]] std::vector<FileDescriptor> get_selected_files() const;
-
-            /// @brief change the current directory such that given file is now selected
-            /// @param file
-            void set_selected_file(const FileDescriptor& file) const;
-
-            /// @brief get current directory
-            /// @return directory
-            [[nodiscard]] FileDescriptor get_current_folder() const;
-
-            /// @brief set current directory
-            /// @param directory
-            void set_current_folder(const FileDescriptor& directory);
-
             /// @brief add a filter to the choice of filters
             /// @param file_filter
-            void add_filter_choice(const FileFilter& file_filter);
+            void add_filter(const FileFilter& file_filter);
 
-            /// @brief set the currently selected filter, does not have to be added via mousetrap::FileChooser::add_filter_choice first
+            /// @brief clear the list of file filters
+            void clear_filters();
+
+            /// @brief set the currently active filter. add_filter will be called if the filter is not yet added
             /// @param file_filter
-            void set_filter(const FileFilter& file_filter);
+            void set_initial_filter(const FileFilter& file_filter);
 
-            /// @brief set name in the file selector, as if entered by the user
-            /// @param name
-            void set_current_name(const std::string&);
+            /// @brief set the initially selected file
+            /// @param file
+            void set_initial_file(const FileDescriptor& file);
 
-            /// @brief get currently entered name in the file selector
-            /// @return name, may be empty
-            std::string get_current_name() const;
+            /// @brief set the initially selected folder
+            /// @param folder
+            void set_initial_folder(const FileDescriptor& folder);
+
+            /// @brief set initial name, only applies for FileChooserAction::SAVE
+            void set_initial_name(const std::string&);
 
         private:
             detail::FileChooserInternal* _internal = nullptr;
+
+            #if USE_NATIVE_FILE_CHOOSER
+                static void on_native_dialog_response(GtkNativeDialog*, gint id, detail::FileChooserInternal* internal);
+            #endif
     };
+
+    template<typename Function_t, typename Data_t>
+    void FileChooser::on_accept(Function_t function, Data_t data)
+    {
+        _internal->on_accept = new std::function<void(const std::vector<FileDescriptor>&)>([f = function, d = data](const std::vector<FileDescriptor>& files)
+        {
+           f(files, d);
+        });
+    }
+
+    template<typename Function_t>
+    void FileChooser::on_accept(Function_t function)
+    {
+        _internal->on_accept = new std::function<void(const std::vector<FileDescriptor>&)>([f = function](const std::vector<FileDescriptor>& files)
+        {
+          f(files);
+        });
+    }
+
+    template<typename Function_t, typename Data_t>
+    void FileChooser::on_cancel(Function_t function, Data_t data)
+    {
+        _internal->on_cancel = new std::function<void()>([f = function, d = data]()
+        {
+            f(d);
+        });
+    }
+
+    template<typename Function_t>
+    void FileChooser::on_cancel(Function_t function)
+    {
+        _internal->on_cancel = new std::function<void()>([f = function]()
+        {
+           f();
+        });
+    }
 }

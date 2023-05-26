@@ -351,10 +351,8 @@ namespace mousetrap
         {
             virtual Widget& COMPOUND_WIDGET_REQUIRED_FUNCTION() = 0;
 
-            virtual operator Widget&() const final;
             virtual operator const Widget&() const final;
             virtual operator Widget&() final;
-            virtual operator const Widget&() final;
         };
     }
     #endif

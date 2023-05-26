@@ -255,12 +255,12 @@ namespace mousetrap
 
     void Widget::show()
     {
-        gtk_widget_show(operator NativeWidget());
+        gtk_widget_set_visible(operator NativeWidget(), true);
     }
 
     void Widget::hide()
     {
-        gtk_widget_hide(operator NativeWidget());
+        gtk_widget_set_visible(operator NativeWidget(), false);
     }
 
     void Widget::set_cursor(CursorType cursor)
@@ -526,10 +526,12 @@ namespace mousetrap::detail
     // const casting like this is awful style but it is necessary to make the definition of COMPOUND_WIDGET_REQUIRED_FUNCTION
     // have the signature () -> Widget&. Creating a compound widget should require as little knowledge about C++ as possible
 
+    /*
     CompoundWidgetSuper::operator Widget&() const
     {
         return const_cast<Widget&>(const_cast<CompoundWidgetSuper*>(this)->COMPOUND_WIDGET_REQUIRED_FUNCTION());
     }
+    */
 
     CompoundWidgetSuper::operator const Widget&() const
     {
@@ -541,8 +543,10 @@ namespace mousetrap::detail
         return const_cast<Widget&>(COMPOUND_WIDGET_REQUIRED_FUNCTION());
     }
 
+    /*
     CompoundWidgetSuper::operator const Widget&()
     {
         return const_cast<Widget&>(COMPOUND_WIDGET_REQUIRED_FUNCTION());
     }
+    */
 }

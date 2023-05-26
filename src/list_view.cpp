@@ -46,7 +46,10 @@ namespace mousetrap::detail
         item->children = g_object_ref(g_list_store_new(G_TYPE_OBJECT));
         item->depth = 0;
         gtk_tree_expander_set_indent_for_icon(item->expander, true);
-        // TODO: once GTK4 4.10 releases: gtk_tree_expander_set_indent_for_depth(item->expander, TRUE);
+
+        #if GTK_MINOR_VERSION >= 10
+            gtk_tree_expander_set_indent_for_depth(item->expander, true);
+        #endif
     }
 
     static void tree_list_view_item_class_init(ListViewItemClass* klass)
@@ -108,7 +111,10 @@ namespace mousetrap::detail
 
         if (g_list_model_get_n_items(G_LIST_MODEL(tree_list_view_item->children)) != 0) // non-leaf
         {
-            gtk_widget_set_margin_start(tree_list_view_item->widget, 0);
+            //#if GTK_MINOR_VERSION < 10
+                gtk_widget_set_margin_start(tree_list_view_item->widget, 0);
+            //#endif
+
             gtk_tree_expander_set_child(tree_list_view_item->expander, tree_list_view_item->widget);
             gtk_tree_expander_set_list_row(tree_list_view_item->expander, tree_list_row);
             gtk_list_item_set_child(list_item, GTK_WIDGET(tree_list_view_item->expander));
@@ -116,10 +122,14 @@ namespace mousetrap::detail
         else // leaf
         {
            gtk_list_item_set_child(list_item, tree_list_view_item->widget);
-           gtk_widget_set_margin_start(tree_list_view_item->widget, ListView::indent_per_depth * tree_list_view_item->depth);
+
+            //#if GTK_MINOR_VERSION < 10
+                gtk_widget_set_margin_start(tree_list_view_item->widget, ListView::indent_per_depth * tree_list_view_item->depth);
+            //#endif
         }
 
         gtk_list_item_set_activatable(list_item, true);
+
     }
 
     static void on_list_item_factory_unbind(GtkSignalListItemFactory* self, void* object, detail::ListViewInternal*)
