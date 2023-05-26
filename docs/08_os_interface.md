@@ -2,9 +2,10 @@
 
 In this chapter, we will learn:
 + How to properly do logging
-+ How to copy/move/create/delete files 
++ How to copy / move / create / delete files 
 + How to access a files metadata
 + How to monitor a file changing
++ How to open a dialog that lets users select files
 + How to store arbitrary objects in a .ini file
 + How to use icons 
 + How to customize menu section layouts using icons
@@ -270,6 +271,106 @@ monitor.on_file_changed([](FileMonitorEvent event, const FileDescriptor& self, c
         std::cout << "file at `" << self.get_path() << "` changed" << std::endl;
 });
 ```
+
+---
+
+## FileChooser
+
+Opening a dialog to allow a user to select a file or folder is a task so common, most operating systems provide a native window just for this purpose. Mousetrap, conversely, also has an object tailor-made for this: \a{FileChooser}
+
+`FileChooser` is not a widget and does not have any signals. Its constructor takes two arguments, a \a{FileChooserAction} and the resulting windows title. `FileChooserAction` is an enum, whose value determine which mode the `FileChooser` enters:
+
+| `FileChooserAction` value | Users may select...         |
+|---------------------------|-----------------------------|
+| `OPEN_FILE` | exactly one file            |
+| `OPEN_MULTIPLE_FILES` | one or more files           |
+| `SELECT_FOLDER` | zero or one folder          |
+| `SELECT_MULTIPLE_FOLDERS` | zero or more folders        |
+| `SAVE` | new files name and location |
+
+Depending on which `FileChooserAction` we choose, `FileChooser` will automatically change its layout and buttons.
+
+```cpp
+auto file_chooser = FileChooser(FileChooserAction::OPEN_MULTIPLE_FILES);
+```
+
+\image html file_chooser.png
+
+\how_to_generate_this_image_begin
+```cpp
+auto filter = FileFilter("*.hpp");
+filter.add_allowed_suffix("hpp");
+
+static auto file_chooser = FileChooser(FileChooserAction::OPEN_MULTIPLE_FILES);
+file_chooser.set_initial_filter(filter);
+
+file_chooser.on_accept([](const std::vector<FileDescriptor>& files){
+    for (auto& file : files)
+        std::cout << file.get_path() << std::endl;
+});
+
+file_chooser.on_cancel([](){
+    std::cout << "cancel" << std::endl;
+});
+
+file_chooser.present();
+```
+\how_to_generate_this_image_end
+
+In order to react to the user making a selection or canceling the operation, we need to register a callback with the file chooser.
+
+`FileChooser::on_accept` accepts a function with the signature `(const std::vector<FileDescriptor>&, (Data_t)) -> void`. The input to this function will be a list of file descriptors. Depending on which `FileChooserAction` we have chosen, the vector may have zero, one, or more elements, and the contained `FileDescriptor`s may point to a file or folder.
+
+`FileChooser::on_cancel` is called if the user cancels or otherwise closes the dialog. This function accepts an argument with the signature `((Data_t)) -> void`:
+
+```cpp
+auto file_chooser = FileChooser(FileChooserAction::OPEN_MULTIPLE_FILES);
+file_chooser.on_accept([](const std::vector<FileDescriptor&> files) -> void {
+    // access selected files 
+    for (auto file : files)
+        std::cout << file.get_path() << std::endl;
+});
+
+file_choose.on_cancel([]() -> void {
+    std::cout << "canceled" << std::endl;
+});
+```
+
+After setting up and connect handlers, we can call `FileChooser::present` to present the dialog to the user.
+
+### FileFilter
+
+Looking again at the previous screenshot in this section, we see that in the bottom right corner of the dialog, a drop-down with the currently selected item `*.hpp` is seen. This is the currently active **filter**. Depending on the selection, only files that pass that filter will be shown. This is useful when we want to limit file selection to only a certain type of files, for example, an image-manipulation application would only allow loadable image files as the file type for an `Open...` dialog.
+
+We construct a `FileFilter` by choosing a name. This string will be used as the title of the filter when the user chooses a filter from the dropdown menu:
+
+```cpp
+auto file_filter = FileFilter("*.hpp");
+```
+
+We then have to specify which files should pass the filter. `FileFilter` offers multiple functions for this:
+
+| `FileFilter` Method | Argument | Resulting Allowed Files                                  |
+|---------------------|----------|----------------------------------------------------------|
+| `add_allowed_suffix` | `hpp`   | files ending in `.hpp`                                   |
+| `add_allow_all_supported_image_formats | (no argument) | file types `Image::create_from_file` accepts             |
+| `add_allowed_mime_type` | `text/plain` | files classified as plain text, for example `.txt`       |
+| `add_alowed_pattern` | `*.hpp; *.cpp` | files whose name conform to the given regular expression |
+
+Where a table with the allowed image formats is available in [the previous chapter on images](07_image_and_sound.md#supported-image-formats).
+
+After having set up our filter, we simply add it to the `FileChooser` instance using `FileChooser::add_filter`:
+
+```cpp
+// create filter that only lets C++ header files through
+auto file_filter = FileFilter("*.hpp");
+file_filter.add_allowed_suffix("hpp");
+file_chooser.add_filter(file_filter);
+```
+
+By default, no `FileFilter`s will be registered, which means the `FileChooser` will display all possible file types.
+
+---
 
 ---
 

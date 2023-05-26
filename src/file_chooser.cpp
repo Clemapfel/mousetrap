@@ -206,6 +206,13 @@ namespace mousetrap
             gtk_native_dialog_show(GTK_NATIVE_DIALOG(_internal->native));
             _internal->currently_shown = true;
         #else
+
+            auto* list = g_list_store_new(GTK_TYPE_FILE_FILTER);
+            for (auto* filter : *_internal->filters)
+                g_list_store_append(list, filter);
+
+            gtk_file_dialog_set_filters(_internal->native, G_LIST_MODEL(list));
+
             auto action = _internal->action;
             if (action == FileChooserAction::OPEN_FILE)
             {
@@ -400,7 +407,7 @@ namespace mousetrap
         else if (internal->action == FileChooserAction::OPEN_MULTIPLE_FILES)
         {
             auto* list = gtk_file_dialog_open_multiple_finish(self, result, &error);
-            for (size_t i = 0; i < g_list_model_get_n_items(list); ++i)
+            for (size_t i = 0; G_IS_LIST_MODEL(list) and i < g_list_model_get_n_items(list); ++i)
                 files.emplace_back(G_FILE(g_list_model_get_item(list, i)));
         }
         else if (internal->action == FileChooserAction::SAVE)
@@ -414,7 +421,7 @@ namespace mousetrap
         else if (internal->action == FileChooserAction::SELECT_MULTIPLE_FOLDERS)
         {
             auto* list = gtk_file_dialog_select_multiple_folders_finish(self, result, &error);
-            for (size_t i = 0; i < g_list_model_get_n_items(list); ++i)
+            for (size_t i = 0; G_IS_LIST_MODEL(list) and i < g_list_model_get_n_items(list); ++i)
                 files.emplace_back(G_FILE(g_list_model_get_item(list, i)));
         }
 

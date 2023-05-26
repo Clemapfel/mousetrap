@@ -118,7 +118,7 @@ namespace mousetrap
             /// @brief construct
             /// @param action type of action, determines formatting of the file chooser
             /// @param title title of the window, may be empty
-            FileChooser(FileChooserAction action, const std::string& title);
+            FileChooser(FileChooserAction action, const std::string& title = "");
 
             /// @brief construct from internal
             /// @param internal

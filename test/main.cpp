@@ -80,9 +80,9 @@ int main()
         */
 
         auto filter = FileFilter("*.hpp");
-        filter.add_allowed_suffix(".hpp");
+        filter.add_allowed_suffix("hpp");
 
-        static auto native = FileChooser(FileChooserAction::SELECT_MULTIPLE_FOLDERS, "test");
+        static auto native = FileChooser(FileChooserAction::SELECT_MULTIPLE_FOLDERS);
         native.set_initial_file(FileDescriptor("/home/clem/Workspace/mousetrap/julia_binding/julia_binding.cpp"));
         native.set_initial_filter(filter);
         native.on_accept([](const std::vector<FileDescriptor>& files){
