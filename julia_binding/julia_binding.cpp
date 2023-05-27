@@ -57,8 +57,7 @@ static jl_value_t* box_vector2f(Vector2f in)
 
 #define declare_is_subtype_of(A, B) template<> struct jlcxx::SuperType<A> { typedef B type; };
 #define make_not_mirrored(Name) template<> struct jlcxx::IsMirroredType<Name> : std::false_type {};
-#define add_enum(Name) add_bits<Name>(#Name, jlcxx::julia_type("CppEnum"))
-#define add_enum_value(EnumName, PREFIX, VALUE_NAME) set_const(std::string(#PREFIX) + "_" + std::string(#VALUE_NAME),  EnumName::VALUE_NAME)
+#define add_enum_value(EnumName, PREFIX, VALUE_NAME) set_const(std::string(#PREFIX) + "_" + std::string(#VALUE_NAME), (int) EnumName::VALUE_NAME)
 
 // ### SIGNAL COMPONENTS
 
@@ -85,13 +84,79 @@ type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_fun
     }); \
 }
 
+#define DEFINE_ADD_SIGNAL_CONVERT_RETURN_TYPE(snake_case, true_return_t, new_return_t) \
+template<typename T, typename Arg_t>                               \
+void add_signal_##snake_case(Arg_t type) {\
+type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    { \
+        instance.connect_signal_##snake_case([](T& instance, jl_function_t* task) -> true_return_t { \
+            return (true_return_t) jlcxx::unbox<new_return_t>(jl_safe_call(("emit_signal_" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(instance))); \
+        }, task); \
+    }) \
+    .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
+        instance.disconnect_signal_##snake_case(); \
+    }) \
+    .method("set_signal_" + std::string(#snake_case) + "_blocked", [](T& instance, bool b){ \
+        instance.set_signal_##snake_case##_blocked(b); \
+    }) \
+    .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
+        return (new_return_t) instance.get_signal_##snake_case##_blocked(); \
+    }) \
+    .method("emit_signal_" + std::string(#snake_case), [](T& instance) { \
+        return (new_return_t) instance.emit_signal_##snake_case(); \
+    }); \
+}
+
+#define DEFINE_ADD_WIDGET_SIGNAL(snake_case) \
+template<typename T, typename Arg_t>                               \
+void add_signal_##snake_case(Arg_t type) {\
+type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    { \
+        instance.connect_signal_##snake_case([](Widget& instance, jl_function_t* task) -> void { \
+            jl_safe_call(("emit_signal_" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(dynamic_cast<T&>(instance))); \
+        }, task); \
+    }) \
+    .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
+        instance.disconnect_signal_##snake_case(); \
+    }) \
+    .method("set_signal_" + std::string(#snake_case) + "_blocked", [](T& instance, bool b){ \
+        instance.set_signal_##snake_case##_blocked(b); \
+    }) \
+    .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
+        instance.get_signal_##snake_case##_blocked(); \
+    }) \
+    .method("emit_signal_" + std::string(#snake_case), [](T& instance) { \
+        instance.emit_signal_##snake_case(); \
+    }); \
+}
+
+
 DEFINE_ADD_SIGNAL(activate, void)
 DEFINE_ADD_SIGNAL(shutdown, void)
-DEFINE_ADD_SIGNAL(close_request, bool)
+
+DEFINE_ADD_SIGNAL_CONVERT_RETURN_TYPE(close_request, WindowCloseRequestResult, bool)
 DEFINE_ADD_SIGNAL(activate_default_widget, void)
 DEFINE_ADD_SIGNAL(activate_focused_widget, void)
 
-//DEFINE_ADD_SIGNAL_MANUAL(activated, void)
+DEFINE_ADD_WIDGET_SIGNAL(realize)
+DEFINE_ADD_WIDGET_SIGNAL(unrealize)
+DEFINE_ADD_WIDGET_SIGNAL(destroy)
+DEFINE_ADD_WIDGET_SIGNAL(hide)
+DEFINE_ADD_WIDGET_SIGNAL(show)
+DEFINE_ADD_WIDGET_SIGNAL(map)
+DEFINE_ADD_WIDGET_SIGNAL(unmap)
+
+template<typename Widget_t, typename T>
+void add_widget_signals(T& type)
+{
+    add_signal_realize<Widget_t>(type);
+    add_signal_unrealize<Widget_t>(type);
+    add_signal_destroy<Widget_t>(type);
+    add_signal_hide<Widget_t>(type);
+    add_signal_show<Widget>(type);
+    add_signal_map<Widget>(type);
+    add_signal_unmap<Widget>(type);
+}
 
 // ### WIDGET
 
@@ -127,9 +192,9 @@ static void implement_widget(jlcxx::Module& m)
     m.widget_method_no_args(get_expand_horizontally);
     m.widget_method_no_args(get_expand_vertically);
 
-    m.set_const("ALIGNMENT_START", Alignment::START);
-    m.set_const("ALIGNMENT_END", Alignment::END);
-    m.set_const("ALIGNMENT_CENTER", Alignment::CENTER);
+    m.add_enum_value(Alignment, ALIGNMENT, START);
+    m.add_enum_value(Alignment, ALIGNMENT, CENTER);
+    m.add_enum_value(Alignment, ALIGNMENT, END);
 
     m.widget_method(set_horizontal_alignment, int alignment, (Alignment) alignment);
     m.widget_method(set_vertical_alignment, int alignment, (Alignment) alignment);
@@ -155,7 +220,7 @@ static void implement_widget(jlcxx::Module& m)
     });
     m.widget_method_no_args(remove_tooltip_widget);
 
-    #define set_cursor_type(VALUE) set_const("CURSOR_TYPE_" + std::string(#VALUE), CursorType::VALUE)
+    #define set_cursor_type(VALUE) add_enum_value(CursorType, CURSOR_TYPE, VALUE)
 
     m.set_cursor_type(NONE);
     m.set_cursor_type(DEFAULT);
@@ -189,7 +254,7 @@ static void implement_widget(jlcxx::Module& m)
     
     m.widget_method(set_cursor, int type, (CursorType) type);
     // TODO: set_cursor_from_image
-    
+
     m.widget_method_no_args(hide);
     m.widget_method_no_args(show);
     
@@ -228,12 +293,14 @@ static void implement_widget(jlcxx::Module& m)
     m.widget_method(set_hide_on_overflow, bool b, b);
     m.widget_method_no_args(get_hide_on_overflow);
 
+    /*
+     * TODO
     m.add_type(FrameClock)
         .constructor([](void* instance){
             return new FrameClock((GdkFrameClock*) instance);
         }, USE_FINALIZERS)
-        // TODO
     ;
+     */
 
     m.method("set_tick_callback", [](void* widget, jl_function_t* task) {
         ((Widget*) widget)->set_tick_callback([](FrameClock clock, jl_function_t* task) -> TickCallbackResult {
@@ -243,7 +310,6 @@ static void implement_widget(jlcxx::Module& m)
     m.widget_method_no_args(remove_tick_callback);
 
     // TODO: get clipboard
-
 }
 
 // ### APPLICATION
@@ -308,13 +374,61 @@ static void implement_action(jlcxx::Module& module)
     // TODO add_signal_activated<Action>(action);
 }
 
+// ### WINDOW
+
+void implement_window(jlcxx::Module& module)
+{
+    auto window = module.add_type(Window)
+        .constructor([](Application& app){
+            return new Window(app);
+        }, USE_FINALIZERS)
+        .add_type_method(Window, set_maximized)
+        .add_type_method(Window, set_fullscreen)
+        .add_type_method(Window, present)
+        .add_type_method(Window, close)
+        .add_type_method(Window, set_hide_on_close)
+        .method("set_child", [](Window& window, void* widget) {
+            window.set_child(*((Widget*) widget));
+        })
+        .add_type_method(Window, remove_child)
+        .add_type_method(Window, set_destroy_with_parent)
+        .add_type_method(Window, get_destroy_with_parent)
+        .add_type_method(Window, set_title)
+        .add_type_method(Window, get_title)
+        .method("set_titlebar_widget", [](Window& window, void* widget){
+            window.set_titlebar_widget(*((Widget*) widget));
+        })
+        .add_type_method(Window, remove_titlebar_widget)
+        .add_type_method(Window, set_is_modal)
+        .add_type_method(Window, get_is_modal)
+        .add_type_method(Window, set_is_decorated)
+        .add_type_method(Window, get_is_decorated)
+        .add_type_method(Window, set_has_close_button)
+        .add_type_method(Window, get_has_close_button)
+        .add_type_method(Window, set_startup_notification_identifier)
+        .add_type_method(Window, set_focus_visible)
+        .add_type_method(Window, get_focus_visible)
+        .method("set_default_widget", [](Window& window, void* widget) {
+            window.set_default_widget(*((Widget*) widget));
+        });
+
+        //add_widget_signals<Window>(window);
+        add_signal_close_request<Window>(window);
+        add_signal_activate_default_widget<Window>(window);
+        add_signal_activate_focused_widget<Window>(window);
+}   
+
 // ### MAIN
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
 {
     // order matters
+    //module.add_type<Widget>(("_Widget"));
+
+    implement_widget(module);
     implement_action(module);
     implement_application(module);
+    implement_window(module);
 
     module.method("test_initialize", [](Application& app){
         auto window = Window(app);

@@ -74,7 +74,7 @@ module mousetrap
             printstyled(stderr, "[ERROR] "; bold = true, color = :red)
             printstyled(stderr, "In " * scope * ": "; bold = true)
             Base.showerror(stderr, e, catch_backtrace())
-            print(stderr, "\n" = detail.CURSOR_TYPE
+            print(stderr, "\n")
         end
     end
 
@@ -159,9 +159,10 @@ module mousetrap
 
     macro export_widget(name)
         mousetrap.eval(:(export $name))
-        quote
-            struct $name <: SignalEmitter
-                _internal::detail.$name
+        internal_name = Symbol("_" * "$name")
+        return quote
+            struct $name <: Widget
+                _internal::detail.$internal_name
             end
         end
     end
@@ -172,11 +173,18 @@ module mousetrap
     import Base: clamp
     clamp(x::AbstractFloat, lower::AbstractFloat, upper::AbstractFloat) = if x < lower return lower elseif x > upper return upper else return x end
 
-####### signal_emitter.jl
+####### forward_declarations.jl
 
-    @document SignalEmitter "TODO"
     abstract type SignalEmitter end
     export SignalEmitter
+
+    abstract type Widget end
+    export Widget
+
+    @export_signal_emitter Application
+    @export_signal_emitter Action
+    #@export_signal_emitter FrameClock
+    @export_widget Window
 
 ####### signal_components.jl
 
@@ -185,7 +193,7 @@ module mousetrap
         out = Expr(:block)
 
         connect_signal_name = :connect_signal_ * snake_case
-        
+
         push!(out.args, esc(:(
             function $connect_signal_name(x::$T, f)
                 detail.$connect_signal_name(x._internal, function(x)
@@ -193,7 +201,7 @@ module mousetrap
                 end)
             end
         )))
-        
+
         push!(out.args, esc(:(
             function $connect_signal_name(x::$T, f, data) where Data_t
                 detail.$connect_signal_name(x._internal, function(x)
@@ -217,23 +225,23 @@ module mousetrap
                 detail.$set_signal_blocked_name(x._internal, b)
             end
         )))
-        
+
         get_signal_blocked_name = :get_signal_ * snake_case * :_blocked
-        
+
         push!(out.args, esc(:(
             function $get_signal_blocked_name(x::$T)
                 return detail.$get_signal_blocked_name(x._internal)
             end
         )))
-        
+
         emit_signal_name = :emit_signal_ * snake_case
-        
+
         push!(out.args, esc(:(
             function $emit_signal_name(x::$T)
                 return detail.$emit_signal_name(x._internal)
-            end        
+            end
         )))
-        
+
         push!(out.args, esc(:(export $connect_signal_name)))
         push!(out.args, esc(:(export $disconnect_signal_name)))
         push!(out.args, esc(:(export $set_signal_blocked_name)))
@@ -243,13 +251,19 @@ module mousetrap
         return out
     end
 
+    macro add_widget_signals(T)
+        out = Expr(:block)
+        push!(out.args, :(@add_signal $T realize))
+        push!(out.args, :(@add_signal $T unrealize))
+        push!(out.args, :(@add_signal $T destroy))
+        push!(out.args, :(@add_signal $T hide))
+        push!(out.args, :(@add_signal $T show))
+        push!(out.args, :(@add_signal $T map))
+        push!(out.args, :(@add_signal $T unmape))
+        return out
+    end
+
     # TODO: documentation for all signal-related methods
-
-####### forward_declarations.jl
-
-    @export_signal_emitter Application
-    @export_signal_emitter Action
-    @export_signal_emitter FrameClock
 
 ###### vector.jl
 
@@ -287,10 +301,10 @@ module mousetrap
 
     const Vector2f = Vector2{Cfloat}
     export Vector2f
-    
+
     const Vector2i = Vector2{Cint}
     export Vector2i
-    
+
     const Vector2ui = Vector2{Csize_t}
     export Vector2ui
 
@@ -328,13 +342,13 @@ module mousetrap
             throw(ErrorException("type Vector2 has no field " * string(symbol)))
         end
     end
-    
+
     const Vector3f = Vector3{Cfloat}
     export Vector3f
-    
+
     const Vector3i = Vector3{Cint}
     export Vector3i
-    
+
     const Vector3ui = Vector3{Csize_t}
     export Vector3ui
 
@@ -376,100 +390,73 @@ module mousetrap
             throw(ErrorException("type Vector2 has no field " * string(symbol)))
         end
     end
-    
+
     const Vector4f = Vector4{Cfloat}
     export Vector4f
-    
+
     const Vector4i = Vector4{Cint}
     export Vector4i
-    
+
     const Vector4ui = Vector4{Csize_t}
     export Vector4ui
 
 ####### widget.jl
-
-    @document Widget "TODO"
-    abstract type Widget end
-    export Widget
 
     macro define_set_margin(which)
         name = Symbol("set_margin_" * string(which))
         mousetrap.eval(:(export $name))
         return :(
             function $name(x::Widget, margin::Number)
-                detail.$name(x._internal.cpp_object, convert(Cfloat, margin) = detail.CURSOR_TYPE
+                detail.$name(x._internal.cpp_object, convert(Cfloat, margin))
             end
         )
     end
 
-    @document set_margin_top "TODO"
     @define_set_margin(top)
-
-    @document set_margin_bottom "TODO"
     @define_set_margin(bottom)
-
-    @document set_margin_left "TODO"
     @define_set_margin(left)
-
-    @document set_margin_right "TODO"
     @define_set_margin(right)
-
-    @document set_margin_horizontal "TODO"
     @define_set_margin(horizontal)
-
-    @document set_margin_vertical "TODO"
     @define_set_margin(vertical)
-
-    @document set_margin "TODO"
     @define_set_margin(Symbol(""))
-    
-    @document get_margin_top "TODO"
+ 
     get_margin_top(widget) = return detail.get_margin_top(widget._internal.cpp_object)
     export get_margin_top
-    
-    @document get_margin_bottom "TODO"
+ 
     get_margin_bottom(widget) = return detail.get_margin_top(widget._internal.cpp_object)
     export get_margin_bottom
 
-    @document get_margin_start "TODO"
     get_margin_start(widget) = return detail.get_margin_top(widget._internal.cpp_object)
     export get_margin_start
 
-    @document get_margin_end "TODO"
     get_margin_end(widget) = return detail.get_margin_top(widget._internal.cpp_object)
     export get_margin_end
 
-    @document set_expand_horizontally "TODO"
     function set_expand_horizontally(widget::Widget, b::Bool)
         detail.set_expand_horizontally(widget._internal.cpp_object, b)
     end
     export set_expand_horizontally
-    
-    @document set_expand_vertically "TODO"
+ 
     function set_expand_vertically(widget::Widget, b::Bool)
         detail.set_expand_vertically(widget._internal.cpp_object, b)
     end
     export set_expand_vertically
-    
-    @document set_expand "TODO"
+ 
     function set_expand(widget::Widget, b::Bool)
         detail.set_expand(widget._internal.cpp_object, b)
     end
     export set_expand
-    
-    @document set_expand_horizontally "TODO"
+ 
     function get_expand_horizontally(widget::Widget, b::Bool)
         return detail.get_expand_horizontally(widget._internal.cpp_object)
     end
     export set_expand_horizontally
-    
-    @document set_expand_vertically "TODO"
+ 
     function set_expand_vertically(widget::Widget, b::Bool)
         return detail.set_expand_vertically(widget._internal.cpp_object)
     end
     export set_expand_vertically
 
-    @document Alignment "TODO"
     @enum Alignment begin
         ALIGNMENT_START = detail.ALIGNMENT_START
         ALIGNMENT_CENTER = detail.ALIGNMENT_CENTER
@@ -477,65 +464,48 @@ module mousetrap
     end
     @export_enum Alignment
 
-    @document ALIGNMENT_START "TODO"
-    @document ALIGNMENT_CENTER "TODO"
-    @document ALIGNMENT_END "TODO"
-
-    @document set_horizontal_alignment "TODO"
     function set_horizontal_alignment(widget::Widget, alignment::Alignment)
         detail.set_horizontal_alignment(widget._internal.cpp_object, Cint(alignment))
     end
     export set_horizontal_alignment
 
-    @document set_vertical_alignment "TODO"
     function set_vertical_alignment(widget::Widget, alignment::Alignment)
         detail.set_vertical_alignment(widget._internal.cpp_object, Cint(alignment))
     end
     export set_vertical_alignment
 
-    @document set_alignment "TODO"
     function set_alignment(widget::Widget, alignment::Alignment)
         detail.set_alignment(widget._internal.cpp_object, Cint(alignment))
     end
     export set_alignment
-    
-    @document get_vertical_alignment "TODO"
+ 
     get_vertical_alignment(widget::Widget) = return Alignment(detail.get_vertical_alignment(widget._internal.cpp_object))
     export get_vertical_alignment
-    
-    @document get_horizontal_alignment "TODO"
+ 
     get_vertical_alignment(widget::Widget) = return Alignment(detail.get_vertical_alignment(widget._internal.cpp_object))
     export get_horizontal_alignment
 
-    @document set_opacity "TODO"
     set_opacity(widget::Widget, x::Number) = detail.set_opacity(widget._internal.cpp_object, Cfloat(clamp(x, 0, 1)))
     export set_opacity
-    
-    @document get_opacity "TODO"
+ 
     get_opacity(widget::Widget) = return detail.get_opacity(widget._internal.cpp_object)
     export get_opacity
-    
-    @document get_is_visible "TODO"
+ 
     get_is_visible(widget::Widget) = return detail.get_is_visible(widget._internal.cpp_object)
     export get_is_visible
-    
-    @document set_is_visible "TODO"
+ 
     set_is_visible(widget::Widget, b::Bool) = detail.set_is_visible(widget._internal.cpp_object, b)
     export set_is_visible
-    
-    @document set_tooltip_text "TODO"
+ 
     set_tooltip_text(widget::Widget, text::String) = detail.set_tooltip_text(widget._internal.cpp_object, text)
     export set_tooltip_text
-    
-    @document set_tooltip_widget "TODO"
+ 
     set_tooltip_widget(parent::Widget, tooltip::Widget) = detail.set_tooltip_widget(parent._internal.cpp_object, tooltip._internal.cpp_object)
     export set_tooltip_widget
-    
-    @document remove_tooltip_widget "TODO"
+ 
     remove_tooltip_widget(widget::Widget) = detail.remove_tooltip_widget(parent._internal.cpp_object)
     export remove_tooltip_widget
 
-    @document CursorType "TODO"
     @enum CursorType begin
         CURSOR_TYPE_NONE = detail.CURSOR_TYPE_NONE
         CURSOR_TYPE_DEFAULT = detail.CURSOR_TYPE_DEFAULT
@@ -567,150 +537,92 @@ module mousetrap
     end
     @export_enum CursorType
 
-    @document CURSOR_TYPE_NONE = "TODO"
-    @document CURSOR_TYPE_DEFAULT = "TODO"
-    @document CURSOR_TYPE_HELP = "TODO"
-    @document CURSOR_TYPE_POINTER = "TODO"
-    @document CURSOR_TYPE_CONTEXT_MENU = "TODO"
-    @document CURSOR_TYPE_PROGRESS = "TODO"
-    @document CURSOR_TYPE_WAIT = "TODO"
-    @document CURSOR_TYPE_CELL = "TODO"
-    @document CURSOR_TYPE_CROSSHAIR = "TODO"
-    @document CURSOR_TYPE_TEXT = "TODO"
-    @document CURSOR_TYPE_MOVE = "TODO"
-    @document CURSOR_TYPE_NOT_ALLOWED = "TODO"
-    @document CURSOR_TYPE_GRAB = "TODO"
-    @document CURSOR_TYPE_GRABBING = "TODO"
-    @document CURSOR_TYPE_ALL_SCROLL = "TODO"
-    @document CURSOR_TYPE_ZOOM_IN = "TODO"
-    @document CURSOR_TYPE_ZOOM_OUT = "TODO"
-    @document CURSOR_TYPE_COLUMN_RESIZE = "TODO"
-    @document CURSOR_TYPE_ROW_RESIZE = "TODO"
-    @document CURSOR_TYPE_NORTH_RESIZE = "TODO"
-    @document CURSOR_TYPE_NORTH_EAST_RESIZE = "TODO"
-    @document CURSOR_TYPE_EAST_RESIZE = "TODO"
-    @document CURSOR_TYPE_SOUTH_EAST_RESIZE = "TODO"
-    @document CURSOR_TYPE_SOUTH_RESIZE = "TODO"
-    @document CURSOR_TYPE_SOUTH_WEST_RESIZE = "TODO"
-    @document CURSOR_TYPE_WEST_RESIZE = "TODO"
-    @document CURSOR_TYPE_NORTH_WEST_RESIZE = "TODO"
-
-    @document set_cursor "TODO"
     set_cursor(widget::Widget, cursor_type::CursorType) = detail.set_cursor(widget._internal.cpp_object, Cint(cursor_type))
     export set_cursor
 
-    @document set_cursor_from_image
     # TODO: set_cursor_from_image(widget::Widget, image::Image, alignment::Vector2f)
     export set_cursor_from_image
 
-    @document hide
     hide(widget::Widget) = detail.hide(widget._internal.cpp_object)
     export hide
 
-    @document show
     show(widget::Widget) = detail.hide(widget._internal.cpp_object)
     export show
 
-    @document add_controller
     # TODO: add_controller(widget::Widget, controller::EventController)
     export add_controller
 
-    @document remove_controller
     # TODO: remove_controller(widget::Widget, controller::EventController)
     export remove_controller
 
-    @document set_is_focusable
     set_is_focusable(widget::Widget, b::Bool) = detail.set_is_focusable(widget._internal.cpp_object, b)
     export set_is_focusable
 
-    @document get_is_focusable
     get_is_focusable(widget::Widget) = return detail.get_is_focusable(widget._internal.cpp_object)
     export get_is_focusable
 
-    @document grab_focus
     grab_focus(widget::Widget) = detail.grab_focus(widget._internal.cpp_object)
     export grab_focus
 
-    @document get_has_focus
     get_has_focus(widget::Widget) = detail.get_has_focus(widget._internal.cpp_object)
     export get_has_focus
 
-    @document set_focus_on_click
     set_focus_on_click(widget::Widget, b::Bool) = detail.set_focus_on_click(widget._internal.cpp_object, b)
     export set_focus_on_click
 
-    @document get_focus_on_click
     get_focus_on_click(widget::Widget) = return detail.get_focus_on_click(widget._internal.cpp_object)
     export get_focus_on_click
 
-    @document get_is_realized
     get_is_realized(widget::Widget) = return detail.get_is_realized(widget._internal.cpp_object)
     export get_is_realized
 
-    @document get_minimum_size
     get_minimum_size(widget::Widget) ::Vector2f = return detail.get_minimum_size(widget._internal.cpp_object)
     export get_minimum_size
 
-    @document get_natural_size
     get_natural_size(widget::Widget) ::Vector2f = return detail.get_natural_size(widget._internal.cpp_object)
     export get_natural_size
 
-    @document get_position
     get_position(widget::Widget) ::Vector2f = return detail.get_position(widget._internal.cpp_object)
     export get_position
 
-    @document get_allocated_size
     get_allocated_size(widget::Widget) ::Vector2f = return detail.get_allocated_size(widget._internal.cpp_object)
     export get_allocated_size
 
-    @document unparent
     unparent(widget::Widget) = detail.unparent(widget._internal.cpp_object)
     export unparent
 
-    @document set_can_respond_to_input
     set_can_respond_to_input(widget::Widget, b::Bool) = detail.set_can_respond_to_input(widget._internal.cpp_object, b)
     export set_can_respond_to_input
 
-    @document get_can_respond_to_input
     get_can_respond_to_input(widget::Widget) = return detail.get_can_respond_to_input(widget._internal.cpp_object)
     export get_can_respond_to_input
 
-    @document set_hide_on_overflow
     set_hide_on_overflow(widget::Widget, b::Bool) = detail.set_hide_on_overflow(widget._internal.cpp_object, b)
     export set_hide_on_overflow
 
-    @document get_hide_on_overflow
     get_hide_on_overflow(widget::Widget) = return detail.get_hide_on_overflow(widget._internal.cpp_object)
     export get_hide_on_overflow
 
-    @document get_clipboard
     # TODO get_clipboard(widget::Widget) ::Clipboard = Clipboard(detail.get_clipboard(widget._internal.cpp_object))
     export get_clipboard
 
 ####### tick_callback.jl
 
-    @document FrameClock "TODO"
-
-    @document set_tick_callback "TODO"
     function set_tick_callback(widget::Widget, f, data)
+        # TODO
     end
     export set_tick_callback
 
-    @document remove_tick_callback "TODO"
     remove_tick_callback(widget::Widget) = detail.remove_tick_callback(widget._internal.cpp_object)
     export remove_tick_callback
 
 ####### action.jl
 
-    @document Action "TODO"
     Action(id::String, app::Application) = Action(detail._Action(id, app._internal.cpp_object))
-
     Base.show(io::IO, x::Action) = print(io, "Application(" * get_id(x) * ")")
 
-    @document activate "TODO"
     @export_function Action activate
 
-    @document set_function "TODO"
     function set_function(action::Action, f)
         detail.set_function(action._internal, function(instance_ref)
             TypedFunction(f, Cvoid, (Action,))(Action(instance_ref[]))
@@ -724,7 +636,6 @@ module mousetrap
     end
     export set_function
 
-    @document set_stateful_function "TODO"
     function set_stateful_function(action::Action, f; initial_state = true)
         detail.set_stateful_function(action._internal, function(instance_ref, state)
             TypedFunction(f, Bool, (Action, Bool))(Action(instance_ref[]), state)
@@ -732,74 +643,40 @@ module mousetrap
     end
     export set_stateful_function
 
-    @document get_id "TODO"
     @export_function Action get_id
-
-    @document get_state "TODO"
     @export_function Action get_state
-
-    @document set_state "TODO"
     @export_function Action set_state state Bool
-
-    @document add_shortcut "TODO"
     @export_function Action add_shortcut shortcut String
-
-    @document clear_shortcuts "TODO"
     @export_function Action clear_shortcuts
-
-    @document get_shortcuts "TODO"
     @export_function Action get_shortcuts
-
-    @document set_enabled "TODO"
     @export_function Action set_enabled b Bool
-
-    @document get_enabled "TODO"
     @export_function Action get_enabled
-
-    @document get_is_stateful "TODO"
     @export_function Action get_is_stateful
 
     @add_signal(Action, activated)
 
 ####### application.jl
 
-    @document Application "TODO"
     Application(id::String) = Application(detail._Application(id))
 
     Base.show(io::IO, x::Application) = print(io, "Application(" * get_id(x) * ")")
 
     import Base.run
-
-    @document run "TODO"
     run(x::Application) = mousetrap.detail.run(x._internal)
 
-    @document quit "TODO"
     @export_function Application quit
-
-    @document hold "TODO"
     @export_function Application hold
-
-    @document release "TODO"
     @export_function Application release
-
-    @document mark_as_busy "TODO"
     @export_function Application mark_as_busy
-
-    @document unmark_as_busy "TODO"
     @export_function Application unmark_as_busy
 
-    @document add_action "TODO"
     add_action(app::Application, action::Action) = detail.add_action(app._internal, action._internal)
     export add_action
 
-    @document get_action "TODO"
     get_action(app::Application, id::String) = return detail.get_action(app._internal, id)
     export get_action
 
-    @document remove_action "TODO"
     @export_function Application remove_action
-
-    @document has_action "TODO"
     @export_function Application has_action
 
     @add_signal(Application, activate)
@@ -807,8 +684,51 @@ module mousetrap
     
 ####### window.jl
 
-    @document Window "TODO"
-    
+    Window(app::Application) = Window(detail._Window(app._internal))
+    export Window
+
+    @export_function Window set_maximized
+    @export_function Window set_fullscreen
+    @export_function Window present
+    @export_function Window close
+    @export_function Window set_hide_on_close
+    @export_function Window remove_child
+    @export_function Window set_destroy_with_parent
+    @export_function Window get_destroy_with_parent
+    @export_function Window set_title
+    @export_function Window get_title
+    @export_function Window remove_titlebar_widget
+    @export_function Window set_is_modal
+    @export_function Window get_is_modal
+    @export_function Window set_is_decorated
+    @export_function Window get_is_decorated
+    @export_function Window set_has_close_button
+    @export_function Window get_has_close_button
+
+    set_startup_notification_identifier(window::Window, title::String) = detail.set_startup_notification_identifier(window._internal, title)
+
+    @export_function Window set_focus_visible
+    @export_function Window get_focus_visible
+
+    function set_child(window::Window, child::Widget)
+        detail.set_child(window._internal, child._internal.cpp_object)
+    end
+    export set_child
+
+    function set_titlebar_widget(window::Window, widget::Widget)
+        detail.set_titlebar_widget(window._internal, widget._internal.cpp_object)
+    end
+    export set_titlebar_widget
+
+    function set_default_widget(window::Window, widget::Widget)
+        detail.set_default_widget(window._internal, widget._internal.cpp_object)
+    end
+    export set_default_widget
+
+    @add_signal(Window, close_request)
+    @add_signal(Window, activate_default_widget)
+    @add_signal(Window, activate_focused_widget)
+    @add_widget_signals(Window)
 end
 
 ####### main.jl
@@ -818,15 +738,8 @@ using .mousetrap;
 app = Application("test.app")
 
 connect_signal_activate(app, function(app::Application, data)
-    mousetrap.detail.test_initialize(app._internal)
-
-    action = Action("test.action", app)
-    set_function(action, (x::Action, data) -> println(get_id(x), " ", data), 1234)
-
-    add_shortcut(action, "m")
-    add_shortcut(action, "<Control>c")
-    #println(get_shortcuts(action))
-    activate(action)
+    window = Window(app)
+    present(window)
 end, 1234)
 
 run(app)

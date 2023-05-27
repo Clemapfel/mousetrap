@@ -63,10 +63,6 @@ namespace mousetrap
             /// @brief present the window to the user
             void present();
 
-            /// @brief set whether the window should show the menubar, by default, only the toplevel window shows the applications menubar
-            /// @param b true if menubar should be visible, false otherwise
-            void set_show_menubar(bool);
-
             /// @brief set whether mousetrap::Window::close should hide or destroy the window, true by default
             /// @param b true if window should only be hidden, false if it should be destroyed
             void set_hide_on_close(bool);
