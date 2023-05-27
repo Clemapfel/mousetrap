@@ -56,14 +56,14 @@ Consider using [Homebrew](https://brew.sh/) to install the listed dependencies
 
 \todo This section is not yet complete. 
 
-Consider following guides linked here to to install each dependency
+Consider following guides linked here, in order to install each dependency
 
 + [SFML](https://www.sfml-dev.org/tutorials/2.5/start-vc.php)
 + [GTK4](https://www.gtk.org/docs/installations/windows)
 + [OpenGL](https://medium.com/swlh/setting-opengl-for-windows-d0b45062caf)
 + [GLEW](https://glew.sourceforge.net/install.html)
 
-Or use [chocolatey](https://chocolatey.org/) or [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/) to install dependencies available at these systems.
+Or use [chocolatey](https://chocolatey.org/) or [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/) to install dependencies if available. 
 
 ---
 

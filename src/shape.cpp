@@ -398,26 +398,6 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d)
-    {
-        *_internal->vertices = {
-            Vertex(a.x, a.y, *_internal->color),
-            Vertex(b.x, b.y, *_internal->color),
-            Vertex(c.x, c.y, *_internal->color),
-            Vertex(d.x, d.y, *_internal->color)
-        };
-
-        _internal->vertices->at(0).texture_coordinates = {0, 0};
-        _internal->vertices->at(1).texture_coordinates = {1, 0};
-        _internal->vertices->at(2).texture_coordinates = {1, 1};
-        _internal->vertices->at(3).texture_coordinates = {0, 1};
-
-        *_internal->indices = {0, 1, 2, 3};
-        _internal->render_type = GL_TRIANGLE_FAN;
-        _internal->shape_type = detail::ShapeType::RECTANGLE;
-        initialize();
-    }
-
     void Shape::as_rectangular_frame(Vector2f top_left, Vector2f outer_size, float x_width, float y_height)
     {
         float x = top_left.x;
@@ -1141,13 +1121,6 @@ namespace mousetrap
     {
         auto out = Shape();
         out.as_rectangle(top_left, size);
-        return out;
-    }
-
-    Shape Shape::Rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d)
-    {
-        auto out = Shape();
-        out.as_rectangle(a, b, c, d);
         return out;
     }
 

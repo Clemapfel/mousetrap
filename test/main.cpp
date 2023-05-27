@@ -53,53 +53,61 @@ int main()
     {
         auto window = Window(app);
 
-        auto action = Action("test", app);
-        action.set_function([](Action&){
-            std::cout << "println" << std::endl;
-        });
-        app.add_action(action);
-        auto test = app.get_action(action.get_id());
-        test.activate();
+        // create render texture
+        static auto render_texture = RenderTexture();
+        render_texture.create(400, 300);
 
-        /*
-        auto* dialog = gtk_file_dialog_new();
-        gtk_file_dialog_open(
-            GTK_FILE_DIALOG(dialog),
-            nullptr,
-            nullptr, nullptr, nullptr
-        );
+// create shape that will be used to display the contents of render texture
+                                     static auto render_texture_shape = Shape::Rectangle({-1, -1}, {2, 2});
+                                     render_texture_shape.set_texture(render_texture);
 
-        auto* native = gtk_file_chooser_native_new(
-            "test",
-            GTK_WINDOW(gtk_window_new()),
-            GTK_FILE_CHOOSER_ACTION_OPEN,
-            nullptr,
-            nullptr
-        );
-        gtk_native_dialog_show(GTK_NATIVE_DIALOG(native));
-        */
+// create task that will render this shape
+                                     static auto render_texture_shape_task = RenderTask(render_texture_shape);
 
-        auto filter = FileFilter("*.hpp");
-        filter.add_allowed_suffix("hpp");
+// connect to signal render
+                                     static auto render_area = RenderArea();
+                                     render_area.connect_signal_render([](RenderArea& area, GdkGLContext*)
+                                                                       {
+                                                                           // render to render texture
+                                                                           {
+                                                                               // bind texture for rendering
+                                                                               render_texture.bind_as_render_target();
 
-        static auto native = FileChooser(FileChooserAction::SELECT_MULTIPLE_FOLDERS);
-        native.set_initial_file(FileDescriptor("/home/clem/Workspace/mousetrap/julia_binding/julia_binding.cpp"));
-        native.set_initial_filter(filter);
-        native.on_accept([](const std::vector<FileDescriptor>& files){
-            for (auto& file : files)
-                std::cout << file.get_path() << std::endl;
-        });
+                                                                               // clear textures buffer with RGBA(0, 0, 0, 0);
+                                                                               glClearColor(0, 0, 0, 0);
+                                                                               glClear(GL_COLOR_BUFFER_BIT);
 
-        native.on_cancel([](){
-            std::cout << "cancel" << std::endl;
-        });
+                                                                               /* rendering to texture happens here */
 
-        auto button = Button();
-        button.connect_signal_clicked([](Button&){
-           native.present();
-        });
+                                                                               // flush to texture
+                                                                               glFlush();
 
-        window.set_child(button);
+                                                                               // unbind textue from rendering
+                                                                               render_texture.unbind_as_render_target();
+                                                                           }
+
+                                                                           // now, render to screen, not to a texture
+                                                                           {
+                                                                               // clear screens framebuffer
+                                                                               glClearColor(0, 0, 0, 0);
+                                                                               glClear(GL_COLOR_BUFFER_BIT);
+
+                                                                               // set blend mode to default
+                                                                               glEnable(GL_BLEND);
+                                                                               set_current_blend_mode(BlendMode::NORMAL);
+
+                                                                               // display render textures contents
+                                                                               render_texture_shape_task.render();
+
+                                                                               // flush to screen
+                                                                               glFlush();
+                                                                           }
+
+                                                                           // signal that the RenderAreas framebuffer was updated
+                                                                           return true;
+                                                                       });
+        aspect_frame.set_child(render_area);
+        window.set_child(aspect_frame);
         window.present();
     });
 

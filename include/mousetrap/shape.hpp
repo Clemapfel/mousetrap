@@ -162,16 +162,6 @@ namespace mousetrap
             /// @copydoc Shape::as_rectangle(Vector2f top_left, Vector2f size)
             static Shape Rectangle(Vector2f top_left, Vector2f size);
 
-            /// @brief construct as filled rectangle from 4 points
-            /// @param a point in gl coordinates
-            /// @param b point in gl coordinates
-            /// @param c point in gl coordinates
-            /// @param d point in gl coordinates
-            void as_rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d);
-
-            /// @copydoc Shape::as_rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d)
-            static Shape Rectangle(Vector2f a, Vector2f b, Vector2f c, Vector2f d);
-
             /// @brief construct as filled circle
             /// @param center point in gl coordinates
             /// @param radius distance in gl coordinates
