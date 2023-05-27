@@ -129,7 +129,7 @@ void add_signal_##snake_case(Arg_t type) {\
         instance.set_signal_##snake_case##_blocked(b); \
     }) \
     .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
-        instance.get_signal_##snake_case##_blocked(); \
+        return instance.get_signal_##snake_case##_blocked(); \
     }) \
     .method("emit_signal_" + std::string(#snake_case), [](T& instance) { \
         instance.emit_signal_##snake_case(); \
@@ -304,9 +304,16 @@ static void implement_widget(jlcxx::Module& m)
         .add_type_method(FrameClock, get_fps)
     ;
 
+    m.widget_method_no_args(get_frame_clock);
+
+
+    m.add_enum_value(TickCallbackResult, TICK_CALLBACK_RESULT, CONTINUE);
+    m.add_enum_value(TickCallbackResult, TICK_CALLBACK_RESULT, DISCONTINUE);
+
     m.method("set_tick_callback", [](void* widget, jl_function_t* task) {
+
         ((Widget*) widget)->set_tick_callback([](FrameClock clock, jl_function_t* task) -> TickCallbackResult {
-            return (TickCallbackResult) jl_unbox_bool(jl_calln(jlcxx::box<FrameClock&>(clock), task));
+            return (TickCallbackResult) jl_unbox_int32(jl_safe_call("Widget::tick_callback", task, jlcxx::box<FrameClock&>(clock)));
         }, task);
     });
     m.widget_method_no_args(remove_tick_callback);

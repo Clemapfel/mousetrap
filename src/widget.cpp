@@ -518,6 +518,11 @@ namespace mousetrap
         else
             return false;
     }
+
+    FrameClock Widget::get_frame_clock() const
+    {
+        return FrameClock(gtk_widget_get_frame_clock(operator NativeWidget()));
+    }
 }
 
 

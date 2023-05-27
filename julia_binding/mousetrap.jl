@@ -70,7 +70,7 @@ module mousetrap
 
     function safe_call(scope, f, args...)
         try
-            f(args...)
+            return f(args...)
         catch e
             printstyled(stderr, "[ERROR] "; bold = true, color = :red)
             printstyled(stderr, "In " * scope * ": "; bold = true)
@@ -609,25 +609,36 @@ module mousetrap
 
 ####### tick_callback.jl
 
-    @export_signal_emitter FrameClock
+    using Dates
 
-    function get_frame_time(clock::FrameClock)
-        return Dates.microseconds(detail.get_frame_time(clock._internal))
+    function get_frame_clock(widget::Widget)
+        return FrameClock(detail.get_frame_clock(widget._internal.cpp_object))
+    end
+    export get_frame_clock
+
+    function get_frame_time(clock::FrameClock) ::Dates.Microsecond
+        return Dates.Microsecond(detail.get_frame_time(clock._internal))
     end
     export get_frame_time
 
-    function get_time_since_last_frame(clock::FrameClock)
-        return Dates.microseconds(detail.get_time_since_last_frame(clock._internal))
+    function get_time_since_last_frame(clock::FrameClock) ::Dates.Microsecond
+        return Dates.Microsecond(detail.get_time_since_last_frame(clock._internal))
     end
     export get_time_since_last_frame
 
+    @enum TickCallbackResult begin
+        TICK_CALLBACK_RESULT_CONTINUE = detail.TICK_CALLBACK_RESULT_CONTINUE
+        TICK_CALLBACK_RESULT_DISCONTINUE = detail.TICK_CALLBACK_RESULT_DISCONTINUE
+    end
+    @export_enum TickCallbackResult
+
     @export_function FrameClock get_fps
 
-    function set_tick_callback(widget::Widget, f, data)
 
-    end
-    function set_tick_callback(widget::Widget, f, data)
-
+    function set_tick_callback(widget::Widget, f, data::Data_t) where Data_t
+        detail.set_tick_callback(widget._internal.cpp_object, function (frame_clock_internal::Ref{detail._FrameClock})
+            return Cint((TypedFunction(f, TickCallbackResult, (FrameClock, Data_t)))(FrameClock(frame_clock_internal[]), data))
+        end)
     end
     export set_tick_callback
 
@@ -755,10 +766,15 @@ using .mousetrap;
 
 app = Application("test.app")
 
-connect_signal_activate(app, function(app::Application, data)
+connect_signal_activate(app, function(app::Application)
     window = Window(app)
+
+    set_tick_callback(window, function (clock::FrameClock, data)
+        println(get_time_since_last_frame(clock), " ", data)
+        return TICK_CALLBACK_RESULT_CONTINUE
+    end, 1234)
     present(window)
-end, 1234)
+end)
 
 run(app)
 
