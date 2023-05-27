@@ -8,6 +8,7 @@ module mousetrap
     Object used to invoke an arbitrary function using the given signature. This wrapper 
     will automatically convert any arguments and return values to the given types 
     unless impossible, at which point an assertion error will be thrown on instantiation. 
+
     In this way, it can be used to assert a functions signature at compile time.
 
     ### Example
@@ -130,7 +131,7 @@ module mousetrap
         ) = detail.$name(x._internal, $arg1_name, $arg2_name, $arg3_name, $arg4_name))
     end
 
-     macro export_function(type, name, args...)
+    macro export_function(type, name, args...)
 
         @assert (length(args) == 0) || (length(args) % 2 == 0)
 
@@ -183,7 +184,7 @@ module mousetrap
 
     @export_signal_emitter Application
     @export_signal_emitter Action
-    #@export_signal_emitter FrameClock
+    @export_signal_emitter FrameClock
     @export_widget Window
 
 ####### signal_components.jl
@@ -203,9 +204,9 @@ module mousetrap
         )))
 
         push!(out.args, esc(:(
-            function $connect_signal_name(x::$T, f, data) where Data_t
+            function $connect_signal_name(x::$T, f, data::Data_t) where Data_t
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, Cvoid, ($T, Any)))($T(x[]), data)
+                    (TypedFunction(f, Cvoid, ($T, Data_t)))($T(x[]), data)
                 end)
             end
         )))
@@ -608,8 +609,25 @@ module mousetrap
 
 ####### tick_callback.jl
 
+    @export_signal_emitter FrameClock
+
+    function get_frame_time(clock::FrameClock)
+        return Dates.microseconds(detail.get_frame_time(clock._internal))
+    end
+    export get_frame_time
+
+    function get_time_since_last_frame(clock::FrameClock)
+        return Dates.microseconds(detail.get_time_since_last_frame(clock._internal))
+    end
+    export get_time_since_last_frame
+
+    @export_function FrameClock get_fps
+
     function set_tick_callback(widget::Widget, f, data)
-        # TODO
+
+    end
+    function set_tick_callback(widget::Widget, f, data)
+
     end
     export set_tick_callback
 

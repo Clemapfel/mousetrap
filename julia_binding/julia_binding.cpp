@@ -107,10 +107,16 @@ type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_fun
     }); \
 }
 
+DEFINE_ADD_SIGNAL(activate, void)
+DEFINE_ADD_SIGNAL(shutdown, void)
+DEFINE_ADD_SIGNAL_CONVERT_RETURN_TYPE(close_request, WindowCloseRequestResult, bool)
+DEFINE_ADD_SIGNAL(activate_default_widget, void)
+DEFINE_ADD_SIGNAL(activate_focused_widget, void)
+
 #define DEFINE_ADD_WIDGET_SIGNAL(snake_case) \
 template<typename T, typename Arg_t>                               \
 void add_signal_##snake_case(Arg_t type) {\
-type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
     { \
         instance.connect_signal_##snake_case([](Widget& instance, jl_function_t* task) -> void { \
             jl_safe_call(("emit_signal_" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(dynamic_cast<T&>(instance))); \
@@ -130,14 +136,6 @@ type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_fun
     }); \
 }
 
-
-DEFINE_ADD_SIGNAL(activate, void)
-DEFINE_ADD_SIGNAL(shutdown, void)
-
-DEFINE_ADD_SIGNAL_CONVERT_RETURN_TYPE(close_request, WindowCloseRequestResult, bool)
-DEFINE_ADD_SIGNAL(activate_default_widget, void)
-DEFINE_ADD_SIGNAL(activate_focused_widget, void)
-
 DEFINE_ADD_WIDGET_SIGNAL(realize)
 DEFINE_ADD_WIDGET_SIGNAL(unrealize)
 DEFINE_ADD_WIDGET_SIGNAL(destroy)
@@ -153,25 +151,25 @@ void add_widget_signals(T& type)
     add_signal_unrealize<Widget_t>(type);
     add_signal_destroy<Widget_t>(type);
     add_signal_hide<Widget_t>(type);
-    add_signal_show<Widget>(type);
-    add_signal_map<Widget>(type);
-    add_signal_unmap<Widget>(type);
+    add_signal_show<Widget_t>(type);
+    add_signal_map<Widget_t>(type);
+    add_signal_unmap<Widget_t>(type);
 }
 
 // ### WIDGET
 
-#define widget_method(name, arg_list, arg_name_list) \
-method(#name, [](void* widget, arg_list) { \
-    return ((Widget*) widget)->name(arg_name_list); \
-})
-
-#define widget_method_no_args(name) \
-method(#name, [](void* widget) { \
-    return ((Widget*) widget)->name(); \
-})
-
 static void implement_widget(jlcxx::Module& m)
 {
+    #define widget_method(name, arg_list, arg_name_list) \
+    method(#name, [](void* widget, arg_list) { \
+        return ((Widget*) widget)->name(arg_name_list); \
+    })
+
+    #define widget_method_no_args(name) \
+    method(#name, [](void* widget) { \
+        return ((Widget*) widget)->name(); \
+    })
+
     m.widget_method_no_args(activate);
 
     m.widget_method(set_margin_top, float margin, margin);
@@ -293,14 +291,18 @@ static void implement_widget(jlcxx::Module& m)
     m.widget_method(set_hide_on_overflow, bool b, b);
     m.widget_method_no_args(get_hide_on_overflow);
 
-    /*
-     * TODO
     m.add_type(FrameClock)
         .constructor([](void* instance){
             return new FrameClock((GdkFrameClock*) instance);
         }, USE_FINALIZERS)
+        .method("get_frame_time", [](FrameClock& instance){
+            return instance.get_frame_time().as_microseconds();
+        })
+        .method("get_time_since_last_frame", [](FrameClock& instance){
+            return instance.get_time_since_last_frame().as_microseconds();
+        })
+        .add_type_method(FrameClock, get_fps)
     ;
-     */
 
     m.method("set_tick_callback", [](void* widget, jl_function_t* task) {
         ((Widget*) widget)->set_tick_callback([](FrameClock clock, jl_function_t* task) -> TickCallbackResult {
@@ -412,7 +414,7 @@ void implement_window(jlcxx::Module& module)
             window.set_default_widget(*((Widget*) widget));
         });
 
-        //add_widget_signals<Window>(window);
+        add_widget_signals<Window>(window);
         add_signal_close_request<Window>(window);
         add_signal_activate_default_widget<Window>(window);
         add_signal_activate_focused_widget<Window>(window);
@@ -422,9 +424,6 @@ void implement_window(jlcxx::Module& module)
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
 {
-    // order matters
-    //module.add_type<Widget>(("_Widget"));
-
     implement_widget(module);
     implement_action(module);
     implement_application(module);
