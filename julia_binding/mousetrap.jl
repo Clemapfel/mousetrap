@@ -1015,6 +1015,35 @@ module mousetrap
 
 ####### window.jl
 
+    struct RGBA
+        r::Cfloat
+        g::Cfloat
+        b::Cfloat
+        a::Cfloat
+    end
+    RGBA(r::AbstractFloat, g::AbstractFloat, b::AbstractFloat, a::AbstractFloat) = RGBA(convert(Cfloat, r), convert(Cfloat, g), convert(Cfloat, b), convert(Cfloat, a))
+    export RGBA
+
+    struct HSVA
+        h::Cfloat
+        s::Cfloat
+        v::Cfloat
+        a::Cfloat
+    end
+    HSVA(h::AbstractFloat, s::AbstractFloat, v::AbstractFloat, a::AbstractFloat) = HSVA(convert(Cfloat, h), convert(Cfloat, s), convert(Cfloat, v), convert(Cfloat, a))
+    export HSVA
+
+    rgba_to_hsva(rgba::RGBA) ::HSVA = return detail.rgba_to_hsva(rgba)
+    export rgba_to_hsva
+
+    hsva_to_rgba(hsva::HSVA) ::RGBA = return detail.hsva_to_rgba(hsva)
+    export hsva_to_rgba
+
+    Base.convert(::Type{HSVA}, x::RGBA) = return rgba_to_hsva(x)
+    Base.convert(::Type{RGBA}, x::HSVA) = return hsva_to_rgba(x)
+
+####### window.jl
+
     Window(app::Application) = Window(detail._Window(app._internal))
     export Window
 
@@ -1066,6 +1095,11 @@ end
 ####### main.jl
 
 using .mousetrap;
+
+rgba = RGBA(1, 0, 1, 1)
+@show convert(HSVA, rgba)
+@show convert(RGBA, convert(HSVA, rgba))
+exit(0)
 
 app = Application("test.app")
 

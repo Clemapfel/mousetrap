@@ -39,6 +39,12 @@ static inline jl_value_t* jl_safe_call(const char* scope, jl_function_t* functio
     return jl_call(safe_call, wrapped.data(), wrapped.size());
 }
 
+static inline jl_value_t* jl_get_property(jl_value_t* object, const char* property_name)
+{
+    static auto* get_property = jl_get_function(jl_base_module, "getproperty");
+    return jl_call2(get_property, object, (jl_value_t*) jl_symbol(property_name));
+}
+
 // ### BOX
 
 static jl_value_t* box_vector2f(Vector2f in)
@@ -643,6 +649,49 @@ void implement_check_button(jlcxx::Module& module)
     add_signal_toggled<CheckButton>(check_button);
 }
 
+// ### COLOR
+
+void implement_colors(jlcxx::Module& module)
+{
+    module.method("rgba_to_hsva", [](jl_value_t* rgba_in) -> jl_value_t*
+    {
+        static auto* hsva_ctor = jl_eval_string("return mousetrap.HSVA");
+        auto as_rgba = RGBA(
+            jl_unbox_float32(jl_get_property(rgba_in, "r")),
+            jl_unbox_float32(jl_get_property(rgba_in, "g")),
+            jl_unbox_float32(jl_get_property(rgba_in, "b")),
+            jl_unbox_float32(jl_get_property(rgba_in, "a"))
+        );
+
+        auto as_hsva = rgba_to_hsva(as_rgba);
+        return jl_calln(hsva_ctor,
+            jl_box_float32(as_hsva.h),
+            jl_box_float32(as_hsva.s),
+            jl_box_float32(as_hsva.v),
+            jl_box_float32(as_hsva.a)
+        );
+    });
+
+    module.method("hsva_to_rgba", [](jl_value_t* rgba_in) -> jl_value_t*
+    {
+        static auto* rgba_ctor = jl_eval_string("return mousetrap.RGBA");
+        auto as_hsva = HSVA(
+            jl_unbox_float32(jl_get_property(rgba_in, "h")),
+            jl_unbox_float32(jl_get_property(rgba_in, "s")),
+            jl_unbox_float32(jl_get_property(rgba_in, "v")),
+            jl_unbox_float32(jl_get_property(rgba_in, "a"))
+        );
+
+        auto as_rgba = hsva_to_rgba(as_hsva);
+        return jl_calln(rgba_ctor,
+            jl_box_float32(as_rgba.r),
+            jl_box_float32(as_rgba.g),
+            jl_box_float32(as_rgba.b),
+            jl_box_float32(as_rgba.a)
+        );
+    });
+}
+
 // ### MAIN
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
@@ -663,6 +712,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_button(module);
     implement_center_box(module);
     implement_check_button(module);
+    implement_colors(module);
 
     // TODO:
     // click event controller
