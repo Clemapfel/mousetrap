@@ -112,6 +112,8 @@ DEFINE_ADD_SIGNAL(shutdown, void)
 DEFINE_ADD_SIGNAL_CONVERT_RETURN_TYPE(close_request, WindowCloseRequestResult, bool)
 DEFINE_ADD_SIGNAL(activate_default_widget, void)
 DEFINE_ADD_SIGNAL(activate_focused_widget, void)
+DEFINE_ADD_SIGNAL(value_changed, void)
+DEFINE_ADD_SIGNAL(properties_changed, void)
 
 #define DEFINE_ADD_WIDGET_SIGNAL(snake_case) \
 template<typename T, typename Arg_t>                               \
@@ -388,6 +390,26 @@ static void implement_action(jlcxx::Module& module)
     // TODO add_signal_activated<Action>(action);
 }
 
+// ### ADJUSTMENT
+
+void implement_adjustment(jlcxx::Module& module)
+{
+    auto adjustment = module.add_type(Adjustment)
+        .add_constructor(float, float, float, float)
+        .add_type_method(Adjustment, get_lower)
+        .add_type_method(Adjustment, get_upper)
+        .add_type_method(Adjustment, get_value)
+        .add_type_method(Adjustment, get_increment)
+        .add_type_method(Adjustment, set_lower)
+        .add_type_method(Adjustment, set_upper)
+        .add_type_method(Adjustment, set_value)
+        .add_type_method(Adjustment, set_increment)
+    ;
+
+    add_signal_value_changed<Adjustment>(adjustment);
+    add_signal_properties_changed<Adjustment>(adjustment);
+}
+
 // ### WINDOW
 
 void implement_window(jlcxx::Module& module)
@@ -469,6 +491,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_action(module);
     implement_application(module);
     implement_window(module);
+    implement_adjustment(module);
 
     module.method("test_initialize", [](Application& app)
     {

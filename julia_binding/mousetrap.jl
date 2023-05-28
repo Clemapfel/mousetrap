@@ -248,6 +248,8 @@ module mousetrap
     @export_signal_emitter Application
     @export_signal_emitter Action
     @export_signal_emitter FrameClock
+    @export_signal_emitter Adjustment
+
     @export_widget Window
 
 ####### signal_components.jl
@@ -775,12 +777,53 @@ module mousetrap
     get_action(app::Application, id::String) = return detail.get_action(app._internal, id)
     export get_action
 
-    @export_function Application remove_action
-    @export_function Application has_action
+    @export_function Application remove_action id String
+    @export_function Application has_action id String
 
     @add_signal(Application, activate)
     @add_signal(Application, shutdown)
     
+####### adjustment.jl
+
+    function Adjustment(value::Number, lower::Number, upper::Number, increment::Number)
+        println(value, " ", lower, " ", upper, " ", increment)
+        return Adjustment(detail._Adjustment(
+            convert(Cfloat, value),
+            convert(Cfloat, lower),
+            convert(Cfloat, upper),
+            convert(Cfloat, increment)
+        ));
+    end
+    
+    @export_function Adjustment get_lower
+    @export_function Adjustment get_upper
+    @export_function Adjustment get_value
+    @export_function Adjustment get_increment
+
+    set_lower(adjustment::Adjustment, x::Number) = detail.set_lower(adjustment._internal, convert(Cfloat, x))
+    export set_lower
+
+    set_upper(adjustment::Adjustment, x::Number) = detail.set_upper(adjustment._internal, convert(Cfloat, x))
+    export set_upper
+
+    set_value(adjustment::Adjustment, x::Number) = detail.set_value(adjustment._internal, convert(Cfloat, x))
+    export set_value
+
+    set_increment(adjustment::Adjustment, x::Number) = detail.set_increment(adjustment._internal, convert(Cfloat, x))
+    export set_increment
+
+    function Base.show(io::IO, x::Adjustment) 
+        print(io, "Adjustment(" * 
+            string(get_value(x)) * ", " *
+            string(get_lower(x)) * ", " *
+            string(get_upper(x)) * ", " *
+            string(get_increment(x)) * ")"
+        );
+    end
+
+    @add_signal(Adjustment, value_changed)
+    @add_signal(Adjustment, properties_changed)
+
 ####### window.jl
 
     Window(app::Application) = Window(detail._Window(app._internal))
@@ -839,7 +882,12 @@ app = Application("test.app")
 
 connect_signal_activate(app) do (app::Application)
     window = Window(app)
-    set_startup_notification_identifier(window, "test notification")
+
+    adjustment = Adjustment(0.5, 0, 1, 0.01)
+    @show adjustment
+    set_value(adjustment, 0.2)
+    @show adjustment
+
     present(window)
 end
 

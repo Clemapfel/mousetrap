@@ -53,61 +53,10 @@ int main()
     {
         auto window = Window(app);
 
-        // create render texture
-        static auto render_texture = RenderTexture();
-        render_texture.create(400, 300);
+        auto* gtk_adjustment = gtk_adjustment_new(0.5, 0, 1, 0.01, 0, 0);
+        auto adjustment = Adjustment(0.5, 0, 1, 0.01);
+        std::cout << adjustment.get_value() << " " << adjustment.get_lower() << " " << adjustment.get_upper() << " " << adjustment.get_increment() << std::endl;
 
-// create shape that will be used to display the contents of render texture
-                                     static auto render_texture_shape = Shape::Rectangle({-1, -1}, {2, 2});
-                                     render_texture_shape.set_texture(render_texture);
-
-// create task that will render this shape
-                                     static auto render_texture_shape_task = RenderTask(render_texture_shape);
-
-// connect to signal render
-                                     static auto render_area = RenderArea();
-                                     render_area.connect_signal_render([](RenderArea& area, GdkGLContext*)
-                                                                       {
-                                                                           // render to render texture
-                                                                           {
-                                                                               // bind texture for rendering
-                                                                               render_texture.bind_as_render_target();
-
-                                                                               // clear textures buffer with RGBA(0, 0, 0, 0);
-                                                                               glClearColor(0, 0, 0, 0);
-                                                                               glClear(GL_COLOR_BUFFER_BIT);
-
-                                                                               /* rendering to texture happens here */
-
-                                                                               // flush to texture
-                                                                               glFlush();
-
-                                                                               // unbind textue from rendering
-                                                                               render_texture.unbind_as_render_target();
-                                                                           }
-
-                                                                           // now, render to screen, not to a texture
-                                                                           {
-                                                                               // clear screens framebuffer
-                                                                               glClearColor(0, 0, 0, 0);
-                                                                               glClear(GL_COLOR_BUFFER_BIT);
-
-                                                                               // set blend mode to default
-                                                                               glEnable(GL_BLEND);
-                                                                               set_current_blend_mode(BlendMode::NORMAL);
-
-                                                                               // display render textures contents
-                                                                               render_texture_shape_task.render();
-
-                                                                               // flush to screen
-                                                                               glFlush();
-                                                                           }
-
-                                                                           // signal that the RenderAreas framebuffer was updated
-                                                                           return true;
-                                                                       });
-        aspect_frame.set_child(render_area);
-        window.set_child(aspect_frame);
         window.present();
     });
 

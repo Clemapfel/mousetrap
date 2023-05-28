@@ -16,7 +16,7 @@ namespace mousetrap
     }
 
     Adjustment::Adjustment(float current, float lower, float upper, float increment)
-        : Adjustment(gtk_adjustment_new(current, lower, upper, increment, 0, glm::distance(lower, upper)))
+        : Adjustment(gtk_adjustment_new(current, lower, upper, increment, 0, 0))
     {
         if (upper < lower)
         {
