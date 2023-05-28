@@ -252,6 +252,7 @@ module mousetrap
 
     @export_widget AspectFrame
     @export_widget Box
+    @export_widget Button
     @export_widget Window
 
 ####### signal_components.jl
@@ -726,20 +727,20 @@ module mousetrap
 
     @export_function Action activate
 
-    function set_function(action::Action, f)
+    function set_function(f, action::Action,)
         detail.set_function(action._internal, function(instance_ref)
             TypedFunction(f, Cvoid, (Action,))(Action(instance_ref[]))
         end)
     end
 
-    function set_function(action::Action, f, data::Data_t) where Data_t
+    function set_function(f, action::Action, data::Data_t) where Data_t
         detail.set_function(action._internal, function(instance_ref)
             TypedFunction(f, Cvoid, (Action, Data_t))(Action(instance_ref[]), data)
         end)
     end
     export set_function
 
-    function set_stateful_function(action::Action, f; initial_state = true)
+    function set_stateful_function(f, action::Action; initial_state = true)
         detail.set_stateful_function(action._internal, function(instance_ref, state)
             TypedFunction(f, Bool, (Action, Bool))(Action(instance_ref[]), state)
         end, initial_state)
@@ -943,6 +944,22 @@ module mousetrap
 
     @add_widget_signals(Box)
 
+####### button.jl
+
+    Button() = Button(detail._Button())
+
+    @export_function Button set_has_frame b Bool
+    @export_function Button get_has_frame
+    @export_function Button set_is_circular b Bool
+    @export_function Button get_is_circular
+    @export_function Button remove_child
+
+    set_child(button::Button, child::Widget) = detail.set_child(button._internal, child._internal.cpp_object)
+    export set_child
+
+    set_action(button::Button, action::Action) = detail.set_action(button._internal, action._internal)
+    export set_action
+
 ####### window.jl
 
     Window(app::Application) = Window(detail._Window(app._internal))
@@ -1002,11 +1019,14 @@ app = Application("test.app")
 connect_signal_activate(app) do (app::Application)
     window = Window(app)
 
-    box = Box(ORIENTATION_HORIZONTAL)
-    push_front(box, AspectFrame(4.0 / 3.0))
-    push_front(box, AspectFrame(4.0 / 3.0))
+    button = Button()
+    action = Action("test_action", app)
+    set_function(action) do (x::Action)
+        println("called")
+    end
+    set_action(button, action)
 
-    set_child(window, box)
+    set_child(window, button)
     present(window)
 end
 

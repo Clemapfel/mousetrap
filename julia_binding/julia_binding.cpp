@@ -114,6 +114,7 @@ DEFINE_ADD_SIGNAL(activate_default_widget, void)
 DEFINE_ADD_SIGNAL(activate_focused_widget, void)
 DEFINE_ADD_SIGNAL(value_changed, void)
 DEFINE_ADD_SIGNAL(properties_changed, void)
+DEFINE_ADD_SIGNAL(clicked, void)
 
 #define DEFINE_ADD_WIDGET_SIGNAL(snake_case) \
 template<typename T, typename Arg_t>                               \
@@ -558,6 +559,29 @@ void implement_box(jlcxx::Module& module)
     add_widget_signals<Box>(box);
 }
 
+// ### BUTTON
+
+void implement_button(jlcxx::Module& module)
+{
+    auto button = module.add_type(Button)
+        .constructor()
+        .add_type_method(Button, set_has_frame)
+        .add_type_method(Button, get_has_frame)
+        .add_type_method(Button, set_is_circular)
+        .add_type_method(Button, get_is_circular)
+        .method("set_child", [](Button& button, void* widget){
+            button.set_child(*((Widget*) widget));
+        })
+        .add_type_method(Button, remove_child)
+        .add_type_method(Button, set_action)
+    ;
+
+    add_signal_activate<Button>(button);
+    add_signal_clicked<Button>(button);
+    add_widget_signals<Button>(button);
+}
+
+
 // ### MAIN
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
@@ -572,6 +596,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_blend_mode(module);
     implement_orientation(module);
     implement_box(module);
+    implement_button(module);
 
     module.method("test_initialize", [](Application& app)
     {
