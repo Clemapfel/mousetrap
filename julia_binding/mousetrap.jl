@@ -68,14 +68,15 @@ module mousetrap
 
 ####### common.jl
 
-    function safe_call(scope, f, args...)
+    function safe_call(scope::String, f, args...)
         try
             return f(args...)
-        catch e
+        catch exception
             printstyled(stderr, "[ERROR] "; bold = true, color = :red)
             printstyled(stderr, "In " * scope * ": "; bold = true)
-            Base.showerror(stderr, e, catch_backtrace())
+            Base.showerror(stderr, exception, catch_backtrace())
             print(stderr, "\n")
+            throw(exception) # this causes jl_call to return nullptr, which we can check against C-side
         end
     end
 
@@ -634,10 +635,9 @@ module mousetrap
 
     @export_function FrameClock get_fps
 
-
     function set_tick_callback(widget::Widget, f, data::Data_t) where Data_t
         detail.set_tick_callback(widget._internal.cpp_object, function (frame_clock_internal::Ref{detail._FrameClock})
-            return Cint((TypedFunction(f, TickCallbackResult, (FrameClock, Data_t)))(FrameClock(frame_clock_internal[]), data))
+            return (TypedFunction(f, TickCallbackResult, (FrameClock, Data_t)))(FrameClock(frame_clock_internal[]), data)
         end)
     end
     export set_tick_callback
@@ -771,6 +771,7 @@ connect_signal_activate(app, function(app::Application)
 
     set_tick_callback(window, function (clock::FrameClock, data)
         println(get_time_since_last_frame(clock), " ", data)
+        throw(ErrorException("triggered"))
         return TICK_CALLBACK_RESULT_CONTINUE
     end, 1234)
     present(window)

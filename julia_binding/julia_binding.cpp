@@ -313,7 +313,12 @@ static void implement_widget(jlcxx::Module& m)
     m.method("set_tick_callback", [](void* widget, jl_function_t* task) {
 
         ((Widget*) widget)->set_tick_callback([](FrameClock clock, jl_function_t* task) -> TickCallbackResult {
-            return (TickCallbackResult) jl_unbox_int32(jl_safe_call("Widget::tick_callback", task, jlcxx::box<FrameClock&>(clock)));
+
+            auto* out = jl_safe_call("Widget::tick_callback", task, jlcxx::box<FrameClock&>(clock));
+            if (out == nullptr)
+                return TickCallbackResult::DISCONTINUE;
+            else
+                return (TickCallbackResult) jl_unbox_int32(out);
         }, task);
     });
     m.widget_method_no_args(remove_tick_callback);
@@ -436,11 +441,19 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_application(module);
     implement_window(module);
 
-    module.method("test_initialize", [](Application& app){
+    module.method("test_initialize", [](Application& app)
+    {
         auto window = Window(app);
         auto label = Label("test");
         label.set_margin(75);
         window.set_child(label);
         window.present();
+    });
+
+    module.method("invoke", [](jl_function_t* f, jl_value_t* args)
+    {
+        static auto* wrap_tuple = jl_eval_string("(x, y) -> return (x, y)");
+        auto* out = jl_call1(f, args);
+        return jl_calln(wrap_tuple, out == nullptr ? jl_nothing : out, jl_exception_occurred());
     });
 }
