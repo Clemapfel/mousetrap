@@ -632,7 +632,12 @@ void implement_check_button(jlcxx::Module& module)
         .add_type_method(CheckButton, get_active)
     ;
 
-    // TODO: if GTK_MINOR_VERSION >= 8 set_child, remove_child
+    #if GTK_MINOR_VERSION >= 8
+        check_button.method("set_child", [](CheckButton& button, void* widget) {
+            button.set_child(*((Widget*) widget));
+        })
+        .add_type_method(CheckButton, remove_child);
+    #endif
 
     add_widget_signals<CheckButton>(check_button);
     add_signal_toggled<CheckButton>(check_button);
@@ -642,6 +647,9 @@ void implement_check_button(jlcxx::Module& module)
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
 {
+    module.set_const("GTK_MAJOR_VERSION", (int) GTK_MAJOR_VERSION);
+    module.set_const("GTK_MINOR_VERSION", (int) GTK_MINOR_VERSION);
+
     implement_log(module);
     implement_widget(module);
     implement_action(module);
@@ -655,4 +663,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_button(module);
     implement_center_box(module);
     implement_check_button(module);
+
+    // TODO:
+    // click event controller
+    // clip board
 }

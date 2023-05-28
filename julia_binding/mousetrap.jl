@@ -990,12 +990,28 @@ module mousetrap
     CheckButton() = CheckButton(detail._CheckButton())
 
     @enum CheckButtonState begin
+        CHECK_BUTTON_STATE_ACTIVE = detail.CHECK_BUTTON_STATE_ACTIVE
+        CHECK_BUTTON_STATE_INACTIVE = detail.CHECK_BUTTON_STATE_INACTIVE
+        CHECK_BUTTON_STATE_INCONSISTENT = detail.CHECK_BUTTON_STATE_INCONSISTENT
+    end
+    @export_enum CheckButtonState
 
+    set_state(check_button::CheckButton, state::CheckButtonState) = detail.set_state(check_button._internal, Cint(state))
+    export set_state
 
+    get_state(check_button::CheckButton) ::CheckButtonState = CheckButtonState(detail.get_state(check_button._internal))
+    export get_state
+
+    @export_function CheckButton get_active
+
+    if detail.GTK_MINOR_VERSION >= 8
+
+        set_child(check_button::CheckButton, widget::Widget) = detail.set_child(check_button._internal, widget._internal.cpp_object)
+        export set_child
+
+        @export_function CheckButton remove_child
 
     end
-
-
 
 ####### window.jl
 
@@ -1061,7 +1077,9 @@ connect_signal_activate(app) do (app::Application)
     set_center_child(center_box, Button())
     set_end_child(center_box, Button())
 
-    set_child(window, center_box)
+    check_button = CheckButton()
+    set_child(check_button, center_box)
+    set_child(window, check_button)
     present(window)
 end
 
