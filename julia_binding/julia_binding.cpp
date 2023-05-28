@@ -49,7 +49,7 @@ static jl_value_t* box_vector2f(Vector2f in)
 
 // ### CXX WRAP COMMON
 
-#define USE_FINALIZERS false
+#define USE_FINALIZERS true
 
 #define add_type(Type) add_type<Type>(std::string("_") + #Type)
 #define add_type_method(Type, id) method(#id, &Type::id)
@@ -430,12 +430,41 @@ void implement_window(jlcxx::Module& module)
         add_signal_close_request<Window>(window);
         add_signal_activate_default_widget<Window>(window);
         add_signal_activate_focused_widget<Window>(window);
-}   
+}
+
+// ### LOG
+
+void implement_log(jlcxx::Module& module)
+{
+    #define implement_log_method(level) \
+        module.method("log_" + std::string(#level), [](const std::string& domain, const std::string& message){ \
+            log::level(message, (LogDomain) domain.c_str()); \
+        });
+
+    implement_log_method(debug)
+    implement_log_method(info)
+    implement_log_method(warning)
+    implement_log_method(critical)
+    implement_log_method(fatal)
+
+    module.method("log_set_surpress_debug", [](const std::string& domain, bool b) {
+        log::set_surpress_debug((LogDomain) domain.c_str(), b);
+    });
+
+    module.method("log_set_surpress_info", [](const std::string& domain, bool b) {
+        log::set_surpress_info((LogDomain) domain.c_str(), b);
+    });
+
+    module.method("log_set_file", [](const std::string& path) -> bool{
+        return log::set_file(path);
+    });
+}
 
 // ### MAIN
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
 {
+    implement_log(module);
     implement_widget(module);
     implement_action(module);
     implement_application(module);

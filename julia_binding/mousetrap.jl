@@ -175,6 +175,68 @@ module mousetrap
     import Base: clamp
     clamp(x::AbstractFloat, lower::AbstractFloat, upper::AbstractFloat) = if x < lower return lower elseif x > upper return upper else return x end
 
+####### log.jl
+
+    const LogDomain = String;
+    export LogDomain
+
+    const USER_DOMAIN = "julia"
+
+    macro debug(log_domain, message)
+        :(mousetrap.detail.log_debug($(string(log_domain)), $(string(message))))
+    end
+    macro debug(message)
+        :(mousetrap.detail.log_debug($(string(mousetrap.USER_DOMAIN)), $(string(message))))
+    end
+    export debug
+
+    macro info(log_domain, message)
+        :(mousetrap.detail.log_info($(string(log_domain)), $(string(message))))
+    end
+    macro info(message)
+        :(mousetrap.detail.log_info($(string(mousetrap.USER_DOMAIN)), $(string(message))))
+    end
+    export info
+
+    macro warning(log_domain, message)
+        :(mousetrap.detail.log_warning($(string(log_domain)), $(string(message))))
+    end
+    macro warning(message)
+        :(mousetrap.detail.log_warning($(string(mousetrap.USER_DOMAIN)), $(string(message))))
+    end
+    export warning
+
+    macro critical(log_domain, message)
+        :(mousetrap.detail.log_critical($(string(log_domain)), $(string(message))))
+    end
+    macro critical(message)
+        :(mousetrap.detail.log_critical($(string(mousetrap.USER_DOMAIN)), $(string(message))))
+    end
+    export critical
+
+    macro fatal(log_domain, message)
+        :(mousetrap.detail.log_fatal($(string(log_domain)), $(string(message))))
+    end
+    macro fatal(message)
+        :(mousetrap.detail.log_fatal($(string(mousetrap.USER_DOMAIN)), $(string(message))))
+    end
+    export fatal
+
+    function log_set_surpress_debug(domain::LogDomain, b::Bool)
+        detail.log_set_surpress_debug(domain, b)
+    end
+    export log_set_surpress_debug
+
+    function log_set_surpress_info(domain::LogDomain, b::Bool)
+        detail.log_set_surpress_info(domain, b)
+    end
+    export log_set_surpress_info
+
+    function log_set_file(path::String) ::Bool
+        return detail.log_set_file(path)
+    end
+    export log_set_file
+
 ####### forward_declarations.jl
 
     abstract type SignalEmitter end
@@ -197,7 +259,7 @@ module mousetrap
         connect_signal_name = :connect_signal_ * snake_case
 
         push!(out.args, esc(:(
-            function $connect_signal_name(x::$T, f)
+            function $connect_signal_name(f, x::$T)
                 detail.$connect_signal_name(x._internal, function(x)
                     (TypedFunction(f, Cvoid, ($T,)))($T(x[]))
                 end)
@@ -205,7 +267,7 @@ module mousetrap
         )))
 
         push!(out.args, esc(:(
-            function $connect_signal_name(x::$T, f, data::Data_t) where Data_t
+            function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
                 detail.$connect_signal_name(x._internal, function(x)
                     (TypedFunction(f, Cvoid, ($T, Data_t)))($T(x[]), data)
                 end)
@@ -635,9 +697,17 @@ module mousetrap
 
     @export_function FrameClock get_fps
 
-    function set_tick_callback(widget::Widget, f, data::Data_t) where Data_t
+    function set_tick_callback(f, widget::Widget, data::Data_t) where Data_t
+        wrapped = TypedFunction(f, TickCallbackResult, (FrameClock, Data_t))
         detail.set_tick_callback(widget._internal.cpp_object, function (frame_clock_internal::Ref{detail._FrameClock})
-            return (TypedFunction(f, TickCallbackResult, (FrameClock, Data_t)))(FrameClock(frame_clock_internal[]), data)
+            return (wrapped)(FrameClock(frame_clock_internal[]), data)
+        end)
+    end
+
+    function set_tick_callback(f, widget::Widget)
+        wrapped = TypedFunction(f, TickCallbackResult, (FrameClock,))
+        detail.set_tick_callback(widget._internal.cpp_object, function (frame_clock_internal::Ref{detail._FrameClock})
+            return (wrapped)(FrameClock(frame_clock_internal[]))
         end)
     end
     export set_tick_callback
@@ -735,6 +805,7 @@ module mousetrap
     @export_function Window get_has_close_button
 
     set_startup_notification_identifier(window::Window, title::String) = detail.set_startup_notification_identifier(window._internal, title)
+    export set_startup_notification_identifier
 
     @export_function Window set_focus_visible
     @export_function Window get_focus_visible
@@ -766,16 +837,11 @@ using .mousetrap;
 
 app = Application("test.app")
 
-connect_signal_activate(app, function(app::Application)
+connect_signal_activate(app) do (app::Application)
     window = Window(app)
-
-    set_tick_callback(window, function (clock::FrameClock, data)
-        println(get_time_since_last_frame(clock), " ", data)
-        throw(ErrorException("triggered"))
-        return TICK_CALLBACK_RESULT_CONTINUE
-    end, 1234)
+    set_startup_notification_identifier(window, "test notification")
     present(window)
-end)
+end
 
 run(app)
 
