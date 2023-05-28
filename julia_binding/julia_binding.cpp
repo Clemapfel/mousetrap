@@ -692,6 +692,12 @@ void implement_colors(jlcxx::Module& module)
     });
 }
 
+// ### ENTRY
+void implement_entry(jlcxx::Module& module)
+{
+
+}
+
 // ### MAIN
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
@@ -717,4 +723,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     // TODO:
     // click event controller
     // clip board
+    // column view
+    // darg event controller
+    // drop down
+
 }
