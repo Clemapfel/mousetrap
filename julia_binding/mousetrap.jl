@@ -253,6 +253,8 @@ module mousetrap
     @export_widget AspectFrame
     @export_widget Box
     @export_widget Button
+    @export_widget CenterBox
+    @export_widget CheckButton
     @export_widget Window
 
 ####### signal_components.jl
@@ -960,6 +962,41 @@ module mousetrap
     set_action(button::Button, action::Action) = detail.set_action(button._internal, action._internal)
     export set_action
 
+####### center_box.jl
+
+    CenterBox(orientation::Orientation) = CenterBox(detail._CenterBox(Cint(orientation)))
+
+    set_start_child(center_box::CenterBox, child::Widget) = detail.set_start_child(center_box._internal, child._internal.cpp_object)
+    export set_start_child
+
+    set_center_child(center_box::CenterBox, child::Widget) = detail.set_center_child(center_box._internal, child._internal.cpp_object)
+    export set_center_child
+
+    set_end_child(center_box::CenterBox, child::Widget) = detail.set_end_child(center_box._internal, child._internal.cpp_object)
+    export set_end_child
+
+    @export_function CenterBox remove_start_widget
+    @export_function CenterBox remove_center_widget
+    @export_function CenterBox remove_end_widget
+
+    get_orientation(center_box::CenterBox) = Orientation(detail.get_orientation(center_box._internal))
+    export get_orientation
+
+    set_orientation(center_box::CenterBox, orientation::Orientation) = detail.set_orientation(center_box._internal, Cint(orientation))
+    export set_orientation
+
+####### check_button.jl
+
+    CheckButton() = CheckButton(detail._CheckButton())
+
+    @enum CheckButtonState begin
+
+
+
+    end
+
+
+
 ####### window.jl
 
     Window(app::Application) = Window(detail._Window(app._internal))
@@ -1019,14 +1056,12 @@ app = Application("test.app")
 connect_signal_activate(app) do (app::Application)
     window = Window(app)
 
-    button = Button()
-    action = Action("test_action", app)
-    set_function(action) do (x::Action)
-        println("called")
-    end
-    set_action(button, action)
+    center_box = CenterBox(ORIENTATION_HORIZONTAL)
+    set_start_child(center_box, Button())
+    set_center_child(center_box, Button())
+    set_end_child(center_box, Button())
 
-    set_child(window, button)
+    set_child(window, center_box)
     present(window)
 end
 

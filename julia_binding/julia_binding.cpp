@@ -115,6 +115,7 @@ DEFINE_ADD_SIGNAL(activate_focused_widget, void)
 DEFINE_ADD_SIGNAL(value_changed, void)
 DEFINE_ADD_SIGNAL(properties_changed, void)
 DEFINE_ADD_SIGNAL(clicked, void)
+DEFINE_ADD_SIGNAL(toggled, void)
 
 #define DEFINE_ADD_WIDGET_SIGNAL(snake_case) \
 template<typename T, typename Arg_t>                               \
@@ -581,6 +582,61 @@ void implement_button(jlcxx::Module& module)
     add_widget_signals<Button>(button);
 }
 
+// ### CENTER BOX
+
+void implement_center_box(jlcxx::Module& module)
+{
+    auto center_box = module.add_type(CenterBox)
+        .constructor([](int orientation){
+            return new CenterBox((Orientation) orientation);
+        }, USE_FINALIZERS)
+        .method("set_start_child", [](CenterBox& instance, void* widget){
+            instance.set_start_child(*((Widget*) widget));
+        })
+        .method("set_center_child", [](CenterBox& instance, void* widget){
+            instance.set_center_child(*((Widget*) widget));
+        })
+        .method("set_end_child", [](CenterBox& instance, void* widget){
+            instance.set_end_child(*((Widget*) widget));
+        })
+        .add_type_method(CenterBox, remove_start_widget)
+        .add_type_method(CenterBox, remove_center_widget)
+        .add_type_method(CenterBox, remove_end_widget)
+        .method("get_orientation", [](CenterBox& instance){
+            return (int) instance.get_orientation();
+        })
+        .method("set_orientation", [](CenterBox& instance, int orientation) {
+            instance.set_orientation((Orientation) orientation);
+        })
+    ;
+
+    add_widget_signals<CenterBox>(center_box);
+}
+
+// ### CHECK BUTTON
+
+void implement_check_button(jlcxx::Module& module)
+{
+    module.add_enum_value(CheckButtonState, CHECK_BUTTON_STATE, ACTIVE);
+    module.add_enum_value(CheckButtonState, CHECK_BUTTON_STATE, INACTIVE);
+    module.add_enum_value(CheckButtonState, CHECK_BUTTON_STATE, INCONSISTENT);
+
+    auto check_button = module.add_type(CheckButton)
+        .constructor()
+        .method("set_state", [](CheckButton& button, int state){
+            button.set_state((CheckButtonState) state);
+        })
+        .method("get_state", [](CheckButton& button) -> int {
+            return (int) button.get_state();
+        })
+        .add_type_method(CheckButton, get_active)
+    ;
+
+    // TODO: if GTK_MINOR_VERSION >= 8 set_child, remove_child
+
+    add_widget_signals<CheckButton>(check_button);
+    add_signal_toggled<CheckButton>(check_button);
+}
 
 // ### MAIN
 
@@ -597,20 +653,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_orientation(module);
     implement_box(module);
     implement_button(module);
-
-    module.method("test_initialize", [](Application& app)
-    {
-        auto window = Window(app);
-        auto label = Label("test");
-        label.set_margin(75);
-        window.set_child(label);
-        window.present();
-    });
-
-    module.method("invoke", [](jl_function_t* f, jl_value_t* args)
-    {
-        static auto* wrap_tuple = jl_eval_string("(x, y) -> return (x, y)");
-        auto* out = jl_call1(f, args);
-        return jl_calln(wrap_tuple, out == nullptr ? jl_nothing : out, jl_exception_occurred());
-    });
+    implement_center_box(module);
+    implement_check_button(module);
 }
