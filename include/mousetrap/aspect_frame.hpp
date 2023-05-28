@@ -68,10 +68,6 @@ namespace mousetrap
             /// @param widget
             void set_child(const Widget& widget);
 
-            /// @brief get child
-            /// @return widget
-            Widget* get_child() const;
-
             /// @brief remove child, equivalent to <tt>set_child(nullptr)</tt>
             void remove_child();
 

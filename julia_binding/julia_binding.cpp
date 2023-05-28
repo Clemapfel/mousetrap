@@ -410,6 +410,24 @@ void implement_adjustment(jlcxx::Module& module)
     add_signal_properties_changed<Adjustment>(adjustment);
 }
 
+// ### ASPECT FRAME
+void implement_aspect_frame(jlcxx::Module& module)
+{
+    auto aspect_frame = module.add_type(AspectFrame)
+        .add_constructor(float, float, float)
+        .add_type_method(AspectFrame, set_ratio)
+        .add_type_method(AspectFrame, get_ratio)
+        .add_type_method(AspectFrame, set_child_x_alignment)
+        .add_type_method(AspectFrame, set_child_y_alignment)
+        .add_type_method(AspectFrame, get_child_x_alignment)
+        .add_type_method(AspectFrame, get_child_y_alignment)
+        .method("add_child", [](AspectFrame& instance, void* widget) {
+            instance.set_child(*((Widget*) widget));
+        })
+        .add_type_method(AspectFrame, remove_child)
+    ;
+}
+
 // ### WINDOW
 
 void implement_window(jlcxx::Module& module)
@@ -482,6 +500,64 @@ void implement_log(jlcxx::Module& module)
     });
 }
 
+// ### BLEND MODE
+void implement_blend_mode(jlcxx::Module& module)
+{
+    module.add_enum_value(BlendMode, BLEND_MODE, NONE);
+    module.add_enum_value(BlendMode, BLEND_MODE, NORMAL);
+    module.add_enum_value(BlendMode, BLEND_MODE, ADD);
+    module.add_enum_value(BlendMode, BLEND_MODE, SUBTRACT);
+    module.add_enum_value(BlendMode, BLEND_MODE, REVERSE_SUBTRACT);
+    module.add_enum_value(BlendMode, BLEND_MODE, MULTIPLY);
+    module.add_enum_value(BlendMode, BLEND_MODE, MIN);
+    module.add_enum_value(BlendMode, BLEND_MODE, MAX);
+}
+
+// ### ORIENTATION
+
+void implement_orientation(jlcxx::Module& module)
+{
+    module.add_enum_value(Orientation, ORIENTATION, HORIZONTAL);
+    module.add_enum_value(Orientation, ORIENTATION, VERTICAL);
+}
+
+// ### BOX
+
+void implement_box(jlcxx::Module& module)
+{
+    auto box = module.add_type(Box)
+        .constructor([](int orientation){
+            return new Box((Orientation) orientation);
+        }, USE_FINALIZERS)
+        .method("push_back", [](Box& box, void* widget) {
+            box.push_back(*((Widget*) widget));
+        })
+        .method("push_front", [](Box& box, void* widget) {
+            box.push_front(*((Widget*) widget));
+        })
+        .method("insert_after", [](Box& box, void* to_append, void* after) {
+            box.insert_after(*((Widget*) to_append), *((Widget*) after));
+        })
+        .method("remove", [](Box& box, void* widget){
+            box.remove(*((Widget*) widget));
+        })
+        .add_type_method(Box, clear)
+        .add_type_method(Box, set_homogeneous)
+        .add_type_method(Box, get_homogeneous)
+        .add_type_method(Box, set_spacing)
+        .add_type_method(Box, get_spacing)
+        .add_type_method(Box, get_n_items)
+        .method("get_orientation", [](Box& box) -> int{
+            return (int) box.get_orientation();
+        })
+        .method("set_orientation", [](Box& box, int orientation){
+           box.set_orientation((Orientation) orientation);
+        })
+    ;
+
+    add_widget_signals<Box>(box);
+}
+
 // ### MAIN
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
@@ -492,6 +568,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_application(module);
     implement_window(module);
     implement_adjustment(module);
+    implement_aspect_frame(module);
+    implement_blend_mode(module);
+    implement_orientation(module);
+    implement_box(module);
 
     module.method("test_initialize", [](Application& app)
     {

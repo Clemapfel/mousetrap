@@ -250,6 +250,8 @@ module mousetrap
     @export_signal_emitter FrameClock
     @export_signal_emitter Adjustment
 
+    @export_widget AspectFrame
+    @export_widget Box
     @export_widget Window
 
 ####### signal_components.jl
@@ -754,7 +756,7 @@ module mousetrap
     @export_function Action get_enabled
     @export_function Action get_is_stateful
 
-    @add_signal(Action, activated)
+    @add_signal Action activated
 
 ####### application.jl
 
@@ -780,8 +782,8 @@ module mousetrap
     @export_function Application remove_action id String
     @export_function Application has_action id String
 
-    @add_signal(Application, activate)
-    @add_signal(Application, shutdown)
+    @add_signal Application activate
+    @add_signal Application shutdown
     
 ####### adjustment.jl
 
@@ -821,8 +823,125 @@ module mousetrap
         );
     end
 
-    @add_signal(Adjustment, value_changed)
-    @add_signal(Adjustment, properties_changed)
+    @add_signal Adjustment value_changed
+    @add_signal Adjustment properties_changed
+
+####### angle.jl
+
+    struct Angle
+        _rads::Cfloat
+    end
+    export Angle
+
+    degrees(x::Number) = return Angle(convert(Cfloat, deg2rad(x)))
+    export degrees
+
+    radians(x::Number) = return Angle(convert(Cfloat, x))
+    export radians
+
+    as_degrees(angle::Angle) = return rad2deg(angle._rads)
+    export as_degrees
+
+    as_radians(angle::Angle) = return angle._rads
+    export as_radians
+
+    import Base: +
+    +(a::Angle, b::Angle) = return Angle(a._rads + b._rads)
+
+    import Base: -
+    -(a::Angle, b::Angle) = return Angle(a._rads - b._rads)
+
+    import Base: *
+    *(a::Angle, b::Angle) = return Angle(a._rads * b._rads)
+
+    import Base: /
+    /(a::Angle, b::Angle) = return Angle(a._rads / b._rads)
+
+    import Base: ==
+    ==(a::Angle, b::Angle) = return a._rads == b._rads
+
+    import Base: !=
+    !=(a::Angle, b::Angle) = return a._rads != b._rads
+
+####### aspect_frame.jl
+
+    function AspectFrame(x::AbstractFloat; child_x_align::AbstractFloat = 0.5, child_y_align::AbstractFloat = 0.5)
+        return AspectFrame(detail._AspectFrame(convert(Cfloat, x), convert(Cfloat, child_x_align), convert(Cfloat, child_y_align)))
+    end
+
+    @export_function AspectFrame set_ratio
+    @export_function AspectFrame get_ratio
+
+    set_child_x_alignment(aspect_frame::AspectFrame, x::AbstractFloat) = detail.set_child_x_alignment(aspect_frame._internal, convert(Cfloat, x))
+    export set_child_x_alignment
+
+    set_child_y_alignment(aspect_frame::AspectFrame, x::AbstractFloat) = detail.set_child_y_alignment(aspect_frame._internal, convert(Cfloat, x))
+    export set_child_y_alignment
+
+    @export_function AspectFrame get_child_x_alignment
+    @export_function AspectFrame get_child_y_alignment
+
+    function set_child(parent::AspectFrame, child::Widget)
+        detail.set_child(parent._internal, child._internal.cpp_object)
+    end
+    export set_child
+
+    @export_function AspectFrame remove_child
+
+    Base.show(io::IO, x::AspectFrame) = print(io, "AspectFrame(" * string(get_ratio(x)) * ")")
+
+####### blend_mode.jl
+
+    @enum BlendMode begin
+        BLEND_MODE_NONE = detail.BLEND_MODE_NONE
+        BLEND_MODE_NORMAL = detail.BLEND_MODE_NORMAL
+        BLEND_MODE_ADD = detail.BLEND_MODE_ADD
+        BLEND_MODE_SUBTRACT = detail.BLEND_MODE_SUBTRACT
+        BLEND_MODE_REVERSE_SUBTRACT = detail.BLEND_MODE_REVERSE_SUBTRACT
+        BLEND_MODE_MULTIPLY = detail.BLEND_MODE_MULTIPLY
+        BLEND_MODE_MAX = detail.BLEND_MODE_MAX
+        BLEND_MODE_MIN = detail.BLEND_MODE_MIN
+    end
+    @export_enum BlendMode
+
+####### orientation.jl
+
+    @enum Orientation begin
+        ORIENTATION_HORIZONTAL = detail.ORIENTATION_HORIZONTAL
+        ORIENTATION_VERTICAL = detail.ORIENTATION_VERTICAL
+    end
+    @export_enum Orientation
+
+####### box.jl
+
+    Box(orientation::Orientation) = return Box(detail._Box(Cint(orientation)))
+
+    push_back(box::Box, child::Widget) = detail.push_back(box._internal, child._internal.cpp_object)
+    export push_back
+
+    push_front(box::Box, child::Widget) = detail.push_front(box._internal, child._internal.cpp_object)
+    export push_front
+
+    insert_after(box::Box, to_insert::Widget, after::Widget) = detail.insert_after(box._internal, to_insert._internal.cpp_object, after._internal.cpp_object)
+    export insert_after
+
+    remove(box::Box, to_remove::Widget) = detail.remove(box._internal, to_remove._internal.cpp_object)
+    export remove
+
+    @export_function Box clear
+    @export_function Box set_homogeneous homogeneous Bool
+    @export_function Box get_homogeneous
+    @export_function Box set_spacing spacing Number
+    @export_function Box get_spacing
+    @export_function Box get_n_items
+
+    get_orientation(box::Box) = return Orientation(detail.get_orientation(box._internal))
+    export get_orientation
+
+    set_orientation(box::Box, orientation::Orientation) = detail.set_orientation(box._internal, Cint(orientation))
+    export set_orientation
+
+    @add_widget_signals(Box)
 
 ####### window.jl
 
@@ -868,9 +987,9 @@ module mousetrap
     end
     export set_default_widget
 
-    @add_signal(Window, close_request)
-    @add_signal(Window, activate_default_widget)
-    @add_signal(Window, activate_focused_widget)
+    @add_signal Window close_request
+    @add_signal Window activate_default_widget
+    @add_signal Window activate_focused_widget
     @add_widget_signals(Window)
 end
 
@@ -883,11 +1002,11 @@ app = Application("test.app")
 connect_signal_activate(app) do (app::Application)
     window = Window(app)
 
-    adjustment = Adjustment(0.5, 0, 1, 0.01)
-    @show adjustment
-    set_value(adjustment, 0.2)
-    @show adjustment
+    box = Box(ORIENTATION_HORIZONTAL)
+    push_front(box, AspectFrame(4.0 / 3.0))
+    push_front(box, AspectFrame(4.0 / 3.0))
 
+    set_child(window, box)
     present(window)
 end
 

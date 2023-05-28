@@ -109,5 +109,10 @@ namespace mousetrap
         gtk_box_set_spacing(GTK_BOX(operator NativeWidget()), spacing);
     }
 
+    float Box::get_spacing() const
+    {
+        return gtk_box_get_spacing(GTK_BOX(operator NativeWidget()));
+    }
+
     IMPLEMENT_ORIENTABLE(Box);
 }
