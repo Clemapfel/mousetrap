@@ -53,9 +53,10 @@ int main()
     {
         auto window = Window(app);
 
-        auto* gtk_adjustment = gtk_adjustment_new(0.5, 0, 1, 0.01, 0, 0);
-        auto adjustment = Adjustment(0.5, 0, 1, 0.01);
-        std::cout << adjustment.get_value() << " " << adjustment.get_lower() << " " << adjustment.get_upper() << " " << adjustment.get_increment() << std::endl;
+        auto label = Label("test");
+        auto frame = Frame();
+        frame.set_child(label);
+        window.set_child(frame);
 
         window.present();
     });
