@@ -352,7 +352,7 @@ if (MOUSETRAP_BUILD_JULIA_BINDING)
     get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
 
     add_library("${PROJECT_PREFIX}julia_binding" SHARED
-        julia_binding/julia_binding.cpp
+            julia_binding/mousetrap.cpp
     )
 
     target_link_libraries("${PROJECT_PREFIX}julia_binding" PUBLIC

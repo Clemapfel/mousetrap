@@ -89,6 +89,8 @@ module mousetrap
         for instance in instances(eval(enum))
             push!(out.args, :(export $(Symbol(instance))))
         end
+
+        push!(out.args, Base.convert(type::Type{$enum}, x::Integer) = return $enum(convert(Int64, x)))
         return out
     end
 
@@ -146,6 +148,9 @@ module mousetrap
             return :(@_export_function_arg3($type, $name, $(args[1]), $(args[2]), $(args[3]), $(args[4]), $(args[5]), $(args[6])))
         elseif length(args) == 8
             return :(@_export_function_arg4($type, $name, $(args[1]), $(args[2]), $(args[3]), $(args[4]), $(args[5]), $(args[6]), $(args[7]), $(args[8])))
+        else
+            throw(AssertionError("In moustrap.export_function: Incompatible number of arguments"))
+            return :()
         end
     end
 
@@ -164,6 +169,16 @@ module mousetrap
         internal_name = Symbol("_" * "$name")
         return quote
             struct $name <: Widget
+                _internal::detail.$internal_name
+            end
+        end
+    end
+
+    macro export_event_controller(name)
+        mousetrap.eval(:(export $name))
+        internal_name = Symbol("_" * "$name")
+        return quote
+            struct $name <: EventController
                 _internal::detail.$internal_name
             end
         end
@@ -245,10 +260,15 @@ module mousetrap
     abstract type Widget end
     export Widget
 
+    abstract type EventController end;
+    export EventController
+
     @export_signal_emitter Application
     @export_signal_emitter Action
     @export_signal_emitter FrameClock
     @export_signal_emitter Adjustment
+
+    @export_event_controller MotionEventController
 
     @export_widget AspectFrame
     @export_widget Box
@@ -259,16 +279,28 @@ module mousetrap
 
 ####### signal_components.jl
 
-    macro add_signal(T, snake_case)
+    macro _add_signal_arg4(T, snake_case, Return_t, Arg1_t, arg1_name, Arg2_t, arg2_name, Arg3_t, arg3_name, Arg4_t, arg4_name)
 
         out = Expr(:block)
 
         connect_signal_name = :connect_signal_ * snake_case
 
+        Return_t = esc(Return_t)
+
+        Arg1_t = esc(Arg1_t)
+        Arg2_t = esc(Arg2_t)
+        Arg3_t = esc(Arg3_t)
+        Arg4_t = esc(Arg4_t)
+
+        arg1_name = esc(arg1_name)
+        arg2_name = esc(arg2_name)
+        arg3_name = esc(arg3_name)
+        arg4_name = esc(arg4_name)
+
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T)
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, Cvoid, ($T,)))($T(x[]))
+                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, $Arg4_t)))($T(x[]))
                 end)
             end
         )))
@@ -276,8 +308,16 @@ module mousetrap
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, Cvoid, ($T, Data_t)))($T(x[]), data)
+                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, $Arg4_t, Data_t)))($T(x[]), data)
                 end)
+            end
+        )))
+
+        emit_signal_name = :emit_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $emit_signal_name(x::$T, $arg1_name::$Arg1_t, $arg2_name::$Arg2_t, $arg3_name::$Arg3_t, $arg4_name::$Arg4_t) ::Return_t
+                return convert($Return_t, detail.$emit_signal_name(x._internal, $arg1_name, $arg2_name, $arg3_name, $arg4_name))
             end
         )))
 
@@ -305,14 +345,6 @@ module mousetrap
             end
         )))
 
-        emit_signal_name = :emit_signal_ * snake_case
-
-        push!(out.args, esc(:(
-            function $emit_signal_name(x::$T)
-                return detail.$emit_signal_name(x._internal)
-            end
-        )))
-
         push!(out.args, esc(:(export $connect_signal_name)))
         push!(out.args, esc(:(export $disconnect_signal_name)))
         push!(out.args, esc(:(export $set_signal_blocked_name)))
@@ -320,6 +352,23 @@ module mousetrap
         push!(out.args, esc(:(export $emit_signal_name)))
 
         return out
+    end
+
+    macro add_signal(T, name, args...)
+        if length(args) == 0
+            return :(@_add_signal_arg0($type, $name))
+        elseif length(args) == 2
+            return :(@_add_signal_arg1($type, $name, $(args[1]), $(args[2])))
+        elseif length(args) == 4
+            return :(@_add_signal_arg2($type, $name, $(args[1]), $(args[2]), $(args[3]), $(args[4])))
+        elseif length(args) == 6
+            return :(@_add_signal_arg3($type, $name, $(args[1]), $(args[2]), $(args[3]), $(args[4]), $(args[5]), $(args[6])))
+        elseif length(args) == 8
+            return :(@_add_signal_arg4($type, $name, $(args[1]), $(args[2]), $(args[3]), $(args[4]), $(args[5]), $(args[6]), $(args[7]), $(args[8])))
+        else
+            throw(AssertionError("In moustrap.add_signal: Incompatible number of arguments"))
+            return :()
+        end
     end
 
     macro add_widget_signals(T)
@@ -1041,6 +1090,57 @@ module mousetrap
 
     Base.convert(::Type{HSVA}, x::RGBA) = return rgba_to_hsva(x)
     Base.convert(::Type{RGBA}, x::HSVA) = return hsva_to_rgba(x)
+
+####### event_controller.jl
+
+    @enum PropagationPhase begin
+        PROPAGATION_PHASE_NONE = detail.PROPAGATION_PHASE_NONE
+        PROPAGATION_PHASE_CAPTURE = detail.PROPAGATION_PHASE_CAPTURE
+        PROPAGATION_PHASE_BUBBLE = detail.PROPAGATION_PHASE_BUBBLE
+        PROPAGATION_PHASE_TARGET = detail.PROPAGATION_PHASE_TARGET
+    end
+
+    set_propagation_phase(controller::EventController, phase::PropagationPhase) = detail.set_propagation_phase(controller._internal, Cint(phase))
+    get_propagation_phase(controller::EventController) = return PropagationPhase(detail.get_propagation_phase(controller._internal))
+
+    @enum ButtonID begin
+        BUTTON_ID_NONE = detail.BUTTON_ID_NONE
+        BUTTON_ID_ANY = detail.BUTTON_ID_ANY
+        BUTTON_ID_BUTTON_01 = detail.BUTTON_ID_BUTTON_01
+        BUTTON_ID_BUTTON_02 = detail.BUTTON_ID_BUTTON_02
+        BUTTON_ID_BUTTON_03 = detail.BUTTON_ID_BUTTON_03
+        BUTTON_ID_BUTTON_04 = detail.BUTTON_ID_BUTTON_04
+        BUTTON_ID_BUTTON_05 = detail.BUTTON_ID_BUTTON_05
+        BUTTON_ID_BUTTON_06 = detail.BUTTON_ID_BUTTON_06
+        BUTTON_ID_BUTTON_07 = detail.BUTTON_ID_BUTTON_07
+        BUTTON_ID_BUTTON_08 = detail.BUTTON_ID_BUTTON_08
+        BUTTON_ID_BUTTON_09 = detail.BUTTON_ID_BUTTON_09
+    end
+
+    macro export_single_click_gesture(T)
+        out = Expr(:block)
+        push!(out.args, :(
+            get_current_button(gesture::T) = ButtonID(detail.get_current_button(gesture._internal))
+        ));
+
+        push!(out.args, :(
+            set_only_listens_to_button(gesture::T, button::ButtonID) = detail.set_only_listens_to_button(gesture._internal, Cint(button))
+        ));
+
+        push!(out.args, :(
+            get_only_listens_to_button(gesture::T) = ButtonID(detail.get_only_listens_to_button(gesture._internal))
+        ));
+
+        push!(out.args, :(
+            set_touch_only(gesture::T, b::Bool) = detail.set_touch_only(gesture._internal, b)
+        ));
+
+        push!(out.args, :(
+            get_touch_only(gesture::T) = return detail.get_touch_only(gesture._internal)
+        ));
+
+        return out
+    end
 
 ####### window.jl
 

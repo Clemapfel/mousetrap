@@ -141,7 +141,7 @@ void add_signal_##snake_case(Arg_t type) {\
     .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
         return instance.get_signal_##snake_case##_blocked(); \
     }) \
-    .method("emit_signal_" + std::string(#snake_case), [](T& instance) { \
+    .method("emit_signal_" + std::string(#snake_case), [](Widget& instance) { \
         instance.emit_signal_##snake_case(); \
     }); \
 }
@@ -153,6 +153,163 @@ DEFINE_ADD_WIDGET_SIGNAL(hide)
 DEFINE_ADD_WIDGET_SIGNAL(show)
 DEFINE_ADD_WIDGET_SIGNAL(map)
 DEFINE_ADD_WIDGET_SIGNAL(unmap)
+
+#define DEFINE_ADD_SIGNAL_MANUAL_ARG0(snake_case, return_t) \
+template<typename T, typename Arg_t> \
+void add_signal_##snake_case(Arg_t type) \
+{ \
+    type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    { \
+        instance.connect_signal_click_pressed([](T& instance, jl_function_t* task) -> return_t { \
+            return jlcxx::unbox<return_t>( \
+                jl_safe_call( \
+                    ("emit_signal_" + std::string(#snake_case)).c_str(), \
+                    task \
+                ) \
+            ); \
+        }, task); \
+    }) \
+    .method("emit_signal_" + std::string(#snake_case), [](T& instance) -> return_t { \
+        return instance.emit_signal_click_pressed(instance); \
+    }) \
+    .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
+        instance.disconnect_signal_##snake_case(); \
+    }) \
+    .method("set_signal_" + std::string(#snake_case) + "_blocked", [](T& instance, bool b){ \
+        instance.set_signal_##snake_case##_blocked(b); \
+    }) \
+    .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
+        return instance.get_signal_##snake_case##_blocked(); \
+    }); \
+}
+
+#define DEFINE_ADD_SIGNAL_MANUAL_ARG1(snake_case, return_t, arg1_t, arg1_name) \
+template<typename T, typename Arg_t> \
+void add_signal_##snake_case(Arg_t type) \
+{ \
+    type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    { \
+        instance.connect_signal_click_pressed([](T& instance, arg1_t arg1_name, jl_function_t* task) -> return_t { \
+            return jlcxx::unbox<return_t>( \
+                jl_safe_call( \
+                    ("emit_signal_" + std::string(#snake_case)).c_str(), \
+                    task, \
+                    jlcxx::box<arg1_t>(arg1_name) \
+                ) \
+            ); \
+        }, task); \
+    }) \
+    .method("emit_signal_" + std::string(#snake_case), [](T& instance, arg1_t arg1_name) -> return_t { \
+        return instance.emit_signal_click_pressed(instance, arg1_name); \
+    }) \
+    .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
+        instance.disconnect_signal_##snake_case(); \
+    }) \
+    .method("set_signal_" + std::string(#snake_case) + "_blocked", [](T& instance, bool b){ \
+        instance.set_signal_##snake_case##_blocked(b); \
+    }) \
+    .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
+        return instance.get_signal_##snake_case##_blocked(); \
+    }); \
+}
+
+#define DEFINE_ADD_SIGNAL_MANUAL_ARG2(snake_case, return_t, arg1_t, arg1_name, arg2_t, arg2_name) \
+template<typename T, typename Arg_t> \
+void add_signal_##snake_case(Arg_t type) \
+{ \
+    type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    { \
+        instance.connect_signal_click_pressed([](T& instance, arg1_t arg1_name, arg2_t arg2_name, jl_function_t* task) -> return_t { \
+            return jlcxx::unbox<return_t>( \
+                jl_safe_call( \
+                    ("emit_signal_" + std::string(#snake_case)).c_str(), \
+                    task, \
+                    jlcxx::box<arg1_t>(arg1_name), \
+                    jlcxx::box<arg2_t>(arg2_name) \
+                ) \
+            ); \
+        }, task); \
+    }) \
+    .method("emit_signal_" + std::string(#snake_case), [](T& instance, arg1_t arg1_name, arg2_t arg2_name) -> return_t { \
+        return instance.emit_signal_click_pressed(instance, arg1_name, arg2_name); \
+    }) \
+    .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
+        instance.disconnect_signal_##snake_case(); \
+    }) \
+    .method("set_signal_" + std::string(#snake_case) + "_blocked", [](T& instance, bool b){ \
+        instance.set_signal_##snake_case##_blocked(b); \
+    }) \
+    .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
+        return instance.get_signal_##snake_case##_blocked(); \
+    }); \
+}
+
+#define DEFINE_ADD_SIGNAL_MANUAL_ARG3(snake_case, return_t, arg1_t, arg1_name, arg2_t, arg2_name, arg3_t, arg3_name) \
+template<typename T, typename Arg_t> \
+void add_signal_##snake_case(Arg_t type) \
+{ \
+    type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    { \
+        instance.connect_signal_click_pressed([](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, jl_function_t* task) -> return_t { \
+            return jlcxx::unbox<return_t>( \
+                jl_safe_call( \
+                    ("emit_signal_" + std::string(#snake_case)).c_str(), \
+                    task, \
+                    jlcxx::box<arg1_t>(arg1_name), \
+                    jlcxx::box<arg2_t>(arg2_name), \
+                    jlcxx::box<arg3_t>(arg3_name) \
+                ) \
+            ); \
+        }, task); \
+    }) \
+    .method("emit_signal_" + std::string(#snake_case), [](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name) -> return_t { \
+        return instance.emit_signal_click_pressed(instance, arg1_name, arg2_name, arg3_name); \
+    }) \
+    .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
+        instance.disconnect_signal_##snake_case(); \
+    }) \
+    .method("set_signal_" + std::string(#snake_case) + "_blocked", [](T& instance, bool b){ \
+        instance.set_signal_##snake_case##_blocked(b); \
+    }) \
+    .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
+        return instance.get_signal_##snake_case##_blocked(); \
+    }); \
+}
+
+#define DEFINE_ADD_SIGNAL_MANUAL_ARG4(snake_case, return_t, arg1_t, arg1_name, arg2_t, arg2_name, arg3_t, arg3_name, arg4_t, arg4_name) \
+template<typename T, typename Arg_t> \
+void add_signal_##snake_case(Arg_t type) \
+{ \
+    type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    { \
+        instance.connect_signal_click_pressed([](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, arg4_t arg4_name, jl_function_t* task) -> return_t { \
+            return jlcxx::unbox<return_t>( \
+                jl_safe_call( \
+                    ("emit_signal_" + std::string(#snake_case)).c_str(), \
+                    task, \
+                    jlcxx::box<arg1_t>(arg1_name), \
+                    jlcxx::box<arg2_t>(arg2_name), \
+                    jlcxx::box<arg3_t>(arg3_name), \
+                    jlcxx::box<arg4_t>(arg4_name) \
+                ) \
+            ); \
+        }, task); \
+    }) \
+    .method("emit_signal_" + std::string(#snake_case), [](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, arg4_t arg4_name) -> return_t { \
+        return instance.emit_signal_click_pressed(instance, arg1_name, arg2_name, arg3_name, arg4_name); \
+    }) \
+    .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
+        instance.disconnect_signal_##snake_case(); \
+    }) \
+    .method("set_signal_" + std::string(#snake_case) + "_blocked", [](T& instance, bool b){ \
+        instance.set_signal_##snake_case##_blocked(b); \
+    }) \
+    .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
+        return instance.get_signal_##snake_case##_blocked(); \
+    }); \
+}
+
+DEFINE_ADD_SIGNAL_MANUAL_ARG4(click_pressed, void, double, x, double, y, double, z, double, w)
 
 template<typename Widget_t, typename T>
 void add_widget_signals(T& type)
@@ -266,8 +423,13 @@ static void implement_widget(jlcxx::Module& m)
     m.widget_method_no_args(hide);
     m.widget_method_no_args(show);
     
-    // TODO: add_controller
-    // TODO: remove_controller
+    m.method("add_controller", [](void* widget, void* controller) {
+        ((Widget*) widget)->add_controller(*((EventController*) controller));
+    });
+
+    m.method("remove_controller", [](void* widget, void* controller) {
+        ((Widget*) widget)->remove_controller(*((EventController*) controller));
+    });
     
     m.widget_method(set_is_focusable, bool b, b);
     m.widget_method_no_args(get_is_focusable);
@@ -692,10 +854,77 @@ void implement_colors(jlcxx::Module& module)
     });
 }
 
-// ### ENTRY
-void implement_entry(jlcxx::Module& module)
-{
+// ### EVENT CONTROLLER
 
+void implement_event_controller(jlcxx::Module& module)
+{
+    module.add_enum_value(PropagationPhase, PROPAGATION_PHASE, NONE);
+    module.add_enum_value(PropagationPhase, PROPAGATION_PHASE, CAPTURE);
+    module.add_enum_value(PropagationPhase, PROPAGATION_PHASE, BUBBLE);
+    module.add_enum_value(PropagationPhase, PROPAGATION_PHASE, TARGET);
+}
+
+void implement_single_click_gesture(jlcxx::Module& module)
+{
+    module.add_enum_value(ButtonID, BUTTON_ID, NONE);
+    module.add_enum_value(ButtonID, BUTTON_ID, ANY);
+    module.add_enum_value(ButtonID, BUTTON_ID, BUTTON_01);
+    module.add_enum_value(ButtonID, BUTTON_ID, BUTTON_02);
+    module.add_enum_value(ButtonID, BUTTON_ID, BUTTON_03);
+    module.add_enum_value(ButtonID, BUTTON_ID, BUTTON_04);
+    module.add_enum_value(ButtonID, BUTTON_ID, BUTTON_05);
+    module.add_enum_value(ButtonID, BUTTON_ID, BUTTON_06);
+    module.add_enum_value(ButtonID, BUTTON_ID, BUTTON_07);
+    module.add_enum_value(ButtonID, BUTTON_ID, BUTTON_08);
+    module.add_enum_value(ButtonID, BUTTON_ID, BUTTON_09);
+}
+
+template<typename T, typename Arg_t>
+void make_event_controller(Arg_t& type)
+{
+    type.method("set_propagation_phase", [](T& instance, int32_t propagation_phase)
+    {
+        instance.set_propagation_phase((PropagationPhase) propagation_phase);
+    });
+    type.method("get_propagation_phase", [](T& instance) -> int32_t
+    {
+        return (int32_t) instance.get_propagation_phase();
+    });
+}
+
+template<typename T, typename Arg_t>
+void make_single_click_gesture(Arg_t& type)
+{
+    type.method("get_current_button", [](T& instance) -> int32_t {
+        return (int32_t) instance.get_current_button();
+    });
+    type.method("set_only_listens_to_button", [](T& instance, int32_t button_id) {
+        instance.set_only_listens_to_button(instance, (ButtonID) button_id);
+    });
+    type.method("get_only_listens_to_button", [](T& instance, int32_t button_id) -> int32_t {
+        (int32_t) instance.get_only_listens_to_button(instance);
+    });
+    type.method("set_touch_only", [](T& instance, bool b){
+        instance.set_touch_only(b);
+    });
+    type.method("get_touch_only", [](T& instance) -> bool {
+        return instance.get_touch_only();
+    });
+}
+
+DEFINE_ADD_SIGNAL_MANUAL_ARG2(motion_enter, void, double, x, double, y);
+DEFINE_ADD_SIGNAL_MANUAL_ARG2(motion, void, double, x, double, y);
+DEFINE_ADD_SIGNAL_MANUAL_ARG0(motion_leave, void);
+
+void implement_event_controller_motion(jlcxx::Module& module)
+{
+    auto motion = module.add_type(MotionEventController);
+
+    add_signal_motion_enter<MotionEventController>(motion);
+    add_signal_motion<MotionEventController>(motion);
+    add_signal_motion_leave<MotionEventController>(motion);
+
+    make_event_controller<MotionEventController>(motion);
 }
 
 // ### MAIN
@@ -719,6 +948,9 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_center_box(module);
     implement_check_button(module);
     implement_colors(module);
+
+    implement_event_controller(module);
+    implement_single_click_gesture(module);
 
     // TODO:
     // click event controller
