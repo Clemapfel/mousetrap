@@ -53,11 +53,13 @@ int main()
     {
         auto window = Window(app);
 
-        auto label = Label("test");
-        auto frame = Frame();
-        frame.set_child(label);
-        window.set_child(frame);
+        auto grid = GridView();
+        auto button = CheckButton();
+        button.set_child(Label("Label"));
 
+        grid.push_back(button);
+        grid.set_margin(50);
+        window.set_child(grid);
         window.present();
     });
 

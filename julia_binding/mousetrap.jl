@@ -90,7 +90,7 @@ module mousetrap
             push!(out.args, :(export $(Symbol(instance))))
         end
 
-        push!(out.args, Base.convert(type::Type{$enum}, x::Integer) = return $enum(convert(Int64, x)))
+        push!(out.args, :(Base.convert(type::Type{$enum}, x::Integer) = return $enum(Base.convert(Int64, x))))
         return out
     end
 
@@ -279,6 +279,285 @@ module mousetrap
 
 ####### signal_components.jl
 
+    macro _add_signal_arg0(T, snake_case, Return_t)
+
+        out = Expr(:block)
+
+        connect_signal_name = :connect_signal_ * snake_case
+
+        Return_t = esc(Return_t)
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T)
+                println(x)
+                detail.$connect_signal_name(x._internal, function(x)
+                    (TypedFunction(f, $Return_t, ($T,)))($T(x[1][]))
+                end)
+            end
+        )))
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                detail.$connect_signal_name(x._internal, function(x)
+                    (TypedFunction(f, $Return_t, ($T, Data_t)))($T(x[1][]), data)
+                end)
+            end
+        )))
+
+        emit_signal_name = :emit_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $emit_signal_name(x::$T) ::$Return_t
+                return convert($Return_t, detail.$emit_signal_name(x._internal))
+            end
+        )))
+
+        disconnect_signal_name = :disconnect_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $disconnect_signal_name(x::$T)
+                detail.$disconnect_signal_name(x._internal)
+            end
+        )))
+
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $set_signal_blocked_name(x::$T, b::Bool)
+                detail.$set_signal_blocked_name(x._internal, b)
+            end
+        )))
+
+        get_signal_blocked_name = :get_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $get_signal_blocked_name(x::$T)
+                return detail.$get_signal_blocked_name(x._internal)
+            end
+        )))
+
+        push!(out.args, esc(:(export $connect_signal_name)))
+        push!(out.args, esc(:(export $disconnect_signal_name)))
+        push!(out.args, esc(:(export $set_signal_blocked_name)))
+        push!(out.args, esc(:(export $get_signal_blocked_name)))
+        push!(out.args, esc(:(export $emit_signal_name)))
+
+        return out
+    end
+
+    macro _add_signal_arg1(T, snake_case, Return_t, Arg1_t, arg1_name)
+
+        out = Expr(:block)
+
+        connect_signal_name = :connect_signal_ * snake_case
+
+        Return_t = esc(Return_t)
+
+        Arg1_t = esc(Arg1_t)
+
+        arg1_name = esc(arg1_name)
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T)
+                detail.$connect_signal_name(x._internal, function(x)
+                    (TypedFunction(f, $Return_t, ($T, $Arg1_t)))($T(x[]))
+                end)
+            end
+        )))
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                detail.$connect_signal_name(x._internal, function(x)
+                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, Data_t)))($T(x[]), data)
+                end)
+            end
+        )))
+
+        emit_signal_name = :emit_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $emit_signal_name(x::$T, $arg1_name::$Arg1_t) ::$Return_t
+                return convert($Return_t, detail.$emit_signal_name(x._internal, $arg1_name))
+            end
+        )))
+
+        disconnect_signal_name = :disconnect_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $disconnect_signal_name(x::$T)
+                detail.$disconnect_signal_name(x._internal)
+            end
+        )))
+
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $set_signal_blocked_name(x::$T, b::Bool)
+                detail.$set_signal_blocked_name(x._internal, b)
+            end
+        )))
+
+        get_signal_blocked_name = :get_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $get_signal_blocked_name(x::$T)
+                return detail.$get_signal_blocked_name(x._internal)
+            end
+        )))
+
+        push!(out.args, esc(:(export $connect_signal_name)))
+        push!(out.args, esc(:(export $disconnect_signal_name)))
+        push!(out.args, esc(:(export $set_signal_blocked_name)))
+        push!(out.args, esc(:(export $get_signal_blocked_name)))
+        push!(out.args, esc(:(export $emit_signal_name)))
+
+        return out
+    end
+
+    macro _add_signal_arg2(T, snake_case, Return_t, Arg1_t, arg1_name, Arg2_t, arg2_name)
+
+        out = Expr(:block)
+
+        connect_signal_name = :connect_signal_ * snake_case
+
+        Return_t = esc(Return_t)
+
+        Arg1_t = esc(Arg1_t)
+        Arg2_t = esc(Arg2_t)
+
+        arg1_name = esc(arg1_name)
+        arg2_name = esc(arg2_name)
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T)
+                detail.$connect_signal_name(x._internal, function(x)
+                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t)))($T(x[1][]), x[2], x[3])
+                end)
+            end
+        )))
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                detail.$connect_signal_name(x._internal, function(x)
+                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, Data_t)))($T(x[1][]), x[2], x[3], data)
+                end)
+            end
+        )))
+
+        emit_signal_name = :emit_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $emit_signal_name(x::$T, $arg1_name::$Arg1_t, $arg2_name::$Arg2_t) ::$Return_t
+                return convert($Return_t, detail.$emit_signal_name(x._internal, $arg1_name, $arg2_name))
+            end
+        )))
+
+        disconnect_signal_name = :disconnect_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $disconnect_signal_name(x::$T)
+                detail.$disconnect_signal_name(x._internal)
+            end
+        )))
+
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $set_signal_blocked_name(x::$T, b::Bool)
+                detail.$set_signal_blocked_name(x._internal, b)
+            end
+        )))
+
+        get_signal_blocked_name = :get_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $get_signal_blocked_name(x::$T)
+                return detail.$get_signal_blocked_name(x._internal)
+            end
+        )))
+
+        push!(out.args, esc(:(export $connect_signal_name)))
+        push!(out.args, esc(:(export $disconnect_signal_name)))
+        push!(out.args, esc(:(export $set_signal_blocked_name)))
+        push!(out.args, esc(:(export $get_signal_blocked_name)))
+        push!(out.args, esc(:(export $emit_signal_name)))
+
+        return out
+    end
+
+    macro _add_signal_arg3(T, snake_case, Return_t, Arg1_t, arg1_name, Arg2_t, arg2_name, Arg3_t, arg3_name)
+
+        out = Expr(:block)
+
+        connect_signal_name = :connect_signal_ * snake_case
+
+        Return_t = esc(Return_t)
+
+        Arg1_t = esc(Arg1_t)
+        Arg2_t = esc(Arg2_t)
+        Arg3_t = esc(Arg3_t)
+
+        arg1_name = esc(arg1_name)
+        arg2_name = esc(arg2_name)
+        arg3_name = esc(arg3_name)
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T)
+                detail.$connect_signal_name(x._internal, function(x)
+                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t)))($T(x[1][]), x[2], x[3], x[4])
+                end)
+            end
+        )))
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                detail.$connect_signal_name(x._internal, function(x)
+                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, Data_t)))($T(x[1][]), x[2], x[3], x[4], data)
+                end)
+            end
+        )))
+
+        emit_signal_name = :emit_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $emit_signal_name(x::$T, $arg1_name::$Arg1_t, $arg2_name::$Arg2_t, $arg3_name::$Arg3_t) ::$Return_t
+                return convert($Return_t, detail.$emit_signal_name(x._internal, $arg1_name, $arg2_name, $arg3_name))
+            end
+        )))
+
+        disconnect_signal_name = :disconnect_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $disconnect_signal_name(x::$T)
+                detail.$disconnect_signal_name(x._internal)
+            end
+        )))
+
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $set_signal_blocked_name(x::$T, b::Bool)
+                detail.$set_signal_blocked_name(x._internal, b)
+            end
+        )))
+
+        get_signal_blocked_name = :get_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $get_signal_blocked_name(x::$T)
+                return detail.$get_signal_blocked_name(x._internal)
+            end
+        )))
+
+        push!(out.args, esc(:(export $connect_signal_name)))
+        push!(out.args, esc(:(export $disconnect_signal_name)))
+        push!(out.args, esc(:(export $set_signal_blocked_name)))
+        push!(out.args, esc(:(export $get_signal_blocked_name)))
+        push!(out.args, esc(:(export $emit_signal_name)))
+
+        return out
+    end
+
     macro _add_signal_arg4(T, snake_case, Return_t, Arg1_t, arg1_name, Arg2_t, arg2_name, Arg3_t, arg3_name, Arg4_t, arg4_name)
 
         out = Expr(:block)
@@ -300,7 +579,7 @@ module mousetrap
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T)
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, $Arg4_t)))($T(x[]))
+                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, $Arg4_t)))($T(x[1][]), x[2], x[3], x[4], x[5])
                 end)
             end
         )))
@@ -308,7 +587,7 @@ module mousetrap
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, $Arg4_t, Data_t)))($T(x[]), data)
+                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, $Arg4_t, Data_t)))($T(x[1][]), x[2], x[3], x[4], x[5], data)
                 end)
             end
         )))
@@ -316,7 +595,7 @@ module mousetrap
         emit_signal_name = :emit_signal_ * snake_case
 
         push!(out.args, esc(:(
-            function $emit_signal_name(x::$T, $arg1_name::$Arg1_t, $arg2_name::$Arg2_t, $arg3_name::$Arg3_t, $arg4_name::$Arg4_t) ::Return_t
+            function $emit_signal_name(x::$T, $arg1_name::$Arg1_t, $arg2_name::$Arg2_t, $arg3_name::$Arg3_t, $arg4_name::$Arg4_t) ::$Return_t
                 return convert($Return_t, detail.$emit_signal_name(x._internal, $arg1_name, $arg2_name, $arg3_name, $arg4_name))
             end
         )))
@@ -354,17 +633,17 @@ module mousetrap
         return out
     end
 
-    macro add_signal(T, name, args...)
+    macro add_signal(T, name, return_t, args...)
         if length(args) == 0
-            return :(@_add_signal_arg0($type, $name))
+            return :(@_add_signal_arg0($T, $name, $return_t))
         elseif length(args) == 2
-            return :(@_add_signal_arg1($type, $name, $(args[1]), $(args[2])))
+            return :(@_add_signal_arg1($T, $name, $return_t, $(args[1]), $(args[2])))
         elseif length(args) == 4
-            return :(@_add_signal_arg2($type, $name, $(args[1]), $(args[2]), $(args[3]), $(args[4])))
+            return :(@_add_signal_arg2($T, $name, $return_t, $(args[1]), $(args[2]), $(args[3]), $(args[4])))
         elseif length(args) == 6
-            return :(@_add_signal_arg3($type, $name, $(args[1]), $(args[2]), $(args[3]), $(args[4]), $(args[5]), $(args[6])))
+            return :(@_add_signal_arg3($T, $name, $return_t, $(args[1]), $(args[2]), $(args[3]), $(args[4]), $(args[5]), $(args[6])))
         elseif length(args) == 8
-            return :(@_add_signal_arg4($type, $name, $(args[1]), $(args[2]), $(args[3]), $(args[4]), $(args[5]), $(args[6]), $(args[7]), $(args[8])))
+            return :(@_add_signal_arg4($T, $name, $return_t, $(args[1]), $(args[2]), $(args[3]), $(args[4]), $(args[5]), $(args[6]), $(args[7]), $(args[8])))
         else
             throw(AssertionError("In moustrap.add_signal: Incompatible number of arguments"))
             return :()
@@ -373,13 +652,13 @@ module mousetrap
 
     macro add_widget_signals(T)
         out = Expr(:block)
-        push!(out.args, :(@add_signal $T realize))
-        push!(out.args, :(@add_signal $T unrealize))
-        push!(out.args, :(@add_signal $T destroy))
-        push!(out.args, :(@add_signal $T hide))
-        push!(out.args, :(@add_signal $T show))
-        push!(out.args, :(@add_signal $T map))
-        push!(out.args, :(@add_signal $T unmape))
+        push!(out.args, :(@add_signal $T realize Cvoid))
+        push!(out.args, :(@add_signal $T unrealize Cvoid))
+        push!(out.args, :(@add_signal $T destroy Cvoid))
+        push!(out.args, :(@add_signal $T hide Cvoid))
+        push!(out.args, :(@add_signal $T show Cvoid))
+        push!(out.args, :(@add_signal $T map Cvoid))
+        push!(out.args, :(@add_signal $T unmap Cvoid))
         return out
     end
 
@@ -669,10 +948,10 @@ module mousetrap
     show(widget::Widget) = detail.hide(widget._internal.cpp_object)
     export show
 
-    # TODO: add_controller(widget::Widget, controller::EventController)
+    add_controller(widget::Widget, controller::EventController) = detail.add_controller(widget._internal.cpp_object, controller._internal.cpp_object)
     export add_controller
 
-    # TODO: remove_controller(widget::Widget, controller::EventController)
+    remove_controller(widget::Widget, controller::EventController) = detail.remove_controller(widget._internal.cpp_object, controller._internal.cpp_object)
     export remove_controller
 
     set_is_focusable(widget::Widget, b::Bool) = detail.set_is_focusable(widget._internal.cpp_object, b)
@@ -808,7 +1087,7 @@ module mousetrap
     @export_function Action get_enabled
     @export_function Action get_is_stateful
 
-    @add_signal Action activated
+    @add_signal Action activated Cvoid
 
 ####### application.jl
 
@@ -824,6 +1103,7 @@ module mousetrap
     @export_function Application release
     @export_function Application mark_as_busy
     @export_function Application unmark_as_busy
+    @export_function Application get_id
 
     add_action(app::Application, action::Action) = detail.add_action(app._internal, action._internal)
     export add_action
@@ -834,13 +1114,12 @@ module mousetrap
     @export_function Application remove_action id String
     @export_function Application has_action id String
 
-    @add_signal Application activate
-    @add_signal Application shutdown
+    @add_signal Application activate Cvoid
+    @add_signal Application shutdown Cvoid
     
 ####### adjustment.jl
 
     function Adjustment(value::Number, lower::Number, upper::Number, increment::Number)
-        println(value, " ", lower, " ", upper, " ", increment)
         return Adjustment(detail._Adjustment(
             convert(Cfloat, value),
             convert(Cfloat, lower),
@@ -875,8 +1154,8 @@ module mousetrap
         );
     end
 
-    @add_signal Adjustment value_changed
-    @add_signal Adjustment properties_changed
+    @add_signal Adjustment value_changed Cvoid
+    @add_signal Adjustment properties_changed Cvoid
 
 ####### angle.jl
 
@@ -1142,6 +1421,15 @@ module mousetrap
         return out
     end
 
+####### motion_event_controller.jl
+
+    @export_event_controller MotionEventController
+    MotionEventController() = MotionEventController(detail._MotionEventController())
+
+    @add_signal MotionEventController motion_enter Cvoid Cdouble x Cdouble y
+    @add_signal MotionEventController motion Cvoid Cdouble x Cdouble y
+    @add_signal MotionEventController motion_leave Cvoid
+
 ####### window.jl
 
     Window(app::Application) = Window(detail._Window(app._internal))
@@ -1186,9 +1474,9 @@ module mousetrap
     end
     export set_default_widget
 
-    @add_signal Window close_request
-    @add_signal Window activate_default_widget
-    @add_signal Window activate_focused_widget
+    @add_signal Window close_request Cvoid
+    @add_signal Window activate_default_widget Cvoid
+    @add_signal Window activate_focused_widget Cvoid
     @add_widget_signals(Window)
 end
 
@@ -1196,24 +1484,19 @@ end
 
 using .mousetrap;
 
-rgba = RGBA(1, 0, 1, 1)
-@show convert(HSVA, rgba)
-@show convert(RGBA, convert(HSVA, rgba))
-exit(0)
-
 app = Application("test.app")
+
+function on_motion(instance::MotionEventController, x::Cdouble, y::Cdouble)
+   println(x, " ", y)
+end
 
 connect_signal_activate(app) do (app::Application)
     window = Window(app)
 
-    center_box = CenterBox(ORIENTATION_HORIZONTAL)
-    set_start_child(center_box, Button())
-    set_center_child(center_box, Button())
-    set_end_child(center_box, Button())
-
-    check_button = CheckButton()
-    set_child(check_button, center_box)
-    set_child(window, check_button)
+    motion_controller = MotionEventController()
+    connect_signal_motion(on_motion, motion_controller)
+    emit_signal_motion(motion_controller, 12.0, 13.0)
+    add_controller(window, motion_controller)
     present(window)
 end
 

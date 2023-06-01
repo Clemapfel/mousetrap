@@ -45,6 +45,13 @@ static inline jl_value_t* jl_get_property(jl_value_t* object, const char* proper
     return jl_call2(get_property, object, (jl_value_t*) jl_symbol(property_name));
 }
 
+template<typename... Ts>
+static inline jl_value_t* jl_wrap(Ts... args)
+{
+    auto* wrap = jl_eval_string("(args...) -> args");
+    return jl_calln(wrap, args...);
+}
+
 // ### BOX
 
 static jl_value_t* box_vector2f(Vector2f in)
@@ -67,36 +74,13 @@ static jl_value_t* box_vector2f(Vector2f in)
 
 // ### SIGNAL COMPONENTS
 
-#define DEFINE_ADD_SIGNAL(snake_case, return_t) \
-template<typename T, typename Arg_t>                               \
-void add_signal_##snake_case(Arg_t type) {\
-type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
-    { \
-        instance.connect_signal_##snake_case([](T& instance, jl_function_t* task) { \
-            return jlcxx::unbox<return_t>(jl_safe_call(("emit_signal_" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(instance))); \
-        }, task); \
-    }) \
-    .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
-        instance.disconnect_signal_##snake_case(); \
-    }) \
-    .method("set_signal_" + std::string(#snake_case) + "_blocked", [](T& instance, bool b){ \
-        instance.set_signal_##snake_case##_blocked(b); \
-    }) \
-    .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
-        return instance.get_signal_##snake_case##_blocked(); \
-    }) \
-    .method("emit_signal_" + std::string(#snake_case), [](T& instance) { \
-        return instance.emit_signal_##snake_case(); \
-    }); \
-}
-
 #define DEFINE_ADD_SIGNAL_CONVERT_RETURN_TYPE(snake_case, true_return_t, new_return_t) \
 template<typename T, typename Arg_t>                               \
 void add_signal_##snake_case(Arg_t type) {\
 type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
     { \
         instance.connect_signal_##snake_case([](T& instance, jl_function_t* task) -> true_return_t { \
-            return (true_return_t) jlcxx::unbox<new_return_t>(jl_safe_call(("emit_signal_" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(instance))); \
+            return (true_return_t) jlcxx::unbox<new_return_t>(jl_safe_call(("emit_signal_" + std::string(#snake_case)).c_str(), task, jl_wrap(jlcxx::box<T&>(instance)))); \
         }, task); \
     }) \
     .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
@@ -112,16 +96,6 @@ type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_fun
         return (new_return_t) instance.emit_signal_##snake_case(); \
     }); \
 }
-
-DEFINE_ADD_SIGNAL(activate, void)
-DEFINE_ADD_SIGNAL(shutdown, void)
-DEFINE_ADD_SIGNAL_CONVERT_RETURN_TYPE(close_request, WindowCloseRequestResult, bool)
-DEFINE_ADD_SIGNAL(activate_default_widget, void)
-DEFINE_ADD_SIGNAL(activate_focused_widget, void)
-DEFINE_ADD_SIGNAL(value_changed, void)
-DEFINE_ADD_SIGNAL(properties_changed, void)
-DEFINE_ADD_SIGNAL(clicked, void)
-DEFINE_ADD_SIGNAL(toggled, void)
 
 #define DEFINE_ADD_WIDGET_SIGNAL(snake_case) \
 template<typename T, typename Arg_t>                               \
@@ -141,8 +115,8 @@ void add_signal_##snake_case(Arg_t type) {\
     .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
         return instance.get_signal_##snake_case##_blocked(); \
     }) \
-    .method("emit_signal_" + std::string(#snake_case), [](Widget& instance) { \
-        instance.emit_signal_##snake_case(); \
+    .method("emit_signal_" + std::string(#snake_case), [](T& instance) { \
+        dynamic_cast<Widget&>(instance).emit_signal_##snake_case(); \
     }); \
 }
 
@@ -160,17 +134,18 @@ void add_signal_##snake_case(Arg_t type) \
 { \
     type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
     { \
-        instance.connect_signal_click_pressed([](T& instance, jl_function_t* task) -> return_t { \
+        instance.connect_signal_##snake_case([](T& instance, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
                 jl_safe_call( \
                     ("emit_signal_" + std::string(#snake_case)).c_str(), \
-                    task \
+                    task,                                   \
+                    jl_wrap(jlcxx::box<T&>(instance))\
                 ) \
             ); \
         }, task); \
     }) \
     .method("emit_signal_" + std::string(#snake_case), [](T& instance) -> return_t { \
-        return instance.emit_signal_click_pressed(instance); \
+        return instance.emit_signal_##snake_case(); \
     }) \
     .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
         instance.disconnect_signal_##snake_case(); \
@@ -189,18 +164,18 @@ void add_signal_##snake_case(Arg_t type) \
 { \
     type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
     { \
-        instance.connect_signal_click_pressed([](T& instance, arg1_t arg1_name, jl_function_t* task) -> return_t { \
+        instance.connect_signal_##snake_case([](T& instance, arg1_t arg1_name, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
                 jl_safe_call( \
                     ("emit_signal_" + std::string(#snake_case)).c_str(), \
                     task, \
-                    jlcxx::box<arg1_t>(arg1_name) \
+                    jl_wrap(jlcxx::box<T&>(instance), jlcxx::box<arg1_t>(arg1_name)) \
                 ) \
             ); \
         }, task); \
     }) \
     .method("emit_signal_" + std::string(#snake_case), [](T& instance, arg1_t arg1_name) -> return_t { \
-        return instance.emit_signal_click_pressed(instance, arg1_name); \
+        return instance.emit_signal_##snake_case(arg1_name); \
     }) \
     .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
         instance.disconnect_signal_##snake_case(); \
@@ -219,19 +194,18 @@ void add_signal_##snake_case(Arg_t type) \
 { \
     type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
     { \
-        instance.connect_signal_click_pressed([](T& instance, arg1_t arg1_name, arg2_t arg2_name, jl_function_t* task) -> return_t { \
+        instance.connect_signal_##snake_case([](T& instance, arg1_t arg1_name, arg2_t arg2_name, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
                 jl_safe_call( \
                     ("emit_signal_" + std::string(#snake_case)).c_str(), \
                     task, \
-                    jlcxx::box<arg1_t>(arg1_name), \
-                    jlcxx::box<arg2_t>(arg2_name) \
+                    jl_wrap(jlcxx::box<T&>(instance), jlcxx::box<arg1_t>(arg1_name), jlcxx::box<arg2_t>(arg2_name)) \
                 ) \
             ); \
         }, task); \
     }) \
     .method("emit_signal_" + std::string(#snake_case), [](T& instance, arg1_t arg1_name, arg2_t arg2_name) -> return_t { \
-        return instance.emit_signal_click_pressed(instance, arg1_name, arg2_name); \
+        return instance.emit_signal_##snake_case(arg1_name, arg2_name); \
     }) \
     .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
         instance.disconnect_signal_##snake_case(); \
@@ -250,20 +224,18 @@ void add_signal_##snake_case(Arg_t type) \
 { \
     type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
     { \
-        instance.connect_signal_click_pressed([](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, jl_function_t* task) -> return_t { \
+        instance.connect_signal_##snake_case([](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
                 jl_safe_call( \
                     ("emit_signal_" + std::string(#snake_case)).c_str(), \
                     task, \
-                    jlcxx::box<arg1_t>(arg1_name), \
-                    jlcxx::box<arg2_t>(arg2_name), \
-                    jlcxx::box<arg3_t>(arg3_name) \
+                    jl_wrap(jlcxx::box<T&>(instance), jlcxx::box<arg1_t>(arg1_name), jlcxx::box<arg2_t>(arg2_name), jlcxx::box<arg3_t>(arg3_name)) \
                 ) \
             ); \
         }, task); \
     }) \
     .method("emit_signal_" + std::string(#snake_case), [](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name) -> return_t { \
-        return instance.emit_signal_click_pressed(instance, arg1_name, arg2_name, arg3_name); \
+        return instance.emit_signal_##snake_case(arg1_name, arg2_name, arg3_name); \
     }) \
     .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
         instance.disconnect_signal_##snake_case(); \
@@ -282,21 +254,18 @@ void add_signal_##snake_case(Arg_t type) \
 { \
     type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
     { \
-        instance.connect_signal_click_pressed([](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, arg4_t arg4_name, jl_function_t* task) -> return_t { \
+        instance.connect_signal_##snake_case([](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, arg4_t arg4_name, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
                 jl_safe_call( \
                     ("emit_signal_" + std::string(#snake_case)).c_str(), \
                     task, \
-                    jlcxx::box<arg1_t>(arg1_name), \
-                    jlcxx::box<arg2_t>(arg2_name), \
-                    jlcxx::box<arg3_t>(arg3_name), \
-                    jlcxx::box<arg4_t>(arg4_name) \
+                    jl_wrap(jlcxx::box<T&>(instance), jlcxx::box<arg1_t>(arg1_name), jlcxx::box<arg2_t>(arg2_name), jlcxx::box<arg3_t>(arg3_name), jlcxx::box<arg4_t>(arg4_name)) \
                 ) \
             ); \
         }, task); \
     }) \
     .method("emit_signal_" + std::string(#snake_case), [](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, arg4_t arg4_name) -> return_t { \
-        return instance.emit_signal_click_pressed(instance, arg1_name, arg2_name, arg3_name, arg4_name); \
+        return instance.emit_signal_##snake_case(arg1_name, arg2_name, arg3_name, arg4_name); \
     }) \
     .method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
         instance.disconnect_signal_##snake_case(); \
@@ -309,7 +278,16 @@ void add_signal_##snake_case(Arg_t type) \
     }); \
 }
 
-DEFINE_ADD_SIGNAL_MANUAL_ARG4(click_pressed, void, double, x, double, y, double, z, double, w)
+DEFINE_ADD_SIGNAL_MANUAL_ARG0(activate, void)
+DEFINE_ADD_SIGNAL_MANUAL_ARG0(shutdown, void)
+DEFINE_ADD_SIGNAL_CONVERT_RETURN_TYPE(close_request, WindowCloseRequestResult, bool)
+DEFINE_ADD_SIGNAL_MANUAL_ARG0(activate_default_widget, void)
+DEFINE_ADD_SIGNAL_MANUAL_ARG0(activate_focused_widget, void)
+DEFINE_ADD_SIGNAL_MANUAL_ARG0(value_changed, void)
+DEFINE_ADD_SIGNAL_MANUAL_ARG0(properties_changed, void)
+DEFINE_ADD_SIGNAL_MANUAL_ARG0(clicked, void)
+DEFINE_ADD_SIGNAL_MANUAL_ARG0(toggled, void)
+
 
 template<typename Widget_t, typename T>
 void add_widget_signals(T& type)
@@ -916,7 +894,7 @@ DEFINE_ADD_SIGNAL_MANUAL_ARG2(motion_enter, void, double, x, double, y);
 DEFINE_ADD_SIGNAL_MANUAL_ARG2(motion, void, double, x, double, y);
 DEFINE_ADD_SIGNAL_MANUAL_ARG0(motion_leave, void);
 
-void implement_event_controller_motion(jlcxx::Module& module)
+void implement_motion_event_controller(jlcxx::Module& module)
 {
     auto motion = module.add_type(MotionEventController);
 
@@ -951,6 +929,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
 
     implement_event_controller(module);
     implement_single_click_gesture(module);
+    implement_motion_event_controller(module);
 
     // TODO:
     // click event controller
