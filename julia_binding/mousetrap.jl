@@ -682,26 +682,61 @@ module mousetrap
     Action(id::String, app::Application) = Action(detail._Action(id, app._internal.cpp_object))
 
     @export_function Action get_id String
-    @export_function Action set_state Cvoid b Bool
+    @export_function Action set_state! Cvoid b Bool
     @export_function Action get_state Bool
     @export_function Action activate Cvoid
-    @export_function Action add_shortcut shortcut Cvoid String
-    @export_function Action get_shortcuts Vector{String}
-    @export_function Action clear_shortcuts Cvoid
-    @export_function Action set_enabled Cvoid b Bool
+    @export_function Action add_shortcut! Cvoid shortcut String
+
+    get_shortcuts(action::Action) ::Vector{String} = return detail.get_shortcuts(action._internal)[]
+    export get_shortcuts
+
+    @export_function Action clear_shortcuts! Cvoid
+    @export_function Action set_enabled! Cvoid b Bool
     @export_function Action get_enabled Bool
     @export_function Action get_is_stateful Bool
+
+    function set_function!(f, action::Action, data::Data_t) where Data_t
+        detail.set_function!(action._internal, function (internal_ref)
+            TypedFunction(f, Cvoid, (Action, Data_t))(Action(internal_ref[]), data)
+        end)
+    end
+
+    function set_function!(f, action::Action)
+        detail.set_function!(action._internal, function (internal_ref)
+            TypedFunction(f, Cvoid, (Action,))(Action(internal_ref[]))
+        end)
+    end
+    export set_function!
+
+    function set_stateful_function!(f, action::Action, data::Data_t) where Data_t
+        detail.set_stateful_function!(action._internal, function (internal_ref, state::Bool)
+            TypedFunction(f, Bool, (Action, Bool, Data_t))(Action(internal_ref[]), state, data)
+        end)
+    end
+
+    function set_stateful_function!(f, action::Action)
+        detail.set_stateful_function!(action._internal, function (internal_ref, state::Bool)
+            TypedFunction(f, Bool, (Action, Bool))(Action(internal_ref[]), state)
+        end)
+    end
+    export set_stateful_function!
 
 end # module mousetrap
 
 using .mousetrap
 
-for n in names(mousetrap) println(n) end
-
 app = Application("test.app")
 
 connect_signal_activate!(app, 1234) do app::Application, data
-    println(data)
+    action = Action("test", app)
+    set_stateful_function!(action) do action::Action, state
+        println(state)
+        return !state
+    end
+    add_shortcut!(action, "<Control>h")
+    add_shortcut!(action, "<Control>d")
+    println(get_shortcuts(action))
+    activate(action)
 end
 
 @show run(app)
