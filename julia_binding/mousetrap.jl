@@ -80,8 +80,6 @@ module mousetrap
         end
     end
 
-    const DISABLE_IF_UNDEFINED = true
-
     macro export_enum(enum)
 
         out = Expr(:block)
@@ -93,23 +91,27 @@ module mousetrap
         return out
     end
 
-    macro export_function(type, name)
+    macro export_function(type, name, return_t)
 
+        return_t = esc(return_t)
         mousetrap.eval(:(export $name))
-        return :($name(x::$type) = detail.$name(x._internal))
+        return :($name(x::$type) = Base.convert($return_t, detail.$name(x._internal)))
     end
 
-    macro export_function(type, name, arg1_name, arg1_type)
+    macro export_function(type, name, return_t, arg1_name, arg1_type)
 
+        return_t = esc(return_t)
         arg1_name = esc(arg1_name)
         arg1_type = esc(arg1_type)
 
         mousetrap.eval(:(export $name))
-        return :($name(x::$type, $arg1_name::$arg1_type) = detail.$name(x._internal, $arg1_name))
+        out = :($name(x::$type, $arg1_name::$arg1_type) = Base.convert($return_t, detail.$name(x._internal, $arg1_name)))
+        return out
     end
 
-    macro export_function(type, name, arg1_name, arg1_type, arg2_name, arg2_type)
+    macro export_function(type, name, return_t, arg1_name, arg1_type, arg2_name, arg2_type)
 
+        return_t = esc(return_t)
         arg1_name = esc(arg1_name)
         arg1_type = esc(arg1_type)
         arg2_name = esc(arg2_name)
@@ -121,11 +123,12 @@ module mousetrap
                 x::$type,
                 $arg1_name::$arg1_type,
                 $arg2_name::$arg2_type
-            ) = detail.$name(x._internal, $arg1_name, $arg2_name))
+            ) = Base.convert(return_t, detail.$name(x._internal, $arg1_name, $arg2_name)))
     end
 
-    macro export_function(type, name, arg1_name, arg1_type, arg2_name, arg2_type, arg3_name, arg3_type)
-        
+    macro export_function(type, name, return_t, arg1_name, arg1_type, arg2_name, arg2_type, arg3_name, arg3_type)
+
+        return_t = esc(return_t)
         arg1_name = esc(arg1_name)
         arg1_type = esc(arg1_type)
         arg2_name = esc(arg2_name)
@@ -139,11 +142,12 @@ module mousetrap
                 $arg1_name::$arg1_type,
                 $arg2_name::$arg2_type,
                 $arg3_name::$arg3_type
-            ) = detail.$name(x._internal, $arg1_name, $arg2_name, $arg3_name))
+            )  = Base.convert($return_t, detail.$name(x._internal, $arg1_name, $arg2_name, $arg3_name)))
     end
 
-    macro export_function(type, name, arg1_name, arg1_type, arg2_name, arg2_type, arg3_name, arg3_type)
+    macro export_function(type, name, return_t, arg1_name, arg1_type, arg2_name, arg2_type, arg3_name, arg3_type)
 
+        return_t = esc(return_t)
         arg1_name = esc(arg1_name)
         arg1_type = esc(arg1_type)
         arg2_name = esc(arg2_name)
@@ -160,13 +164,17 @@ module mousetrap
                 $arg2_name::$arg2_type,
                 $arg3_name::$arg3_type,
                 $arg4_name::$arg4_type
-            ) = detail.$name(x._internal, $arg1_name, $arg2_name, $arg3_name, $arg4_name))
+            )  = Base.convert($return_t, detail.$name(x._internal, $arg1_name, $arg2_name, $arg3_name, $arg4_name)))
     end
 
     macro export_type(name, super)
 
         super = esc(super)
         internal_name = Symbol("_" * "$name")
+
+        if !isdefined(mousetrap.detail, internal_name)
+            return
+        end
 
         out = Expr(:block)
         mousetrap.eval(:(export $name))
@@ -191,8 +199,6 @@ module mousetrap
         out = Expr(:block)
 
         connect_signal_name = :connect_signal_ * snake_case * :!
-
-        Return_t = esc(Return_t)
 
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T)
@@ -230,7 +236,7 @@ module mousetrap
         set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
 
         push!(out.args, esc(:(
-            function $set_signal_blocked_name(x::$T, b::Bool)
+            function $set_signal_blocked_name(x::$T, b)
                 detail.$set_signal_blocked_name(x._internal, b)
             end
         )))
@@ -258,7 +264,7 @@ module mousetrap
 
         connect_signal_name = :connect_signal_ * snake_case * :!
 
-        Return_t = esc(Return_t)
+        
 
         Arg1_t = esc(Arg1_t)
 
@@ -299,7 +305,7 @@ module mousetrap
         set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
 
         push!(out.args, esc(:(
-            function $set_signal_blocked_name(x::$T, b::Bool)
+            function $set_signal_blocked_name(x::$T, b)
                 detail.$set_signal_blocked_name(x._internal, b)
             end
         )))
@@ -327,7 +333,7 @@ module mousetrap
 
         connect_signal_name = :connect_signal_ * snake_case * :!
 
-        Return_t = esc(Return_t)
+        
 
         Arg1_t = esc(Arg1_t)
         Arg2_t = esc(Arg2_t)
@@ -370,7 +376,7 @@ module mousetrap
         set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
 
         push!(out.args, esc(:(
-            function $set_signal_blocked_name(x::$T, b::Bool)
+            function $set_signal_blocked_name(x::$T, b)
                 detail.$set_signal_blocked_name(x._internal, b)
             end
         )))
@@ -398,7 +404,7 @@ module mousetrap
 
         connect_signal_name = :connect_signal_ * snake_case * :!
 
-        Return_t = esc(Return_t)
+        
 
         Arg1_t = esc(Arg1_t)
         Arg2_t = esc(Arg2_t)
@@ -443,7 +449,7 @@ module mousetrap
         set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
 
         push!(out.args, esc(:(
-            function $set_signal_blocked_name(x::$T, b::Bool)
+            function $set_signal_blocked_name(x::$T, b)
                 detail.$set_signal_blocked_name(x._internal, b)
             end
         )))
@@ -471,7 +477,7 @@ module mousetrap
 
         connect_signal_name = :connect_signal_ * snake_case * :!
 
-        Return_t = esc(Return_t)
+
 
         Arg1_t = esc(Arg1_t)
         Arg2_t = esc(Arg2_t)
@@ -518,7 +524,7 @@ module mousetrap
         set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
 
         push!(out.args, esc(:(
-            function $set_signal_blocked_name(x::$T, b::Bool)
+            function $set_signal_blocked_name(x::$T, b)
                 detail.$set_signal_blocked_name(x._internal, b)
             end
         )))
@@ -548,16 +554,17 @@ module mousetrap
     abstract type SignalEmitter end
     export SignalEmitter
 
-    @export_type Adjustment SignalEmitter
-    @export_type Application SignalEmitter
-
     abstract type Widget end
     export Widget
 
     abstract type EventController end
     export EventController
 
+    # forward declarations:
+
 ####### adjustment.jl
+
+    @export_type Adjustment SignalEmitter
 
     function Adjustment(value::Number, lower::Number, upper::Number, increment::Number)
         return Adjustment(detail._Adjustment(
@@ -568,10 +575,10 @@ module mousetrap
         ));
     end
 
-    @export_function Adjustment get_lower
-    @export_function Adjustment get_upper
-    @export_function Adjustment get_value
-    @export_function Adjustment get_increment
+    @export_function Adjustment get_lower Float32
+    @export_function Adjustment get_upper Float32
+    @export_function Adjustment get_value Float32
+    @export_function Adjustment get_increment Float32
 
     set_lower!(adjustment::Adjustment, x::Number) = detail.set_lower!(adjustment._internal, convert(Cfloat, x))
     export set_lower!
@@ -594,25 +601,66 @@ module mousetrap
         );
     end
 
-####### action.jl
-
 ####### alignment.jl
+
+    @enum Alignment begin
+        ALIGNMENT_START = detail.ALIGNMENT_START
+        ALIGNMENT_CENTER = detail.ALIGNMENT_CENTER
+        ALIGNMENT_END = detail.ALIGNMENT_END
+    end
+    @export_enum Alignment
 
 ####### angle.jl
 
+    struct Angle
+        _rads::Cfloat
+    end
+    export Angle
+
+    degrees(x::Number) = return Angle(convert(Cfloat, deg2rad(x)))
+    export degrees
+
+    radians(x::Number) = return Angle(convert(Cfloat, x))
+    export radians
+
+    as_degrees(angle::Angle) = return rad2deg(angle._rads)
+    export as_degrees
+
+    as_radians(angle::Angle) = return angle._rads
+    export as_radians
+
+    import Base: +
+    +(a::Angle, b::Angle) = return Angle(a._rads + b._rads)
+
+    import Base: -
+    -(a::Angle, b::Angle) = return Angle(a._rads - b._rads)
+
+    import Base: *
+    *(a::Angle, b::Angle) = return Angle(a._rads * b._rads)
+
+    import Base: /
+    /(a::Angle, b::Angle) = return Angle(a._rads / b._rads)
+
+    import Base: ==
+    ==(a::Angle, b::Angle) = return a._rads == b._rads
+
+    import Base: !=
+    !=(a::Angle, b::Angle) = return a._rads != b._rads
+
 ####### application.jl
 
+    @export_type Application SignalEmitter
     Application(id::String) = Application(detail._Application(id))
 
     import Base.run
     run(x::Application) = mousetrap.detail.run(x._internal)
 
-    @export_function Application quit
-    @export_function Application hold
-    @export_function Application release
-    @export_function Application mark_as_busy!
-    @export_function Application unmark_as_busy!
-    @export_function Application get_id
+    @export_function Application quit Cvoid
+    @export_function Application hold Cvoid
+    @export_function Application release Cvoid
+    @export_function Application mark_as_busy! Cvoid
+    @export_function Application unmark_as_busy! Cvoid
+    @export_function Application get_id String
 
     #add_action(app::Application, action::Action) = detail.add_action(app._internal, action._internal)
     export add_action
@@ -620,13 +668,29 @@ module mousetrap
     #get_action(app::Application, id::String) = return detail.get_action(app._internal, id)
     export get_action
 
-    @export_function Application remove_action id String
-    @export_function Application has_action id String
+    @export_function Application remove_action Cvoid id String
+    @export_function Application has_action Bool id String
 
     @add_signal_activate Application
     @add_signal_shutdown Application
 
     Base.show(io::IO, x::Application) = print(io, "Application(" * get_id(x) * ")")
+
+####### action.jl
+
+    @export_type Action SignalEmitter
+    Action(id::String, app::Application) = Action(detail._Action(id, app._internal.cpp_object))
+
+    @export_function Action get_id String
+    @export_function Action set_state Cvoid b Bool
+    @export_function Action get_state Bool
+    @export_function Action activate Cvoid
+    @export_function Action add_shortcut shortcut Cvoid String
+    @export_function Action get_shortcuts Vector{String}
+    @export_function Action clear_shortcuts Cvoid
+    @export_function Action set_enabled Cvoid b Bool
+    @export_function Action get_enabled Bool
+    @export_function Action get_is_stateful Bool
 
 end # module mousetrap
 

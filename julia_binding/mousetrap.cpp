@@ -117,8 +117,8 @@ static HSVA unbox_hsva(jl_value_t* in)
 #define add_type(Type) add_type<Type>(std::string("_") + #Type)
 #define add_type_method(Type, id, ...) method(#id + std::string(#__VA_ARGS__), &Type::id)
 #define add_constructor(...) constructor<__VA_ARGS__>(USE_FINALIZERS)
-#define add_enum(Enum) add_bits<Enum>(#Enum, jl_int32_type)
-#define add_enum_value(Enum, PREFIX, VALUE) set_const(std::string(#PREFIX) + "_" + std::string(#VALUE), Enum::VALUE)
+#define add_enum(Enum) add_bits<Enum>(#Enum, jl_int64_type);
+#define add_enum_value(Enum, PREFIX, VALUE) set_const(std::string(#PREFIX) + "_" + std::string(#VALUE), (int64_t) Enum::VALUE)
 
 #define declare_is_subtype_of(A, B) template<> struct jlcxx::SuperType<A> { typedef B type; };
 #define make_not_mirrored(Name) template<> struct jlcxx::IsMirroredType<Name> : std::false_type {};
@@ -360,14 +360,31 @@ void implement_adjustment(jlcxx::Module& module)
 
 static void implement_action(jlcxx::Module& module)
 {
-    // TODO
+    module.add_type(Action)
+        .constructor( [](const std::string& id, void* app_ptr){
+            return new Action(id, *((Application*) app_ptr));
+        }, USE_FINALIZERS)
+        .add_type_method(Action, get_id)
+        .add_type_method(Action, set_state)
+        .add_type_method(Action, get_state)
+        .add_type_method(Action, activate)
+        .add_type_method(Action, add_shortcut)
+        .add_type_method(Action, get_shortcuts)
+        .add_type_method(Action, clear_shortcuts)
+        .add_type_method(Action, set_enabled)
+        .add_type_method(Action, get_enabled)
+        .add_type_method(Action, get_is_stateful)
+    ;
 }
 
 // ### ALIGNMENT
 
 static void implement_alignment(jlcxx::Module& module)
 {
-    // TODO
+    module.add_enum(Alignment);
+    module.add_enum_value(Alignment, ALIGNMENT, START);
+    module.add_enum_value(Alignment, ALIGNMENT, CENTER);
+    module.add_enum_value(Alignment, ALIGNMENT, END);
 }
 
 // ### APPLICATION
@@ -393,6 +410,354 @@ static void implement_application(jlcxx::Module& module)
     add_signal_activate<Application>(application);
     add_signal_shutdown<Application>(application);
 }
+
+// ### TODO
+
+static void implement_aspect_frame(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_blend_mode(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_box(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_button(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_center_box(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_check_button(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_click_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_clipboard(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_color(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_column_view(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_cursor_type(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_drag_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_drop_down(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_entry(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_expander(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_file_chooser(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_file_descriptor(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_file_monitor(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_file_system(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_fixed(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_focus_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_frame(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_frame_clock(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_geometry(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_gl_common(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_gl_transform(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_grid(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_grid_view(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_header_bar(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_icon(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_image(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_image_display(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_justify_mode(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_key_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_key_file(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_label(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_level_bar(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_list_view(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_log(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_long_press_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_menu_model(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_menubar(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_motion_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_msaa_render_texture(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_music(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_notebook(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_orientation(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_overlay(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_pan_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_paned(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_pinch_zoom_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_popover(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_popover_button(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_popover_menu(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_progress_bar(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_relative_position(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_render_area(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_render_task(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_render_texture(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_revealer(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_rotate_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_scale(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_scale_mode(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_scroll_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_scrollbar(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_selection_model(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_separator(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_shader(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_shape(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_shortcut_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_sound(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_sound_buffer(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_spin_button(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_spinner(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_stack(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_stylus_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_swipe_event_controller(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_switch(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_text_view(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_texture(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_toggle_button(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_transition_type(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_viewport(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_widget(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_window(jlcxx::Module& module) {}
+
+// ### TODO
+
+static void implement_wrap_mode(jlcxx::Module& module) {}
 
 // ### MAIN
 
