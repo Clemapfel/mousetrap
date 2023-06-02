@@ -336,10 +336,6 @@ DEFINE_ADD_SIGNAL_ARG3(items_changed, void, gint, position, gint, n_removed, gin
 DEFINE_ADD_SIGNAL_ARG0(revealed, void)
 DEFINE_ADD_SIGNAL_ARG1(activated, void, void*, _) // TODO
 
-// ### ACTION
-
-// TODO
-
 // ### ADJUSTMENT
 
 void implement_adjustment(jlcxx::Module& module)
@@ -360,13 +356,53 @@ void implement_adjustment(jlcxx::Module& module)
     add_signal_properties_changed<Adjustment>(adjustment);
 }
 
+// ### ACTION
+
+static void implement_action(jlcxx::Module& module)
+{
+    // TODO
+}
+
+// ### ALIGNMENT
+
+static void implement_alignment(jlcxx::Module& module)
+{
+    // TODO
+}
+
+// ### APPLICATION
+
+static void implement_application(jlcxx::Module& module)
+{
+    auto application = module.add_type(Application)
+        .add_constructor(const std::string&)
+        .add_type_method(Application, run)
+        .add_type_method(Application, quit)
+        .add_type_method(Application, hold)
+        .add_type_method(Application, release)
+        .add_type_method(Application, mark_as_busy)
+        .add_type_method(Application, unmark_as_busy)
+        .add_type_method(Application, get_id)
+
+        //.add_type_method(Application, add_action)
+        //.add_type_method(Application, remove_action)
+        //.add_type_method(Application, has_action)
+        //.add_type_method(Application, get_action)
+    ;
+
+    add_signal_activate<Application>(application);
+    add_signal_shutdown<Application>(application);
+}
+
 // ### MAIN
-
-
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
 {
     module.set_const("GTK_MAJOR_VERSION", (int) GTK_MAJOR_VERSION);
     module.set_const("GTK_MINOR_VERSION", (int) GTK_MINOR_VERSION);
 
+    implement_adjustment(module);
+    implement_action(module);
+    implement_alignment(module);
+    implement_application(module);
 }
