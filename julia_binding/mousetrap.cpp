@@ -115,7 +115,7 @@ static HSVA unbox_hsva(jl_value_t* in)
 #define USE_FINALIZERS true
 
 #define add_type(Type) add_type<Type>(std::string("_") + #Type)
-#define add_type_method(Type, id) method(#id, &Type::id)
+#define add_type_method(Type, id, ...) method(#id + std::string(#__VA_ARGS__), &Type::id)
 #define add_constructor(...) constructor<__VA_ARGS__>(USE_FINALIZERS)
 #define add_enum(Enum) add_bits<Enum>(#Enum, jl_int32_type)
 #define add_enum_value(Enum, PREFIX, VALUE) set_const(std::string(#PREFIX) + "_" + std::string(#VALUE), Enum::VALUE)
@@ -126,10 +126,10 @@ static HSVA unbox_hsva(jl_value_t* in)
 // ### SIGNAL COMPONENTS
 
 #define _DEFINE_ADD_SIGNAL_INVARIANT(snake_case) \
-    method("disconnect_signal_" + std::string(#snake_case), [](T& instance) { \
+    method("disconnect_signal_" + std::string(#snake_case) + "!", [](T& instance) { \
         instance.disconnect_signal_##snake_case(); \
     }) \
-    .method("set_signal_" + std::string(#snake_case) + "_blocked", [](T& instance, bool b){ \
+    .method("set_signal_" + std::string(#snake_case) + "_blocked!", [](T& instance, bool b){ \
         instance.set_signal_##snake_case##_blocked(b); \
     }) \
     .method("get_signal_" + std::string(#snake_case) + "_blocked", [](T& instance) -> bool { \
@@ -140,7 +140,7 @@ static HSVA unbox_hsva(jl_value_t* in)
 template<typename T, typename Arg_t> \
 void add_signal_##snake_case(Arg_t type) \
 { \
-    type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [](T& instance, jl_function_t* task) \
     { \
         instance.connect_signal_##snake_case([](T& instance, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
@@ -162,7 +162,7 @@ void add_signal_##snake_case(Arg_t type) \
 template<typename T, typename Arg_t> \
 void add_signal_##snake_case(Arg_t type) \
 { \
-    type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [](T& instance, jl_function_t* task) \
     { \
         instance.connect_signal_##snake_case([](T& instance, arg1_t arg1_name, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
@@ -184,7 +184,7 @@ void add_signal_##snake_case(Arg_t type) \
 template<typename T, typename Arg_t> \
 void add_signal_##snake_case(Arg_t type) \
 { \
-    type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [](T& instance, jl_function_t* task) \
     { \
         instance.connect_signal_##snake_case([](T& instance, arg1_t arg1_name, arg2_t arg2_name, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
@@ -203,7 +203,7 @@ void add_signal_##snake_case(Arg_t type) \
 template<typename T, typename Arg_t> \
 void add_signal_##snake_case(Arg_t type) \
 { \
-    type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [](T& instance, jl_function_t* task) \
     { \
         instance.connect_signal_##snake_case([](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
@@ -225,7 +225,7 @@ void add_signal_##snake_case(Arg_t type) \
 template<typename T, typename Arg_t> \
 void add_signal_##snake_case(Arg_t type) \
 { \
-    type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [](T& instance, jl_function_t* task) \
     { \
         instance.connect_signal_##snake_case([](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, arg4_t arg4_name, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
@@ -246,7 +246,7 @@ void add_signal_##snake_case(Arg_t type) \
 #define DEFINE_ADD_WIDGET_SIGNAL(snake_case) \
 template<typename T, typename Arg_t>                               \
 void add_signal_##snake_case(Arg_t type) {\
-    type.method("connect_signal_" + std::string(#snake_case), [](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [](T& instance, jl_function_t* task) \
     { \
         instance.connect_signal_##snake_case([](Widget& instance, jl_function_t* task) -> void { \
             jl_safe_call(("emit_signal_" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(dynamic_cast<T&>(instance))); \
@@ -346,10 +346,10 @@ void implement_adjustment(jlcxx::Module& module)
         .add_type_method(Adjustment, get_upper)
         .add_type_method(Adjustment, get_value)
         .add_type_method(Adjustment, get_increment)
-        .add_type_method(Adjustment, set_lower)
-        .add_type_method(Adjustment, set_upper)
-        .add_type_method(Adjustment, set_value)
-        .add_type_method(Adjustment, set_increment)
+        .add_type_method(Adjustment, set_lower, !)
+        .add_type_method(Adjustment, set_upper, !)
+        .add_type_method(Adjustment, set_value, !)
+        .add_type_method(Adjustment, set_increment, !)
     ;
 
     add_signal_value_changed<Adjustment>(adjustment);
@@ -380,8 +380,8 @@ static void implement_application(jlcxx::Module& module)
         .add_type_method(Application, quit)
         .add_type_method(Application, hold)
         .add_type_method(Application, release)
-        .add_type_method(Application, mark_as_busy)
-        .add_type_method(Application, unmark_as_busy)
+        .add_type_method(Application, mark_as_busy, !)
+        .add_type_method(Application, unmark_as_busy, !)
         .add_type_method(Application, get_id)
 
         //.add_type_method(Application, add_action)

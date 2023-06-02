@@ -190,7 +190,7 @@ module mousetrap
 
         out = Expr(:block)
 
-        connect_signal_name = :connect_signal_ * snake_case
+        connect_signal_name = :connect_signal_ * snake_case * :!
 
         Return_t = esc(Return_t)
 
@@ -219,7 +219,7 @@ module mousetrap
             end
         )))
 
-        disconnect_signal_name = :disconnect_signal_ * snake_case
+        disconnect_signal_name = :disconnect_signal_ * snake_case * :!
 
         push!(out.args, esc(:(
             function $disconnect_signal_name(x::$T)
@@ -227,7 +227,7 @@ module mousetrap
             end
         )))
 
-        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
 
         push!(out.args, esc(:(
             function $set_signal_blocked_name(x::$T, b::Bool)
@@ -256,7 +256,7 @@ module mousetrap
 
         out = Expr(:block)
 
-        connect_signal_name = :connect_signal_ * snake_case
+        connect_signal_name = :connect_signal_ * snake_case * :!
 
         Return_t = esc(Return_t)
 
@@ -288,7 +288,7 @@ module mousetrap
             end
         )))
 
-        disconnect_signal_name = :disconnect_signal_ * snake_case
+        disconnect_signal_name = :disconnect_signal_ * snake_case * :!
 
         push!(out.args, esc(:(
             function $disconnect_signal_name(x::$T)
@@ -296,7 +296,7 @@ module mousetrap
             end
         )))
 
-        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
 
         push!(out.args, esc(:(
             function $set_signal_blocked_name(x::$T, b::Bool)
@@ -325,7 +325,7 @@ module mousetrap
 
         out = Expr(:block)
 
-        connect_signal_name = :connect_signal_ * snake_case
+        connect_signal_name = :connect_signal_ * snake_case * :!
 
         Return_t = esc(Return_t)
 
@@ -359,7 +359,7 @@ module mousetrap
             end
         )))
 
-        disconnect_signal_name = :disconnect_signal_ * snake_case
+        disconnect_signal_name = :disconnect_signal_ * snake_case * :!
 
         push!(out.args, esc(:(
             function $disconnect_signal_name(x::$T)
@@ -367,7 +367,7 @@ module mousetrap
             end
         )))
 
-        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
 
         push!(out.args, esc(:(
             function $set_signal_blocked_name(x::$T, b::Bool)
@@ -396,7 +396,7 @@ module mousetrap
 
         out = Expr(:block)
 
-        connect_signal_name = :connect_signal_ * snake_case
+        connect_signal_name = :connect_signal_ * snake_case * :!
 
         Return_t = esc(Return_t)
 
@@ -432,7 +432,7 @@ module mousetrap
             end
         )))
 
-        disconnect_signal_name = :disconnect_signal_ * snake_case
+        disconnect_signal_name = :disconnect_signal_ * snake_case * :!
 
         push!(out.args, esc(:(
             function $disconnect_signal_name(x::$T)
@@ -440,7 +440,7 @@ module mousetrap
             end
         )))
 
-        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
 
         push!(out.args, esc(:(
             function $set_signal_blocked_name(x::$T, b::Bool)
@@ -469,7 +469,7 @@ module mousetrap
 
         out = Expr(:block)
 
-        connect_signal_name = :connect_signal_ * snake_case
+        connect_signal_name = :connect_signal_ * snake_case * :!
 
         Return_t = esc(Return_t)
 
@@ -507,7 +507,7 @@ module mousetrap
             end
         )))
 
-        disconnect_signal_name = :disconnect_signal_ * snake_case
+        disconnect_signal_name = :disconnect_signal_ * snake_case * :!
 
         push!(out.args, esc(:(
             function $disconnect_signal_name(x::$T)
@@ -515,7 +515,7 @@ module mousetrap
             end
         )))
 
-        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
 
         push!(out.args, esc(:(
             function $set_signal_blocked_name(x::$T, b::Bool)
@@ -541,6 +541,7 @@ module mousetrap
     end
 
     macro add_signal_activate(x) return :(@add_signal $x activate Cvoid) end
+    macro add_signal_shutdown(x) return :(@add_signal $x shutdown Cvoid) end
 
 ####### types.jl
 
@@ -555,7 +556,6 @@ module mousetrap
 
     abstract type EventController end
     export EventController
-
 
 ####### adjustment.jl
 
@@ -573,17 +573,17 @@ module mousetrap
     @export_function Adjustment get_value
     @export_function Adjustment get_increment
 
-    set_lower(adjustment::Adjustment, x::Number) = detail.set_lower(adjustment._internal, convert(Cfloat, x))
-    export set_lower
+    set_lower!(adjustment::Adjustment, x::Number) = detail.set_lower!(adjustment._internal, convert(Cfloat, x))
+    export set_lower!
 
-    set_upper(adjustment::Adjustment, x::Number) = detail.set_upper(adjustment._internal, convert(Cfloat, x))
-    export set_upper
+    set_upper!(adjustment::Adjustment, x::Number) = detail.set_upper!(adjustment._internal, convert(Cfloat, x))
+    export set_upper!
 
-    set_value(adjustment::Adjustment, x::Number) = detail.set_value(adjustment._internal, convert(Cfloat, x))
-    export set_value
+    set_value!(adjustment::Adjustment, x::Number) = detail.set_value!(adjustment._internal, convert(Cfloat, x))
+    export set_value!
 
-    set_increment(adjustment::Adjustment, x::Number) = detail.set_increment(adjustment._internal, convert(Cfloat, x))
-    export set_increment
+    set_increment!(adjustment::Adjustment, x::Number) = detail.set_increment!(adjustment._internal, convert(Cfloat, x))
+    export set_increment!
 
     function Base.show(io::IO, x::Adjustment)
         print(io, "Adjustment(" *
@@ -610,8 +610,8 @@ module mousetrap
     @export_function Application quit
     @export_function Application hold
     @export_function Application release
-    @export_function Application mark_as_busy
-    @export_function Application unmark_as_busy
+    @export_function Application mark_as_busy!
+    @export_function Application unmark_as_busy!
     @export_function Application get_id
 
     #add_action(app::Application, action::Action) = detail.add_action(app._internal, action._internal)
@@ -624,6 +624,7 @@ module mousetrap
     @export_function Application has_action id String
 
     @add_signal_activate Application
+    @add_signal_shutdown Application
 
     Base.show(io::IO, x::Application) = print(io, "Application(" * get_id(x) * ")")
 
@@ -631,10 +632,13 @@ end # module mousetrap
 
 using .mousetrap
 
+for n in names(mousetrap) println(n) end
+
 app = Application("test.app")
 
-on_activate(app::Application, data) = println(data)
-connect_signal_activate(on_activate, app, 1234)
+connect_signal_activate!(app, 1234) do app::Application, data
+    println(data)
+end
 
 @show run(app)
 
