@@ -172,7 +172,6 @@ DEFINE_SIGNAL(Scroll, scroll, SCROLL, "scroll", bool,
     );
 
     DEFINE_SIGNAL(Wrapped, wrapped, WRAPPED, "wrapped", void);
-    DEFINE_SIGNAL(Response, response, RESPONSE, "response", void, int response, response);
     DEFINE_SIGNAL(PressCancelled, press_cancelled, PRESS_CANCELLED, "cancelled", void);
     DEFINE_SIGNAL(Pressed, pressed, PRESSED, "pressed", void,
                           SPLAT(double x, double y),

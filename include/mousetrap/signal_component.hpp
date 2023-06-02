@@ -1906,36 +1906,6 @@ namespace mousetrap
     /// @fn has_signal_wrapped::has_signal_wrapped
     /// \signal_ctor
 
-    DECLARE_SIGNAL_MANUAL(Response, response, RESPONSE, "response", void, int response, response);
-    /// @class has_signal_response
-    /// @brief \signal_response_brief
-    /// @tparam T instance type
-    ///
-    /// @fn void has_signal_response::connect_signal_response(Function_t)
-    /// \signal_connect{(T&, int response_id) -> void}
-    ///
-    /// @fn void has_signal_response::connect_signal_response(Function_t, Data_t)
-    /// \signal_connect_data{(T&, int response_id, Data_t) -> void}
-    ///
-    /// @fn void has_signal_response::emit_signal_response(int response)
-    /// \signal_emit_brief
-    /// @param response response id as int
-    ///
-    /// @var has_signal_response::signal_id
-    /// \signal_id{https://docs.gtk.org/gtk4/signal.NativeDialog.response.html}
-    ///
-    /// @fn void has_signal_response::set_signal_response_blocked(bool)
-    /// \signal_set_blocked
-    ///
-    /// @fn bool has_signal_response::get_signal_response_blocked() const
-    /// \signal_get_blocked
-    ///
-    /// @fn void has_signal_response::disconnect_signal_response()
-    /// \signal_disconnect
-    ///
-    /// @fn has_signal_response::has_signal_response
-    /// \signal_ctor
-
     DECLARE_SIGNAL_MANUAL(Pressed, pressed, PRESSED, "pressed", void,
                           SPLAT(double x, double y),
                           SPLAT(x, y)

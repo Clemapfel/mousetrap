@@ -285,7 +285,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/window.cpp
     src/action.cpp
     src/popover_menu.cpp
-)
+        julia_binding/mousetrap.cpp)
 
 add_library(mousetrap SHARED
     ${MOUSETRAP_HEADER_FILES}
@@ -348,16 +348,20 @@ option(MOUSETRAP_BUILD_JULIA_BINDING OFF)
 if (MOUSETRAP_BUILD_JULIA_BINDING)
 
     find_package(JlCxx REQUIRED)
-    get_target_property(JlCxx_location JlCxx::cxxwrap_julia LOCATION)
-    get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
+    find_package(mousetrap REQUIRED)
 
     add_library("${PROJECT_PREFIX}julia_binding" SHARED
-            julia_binding/mousetrap.cpp
+        julia_binding/mousetrap.cpp
     )
 
     target_link_libraries("${PROJECT_PREFIX}julia_binding" PUBLIC
-        "$<BUILD_INTERFACE:mousetrap>"
+        ${MOUSETRAP_LIBRARIES}
         JlCxx::cxxwrap_julia
+    )
+
+    target_include_directories("${PROJECT_PREFIX}julia_binding" PUBLIC
+        "${MOUSETRAP_INCLUDE_DIRECTORIES}"
+        "${Julia_INCLUDE_DIRS}"
     )
 
     target_compile_features("${PROJECT_PREFIX}julia_binding" PUBLIC
@@ -368,12 +372,6 @@ if (MOUSETRAP_BUILD_JULIA_BINDING)
 
     set_target_properties("${PROJECT_PREFIX}julia_binding" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${JULIA_BINDING_DIRECTORY}"
-    )
-
-    add_custom_target("${PROJECT_PREFIX}julia_binding_test"
-        COMMAND julia mousetrap.jl
-        WORKING_DIRECTORY "${JULIA_BINDING_DIRECTORY}"
-        DEPENDS mousetrap_julia_binding
     )
 endif()
 
