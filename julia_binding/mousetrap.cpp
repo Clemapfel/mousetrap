@@ -114,14 +114,16 @@ static HSVA unbox_hsva(jl_value_t* in)
 
 #define USE_FINALIZERS true
 
+#define declare_is_subtype_of(A, B) template<> struct jlcxx::SuperType<A> { typedef B type; };
+#define make_not_mirrored(Name) template<> struct jlcxx::IsMirroredType<Name> : std::false_type {};
+
 #define add_type(Type) add_type<Type>(std::string("_") + #Type)
 #define add_type_method(Type, id, ...) method(#id + std::string(#__VA_ARGS__), &Type::id)
 #define add_constructor(...) constructor<__VA_ARGS__>(USE_FINALIZERS)
-#define add_enum(Enum) add_bits<Enum>(#Enum, jl_int64_type);
-#define add_enum_value(Enum, PREFIX, VALUE) set_const(std::string(#PREFIX) + "_" + std::string(#VALUE), (int64_t) Enum::VALUE)
 
-#define declare_is_subtype_of(A, B) template<> struct jlcxx::SuperType<A> { typedef B type; };
-#define make_not_mirrored(Name) template<> struct jlcxx::IsMirroredType<Name> : std::false_type {};
+#define add_enum(Enum) add_bits<Enum>(std::string("_") + #Enum, jl_int64_type);
+#define add_enum_type(Enum) method("convert_enum", [](Enum x) -> int64_t { return (int64_t) x; })
+#define add_enum_value(Enum, PREFIX, VALUE) set_const(std::string(#PREFIX) + "_" + std::string(#VALUE), Enum::VALUE)
 
 // ### SIGNAL COMPONENTS
 
@@ -427,7 +429,7 @@ static void implement_application(jlcxx::Module& module)
     add_signal_shutdown<Application>(application);
 }
 
-// ### TODO
+// ### ASPECT FRAME
 
 static void implement_aspect_frame(jlcxx::Module& module)
 {
@@ -449,9 +451,24 @@ static void implement_aspect_frame(jlcxx::Module& module)
     add_widget_signals<AspectFrame>(aspect_frame);
 }
 
-// ### TODO
+// ### BLEND MODE
 
-static void implement_blend_mode(jlcxx::Module& module) {}
+static void implement_blend_mode(jlcxx::Module& module)
+{
+    module.add_enum(BlendMode);
+    module.add_enum_value(BlendMode, BLEND_MODE, NONE);
+    module.add_enum_value(BlendMode, BLEND_MODE, NORMAL);
+    module.add_enum_value(BlendMode, BLEND_MODE, ADD);
+    module.add_enum_value(BlendMode, BLEND_MODE, SUBTRACT);
+    module.add_enum_value(BlendMode, BLEND_MODE, REVERSE_SUBTRACT);
+    module.add_enum_value(BlendMode, BLEND_MODE, MULTIPLY);
+    module.add_enum_value(BlendMode, BLEND_MODE, MIN);
+    module.add_enum_value(BlendMode, BLEND_MODE, MAX);
+
+    module.method("set_current_blend_mode", [](BlendMode mode, bool allow_alpha_blend){
+        set_current_blend_mode(mode, allow_alpha_blend);
+    });
+}
 
 // ### TODO
 
@@ -805,4 +822,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_alignment(module);
     implement_application(module);
     implement_aspect_frame(module);
+    implement_blend_mode(module);
+
+
 }

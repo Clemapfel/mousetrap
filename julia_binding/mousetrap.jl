@@ -429,8 +429,6 @@ module mousetrap
 
         connect_signal_name = :connect_signal_ * snake_case * :!
 
-        
-
         Arg1_t = esc(Arg1_t)
         Arg2_t = esc(Arg2_t)
         Arg3_t = esc(Arg3_t)
@@ -501,8 +499,6 @@ module mousetrap
         out = Expr(:block)
 
         connect_signal_name = :connect_signal_ * snake_case * :!
-
-
 
         Arg1_t = esc(Arg1_t)
         Arg2_t = esc(Arg2_t)
@@ -617,16 +613,14 @@ module mousetrap
     set_increment!(adjustment::Adjustment, x::Number) = detail.set_increment!(adjustment._internal, convert(Cfloat, x))
     export set_increment!
 
-    # TODO: Base.show
+    Base.show(io::IO, x::Adjustment) = mousetrap.show_aux(io, x, :value, :lower, :upper, :increment)
 
 ####### alignment.jl
 
-    @enum Alignment begin
-        ALIGNMENT_START = detail.ALIGNMENT_START
-        ALIGNMENT_CENTER = detail.ALIGNMENT_CENTER
-        ALIGNMENT_END = detail.ALIGNMENT_END
-    end
-    @export_enum Alignment
+    const Alignment = detail._Alignment
+    const ALIGNMENT_START = detail.ALIGNMENT_START
+    const ALIGNMENT_CENTER = detail.ALIGNMENT_CENTER
+    const ALIGNMENT_END = detail.ALIGNMENT_END
 
 ####### angle.jl
 
@@ -694,7 +688,7 @@ module mousetrap
     @add_signal_activate Application
     @add_signal_shutdown Application
 
-    # TODO: Base.show
+    Base.show(io::IO, x::Application) = mousetrap.show(x, :id)
 
 ####### action.jl
 
@@ -741,7 +735,7 @@ module mousetrap
     end
     export set_stateful_function!
 
-    # TODO: Base.show
+    Base.show(io::IO, x::Action) = mousetrap.show_aux(io, x, :id, :enabled, :shortcuts, :is_stateful, :state)
 
 ####### aspect_frame.jl
 
@@ -762,6 +756,26 @@ module mousetrap
     set_child!(aspect_frame::AspectFrame, child::Widget) = detail.set_child!(aspect_frame._internal, child._internal.cpp_object)
     export set_child!
 
+    Base.show(io::IO, x::AspectFrame) = mousetrap.show_aux(io, x, :ratio, :child_x_alignment, :child_y_alignment)
+
+####### aspect_frame.jl
+
+    const BlendMode = detail._BlendMode;
+    const BLEND_MODE_NONE = detail.BLEND_MODE_NONE
+    const BLEND_MODE_ADD = detail.BLEND_MODE_ADD
+    const BLEND_MODE_SUBTRACT = detail.BLEND_MODE_SUBTRACT
+    const BLEND_MODE_REVERSE_SUBTRACT = detail.BLEND_MODE_REVERSE_SUBTRACT
+    const BLEND_MODE_MULTIPLY = detail.BLEND_MODE_MULTIPLY
+    const BLEND_MODE_MIN = detail.BLEND_MODE_MIN
+    const BLEND_MODE_MAX = detail.BLEND_MODE_MAX
+
+    export BLEND_MODE_NONE
+
+    function set_current_blend_mode(blend_mode::BlendMode; allow_alpha_blending = true)
+        detail.set_current_blend_mode(blend_mode, allow_alpha_blending);
+    end
+    export set_current_blend_mode
+
 end # module mousetrap
 
 using .mousetrap
@@ -778,9 +792,7 @@ connect_signal_activate!(app, 1234) do app::Application, data
     add_shortcut!(action, "<Control>h")
     add_shortcut!(action, "<Control>d")
 
-    mousetrap.show_aux(stdout, action, :id, :shortcuts, :enabled, :is_stateful, :state)
-
-    activate(action)
+    set_current_blend_mode(BLEND_MODE_NONE)
 end
 
 @show run(app)
