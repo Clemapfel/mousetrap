@@ -252,7 +252,7 @@ void add_signal_##snake_case(Arg_t type) {\
             jl_safe_call(("emit_signal_" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(dynamic_cast<T&>(instance))); \
         }, task); \
     }) \
-    .method("emit_signal_" + std::string(#snake_case), [](Widget& instance) { \
+    .method("emit_signal_" + std::string(#snake_case), [](T& instance) { \
         instance.emit_signal_##snake_case(); \
     }); \
     type._DEFINE_ADD_SIGNAL_INVARIANT(snake_case); \
@@ -417,11 +417,10 @@ static void implement_application(jlcxx::Module& module)
         .add_type_method(Application, mark_as_busy, !)
         .add_type_method(Application, unmark_as_busy, !)
         .add_type_method(Application, get_id)
-
-        //.add_type_method(Application, add_action)
-        //.add_type_method(Application, remove_action)
-        //.add_type_method(Application, has_action)
-        //.add_type_method(Application, get_action)
+        .add_type_method(Application, add_action)
+        .add_type_method(Application, remove_action)
+        .add_type_method(Application, has_action)
+        .add_type_method(Application, get_action)
     ;
 
     add_signal_activate<Application>(application);
@@ -430,7 +429,25 @@ static void implement_application(jlcxx::Module& module)
 
 // ### TODO
 
-static void implement_aspect_frame(jlcxx::Module& module) {}
+static void implement_aspect_frame(jlcxx::Module& module)
+{
+    auto aspect_frame = module.add_type(AspectFrame)
+        .constructor([](float ratio, float x_alignment, float y_alignment){
+            return new AspectFrame(ratio, x_alignment, y_alignment);
+        }, USE_FINALIZERS)
+        .add_type_method(AspectFrame, set_ratio, !)
+        .add_type_method(AspectFrame, get_ratio)
+        .add_type_method(AspectFrame, set_child_x_alignment, !)
+        .add_type_method(AspectFrame, set_child_y_alignment, !)
+        .add_type_method(AspectFrame, get_child_x_alignment)
+        .add_type_method(AspectFrame, get_child_y_alignment)
+        .add_type_method(AspectFrame, remove_child, !)
+        .method("set_child", [](AspectFrame& instance, void* widget){
+            instance.set_child(*((Widget*) widget));
+        });
+
+    add_widget_signals<AspectFrame>(aspect_frame);
+}
 
 // ### TODO
 
@@ -787,4 +804,5 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_action(module);
     implement_alignment(module);
     implement_application(module);
+    implement_aspect_frame(module);
 }

@@ -186,7 +186,34 @@ module mousetrap
         return out
     end
 
-      import Base: *
+    function show_aux(io::IO, x::T, fields::Symbol...) where T
+
+        out = ""
+
+        tostring(x) = string(x)
+        tostring(x::String) = "\"" * x * "\""
+
+        super = ""
+        if T <: SignalEmitter
+            super = tostring(SignalEmitter)
+        elseif T <: Widget
+            super = tostring(Widget)
+        elseif T <: EventController
+            super = tostring(EventController)
+        end
+
+        out *= "mousetrap." * tostring(T) * (!isempty(super) ? " <: " * super : "") * "\n"
+        #out *= "  " * "internal" * " = @" * tostring(x._internal.cpp_object) * "\n"
+
+        for field in fields
+            getter = getproperty(mousetrap, Symbol("get_") * field)
+            out *= "  " * tostring(field) * " = " * tostring(getter(x)) * "\n"
+        end
+
+        print(io, out, "end\n")
+    end
+
+    import Base: *
     *(x::Symbol, y::Symbol) = return Symbol(string(x) * string(y))
 
     import Base: clamp
@@ -332,8 +359,6 @@ module mousetrap
         out = Expr(:block)
 
         connect_signal_name = :connect_signal_ * snake_case * :!
-
-        
 
         Arg1_t = esc(Arg1_t)
         Arg2_t = esc(Arg2_t)
@@ -592,14 +617,7 @@ module mousetrap
     set_increment!(adjustment::Adjustment, x::Number) = detail.set_increment!(adjustment._internal, convert(Cfloat, x))
     export set_increment!
 
-    function Base.show(io::IO, x::Adjustment)
-        print(io, "Adjustment(" *
-            string(get_value(x)) * ", " *
-            string(get_lower(x)) * ", " *
-            string(get_upper(x)) * ", " *
-            string(get_increment(x)) * ")"
-        );
-    end
+    # TODO: Base.show
 
 ####### alignment.jl
 
@@ -650,6 +668,8 @@ module mousetrap
 ####### application.jl
 
     @export_type Application SignalEmitter
+    @export_type Action SignalEmitter
+
     Application(id::String) = Application(detail._Application(id))
 
     import Base.run
@@ -662,10 +682,10 @@ module mousetrap
     @export_function Application unmark_as_busy! Cvoid
     @export_function Application get_id String
 
-    #add_action(app::Application, action::Action) = detail.add_action(app._internal, action._internal)
+    add_action(app::Application, action::Action) = detail.add_action(app._internal, action._internal)
     export add_action
 
-    #get_action(app::Application, id::String) = return detail.get_action(app._internal, id)
+    get_action(app::Application, id::String) ::Action = return Action(detail.get_action(app._internal, id))
     export get_action
 
     @export_function Application remove_action Cvoid id String
@@ -674,11 +694,11 @@ module mousetrap
     @add_signal_activate Application
     @add_signal_shutdown Application
 
-    Base.show(io::IO, x::Application) = print(io, "Application(" * get_id(x) * ")")
+    # TODO: Base.show
 
 ####### action.jl
 
-    @export_type Action SignalEmitter
+    #@export_type Action SignalEmitter
     Action(id::String, app::Application) = Action(detail._Action(id, app._internal.cpp_object))
 
     @export_function Action get_id String
@@ -721,6 +741,27 @@ module mousetrap
     end
     export set_stateful_function!
 
+    # TODO: Base.show
+
+####### aspect_frame.jl
+
+    @export_type AspectFrame Widget
+    function AspectFrame(ratio::AbstractFloat; child_x_alignment::AbstractFloat = 0.5, child_y_alignment::AbstractFloat = 0.5)
+        return AspectFrame(detail._AspectFrame(ratio, child_x_alignment, child_y_alignment))
+    end
+
+    @export_function AspectFrame set_ratio! Cvoid ratio AbstractFloat
+    @export_function AspectFrame get_ratio Cfloat
+    @export_function AspectFrame set_child_x_alignment! Cvoid alignment AbstractFloat
+    @export_function AspectFrame set_child_y_alignment! Cvoid alignment AbstractFloat
+    @export_function AspectFrame get_child_x_alignment Cfloat
+    @export_function AspectFrame get_child_y_alignment Cfloat
+
+    @export_function AspectFrame remove_child! Cvoid
+
+    set_child!(aspect_frame::AspectFrame, child::Widget) = detail.set_child!(aspect_frame._internal, child._internal.cpp_object)
+    export set_child!
+
 end # module mousetrap
 
 using .mousetrap
@@ -733,9 +774,12 @@ connect_signal_activate!(app, 1234) do app::Application, data
         println(state)
         return !state
     end
+
     add_shortcut!(action, "<Control>h")
     add_shortcut!(action, "<Control>d")
-    println(get_shortcuts(action))
+
+    mousetrap.show_aux(stdout, action, :id, :shortcuts, :enabled, :is_stateful, :state)
+
     activate(action)
 end
 

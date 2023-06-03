@@ -315,6 +315,12 @@ body, table, div, p, dl, #nav-tree .label, .title,
     font-family: var(--font-family);
 }
 
+::selection {
+    background: #3c423d;
+    font-weight: inherit;
+    font-style: inherit;
+}
+
 h1, h2, h3, h4, h5 {
     margin-top: .9em;
     font-weight: 600;
