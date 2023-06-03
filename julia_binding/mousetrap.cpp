@@ -121,8 +121,10 @@ static HSVA unbox_hsva(jl_value_t* in)
 #define add_type_method(Type, id, ...) method(#id + std::string(#__VA_ARGS__), &Type::id)
 #define add_constructor(...) constructor<__VA_ARGS__>(USE_FINALIZERS)
 
-#define add_enum(Enum) add_bits<Enum>(std::string("_") + #Enum, jl_int64_type);
-#define add_enum_type(Enum) method("convert_enum", [](Enum x) -> int64_t { return (int64_t) x; })
+#define define_enum_in(module, Enum) \
+    module.add_bits<Enum>(std::string("_") + #Enum, jl_int64_type); \
+    module.method(std::string(#Enum) + "_to_int", [](Enum x) -> int64_t { return (int64_t) x; });
+
 #define add_enum_value(Enum, PREFIX, VALUE) set_const(std::string(#PREFIX) + "_" + std::string(#VALUE), Enum::VALUE)
 
 // ### SIGNAL COMPONENTS
@@ -400,7 +402,7 @@ static void implement_action(jlcxx::Module& module)
 
 static void implement_alignment(jlcxx::Module& module)
 {
-    module.add_enum(Alignment);
+    define_enum_in(module, Alignment);
     module.add_enum_value(Alignment, ALIGNMENT, START);
     module.add_enum_value(Alignment, ALIGNMENT, CENTER);
     module.add_enum_value(Alignment, ALIGNMENT, END);
@@ -455,7 +457,7 @@ static void implement_aspect_frame(jlcxx::Module& module)
 
 static void implement_blend_mode(jlcxx::Module& module)
 {
-    module.add_enum(BlendMode);
+    define_enum_in(module, BlendMode);
     module.add_enum_value(BlendMode, BLEND_MODE, NONE);
     module.add_enum_value(BlendMode, BLEND_MODE, NORMAL);
     module.add_enum_value(BlendMode, BLEND_MODE, ADD);
@@ -823,6 +825,4 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_application(module);
     implement_aspect_frame(module);
     implement_blend_mode(module);
-
-
 }

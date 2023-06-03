@@ -76,24 +76,15 @@ module mousetrap
             printstyled(stderr, "In " * scope * ": "; bold = true)
             Base.showerror(stderr, exception, catch_backtrace())
             print(stderr, "\n")
-            throw(exception) # this causes jl_call to return nullptr, which we can check against C-side
+            #throw(exception) # this causes jl_call to return nullptr, which we can check against C-side
+            return 0
         end
-    end
-
-    macro export_enum(enum)
-
-        out = Expr(:block)
-        for instance in instances(eval(enum))
-            mousetrap.eval(:(export $(Symbol(instance))))
-        end
-
-        push!(out.args, :(Base.convert(type::Type{$enum}, x::Integer) = return $enum(Base.convert(Int64, x))))
-        return out
     end
 
     macro export_function(type, name, return_t)
 
         return_t = esc(return_t)
+
         mousetrap.eval(:(export $name))
         return :($name(x::$type) = Base.convert($return_t, detail.$name(x._internal)))
     end
@@ -183,6 +174,31 @@ module mousetrap
                 _internal::detail.$internal_name
             end
         end)
+        return out
+    end
+
+    macro export_enum(enum, block)
+
+        @assert block isa Expr
+
+        out = Expr(:toplevel)
+
+        push!(out.args, (:(export $enum)))
+        detail_enum_name = :_ * enum
+        push!(out.args, :(const $(esc(enum)) = mousetrap.detail.$detail_enum_name))
+        for name in block.args
+            if !(name isa Symbol)
+                continue
+            end
+
+            push!(out.args, :(const $(esc(name)) = detail.$name))
+            push!(out.args, :(export $name))
+        end
+
+        to_int_name = Symbol(enum) * :_to_int
+        push!(out.args, :(Base.string(x::$enum) = return string(mousetrap.detail.$to_int_name(x))))
+        push!(out.args, :(Base.convert(::Type{Integer}, x::$enum) = return Integer(mousetrap.detail.to_int_name(x))))
+
         return out
     end
 
@@ -617,10 +633,11 @@ module mousetrap
 
 ####### alignment.jl
 
-    const Alignment = detail._Alignment
-    const ALIGNMENT_START = detail.ALIGNMENT_START
-    const ALIGNMENT_CENTER = detail.ALIGNMENT_CENTER
-    const ALIGNMENT_END = detail.ALIGNMENT_END
+    @export_enum Alignment begin
+        ALIGNMENT_START
+        ALIGNMENT_CENTER
+        ALIGNMENT_END
+    end
 
 ####### angle.jl
 
@@ -760,19 +777,18 @@ module mousetrap
 
 ####### aspect_frame.jl
 
-    const BlendMode = detail._BlendMode;
-    const BLEND_MODE_NONE = detail.BLEND_MODE_NONE
-    const BLEND_MODE_ADD = detail.BLEND_MODE_ADD
-    const BLEND_MODE_SUBTRACT = detail.BLEND_MODE_SUBTRACT
-    const BLEND_MODE_REVERSE_SUBTRACT = detail.BLEND_MODE_REVERSE_SUBTRACT
-    const BLEND_MODE_MULTIPLY = detail.BLEND_MODE_MULTIPLY
-    const BLEND_MODE_MIN = detail.BLEND_MODE_MIN
-    const BLEND_MODE_MAX = detail.BLEND_MODE_MAX
-
-    export BLEND_MODE_NONE
+    @export_enum BlendMode begin
+        BLEND_MODE_NONE
+        BLEND_MODE_ADD
+        BLEND_MODE_SUBTRACT
+        BLEND_MODE_REVERSE_SUBTRACT
+        BLEND_MODE_MULTIPLY
+        BLEND_MODE_MIN
+        BLEND_MODE_MAX
+    end
 
     function set_current_blend_mode(blend_mode::BlendMode; allow_alpha_blending = true)
-        detail.set_current_blend_mode(blend_mode, allow_alpha_blending);
+        detail.set_current_blend_mode(blend_mode, allow_alpha_blending)
     end
     export set_current_blend_mode
 
@@ -788,11 +804,6 @@ connect_signal_activate!(app, 1234) do app::Application, data
         println(state)
         return !state
     end
-
-    add_shortcut!(action, "<Control>h")
-    add_shortcut!(action, "<Control>d")
-
-    set_current_blend_mode(BLEND_MODE_NONE)
 end
 
 @show run(app)
