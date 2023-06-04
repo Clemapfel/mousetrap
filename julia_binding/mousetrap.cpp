@@ -694,9 +694,91 @@ static void implement_justify_mode(jlcxx::Module& module) {}
 
 static void implement_key_event_controller(jlcxx::Module& module) {}
 
-// ### TODO
+// ### KEY FILE
 
-static void implement_key_file(jlcxx::Module& module) {}
+static void implement_key_file(jlcxx::Module& module)
+{
+    auto key_file = module.add_type(KeyFile)
+        .add_constructor()
+        .add_constructor(const std::string&)
+        .add_type_method(KeyFile, as_string)
+        .add_type_method(KeyFile, load_from_file, !)
+        .add_type_method(KeyFile, load_from_string, !)
+        .add_type_method(KeyFile, save_to_file)
+        .add_type_method(KeyFile, get_groups)
+        .add_type_method(KeyFile, get_keys)
+        .add_type_method(KeyFile, has_key)
+        .add_type_method(KeyFile, has_group)
+        .add_type_method(KeyFile, set_comment_above_group, !)
+        .add_type_method(KeyFile, set_comment_above_key, !)
+        .add_type_method(KeyFile, get_comment_above_group)
+        .add_type_method(KeyFile, get_comment_above_key)
+    ;
+
+    #define define_get_value_as(type, name) \
+        key_file.method("get_value_as_" + std::string(name), [](KeyFile& file, KeyFile::GroupKey group_id, KeyFile::KeyID key_id) { \
+            return file.get_value_as<type>(group_id, key_id); \
+        });
+
+    #define define_set_value_as(type, name) \
+        key_file.method("set_value_as_" + std::string(name) + "!", [](KeyFile& file, KeyFile::GroupKey group_id, KeyFile::KeyID key_id, type value) { \
+            return file.set_value_as<type>(group_id, key_id, value); \
+        });
+
+    #define define_get_value_as_list(type, name)\
+        key_file.method("get_value_as_" + std::string(name) + "_list", [](KeyFile& file, KeyFile::GroupKey group_id, KeyFile::KeyID key_id) { \
+            return file.get_value_as<std::vector<type>>(group_id, key_id); \
+        });
+
+    #define define_set_value_as_list(type, name)\
+        key_file.method("set_value_as_" + std::string(name) + "_list!", [](KeyFile& file, KeyFile::GroupKey group_id, KeyFile::KeyID key_id, jl_value_t* in) { \
+            std::vector<type> vec; \
+            for (size_t i = 0; i < jl_array_len(in); ++i) \
+                vec.push_back(jlcxx::unbox<type>(jl_arrayref((jl_array_t*) in, i))); \
+            file.set_value_as<std::vector<type>>(group_id, key_id, vec); \
+        });
+
+    define_get_value_as(std::string, "string");
+    define_set_value_as(std::string, "string");
+
+    define_get_value_as(bool, "bool");
+    define_set_value_as(bool, "bool");
+
+    define_get_value_as(int, "int");
+    define_set_value_as(int, "int");
+
+    define_get_value_as(size_t, "uint");
+    define_set_value_as(size_t, "uint");
+
+    define_get_value_as(float, "float");
+    define_set_value_as(float, "float");
+
+    define_get_value_as(double, "double");
+    define_set_value_as(double, "double");
+
+    define_get_value_as_list(std::string, "string");
+    // define_set_value_as_list(std::string, "string");
+
+    define_get_value_as_list(bool, "bool");
+    define_set_value_as_list(bool, "bool");
+
+    define_get_value_as_list(int, "int");
+    define_set_value_as_list(int, "int");
+
+    define_get_value_as_list(size_t, "uint");
+    define_set_value_as_list(size_t, "uint");
+
+    define_get_value_as_list(float, "float");
+    define_set_value_as_list(float, "float");
+
+    define_get_value_as_list(double, "double");
+    define_set_value_as_list(double, "double");
+
+    // TODO _as_image
+    // TODO _as_rgba
+
+    #undef define_access_value_as
+}
 
 // ### TODO
 
@@ -971,4 +1053,82 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_button(module);
     implement_center_box(module);
     implement_check_button(module);
+    implement_click_event_controller(module);
+    implement_clipboard(module);
+    implement_color(module);
+    implement_column_view(module);
+    implement_cursor_type(module);
+    implement_drag_event_controller(module);
+    implement_drop_down(module);
+    implement_entry(module);
+    implement_event_controller(module);
+    implement_expander(module);
+    implement_file_chooser(module);
+    implement_file_descriptor(module);
+    implement_file_monitor(module);
+    implement_file_system(module);
+    implement_fixed(module);
+    implement_focus_event_controller(module);
+    implement_frame(module);
+    implement_frame_clock(module);
+    implement_geometry(module);
+    implement_gl_common(module);
+    implement_gl_transform(module);
+    implement_grid(module);
+    implement_grid_view(module);
+    implement_header_bar(module);
+    implement_icon(module);
+    implement_image(module);
+    implement_image_display(module);
+    implement_justify_mode(module);
+    implement_key_event_controller(module);
+    implement_key_file(module);
+    implement_label(module);
+    implement_level_bar(module);
+    implement_list_view(module);
+    implement_log(module);
+    implement_long_press_event_controller(module);
+    implement_menu_model(module);
+    implement_menubar(module);
+    implement_motion_event_controller(module);
+    implement_msaa_render_texture(module);
+    implement_music(module);
+    implement_notebook(module);
+    implement_overlay(module);
+    implement_pan_event_controller(module);
+    implement_paned(module);
+    implement_pinch_zoom_event_controller(module);
+    implement_popover(module);
+    implement_popover_button(module);
+    implement_popover_menu(module);
+    implement_progress_bar(module);
+    implement_relative_position(module);
+    implement_render_area(module);
+    implement_render_task(module);
+    implement_render_texture(module);
+    implement_revealer(module);
+    implement_rotate_event_controller(module);
+    implement_scale(module);
+    implement_scale_mode(module);
+    implement_scroll_event_controller(module);
+    implement_scrollbar(module);
+    implement_selection_model(module);
+    implement_separator(module);
+    implement_shader(module);
+    implement_shape(module);
+    implement_shortcut_event_controller(module);
+    implement_sound(module);
+    implement_sound_buffer(module);
+    implement_spin_button(module);
+    implement_spinner(module);
+    implement_stack(module);
+    implement_stylus_event_controller(module);
+    implement_swipe_event_controller(module);
+    implement_switch(module);
+    implement_text_view(module);
+    implement_texture(module);
+    implement_toggle_button(module);
+    implement_transition_type(module);
+    implement_viewport(module);
+    implement_widget(module);
 }

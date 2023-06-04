@@ -285,7 +285,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/window.cpp
     src/action.cpp
     src/popover_menu.cpp
-        julia_binding/mousetrap.cpp)
+)
 
 add_library(mousetrap SHARED
     ${MOUSETRAP_HEADER_FILES}

@@ -183,7 +183,7 @@ namespace mousetrap
         return g_key_file_has_group(_native, group.c_str());
     }
 
-    void KeyFile::add_comment_above(GroupKey group, KeyID key, const std::string& comment)
+    void KeyFile::set_comment_above_key(GroupKey group, KeyID key, const std::string& comment)
     {
         GError* error = nullptr;
         g_key_file_set_comment(_native, group.c_str(), key.c_str(), (" " + comment).c_str(), &error);
@@ -197,7 +197,7 @@ namespace mousetrap
         }
     }
 
-    void KeyFile::add_comment_above(GroupKey group, const std::string& comment)
+    void KeyFile::set_comment_above_group(GroupKey group, const std::string& comment)
     {
         GError* error = nullptr;
         g_key_file_set_comment(_native, group.c_str(), nullptr, (" " + comment).c_str(), &error);
@@ -211,7 +211,7 @@ namespace mousetrap
         }
     }
 
-    std::string KeyFile::get_comment_above(GroupKey group, KeyID key)
+    std::string KeyFile::get_comment_above_key(GroupKey group, KeyID key)
     {
         GError* error = nullptr;
         auto* out = g_key_file_get_comment(_native, group.c_str(), key.c_str(), &error);
@@ -219,7 +219,7 @@ namespace mousetrap
         if (error != nullptr)
         {
             std::stringstream str;
-            str << "In KeyFile::get_comment_above: Unable to retrieve comment for `" << group << "." << key << "`: " << error->message;
+            str << "In KeyFile::get_comment_above_key: Unable to retrieve comment for `" << group << "." << key << "`: " << error->message;
             log::critical(str.str(), MOUSETRAP_DOMAIN);
             g_error_free(error);
         }
@@ -227,7 +227,7 @@ namespace mousetrap
         return std::string(out == nullptr ? "" : out);
     }
 
-    std::string KeyFile::get_comment_above(GroupKey group)
+    std::string KeyFile::get_comment_above_group(GroupKey group)
     {
         GError* error = nullptr;
         auto* out = g_key_file_get_comment(_native, group.c_str(), nullptr, &error);

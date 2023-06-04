@@ -136,7 +136,7 @@ module mousetrap
             )  = Base.convert($return_t, detail.$name(x._internal, $arg1_name, $arg2_name, $arg3_name)))
     end
 
-    macro export_function(type, name, return_t, arg1_name, arg1_type, arg2_name, arg2_type, arg3_name, arg3_type)
+    macro export_function(type, name, return_t, arg1_name, arg1_type, arg2_name, arg2_type, arg3_name, arg3_type, arg4_name, arg4_type)
 
         return_t = esc(return_t)
         arg1_name = esc(arg1_name)
@@ -162,7 +162,10 @@ module mousetrap
 
         super = esc(super)
         internal_name = Symbol("_" * "$name")
-        @assert isdefined(detail, internal_name)
+
+        if !isdefined(detail, :($internal_name))
+            throw(AssertionError("In mousetrap.@export_type: detail.$internal_name undefined"))
+        end
 
         out = Expr(:block)
         mousetrap.eval(:(export $name))
@@ -245,7 +248,6 @@ module mousetrap
 
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T)
-                println(x)
                 detail.$connect_signal_name(x._internal, function(x)
                     (TypedFunction(f, $Return_t, ($T,)))($T(x[1][]))
                 end)
@@ -596,7 +598,7 @@ module mousetrap
     macro add_signal_activate(x) return :(@add_signal $x activate Cvoid) end
     macro add_signal_shutdown(x) return :(@add_signal $x shutdown Cvoid) end
     macro add_signal_clicked(x) return :(@add_signal $x clicked Cvoid) end
-    macro add_signal_toggeld(x) return :(@add_signal $x toggled Cvoid) end
+    macro add_signal_toggled(x) return :(@add_signal $x toggled Cvoid) end
     macro add_signal_activate_default_widget(x) return :(@add_signal $x activate_default_widget Cvoid) end
     macro add_signal_activate_focused_widget(x) return :(@add_signal $x activate_focused_widget Cvoid) end
     macro add_signal_close_request(x) return :(@add_signal $x close_request WindowCloseRequestResult) end
@@ -924,7 +926,7 @@ module mousetrap
     @export_function CheckButton get_state CheckButtonState
     @export_function CheckButton get_is_active Bool
 
-    if GTK_MINOR_VERSION >= 8
+    if detail.GTK_MINOR_VERSION >= 8
         function set_child!(check_button::CheckButton, child::Widget)
             detail.set_child!(check_button._internal, child._internal.cpp_object)
         end
@@ -936,6 +938,40 @@ module mousetrap
     @add_widget_signals CheckButton
     @add_signal_toggled CheckButton
     @add_signal_activate CheckButton
+
+####### key_file.jl
+
+    @export_type KeyFile SignalEmitter
+    KeyFile() = KeyFile(detail._KeyFile())
+    KeyFile(path::String) = KeyFile(detail._KeyFile(path))
+
+    const GroupID = String
+    export GroupID
+
+    const KeyID = String
+    export KeyID
+
+    @export_function KeyFile as_string String
+    @export_function KeyFile load_from_file! Bool path String
+    @export_function KeyFile load_from_string! Bool file String
+    @export_function KeyFile save_to_file Bool path String
+    @export_function KeyFile get_groups Vector{GroupID}
+    @export_function KeyFile get_keys Vector{KeyID} group GroupID
+    @export_function KeyFile has_key Bool group GroupID key KeyID
+    @export_function KeyFile has_group Bool group GroupID
+    @export_function KeyFile set_comment_above_group! Cvoid group GroupID comment String
+    @export_function KeyFile set_comment_above_key! Cvoid group GroupID key KeyID comment String
+    @export_function KeyFile get_comment_above_group String group GroupID
+    @export_function KeyFile get_comment_above_key String group GroupID key KeyID
+
+    export set_value!
+    export get_value
+
+    set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Cfloat) = detail.set_value_as_float!(file._internal, group, key, value)
+    get_value(file::KeyFile, type::Type{Cfloat}, group::GroupID, key::KeyID) ::Cfloat = detail.get_value_as_float(file._internal, group, key)
+
+    set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{Cfloat}) = detail.set_value_as_float_list!(file._internal, group, key, value)
+    get_value(file::KeyFile, type::Type{Vector{Cfloat}}, group::GroupID, key::KeyID) ::Vector{Cfloat} = detail.get_value_as_float_list(file._internal, group, key)
 
 ####### window.jl
 
@@ -1006,21 +1042,24 @@ end # module mousetrap
 
 using .mousetrap
 
-app = Application("test.app")
 
-connect_signal_activate!(app, 1234) do app::Application, data
+using CxxWrap
+
+app = Application("example.app")
+
+connect_signal_activate!(app) do app::Application
 
     window = Window(app)
-    button = Button()
-    connect_signal_clicked!(button) do button::Button
-        println("clicked")
-    end
 
-    set_child!(window, button)
+    file = KeyFile()
+
+    set_value!(file, "group_id", "key_id", Cfloat[0, 1])
+    println(get_value(file, Vector{Cfloat}, "group_id", "key_id"))
+
     present!(window)
 end
 
-@show run(app)
+exit(run(app))
 
 
 

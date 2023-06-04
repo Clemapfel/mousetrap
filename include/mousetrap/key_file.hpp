@@ -92,24 +92,24 @@ namespace mousetrap
             /// @brief add comment above group id, only one line of comment is possible. Prints soft warning if group doesn't exist
             /// @param group_id
             /// @param comment
-            void add_comment_above(GroupKey group_id, const std::string& comment);
+            void set_comment_above_group(GroupKey group_id, const std::string& comment);
 
             /// @brief add comment above key in group, only one line of comment is possible. Prints soft warning if group doesn't exist
             /// @param group_id
             /// @param key_id
             /// @param comment
-            void add_comment_above(GroupKey group_id, KeyID key_id, const std::string& comment);
+            void set_comment_above_key(GroupKey group_id, KeyID key_id, const std::string& comment);
 
             /// @brief get comment above group label, prints soft warning if group does not exist
             /// @param group_id
             /// @return comment if exist, empty string otherwise
-            std::string get_comment_above(GroupKey group_id);
+            std::string get_comment_above_group(GroupKey group_id);
 
             /// @brief get comment above key, prints soft warning if group or key in group does not exist
             /// @param group_id
             /// @param key_id
             /// @return comment if exists, empty string otherwise
-            std::string get_comment_above(GroupKey group_id, KeyID key_id);
+            std::string get_comment_above_key(GroupKey group_id, KeyID key_id);
 
             /// @brief get value of key in group as escaped string
             /// @param group_id
@@ -134,6 +134,7 @@ namespace mousetrap
             /// @param group_id
             /// @param key_id
             /// @param value
+            /// \note This function is not accessible in the Julia Binding. Use `set_value!` instead
             template<typename Value_t>
             void set_value_as(GroupKey group_id, KeyID key_id, Value_t value);
 
