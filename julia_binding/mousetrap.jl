@@ -307,8 +307,6 @@ module mousetrap
 
         connect_signal_name = :connect_signal_ * snake_case * :!
 
-        
-
         Arg1_t = esc(Arg1_t)
 
         arg1_name = esc(arg1_name)
@@ -598,6 +596,7 @@ module mousetrap
     macro add_signal_activate(x) return :(@add_signal $x activate Cvoid) end
     macro add_signal_shutdown(x) return :(@add_signal $x shutdown Cvoid) end
     macro add_signal_clicked(x) return :(@add_signal $x clicked Cvoid) end
+    macro add_signal_toggeld(x) return :(@add_signal $x toggled Cvoid) end
     macro add_signal_activate_default_widget(x) return :(@add_signal $x activate_default_widget Cvoid) end
     macro add_signal_activate_focused_widget(x) return :(@add_signal $x activate_focused_widget Cvoid) end
     macro add_signal_close_request(x) return :(@add_signal $x close_request WindowCloseRequestResult) end
@@ -882,6 +881,62 @@ module mousetrap
     @add_signal_activate Button
     @add_signal_clicked Button
 
+####### center_box.jl
+
+    @export_type CenterBox Widget
+    CenterBox(orientation::Orientation) = CenterBox(detail._CenterBox(orientation))
+
+    function set_start_child!(center_box::CenterBox, child::Widget)
+        detail.set_start_child!(center_box._internal, child._internal.cpp_object)
+    end
+    export set_start_child!
+
+    function set_center_child!(center_box::CenterBox, child::Widget)
+        detail.set_center_child!(center_box._internal, child._internal.cpp_object)
+    end
+    export set_center_child!
+
+    function set_end_child!(center_box::CenterBox, child::Widget)
+        detail.set_end_child!(center_box._internal, child._internal.cpp_object)
+    end
+    export set_end_child!
+
+    @export_function CenterBox remove_start_widget! Cvoid
+    @export_function CenterBox remove_center_widget! Cvoid
+    @export_function CenterBox remove_end_widget! Cvoid
+    @export_function CenterBox get_orientation Orientation
+    @export_function CenterBox set_orientation! Cvoid orientation Orientation
+
+    @add_widget_signals CenterBox
+
+####### check_button.jl
+
+    @export_enum CheckButtonState begin
+        CHECK_BUTTON_STATE_ACTIVE
+        CHECK_BUTTON_STATE_INCONSISTENT
+        CHECK_BUTTON_STATE_INACTIVE
+    end
+
+    @export_type CheckButton Widget
+    CheckButton() = CheckButton(detail._CheckButton())
+
+    @export_function CheckButton set_state! Cvoid state CheckButtonState
+    @export_function CheckButton get_state CheckButtonState
+    @export_function CheckButton get_is_active Bool
+
+    if GTK_MINOR_VERSION >= 8
+        function set_child!(check_button::CheckButton, child::Widget)
+            detail.set_child!(check_button._internal, child._internal.cpp_object)
+        end
+        export set_child!
+
+        @export_function CheckButton remove_child! Cvoid
+    end
+
+    @add_widget_signals CheckButton
+    @add_signal_toggled CheckButton
+    @add_signal_activate CheckButton
+
 ####### window.jl
 
     @export_enum WindowCloseRequestResult begin
@@ -956,10 +1011,12 @@ app = Application("test.app")
 connect_signal_activate!(app, 1234) do app::Application, data
 
     window = Window(app)
-    connect_signal_close_request!(window) do (window::Window)
-        return WINDOW_CLOSE_REQUEST_RESULT_PREVENT_CLOSE
+    button = Button()
+    connect_signal_clicked!(button) do button::Button
+        println("clicked")
     end
 
+    set_child!(window, button)
     present!(window)
 end
 

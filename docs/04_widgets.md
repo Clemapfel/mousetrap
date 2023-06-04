@@ -676,12 +676,12 @@ Unique to `ToggleButton` is that, if clicked, the button will **remain pressed**
 \signal_activate{ToggleButton}
 \signal_clicked{ToggleButton}
 
-To check whether the button is currently toggled, we use `ToggleButton::get_active`, which returns `true` if the button is currently pressed, `false` otherwise.
+To check whether the button is currently toggled, we use `ToggleButton::get_is_active`, which returns `true` if the button is currently pressed, `false` otherwise.
 
 ```cpp
 auto toggle_button = ToggleButton();
 toggle_button.connect_signal_clicked([](ToggleButton& instance) -> void {
-    if (instance.get_active())
+    if (instance.get_is_active())
         std::cout << "pressed" << std::endl;
     else
         std::cout << "released" << std::endl;
@@ -692,7 +692,7 @@ toggle_button.connect_signal_clicked([](ToggleButton& instance) -> void {
 
 ## CheckButton
 
-\{CheckButton} is almost identical to `ToggleButton` in function -  but not appearance. `CheckButton` is an empty box in which a checkmark appears when it is toggled. Just like before, we query whether it is pressed by calling `CheckButton::get_active`.
+\{CheckButton} is almost identical to `ToggleButton` in function -  but not appearance. `CheckButton` is an empty box in which a checkmark appears when it is toggled. Just like before, we query whether it is pressed by calling `CheckButton::get_is_active`.
 
 \signals
 \signal_activate{CheckButton}
@@ -739,7 +739,7 @@ window.set_child(box);
 ```
 \how_to_generate_this_image_end
 
-Note that `CheckButton::get_active` will only return `true` if the current state is specifically `CheckButtonState::ACTIVE`. `toggled` is emitted whenever the state changes, regardless of which state the `CheckButton` was in.
+Note that `CheckButton::get_is_active` will only return `true` if the current state is specifically `CheckButtonState::ACTIVE`. `toggled` is emitted whenever the state changes, regardless of which state the `CheckButton` was in.
 
 ---
 

@@ -68,7 +68,7 @@ namespace mousetrap
 
             /// @brief check whether state is active
             /// @return true if state is CheckButtonState::ACTIVE, false otherwise
-            bool get_active() const;
+            bool get_is_active() const;
 
             #if GTK_MINOR_VERSION >= 8
 

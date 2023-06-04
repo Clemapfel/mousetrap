@@ -31,7 +31,7 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
-    bool Switch::get_active() const
+    bool Switch::get_is_active() const
     {
         return gtk_switch_get_active(GTK_SWITCH(_internal));
     }

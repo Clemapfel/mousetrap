@@ -45,7 +45,7 @@ namespace mousetrap
 
             /// @brief get whether the switch is in the "on" position
             /// @return true if "on", false otherwise
-            bool get_active() const;
+            bool get_is_active() const;
 
             /// @brief set whether the switch is in the "on" position
             /// @param b true if "on", false otherwise

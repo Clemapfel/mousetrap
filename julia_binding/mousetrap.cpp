@@ -525,13 +525,58 @@ static void implement_button(jlcxx::Module& module)
     add_signal_clicked<Button>(button);
 }
 
-// ### TODO
+// ### CENTER BOX
 
-static void implement_center_box(jlcxx::Module& module) {}
+static void implement_center_box(jlcxx::Module& module)
+{
+    auto center_box = module.add_type(CenterBox)
+        .add_constructor(Orientation)
+        .method("set_start_child!", [](CenterBox& box, void* widget) {
+            box.set_start_child(*((Widget*) widget));
+        })
+        .method("set_center_child!", [](CenterBox& box, void* widget) {
+            box.set_center_child(*((Widget*) widget));
+        })
+        .method("set_end_child!", [](CenterBox& box, void* widget) {
+            box.set_end_child(*((Widget*) widget));
+        })
+        .add_type_method(CenterBox, remove_start_widget, !)
+        .add_type_method(CenterBox, remove_center_widget, !)
+        .add_type_method(CenterBox, remove_end_widget, !)
+        .add_type_method(CenterBox, get_orientation)
+        .add_type_method(CenterBox, set_orientation, !)
+    ;
 
-// ### TODO
+    add_widget_signals<CenterBox>(center_box);
+}
 
-static void implement_check_button(jlcxx::Module& module) {}
+// ### CHECK BUTTON
+
+static void implement_check_button(jlcxx::Module& module)
+{
+    define_enum_in(module, CheckButtonState);
+    module.add_enum_value(CheckButtonState, CHECK_BUTTON_STATE, ACTIVE);
+    module.add_enum_value(CheckButtonState, CHECK_BUTTON_STATE, INCONSISTENT);
+    module.add_enum_value(CheckButtonState, CHECK_BUTTON_STATE, INACTIVE);
+
+    auto check_button = module.add_type(CheckButton)
+        .add_constructor()
+        .add_type_method(CheckButton, set_state, !)
+        .add_type_method(CheckButton, get_state)
+        .add_type_method(CheckButton, get_is_active)
+    ;
+
+    #if GTK_MINOR_VERSION >= 8
+        check_button.method("set_child!", [](CheckButton& check_button, void* widget) {
+            check_button.set_child(*((Widget*) widget));
+        })
+        .add_type_method(CheckButton, remove_child);
+    #endif
+
+    add_widget_signals<CheckButton>(check_button);
+    add_signal_toggled<CheckButton>(check_button);
+    add_signal_activate<CheckButton>(check_button);
+}
 
 // ### TODO
 
@@ -924,4 +969,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_orientation(module);
     implement_box(module);
     implement_button(module);
+    implement_center_box(module);
+    implement_check_button(module);
 }

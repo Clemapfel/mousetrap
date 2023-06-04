@@ -75,7 +75,7 @@ namespace mousetrap
             return gtk_check_button_get_active(GTK_CHECK_BUTTON(operator NativeWidget())) ? CheckButtonState::ACTIVE : CheckButtonState::INACTIVE;
     }
 
-    bool CheckButton::get_active() const
+    bool CheckButton::get_is_active() const
     {
         return get_state() == CheckButtonState::ACTIVE;
     }

@@ -49,7 +49,7 @@ namespace mousetrap
 
             /// @brief get whether the button is pressed in
             /// @return true if active, false otherwise
-            bool get_active() const;
+            bool get_is_active() const;
 
             /// @brief set whether the button is pressed in
             /// @param b true if active, false otherwise

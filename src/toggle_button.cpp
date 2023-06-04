@@ -37,7 +37,7 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
-    bool ToggleButton::get_active() const
+    bool ToggleButton::get_is_active() const
     {
         return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(_internal)) == TRUE;
     }
