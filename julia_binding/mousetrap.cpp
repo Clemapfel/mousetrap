@@ -472,13 +472,58 @@ static void implement_blend_mode(jlcxx::Module& module)
     });
 }
 
-// ### TODO
+// ### BOX
 
-static void implement_box(jlcxx::Module& module) {}
+static void implement_box(jlcxx::Module& module)
+{
+    auto box = module.add_type(Box)
+        .add_constructor(Orientation)
+        .method("push_back!", [](Box& box, void* widget){
+            box.push_back(*((Widget*) widget));
+        })
+        .method("push_front!", [](Box& box, void* widget){
+            box.push_front(*((Widget*) widget));
+        })
+        .method("insert_after!", [](Box& box, void* to_append, void* after){
+            box.insert_after(*((Widget*) to_append), *((Widget*) after));
+        })
+        .method("remove!", [](Box& box, void* to_remove) {
+            box.remove(*((Widget*) to_remove));
+        })
+        .add_type_method(Box, clear)
+        .add_type_method(Box, set_homogeneous, !)
+        .add_type_method(Box, get_homogeneous)
+        .add_type_method(Box, set_spacing, !)
+        .add_type_method(Box, get_spacing)
+        .add_type_method(Box, get_n_items)
+        .add_type_method(Box, get_orientation)
+        .add_type_method(Box, set_orientation, !)
+    ;
 
-// ### TODO
+    add_widget_signals<Box>(box);
+}
 
-static void implement_button(jlcxx::Module& module) {}
+// ### BUTTON
+
+static void implement_button(jlcxx::Module& module)
+{
+    auto button = module.add_type(Button)
+        .add_constructor()
+        .add_type_method(Button, set_has_frame, !)
+        .add_type_method(Button, get_has_frame)
+        .add_type_method(Button, set_is_circular, !)
+        .add_type_method(Button, get_is_circular)
+        .method("set_child!", [](Button& button, void* widget){
+            button.set_child(*((Widget*) widget));
+        })
+        .add_type_method(Button, remove_child, !)
+        .add_type_method(Button, set_action, !)
+    ;
+
+    add_widget_signals<Button>(button);
+    add_signal_activate<Button>(button);
+    add_signal_clicked<Button>(button);
+}
 
 // ### TODO
 
@@ -654,7 +699,12 @@ static void implement_notebook(jlcxx::Module& module) {}
 
 // ### TODO
 
-static void implement_orientation(jlcxx::Module& module) {}
+static void implement_orientation(jlcxx::Module& module)
+{
+    define_enum_in(module, Orientation);
+    module.add_enum_value(Orientation, ORIENTATION, HORIZONTAL);
+    module.add_enum_value(Orientation, ORIENTATION, VERTICAL);
+}
 
 // ### TODO
 
@@ -804,9 +854,54 @@ static void implement_viewport(jlcxx::Module& module) {}
 
 static void implement_widget(jlcxx::Module& module) {}
 
-// ### TODO
+// ### WINDOW
 
-static void implement_window(jlcxx::Module& module) {}
+static void implement_window(jlcxx::Module& module)
+{
+    define_enum_in(module, WindowCloseRequestResult);
+    module.add_enum_value(WindowCloseRequestResult, WINDOW_CLOSE_REQUEST_RESULT, ALLOW_CLOSE);
+    module.add_enum_value(WindowCloseRequestResult, WINDOW_CLOSE_REQUEST_RESULT, PREVENT_CLOSE);
+
+    auto window = module.add_type(Window)
+        .add_constructor(Application&)
+        .add_type_method(Window, set_application, !)
+        .add_type_method(Window, set_maximized, !)
+        .add_type_method(Window, set_fullscreen, !)
+        .add_type_method(Window, present, !)
+        .add_type_method(Window, set_hide_on_close, !)
+        .add_type_method(Window, close, !)
+        .method("set_child!", [](Window& window, void* widget){
+            window.set_child(*((Widget*) widget));
+        })
+        .add_type_method(Window, remove_child, !)
+        .add_type_method(Window, set_destroy_with_parent, !)
+        .add_type_method(Window, get_destroy_with_parent)
+        .add_type_method(Window, set_title, !)
+        .add_type_method(Window, get_title)
+        .method("set_titlebar_widget!", [](Window& window, void* widget){
+            window.set_titlebar_widget(*((Widget*) widget));
+        })
+        .add_type_method(Window, remove_titlebar_widget, !)
+        .add_type_method(Window, set_is_modal, !)
+        .add_type_method(Window, get_is_modal)
+        .add_type_method(Window, set_transient_for, !)
+        .add_type_method(Window, set_is_decorated, !)
+        .add_type_method(Window, get_is_decorated)
+        .add_type_method(Window, set_has_close_button, !)
+        .add_type_method(Window, get_has_close_button)
+        .add_type_method(Window, set_startup_notification_identifier, !)
+        .add_type_method(Window, set_focus_visible, !)
+        .add_type_method(Window, get_focus_visible)
+        .method("set_default_widget!", [](Window& window, void* widget) {
+            window.set_default_widget(*((Widget*) widget));
+        })
+    ;
+
+    add_widget_signals<Window>(window);
+    add_signal_close_request<Window>(window);
+    add_signal_activate_default_widget<Window>(window);
+    add_signal_activate_focused_widget<Window>(window);
+}
 
 // ### TODO
 
@@ -823,6 +918,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_action(module);
     implement_alignment(module);
     implement_application(module);
+    implement_window(module);
     implement_aspect_frame(module);
     implement_blend_mode(module);
+    implement_orientation(module);
+    implement_box(module);
+    implement_button(module);
 }

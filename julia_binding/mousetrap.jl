@@ -162,10 +162,7 @@ module mousetrap
 
         super = esc(super)
         internal_name = Symbol("_" * "$name")
-
-        if !isdefined(mousetrap.detail, internal_name)
-            return
-        end
+        @assert isdefined(detail, internal_name)
 
         out = Expr(:block)
         mousetrap.eval(:(export $name))
@@ -184,7 +181,10 @@ module mousetrap
         out = Expr(:toplevel)
 
         push!(out.args, (:(export $enum)))
+
         detail_enum_name = :_ * enum
+        @assert isdefined(detail, detail_enum_name)
+
         push!(out.args, :(const $(esc(enum)) = mousetrap.detail.$detail_enum_name))
         for name in block.args
             if !(name isa Symbol)
@@ -583,8 +583,24 @@ module mousetrap
         return out
     end
 
+    macro add_widget_signals(x)
+        return quote
+            @add_signal $x realize Cvoid
+            @add_signal $x unrealize Cvoid
+            @add_signal $x destroy Cvoid
+            @add_signal $x hide Cvoid
+            @add_signal $x show Cvoid
+            @add_signal $x map Cvoid
+            @add_signal $x unmap Cvoid
+        end
+    end
+
     macro add_signal_activate(x) return :(@add_signal $x activate Cvoid) end
     macro add_signal_shutdown(x) return :(@add_signal $x shutdown Cvoid) end
+    macro add_signal_clicked(x) return :(@add_signal $x clicked Cvoid) end
+    macro add_signal_activate_default_widget(x) return :(@add_signal $x activate_default_widget Cvoid) end
+    macro add_signal_activate_focused_widget(x) return :(@add_signal $x activate_focused_widget Cvoid) end
+    macro add_signal_close_request(x) return :(@add_signal $x close_request WindowCloseRequestResult) end
 
 ####### types.jl
 
@@ -792,6 +808,145 @@ module mousetrap
     end
     export set_current_blend_mode
 
+####### orientation.jl
+
+    @export_enum Orientation begin
+        ORIENTATION_HORIZONTAL
+        ORIENTATION_VERTICAL
+    end
+
+####### box.jl
+
+    @export_type Box Widget
+    Box(orientation::Orientation) = Box(detail._Box(orientation))
+
+    function push_back!(box::Box, widget::Widget)
+        detail.push_back!(box._internal, widget._internal.cpp_object)
+    end
+    export push_back!
+    
+    function push_front!(box::Box, widget::Widget)
+        detail.push_front!(box._internal, widget._internal.cpp_object)
+    end
+    export push_front!
+    
+    function insert_after!(box::Box, to_append::Widget, after::Widget)
+        detail.push_front!(box._internal, to_append._internal.cpp_object, after._internal.cpp_object)
+    end
+    export insert_after!
+    
+    function remove!(box::Box, widget::Widget)
+        detail.remove!(box._internal, widget._internal.cpp_object)
+    end
+    export remove!
+    
+    @export_function Box clear Cvoid
+    @export_function Box set_homogeneous! Cvoid b Bool
+    @export_function Box get_homogeneous Bool
+
+    function set_spacing!(box::Box, spacing::Number) ::Cvoid
+        detail.set_spacing!(box._internal, convert(Cfloat, spacing))
+    end
+    export set_spacing!
+
+    @export_function Box get_spacing Cfloat
+    @export_function Box get_n_items Cint
+    @export_function Box get_orientation Orientation
+    @export_function Box set_orientation! Cvoid orientation Orientation
+
+    @add_widget_signals Box
+
+####### button.jl
+
+    @export_type Button Widget
+    Button() = Button(detail._Button())
+
+    @export_function Button set_has_frame! Cvoid b Bool
+    @export_function Button get_has_frame Bool
+    @export_function Button set_is_circular Cvoid b Bool
+    @export_function Button get_is_circular Bool
+
+    function set_child!(button::Button, child::Widget)
+        detail.set_child!(button._internal, child._internal.cpp_object)
+    end
+    export set_child!
+
+    @export_function Button remove_child! Cvoid
+
+    function set_action!(button::Button, action::Action)
+        detail.set_action!(button._internal, action._internal)
+    end
+    export set_action!
+
+    @add_widget_signals Button
+    @add_signal_activate Button
+    @add_signal_clicked Button
+
+####### window.jl
+
+    @export_enum WindowCloseRequestResult begin
+        WINDOW_CLOSE_REQUEST_RESULT_ALLOW_CLOSE
+        WINDOW_CLOSE_REQUEST_RESULT_PREVENT_CLOSE
+    end
+
+    @export_type Window Widget
+    Window(app::Application) = Window(detail._Window(app._internal))
+
+    function set_application!(window::Window, app::Application)
+        detail.set_application!(window._internal, app._internal)
+    end
+    export set_application!
+
+    @export_function Window set_maximized! Cvoid
+    @export_function Window set_fullscreen! Cvoid
+    @export_function Window present! Cvoid
+    @export_function Window set_hide_on_close! Cvoid b Bool
+    @export_function Window close! Cvoid
+
+    function set_child!(window::Window, child::Widget)
+        detail.set_child!(window._internal, child._internal.cpp_object)
+    end
+    export set_child!
+
+    @export_function Window remove_child! Cvoid
+    @export_function Window set_destroy_with_parent! Cvoid b Bool
+    @export_function Window get_destroy_with_parent Bool
+    @export_function Window set_title! Cvoid title String
+    @export_function Window get_title String
+
+    function set_titlebar_widget!(window::Window, titlebar::Widget)
+        detail.set_titlebar_widget!(window._internal, titlebar._internal.cpp_object)
+    end
+    export set_titlebar_widget!
+
+    @export_function Window remove_titlebar_widget! Cvoid
+    @export_function Window set_is_modal! Cvoid b Bool
+    @export_function Window get_is_modal Bool
+
+    function set_transient_for(self::Window, other::Window)
+        detail.set_transient_for!(self._itnernal, other._internal)
+    end
+    export set_transient_for!
+
+    @export_function Window set_is_decorated! Cvoid b Bool
+    @export_function Window get_is_decorated Bool
+    @export_function Window set_has_close_button! Cvoid b Bool
+    @export_function Window get_has_close_button Bool
+    @export_function Window set_startup_notification_identifier! Cvoid id String
+    @export_function Window set_focus_visible! Cvoid b Bool
+    @export_function Window get_focus_visible Bool
+
+    function set_default_widget!(window::Window, widget::Widget)
+        detail.set_default_widget!(window._internal, widget._internal.cpp_object)
+    end
+    export set_default_widget!
+
+    @add_widget_signals Window
+    @add_signal_close_request Window
+    @add_signal_activate_default_widget Window
+    @add_signal_activate_focused_widget Window
+
+
 end # module mousetrap
 
 using .mousetrap
@@ -799,11 +954,13 @@ using .mousetrap
 app = Application("test.app")
 
 connect_signal_activate!(app, 1234) do app::Application, data
-    action = Action("test", app)
-    set_stateful_function!(action) do action::Action, state
-        println(state)
-        return !state
+
+    window = Window(app)
+    connect_signal_close_request!(window) do (window::Window)
+        return WINDOW_CLOSE_REQUEST_RESULT_PREVENT_CLOSE
     end
+
+    present!(window)
 end
 
 @show run(app)
