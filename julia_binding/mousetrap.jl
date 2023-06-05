@@ -1340,6 +1340,24 @@ module mousetrap
 
 ####### icon.jl
 
+    @export_type Frame
+    Frame() = Frame(detail._Frame())
+
+    set_child!(frame::Frame, child::Widget) = detail.set_child!(fixed._internal, child._internal.cpp_object)
+    export set_child!
+
+    set_label_widget!(frame::Frame, label::Widget) = detail.set_label_widget!(frame._internal, label._internal.cpp_object)
+    export set_label_widget!
+
+    @export_function Frame remove_child! Cvoid
+    @export_function Frame remove_label_widget! Cvoid
+    @export_function Frame set_label_x_alignment! Cvoid x AbstractFloat
+    @export_function Frame get_label_x_alignment! Cfloat
+
+    @add_widget_signals Frame
+
+####### icon.jl
+
     @export_type Icon
     Icon() = Icon(detail._Icon())
 
