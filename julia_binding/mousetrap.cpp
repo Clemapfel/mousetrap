@@ -912,7 +912,7 @@ static void implement_image_display(jlcxx::Module& module)
     add_widget_signals<ImageDisplay>(image_display);
 }
 
-// ### TODO
+// ### JUSTIFY MODE
 
 static void implement_justify_mode(jlcxx::Module& module)
 {
@@ -1067,9 +1067,34 @@ static void implement_label(jlcxx::Module& module)
     add_widget_signals<Label>(label);
 }
 
-// ### TODO
+// ### LEVEL BAR
 
-static void implement_level_bar(jlcxx::Module& module) {}
+static void implement_level_bar(jlcxx::Module& module)
+{
+    define_enum_in(module, LevelBarMode);
+    module.add_enum_value(LevelBarMode, LEVEL_BAR_MODE, CONTINUOUS);
+    module.add_enum_value(LevelBarMode, LEVEL_BAR_MODE, DISCRETE);
+
+    auto level_bar = module.add_type(LevelBar)
+        .add_constructor(float, float)
+        .add_type_method(LevelBar, add_marker, !)
+        .add_type_method(LevelBar, remove_marker, !)
+        .add_type_method(LevelBar, set_inverted, !)
+        .add_type_method(LevelBar, get_inverted)
+        .add_type_method(LevelBar, set_mode, !)
+        .add_type_method(LevelBar, get_mode)
+        .add_type_method(LevelBar, set_min_value, !)
+        .add_type_method(LevelBar, get_min_value)
+        .add_type_method(LevelBar, set_max_value, !)
+        .add_type_method(LevelBar, get_max_value)
+        .add_type_method(LevelBar, set_value, !)
+        .add_type_method(LevelBar, get_value)
+        .add_type_method(LevelBar, set_orientation, !)
+        .add_type_method(LevelBar, get_orientation)
+    ;
+
+    add_widget_signals<LevelBar>(level_bar);
+}
 
 // ### TODO
 
@@ -1344,7 +1369,7 @@ static void implement_swipe_event_controller(jlcxx::Module& module) {}
 
 static void implement_switch(jlcxx::Module& module) {}
 
-// ### TODO
+// ### TEXT VIEW
 
 static void implement_text_view(jlcxx::Module& module)
 {

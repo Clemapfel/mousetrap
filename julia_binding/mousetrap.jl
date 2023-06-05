@@ -1585,6 +1585,32 @@ module mousetrap
 
     @add_widget_signals Fixed
 
+####### level_bar.jl
+
+    @export_enum LevelBarMode begin
+        LEVEL_BAR_MODE_CONTINUOUS
+        LEVEL_BAR_MODE_DISCRETE
+    end
+
+    @export_type LevelBar Widget
+    LevelBar(min::AbstractFloat, max::AbstractFloat) = LevelBar(detail._internal(min, max))
+
+    @export_function LevelBar add_marker! Cvoid name String value AbstractFloat
+    @export_function LevelBar remove_mark! Cvoid name String value AbstractFloat
+    @export_function LevelBar set_inverted! Cvoid b Bool
+    @export_function LevelBar get_inverted Bool
+    @export_function LevelBar set_mode! Cvoid mode LevelBarMode
+    @export_function LevelBar get_mode LevelBarMode
+    @export_function LevelBar set_min_value! Cvoid value AbstractFloat
+    @export_function LevelBar get_min_value Cfloat
+    @export_function LevelBar set_max_value! Cvoid value AbstractFloat
+    @export_function LevelBar set_value! Cvoid value AbstractFloat
+    @export_function LevelBar get_value Cfloat
+    @export_function LevelBar set_orientation! Cvoid orientation Orientation
+    @export_function LevelBar get_orientation Orientation
+
+    @add_widget_signals LevelBar
+
 ####### label.jl
 
     @export_enum JustifyMode begin
