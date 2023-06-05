@@ -131,9 +131,19 @@ namespace mousetrap
         gtk_menu_button_set_always_show_arrow(_internal->native, b);
     }
 
+    bool PopoverButton::get_always_show_arrow() const
+    {
+        return gtk_menu_button_get_always_show_arrow(_internal->native);
+    }
+
     void PopoverButton::set_has_frame(bool b)
     {
         gtk_menu_button_set_has_frame(_internal->native, b);
+    }
+
+    bool PopoverButton::get_has_frame() const
+    {
+        return gtk_menu_button_get_has_frame(_internal->native);
     }
 
     void PopoverButton::set_is_circular(bool b)

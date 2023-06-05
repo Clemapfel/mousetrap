@@ -932,13 +932,54 @@ static void implement_log(jlcxx::Module& module) {}
 
 static void implement_long_press_event_controller(jlcxx::Module& module) {}
 
-// ### TODO
+// ### MENU MODEL
 
-static void implement_menu_model(jlcxx::Module& module) {}
+enum SectionFormat
+{
+    NORMAL = MenuModel::SectionFormat::NORMAL,
+    HORIZONTAL_BUTTONS = MenuModel::SectionFormat::HORIZONTAL_BUTTONS,
+    HORIZONTAL_BUTTONS_LEFT_TO_RIGHT = MenuModel::SectionFormat::HORIZONTAL_BUTTONS_LEFT_TO_RIGHT,
+    HORIZONTAL_BUTTONS_RIGHT_TO_LEFT = MenuModel::SectionFormat::HORIZONTAL_BUTTONS_RIGHT_TO_LEFT,
+    CIRCULAR_BUTTONS = MenuModel::SectionFormat::CIRCULAR_BUTTONS,
+    INLINE_BUTTONS = MenuModel::SectionFormat::INLINE_BUTTONS
+};
 
-// ### TODO
+static void implement_menu_model(jlcxx::Module& module)
+{
+    define_enum_in(module, SectionFormat);
+    module.add_enum_value(SectionFormat, SECTION_FORMAT, NORMAL);
+    module.add_enum_value(SectionFormat, SECTION_FORMAT, HORIZONTAL_BUTTONS);
+    module.add_enum_value(SectionFormat, SECTION_FORMAT, HORIZONTAL_BUTTONS_LEFT_TO_RIGHT);
+    module.add_enum_value(SectionFormat, SECTION_FORMAT, HORIZONTAL_BUTTONS_RIGHT_TO_LEFT);
+    module.add_enum_value(SectionFormat, SECTION_FORMAT, CIRCULAR_BUTTONS);
+    module.add_enum_value(SectionFormat, SECTION_FORMAT, INLINE_BUTTONS);
 
-static void implement_menubar(jlcxx::Module& module) {}
+    auto menu_model = module.add_type(MenuModel)
+        .add_constructor()
+        .add_type_method(MenuModel, add_action, !)
+        .method("add_widget!", [](MenuModel& model, void* widget){
+            model.add_widget(*((Widget*) widget));
+        })
+        .method("add_section!", [](MenuModel& model, const std::string& label, const MenuModel& other, SectionFormat format){
+            model.add_section(label, other, (MenuModel::SectionFormat) format);
+        })
+        .add_type_method(MenuModel, add_submenu, !)
+        .add_type_method(MenuModel, add_icon, !)
+    ;
+
+    add_signal_items_changed<MenuModel>(menu_model);
+}
+
+// ### MENU BAR
+
+static void implement_menu_bar(jlcxx::Module& module) 
+{
+    auto menubar = module.add_type(MenuBar)
+        .add_constructor(const MenuModel&)
+    ;
+
+    add_widget_signals<MenuBar>(menubar);
+}
 
 // ### TODO
 
@@ -983,23 +1024,86 @@ static void implement_pinch_zoom_event_controller(jlcxx::Module& module) {}
 
 // ### TODO
 
-static void implement_popover(jlcxx::Module& module) {}
+static void implement_popover(jlcxx::Module& module)
+{
+    auto popover = module.add_type(Popover)
+        .add_type_method(Popover, popup, !)
+        .add_type_method(Popover, popdown, !)
+        .add_type_method(Popover, present, !)
+        .method("set_child!", [](Popover& popover, void* widget){
+            popover.set_child(*((Widget*) widget));
+        })
+        .add_type_method(Popover, remove_child, !)
+        .method("attach_to!", [](Popover& popover, void* widget){
+            popover.attach_to(*((Widget*) widget));
+        })
+        .add_type_method(Popover, set_relative_position, !)
+        .add_type_method(Popover, get_relative_position)
+        .add_type_method(Popover, set_autohide, !)
+        .add_type_method(Popover, get_autohide)
+        .add_type_method(Popover, set_has_base_arrow, !)
+        .add_type_method(Popover, get_has_base_arrow)
+    ;
+
+    add_widget_signals<Popover>(popover);
+    add_signal_closed<Popover>(popover);
+}
+
+// ### POPOVER BUTTON
+
+static void implement_popover_button(jlcxx::Module& module)
+{
+    auto popover_button = module.add_type(PopoverButton)
+        .add_constructor()
+        .method("set_child!", [](PopoverButton& x, void* widget){
+            x.set_child(*((Widget*) widget));
+        })
+        .add_type_method(PopoverButton, remove_child, !)
+        .add_type_method(PopoverButton, set_popover, !)
+        .add_type_method(PopoverButton, set_popover_menu, !)
+        .add_type_method(PopoverButton, set_popover_position, !)
+        .add_type_method(PopoverButton, get_popover_position)
+        .add_type_method(PopoverButton, remove_popover, !)
+        .add_type_method(PopoverButton, set_always_show_arrow, !)
+        .add_type_method(PopoverButton, get_always_show_arrow)
+        .add_type_method(PopoverButton, set_has_frame, !)
+        .add_type_method(PopoverButton, get_has_frame)
+        .add_type_method(PopoverButton, popup, !)
+        .add_type_method(PopoverButton, popdown, !)
+        .add_type_method(PopoverButton, set_is_circular, !)
+        .add_type_method(PopoverButton, get_is_circular)
+    ;
+
+    add_widget_signals<PopoverButton>(popover_button);
+    add_signal_activate<PopoverButton>(popover_button);
+}
 
 // ### TODO
 
-static void implement_popover_button(jlcxx::Module& module) {}
+static void implement_popover_menu(jlcxx::Module& module)
+{
+    auto popover_menu = module.add_type(PopoverMenu)
+        .add_constructor(const MenuModel&)
+    ;
 
-// ### TODO
-
-static void implement_popover_menu(jlcxx::Module& module) {}
+    add_widget_signals<PopoverMenu>(popover_menu);
+    add_signal_closed<PopoverMenu>(popover_menu);
+}
 
 // ### TODO
 
 static void implement_progress_bar(jlcxx::Module& module) {}
 
-// ### TODO
+// ### RELATIVE POSITION
 
-static void implement_relative_position(jlcxx::Module& module) {}
+static void implement_relative_position(jlcxx::Module& module)
+{
+    define_enum_in(module, RelativePosition);
+    module.add_enum_value(RelativePosition, RELATIVE_POSITION, ABOVE);
+    module.add_enum_value(RelativePosition, RELATIVE_POSITION, LEFT_OF);
+    module.add_enum_value(RelativePosition, RELATIVE_POSITION, RIGHT_OF);
+    module.add_enum_value(RelativePosition, RELATIVE_POSITION, BELOW);
+}
 
 // ### TODO
 
@@ -1188,6 +1292,9 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_click_event_controller(module);
     implement_clipboard(module);
     implement_color(module);
+    implement_icon(module);
+    implement_image(module);
+    implement_image_display(module);
     implement_column_view(module);
     implement_cursor_type(module);
     implement_drag_event_controller(module);
@@ -1209,9 +1316,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_grid(module);
     implement_grid_view(module);
     implement_header_bar(module);
-    implement_icon(module);
-    implement_image(module);
-    implement_image_display(module);
     implement_justify_mode(module);
     implement_key_event_controller(module);
     implement_key_file(module);
@@ -1220,8 +1324,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_list_view(module);
     implement_log(module);
     implement_long_press_event_controller(module);
-    implement_menu_model(module);
-    implement_menubar(module);
     implement_motion_event_controller(module);
     implement_msaa_render_texture(module);
     implement_music(module);
@@ -1230,11 +1332,15 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_pan_event_controller(module);
     implement_paned(module);
     implement_pinch_zoom_event_controller(module);
+
+    implement_relative_position(module);
+    implement_menu_model(module);
+    implement_menu_bar(module);
+    implement_popover_menu(module);
     implement_popover(module);
     implement_popover_button(module);
-    implement_popover_menu(module);
     implement_progress_bar(module);
-    implement_relative_position(module);
+
     implement_render_area(module);
     implement_render_task(module);
     implement_render_texture(module);

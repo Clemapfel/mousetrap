@@ -55,22 +55,12 @@ namespace mousetrap
             /// @brief expose internal
             NativeObject get_internal() const override;
 
-            /// @brief add an action to the model
+            /// @brief add an action to the model, if the action is stateful, the menu item will contain a check box
             /// @param label label to be used
             /// @param action action that triggers when the label is activated
             void add_action(
                 const std::string& label,
                 const Action& action
-            );
-
-            /// @brief add a stateful action to the model, the menu item will appear with a checkmark next to it, clicking the item swaps the internal state of the action
-            /// @param label label to be used
-            /// @param action action that triggers when the label is activated
-            /// @param initial_state initial state of the menu item
-            void add_stateful_action(
-                const std::string& label,
-                const Action& action,
-                bool initial_state
             );
 
             /// @brief add widget to menu, note that widgets can only be display when they are part of a section or submenu, not if they are in the toplevel sectino

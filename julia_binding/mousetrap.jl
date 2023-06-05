@@ -76,8 +76,7 @@ module mousetrap
             printstyled(stderr, "In " * scope * ": "; bold = true)
             Base.showerror(stderr, exception, catch_backtrace())
             print(stderr, "\n")
-            #throw(exception) # this causes jl_call to return nullptr, which we can check against C-side
-            return 0
+            throw(exception) # this causes jl_call to return nullptr, which we can check against C-side
         end
     end
 
@@ -266,16 +265,18 @@ module mousetrap
 
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T)
+                typed_f = TypedFunction(f, $Return_t, ($T,))
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, $Return_t, ($T,)))($T(x[1][]))
+                    typed_f($T(x[1][]))
                 end)
             end
         )))
 
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                typed_f = TypedFunction(f, $Return_t, ($T, Data_t))
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, $Return_t, ($T, Data_t)))($T(x[1][]), data)
+                    typed_f($T(x[1][]), data)
                 end)
             end
         )))
@@ -333,16 +334,18 @@ module mousetrap
 
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T)
+                typed_f = TypedFunction(f, $Return_t, ($T, $Arg1_t))
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, $Return_t, ($T, $Arg1_t)))($T(x[]))
+                    typed_f($T(x[]))
                 end)
             end
         )))
 
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                typed_f = TypedFunction(f, $Return_t, ($T, $Arg1_t, Data_t))
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, Data_t)))($T(x[]), data)
+                    typed_f($T(x[]), data)
                 end)
             end
         )))
@@ -402,16 +405,18 @@ module mousetrap
 
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T)
+                typed_f = TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t))
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t)))($T(x[1][]), x[2], x[3])
+                    typed_f($T(x[1][]), x[2], x[3])
                 end)
             end
         )))
 
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                typed_f = TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, Data_t))
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, Data_t)))($T(x[1][]), x[2], x[3], data)
+                    typed_f($T(x[1][]), x[2], x[3], data)
                 end)
             end
         )))
@@ -473,16 +478,18 @@ module mousetrap
 
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T)
+                typed_f = TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t))
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t)))($T(x[1][]), x[2], x[3], x[4])
+                    typed_f($T(x[1][]), x[2], x[3], x[4])
                 end)
             end
         )))
 
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                typed_f = TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, Data_t))
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, Data_t)))($T(x[1][]), x[2], x[3], x[4], data)
+                    typed_f($T(x[1][]), x[2], x[3], x[4], data)
                 end)
             end
         )))
@@ -546,16 +553,18 @@ module mousetrap
 
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T)
+                typed_f = TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, $Arg4_t))
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, $Arg4_t)))($T(x[1][]), x[2], x[3], x[4], x[5])
+                    typed_f($T(x[1][]), x[2], x[3], x[4], x[5])
                 end)
             end
         )))
 
         push!(out.args, esc(:(
             function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                typed_f = TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, $Arg4_t, Data_t))
                 detail.$connect_signal_name(x._internal, function(x)
-                    (TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, $Arg3_t, $Arg4_t, Data_t)))($T(x[1][]), x[2], x[3], x[4], x[5], data)
+                    typed_f($T(x[1][]), x[2], x[3], x[4], x[5], data)
                 end)
             end
         )))
@@ -620,6 +629,8 @@ module mousetrap
     macro add_signal_activate_default_widget(x) return :(@add_signal $x activate_default_widget Cvoid) end
     macro add_signal_activate_focused_widget(x) return :(@add_signal $x activate_focused_widget Cvoid) end
     macro add_signal_close_request(x) return :(@add_signal $x close_request WindowCloseRequestResult) end
+    macro add_signal_items_changed(x) return :(@add_signal $x items_changed Cvoid Int32 position Int32 n_removed Int32 n_added) end
+    macro add_signal_closed(x) return :(@add_signal $x closed Cvoid) end
 
 ####### types.jl
 
@@ -762,27 +773,31 @@ module mousetrap
     @export_function Action get_is_stateful Bool
 
     function set_function!(f, action::Action, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, Cvoid, (Action, Data_t))
         detail.set_function!(action._internal, function (internal_ref)
-            TypedFunction(f, Cvoid, (Action, Data_t))(Action(internal_ref[]), data)
+            typed_f(Action(internal_ref[]), data)
         end)
     end
 
     function set_function!(f, action::Action)
+        typed_f = TypedFunction(f, Cvoid, (Action,))
         detail.set_function!(action._internal, function (internal_ref)
-            TypedFunction(f, Cvoid, (Action,))(Action(internal_ref[]))
+            typed_f(Action(internal_ref[]))
         end)
     end
     export set_function!
 
     function set_stateful_function!(f, action::Action, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, Bool, (Action, Bool, Data_t))
         detail.set_stateful_function!(action._internal, function (internal_ref, state::Bool)
-            TypedFunction(f, Bool, (Action, Bool, Data_t))(Action(internal_ref[]), state, data)
+            typed_f(Action(internal_ref[]), state, data)
         end)
     end
 
     function set_stateful_function!(f, action::Action)
+        typed_f = TypedFunction(f, Bool, (Action, Bool))
         detail.set_stateful_function!(action._internal, function (internal_ref, state::Bool)
-            TypedFunction(f, Bool, (Action, Bool))(Action(internal_ref[]), state)
+            typed_f(Action(internal_ref[]), state)
         end)
     end
     export set_stateful_function!
@@ -1324,10 +1339,132 @@ module mousetrap
 
     @add_widget_signals ImageDisplay
 
+####### relative_position.jl
+
+    @export_enum RelativePosition begin
+        RELATIVE_POSITION_ABOVE
+        RELATIVE_POSITION_BELOW
+        RELATIVE_POSITION_LEFT_OF
+        RELATIVE_POSITION_RIGHT_OF
+    end
+
+####### menu_model.jl
+
+    @export_type MenuModel SignalEmitter
+    MenuModel() = MenuModel(detail._MenuModel())
+
+    add_action!(model::MenuModel, label::String, action::Action) = detail.add_action!(model._internal, label, action._internal)
+    export add_action!
+
+    add_widget!(model::MenuModel, widget::Widget) = detail.add_widget!(model._internal, widget._internal.cpp_object)
+    export add_widget!
+
+    @export_enum SectionFormat begin
+        SECTION_FORMAT_NORMAL
+        SECTION_FORMAT_HORIZONTAL_BUTTONS
+        SECTION_FORMAT_HORIZONTAL_BUTTONS_LEFT_TO_RIGHT
+        SECTION_FORMAT_HORIZONTAL_BUTTONS_RIGHT_TO_LEFT
+        SECTION_FORMAT_CIRCULAR_BUTTONS
+        SECTION_FORMAT_INLINE_BUTTONS
+    end
+
+    function add_section!(model::MenuModel, title::String, to_add::MenuModel, section_format::SectionFormat = SECTION_FORMAT_NORMAL)
+        detail.add_section!(model._internal, title, to_add._internal, section_format)
+    end
+    export add_section!
+
+    add_submenu!(model::MenuModel, label::String, to_add::MenuModel) = detail.add_submenu!(model._internal, label, to_add._internal)
+    export add_submenu!
+
+    add_icon!(model::MenuModel, icon::Icon) = detail.add_icon!(model._internal, icon._internal)
+    export add_icon!
+
+    @add_signal_items_changed MenuModel
+
+####### popover_menu.jl
+
+    @export_type PopoverMenu Widget
+    PopoverMenu(model::MenuModel) = PopoverMenu(detail._PopoverMenu(model._internal))
+
+    @add_widget_signals PopoverMenu
+    @add_signal_closed PopoverMenu
+
+###### popover.jl
+
+    @export_type Popover Widget
+    Popover() = Popover(detail._Popover())
+
+    @export_function Popover popup! Cvoid
+    @export_function Popover popdown! Cvoid
+    @export_function Popover present! Cvoid
+
+    function set_child!(popover::Popover, child::Widget)
+        detail.set_child!(popover._internal, child._internal.cpp_object)
+    end
+    export set_child!
+
+    @export_function Popover remove_child! Cvoid
+
+    function attach_to!(popover::Popover, attachment::Widget)
+        detail.atach_to!(popover._internal, child._internal.cpp_object)
+    end
+    export attach_to!
+
+    @export_function Popover set_relative_position! Cvoid position RelativePosition
+    @export_function Popover get_relative_position RelativePosition
+    @export_function Popover set_autohide! Cvoid b Bool
+    @export_function Popover get_autohide Bool
+    @export_function Popover set_has_base_arrow! Cvoid b Bool
+    @export_function Popover get_has_base_arrow Bool
+
+    @add_widget_signals Popover
+    @add_signal_closed Popover
+
+###### popover_button.jl
+
+    @export_type PopoverButton Widget
+    PopoverButton() = PopoverButton(detail._PopoverButton())
+
+    set_child!(popover_button::PopoverButton, child::Widget) = detail.set_child!(popover_button._internal, child._internal.cpp_object)
+    export set_child!
+
+    @export_function PopoverButton remove_child! Cvoid
+
+    function set_popover!(popover_button::PopoverButton, popover::Popover)
+        detail.set_popover!(popover_button._internal, popover._internal)
+    end
+    export set_popover!
+
+    function set_popover_menu!(popover_button::PopoverButton, popover_menu::PopoverMenu)
+        detail.set_popover_menu!(popover_button._internal, popover_menu._internal)
+    end
+    export set_popover_menu!
+
+    @export_function PopoverButton remove_popover! Cvoid
+    @export_function PopoverButton set_popover_position! Cvoid position RelativePosition
+    @export_function PopoverButton get_relative_position RelativePosition
+    @export_function PopoverButton set_always_show_arrow! Cvoid b Bool
+    @export_function PopoverButton get_always_show_arrow Bool
+    @export_function PopoverButton set_has_frame Cvoid b Bool
+    @export_function PopoverButton get_has_frame Bool
+    @export_function PopoverButton popoup! Cvoid
+    @export_function PopoverButton popdown! Cvoid
+    @export_function PopoverButton set_is_circular! Cvoid b Bool
+    @export_function PopoverButton get_is_circular Bool
+
+    @add_widget_signals PopoverButton
+    @add_signal_activate PopoverButton
+
+###### menubar.jl
+
+    @export_type MenuBar Widget
+    MenuBar(model::MenuModel) = detail._MenuBar(model._internal)
+
+    @add_widget_signals MenuBar
+
 end # module mousetrap
 
 using .mousetrap
-
 
 using CxxWrap
 
@@ -1337,11 +1474,29 @@ connect_signal_activate!(app) do app::Application
 
     window = Window(app)
 
-    theme = IconTheme(window)
-    for id in get_icon_names(theme)
-        println(id)
+    action_01 = Action("action_01", app)
+    set_function!(action_01) do action::Action
+        println("01")
     end
 
+    action_02 = Action("action_02", app)
+    set_stateful_function!(action_02) do action::Action
+        println("02", b)
+        return !b
+    end
+
+    model = MenuModel()
+    section = MenuModel()
+
+    add_action!(section, "01", action_01)
+    add_action!(section, "02", action_02)
+    add_section!(model, "section", section)
+
+    popover = PopoverMenu(model)
+    popover_button = PopoverButton()
+    set_popover_menu!(popover_button, popover)
+
+    set_child!(window, popover_button)
     present!(window)
 end
 

@@ -63,20 +63,21 @@ namespace mousetrap
 
     void MenuModel::add_action(const std::string& label, const Action& action)
     {
-        auto* item = g_menu_item_new(label.c_str(), ("app." + action.get_id()).c_str());
-
-        g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
-        g_menu_append_item(_internal->native, item);
-        g_object_unref(item);
-    }
-
-    void MenuModel::add_stateful_action(const std::string& label, const Action& action, bool initial_state)
-    {
-        auto* item = g_menu_item_new(label.c_str(), ("app." + action.get_id()).c_str());
-        g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
-        g_menu_item_set_attribute_value(item, "target", g_variant_new_boolean(initial_state));
-        g_menu_append_item(_internal->native, item);
-        g_object_unref(item);
+        if (action.get_is_stateful())
+        {
+            auto* item = g_menu_item_new(label.c_str(), ("app." + action.get_id()).c_str());
+            g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
+            g_menu_item_set_attribute_value(item, "target", g_variant_new_boolean(action.get_state()));
+            g_menu_append_item(_internal->native, item);
+            g_object_unref(item);
+        }
+        else
+        {
+            auto* item = g_menu_item_new(label.c_str(), ("app." + action.get_id()).c_str());
+            g_menu_item_set_attribute_value(item, "use-markup", g_variant_new_string("yes"));
+            g_menu_append_item(_internal->native, item);
+            g_object_unref(item);
+        }
     }
 
     void MenuModel::add_widget(const Widget& widget)
