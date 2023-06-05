@@ -952,8 +952,8 @@ module mousetrap
     export KeyID
 
     @export_function KeyFile as_string String
-    @export_function KeyFile load_from_file! Bool path String
-    @export_function KeyFile load_from_string! Bool file String
+    @export_function KeyFile create_from_file! Bool path String
+    @export_function KeyFile create_from_string! Bool file String
     @export_function KeyFile save_to_file Bool path String
     @export_function KeyFile get_groups Vector{GroupID}
     @export_function KeyFile get_keys Vector{KeyID} group GroupID
@@ -967,11 +967,121 @@ module mousetrap
     export set_value!
     export get_value
 
-    set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Cfloat) = detail.set_value_as_float!(file._internal, group, key, value)
-    get_value(file::KeyFile, type::Type{Cfloat}, group::GroupID, key::KeyID) ::Cfloat = detail.get_value_as_float(file._internal, group, key)
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Bool)
+        detail.set_value_as_bool!(file._internal, group, key, value)
+    end
 
-    set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{Cfloat}) = detail.set_value_as_float_list!(file._internal, group, key, value)
-    get_value(file::KeyFile, type::Type{Vector{Cfloat}}, group::GroupID, key::KeyID) ::Vector{Cfloat} = detail.get_value_as_float_list(file._internal, group, key)
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::AbstractFloat)
+        detail.set_value_as_double!(file._internal, group, key, convert(Cdouble, value))
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Signed)
+        detail.set_value_as_int!(file._internal, group, key, convert(Cint, value))
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Unsigned)
+        detail.set_value_as_uint!(file._internal, group, key, convert(Cuint, value))
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::String)
+        detail.set_value_as_string!(file._internal, group, key, value)
+    end
+
+    #function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::RGBA)
+    #    detail.set_value_as_float_list!(file._internal, group, key, Cfloat[value.r, value.g, value.b, value.a])
+    #end
+
+    #function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Image)
+    #   TODO
+    #end
+
+    ##
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{Bool})
+        detail.set_value_as_bool_list!(file._internal, group, key, value)
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{<: AbstractFloat})
+        vec::Vector{Cdouble} = []
+        for x in value
+            push!(vec, convert(Cdouble, x))
+        end
+        detail.set_value_as_double_list!(file._internal, group, key, vec)
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{<: Signed})
+        vec::Vector{Cint} = []
+        for x in value
+            push!(vec, convert(Cint, x))
+        end
+        detail.set_value_as_int_list!(file._internal, group, key, vec)
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{<: Unsigned})
+        vec::Vector{Cuint} = []
+        for x in value
+            push!(vec, convert(Cuint, x))
+        end
+        detail.set_value_as_uint_list!(file._internal, group, key, vec)
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{String})
+        detail.set_value_as_string_list!(file._internal, group, key, value)
+    end
+
+    ##
+
+    function get_value(file::KeyFile, type::Type{Bool}, group::GroupID, key::KeyID)
+        return detail.get_value_as_bool(file._internal, group, key)
+    end
+
+    function get_value(file::KeyFile, type::Type{<: AbstractFloat}, group::GroupID, key::KeyID)
+        return detail.get_value_as_double(file._internal, group, key)
+    end
+
+    function get_value(file::KeyFile, type::Type{<: Signed}, group::GroupID, key::KeyID)
+        return detail.get_value_as_int(file._internal, group, key)
+    end
+
+    function get_value(file::KeyFile, type::Type{<: Unsigned}, group::GroupID, key::KeyID)
+        return detail.get_value_as_uint(file._internal, group, key)
+    end
+
+    function get_value(file::KeyFile, type::Type{String}, group::GroupID, key::KeyID)
+        return detail.get_value_as_string(file._internal, group, key)
+    end
+
+    #function get_value(file::KeyFile, type::Type{RGBA}, group::GroupID, key::KeyID)
+    #    vec = get_value(file, Vector{Cfloat}, group, key)
+    #    return RGBA(vec[1], vec[2], vec[3], vec[4])
+    #end
+
+    #function get_value(file::KeyFile, type::Type{Image}, group::GroupID, key::KeyID)
+    #    TODO
+    #end
+
+    ##
+
+    function get_value(file::KeyFile, type::Type{Vector{Bool}}, group::GroupID, key::KeyID)
+        return convert(Vector{Bool}, detail.get_value_as_bool_list(file._internal, group, key))
+    end
+
+    function get_value(file::KeyFile, type::Type{Vector{T}}, group::GroupID, key::KeyID) where T <: AbstractFloat
+        return convert(Vector{T}, detail.get_value_as_double_list(file._internal, group, key))
+    end
+
+    function get_value(file::KeyFile, type::Type{Vector{T}}, group::GroupID, key::KeyID) where T <: Signed
+        return convert(Vector{T}, detail.get_value_as_int_list(file._internal, group, key))
+    end
+
+    function get_value(file::KeyFile, type::Type{Vector{T}}, group::GroupID, key::KeyID) where T <: Unsigned
+        return convert(Vector{T}, detail.get_value_as_uint_list(file._internal, group, key))
+    end
+
+    function get_value(file::KeyFile, type::Type{Vector{String}}, group::GroupID, key::KeyID)
+        return convert(Vector{String}, detail.get_value_as_string_list(file._internal, group, key))
+    end
+
 
 ####### window.jl
 
@@ -1053,9 +1163,10 @@ connect_signal_activate!(app) do app::Application
 
     file = KeyFile()
 
-    set_value!(file, "group_id", "key_id", Cfloat[0, 1])
-    println(get_value(file, Vector{Cfloat}, "group_id", "key_id"))
+    set_value!(file, "group", "key", String["abc", "def"])
+    println(get_value(file, Vector{String}, "group", "key"))
 
+    #println(as_string(file))
     present!(window)
 end
 

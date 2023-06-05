@@ -53,6 +53,10 @@ int main()
     {
         auto window = Window(app);
 
+        auto file = KeyFile();
+        file.set_value_as<std::vector<std::string>>("group", "key", {"abc", "def"});
+        auto out = file.get_value_as<std::vector<std::string>>("group", "key");
+
         auto grid = GridView();
         auto button = CheckButton();
         button.set_child(Label("Label"));

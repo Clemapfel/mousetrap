@@ -20,7 +20,7 @@ namespace mousetrap
     KeyFile::KeyFile(const std::string& path)
         : KeyFile()
     {
-        load_from_file(path);
+        create_from_file(path);
     }
 
     KeyFile::~KeyFile()
@@ -72,7 +72,7 @@ namespace mousetrap
         return this->operator std::string();
     }
 
-    bool KeyFile::load_from_file(const std::string& path)
+    bool KeyFile::create_from_file(const std::string& path)
     {
         GError* error = nullptr;
         g_key_file_load_from_file(
@@ -85,7 +85,7 @@ namespace mousetrap
         if (error != nullptr)
         {
             std::stringstream str;
-            str << "In KeyFile::load_from_file: Unable to load file at `" << path << "`: " << error->message;
+            str << "In KeyFile::create_from_file: Unable to load file at `" << path << "`: " << error->message;
             log::critical(str.str(), MOUSETRAP_DOMAIN);
             return false;
         }
@@ -93,7 +93,7 @@ namespace mousetrap
         return true;
     }
 
-    bool KeyFile::load_from_string(const std::string& file)
+    bool KeyFile::create_from_string(const std::string& file)
     {
         GError* error = nullptr;
 
@@ -108,7 +108,7 @@ namespace mousetrap
         if (error != nullptr)
         {
             std::stringstream str;
-            str << "In KeyFile::load_from_string: Unable to load from string\n" << file << "\n\n" << error->message;
+            str << "In KeyFile::create_from_string: Unable to load from string\n" << file << "\n\n" << error->message;
             log::critical(str.str());
             return false;
         }
@@ -131,7 +131,7 @@ namespace mousetrap
         return true;
     }
 
-    std::vector<KeyFile::KeyID> KeyFile::get_keys(GroupKey group) const
+    std::vector<KeyFile::KeyID> KeyFile::get_keys(GroupID group) const
     {
         gsize length;
         GError* error = nullptr;
@@ -152,7 +152,7 @@ namespace mousetrap
         return out;
     }
 
-    bool KeyFile::has_key(GroupKey group, KeyID key)
+    bool KeyFile::has_key(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         auto out = g_key_file_has_key(_native, group.c_str(), key.c_str(), &error);
@@ -166,24 +166,24 @@ namespace mousetrap
         return out;
     }
 
-    std::vector<KeyFile::GroupKey> KeyFile::get_groups() const
+    std::vector<KeyFile::GroupID> KeyFile::get_groups() const
     {
         gsize length;
         auto* groups = g_key_file_get_groups(_native, &length);
 
-        std::vector<KeyFile::GroupKey> out;
+        std::vector<KeyFile::GroupID> out;
         for (size_t i = 0; i < length; ++i)
             out.emplace_back(groups[i]);
 
         return out;
     }
 
-    bool KeyFile::has_group(GroupKey group)
+    bool KeyFile::has_group(GroupID group)
     {
         return g_key_file_has_group(_native, group.c_str());
     }
 
-    void KeyFile::set_comment_above_key(GroupKey group, KeyID key, const std::string& comment)
+    void KeyFile::set_comment_above_key(GroupID group, KeyID key, const std::string& comment)
     {
         GError* error = nullptr;
         g_key_file_set_comment(_native, group.c_str(), key.c_str(), (" " + comment).c_str(), &error);
@@ -197,7 +197,7 @@ namespace mousetrap
         }
     }
 
-    void KeyFile::set_comment_above_group(GroupKey group, const std::string& comment)
+    void KeyFile::set_comment_above_group(GroupID group, const std::string& comment)
     {
         GError* error = nullptr;
         g_key_file_set_comment(_native, group.c_str(), nullptr, (" " + comment).c_str(), &error);
@@ -211,7 +211,7 @@ namespace mousetrap
         }
     }
 
-    std::string KeyFile::get_comment_above_key(GroupKey group, KeyID key)
+    std::string KeyFile::get_comment_above_key(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         auto* out = g_key_file_get_comment(_native, group.c_str(), key.c_str(), &error);
@@ -227,7 +227,7 @@ namespace mousetrap
         return std::string(out == nullptr ? "" : out);
     }
 
-    std::string KeyFile::get_comment_above_group(GroupKey group)
+    std::string KeyFile::get_comment_above_group(GroupID group)
     {
         GError* error = nullptr;
         auto* out = g_key_file_get_comment(_native, group.c_str(), nullptr, &error);
@@ -243,7 +243,7 @@ namespace mousetrap
         return std::string(out == nullptr ? "" : out);
     }
 
-    std::string KeyFile::get_value(GroupKey group, KeyID key)
+    std::string KeyFile::get_value(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         auto* value = g_key_file_get_value(_native, group.c_str(), key.c_str(), &error);
@@ -260,8 +260,13 @@ namespace mousetrap
         return std::string(value);
     }
 
+    void KeyFile::set_value(GroupID group, KeyID key, const std::string& value)
+    {
+        g_key_file_set_value(_native, group.c_str(), key.c_str(), value.c_str());
+    }
+
     template<>
-    bool KeyFile::get_value_as(GroupKey group, KeyID key)
+    bool KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         bool value = g_key_file_get_boolean(_native, group.c_str(), key.c_str(), &error);
@@ -279,7 +284,7 @@ namespace mousetrap
     }
 
     template<>
-    std::vector<bool> KeyFile::get_value_as(GroupKey group, KeyID key)
+    std::vector<bool> KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -302,7 +307,7 @@ namespace mousetrap
     }
 
     template<>
-    int KeyFile::get_value_as(GroupKey group, KeyID key)
+    int KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         int value = g_key_file_get_integer(_native, group.c_str(), key.c_str(), &error);
@@ -320,7 +325,7 @@ namespace mousetrap
     }
 
     template<>
-    std::vector<int> KeyFile::get_value_as(GroupKey group, KeyID key)
+    std::vector<int> KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -343,7 +348,7 @@ namespace mousetrap
     }
 
     template<>
-    size_t KeyFile::get_value_as(GroupKey group, KeyID key)
+    size_t KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         int value = g_key_file_get_uint64(_native, group.c_str(), key.c_str(), &error);
@@ -361,7 +366,7 @@ namespace mousetrap
     }
 
     template<>
-    std::vector<size_t> KeyFile::get_value_as(GroupKey group, KeyID key)
+    std::vector<size_t> KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -384,7 +389,7 @@ namespace mousetrap
     }
 
     template<>
-    double KeyFile::get_value_as(GroupKey group, KeyID key)
+    double KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         double value = g_key_file_get_double(_native, group.c_str(), key.c_str(), &error);
@@ -402,7 +407,7 @@ namespace mousetrap
     }
 
     template<>
-    std::vector<double> KeyFile::get_value_as(GroupKey group, KeyID key)
+    std::vector<double> KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -425,13 +430,13 @@ namespace mousetrap
     }
 
     template<>
-    float KeyFile::get_value_as(GroupKey group, KeyID key)
+    float KeyFile::get_value_as(GroupID group, KeyID key)
     {
         return get_value_as<double>(group, key);
     }
 
     template<>
-    std::vector<float> KeyFile::get_value_as(GroupKey group, KeyID key)
+    std::vector<float> KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -454,7 +459,7 @@ namespace mousetrap
     }
 
     template<>
-    std::string KeyFile::get_value_as(GroupKey group, KeyID key)
+    std::string KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         const char* value = g_key_file_get_string(_native, group.c_str(), key.c_str(), &error);
@@ -478,7 +483,7 @@ namespace mousetrap
     }
 
     template<>
-    std::vector<std::string> KeyFile::get_value_as(GroupKey group, KeyID key)
+    std::vector<std::string> KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -509,7 +514,7 @@ namespace mousetrap
     }
 
     template<>
-    HSVA KeyFile::get_value_as(GroupKey group, KeyID key)
+    HSVA KeyFile::get_value_as(GroupID group, KeyID key)
     {
         auto list = get_value_as<std::vector<float>>(group, key);
         if (not (list.size() != 3 or list.size() != 4))
@@ -532,7 +537,7 @@ namespace mousetrap
     }
 
     template<>
-    RGBA KeyFile::get_value_as(GroupKey group, KeyID key)
+    RGBA KeyFile::get_value_as(GroupID group, KeyID key)
     {
         auto list = get_value_as<std::vector<float>>(group, key);
         if (not (list.size() != 3 or list.size() != 4))
@@ -554,7 +559,7 @@ namespace mousetrap
     }
 
     template<>
-    Image KeyFile::get_value_as(GroupKey group, KeyID key)
+    Image KeyFile::get_value_as(GroupID group, KeyID key)
     {
         Image out;
 
@@ -586,19 +591,14 @@ namespace mousetrap
         return out;
     }
 
-    void KeyFile::set_value(GroupKey group, KeyID key, const std::string& value)
-    {
-        g_key_file_set_value(_native, group.c_str(), key.c_str(), value.c_str());
-    }
-
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, std::string value)
+    void KeyFile::set_value_as(GroupID group, KeyID key, std::string value)
     {
         g_key_file_set_string(_native, group.c_str(), key.c_str(), value.c_str());
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<std::string> value)
+    void KeyFile::set_value_as(GroupID group, KeyID key, std::vector<std::string> value)
     {
         std::vector<const char*> to_add;
         for (auto& s : value)
@@ -608,13 +608,13 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, bool value)
+    void KeyFile::set_value_as(GroupID group, KeyID key, bool value)
     {
         g_key_file_set_boolean(_native, group.c_str(), key.c_str(), value);
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<bool> value)
+    void KeyFile::set_value_as(GroupID group, KeyID key, std::vector<bool> value)
     {
         std::vector<gboolean> to_add; // convert because std::vector<bool> is bit compressed
         for (bool b : value)
@@ -624,19 +624,19 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, int value)
+    void KeyFile::set_value_as(GroupID group, KeyID key, int value)
     {
         g_key_file_set_integer(_native, group.c_str(), key.c_str(), value);
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<int> value)
+    void KeyFile::set_value_as(GroupID group, KeyID key, std::vector<int> value)
     {
         g_key_file_set_integer_list(_native, group.c_str(), key.c_str(), value.data(), value.size());
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, size_t value)
+    void KeyFile::set_value_as(GroupID group, KeyID key, size_t value)
     {
         if (value > std::numeric_limits<gint64>::max())
         {
@@ -649,7 +649,7 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<size_t> value)
+    void KeyFile::set_value_as(GroupID group, KeyID key, std::vector<size_t> value)
     {
         std::vector<int> converted;
         converted.reserve(value.size());
@@ -672,13 +672,13 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, float value)
+    void KeyFile::set_value_as(GroupID group, KeyID key, float value)
     {
         g_key_file_set_double(_native, group.c_str(), key.c_str(), value);
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, std::vector<float> value)
+    void KeyFile::set_value_as(GroupID group, KeyID key, std::vector<float> value)
     {
         std::vector<gdouble> to_add;
         for (auto& f : value)
@@ -688,19 +688,25 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, HSVA hsva)
+    void KeyFile::set_value_as(GroupID group, KeyID key, std::vector<double> value)
+    {
+        g_key_file_set_double_list(_native, group.c_str(), key.c_str(), value.data(), value.size());
+    }
+
+    template<>
+    void KeyFile::set_value_as(GroupID group, KeyID key, HSVA hsva)
     {
         set_value_as<std::vector<float>>(group, key, {hsva.h, hsva.s, hsva.v, hsva.a});
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, RGBA rgba)
+    void KeyFile::set_value_as(GroupID group, KeyID key, RGBA rgba)
     {
         set_value_as<std::vector<float>>(group, key, {rgba.r, rgba.g, rgba.b, rgba.a});
     }
 
     template<>
-    void KeyFile::set_value_as(GroupKey group, KeyID key, Image image)
+    void KeyFile::set_value_as(GroupID group, KeyID key, Image image)
     {
         std::vector<float> serialized;
         auto n_pixels = image.get_size().x * image.get_size().y;
