@@ -90,6 +90,7 @@ namespace mousetrap
 
             /// @brief expose pixel data, linear array of RGBA values. For internal use only
             /// @return void pointer to data
+            /// \not_available_in_julia_binding
             void* data() const;
 
             /// @brief get length of linear data
@@ -147,16 +148,19 @@ namespace mousetrap
             /// @brief set value of individual pixel, linear indexing. Prints soft warning if index out of bounds
             /// @param linear_index
             /// @param new_color RBGA
+            /// \not_available_in_julia_binding
             void set_pixel(size_t linear_index, RGBA new_color);
 
             /// @brief set value of individual pixel, linear indexing. Prints soft warning if index out of bounds
             /// @param linear_index
             /// @param new_color HSVA
+            /// \not_available_in_julia_binding
             void set_pixel(size_t linear_index, HSVA new_color);
 
             /// @brief get value of individual pixel, linear indexing.
             /// @param linear_index
             /// @return RGBA
+            /// \not_available_in_julia_binding
             RGBA get_pixel(size_t linear_index) const;
 
         private:

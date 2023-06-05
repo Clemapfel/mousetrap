@@ -177,6 +177,24 @@ module mousetrap
         return out
     end
 
+    macro export_type(name)
+
+        internal_name = Symbol("_" * "$name")
+
+        if !isdefined(detail, :($internal_name))
+            throw(AssertionError("In mousetrap.@export_type: detail.$internal_name undefined"))
+        end
+
+        out = Expr(:block)
+        mousetrap.eval(:(export $name))
+        push!(out.args, quote
+            struct $name
+                _internal::detail.$internal_name
+            end
+        end)
+        return out
+    end
+
     macro export_enum(enum, block)
 
         @assert block isa Expr
@@ -1082,6 +1100,119 @@ module mousetrap
         return convert(Vector{String}, detail.get_value_as_string_list(file._internal, group, key))
     end
 
+####### color.jl
+
+    abstract type Color end
+
+    struct RGBA <: Color
+        r::Cfloat
+        g::Cfloat
+        b::Cfloat
+        a::Cfloat
+    end
+    export RGBA
+
+    function RGBA(r::AbstractFloat, g::AbstractFloat, b::AbstractFloat, a::AbstractFloat)
+        return RBGA(
+            convert(Cfloat, r),
+            convert(Cfloat, g),
+            convert(Cfloat, b),
+            convert(Cfloat, a)
+        )
+    end
+
+    struct HSVA <: Color
+        h::Cfloat
+        s::Cfloat
+        v::Cfloat
+        a::Cfloat
+    end
+    export HSVA
+
+    function HSVA(h::AbstractFloat, s::AbstractFloat, v::AbstractFloat, a::AbstractFloat)
+        return HSVA(
+            convert(Cfloat, h),
+            convert(Cfloat, s),
+            convert(Cfloat, v),
+            convert(Cfloat, a)
+        )
+    end
+
+    rgba_to_hsva(rgba::RGBA) = detail.rgba_to_hsva(rgba)
+    export rgba_to_hsva
+
+    hsva_to_rgba(hsva::HSVA) = detail.hsva_to_rgba(hsva)
+    export hsva_to_rgba
+
+    rgba_to_html_code(rgba::RGBA) = convert(String, detail.rgba_to_html_code(rgba))
+    export rgba_to_html_code
+
+    html_code_to_rgba(code::String) ::RGBA = return detail.html_code_to_rgba(code)
+    export html_code_to_rgba
+
+####### image.jl
+
+    @export_enum InterpolationType begin
+        INTERPOLATION_TYPE_NEAREST
+        INTERPOLATION_TYPE_TILES
+        INTERPOLATION_TYPE_BILINEAR
+        INTERPOLATION_TYPE_HYPERBOLIC
+    end
+
+    @export_type Image
+    Image() = Image(detail._Image())
+    Image(path::String) = Image(detail._Image(path))
+    Image(width::Unsigned, height::Unsigned, color::RGBA = RGBA(0, 0, 0, 1)) = Image(detail._Image(width, height, color))
+
+    function create!(image::Image, width::Unsigned, height::Unsigned, color::RGBA = RGBA(0, 0, 0, 1))
+        detail.create!(image._internal, width, height, color)
+    end
+    export create!
+
+    @export_function Image create_from_file! Bool path String
+    @export_function Image save_to_file Bool path String
+    @export_function Image get_n_pixels Int64
+    @export_function Image get_size Vector2f
+
+    function as_scaled(image::Image, size_x::Unsigned, size_y::Unsigned, interpolation::InterpolationType)
+        return Image(detail.as_scaled(image._internal, size_x, size_y, interpolation))
+    end
+    export as_scaled
+
+    function as_cropped(image::Image, offset_x::Integer, offset_y::Integer, new_width::Unsigned, new_height::Unsigned)
+        return Image(detail.as_cropped(image._internal, offset_x, offset_y, new_width, new_height))
+    end
+    export as_cropped
+
+    function set_pixel!(image::Image, x::Unsigned, y::Unsigned, color::RGBA)
+        detail.set_pixel_rgba!(image._internal, x, y, color)
+    end
+    function set_pixel!(image::Image, x::Unsigned, y::Unsigned, color::HSVA)
+        detail.set_pixel_hsva!(image._internal, x, y, color)
+    end
+    export set_pixel!
+
+    function get_pixel(image::Image, x::Unsigned, y::Unsigned) ::RGBA
+        return detail.get_pixel(image._internal, x, y)
+    end
+    export get_pixel
+
+####### image_display.jl
+
+    @export_type ImageDisplay Widget
+    ImageDisplay(path::String) = ImageDisplay(detail._ImageDisplay(path))
+    ImageDisplay(image::Image) = ImageDisplay(detail._ImageDisplay(image._internal))
+    #TODO: ImageDisplay(icon::Icon) = ImageDisplay(detail._ImageDisplay(icon._internal))
+
+    @export_function ImageDisplay create_from_file! Cvoid path String
+
+    create_from_image!(image_display::ImageDisplay, image::Image) = detail.create_from_image!(image_display._internal, image._internal)
+    export create_from_image!
+
+    @export_function ImageDisplay clear! Cvoid
+    @export_function ImageDisplay set_scale! Cvoid scale Cint
+
+    @add_widget_signals ImageDisplay
 
 ####### window.jl
 
@@ -1161,12 +1292,10 @@ connect_signal_activate!(app) do app::Application
 
     window = Window(app)
 
-    file = KeyFile()
-
-    set_value!(file, "group", "key", String["abc", "def"])
-    println(get_value(file, Vector{String}, "group", "key"))
-
-    #println(as_string(file))
+    image = Image()
+    create!(image, Unsigned(100), Unsigned(100), RGBA(1, 0, 1, 1))
+    display = ImageDisplay(image)
+    set_child!(window, display)
     present!(window)
 end
 

@@ -66,6 +66,20 @@ static Vector2f unbox_vector2f(jl_value_t* in)
     };
 }
 
+static jl_value_t* box_vector2i(Vector2i in)
+{
+    static auto* ctor = jl_eval_string("mousetrap.Vector2i");
+    return jl_calln(ctor, jl_box_int64(in.x), jl_box_int64(in.y));
+}
+
+static Vector2f unbox_vector2i(jl_value_t* in)
+{
+    return Vector2i {
+        jl_unbox_int64(jl_get_property(in, "x")),
+        jl_unbox_int64(jl_get_property(in, "y"))
+    };
+}
+
 static jl_value_t* box_rgba(RGBA in)
 {
     static auto* ctor = jl_eval_string("return mousetrap.RGBA");
@@ -588,7 +602,28 @@ static void implement_clipboard(jlcxx::Module& module) {}
 
 // ### TODO
 
-static void implement_color(jlcxx::Module& module) {}
+static void implement_color(jlcxx::Module& module)
+{
+    module.method("rgba_to_hsva", [](jl_value_t* rgba)
+    {
+        return box_hsva(rgba_to_hsva(unbox_rgba(rgba)));
+    });
+
+    module.method("hsva_to_rgba", [](jl_value_t* hsva)
+    {
+        return box_rgba(hsva_to_rgba(unbox_hsva(hsva)));
+    });
+
+    module.method("rgba_to_html_code", [](jl_value_t* rgba) -> std::string
+    {
+        return rgba_to_html_code(unbox_rgba(rgba));
+    });
+
+    module.method("html_code_to_rgba", [](const std::string& code) -> jl_value_t*
+    {
+        return box_rgba(html_code_to_rgba(code));
+    });
+}
 
 // ### TODO
 
@@ -678,13 +713,67 @@ static void implement_header_bar(jlcxx::Module& module) {}
 
 static void implement_icon(jlcxx::Module& module) {}
 
-// ### TODO
+// ### IMAGE
 
-static void implement_image(jlcxx::Module& module) {}
+static void implement_image(jlcxx::Module& module)
+{
+    define_enum_in(module, InterpolationType);
+    module.add_enum_value(InterpolationType, INTERPOLATION_TYPE, NEAREST);
+    module.add_enum_value(InterpolationType, INTERPOLATION_TYPE, TILES);
+    module.add_enum_value(InterpolationType, INTERPOLATION_TYPE, BILINEAR);
+    module.add_enum_value(InterpolationType, INTERPOLATION_TYPE, HYPERBOLIC);
 
-// ### TODO
+    module.add_type(Image)
+        .add_constructor()
+        .add_constructor(const std::string&)
+        .constructor([](size_t width, size_t height, jl_value_t* rgba){
+            return new Image(width, height, unbox_rgba(rgba));
+        }, USE_FINALIZERS)
+        .method("create!", [](Image& image, size_t width, size_t height, jl_value_t* rgba){
+            image.create(width, height, unbox_rgba(rgba));
+        })
+        .add_type_method(Image, create_from_file, !)
+        .add_type_method(Image, save_to_file)
+        .add_type_method(Image, get_n_pixels)
+        .method("get_size", [](const Image& image) -> jl_value_t* {
+            auto size = image.get_size();
+            return box_vector2i(Vector2i(size.x, size.y));
+        })
+        .add_type_method(Image, as_scaled)
+        .add_type_method(Image, as_cropped)
+        .method("set_pixel_rgba!", [](Image& image, size_t x, size_t y, jl_value_t* rgba){
+            image.set_pixel(x, y, unbox_rgba(rgba));
+        })
+        .method("set_pixel_hsva!", [](Image& image, size_t x, size_t y, jl_value_t* hsva){
+            image.set_pixel(x, y, unbox_hsva(hsva));
+        })
+        .method("get_pixel", [](const Image& image, size_t x, size_t y) -> jl_value_t* {
+            return box_rgba(image.get_pixel(x, y));
+        })
+    ;
+}
 
-static void implement_image_display(jlcxx::Module& module) {}
+// ### IMAGE DISPLAY
+
+static void implement_image_display(jlcxx::Module& module)
+{
+    auto image_display = module.add_type(ImageDisplay)
+        .add_constructor(const std::string&)
+        .add_constructor(const Image&)
+        //TODO: .add_constructor(const Icon&)
+        .method("get_size", [](ImageDisplay& x) -> jl_value_t* {
+            return box_vector2f(x.get_size());
+        })
+        .add_type_method(ImageDisplay, create_from_file, !)
+        .add_type_method(ImageDisplay, create_from_image, !)
+        //TODO: .add_type_method(ImageDisplay, create_from_icon, !)
+        //TODO: .add_type_method(ImageDisplay, create_as_file_preview, !)
+        .add_type_method(ImageDisplay, clear, !)
+        .add_type_method(ImageDisplay, set_scale, !)
+    ;
+
+    add_widget_signals<ImageDisplay>(image_display);
+}
 
 // ### TODO
 
