@@ -1297,7 +1297,7 @@ module mousetrap
     @add_signal_activate Entry
     @add_signal_text_changed Entry
 
-####### entry.jl
+####### expander.jl
 
     @export_type Expander Widget
     Expander() = Expander(detail._Expander())
@@ -1318,6 +1318,25 @@ module mousetrap
 
     @add_widget_signals Expander
     @add_signal_activate Expander
+
+####### fixed.jl
+
+    @export_type Fixed Widget
+    Fixed() = Fixed(detail._Fixed())
+
+    add_child!(fixed::Fixed, child::Widget, position::Vector2f) = detail.add_child!(fixed._internal, child._internal.cpp_object, position)
+    export add_child!
+
+    remove_child!(fixed::Fixed, child::Widget) = detail.remove_child!(fixed._internal, child._internal.cpp_object)
+    export remove_child!
+
+    set_child_position!(fixed::Fixed, child::Widget, position::Vector2f) = detail.set_child_position!(fixed._internal, child._internal.cpp_object, position)
+    export set_child_position!
+
+    get_child_position(fixed::Fixed, child::Widget) ::Vector2f = detail.get_child_position(fixed._internal, child._internal.cpp_object)
+    export get_child_position!
+
+    @add_widget_signals Fixed
 
 ####### icon.jl
 
