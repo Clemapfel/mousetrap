@@ -49,6 +49,7 @@ namespace mousetrap
             log() = delete;
 
             /// @brief initiailze the logging suite, automatically called during construction of mousetrap::Application
+            /// \not_available_in_julia_binding
             static void initialize();
 
             /// @brief print a debug message, not printed unless set_surpress_debug is set to false
@@ -99,11 +100,13 @@ namespace mousetrap
             /// @brief specify a log file, any message regardless of priority will be appended to it. File will not be overwritten, if it does not exist, it will be created
             /// @param path absolute path
             /// @return true if file was succesfully opened for streaming, false otherwise
+            /// \note This function is available as `set_log_file` in the Julia Binding
             static bool set_file(const std::string& path);
 
             /// @brief set formatting function, this functino transforms the log message into a string which will be appended to the log file. This function is not applied to messages printed to cout or cerr
             /// @tparam Function_t lambda with signatures (const std::string& message, const std::map<std::string, std::string>& fields) -> std::string
             /// @param function
+            /// \not_available_in_julia_binding
             template<typename Function_t>
             static void set_file_formatting_function(Function_t function);
 

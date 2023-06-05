@@ -781,7 +781,60 @@ module mousetrap
     abstract type EventController end
     export EventController
 
-    # forward declarations:
+####### log.jl
+
+    const LogDomain = String;
+    export LogDomain
+
+    macro debug(domain, message)
+        @assert domain isa mousetrap.LogDomain
+        @assert message isa String
+        return :(mousetrap.detail.log_debug($message, $domain))
+    end
+    export debug
+
+    macro info(domain, message)
+        @assert domain isa mousetrap.LogDomain
+        @assert message isa String
+        return :(mousetrap.detail.log_info($message, $domain))
+    end
+    export info
+
+    macro warning(domain, message)
+        @assert domain isa mousetrap.LogDomain
+        @assert message isa String
+        return :(mousetrap.detail.log_warning($message, $domain))
+    end
+    export warning
+
+    macro critical(domain, message)
+        @assert domain isa mousetrap.LogDomain
+        @assert message isa String
+        return :(mousetrap.detail.log_critical($message, $domain))
+    end
+    export critical
+
+    macro fatal(domain, message)
+        @assert domain isa mousetrap.LogDomain
+        @assert message isa String
+        return :(mousetrap.detail.log_fatal($message, $domain))
+    end
+    export fatal
+
+    set_surpress_debug(domain::LogDomain, b::Bool) = detail.log_set_surpress_debug(domain, b)
+    export set_surpress_debug
+
+    set_surpress_info(domain::LogDomain, b::Bool) = detail.log_set_surpress_info(domain, b)
+    export set_surpress_info
+
+    get_surpress_debug(domain::LogDomain) ::Bool = detail.log_get_surpress_debug(domain, b)
+    export set_surpress_debug
+
+    get_surpress_info(domain::LogDomain) ::Bool = detail.log_get_surpress_info(domain, b)
+    export set_surpress_info
+
+    set_log_file(path::String) = detail.log_set_file(path)
+    export set_log_file
 
 ####### adjustment.jl
 
@@ -1062,7 +1115,7 @@ module mousetrap
 
     Base.show(io::IO, x::AspectFrame) = mousetrap.show_aux(io, x, :ratio, :child_x_alignment, :child_y_alignment)
 
-####### aspect_frame.jl
+####### blend_mode.jl
 
     @export_enum BlendMode begin
         BLEND_MODE_NONE
@@ -1095,22 +1148,22 @@ module mousetrap
         detail.push_back!(box._internal, widget._internal.cpp_object)
     end
     export push_back!
-    
+
     function push_front!(box::Box, widget::Widget)
         detail.push_front!(box._internal, widget._internal.cpp_object)
     end
     export push_front!
-    
+
     function insert_after!(box::Box, to_append::Widget, after::Widget)
         detail.push_front!(box._internal, to_append._internal.cpp_object, after._internal.cpp_object)
     end
     export insert_after!
-    
+
     function remove!(box::Box, widget::Widget)
         detail.remove!(box._internal, widget._internal.cpp_object)
     end
     export remove!
-    
+
     @export_function Box clear Cvoid
     @export_function Box set_homogeneous! Cvoid b Bool
     @export_function Box get_homogeneous Bool
@@ -1208,6 +1261,8 @@ module mousetrap
     @add_widget_signals CheckButton
     @add_signal_toggled CheckButton
     @add_signal_activate CheckButton
+
+####### check_button.jl
 
 ####### key_file.jl
 
@@ -1710,6 +1765,11 @@ module mousetrap
     @export_function Frame get_label_x_alignment! Cfloat
 
     @add_widget_signals Frame
+
+####### overlay.jl
+
+    @export_type Overlay Widget
+    Overlay(9 =
 
 ####### relative_position.jl
 
