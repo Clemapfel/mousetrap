@@ -1458,7 +1458,7 @@ module mousetrap
 ###### menubar.jl
 
     @export_type MenuBar Widget
-    MenuBar(model::MenuModel) = detail._MenuBar(model._internal)
+    MenuBar(model::MenuModel) = MenuBar(detail._MenuBar(model._internal))
 
     @add_widget_signals MenuBar
 
@@ -1480,7 +1480,7 @@ connect_signal_activate!(app) do app::Application
     end
 
     action_02 = Action("action_02", app)
-    set_stateful_function!(action_02) do action::Action
+    set_stateful_function!(action_02) do action::Action, b::Bool
         println("02", b)
         return !b
     end
@@ -1490,13 +1490,15 @@ connect_signal_activate!(app) do app::Application
 
     add_action!(section, "01", action_01)
     add_action!(section, "02", action_02)
-    add_section!(model, "section", section)
+    add_submenu!(model, "section", section)
 
     popover = PopoverMenu(model)
     popover_button = PopoverButton()
     set_popover_menu!(popover_button, popover)
 
-    set_child!(window, popover_button)
+    menubar = MenuBar(model)
+
+    set_child!(window, menubar)
     present!(window)
 end
 
