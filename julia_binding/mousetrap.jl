@@ -1150,70 +1150,6 @@ module mousetrap
     html_code_to_rgba(code::String) ::RGBA = return detail.html_code_to_rgba(code)
     export html_code_to_rgba
 
-####### image.jl
-
-    @export_enum InterpolationType begin
-        INTERPOLATION_TYPE_NEAREST
-        INTERPOLATION_TYPE_TILES
-        INTERPOLATION_TYPE_BILINEAR
-        INTERPOLATION_TYPE_HYPERBOLIC
-    end
-
-    @export_type Image
-    Image() = Image(detail._Image())
-    Image(path::String) = Image(detail._Image(path))
-    Image(width::Unsigned, height::Unsigned, color::RGBA = RGBA(0, 0, 0, 1)) = Image(detail._Image(width, height, color))
-
-    function create!(image::Image, width::Unsigned, height::Unsigned, color::RGBA = RGBA(0, 0, 0, 1))
-        detail.create!(image._internal, width, height, color)
-    end
-    export create!
-
-    @export_function Image create_from_file! Bool path String
-    @export_function Image save_to_file Bool path String
-    @export_function Image get_n_pixels Int64
-    @export_function Image get_size Vector2f
-
-    function as_scaled(image::Image, size_x::Unsigned, size_y::Unsigned, interpolation::InterpolationType)
-        return Image(detail.as_scaled(image._internal, size_x, size_y, interpolation))
-    end
-    export as_scaled
-
-    function as_cropped(image::Image, offset_x::Integer, offset_y::Integer, new_width::Unsigned, new_height::Unsigned)
-        return Image(detail.as_cropped(image._internal, offset_x, offset_y, new_width, new_height))
-    end
-    export as_cropped
-
-    function set_pixel!(image::Image, x::Unsigned, y::Unsigned, color::RGBA)
-        detail.set_pixel_rgba!(image._internal, x, y, color)
-    end
-    function set_pixel!(image::Image, x::Unsigned, y::Unsigned, color::HSVA)
-        detail.set_pixel_hsva!(image._internal, x, y, color)
-    end
-    export set_pixel!
-
-    function get_pixel(image::Image, x::Unsigned, y::Unsigned) ::RGBA
-        return detail.get_pixel(image._internal, x, y)
-    end
-    export get_pixel
-
-####### image_display.jl
-
-    @export_type ImageDisplay Widget
-    ImageDisplay(path::String) = ImageDisplay(detail._ImageDisplay(path))
-    ImageDisplay(image::Image) = ImageDisplay(detail._ImageDisplay(image._internal))
-    #TODO: ImageDisplay(icon::Icon) = ImageDisplay(detail._ImageDisplay(icon._internal))
-
-    @export_function ImageDisplay create_from_file! Cvoid path String
-
-    create_from_image!(image_display::ImageDisplay, image::Image) = detail.create_from_image!(image_display._internal, image._internal)
-    export create_from_image!
-
-    @export_function ImageDisplay clear! Cvoid
-    @export_function ImageDisplay set_scale! Cvoid scale Cint
-
-    @add_widget_signals ImageDisplay
-
 ####### window.jl
 
     @export_enum WindowCloseRequestResult begin
@@ -1278,6 +1214,115 @@ module mousetrap
     @add_signal_activate_default_widget Window
     @add_signal_activate_focused_widget Window
 
+####### icon.jl
+
+    @export_type Icon
+    Icon() = Icon(detail._Icon())
+
+    @export_type IconTheme
+    IconTheme(window::Window) = IconTheme(detail._IconTheme(window._internal))
+
+    const IconID = String
+
+    # Icon
+
+    @export_function Icon create_from_file! Bool path String
+
+    function create_from_theme!(icon::Icon, theme::IconTheme, id::IconID, square_resolution::Unsigned, scale::Unsigned = Unsigned(1))
+        detail.create_from_theme!(icon._internal, theme._internal.cpp_object, id, square_resolution, scale)
+    end
+    export create_from_theme!
+
+    @export_function Icon get_name IconID
+
+    import Base.==
+    ==(a::Icon, b::Icon) = return detail.compare_icons(a._internal, b_internal)
+
+    import Base.!=
+    !=(a::Icon, b::Icon) = return !Base.==(a, b)
+
+    @export_function Icon get_size Vector2i
+
+    # IconTheme
+
+    function get_icon_names(theme::IconTheme) ::Vector{String}
+        return detail.get_icon_names(theme._internal)
+    end
+    export get_icon_names
+
+    has_icon(theme::IconTheme, icon::Icon) = detail.has_icon_icon(theme._internal, icon._internal)
+    has_icon(theme::IconTheme, id::IconID) = detail.has_icon_id(theme._internal, id)
+    export has_icon
+
+    @export_function IconTheme add_resource_path! Cvoid path String
+    @export_function IconTheme set_resource_path! Cvoid path String
+
+####### image.jl
+
+    @export_enum InterpolationType begin
+        INTERPOLATION_TYPE_NEAREST
+        INTERPOLATION_TYPE_TILES
+        INTERPOLATION_TYPE_BILINEAR
+        INTERPOLATION_TYPE_HYPERBOLIC
+    end
+
+    @export_type Image
+    Image() = Image(detail._Image())
+    Image(path::String) = Image(detail._Image(path))
+    Image(width::Unsigned, height::Unsigned, color::RGBA = RGBA(0, 0, 0, 1)) = Image(detail._Image(width, height, color))
+
+    function create!(image::Image, width::Unsigned, height::Unsigned, color::RGBA = RGBA(0, 0, 0, 1))
+        detail.create!(image._internal, width, height, color)
+    end
+    export create!
+
+    @export_function Image create_from_file! Bool path String
+    @export_function Image save_to_file Bool path String
+    @export_function Image get_n_pixels Int64
+    @export_function Image get_size Vector2f
+
+    function as_scaled(image::Image, size_x::Unsigned, size_y::Unsigned, interpolation::InterpolationType)
+        return Image(detail.as_scaled(image._internal, size_x, size_y, interpolation))
+    end
+    export as_scaled
+
+    function as_cropped(image::Image, offset_x::Integer, offset_y::Integer, new_width::Unsigned, new_height::Unsigned)
+        return Image(detail.as_cropped(image._internal, offset_x, offset_y, new_width, new_height))
+    end
+    export as_cropped
+
+    function set_pixel!(image::Image, x::Unsigned, y::Unsigned, color::RGBA)
+        detail.set_pixel_rgba!(image._internal, x, y, color)
+    end
+    function set_pixel!(image::Image, x::Unsigned, y::Unsigned, color::HSVA)
+        detail.set_pixel_hsva!(image._internal, x, y, color)
+    end
+    export set_pixel!
+
+    function get_pixel(image::Image, x::Unsigned, y::Unsigned) ::RGBA
+        return detail.get_pixel(image._internal, x, y)
+    end
+    export get_pixel
+
+####### image_display.jl
+
+    @export_type ImageDisplay Widget
+    ImageDisplay(path::String) = ImageDisplay(detail._ImageDisplay(path))
+    ImageDisplay(image::Image) = ImageDisplay(detail._ImageDisplay(image._internal))
+    ImageDisplay(icon::Icon) = ImageDisplay(detail._ImageDisplay(icon._internal))
+
+    @export_function ImageDisplay create_from_file! Cvoid path String
+
+    create_from_image!(image_display::ImageDisplay, image::Image) = detail.create_from_image!(image_display._internal, image._internal)
+    export create_from_image!
+
+    create_from_icon!(image_display::ImageDisplay, icon::Icon) = detail.create_from_icon!(image_display._internal, icon._internal)
+    export create_from_icon!
+
+    @export_function ImageDisplay clear! Cvoid
+    @export_function ImageDisplay set_scale! Cvoid scale Cint
+
+    @add_widget_signals ImageDisplay
 
 end # module mousetrap
 
@@ -1292,10 +1337,11 @@ connect_signal_activate!(app) do app::Application
 
     window = Window(app)
 
-    image = Image()
-    create!(image, Unsigned(100), Unsigned(100), RGBA(1, 0, 1, 1))
-    display = ImageDisplay(image)
-    set_child!(window, display)
+    theme = IconTheme(window)
+    for id in get_icon_names(theme)
+        println(id)
+    end
+
     present!(window)
 end
 

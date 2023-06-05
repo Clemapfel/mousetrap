@@ -77,7 +77,7 @@ namespace mousetrap
         return Vector2ui(_internal->resolution);
     }
 
-    void Icon::create_from_file(const std::string& path, size_t square_resolution, size_t scale)
+    bool Icon::create_from_file(const std::string& path, size_t square_resolution, size_t scale)
     {
         if (_internal->scale == 0)
             _internal->scale = 1;
@@ -90,7 +90,7 @@ namespace mousetrap
 
             _internal->native = nullptr;
             _internal->paintable = nullptr;
-            return;
+            return false;
         }
 
         _internal->native = g_file_icon_new(file);
@@ -100,9 +100,10 @@ namespace mousetrap
         g_object_unref(file);
         _internal->resolution = square_resolution;
         _internal->scale = scale;
+        return true;
     }
 
-    void Icon::create_from_theme(const IconTheme& theme, const IconID& id, size_t square_resolution, size_t scale)
+    bool Icon::create_from_theme(const IconTheme& theme, const IconID& id, size_t square_resolution, size_t scale)
     {
         _internal->resolution = square_resolution;
         _internal->scale = scale;
@@ -124,7 +125,10 @@ namespace mousetrap
         {
             log::critical(std::string("In Icon::create_from_theme: ") + error->message, MOUSETRAP_DOMAIN);
             g_error_free(error);
+            return false;
         }
+
+        return true;
     }
 
     IconID Icon::get_name() const
