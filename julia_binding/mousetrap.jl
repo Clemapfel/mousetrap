@@ -631,6 +631,7 @@ module mousetrap
     macro add_signal_close_request(x) return :(@add_signal $x close_request WindowCloseRequestResult) end
     macro add_signal_items_changed(x) return :(@add_signal $x items_changed Cvoid Int32 position Int32 n_removed Int32 n_added) end
     macro add_signal_closed(x) return :(@add_signal $x closed Cvoid) end
+    macro add_signal_text_changed(x) return :(@add_signal $x text_changed Cvoid) end
 
 ####### types.jl
 
@@ -803,6 +804,41 @@ module mousetrap
     export set_stateful_function!
 
     Base.show(io::IO, x::Action) = mousetrap.show_aux(io, x, :id, :enabled, :shortcuts, :is_stateful, :state)
+
+####### cursor_type.jl
+
+    @export_enum CursorType begin
+        CURSOR_TYPE_NONE
+        CURSOR_TYPE_DEFAULT
+        CURSOR_TYPE_HELP
+        CURSOR_TYPE_POINTER
+        CURSOR_TYPE_CONTEXT_MENU
+        CURSOR_TYPE_PROGRESS
+        CURSOR_TYPE_WAIT
+        CURSOR_TYPE_CELL
+        CURSOR_TYPE_CROSSHAIR
+        CURSOR_TYPE_TEXT
+        CURSOR_TYPE_MOVE
+        CURSOR_TYPE_NOT_ALLOWED
+        CURSOR_TYPE_GRAB
+        CURSOR_TYPE_GRABBING
+        CURSOR_TYPE_ALL_SCROLL
+        CURSOR_TYPE_ZOOM_IN
+        CURSOR_TYPE_ZOOM_OUT
+        CURSOR_TYPE_COLUMN_RESIZE
+        CURSOR_TYPE_ROW_RESIZE
+        CURSOR_TYPE_NORTH_RESIZE
+        CURSOR_TYPE_NORTH_EAST_RESIZE
+        CURSOR_TYPE_EAST_RESIZE
+        CURSOR_TYPE_SOUTH_EAST_RESIZE
+        CURSOR_TYPE_SOUTH_RESIZE
+        CURSOR_TYPE_SOUTH_WEST_RESIZE
+        CURSOR_TYPE_WEST_RESIZE
+        CURSOR_TYPE_NORTH_WEST_RESIZE
+    end
+
+    const CURSOR_TYPE_HORIZONTAL_RESIZE = ROW_RESIZE
+    const CURSOR_TYPE_VERTICAL_RESIZE = COLUMN_RESIZE
 
 ####### aspect_frame.jl
 
@@ -1228,6 +1264,38 @@ module mousetrap
     @add_signal_close_request Window
     @add_signal_activate_default_widget Window
     @add_signal_activate_focused_widget Window
+
+####### entry.jl
+
+    @export_type Entry Widget
+    Entry() = Entry(detail._Entry())
+
+    @export_function Entry get_text String
+    @export_function Entry set_text! Cvoid text String
+    @export_function Entry set_max_length! Cvoid n Integer
+    @export_function Entry get_max_length Int64
+    @export_function Entry set_has_frame! Cvoid b Bool
+    @export_function Entry get_has_frame Bool
+    @export_function Entry set_text_visible! Cvoid b Bool
+    @export_function Entry get_text_visible Bool
+
+    function set_primary_icon!(entry::Entry, icon::Icon)
+        detail.set_primary_icon!(entry._internal, icon._internal)
+    end
+    export set_primary_icon!
+
+    @export_function Entry remove_primary_icon! Cvoid
+
+    function set_secondary_icon!(entry::Entry, icon::Icon)
+        detail.set_secondary_icon!(entry._internal, icon._internal)
+    end
+    export set_secondary_icon!
+
+    @export_function Entry remove_secondary_icon! Cvoid
+
+    @add_widget_signals Entry
+    @add_signal_activate Entry
+    @add_signal_text_changed Entry
 
 ####### icon.jl
 

@@ -629,9 +629,41 @@ static void implement_color(jlcxx::Module& module)
 
 static void implement_column_view(jlcxx::Module& module) {}
 
-// ### TODO
+// ### CURSOR_TYPE
 
-static void implement_cursor_type(jlcxx::Module& module) {}
+static void implement_cursor_type(jlcxx::Module& module) 
+{
+    define_enum_in(module, CursorType);
+    module.add_enum_value(CursorType, CURSOR_TYPE, NONE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, DEFAULT);
+    module.add_enum_value(CursorType, CURSOR_TYPE, HELP);
+    module.add_enum_value(CursorType, CURSOR_TYPE, POINTER);
+    module.add_enum_value(CursorType, CURSOR_TYPE, CONTEXT_MENU);
+    module.add_enum_value(CursorType, CURSOR_TYPE, PROGRESS);
+    module.add_enum_value(CursorType, CURSOR_TYPE, WAIT);
+    module.add_enum_value(CursorType, CURSOR_TYPE, CELL);
+    module.add_enum_value(CursorType, CURSOR_TYPE, CROSSHAIR);
+    module.add_enum_value(CursorType, CURSOR_TYPE, TEXT);
+    module.add_enum_value(CursorType, CURSOR_TYPE, MOVE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, NOT_ALLOWED);
+    module.add_enum_value(CursorType, CURSOR_TYPE, GRAB);
+    module.add_enum_value(CursorType, CURSOR_TYPE, GRABBING);
+    module.add_enum_value(CursorType, CURSOR_TYPE, ALL_SCROLL);
+    module.add_enum_value(CursorType, CURSOR_TYPE, ZOOM_IN);
+    module.add_enum_value(CursorType, CURSOR_TYPE, ZOOM_OUT);
+    module.add_enum_value(CursorType, CURSOR_TYPE, COLUMN_RESIZE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, ROW_RESIZE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, NORTH_RESIZE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, NORTH_EAST_RESIZE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, EAST_RESIZE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, SOUTH_EAST_RESIZE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, SOUTH_RESIZE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, SOUTH_WEST_RESIZE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, WEST_RESIZE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, NORTH_WEST_RESIZE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, HORIZONTAL_RESIZE);
+    module.add_enum_value(CursorType, CURSOR_TYPE, VERTICAL_RESIZE);
+}
 
 // ### TODO
 
@@ -641,9 +673,30 @@ static void implement_drag_event_controller(jlcxx::Module& module) {}
 
 static void implement_drop_down(jlcxx::Module& module) {}
 
-// ### TODO
+// ### ENTRY
 
-static void implement_entry(jlcxx::Module& module) {}
+static void implement_entry(jlcxx::Module& module)
+{
+    auto entry = module.add_type(Entry)
+        .constructor()
+        .add_type_method(Entry, get_text)
+        .add_type_method(Entry, set_text, !)
+        .add_type_method(Entry, set_max_length, !)
+        .add_type_method(Entry, get_max_length)
+        .add_type_method(Entry, set_has_frame, !)
+        .add_type_method(Entry, get_has_frame)
+        .add_type_method(Entry, set_text_visible, !)
+        .add_type_method(Entry, get_text_visible)
+        .add_type_method(Entry, set_primary_icon, !)
+        .add_type_method(Entry, remove_primary_icon)
+        .add_type_method(Entry, set_secondary_icon, !)
+        .add_type_method(Entry, remove_primary_icon)
+    ;
+
+    add_widget_signals<Entry>(entry);
+    add_signal_activate<Entry>(entry);
+    add_signal_text_changed<Entry>(entry);
+}
 
 // ### TODO
 
