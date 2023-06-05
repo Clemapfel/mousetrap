@@ -62,4 +62,9 @@ namespace mousetrap
 
         gtk_expander_set_label_widget(GTK_EXPANDER(operator NativeWidget()), widget.operator NativeWidget());
     }
+
+    void Expander::remove_label_widget()
+    {
+        gtk_expander_set_label_widget(GTK_EXPANDER(operator NativeWidget()), nullptr);
+    }
 }

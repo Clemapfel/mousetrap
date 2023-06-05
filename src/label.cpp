@@ -62,6 +62,11 @@ namespace mousetrap
         gtk_label_set_ellipsize(GTK_LABEL(operator NativeWidget()), (PangoEllipsizeMode) mode);
     }
 
+    EllipsizeMode Label::get_ellipsize_mode() const
+    {
+        return (EllipsizeMode) gtk_label_get_ellipsize(GTK_LABEL(operator NativeWidget()));
+    }
+
     void Label::set_wrap_mode(LabelWrapMode mode)
     {
         if (mode == LabelWrapMode::NONE)

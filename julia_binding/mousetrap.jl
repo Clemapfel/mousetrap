@@ -255,6 +255,141 @@ module mousetrap
     import Base: clamp
     clamp(x::AbstractFloat, lower::AbstractFloat, upper::AbstractFloat) = if x < lower return lower elseif x > upper return upper else return x end
 
+###### vector.jl
+
+    using StaticArrays
+
+    """
+    # Vector2{T}
+
+    ## Public Fields
+    x::T
+    y::T
+    """
+    const Vector2{T} = SVector{2, T}
+    export Vector2
+
+    function Base.getproperty(v::Vector2{T}, symbol::Symbol) where T
+        if symbol == :x
+            return v[1]
+        elseif symbol == :y
+            return v[2]
+        else
+            throw(ErrorException("type Vector2 has no field " * string(symbol)))
+        end
+    end
+
+    function Base.setproperty!(v::Vector2{T}, symbol::Symbol, value) where T
+        if symbol == :x
+            v[1] = convert(T, value)
+        elseif symbol == :y
+            v[2] = convert(T, value)
+        else
+            throw(ErrorException("type Vector2 has no field " * string(symbol)))
+        end
+    end
+
+    const Vector2f = Vector2{Cfloat}
+    export Vector2f
+
+    const Vector2i = Vector2{Cint}
+    export Vector2i
+
+    const Vector2ui = Vector2{Csize_t}
+    export Vector2ui
+
+    """
+    # Vector3{T}
+
+    ## Public Fields
+    x::T
+    y::T
+    z::T
+    """
+    const Vector3{T} = SVector{3, T}
+    export Vector3
+
+    function Base.getproperty(v::Vector3{T}, symbol::Symbol) where T
+        if symbol == :x
+            return v[1]
+        elseif symbol == :y
+            return v[2]
+        elseif symbol == :z
+            return v[3]
+        else
+            throw(ErrorException("type Vector3 has no field " * string(symbol)))
+        end
+    end
+
+    function Base.setproperty!(v::Vector2{T}, symbol::Symbol, value) where T
+        if symbol == :x
+            v[1] = convert(T, value)
+        elseif symbol == :y
+            v[2] = convert(T, value)
+        elseif symbol == :z
+            v[3] = convert(T, value)
+        else
+            throw(ErrorException("type Vector2 has no field " * string(symbol)))
+        end
+    end
+
+    const Vector3f = Vector3{Cfloat}
+    export Vector3f
+
+    const Vector3i = Vector3{Cint}
+    export Vector3i
+
+    const Vector3ui = Vector3{Csize_t}
+    export Vector3ui
+
+    """
+    # Vector4{T}
+
+    ## Public Fields
+    x::T
+    y::T
+    z::T
+    """
+    const Vector4{T} = SVector{4, T}
+    export Vector4
+
+    function Base.getproperty(v::Vector4{T}, symbol::Symbol) where T
+        if symbol == :x
+            return v[1]
+        elseif symbol == :y
+            return v[2]
+        elseif symbol == :z
+            return v[3]
+        elseif symbol == :w
+            return v[4]
+        else
+            throw(ErrorException("type Vector4 has no field " * string(symbol)))
+        end
+    end
+
+    function Base.setproperty!(v::Vector2{T}, symbol::Symbol, value) where T
+        if symbol == :x
+            v[1] = convert(T, value)
+        elseif symbol == :y
+            v[2] = convert(T, value)
+        elseif symbol == :z
+            v[3] = convert(T, value)
+        elseif symbol == :w
+            v[4] = convert(T, value)
+        else
+            throw(ErrorException("type Vector2 has no field " * string(symbol)))
+        end
+    end
+
+    const Vector4f = Vector4{Cfloat}
+    export Vector4f
+
+    const Vector4i = Vector4{Cint}
+    export Vector4i
+
+    const Vector4ui = Vector4{Csize_t}
+    export Vector4ui
+
 ####### signal_components.jl
 
     macro add_signal(T, snake_case, Return_t)
@@ -632,6 +767,8 @@ module mousetrap
     macro add_signal_items_changed(x) return :(@add_signal $x items_changed Cvoid Int32 position Int32 n_removed Int32 n_added) end
     macro add_signal_closed(x) return :(@add_signal $x closed Cvoid) end
     macro add_signal_text_changed(x) return :(@add_signal $x text_changed Cvoid) end
+    macro add_signal_redo(x) return :(@add_signal $x redo Cvoid) end
+    macro add_signal_undo(x) return :(@add_signal $x undo Cvoid) end
 
 ####### types.jl
 
@@ -754,6 +891,70 @@ module mousetrap
 
     Base.show(io::IO, x::Application) = mousetrap.show(x, :id)
 
+####### window.jl
+
+    @export_enum WindowCloseRequestResult begin
+        WINDOW_CLOSE_REQUEST_RESULT_ALLOW_CLOSE
+        WINDOW_CLOSE_REQUEST_RESULT_PREVENT_CLOSE
+    end
+
+    @export_type Window Widget
+    Window(app::Application) = Window(detail._Window(app._internal))
+
+    function set_application!(window::Window, app::Application)
+        detail.set_application!(window._internal, app._internal)
+    end
+    export set_application!
+
+    @export_function Window set_maximized! Cvoid
+    @export_function Window set_fullscreen! Cvoid
+    @export_function Window present! Cvoid
+    @export_function Window set_hide_on_close! Cvoid b Bool
+    @export_function Window close! Cvoid
+
+    function set_child!(window::Window, child::Widget)
+        detail.set_child!(window._internal, child._internal.cpp_object)
+    end
+    export set_child!
+
+    @export_function Window remove_child! Cvoid
+    @export_function Window set_destroy_with_parent! Cvoid b Bool
+    @export_function Window get_destroy_with_parent Bool
+    @export_function Window set_title! Cvoid title String
+    @export_function Window get_title String
+
+    function set_titlebar_widget!(window::Window, titlebar::Widget)
+        detail.set_titlebar_widget!(window._internal, titlebar._internal.cpp_object)
+    end
+    export set_titlebar_widget!
+
+    @export_function Window remove_titlebar_widget! Cvoid
+    @export_function Window set_is_modal! Cvoid b Bool
+    @export_function Window get_is_modal Bool
+
+    function set_transient_for(self::Window, other::Window)
+        detail.set_transient_for!(self._itnernal, other._internal)
+    end
+    export set_transient_for!
+
+    @export_function Window set_is_decorated! Cvoid b Bool
+    @export_function Window get_is_decorated Bool
+    @export_function Window set_has_close_button! Cvoid b Bool
+    @export_function Window get_has_close_button Bool
+    @export_function Window set_startup_notification_identifier! Cvoid id String
+    @export_function Window set_focus_visible! Cvoid b Bool
+    @export_function Window get_focus_visible Bool
+
+    function set_default_widget!(window::Window, widget::Widget)
+        detail.set_default_widget!(window._internal, widget._internal.cpp_object)
+    end
+    export set_default_widget!
+
+    @add_widget_signals Window
+    @add_signal_close_request Window
+    @add_signal_activate_default_widget Window
+    @add_signal_activate_focused_widget Window
+
 ####### action.jl
 
     #@export_type Action SignalEmitter
@@ -837,8 +1038,8 @@ module mousetrap
         CURSOR_TYPE_NORTH_WEST_RESIZE
     end
 
-    const CURSOR_TYPE_HORIZONTAL_RESIZE = ROW_RESIZE
-    const CURSOR_TYPE_VERTICAL_RESIZE = COLUMN_RESIZE
+    const CURSOR_TYPE_HORIZONTAL_RESIZE = CURSOR_TYPE_ROW_RESIZE
+    const CURSOR_TYPE_VERTICAL_RESIZE = CURSOR_TYPE_COLUMN_RESIZE
 
 ####### aspect_frame.jl
 
@@ -1201,161 +1402,6 @@ module mousetrap
     html_code_to_rgba(code::String) ::RGBA = return detail.html_code_to_rgba(code)
     export html_code_to_rgba
 
-####### window.jl
-
-    @export_enum WindowCloseRequestResult begin
-        WINDOW_CLOSE_REQUEST_RESULT_ALLOW_CLOSE
-        WINDOW_CLOSE_REQUEST_RESULT_PREVENT_CLOSE
-    end
-
-    @export_type Window Widget
-    Window(app::Application) = Window(detail._Window(app._internal))
-
-    function set_application!(window::Window, app::Application)
-        detail.set_application!(window._internal, app._internal)
-    end
-    export set_application!
-
-    @export_function Window set_maximized! Cvoid
-    @export_function Window set_fullscreen! Cvoid
-    @export_function Window present! Cvoid
-    @export_function Window set_hide_on_close! Cvoid b Bool
-    @export_function Window close! Cvoid
-
-    function set_child!(window::Window, child::Widget)
-        detail.set_child!(window._internal, child._internal.cpp_object)
-    end
-    export set_child!
-
-    @export_function Window remove_child! Cvoid
-    @export_function Window set_destroy_with_parent! Cvoid b Bool
-    @export_function Window get_destroy_with_parent Bool
-    @export_function Window set_title! Cvoid title String
-    @export_function Window get_title String
-
-    function set_titlebar_widget!(window::Window, titlebar::Widget)
-        detail.set_titlebar_widget!(window._internal, titlebar._internal.cpp_object)
-    end
-    export set_titlebar_widget!
-
-    @export_function Window remove_titlebar_widget! Cvoid
-    @export_function Window set_is_modal! Cvoid b Bool
-    @export_function Window get_is_modal Bool
-
-    function set_transient_for(self::Window, other::Window)
-        detail.set_transient_for!(self._itnernal, other._internal)
-    end
-    export set_transient_for!
-
-    @export_function Window set_is_decorated! Cvoid b Bool
-    @export_function Window get_is_decorated Bool
-    @export_function Window set_has_close_button! Cvoid b Bool
-    @export_function Window get_has_close_button Bool
-    @export_function Window set_startup_notification_identifier! Cvoid id String
-    @export_function Window set_focus_visible! Cvoid b Bool
-    @export_function Window get_focus_visible Bool
-
-    function set_default_widget!(window::Window, widget::Widget)
-        detail.set_default_widget!(window._internal, widget._internal.cpp_object)
-    end
-    export set_default_widget!
-
-    @add_widget_signals Window
-    @add_signal_close_request Window
-    @add_signal_activate_default_widget Window
-    @add_signal_activate_focused_widget Window
-
-####### entry.jl
-
-    @export_type Entry Widget
-    Entry() = Entry(detail._Entry())
-
-    @export_function Entry get_text String
-    @export_function Entry set_text! Cvoid text String
-    @export_function Entry set_max_length! Cvoid n Integer
-    @export_function Entry get_max_length Int64
-    @export_function Entry set_has_frame! Cvoid b Bool
-    @export_function Entry get_has_frame Bool
-    @export_function Entry set_text_visible! Cvoid b Bool
-    @export_function Entry get_text_visible Bool
-
-    function set_primary_icon!(entry::Entry, icon::Icon)
-        detail.set_primary_icon!(entry._internal, icon._internal)
-    end
-    export set_primary_icon!
-
-    @export_function Entry remove_primary_icon! Cvoid
-
-    function set_secondary_icon!(entry::Entry, icon::Icon)
-        detail.set_secondary_icon!(entry._internal, icon._internal)
-    end
-    export set_secondary_icon!
-
-    @export_function Entry remove_secondary_icon! Cvoid
-
-    @add_widget_signals Entry
-    @add_signal_activate Entry
-    @add_signal_text_changed Entry
-
-####### expander.jl
-
-    @export_type Expander Widget
-    Expander() = Expander(detail._Expander())
-
-    function set_child!(expander::Expander, child::Widget)
-        detail.set_child!(expander._internal, child._internal.cpp_object)
-    end
-    export set_child!
-
-    @export_function Expander remove_child! Cvoid
-
-    function set_label_widget!(expander::Expander, child::Widget)
-        detail.set_label_widget!(expander._internal, child._internal.cpp_object)
-    end
-    export set_label_widget!
-
-    @export_function Expander remove_label_widget! Cvoid
-
-    @add_widget_signals Expander
-    @add_signal_activate Expander
-
-####### fixed.jl
-
-    @export_type Fixed Widget
-    Fixed() = Fixed(detail._Fixed())
-
-    add_child!(fixed::Fixed, child::Widget, position::Vector2f) = detail.add_child!(fixed._internal, child._internal.cpp_object, position)
-    export add_child!
-
-    remove_child!(fixed::Fixed, child::Widget) = detail.remove_child!(fixed._internal, child._internal.cpp_object)
-    export remove_child!
-
-    set_child_position!(fixed::Fixed, child::Widget, position::Vector2f) = detail.set_child_position!(fixed._internal, child._internal.cpp_object, position)
-    export set_child_position!
-
-    get_child_position(fixed::Fixed, child::Widget) ::Vector2f = detail.get_child_position(fixed._internal, child._internal.cpp_object)
-    export get_child_position!
-
-    @add_widget_signals Fixed
-
-####### icon.jl
-
-    @export_type Frame
-    Frame() = Frame(detail._Frame())
-
-    set_child!(frame::Frame, child::Widget) = detail.set_child!(fixed._internal, child._internal.cpp_object)
-    export set_child!
-
-    set_label_widget!(frame::Frame, label::Widget) = detail.set_label_widget!(frame._internal, label._internal.cpp_object)
-    export set_label_widget!
-
-    @export_function Frame remove_child! Cvoid
-    @export_function Frame remove_label_widget! Cvoid
-    @export_function Frame set_label_x_alignment! Cvoid x AbstractFloat
-    @export_function Frame get_label_x_alignment! Cfloat
-
-    @add_widget_signals Frame
-
 ####### icon.jl
 
     @export_type Icon
@@ -1465,6 +1511,179 @@ module mousetrap
     @export_function ImageDisplay set_scale! Cvoid scale Cint
 
     @add_widget_signals ImageDisplay
+
+####### entry.jl
+
+    @export_type Entry Widget
+    Entry() = Entry(detail._Entry())
+
+    @export_function Entry get_text String
+    @export_function Entry set_text! Cvoid text String
+    @export_function Entry set_max_length! Cvoid n Integer
+    @export_function Entry get_max_length Int64
+    @export_function Entry set_has_frame! Cvoid b Bool
+    @export_function Entry get_has_frame Bool
+    @export_function Entry set_text_visible! Cvoid b Bool
+    @export_function Entry get_text_visible Bool
+
+    function set_primary_icon!(entry::Entry, icon::Icon)
+        detail.set_primary_icon!(entry._internal, icon._internal)
+    end
+    export set_primary_icon!
+
+    @export_function Entry remove_primary_icon! Cvoid
+
+    function set_secondary_icon!(entry::Entry, icon::Icon)
+        detail.set_secondary_icon!(entry._internal, icon._internal)
+    end
+    export set_secondary_icon!
+
+    @export_function Entry remove_secondary_icon! Cvoid
+
+    @add_widget_signals Entry
+    @add_signal_activate Entry
+    @add_signal_text_changed Entry
+
+####### expander.jl
+
+    @export_type Expander Widget
+    Expander() = Expander(detail._Expander())
+
+    function set_child!(expander::Expander, child::Widget)
+        detail.set_child!(expander._internal, child._internal.cpp_object)
+    end
+    export set_child!
+
+    @export_function Expander remove_child! Cvoid
+
+    function set_label_widget!(expander::Expander, child::Widget)
+        detail.set_label_widget!(expander._internal, child._internal.cpp_object)
+    end
+    export set_label_widget!
+
+    @export_function Expander remove_label_widget! Cvoid
+
+    @add_widget_signals Expander
+    @add_signal_activate Expander
+
+####### fixed.jl
+
+    @export_type Fixed Widget
+    Fixed() = Fixed(detail._Fixed())
+
+    add_child!(fixed::Fixed, child::Widget, position::Vector2f) = detail.add_child!(fixed._internal, child._internal.cpp_object, position)
+    export add_child!
+
+    remove_child!(fixed::Fixed, child::Widget) = detail.remove_child!(fixed._internal, child._internal.cpp_object)
+    export remove_child!
+
+    set_child_position!(fixed::Fixed, child::Widget, position::Vector2f) = detail.set_child_position!(fixed._internal, child._internal.cpp_object, position)
+    export set_child_position!
+
+    get_child_position(fixed::Fixed, child::Widget) ::Vector2f = detail.get_child_position(fixed._internal, child._internal.cpp_object)
+    export get_child_position!
+
+    @add_widget_signals Fixed
+
+####### label.jl
+
+    @export_enum JustifyMode begin
+        JUSTIFY_MODE_LEFT
+        JUSTIFY_MODE_RIGHT
+        JUSTIFY_MODE_CENTER
+        JUSTIFY_MODE_FILL
+    end
+
+    @export_enum EllipsizeMode begin
+        ELLIPSIZE_MODE_NONE
+        ELLIPSIZE_MODE_START
+        ELLIPSIZE_MODE_MIDDLE
+        ELLIPSIZE_MODE_END
+    end
+
+    @export_enum LabelWrapMode begin
+        LABEL_WRAP_MODE_NONE
+        LABEL_WRAP_MODE_ONLY_ON_WORD
+        LABEL_WRAP_MODE_ONLY_ON_CHAR
+        LABEL_WRAP_MODE_WORD_OR_CHAR
+    end
+
+    @export_type Label Widget
+    Label() = Label(detail._Label())
+    Label(formatted_string::String) = Label(detail._Label(formatted_string))
+
+    @export_function Label set_text! Cvoid text String
+    @export_function Label get_text String
+    @export_function Label set_use_markup! Cvoid b Bool
+    @export_function Label get_use_markup Bool
+    @export_function Label set_ellipsize_mode! Cvoid mode EllipsizeMode
+    @export_function Label get_ellipsize_mode EllipsizeMode
+    @export_function Label set_wrap_mode mode! Cvoid LabelWrapMode
+    @export_function Label get_wrap_mode LabelWrapMode
+    @export_function Label set_justify_mode! mode Cvoid JustifyMode
+    @export_function Label get_justify_mode JustifyMode
+    @export_function Label set_max_width_chars! Cvoid n Unsigned
+    @export_function Label get_max_width_chars UInt64
+    @export_function Label set_x_alignment! Cvoid x AbstractFloat
+    @export_function Label get_x_alignment Cfloat
+    @export_function Label set_y_alignment! Cvoid x AbstractFloat
+    @export_function Label get_y_alignment Cfloat
+    @export_function Label set_selectable! Cvoid b Bool
+    @export_function Label get_selectable Bool
+
+    @add_widget_signals Label
+
+####### text_view.jl
+
+    @export_type TextView Widget
+
+    TextView() = TextView(detail._TextView())
+
+    @export_function TextView get_text String
+    @export_function TextView set_text! Cvoid text String
+    @export_function TextView set_cursor_visible! Cvoid b Bool
+    @export_function TextView get_cursor_visible Bool
+    @export_function TextView undo! Cvoid
+    @export_function TextView redo! Cvoid
+    @export_function TextView set_was_modified! Cvoid b Bool
+    @export_function TextView get_was_modified Bool
+    @export_function TextView set_editable! Cvoid b Bool
+    @export_function TextView get_editable Bool
+    @export_function TextView set_justify_mode! Cvoid mode JustifyMode
+    @export_function TextView get_justify_mode JustifyMode
+    @export_function TextView set_left_margin! Cvoid margin AbstractFloat
+    @export_function TextView get_left_margin Cfloat
+    @export_function TextView set_right_margin! Cvoid margin AbstractFloat
+    @export_function TextView get_right_margin Cfloat
+    @export_function TextView set_left_margin! Cvoid margin AbstractFloat
+    @export_function TextView get_top_margin Cfloat
+    @export_function TextView set_left_margin! Cvoid margin AbstractFloat
+    @export_function TextView get_top_margin Cfloat
+    @export_function TextView set_bottom_margin! Cvoid margin AbstractFloat
+    @export_function TextView get_bottom_margin Cfloat
+
+    @add_widget_signals TextView
+    @add_signal_undo TextView
+    @add_signal_redo TextView
+    @add_signal_text_changed TextView
+
+####### frame.jl
+
+    @export_type Frame
+    Frame() = Frame(detail._Frame())
+
+    set_child!(frame::Frame, child::Widget) = detail.set_child!(fixed._internal, child._internal.cpp_object)
+    export set_child!
+
+    set_label_widget!(frame::Frame, label::Widget) = detail.set_label_widget!(frame._internal, label._internal.cpp_object)
+    export set_label_widget!
+
+    @export_function Frame remove_child! Cvoid
+    @export_function Frame remove_label_widget! Cvoid
+    @export_function Frame set_label_x_alignment! Cvoid x AbstractFloat
+    @export_function Frame get_label_x_alignment! Cfloat
+
+    @add_widget_signals Frame
 
 ####### relative_position.jl
 
@@ -1601,31 +1820,10 @@ connect_signal_activate!(app) do app::Application
 
     window = Window(app)
 
-    action_01 = Action("action_01", app)
-    set_function!(action_01) do action::Action
-        println("01")
-    end
+    label = TextView()
+    set_text!(label, "abc\ndef")
 
-    action_02 = Action("action_02", app)
-    set_stateful_function!(action_02) do action::Action, b::Bool
-        println("02", b)
-        return !b
-    end
-
-    model = MenuModel()
-    section = MenuModel()
-
-    add_action!(section, "01", action_01)
-    add_action!(section, "02", action_02)
-    add_submenu!(model, "section", section)
-
-    popover = PopoverMenu(model)
-    popover_button = PopoverButton()
-    set_popover_menu!(popover_button, popover)
-
-    menubar = MenuBar(model)
-
-    set_child!(window, menubar)
+    set_child!(window, label)
     present!(window)
 end
 

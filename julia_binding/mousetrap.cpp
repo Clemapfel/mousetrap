@@ -690,7 +690,7 @@ static void implement_entry(jlcxx::Module& module)
         .add_type_method(Entry, set_primary_icon, !)
         .add_type_method(Entry, remove_primary_icon)
         .add_type_method(Entry, set_secondary_icon, !)
-        .add_type_method(Entry, remove_primary_icon)
+        .add_type_method(Entry, remove_secondary_icon)
     ;
 
     add_widget_signals<Entry>(entry);
@@ -914,7 +914,14 @@ static void implement_image_display(jlcxx::Module& module)
 
 // ### TODO
 
-static void implement_justify_mode(jlcxx::Module& module) {}
+static void implement_justify_mode(jlcxx::Module& module)
+{
+    define_enum_in(module, JustifyMode);
+    module.add_enum_value(JustifyMode, JUSTIFY_MODE, LEFT);
+    module.add_enum_value(JustifyMode, JUSTIFY_MODE, RIGHT);
+    module.add_enum_value(JustifyMode, JUSTIFY_MODE, CENTER);
+    module.add_enum_value(JustifyMode, JUSTIFY_MODE, FILL);
+}
 
 // ### TODO
 
@@ -1020,7 +1027,45 @@ static void implement_key_file(jlcxx::Module& module)
 
 // ### TODO
 
-static void implement_label(jlcxx::Module& module) {}
+static void implement_label(jlcxx::Module& module)
+{
+    define_enum_in(module, EllipsizeMode)
+    module.add_enum_value(EllipsizeMode, ELLIPSIZE_MODE, NONE);
+    module.add_enum_value(EllipsizeMode, ELLIPSIZE_MODE, START);
+    module.add_enum_value(EllipsizeMode, ELLIPSIZE_MODE, MIDDLE);
+    module.add_enum_value(EllipsizeMode, ELLIPSIZE_MODE, END);
+
+    define_enum_in(module, LabelWrapMode)
+    module.add_enum_value(LabelWrapMode, LABEL_WRAP_MODE, NONE);
+    module.add_enum_value(LabelWrapMode, LABEL_WRAP_MODE, ONLY_ON_WORD);
+    module.add_enum_value(LabelWrapMode, LABEL_WRAP_MODE, ONLY_ON_CHAR);
+    module.add_enum_value(LabelWrapMode, LABEL_WRAP_MODE, WORD_OR_CHAR);
+
+    auto label = module.add_type(Label)
+        .add_constructor()
+        .add_constructor(const std::string&)
+        .add_type_method(Label, set_text, !)
+        .add_type_method(Label, get_text)
+        .add_type_method(Label, set_use_markup, !)
+        .add_type_method(Label, get_use_markup)
+        .add_type_method(Label, set_ellipsize_mode, !)
+        .add_type_method(Label, get_ellipsize_mode)
+        .add_type_method(Label, set_wrap_mode, !)
+        .add_type_method(Label, get_wrap_mode)
+        .add_type_method(Label, set_justify_mode, !)
+        .add_type_method(Label, get_justify_mode)
+        .add_type_method(Label, set_max_width_chars, !)
+        .add_type_method(Label, get_max_width_chars)
+        .add_type_method(Label, set_x_alignment, !)
+        .add_type_method(Label, get_x_alignment)
+        .add_type_method(Label, set_y_alignment, !)
+        .add_type_method(Label, get_y_alignment)
+        .add_type_method(Label, set_selectable, !)
+        .add_type_method(Label, get_selectable)
+    ;
+
+    add_widget_signals<Label>(label);
+}
 
 // ### TODO
 
@@ -1301,7 +1346,37 @@ static void implement_switch(jlcxx::Module& module) {}
 
 // ### TODO
 
-static void implement_text_view(jlcxx::Module& module) {}
+static void implement_text_view(jlcxx::Module& module)
+{
+    auto text_view = module.add_type(TextView)
+        .add_constructor()
+        .add_type_method(TextView, get_text)
+        .add_type_method(TextView, set_text, !)
+        .add_type_method(TextView, set_cursor_visible, !)
+        .add_type_method(TextView, get_cursor_visible)
+        .add_type_method(TextView, undo, !)
+        .add_type_method(TextView, redo, !)
+        .add_type_method(TextView, set_was_modified, !)
+        .add_type_method(TextView, get_was_modified)
+        .add_type_method(TextView, set_editable, !)
+        .add_type_method(TextView, get_editable)
+        .add_type_method(TextView, set_justify_mode, !)
+        .add_type_method(TextView, get_justify_mode)
+        .add_type_method(TextView, set_left_margin, !)
+        .add_type_method(TextView, get_left_margin)
+        .add_type_method(TextView, set_right_margin, !)
+        .add_type_method(TextView, get_right_margin)
+        .add_type_method(TextView, set_top_margin, !)
+        .add_type_method(TextView, get_top_margin)
+        .add_type_method(TextView, set_bottom_margin, !)
+        .add_type_method(TextView, get_bottom_margin)
+    ;
+
+    add_widget_signals<TextView>(text_view);
+    add_signal_text_changed<TextView>(text_view);
+    add_signal_undo<TextView>(text_view);
+    add_signal_redo<TextView>(text_view);
+}
 
 // ### TODO
 
@@ -1422,10 +1497,13 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_grid(module);
     implement_grid_view(module);
     implement_header_bar(module);
-    implement_justify_mode(module);
     implement_key_event_controller(module);
     implement_key_file(module);
+
+    implement_justify_mode(module);
     implement_label(module);
+    implement_text_view(module);
+
     implement_level_bar(module);
     implement_list_view(module);
     implement_log(module);
@@ -1469,7 +1547,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_stylus_event_controller(module);
     implement_swipe_event_controller(module);
     implement_switch(module);
-    implement_text_view(module);
     implement_texture(module);
     implement_toggle_button(module);
     implement_transition_type(module);
