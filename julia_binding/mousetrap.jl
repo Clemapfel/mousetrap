@@ -1769,7 +1769,20 @@ module mousetrap
 ####### overlay.jl
 
     @export_type Overlay Widget
-    Overlay(9 =
+    Overlay() = Overlay(detail._Overlay())
+
+    set_child!(overlay::Overlay, child::Widget) = detail.set_child!(overlay._internal, child._internal.cpp_object)
+    export set_child!
+
+    function add_overlay!(overlay::Overlay, child::Widget; include_in_measurement::Bool = true, clip::Bool = true)
+        detail.add_overlay!(overlay._internal, child._internal.cpp_object, include_in_measurement, clip)
+    end
+    export add_overlay!
+
+    remove_overlay!(overlay::Overlay, child::Widget) = detail.remove_overlay(overlay._internal, child._internal.cpp_object)
+    export remove_overlay!
+
+    @add_widget_signals Overlay
 
 ####### relative_position.jl
 
