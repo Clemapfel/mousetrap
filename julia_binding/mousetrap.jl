@@ -1297,6 +1297,28 @@ module mousetrap
     @add_signal_activate Entry
     @add_signal_text_changed Entry
 
+####### entry.jl
+
+    @export_type Expander Widget
+    Expander() = Expander(detail._Expander())
+
+    function set_child!(expander::Expander, child::Widget)
+        detail.set_child!(expander._internal, child._internal.cpp_object)
+    end
+    export set_child!
+
+    @export_function Expander remove_child! Cvoid
+
+    function set_label_widget!(expander::Expander, child::Widget)
+        detail.set_label_widget!(expander._internal, child._internal.cpp_object)
+    end
+    export set_label_widget!
+
+    @export_function Expander remove_label_widget! Cvoid
+
+    @add_widget_signals Expander
+    @add_signal_activate Expander
+
 ####### icon.jl
 
     @export_type Icon
