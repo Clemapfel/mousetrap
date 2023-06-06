@@ -193,6 +193,7 @@ set(MOUSETRAP_HEADER_FILES
         include/mousetrap/inline/signal_emitter.inl
         include/mousetrap/inline/spin_button.inl
         include/mousetrap/inline/widget.inl
+        include/mousetrap/key_codes.hpp
 )
 
 set(MOUSETRAP_SOURCE_FILES
