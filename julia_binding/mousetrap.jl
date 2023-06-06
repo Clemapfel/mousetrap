@@ -757,6 +757,8 @@ module mousetrap
         end
     end
 
+    ## TODO: JUMP
+
     macro add_signal_activate(x) return :(@add_signal $x activate Cvoid) end
     macro add_signal_shutdown(x) return :(@add_signal $x shutdown Cvoid) end
     macro add_signal_clicked(x) return :(@add_signal $x clicked Cvoid) end
@@ -772,6 +774,35 @@ module mousetrap
     macro add_signal_drag_begin(x) return :(@add_signal $x drag_begin Cvoid Cdouble start_x Cdouble start_y)
     macro add_signal_drag(x) return :(@add_signal $x drag Cvoid Cdouble offset_x Cdouble offset_y)
     macro add_signal_drag_end(x) return :(@add_signal $x drag_end Cvoid Cdouble offset_x Cdouble offset_y)
+    macro add_signal_click_pressed(x) return :(@add_signal $x click_pressed Cvoid Cint n_press Cdouble x Cdouble y)
+    macro add_signal_click_released(x) return :(@add_signal $x click_released Cvoid Cint n_press Cdouble x Cdouble y)
+    macro add_signal_click_stopped(x) return :(@add_signal $x click_stopped Cvoid)
+    macro add_signal_focus_gained(x) return :(@add_signal $x focus_gained Cvoid)
+    macro add_signal_focus_lost(x) return :(@add_signal $x focus_lost Cvoid)
+    macro add_signal_key_pressed(x) return :(@add_signal $x key_pressed Bool Cint key_value Cint key_code ModifierState modifier)        
+    macro add_signal_key_released(x) return :(@add_signal $x key_released Bool Cint key_value Cint key_code ModifierState modifier)        
+    macro add_signal_modifiers_changed(x) return :(@add_signal $x modifiers_changed Bool Cint key_value Cint key_code ModifierState modifier)        
+    macro add_signal_pressed(x) return :(@add_signal $x pressed Cvoid Cdouble x Cdouble y)
+    macro add_signal_press_cancelled(x) return :(@add_signal $x press_cancelled Cvoid)
+    macro add_signal_motion_enter(x) return :(@add_signal $x motion_enter Cvoid Cdouble x Cdouble y)
+    macro add_signal_motion(x) return :(@add_signal $x motion Cvoid Cdouble x Cdouble y)
+    macro add_signal_motion_leave(x) return :(@add_signal $x motion_leave Cvoid)
+    macro add_signal_scale_changed(x) return :(@add_signal $x scale_changed Cvoid Cdouble scale)
+    macro add_signal_rotation_changed(x) return :(@add_signal $x rotation_changed Cvoid Cdouble angle_absolute_rads Cdouble angle_delta_rads)
+    macro add_signal_scroll_decelerate(x) return :(@add_signal $x scroll_decelerate Cvoid Cdouble x_velocity Cdouble y_velocity)
+    macro add_signal_scroll_begin(x) return :(@add_signal $x scroll_begin Cvoid)
+    macro add_signal_scroll(x) return :(@add_signal $x scroll Bool Cdouble delta_x Cdouble delta_y)
+    macro add_signal_scroll_end(x) return :(@add_signal $x scroll_end Cvoid)
+
+
+
+
+
+
+
+
+
+
 
 ####### types.jl
 
@@ -830,7 +861,7 @@ module mousetrap
     set_surpress_info(domain::LogDomain, b::Bool) = detail.log_set_surpress_info(domain, b)
     export set_surpress_info
 
-    get_surpress_debug(domain::LogDomain) ::Bool = detail.log_get_surpress_debug(domain, b)
+    get_surpress_debug(dbut thomain::LogDomain) ::Bool = detail.log_get_surpress_debug(domain, b)
     export set_surpress_debug
 
     get_surpress_info(domain::LogDomain) ::Bool = detail.log_get_surpress_info(domain, b)
@@ -1955,7 +1986,144 @@ module mousetrap
 
 ###### drag_event_controller.jl
 
+    @export_type DragEventController SingleClickGesture
+    DragEventController() = DragEventController(detail._DragEventController())
+
+    get_start_position(controller::DragEventController) = return detail.get_start_position(controller._internal)
+    export get_start_position
+
+    get_current_offset(controller::DragEventController) = return detail.get_current_offset(controller._internal)
+    export get_current_offset
+
+    @add_signal_drag_begin DragEventController
+    @add_signal_drag DragEventController
+    @add_signal_drag_end DragEventController
+
+###### click_event_controller.jl
+
+    @export_type ClickEventController SingleClickGesture
+    ClickEventController() = ClickEventController(detail._ClickEventController())
+
+    @add_signal_click_pressed ClickEventController
+    @add_signal_click_released ClickEventController
+    @add_signal_click_stopped ClickEventController
+
+###### focus_event_controller.jl
+
+    @export_type FocusEventController EventController
+    FocusEventController() = FocusEventController(detail._FocusEventController())
+
+    @export_function FocusEventController self_or_child_is_focused Bool
+    @export_function FocusEventController self_is_focused Bool
+
+    @add_signal_focus_gained FocusEventController
+    @add_signal_focus_lost FocusEventController
+
+###### key_event_controller.jl
+
+    @export_type KeyEventController EventController
+    KeyEventController() = KeyEventController(detail._KeyEventController())
+
+    @export_function KeyEventController Bool trigger String
+
+    const ModifierState = detail._ModifierState
+    export ModifierState
+
+    const KeyCode = Cint
+    export KeyCode
+
+    const KeyValue = Cint
+    export KeyValue
+
+    @add_signal_key_pressed KeyEventController
+    @add_signal_key_released KeyEventController
+    @add_signal_modifiers_changed KeyEventController
+
+    shift_pressed(modifier_state::ModifierState) ::Bool = return detail.shift_pressed(modifier_state);
+    export shift_pressed
+
+    control_pressed(modifier_state::ModifierState) ::Bool = return detail.control_pressed(modifier_state);
+    export shift_pressed
+
+    alt_pressed(modifier_state::ModifierState) ::Bool = return detail.alt_pressed(modifier_state);
+    export alt_pressed
+
+    shift_pressed(modifier_state::ModifierState) ::Bool = return detail.shift_pressed(modifier_state);
+    export shift_pressed
+
+    mouse_button_01_pressed(modifier_state::ModifierState) ::Bool = return detail.mouse_button_01_pressed(modifier_state);
+    export shift_mouse_button_01_pressedpressed
+
+    mouse_button_02_pressed(modifier_state::ModifierState) ::Bool = return detail.mouse_button_02_pressed(modifier_state);
+    export mouse_button_02_pressed
+
+###### long_press_event_controller.jl
+
+    @export_type LongPressEventController SingleClickGesture
+    LongPressEventController() = LongPressEventController(detail._LongPressEventController())
+
+    @export_function LongPressEventController set_delay_factor Cvoid factor AbstractFloat
+    @export_function LongPressEventController get_delay_factor Cfloat
+
+    @add_signal_pressed LongPressEventController
+    @add_signal_press_cancelled LongPressEventController
+
+###### motion_event_controller.jl
+
+    @export_type MotionEventController EventController
+    MotionEventController() = MotionEventController(detail._MotionEventController())
+
+    @add_signal_motion_enter MotionEventController
+    @add_signal_motion MotionEventController
+    @add_signal_motion_leave MotionEventController
+
+###### pinch_zoom_event_controller.jl
+
+    @export_type PinchZoomEventController EventController
+    PinchZoomEventController() = PinchZoomEventController(detail._PinchZoomEventController())
+
+    @export_function PinchZoomEventController get_scale_delta Cfloat
+
+    @add_signal_scale_changed PinchZoomEventController
+
+###### rotate_event_controller.jl
+
+    @export_type RotateEventController EventController
+    RotateEventController() = RotateEventController(detail._RotateEventController())
+
+    get_angle_delta(controller::RotateEventController) ::Angle = return radians(detail.get_angle_delta(controller._internal))
+
+    @add_signal_rotation_changed RotateEventController
     
+###### scroll_event_controller.jl
+
+    @export_type ScrollEventController EventController
+    ScrollEventController(; emit_vertical = true, emit_horizontal = true) = ScrollEventController(detail._ScrollEventController(emit_vertical, emit_horizontal))
+
+    @add_signal_kinetic_scroll ScrollEventController
+    @add_signal_scroll_begin ScrollEventController
+    @add_signal_scroll ScrollEventController
+    @add_signal_scroll_end ScrollEventController
+
+###### shortcut_event_controller.jl
+
+    @export_type ShortcutEventController EventController
+    ShortcutEventController() = ShortcutEventController(detail._ShortcutEventController())
+
+    add_action!(shortcut_controller::ShortcutEventController, action::Action) = detail.add_action!(shortcut_controller._internal, action._internal)
+    export add_action!
+
+    @export_enum ShortcutScope begin
+        SHORTCUT_SCOPE_LOCAL
+        SHORTCUT_SCOPE_MANAGED
+        SHORTCUT_SCOPE_GLOBAL
+    end
+
+    set_scope!(controller::ShortcutController, scope::ShortcutScope) = detail.set_scope!(controller._internal, scope)
+    export set_scope!
+
+    get_scope(controller::ShortcutController) ::ShortcutScope = return detail.get_scope(controller._internal)
+    export get_scope
 
 ###### menubar.jl
 
@@ -1963,6 +2131,10 @@ module mousetrap
     MenuBar(model::MenuModel) = MenuBar(detail._MenuBar(model._internal))
 
     @add_widget_signals MenuBar
+
+###### key_code.jl
+
+    # TODO
 
 end # module mousetrap
 

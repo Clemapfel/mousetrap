@@ -592,7 +592,7 @@ static void implement_check_button(jlcxx::Module& module)
     add_signal_activate<CheckButton>(check_button);
 }
 
-// ### TODO
+// ### CLICK EVENT CONTROLLER
 
 static void implement_click_event_controller(jlcxx::Module& module)
 {
@@ -609,7 +609,7 @@ static void implement_click_event_controller(jlcxx::Module& module)
 
 static void implement_clipboard(jlcxx::Module& module) {}
 
-// ### TODO
+// ### COLOR
 
 static void implement_color(jlcxx::Module& module)
 {
@@ -674,7 +674,7 @@ static void implement_cursor_type(jlcxx::Module& module)
     module.add_enum_value(CursorType, CURSOR_TYPE, VERTICAL_RESIZE);
 }
 
-// ### TODO
+// ### DRAG EVENT CONTROLLER
 
 static void implement_drag_event_controller(jlcxx::Module& module)
 {
@@ -722,7 +722,7 @@ static void implement_entry(jlcxx::Module& module)
     add_signal_text_changed<Entry>(entry);
 }
 
-// ### TODO
+// ### EVENT CONTROLLER
 
 static void implement_event_controller(jlcxx::Module& module)
 {
@@ -769,7 +769,7 @@ static void implement_event_controller(jlcxx::Module& module)
     });
 }
 
-// ### TODO
+// ### EXPANDER
 
 static void implement_expander(jlcxx::Module& module)
 {
@@ -806,7 +806,7 @@ static void implement_file_monitor(jlcxx::Module& module) {}
 
 static void implement_file_system(jlcxx::Module& module) {}
 
-// ### TODO
+// ### FIXED
 
 static void implement_fixed(jlcxx::Module& module)
 {
@@ -829,7 +829,7 @@ static void implement_fixed(jlcxx::Module& module)
     add_widget_signals<Fixed>(fixed);
 }
 
-// ### TODO
+// ### FOCUS EVENT CONTROLLER
 
 static void implement_focus_event_controller(jlcxx::Module& module)
 {
@@ -843,7 +843,7 @@ static void implement_focus_event_controller(jlcxx::Module& module)
     add_signal_focus_lost<FocusEventController>(focus);
 }
 
-// ### TODO
+// ### FRAME
 
 static void implement_frame(jlcxx::Module& module)
 {
@@ -892,7 +892,7 @@ static void implement_grid_view(jlcxx::Module& module) {}
 
 static void implement_header_bar(jlcxx::Module& module) {}
 
-// ### TODO
+// ### ICON
 
 static void implement_icon(jlcxx::Module& module)
 {
@@ -1000,7 +1000,7 @@ static void implement_justify_mode(jlcxx::Module& module)
     module.add_enum_value(JustifyMode, JUSTIFY_MODE, FILL);
 }
 
-// ### TODO
+// ### KEY EVENT CONTROLLER
 
 static void export_key_codes(jlcxx::Module& module);
 
@@ -1137,7 +1137,7 @@ static void implement_key_file(jlcxx::Module& module)
     #undef define_access_value_as
 }
 
-// ### TODO
+// ### LABEL
 
 static void implement_label(jlcxx::Module& module)
 {
@@ -1212,7 +1212,7 @@ static void implement_level_bar(jlcxx::Module& module)
 
 static void implement_list_view(jlcxx::Module& module) {}
 
-// ### TODO
+// ### LOG
 
 static void implement_log(jlcxx::Module& module)
 {
@@ -1301,7 +1301,7 @@ static void implement_log(jlcxx::Module& module)
      */
 }
 
-// ### TODO
+// ### LONG PRESS EVENT CONTROLLER
 
 static void implement_long_press_event_controller(jlcxx::Module& module)
 {
@@ -1363,9 +1363,18 @@ static void implement_menu_bar(jlcxx::Module& module)
     add_widget_signals<MenuBar>(menubar);
 }
 
-// ### TODO
+// ### MOTION EVENT CONTROLLER
 
-static void implement_motion_event_controller(jlcxx::Module& module) {}
+static void implement_motion_event_controller(jlcxx::Module& module)
+{
+    auto motion = module.add_type(MotionEventController)
+        .add_constructor()
+    ;
+
+    add_signal_motion_enter<MotionEventController>(motion);
+    add_signal_motion<MotionEventController>(motion);
+    add_signal_motion_leave<MotionEventController>(motion);
+}
 
 // ### TODO
 
@@ -1379,7 +1388,7 @@ static void implement_music(jlcxx::Module& module) {}
 
 static void implement_notebook(jlcxx::Module& module) {}
 
-// ### TODO
+// ### ORIENTATION
 
 static void implement_orientation(jlcxx::Module& module)
 {
@@ -1388,7 +1397,7 @@ static void implement_orientation(jlcxx::Module& module)
     module.add_enum_value(Orientation, ORIENTATION, VERTICAL);
 }
 
-// ### OVERLAYY
+// ### OVERLAY
 
 static void implement_overlay(jlcxx::Module& module)
 {
@@ -1409,19 +1418,42 @@ static void implement_overlay(jlcxx::Module& module)
     add_widget_signals<Overlay>(overlay);
 }
 
-// ### TODO
+// ### PAN EVENT CONTROLLER
 
-static void implement_pan_event_controller(jlcxx::Module& module) {}
+static void implement_pan_event_controller(jlcxx::Module& module)
+{
+    define_enum_in(module, PanDirection);
+    module.add_enum_value(PanDirection, PAN_DIRECTION, LEFT);
+    module.add_enum_value(PanDirection, PAN_DIRECTION, RIGHT);
+    module.add_enum_value(PanDirection, PAN_DIRECTION, UP);
+    module.add_enum_value(PanDirection, PAN_DIRECTION, DOWN);
+
+    auto pan = module.add_type(PanEventController)
+        .add_constructor(Orientation)
+        .add_type_method(PanEventController, set_orientation, !)
+        .add_type_method(PanEventController, get_orientation)
+    ;
+
+    add_signal_pan<PanEventController>(pan);
+}
 
 // ### TODO
 
 static void implement_paned(jlcxx::Module& module) {}
 
-// ### TODO
+// ### PINCH ZOOM EVENT CONTROLLER
 
-static void implement_pinch_zoom_event_controller(jlcxx::Module& module) {}
+static void implement_pinch_zoom_event_controller(jlcxx::Module& module)
+{
+    auto pinch = module.add_type(PinchZoomEventController)
+        .add_constructor()
+        .add_type_method(PinchZoomEventController, get_scale_delta)
+    ;
 
-// ### TODO
+    add_signal_scale_changed<PinchZoomEventController>(pinch);
+}
+
+// ### POPOVER
 
 static void implement_popover(jlcxx::Module& module)
 {
@@ -1477,7 +1509,7 @@ static void implement_popover_button(jlcxx::Module& module)
     add_signal_activate<PopoverButton>(popover_button);
 }
 
-// ### TODO
+// ### POPOVER MENU
 
 static void implement_popover_menu(jlcxx::Module& module)
 {
@@ -1520,9 +1552,19 @@ static void implement_render_texture(jlcxx::Module& module) {}
 
 static void implement_revealer(jlcxx::Module& module) {}
 
-// ### TODO
+// ### ROTATE EVENT CONTROLLER
 
-static void implement_rotate_event_controller(jlcxx::Module& module) {}
+static void implement_rotate_event_controller(jlcxx::Module& module)
+{
+    auto rotate = module.add_type(RotateEventController)
+        .add_constructor()
+        .method("get_angle_deta", [](RotateEventController& x){
+            return x.get_angle_delta().as_radians();
+        })
+    ;
+
+    add_signal_rotation_changed<RotateEventController>(rotate);
+}
 
 // ### TODO
 
@@ -1532,9 +1574,19 @@ static void implement_scale(jlcxx::Module& module) {}
 
 static void implement_scale_mode(jlcxx::Module& module) {}
 
-// ### TODO
+// ### SCROLL EVENT CONTROLLER
 
-static void implement_scroll_event_controller(jlcxx::Module& module) {}
+static void implement_scroll_event_controller(jlcxx::Module& module)
+{
+    auto scroll = module.add_type(ScrollEventController)
+        .add_constructor(bool, bool)
+    ;
+
+    add_signal_kinetic_scroll_delecerate<ScrollEventController>(scroll);
+    add_signal_scroll_begin<ScrollEventController>(scroll);
+    add_signal_scroll<ScrollEventController>(scroll);
+    add_signal_scroll_end<ScrollEventController>(scroll);
+}
 
 // ### TODO
 
@@ -1556,9 +1608,22 @@ static void implement_shader(jlcxx::Module& module) {}
 
 static void implement_shape(jlcxx::Module& module) {}
 
-// ### TODO
+// ### SHORTCUT EVENT CONTROLLER
 
-static void implement_shortcut_event_controller(jlcxx::Module& module) {}
+static void implement_shortcut_event_controller(jlcxx::Module& module)
+{
+    define_enum_in(module, ShortcutScope);
+    module.add_enum_value(ShortcutScope, SHORTCUT_SCOPE, LOCAL);
+    module.add_enum_value(ShortcutScope, SHORTCUT_SCOPE, MANAGED);
+    module.add_enum_value(ShortcutScope, SHORTCUT_SCOPE, GLOBAL);
+
+    module.add_type(ShortcutEventController)
+        .add_constructor()
+        .add_type_method(ShortcutEventController, add_action, !)
+        .add_type_method(ShortcutEventController, set_scope, !)
+        .add_type_method(ShortcutEventController, get_scope)
+    ;
+}
 
 // ### TODO
 
@@ -1580,13 +1645,63 @@ static void implement_spinner(jlcxx::Module& module) {}
 
 static void implement_stack(jlcxx::Module& module) {}
 
-// ### TODO
+// ### STYLUS EVENT CONTROLLER
 
-static void implement_stylus_event_controller(jlcxx::Module& module) {}
+static void implement_stylus_event_controller(jlcxx::Module& module) 
+{
+    define_enum_in(module, ToolType);
+    module.add_enum_value(ToolType, TOOL_TYPE, UNKNOWN);
+    module.add_enum_value(ToolType, TOOL_TYPE, PEN);
+    module.add_enum_value(ToolType, TOOL_TYPE, ERASER);
+    module.add_enum_value(ToolType, TOOL_TYPE, BRUSH);
+    module.add_enum_value(ToolType, TOOL_TYPE, PENCIL);
+    module.add_enum_value(ToolType, TOOL_TYPE, AIRBRUSH);
+    module.add_enum_value(ToolType, TOOL_TYPE, LENS);
+    module.add_enum_value(ToolType, TOOL_TYPE, MOUSE);
+   
+    define_enum_in(module, DeviceAxis);
+    module.add_enum_value(DeviceAxis, DEVICE_AXIS, X);
+    module.add_enum_value(DeviceAxis, DEVICE_AXIS, Y);
+    module.add_enum_value(DeviceAxis, DEVICE_AXIS, DELTA_X);
+    module.add_enum_value(DeviceAxis, DEVICE_AXIS, DELTA_Y);
+    module.add_enum_value(DeviceAxis, DEVICE_AXIS, PRESSURE);
+    module.add_enum_value(DeviceAxis, DEVICE_AXIS, X_TILT);
+    module.add_enum_value(DeviceAxis, DEVICE_AXIS, Y_TILT);
+    module.add_enum_value(DeviceAxis, DEVICE_AXIS, WHEEL);
+    module.add_enum_value(DeviceAxis, DEVICE_AXIS, DISTANCE);
+    module.add_enum_value(DeviceAxis, DEVICE_AXIS, ROTATION);
+    module.add_enum_value(DeviceAxis, DEVICE_AXIS, SLIDER);
 
-// ### TODO
+    module.method("device_axis_to_string", [](DeviceAxis axis) -> std::string {
+        return device_axis_to_string(axis);
+    });
 
-static void implement_swipe_event_controller(jlcxx::Module& module) {}
+    auto stylus = module.add_type(StylusEventController)
+        .add_constructor()
+        .add_type_method(StylusEventController, get_hardware_id)
+        .add_type_method(StylusEventController, get_device_type)
+        .add_type_method(StylusEventController, has_axis)
+        .add_type_method(StylusEventController, get_axis_value)
+    ;
+
+    add_signal_stylus_down<StylusEventController>(stylus);
+    add_signal_stylus_up<StylusEventController>(stylus);
+    add_signal_proximity<StylusEventController>(stylus);
+    add_signal_motion<StylusEventController>(stylus);
+}
+
+// ### SWIPE EVENT CONTROLLER
+
+static void implement_swipe_event_controller(jlcxx::Module& module)
+{
+    auto swipe = module.add_type(SwipeEventController)
+        .add_constructor(Orientation)
+        .method("get_velocity", [](SwipeEventController& x) -> jl_value_t* {
+            return box_vector2f(x.get_velocity());
+        });
+
+    add_signal_swipe<SwipeEventController>(swipe);
+}
 
 // ### TODO
 
@@ -1712,6 +1827,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_application(module);
 
     // jump
+
     implement_event_controller(module);
     implement_drag_event_controller(module);
     implement_click_event_controller(module);

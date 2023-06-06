@@ -16,7 +16,7 @@ namespace mousetrap
           CTOR_SIGNAL(SwipeEventController, swipe)
     {}
 
-    Vector2f SwipeEventController::get_velocty() const
+    Vector2f SwipeEventController::get_velocity() const
     {
         double x, y;
         if (gtk_gesture_swipe_get_velocity(GTK_GESTURE_SWIPE(get_internal()), &x, &y))

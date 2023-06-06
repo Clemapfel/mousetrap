@@ -1979,7 +1979,7 @@ namespace mousetrap
         RIGHT = GTK_PAN_DIRECTION_RIGHT,
 
         /// @brief pan bottom to top
-        TOP = GTK_PAN_DIRECTION_UP,
+        UP = GTK_PAN_DIRECTION_UP,
 
         /// @brief pan top to bottom
         DOWN = GTK_PAN_DIRECTION_DOWN

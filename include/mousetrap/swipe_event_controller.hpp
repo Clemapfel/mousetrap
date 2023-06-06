@@ -34,6 +34,6 @@ namespace mousetrap
 
             /// @brief get current swipe velocity
             /// @return 2D velocity
-            Vector2f get_velocty() const;
+            Vector2f get_velocity() const;
     };
 }

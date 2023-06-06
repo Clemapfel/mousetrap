@@ -262,12 +262,12 @@ set(MOUSETRAP_SOURCE_FILES
     src/scale.cpp
     src/scroll_event_controller.cpp
     src/scrollbar.cpp
-        src/viewport.cpp
+    src/viewport.cpp
     src/selection_model.cpp
     src/separator.cpp
     src/shader.cpp
     src/shape.cpp
-        src/shortcut_event_controller.cpp
+    src/shortcut_event_controller.cpp
     src/signal_component.cpp
     src/signal_emitter.cpp
     src/sound.cpp
