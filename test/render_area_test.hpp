@@ -31,6 +31,8 @@ namespace mousetrap
         public:
             RenderAreaTest()
             {
+                // comment looks like this
+                // TODO: or this
                 _shape.as_circle({0, 0}, 0.75, 5);
                 _shape.set_color(RGBA(1, 0, 1, 1));
                 _shape_task = RenderTask(_shape);
@@ -39,7 +41,7 @@ namespace mousetrap
                 _render_texture_shape.set_texture(&_render_texture);
                 _render_texture_task = RenderTask(_render_texture_shape);
 
-                _motion_shape.as_rectangle({0, 0}, {0.1, 0.1});//.as_circle({-1, -1}, 0.02 * 2, 32);
+                _motion_shape.as_rectangle({0, 0}, {0.1, 0.1});
                 _motion_shape.set_color(RGBA(1, 0, 1, 1));
 
                 _area.connect_signal_resize([](RenderArea* area, int32_t w, int32_t h, RenderAreaTest* instance){
@@ -50,28 +52,9 @@ namespace mousetrap
                 circle.as_circle({0, 0}, 0.5, 16);
                 _area.add_render_task(RenderTask(circle));
 
-                /*
-                _area.connect_signal_render([](RenderArea* area, GdkGLContext* context, RenderAreaTest* instance) -> bool {
 
-                    instance->_render_texture.bind_as_rendertarget();
-
-                    glClearColor(0, 0, 0, 0);
-                    glClear(GL_COLOR_BUFFER_BIT);
-                    instance->_shape_task.render();
-                    instance->_motion_task.render();
-                    glFlush();
-
-                    instance->_render_texture.unbind_as_rendertarget();
-
-                    glClearColor(0, 0, 0, 0);
-                    glClear(GL_COLOR_BUFFER_BIT);
-                    instance->_render_texture_task.render();
-                    glFlush();
-
-                    return false;
-                }, this);
-                 */
-
+                // update
+                // TODO looks like this
                 _area.set_tick_callback([](FrameClock clock, RenderAreaTest* instance) -> TickCallbackResult{
 
                     instance->_shape.rotate(degrees(1), {0, 0});

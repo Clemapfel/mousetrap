@@ -225,7 +225,7 @@ module mousetrap
     function show_aux(io::IO, x::T, fields::Symbol...) where T
 
         out = ""
-
+        
         tostring(x) = string(x)
         tostring(x::String) = "\"" * x * "\""
 
@@ -769,6 +769,9 @@ module mousetrap
     macro add_signal_text_changed(x) return :(@add_signal $x text_changed Cvoid) end
     macro add_signal_redo(x) return :(@add_signal $x redo Cvoid) end
     macro add_signal_undo(x) return :(@add_signal $x undo Cvoid) end
+    macro add_signal_drag_begin(x) return :(@add_signal $x drag_begin Cvoid Cdouble start_x Cdouble start_y)
+    macro add_signal_drag(x) return :(@add_signal $x drag Cvoid Cdouble offset_x Cdouble offset_y)
+    macro add_signal_drag_end(x) return :(@add_signal $x drag_end Cvoid Cdouble offset_x Cdouble offset_y)
 
 ####### types.jl
 
@@ -1899,6 +1902,60 @@ module mousetrap
 
     @add_widget_signals PopoverButton
     @add_signal_activate PopoverButton
+
+###### event_controller.jl
+
+    abstract type EventController end
+    export EventController
+
+    abstract type SingleClickGesture <: EventController end
+    export SingleClickGesture
+
+    @export_enum PropagationPhase begin
+        PROPAGATION_PHASE_NONE
+        PROPAGATION_PHASE_CAPTURE
+        PROPAGATION_PHASE_BUBBLE
+        PROPAGATION_PHASE_TARGET
+    end
+
+    set_propagation_phase!(controller::EventController) = detail.set_propagation_phase!(controller._internal.cpp_object)
+    export set_propagation_phase!
+
+    get_propagation_phase(controller::EventController) = return detail.get_propagation_phase(controller._internal.cpp_object)
+    export get_propagation_phase
+
+    @export_enum ButtonID begin
+        BUTTON_ID_NONE
+        BUTTON_ID_ANY
+        BUTTON_ID_01
+        BUTTON_ID_02
+        BUTTON_ID_03
+        BUTTON_ID_04
+        BUTTON_ID_05
+        BUTTON_ID_06
+        BUTTON_ID_07
+        BUTTON_ID_08
+        BUTTON_ID_09
+    end
+
+    get_current_button(gesture::SingleClickGesture) ::ButtonID = return detail.get_current_button(gesture._internal.cpp_object)
+    export get_current_button
+
+    set_only_listens_to_button!(gesture::SingleClickGesture, button::ButtonID) = detail.set_only_listens_to_button!(gesture._internal.cpp_object) 
+    export set_only_listens_to_button
+
+    get_only_listens_to_button(gesture::SingleClickGesture) = return detail.get_only_listens_to_button(gesture._internal.cpp_object)
+    export get_only_listens_to_button
+
+    set_touch_only!(gesture::SingleClickGesture) = detail.set_touch_only!(gesture._internal.cpp_object)
+    export set_touch_only!
+
+    get_touch_only(gesture::SingleClickGesture) = detail.get_touch_only(gesture._internal.cpp_object)
+    export get_touch_only
+
+###### drag_event_controller.jl
+
+    
 
 ###### menubar.jl
 
