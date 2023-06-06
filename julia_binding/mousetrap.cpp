@@ -310,18 +310,18 @@ DEFINE_ADD_SIGNAL_ARG0(text_changed, void)
 DEFINE_ADD_SIGNAL_ARG0(undo, void)
 DEFINE_ADD_SIGNAL_ARG0(redo, void)
 DEFINE_ADD_SIGNAL_ARG2(selection_changed, void, gint, position, gint, n_items)
-DEFINE_ADD_SIGNAL_ARG3(key_pressed, void, guint, keyval, guint, keycode, ModifierState, modifier) // TODO
+DEFINE_ADD_SIGNAL_ARG3(key_pressed, bool, guint, keyval, guint, keycode, ModifierState, modifier) // TODO
 DEFINE_ADD_SIGNAL_ARG3(key_released, void, guint, keyval, guint, keycode, ModifierState, modifier) // TODO
-DEFINE_ADD_SIGNAL_ARG3(modifiers_changed, void, guint, keyval, guint, keycode, ModifierState, modifier) // TODO
+DEFINE_ADD_SIGNAL_ARG3(modifiers_changed, bool, guint, keyval, guint, keycode, ModifierState, modifier) // TODO
 DEFINE_ADD_SIGNAL_ARG2(motion_enter, void, double, x, double, y)
 DEFINE_ADD_SIGNAL_ARG2(motion, void, double, x, double, y)
 DEFINE_ADD_SIGNAL_ARG0(motion_leave, void)
 DEFINE_ADD_SIGNAL_ARG3(click_pressed, void, gint, n_press, double, x, double, y)
 DEFINE_ADD_SIGNAL_ARG3(click_released, void, gint, n_press, double, x, double, y)
 DEFINE_ADD_SIGNAL_ARG0(click_stopped, void)
-DEFINE_ADD_SIGNAL_ARG2(kinetic_scroll_delecerate, void, double, x_velocity, double, y_velocity)
+DEFINE_ADD_SIGNAL_ARG2(kinetic_scroll_decelerate, void, double, x_velocity, double, y_velocity)
 DEFINE_ADD_SIGNAL_ARG0(scroll_begin, void)
-DEFINE_ADD_SIGNAL_ARG2(scroll, void, double, delta_x, double, delta_y)
+DEFINE_ADD_SIGNAL_ARG2(scroll, bool, double, delta_x, double, delta_y)
 DEFINE_ADD_SIGNAL_ARG0(scroll_end, void)
 DEFINE_ADD_SIGNAL_ARG0(focus_gained, void)
 DEFINE_ADD_SIGNAL_ARG0(focus_lost, void)
@@ -1258,12 +1258,12 @@ static void implement_log(jlcxx::Module& module)
 
     module.method("log_get_surpress_debug", [](LogDomain domain)
     {
-        log::get_surpress_debug(domain, b);
+        return log::get_surpress_debug(domain);
     });
 
     module.method("log_get_surpress_info", [](LogDomain domain)
     {
-        log::get_surpress_info(domain, b);
+        return log::get_surpress_info(domain);
     });
 
     module.method("log_set_file", [](const std::string& path){
@@ -1582,7 +1582,7 @@ static void implement_scroll_event_controller(jlcxx::Module& module)
         .add_constructor(bool, bool)
     ;
 
-    add_signal_kinetic_scroll_delecerate<ScrollEventController>(scroll);
+    add_signal_kinetic_scroll_decelerate<ScrollEventController>(scroll);
     add_signal_scroll_begin<ScrollEventController>(scroll);
     add_signal_scroll<ScrollEventController>(scroll);
     add_signal_scroll_end<ScrollEventController>(scroll);

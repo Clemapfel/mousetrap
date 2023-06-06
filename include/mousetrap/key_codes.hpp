@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <gtk_common.hpp>
+#include <mousetrap/gtk_common.hpp>
 
 namespace mousetrap
 {
