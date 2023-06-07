@@ -31,19 +31,12 @@ namespace mousetrap
 
             auto gtk_mode = (GtkSelectionMode) mode;
             self->selection_mode = gtk_mode;
+            self->selection_model = new SelectionModel(mode, G_LIST_MODEL(self->list_store));
 
-            if (gtk_mode == GTK_SELECTION_MULTIPLE)
-                self->selection_model = new MultiSelectionModel(G_LIST_MODEL(self->list_store));
-            else if (gtk_mode == GTK_SELECTION_SINGLE or gtk_mode == GTK_SELECTION_BROWSE)
-            {
-                self->selection_model = new SingleSelectionModel(G_LIST_MODEL(self->list_store));
+            if (mode == SelectionMode::SINGLE)
                 gtk_single_selection_set_can_unselect(GTK_SINGLE_SELECTION(self->selection_model->operator GtkSelectionModel *()), true);
-            }
-            else if (gtk_mode == GTK_SELECTION_NONE)
-                self->selection_model = new NoSelectionModel(G_LIST_MODEL(self->list_store));
 
             gtk_column_view_set_model(self->native, self->selection_model->operator GtkSelectionModel*());
-
             return self;
         }
     }

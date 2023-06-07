@@ -46,8 +46,8 @@ namespace mousetrap
             /// @brief construct from internal, for interal use only. Use <tt>get_selection_model</tt> to acquire a selection model from a selectable widget
             SelectionModel(detail::SelectionModelInternal*);
 
-            /// @brief default ctor deleted. Use <tt>get_selection_model</tt> to acquire a selection model from a selectable widget
-            SelectionModel() = delete;
+            /// @brief construct from selection mode, \internal
+            SelectionModel(SelectionMode mode, GListModel* model);
 
             /// @brief destruct
             ~SelectionModel();
@@ -82,27 +82,6 @@ namespace mousetrap
 
         protected:
             detail::SelectionModelInternal* _internal = nullptr;
-    };
-
-    /// @brief selection model implementation for mousetrap::SelectionMode::MULTIPLE
-    struct MultiSelectionModel : public SelectionModel
-    {
-        /// @brief construct, for internal us only
-        MultiSelectionModel(GListModel*);
-    };
-
-    /// @brief selection model implementation for mousetrap::SelectionMode::SINGLE
-    struct SingleSelectionModel : public SelectionModel
-    {
-        /// @brief construct, for internal us only
-        SingleSelectionModel(GListModel*);
-    };
-
-    /// @brief selection model implementation for mousetrap::SelectionMode::NONE
-    struct NoSelectionModel : public SelectionModel
-    {
-        /// @brief construct, for internal us only
-        NoSelectionModel(GListModel*);
     };
 }
 

@@ -24,6 +24,18 @@ namespace mousetrap
         g_object_ref(_internal);
     }
 
+    SelectionModel::SelectionModel(SelectionMode mode, GListModel* model)
+        : SelectionModel([&]() -> detail::SelectionModelInternal*
+        {
+            if (mode == SelectionMode::SINGLE)
+                return GTK_SELECTION_MODEL(gtk_single_selection_new(model));
+            else if (mode == SelectionMode::MULTIPLE)
+                return GTK_SELECTION_MODEL(gtk_single_selection_new(model));
+            else
+                return GTK_SELECTION_MODEL(gtk_multi_selection_new(model));
+        }())
+    {}
+
     SelectionModel::~SelectionModel()
     {
         g_object_unref(_internal);
@@ -63,16 +75,4 @@ namespace mousetrap
     {
         gtk_selection_model_unselect_item(operator GtkSelectionModel*(), i);
     }
-
-    MultiSelectionModel::MultiSelectionModel(GListModel* model)
-        : SelectionModel((detail::SelectionModelInternal*) GTK_SELECTION_MODEL(gtk_multi_selection_new(model)))
-    {}
-
-    SingleSelectionModel::SingleSelectionModel(GListModel* model)
-        : SelectionModel((detail::SelectionModelInternal*) GTK_SELECTION_MODEL(gtk_single_selection_new(model)))
-    {}
-
-    NoSelectionModel::NoSelectionModel(GListModel* model)
-        : SelectionModel((detail::SelectionModelInternal*) GTK_SELECTION_MODEL(gtk_no_selection_new(model)))
-    {}
 }

@@ -793,11 +793,11 @@ module mousetrap
     macro add_signal_scroll_begin(x) return :(@add_signal $x scroll_begin Cvoid)
     macro add_signal_scroll(x) return :(@add_signal $x scroll Bool Cdouble delta_x Cdouble delta_y)
     macro add_signal_scroll_end(x) return :(@add_signal $x scroll_end Cvoid)
-
-
-
-
-
+    macro add_signal_stylus_up(x) return :(@add_signal $x stylus_up Cvoid Cdouble x Cdouble y)
+    macro add_signal_stylus_down(x) return :(@add_signal $x stylus_down Cvoid Cdouble x Cdouble y)
+    macro add_signal_proximity(x) return :(@add_signal $x proximity Cvoid Cdouble x Cdouble y)
+    macro add_signal_swipe(x) return :(@add_signal $x swipe Cvoid Cdouble x_velocity Cdouble y_velocity)
+    macro add_signal_pan(x) return :(@add_signal $x pan Cvoid PanDirection direction Cdouble offset)
 
 
 
@@ -2124,6 +2124,78 @@ module mousetrap
 
     get_scope(controller::ShortcutController) ::ShortcutScope = return detail.get_scope(controller._internal)
     export get_scope
+
+###### stylus_event_controller.jl
+
+    @export_enum ToolType begin
+        TOOL_TYPE_UNKNOWN
+        TOOL_TYPE_PEN
+        TOOL_TYPE_ERASER
+        TOOL_TYPE_BRUSH
+        TOOL_TYPE_PENCIL
+        TOOL_TYPE_AIRBRUSH
+        TOOL_TYPE_LENS
+        TOOL_TYPE_MOUSE
+    end
+
+    @export_enum DeviceAxis begin
+        DEVICE_AXIS_X
+        DEVICE_AXIS_Y
+        DEVICE_AXIS_DELTA_X
+        DEVICE_AXIS_DELTA_Y
+        DEVICE_AXIS_PRESSURE
+        DEVICE_AXIS_X_TILT
+        DEVICE_AXIS_Y_TILT
+        DEVICE_AXIS_WHEEL
+        DEVICE_AXIS_DISTANCE
+        DEVICE_AXIS_ROTATION
+        DEVICE_AXIS_SLIDER
+    end
+
+    device_axis_to_string(axis::DeviceAxis) ::String = detail.device_axis_to_string(axis)
+    export device_axis_to_string
+
+    @export_type StylusEventController SingleClickGesture
+    StylusEventController() = StylusEventController(detail._StylusEventController())
+
+    @export_function StylusEventController get_hardware_id Csize_t
+    @export_function StylusEventController get_tool_type ToolType
+    @export_function StylusEventController has_axis Bool DeviceAxis axis
+
+    @add_signal_stylus_up StylusEventController
+    @add_signal_stylus_down StylusEventController
+    @add_signal_proximity StylusEventController
+    @add_signal_motion StylusEventController
+
+###### swipe_event_controller.jl
+
+    @export_type SwipeEventController SingleClickGesture
+    SwipeEventController(orientation::Orientation) = SwipeEventController(detail._SwipeEventController(orientation))
+
+    get_velocity(swipe_controller::SwipeEventController) ::Vector2f = return detail.get_velocity(swipe_controller._internal)
+    export get_velocity
+
+    @add_signal_swipe SwipeEventController
+
+###### pan_event_controller.jl
+
+    @export_enum PanDirection begin
+        PAN_DIRECTION_LEFT
+        PAN_DIRECTION_RIGHT
+        PAN_DIRECTION_TOP
+        PAN_DIRECTION_BOTTOM
+    end
+
+    @export_type PanEventController SingleClickGesture
+    PanEventController(orientation::Orientation) = PanEventController(detail._PanEventController(orientation))
+
+    set_orientation!(pan_controller::PanEventController) = detail.set_orientation!(pan_controller._internal)
+    export set_orientation!
+
+    get_orientation(pan_controller::PanEventController) ::Orientation = detail.get_orientation(pan_controller._internal)
+    export get_orientation
+
+    @add_signal_pan PanEventController
 
 ###### menubar.jl
 
