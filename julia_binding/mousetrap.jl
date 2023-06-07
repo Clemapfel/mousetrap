@@ -1,3 +1,5 @@
+using Revise
+
 module mousetrap
 
 ####### typed_function.jl
@@ -88,7 +90,7 @@ module mousetrap
         return :($name(x::$type) = Base.convert($return_t, detail.$name(x._internal)))
     end
 
-    macro export_function(type, name, return_t, arg1_name, arg1_type)
+    macro export_function(type, name, return_t, arg1_type, arg1_name)
 
         return_t = esc(return_t)
         arg1_name = esc(arg1_name)
@@ -99,7 +101,7 @@ module mousetrap
         return out
     end
 
-    macro export_function(type, name, return_t, arg1_name, arg1_type, arg2_name, arg2_type)
+    macro export_function(type, name, return_t, arg1_type, arg1_name, arg2_type, arg2_name)
 
         return_t = esc(return_t)
         arg1_name = esc(arg1_name)
@@ -116,7 +118,7 @@ module mousetrap
             ) = Base.convert(return_t, detail.$name(x._internal, $arg1_name, $arg2_name)))
     end
 
-    macro export_function(type, name, return_t, arg1_name, arg1_type, arg2_name, arg2_type, arg3_name, arg3_type)
+    macro export_function(type, name, return_t, arg1_type, arg1_name, arg2_type, arg2_name, arg3_type, arg3_name)
 
         return_t = esc(return_t)
         arg1_name = esc(arg1_name)
@@ -135,7 +137,7 @@ module mousetrap
             )  = Base.convert($return_t, detail.$name(x._internal, $arg1_name, $arg2_name, $arg3_name)))
     end
 
-    macro export_function(type, name, return_t, arg1_name, arg1_type, arg2_name, arg2_type, arg3_name, arg3_type, arg4_name, arg4_type)
+    macro export_function(type, name, return_t, arg1_type, arg1_name, arg2_type, arg2_name, arg3_type, arg3_name, arg4_type, arg4_name)
 
         return_t = esc(return_t)
         arg1_name = esc(arg1_name)
@@ -850,7 +852,7 @@ module mousetrap
     macro add_signal_motion_leave(x) return :(@add_signal $x motion_leave Cvoid) end
     macro add_signal_scale_changed(x) return :(@add_signal $x scale_changed Cvoid Cdouble scale) end
     macro add_signal_rotation_changed(x) return :(@add_signal $x rotation_changed Cvoid Cdouble angle_absolute_rads Cdouble angle_delta_rads) end
-    macro add_signal_scroll_decelerate(x) return :(@add_signal $x scroll_decelerate Cvoid Cdouble x_velocity Cdouble y_velocity) end
+    macro add_signal_kinetic_scroll_decelerate(x) return :(@add_signal $x scroll_decelerate Cvoid Cdouble x_velocity Cdouble y_velocity) end
     macro add_signal_scroll_begin(x) return :(@add_signal $x scroll_begin Cvoid) end
     macro add_signal_scroll(x) return :(@add_signal $x scroll Bool Cdouble delta_x Cdouble delta_y) end
     macro add_signal_scroll_end(x) return :(@add_signal $x scroll_end Cvoid) end
@@ -1031,8 +1033,8 @@ module mousetrap
     get_action(app::Application, id::String) ::Action = return Action(detail.get_action(app._internal, id))
     export get_action
 
-    @export_function Application remove_action Cvoid id String
-    @export_function Application has_action Bool id String
+    @export_function Application remove_action Cvoid String id
+    @export_function Application has_action Bool String id
 
     @add_signal_activate Application
     @add_signal_shutdown Application
@@ -1057,7 +1059,7 @@ module mousetrap
     @export_function Window set_maximized! Cvoid
     @export_function Window set_fullscreen! Cvoid
     @export_function Window present! Cvoid
-    @export_function Window set_hide_on_close! Cvoid b Bool
+    @export_function Window set_hide_on_close! Cvoid Bool b
     @export_function Window close! Cvoid
 
     function set_child!(window::Window, child::Widget)
@@ -1066,9 +1068,9 @@ module mousetrap
     export set_child!
 
     @export_function Window remove_child! Cvoid
-    @export_function Window set_destroy_with_parent! Cvoid b Bool
+    @export_function Window set_destroy_with_parent! Cvoid Bool n
     @export_function Window get_destroy_with_parent Bool
-    @export_function Window set_title! Cvoid title String
+    @export_function Window set_title! Cvoid String title
     @export_function Window get_title String
 
     function set_titlebar_widget!(window::Window, titlebar::Widget)
@@ -1077,7 +1079,7 @@ module mousetrap
     export set_titlebar_widget!
 
     @export_function Window remove_titlebar_widget! Cvoid
-    @export_function Window set_is_modal! Cvoid b Bool
+    @export_function Window set_is_modal! Cvoid Bool b
     @export_function Window get_is_modal Bool
 
     function set_transient_for(self::Window, other::Window)
@@ -1085,12 +1087,12 @@ module mousetrap
     end
     export set_transient_for!
 
-    @export_function Window set_is_decorated! Cvoid b Bool
+    @export_function Window set_is_decorated! Cvoid Bool b
     @export_function Window get_is_decorated Bool
-    @export_function Window set_has_close_button! Cvoid b Bool
+    @export_function Window set_has_close_button! Cvoid Bool b
     @export_function Window get_has_close_button Bool
-    @export_function Window set_startup_notification_identifier! Cvoid id String
-    @export_function Window set_focus_visible! Cvoid b Bool
+    @export_function Window set_startup_notification_identifier! Cvoid String id
+    @export_function Window set_focus_visible! Cvoid Bool b
     @export_function Window get_focus_visible Bool
 
     function set_default_widget!(window::Window, widget::Widget)
@@ -1105,20 +1107,20 @@ module mousetrap
 
 ####### action.jl
 
-    #@export_type Action SignalEmitter
+    @export_type Action SignalEmitter
     Action(id::String, app::Application) = Action(detail._Action(id, app._internal.cpp_object))
 
     @export_function Action get_id String
-    @export_function Action set_state! Cvoid b Bool
+    @export_function Action set_state! Cvoid Bool b
     @export_function Action get_state Bool
     @export_function Action activate Cvoid
-    @export_function Action add_shortcut! Cvoid shortcut String
+    @export_function Action add_shortcut! Cvoid String shortcut
 
     get_shortcuts(action::Action) ::Vector{String} = return detail.get_shortcuts(action._internal)[]
     export get_shortcuts
 
     @export_function Action clear_shortcuts! Cvoid
-    @export_function Action set_enabled! Cvoid b Bool
+    @export_function Action set_enabled! Cvoid Bool b
     @export_function Action get_enabled Bool
     @export_function Action get_is_stateful Bool
 
@@ -1196,10 +1198,10 @@ module mousetrap
         return AspectFrame(detail._AspectFrame(ratio, child_x_alignment, child_y_alignment))
     end
 
-    @export_function AspectFrame set_ratio! Cvoid ratio AbstractFloat
+    @export_function AspectFrame set_ratio! Cvoid AbstractFloat ratio
     @export_function AspectFrame get_ratio Cfloat
-    @export_function AspectFrame set_child_x_alignment! Cvoid alignment AbstractFloat
-    @export_function AspectFrame set_child_y_alignment! Cvoid alignment AbstractFloat
+    @export_function AspectFrame set_child_x_alignment! Cvoid AbstractFloat alignment
+    @export_function AspectFrame set_child_y_alignment! Cvoid AbstractFloat alignment
     @export_function AspectFrame get_child_x_alignment Cfloat
     @export_function AspectFrame get_child_y_alignment Cfloat
 
@@ -1260,7 +1262,7 @@ module mousetrap
     export remove!
 
     @export_function Box clear Cvoid
-    @export_function Box set_homogeneous! Cvoid b Bool
+    @export_function Box set_homogeneous! Cvoid Bool b
     @export_function Box get_homogeneous Bool
 
     function set_spacing!(box::Box, spacing::Number) ::Cvoid
@@ -1271,7 +1273,7 @@ module mousetrap
     @export_function Box get_spacing Cfloat
     @export_function Box get_n_items Cint
     @export_function Box get_orientation Orientation
-    @export_function Box set_orientation! Cvoid orientation Orientation
+    @export_function Box set_orientation! Cvoid Orientation orientation
 
     @add_widget_signals Box
 
@@ -1280,9 +1282,9 @@ module mousetrap
     @export_type Button Widget
     Button() = Button(detail._Button())
 
-    @export_function Button set_has_frame! Cvoid b Bool
+    @export_function Button set_has_frame! Cvoid Bool b
     @export_function Button get_has_frame Bool
-    @export_function Button set_is_circular Cvoid b Bool
+    @export_function Button set_is_circular Cvoid Bool b
     @export_function Button get_is_circular Bool
 
     function set_child!(button::Button, child::Widget)
@@ -1325,7 +1327,7 @@ module mousetrap
     @export_function CenterBox remove_center_widget! Cvoid
     @export_function CenterBox remove_end_widget! Cvoid
     @export_function CenterBox get_orientation Orientation
-    @export_function CenterBox set_orientation! Cvoid orientation Orientation
+    @export_function CenterBox set_orientation! Cvoid Orientation orientation
 
     @add_widget_signals CenterBox
 
@@ -1340,7 +1342,7 @@ module mousetrap
     @export_type CheckButton Widget
     CheckButton() = CheckButton(detail._CheckButton())
 
-    @export_function CheckButton set_state! Cvoid state CheckButtonState
+    @export_function CheckButton set_state! Cvoid CheckButtonState state
     @export_function CheckButton get_state CheckButtonState
     @export_function CheckButton get_is_active Bool
 
@@ -1372,17 +1374,17 @@ module mousetrap
     export KeyID
 
     @export_function KeyFile as_string String
-    @export_function KeyFile create_from_file! Bool path String
-    @export_function KeyFile create_from_string! Bool file String
-    @export_function KeyFile save_to_file Bool path String
+    @export_function KeyFile create_from_file! Bool String path
+    @export_function KeyFile create_from_string! Bool String file
+    @export_function KeyFile save_to_file Bool String path
     @export_function KeyFile get_groups Vector{GroupID}
-    @export_function KeyFile get_keys Vector{KeyID} group GroupID
-    @export_function KeyFile has_key Bool group GroupID key KeyID
-    @export_function KeyFile has_group Bool group GroupID
-    @export_function KeyFile set_comment_above_group! Cvoid group GroupID comment String
-    @export_function KeyFile set_comment_above_key! Cvoid group GroupID key KeyID comment String
-    @export_function KeyFile get_comment_above_group String group GroupID
-    @export_function KeyFile get_comment_above_key String group GroupID key KeyID
+    @export_function KeyFile get_keys Vector{KeyID} GroupID group
+    @export_function KeyFile has_key Bool GroupID group KeyID key
+    @export_function KeyFile has_group Bool GroupID group
+    @export_function KeyFile set_comment_above_group! Cvoid GroupID group String comment
+    @export_function KeyFile set_comment_above_key! Cvoid GroupID group KeyID key String comment
+    @export_function KeyFile get_comment_above_group String GroupID group
+    @export_function KeyFile get_comment_above_key String GroupID group KeyID key
 
     export set_value!
     export get_value
@@ -1564,7 +1566,7 @@ module mousetrap
 
     # Icon
 
-    @export_function Icon create_from_file! Bool path String
+    @export_function Icon create_from_file! Bool String path
 
     function create_from_theme!(icon::Icon, theme::IconTheme, id::IconID, square_resolution::Integer, scale::Integer = 1)
         detail.create_from_theme!(icon._internal, theme._internal.cpp_object, id, UInt64(square_resolution), UInt64(scale))
@@ -1592,8 +1594,8 @@ module mousetrap
     has_icon(theme::IconTheme, id::IconID) = detail.has_icon_id(theme._internal, id)
     export has_icon
 
-    @export_function IconTheme add_resource_path! Cvoid path String
-    @export_function IconTheme set_resource_path! Cvoid path String
+    @export_function IconTheme add_resource_path! Cvoid String path
+    @export_function IconTheme set_resource_path! Cvoid String path
 
 ####### image.jl
 
@@ -1614,8 +1616,8 @@ module mousetrap
     end
     export create!
 
-    @export_function Image create_from_file! Bool path String
-    @export_function Image save_to_file Bool path String
+    @export_function Image create_from_file! Bool String path
+    @export_function Image save_to_file Bool String path
     @export_function Image get_n_pixels Int64
     @export_function Image get_size Vector2f
 
@@ -1649,7 +1651,7 @@ module mousetrap
     ImageDisplay(image::Image) = ImageDisplay(detail._ImageDisplay(image._internal))
     ImageDisplay(icon::Icon) = ImageDisplay(detail._ImageDisplay(icon._internal))
 
-    @export_function ImageDisplay create_from_file! Cvoid path String
+    @export_function ImageDisplay create_from_file! Cvoid String path
 
     create_from_image!(image_display::ImageDisplay, image::Image) = detail.create_from_image!(image_display._internal, image._internal)
     export create_from_image!
@@ -1658,7 +1660,7 @@ module mousetrap
     export create_from_icon!
 
     @export_function ImageDisplay clear! Cvoid
-    @export_function ImageDisplay set_scale! Cvoid scale Cint
+    @export_function ImageDisplay set_scale! Cvoid Cint scale
 
     @add_widget_signals ImageDisplay
 
@@ -1668,12 +1670,12 @@ module mousetrap
     Entry() = Entry(detail._Entry())
 
     @export_function Entry get_text String
-    @export_function Entry set_text! Cvoid text String
-    @export_function Entry set_max_length! Cvoid n Integer
+    @export_function Entry set_text! Cvoid String text
+    @export_function Entry set_max_length! Cvoid Integer n
     @export_function Entry get_max_length Int64
-    @export_function Entry set_has_frame! Cvoid b Bool
+    @export_function Entry set_has_frame! Cvoid Bool b
     @export_function Entry get_has_frame Bool
-    @export_function Entry set_text_visible! Cvoid b Bool
+    @export_function Entry set_text_visible! Cvoid Bool b
     @export_function Entry get_text_visible Bool
 
     function set_primary_icon!(entry::Entry, icon::Icon)
@@ -1745,18 +1747,18 @@ module mousetrap
     @export_type LevelBar Widget
     LevelBar(min::AbstractFloat, max::AbstractFloat) = LevelBar(detail._internal(min, max))
 
-    @export_function LevelBar add_marker! Cvoid name String value AbstractFloat
-    @export_function LevelBar remove_mark! Cvoid name String value AbstractFloat
-    @export_function LevelBar set_inverted! Cvoid b Bool
+    @export_function LevelBar add_marker! Cvoid String name AbstractFloat value
+    @export_function LevelBar remove_mark! Cvoid String name AbstractFloat value
+    @export_function LevelBar set_inverted! Cvoid Bool b
     @export_function LevelBar get_inverted Bool
-    @export_function LevelBar set_mode! Cvoid mode LevelBarMode
+    @export_function LevelBar set_mode! Cvoid LevelBarMode mode
     @export_function LevelBar get_mode LevelBarMode
-    @export_function LevelBar set_min_value! Cvoid value AbstractFloat
+    @export_function LevelBar set_min_value! Cvoid AbstractFloat value
     @export_function LevelBar get_min_value Cfloat
-    @export_function LevelBar set_max_value! Cvoid value AbstractFloat
-    @export_function LevelBar set_value! Cvoid value AbstractFloat
+    @export_function LevelBar set_max_value! Cvoid AbstractFloat value
+    @export_function LevelBar set_value! Cvoid AbstractFloat value
     @export_function LevelBar get_value Cfloat
-    @export_function LevelBar set_orientation! Cvoid orientation Orientation
+    @export_function LevelBar set_orientation! Cvoid Orientation orientation
     @export_function LevelBar get_orientation Orientation
 
     @add_widget_signals LevelBar
@@ -1788,23 +1790,23 @@ module mousetrap
     Label() = Label(detail._Label())
     Label(formatted_string::String) = Label(detail._Label(formatted_string))
 
-    @export_function Label set_text! Cvoid text String
+    @export_function Label set_text! Cvoid String text
     @export_function Label get_text String
-    @export_function Label set_use_markup! Cvoid b Bool
+    @export_function Label set_use_markup! Cvoid Bool b
     @export_function Label get_use_markup Bool
-    @export_function Label set_ellipsize_mode! Cvoid mode EllipsizeMode
+    @export_function Label set_ellipsize_mode! Cvoid EllipsizeMode mode
     @export_function Label get_ellipsize_mode EllipsizeMode
-    @export_function Label set_wrap_mode mode! Cvoid LabelWrapMode
+    @export_function Label set_wrap_mode! Cvoid LabelWrapMode mode
     @export_function Label get_wrap_mode LabelWrapMode
-    @export_function Label set_justify_mode! mode Cvoid JustifyMode
+    @export_function Label set_justify_mode! Cvoid JustifyMode mode
     @export_function Label get_justify_mode JustifyMode
-    @export_function Label set_max_width_chars! Cvoid n Unsigned
+    @export_function Label set_max_width_chars! Cvoid Unsigned n
     @export_function Label get_max_width_chars UInt64
-    @export_function Label set_x_alignment! Cvoid x AbstractFloat
+    @export_function Label set_x_alignment! Cvoid AbstractFloat x
     @export_function Label get_x_alignment Cfloat
-    @export_function Label set_y_alignment! Cvoid x AbstractFloat
+    @export_function Label set_y_alignment! Cvoid AbstractFloat x
     @export_function Label get_y_alignment Cfloat
-    @export_function Label set_selectable! Cvoid b Bool
+    @export_function Label set_selectable! Cvoid Bool b
     @export_function Label get_selectable Bool
 
     @add_widget_signals Label
@@ -1816,26 +1818,26 @@ module mousetrap
     TextView() = TextView(detail._TextView())
 
     @export_function TextView get_text String
-    @export_function TextView set_text! Cvoid text String
-    @export_function TextView set_cursor_visible! Cvoid b Bool
+    @export_function TextView set_text! Cvoid String text
+    @export_function TextView set_cursor_visible! Cvoid Bool b
     @export_function TextView get_cursor_visible Bool
     @export_function TextView undo! Cvoid
     @export_function TextView redo! Cvoid
-    @export_function TextView set_was_modified! Cvoid b Bool
+    @export_function TextView set_was_modified! Cvoid Bool b
     @export_function TextView get_was_modified Bool
-    @export_function TextView set_editable! Cvoid b Bool
+    @export_function TextView set_editable! Cvoid Bool b
     @export_function TextView get_editable Bool
-    @export_function TextView set_justify_mode! Cvoid mode JustifyMode
+    @export_function TextView set_justify_mode! Cvoid JustifyMode mode
     @export_function TextView get_justify_mode JustifyMode
-    @export_function TextView set_left_margin! Cvoid margin AbstractFloat
+    @export_function TextView set_left_margin! Cvoid AbstractFloat margin
     @export_function TextView get_left_margin Cfloat
-    @export_function TextView set_right_margin! Cvoid margin AbstractFloat
+    @export_function TextView set_right_margin! Cvoid AbstractFloat margin
     @export_function TextView get_right_margin Cfloat
-    @export_function TextView set_left_margin! Cvoid margin AbstractFloat
+    @export_function TextView set_left_margin! Cvoid AbstractFloat margin
     @export_function TextView get_top_margin Cfloat
-    @export_function TextView set_left_margin! Cvoid margin AbstractFloat
+    @export_function TextView set_left_margin! Cvoid AbstractFloat margin
     @export_function TextView get_top_margin Cfloat
-    @export_function TextView set_bottom_margin! Cvoid margin AbstractFloat
+    @export_function TextView set_bottom_margin! Cvoid AbstractFloat margin
     @export_function TextView get_bottom_margin Cfloat
 
     @add_widget_signals TextView
@@ -1856,7 +1858,7 @@ module mousetrap
 
     @export_function Frame remove_child! Cvoid
     @export_function Frame remove_label_widget! Cvoid
-    @export_function Frame set_label_x_alignment! Cvoid x AbstractFloat
+    @export_function Frame set_label_x_alignment! Cvoid AbstractFloat x
     @export_function Frame get_label_x_alignment! Cfloat
 
     @add_widget_signals Frame
@@ -1957,11 +1959,11 @@ module mousetrap
     end
     export attach_to!
 
-    @export_function Popover set_relative_position! Cvoid position RelativePosition
+    @export_function Popover set_relative_position! Cvoid RelativePosition position
     @export_function Popover get_relative_position RelativePosition
-    @export_function Popover set_autohide! Cvoid b Bool
+    @export_function Popover set_autohide! Cvoid Bool b
     @export_function Popover get_autohide Bool
-    @export_function Popover set_has_base_arrow! Cvoid b Bool
+    @export_function Popover set_has_base_arrow! Cvoid Bool b
     @export_function Popover get_has_base_arrow Bool
 
     @add_widget_signals Popover
@@ -1988,15 +1990,15 @@ module mousetrap
     export set_popover_menu!
 
     @export_function PopoverButton remove_popover! Cvoid
-    @export_function PopoverButton set_popover_position! Cvoid position RelativePosition
+    @export_function PopoverButton set_popover_position! Cvoid RelativePosition position
     @export_function PopoverButton get_relative_position RelativePosition
-    @export_function PopoverButton set_always_show_arrow! Cvoid b Bool
+    @export_function PopoverButton set_always_show_arrow! Cvoid Bool b
     @export_function PopoverButton get_always_show_arrow Bool
-    @export_function PopoverButton set_has_frame Cvoid b Bool
+    @export_function PopoverButton set_has_frame Cvoid Bool b
     @export_function PopoverButton get_has_frame Bool
     @export_function PopoverButton popoup! Cvoid
     @export_function PopoverButton popdown! Cvoid
-    @export_function PopoverButton set_is_circular! Cvoid b Bool
+    @export_function PopoverButton set_is_circular! Cvoid Bool b
     @export_function PopoverButton get_is_circular Bool
 
     @add_widget_signals PopoverButton
@@ -2026,15 +2028,15 @@ module mousetrap
     @export_enum ButtonID begin
         BUTTON_ID_NONE
         BUTTON_ID_ANY
-        BUTTON_ID_01
-        BUTTON_ID_02
-        BUTTON_ID_03
-        BUTTON_ID_04
-        BUTTON_ID_05
-        BUTTON_ID_06
-        BUTTON_ID_07
-        BUTTON_ID_08
-        BUTTON_ID_09
+        BUTTON_ID_BUTTON_01
+        BUTTON_ID_BUTTON_02
+        BUTTON_ID_BUTTON_03
+        BUTTON_ID_BUTTON_04
+        BUTTON_ID_BUTTON_05
+        BUTTON_ID_BUTTON_06
+        BUTTON_ID_BUTTON_07
+        BUTTON_ID_BUTTON_08
+        BUTTON_ID_BUTTON_09
     end
 
     get_current_button(gesture::SingleClickGesture) ::ButtonID = return detail.get_current_button(gesture._internal.cpp_object)
@@ -2092,7 +2094,7 @@ module mousetrap
     @export_type KeyEventController EventController
     KeyEventController() = KeyEventController(detail._KeyEventController())
 
-    @export_function KeyEventController Bool trigger String
+    @export_function KeyEventController should_shortcut_trigger_trigger Bool String trigger
 
     const ModifierState = detail._ModifierState
     export ModifierState
@@ -2130,7 +2132,7 @@ module mousetrap
     @export_type LongPressEventController SingleClickGesture
     LongPressEventController() = LongPressEventController(detail._LongPressEventController())
 
-    @export_function LongPressEventController set_delay_factor Cvoid factor AbstractFloat
+    @export_function LongPressEventController set_delay_factor Cvoid AbstractFloat factor
     @export_function LongPressEventController get_delay_factor Cfloat
 
     @add_signal_pressed LongPressEventController
@@ -2168,7 +2170,7 @@ module mousetrap
     @export_type ScrollEventController EventController
     ScrollEventController(; emit_vertical = true, emit_horizontal = true) = ScrollEventController(detail._ScrollEventController(emit_vertical, emit_horizontal))
 
-    @add_signal_kinetic_scroll ScrollEventController
+    @add_signal_kinetic_scroll_decelerate ScrollEventController
     @add_signal_scroll_begin ScrollEventController
     @add_signal_scroll ScrollEventController
     @add_signal_scroll_end ScrollEventController
@@ -2187,10 +2189,10 @@ module mousetrap
         SHORTCUT_SCOPE_GLOBAL
     end
 
-    set_scope!(controller::ShortcutController, scope::ShortcutScope) = detail.set_scope!(controller._internal, scope)
+    set_scope!(controller::ShortcutEventController, scope::ShortcutScope) = detail.set_scope!(controller._internal, scope)
     export set_scope!
 
-    get_scope(controller::ShortcutController) ::ShortcutScope = return detail.get_scope(controller._internal)
+    get_scope(controller::ShortcutEventController) ::ShortcutScope = return detail.get_scope(controller._internal)
     export get_scope
 
 ###### stylus_event_controller.jl
@@ -2250,8 +2252,8 @@ module mousetrap
     @export_enum PanDirection begin
         PAN_DIRECTION_LEFT
         PAN_DIRECTION_RIGHT
-        PAN_DIRECTION_TOP
-        PAN_DIRECTION_BOTTOM
+        PAN_DIRECTION_UP
+        PAN_DIRECTION_DOWN
     end
 
     @export_type PanEventController SingleClickGesture
@@ -2293,7 +2295,7 @@ module mousetrap
 ###### list_view.jl
 
     @export_type ListView Widget
-    ListView(orientation::Orientation, selection_mode::SelectionMode) = ListView(detai._ListView(orientation, selection_mode))    
+    ListView(orientation::Orientation, selection_mode::SelectionMode = SELECTION_MODE_NONE) = ListView(detail._ListView(orientation, selection_mode))    
 
     struct ListViewIterator
         _internal::Ptr{Cvoid}
@@ -2332,7 +2334,7 @@ module mousetrap
     @export_function ListView set_show_separators Cvoid Bool b
     @export_function ListView get_show_separators Bool
     @export_function ListView set_single_click_activate Cvoid Bool b
-    @export_function ListVIew get_single_click_activate Bool
+    @export_function ListView get_single_click_activate Bool
     @export_function ListView get_n_items Cuint
     @export_function ListView set_orientation Cvoid Orientation orientation
     @export_function ListView get_orientation Orientation
@@ -2343,7 +2345,7 @@ module mousetrap
 ###### grid_view.jl
 
     @export_type GridView Widget
-    GridView(orientation::Orientation, selection_mode::SelectionMode) = GridView(detail._GridView(orientation, selection_mode))
+    GridView(orientation::Orientation, selection_mode::SelectionMode = SELECTION_MODE_NONE) = GridView(detail._GridView(orientation, selection_mode))
 
     push_back!(grid_view::GridView, widget::Widget) = detail.push_back!(grid_view._internal, widget._internal.cpp_object)
     export push_back!
@@ -2377,7 +2379,7 @@ module mousetrap
     export get_min_n_columns
 
     @export_function GridView set_orientation Cvoid Orientation orientation
-    @export_functino GridView get_orientation Orientation
+    @export_function GridView get_orientation Orientation
 
     get_selection_model(grid_view::GridView) ::SelectionModel = SelectionModel(detail.get_selection_model(grid_view._internal))
     export get_selection_model
@@ -2429,7 +2431,7 @@ module mousetrap
     @export_type StackSidebar Widget
     StackSidebar(stack::Stack) = StackSidebar(detail._StackSidebar(stack._internal))
 
-    @export_type StackSwitcher Wigget
+    @export_type StackSwitcher Widget
     StackSwitcher(stack::Stack) = StackSwitcher(detail._StackSwitcher(stack._internal))
 
     @export_enum StackTransitionType begin
@@ -2487,7 +2489,7 @@ module mousetrap
     @export_function Stack get_is_horizontally_homogeneous Bool
     @export_function Stack set_is_vertically_homogeneous Cvoid Bool b
     @export_function Stack get_is_vertically_homogeneous Bool
-    @export_fucntion Stack set_should_interpolate_size Cvoid Bool b
+    @export_function Stack set_should_interpolate_size Cvoid Bool b
     @export_function Stack get_should_interpolate_size Bool
 
     @add_widget_signals Stack
@@ -2594,10 +2596,10 @@ connect_signal_activate!(app) do app::Application
 
     window = Window(app)
 
-    label = TextView()
-    set_text!(label, "abc\ndef")
-
-    set_child!(window, label)
+    view = ListView(ORIENTATION_HORIZONTAL)
+    push_back!(view, Label("A"))
+    push_back!(view, Label("B"))
+    set_child!(window, view)
     present!(window)
 end
 
