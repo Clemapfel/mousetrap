@@ -636,7 +636,64 @@ static void implement_color(jlcxx::Module& module)
 
 // ### TODO
 
-static void implement_column_view(jlcxx::Module& module) {}
+using ColumnViewColumn = ColumnView::Column;
+
+static void implement_column_view(jlcxx::Module& module)
+{
+    auto column = module.add_type(ColumnViewColumn)
+        .constructor([](void* internal){
+            return new ColumnView::Column(GTK_COLUMN_VIEW_COLUMN(internal));
+        })
+        .add_type_method(ColumnViewColumn, set_title, !)
+        .add_type_method(ColumnViewColumn, get_title)
+        .add_type_method(ColumnViewColumn, set_fixed_width, !)
+        .add_type_method(ColumnViewColumn, get_fixed_width)
+        .add_type_method(ColumnViewColumn, set_header_menu, !)
+        .add_type_method(ColumnViewColumn, set_is_visible, !)
+        .add_type_method(ColumnViewColumn, get_is_visible)
+        .add_type_method(ColumnViewColumn, set_is_resizable, !)
+        .add_type_method(ColumnViewColumn, get_is_resizable)
+    ;
+
+    auto column_view = module.add_type(ColumnView)
+        .add_constructor(SelectionMode)
+        .add_type_method(ColumnView, push_back_column, !)
+        .add_type_method(ColumnView, push_front_column, !)
+        .add_type_method(ColumnView, insert_column, !)
+        .add_type_method(ColumnView, remove_column, !)
+        .add_type_method(ColumnView, get_column_at)
+        .add_type_method(ColumnView, get_column_with_title)
+        .add_type_method(ColumnView, has_column_with_title)
+        .method("set_widget!", [](ColumnView& view, ColumnView::Column& column, size_t row_i, void* widget){
+            view.set_widget(column, row_i, *((Widget*) widget));
+        })
+        .method("push_back_row!", [](ColumnView& view, jl_value_t* ptr_vec) {
+            log::fatal("In ColumnView::push_back_row!: TODO");
+        })
+        .method("push_front_row!", [](ColumnView& view, jl_value_t* ptr_vec) {
+            log::fatal("In ColumnView::push_front_row!: TODO");
+        })
+        .method("insert_row!", [](ColumnView& view, size_t index, jl_value_t* ptr_vec) {
+            log::fatal("In ColumnView::insert_row!: TODO");
+        })
+        .add_type_method(ColumnView, set_enable_rubberband_selection, !)
+        .add_type_method(ColumnView, get_enable_rubberband_selection)
+        .add_type_method(ColumnView, set_show_row_separators, !)
+        .add_type_method(ColumnView, get_show_row_separators)
+        .add_type_method(ColumnView, set_show_column_separators, !)
+        .add_type_method(ColumnView, get_show_column_separators)
+        .add_type_method(ColumnView, set_single_click_activate, !)
+        .add_type_method(ColumnView, get_single_click_activate)
+        .add_type_method(ColumnView, get_n_rows)
+        .add_type_method(ColumnView, get_n_columns)
+        .method("get_selection_model", [](ColumnView& view) -> void* {
+            return view.get_selection_model()->get_internal();
+        })
+    ;
+
+    add_widget_signals<ColumnView>(column_view);
+    add_signal_activate<ColumnView>(column_view);
+}
 
 // ### CURSOR_TYPE
 
@@ -880,13 +937,87 @@ static void implement_gl_common(jlcxx::Module& module) {}
 
 static void implement_gl_transform(jlcxx::Module& module) {}
 
-// ### TODO
+// ### GRID
 
-static void implement_grid(jlcxx::Module& module) {}
+static void implement_grid(jlcxx::Module& module)
+{
+    auto grid = module.add_type(Grid)
+        .add_constructor()
+        .method("insert!", [](Grid& grid, void* widget, size_t row_i, size_t col_i, size_t n_horizontal_cells, size_t n_vertical_cells){
+            grid.insert(*((Widget*) widget), Vector2i(row_i, col_i), n_horizontal_cells, n_vertical_cells);
+        })
+        .method("remove!", [](Grid& grid, void* widget) {
+            grid.remove(*((Widget*) widget));
+        })
+        .method("get_position", [](Grid& grid, void* widget) -> jl_value_t* {
+            static auto* vector2i_ctor = jl_eval_string("return mousetrap.Vector2i");
+            auto position = grid.get_position(*((Widget*) widget));
+            return jl_calln(vector2i_ctor, jl_box_int64(position.x), jl_box_int64(position.y));
+        })
+        .method("get_size", [](Grid& grid, void* widget) -> jl_value_t* {
+            static auto* vector2i_ctor = jl_eval_string("return mousetrap.Vector2i");
+            auto position = grid.get_size(*((Widget*) widget));
+            return jl_calln(vector2i_ctor, jl_box_int64(position.x), jl_box_int64(position.y));
+        })
+        .add_type_method(Grid, insert_row_at, !)
+        .add_type_method(Grid, remove_row_at, !)
+        .add_type_method(Grid, insert_column_at, !)
+        .add_type_method(Grid, remove_column_at, !)
+        .add_type_method(Grid, set_column_spacing, !)
+        .add_type_method(Grid, get_column_spacing)
+        .add_type_method(Grid, set_row_spacing, !)
+        .add_type_method(Grid, get_row_spacing)
+        .add_type_method(Grid, set_rows_homogeneous, !)
+        .add_type_method(Grid, get_rows_homogeneous)
+        .add_type_method(Grid, set_columns_homogeneous, !)
+        .add_type_method(Grid, get_columns_homogeneous)
+        .add_type_method(Grid, get_orientation)
+        .add_type_method(Grid, set_orientation, !)
+    ;
 
-// ### TODO
+    add_widget_signals<Grid>(grid);
+}
 
-static void implement_grid_view(jlcxx::Module& module) {}
+// ### GRID VIEW
+
+static void implement_grid_view(jlcxx::Module& module)
+{
+    auto grid = module.add_type(GridView)
+        .add_constructor(Orientation, SelectionMode)
+        .method("push_back!", [](GridView& view, void* widget) -> void {
+            view.push_back(*((Widget*) widget));
+        })
+        .method("push_front!", [](GridView& view, void* widget) -> void {
+            view.push_front(*((Widget*) widget));
+        })
+        .method("insert!", [](GridView& view, size_t index, void* widget) -> void {
+            view.insert(*((Widget*) widget), index);
+        })
+        .method("remove!", [](GridView& view, void* widget) -> void {
+            view.remove(*((Widget*) widget));
+        })
+        .method("clear!", [](GridView& view) -> void {
+            view.clear();
+        })
+        .add_type_method(GridView, get_n_items)
+        .add_type_method(GridView, set_enable_rubberband_selection, !)
+        .add_type_method(GridView, get_enable_rubberband_selection)
+        .add_type_method(GridView, set_max_n_columns, !)
+        .add_type_method(GridView, get_max_n_columns)
+        .add_type_method(GridView, set_min_n_columns, !)
+        .add_type_method(GridView, get_min_n_columns)
+        .method("get_selection_model", [](GridView& view) -> void* {
+            return view.get_selection_model()->get_internal();
+        })
+        .add_type_method(GridView, set_single_click_activate, !)
+        .add_type_method(GridView, get_single_click_activate)
+        .add_type_method(GridView, set_orientation, !)
+        .add_type_method(GridView, get_orientation)
+    ;
+
+    add_widget_signals<GridView>(grid);
+    add_signal_activate<GridView>(grid);
+}
 
 // ### TODO
 
@@ -1208,9 +1339,48 @@ static void implement_level_bar(jlcxx::Module& module)
     add_widget_signals<LevelBar>(level_bar);
 }
 
-// ### TODO
+// ### LIST VIEW
 
-static void implement_list_view(jlcxx::Module& module) {}
+static void implement_list_view(jlcxx::Module& module)
+{
+    auto list_view = module.add_type(ListView)
+        .add_constructor(Orientation, SelectionMode)
+        .method("push_back!", [](ListView& view, void* widget, void* iterator) -> void* {
+            return (void*) view.push_back(*((Widget*) widget), (ListView::Iterator) iterator);
+        })
+        .method("push_front!", [](ListView& view, void* widget, void* iterator) -> void* {
+            return (void*) view.push_front(*((Widget*) widget), (ListView::Iterator) iterator);
+        })
+        .method("insert!", [](ListView& view, void* widget, size_t i, void* iterator) -> void* {
+            return (void*) view.insert(*((Widget*) widget), i, (ListView::Iterator) iterator);
+        })
+        .method("remove!", [](ListView& view, size_t index, void* iterator) -> void {
+            view.remove(index, (ListView::Iterator) iterator);
+        })
+        .method("clear!", [](ListView& view, void* iterator) -> void {
+            view.clear((ListView::Iterator) iterator);
+        })
+        // TODO: get_widget_at
+        .method("set_widget_at!", [](ListView& view, size_t index, void* widget, void* iterator) -> void {
+            view.set_widget_at(index, *((Widget*) widget), (ListView::Iterator) iterator);
+        })
+        .method("get_selection_model", [](ListView& view) -> void* {
+            return view.get_selection_model()->get_internal();
+        })
+        .add_type_method(ListView, set_enable_rubberband_selection)
+        .add_type_method(ListView, get_enable_rubberband_selection)
+        .add_type_method(ListView, set_show_separators)
+        .add_type_method(ListView, get_show_separators)
+        .add_type_method(ListView, set_single_click_activate)
+        .add_type_method(ListView, get_single_click_activate)
+        .add_type_method(ListView, get_n_items)
+        .add_type_method(ListView, get_orientation)
+        .add_type_method(ListView, set_orientation)
+    ;
+
+    add_widget_signals<ListView>(list_view);
+    add_signal_activate<ListView>(list_view);
+}
 
 // ### LOG
 
@@ -1592,7 +1762,7 @@ static void implement_scroll_event_controller(jlcxx::Module& module)
 
 static void implement_scrollbar(jlcxx::Module& module) {}
 
-// ### TODO
+// ### SELECTION MODEL
 
 static void implement_selection_model(jlcxx::Module& module)
 {
@@ -1609,10 +1779,10 @@ static void implement_selection_model(jlcxx::Module& module)
             return model.get_internal();
         })
         .add_type_method(SelectionModel, get_selection)
-        .add_type_method(SelectionModel, select_all)
-        .add_type_method(SelectionModel, unselect_all)
-        .add_type_method(SelectionModel, select)
-        .add_type_method(SelectionModel, unselect)
+        .add_type_method(SelectionModel, select_all, !)
+        .add_type_method(SelectionModel, unselect_all, !)
+        .add_type_method(SelectionModel, select, !)
+        .add_type_method(SelectionModel, unselect, !)
     ;
 
     add_signal_selection_changed<SelectionModel>(selection);
@@ -1665,7 +1835,80 @@ static void implement_spinner(jlcxx::Module& module) {}
 
 // ### TODO
 
-static void implement_stack(jlcxx::Module& module) {}
+static void implement_stack(jlcxx::Module& module)
+{
+    define_enum_in(module, StackTransitionType);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, NONE);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, CROSSFADE);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, SLIDE_RIGHT);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, SLIDE_LEFT);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, SLIDE_DOWN);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, SLIDE_UP);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, SLIDE_LEFT_RIGHT);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, SLIDE_UP_DOWN);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, OVER_UP);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, OVER_DOWN);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, OVER_LEFT);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, OVER_RIGHT);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, UNDER_UP);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, UNDER_DOWN);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, UNDER_LEFT);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, UNDER_RIGHT);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, OVER_UP_DOWN);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, OVER_DOWN_UP);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, OVER_LEFT_RIGHT);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, OVER_RIGHT_LEFT);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, ROTATE_LEFT);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, ROTATE_RIGHT);
+    module.add_enum_value(StackTransitionType, STACK_TRANSITION_TYPE, ROTATE_LEFT_RIGHT);
+
+    auto stack = module.add_type(Stack)
+        .add_constructor()
+        .method("get_selection_model", [](Stack& stack) -> void* {
+            return stack.get_selection_model().get_internal();
+        })
+        .method("add_child!", [](Stack& stack, void* widget, const std::string& title) -> std::string {
+            return stack.add_child(*((Widget*) widget), title);
+        })
+        // TODO: get_child
+        .method("remove_child!", [](Stack& stack, const std::string& id) {
+            stack.remove_child(id);
+        })
+        .add_type_method(Stack, get_n_children)
+        .method("set_visible_child!", [](Stack& stack, const std::string& id) {
+            stack.set_visible_child(id);
+        })
+        .method("get_visible_child!", [](Stack& stack) -> std::string {
+            return stack.get_visible_child();
+        })
+        .add_type_method(Stack, set_transition_type)
+        .add_type_method(Stack, get_transition_type)
+        .method("set_transition_duration!", [](Stack& stack, float duration_mys){
+            stack.set_transition_duration(microseconds(duration_mys));
+        })
+        .method("get_transition_duration", [](Stack& stack) -> float {
+            return stack.get_transition_duration().as_microseconds();
+        })
+        .add_type_method(Stack, set_is_horizontally_homogeneous)
+        .add_type_method(Stack, get_is_horizontally_homogenous)
+        .add_type_method(Stack, set_is_vertically_homogeneous)
+        .add_type_method(Stack, get_is_vertically_homogeneous)
+        .add_type_method(Stack, set_should_interpolate_size)
+        .add_type_method(Stack, get_should_interpolate_size)
+    ;
+
+    add_widget_signals<Stack>(stack);
+
+    auto sidebar = module.add_type(StackSidebar)
+        .add_constructor(const Stack&)
+    ;
+    add_widget_signals<StackSidebar>(sidebar);
+
+    auto switcher = module.add_type(StackSwitcher)
+        .add_constructor(const Stack&)
+    ;
+    add_widget_signals<StackSwitcher>(switcher);
+}
 
 // ### STYLUS EVENT CONTROLLER
 
@@ -1763,6 +2006,36 @@ static void implement_text_view(jlcxx::Module& module)
     add_signal_redo<TextView>(text_view);
 }
 
+// ### TIME
+
+static void implement_time(jlcxx::Module& module)
+{
+    module.method("ns_to_minutes", [](double ns) -> double {
+        return nanoseconds(ns).as_minutes();
+    });
+    module.method("ns_to_seconds", [](double ns) -> double {
+        return nanoseconds(ns).as_seconds();
+    });
+    module.method("ns_to_milliseconds", [](double ns) -> double {
+        return nanoseconds(ns).as_milliseconds();
+    });
+    module.method("ns_to_microseconds", [](double ns) -> double {
+        return nanoseconds(ns).as_microseconds();
+    });
+    module.method("minutes_to_ns", [](double x) -> int64_t {
+        return minutes(x).as_nanoseconds();
+    });
+    module.method("seconds_to_ns", [](double x) -> int64_t {
+        return seconds(x).as_nanoseconds();
+    });
+    module.method("milliseconds_to_ns", [](double x) -> int64_t {
+        return milliseconds(x).as_nanoseconds();
+    });
+    module.method("microseconds_to_ns", [](double x) -> int64_t {
+        return milliseconds(x).as_nanoseconds();
+    });
+}
+
 // ### TODO
 
 static void implement_texture(jlcxx::Module& module) {}
@@ -1835,120 +2108,6 @@ static void implement_window(jlcxx::Module& module)
 // ### TODO
 
 static void implement_wrap_mode(jlcxx::Module& module) {}
-
-// ### MAIN
-
-JLCXX_MODULE define_julia_module(jlcxx::Module& module)
-{
-    module.set_const("GTK_MAJOR_VERSION", (int) GTK_MAJOR_VERSION);
-    module.set_const("GTK_MINOR_VERSION", (int) GTK_MINOR_VERSION);
-
-    implement_adjustment(module);
-    implement_action(module);
-    implement_alignment(module);
-    implement_application(module);
-
-    // jump
-
-    implement_event_controller(module);
-    implement_drag_event_controller(module);
-    implement_click_event_controller(module);
-    implement_focus_event_controller(module);
-    implement_key_event_controller(module);
-    implement_long_press_event_controller(module);
-    implement_motion_event_controller(module);
-    implement_pinch_zoom_event_controller(module);
-    implement_rotate_event_controller(module);
-    implement_scroll_event_controller(module);
-    implement_shortcut_event_controller(module);
-    implement_stylus_event_controller(module);
-    implement_swipe_event_controller(module);
-    implement_pan_event_controller(module);
-
-    implement_window(module);
-    implement_aspect_frame(module);
-    implement_blend_mode(module);
-    implement_orientation(module);
-    implement_box(module);
-    implement_button(module);
-    implement_center_box(module);
-    implement_check_button(module);
-    implement_clipboard(module);
-    implement_color(module);
-    implement_icon(module);
-    implement_image(module);
-    implement_image_display(module);
-    implement_column_view(module);
-    implement_cursor_type(module);
-
-    implement_drop_down(module);
-    implement_entry(module);
-    implement_expander(module);
-    implement_file_chooser(module);
-    implement_file_descriptor(module);
-    implement_file_monitor(module);
-    implement_file_system(module);
-    implement_fixed(module);
-    implement_frame(module);
-    implement_frame_clock(module);
-    implement_geometry(module);
-    implement_gl_common(module);
-    implement_gl_transform(module);
-    implement_grid(module);
-    implement_grid_view(module);
-    implement_header_bar(module);
-    implement_key_file(module);
-
-    implement_justify_mode(module);
-    implement_label(module);
-    implement_text_view(module);
-
-    implement_level_bar(module);
-    implement_list_view(module);
-    implement_log(module);
-
-    implement_msaa_render_texture(module);
-    implement_music(module);
-    implement_notebook(module);
-    implement_overlay(module);
-    implement_paned(module);
-
-
-    implement_relative_position(module);
-    implement_menu_model(module);
-    implement_menu_bar(module);
-    implement_popover_menu(module);
-    implement_popover(module);
-    implement_popover_button(module);
-    implement_progress_bar(module);
-
-    implement_render_area(module);
-    implement_render_task(module);
-    implement_render_texture(module);
-    implement_revealer(module);
-
-    implement_scale(module);
-    implement_scale_mode(module);
-
-    implement_scrollbar(module);
-    implement_selection_model(module);
-    implement_separator(module);
-    implement_shader(module);
-    implement_shape(module);
-
-    implement_sound(module);
-    implement_sound_buffer(module);
-    implement_spin_button(module);
-    implement_spinner(module);
-    implement_stack(module);
-
-    implement_switch(module);
-    implement_texture(module);
-    implement_toggle_button(module);
-    implement_transition_type(module);
-    implement_viewport(module);
-    implement_widget(module);
-}
 
 void export_key_codes(jlcxx::Module& module)
 {

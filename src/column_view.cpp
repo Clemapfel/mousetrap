@@ -33,9 +33,6 @@ namespace mousetrap
             self->selection_mode = gtk_mode;
             self->selection_model = new SelectionModel(mode, G_LIST_MODEL(self->list_store));
 
-            if (mode == SelectionMode::SINGLE)
-                gtk_single_selection_set_can_unselect(GTK_SINGLE_SELECTION(self->selection_model->operator GtkSelectionModel *()), true);
-
             gtk_column_view_set_model(self->native, self->selection_model->operator GtkSelectionModel*());
             return self;
         }
@@ -98,6 +95,11 @@ namespace mousetrap
         : _native(native)
     {}
 
+    NativeObject ColumnView::Column::get_internal() const
+    {
+        return G_OBJECT(_native);
+    }
+
     void ColumnView::Column::set_title(const std::string& title)
     {
         gtk_column_view_column_set_title(_native, title.c_str());
@@ -113,7 +115,7 @@ namespace mousetrap
         gtk_column_view_column_set_fixed_width(_native, width);
     }
 
-    float ColumnView::Column::get_fixed_with() const
+    float ColumnView::Column::get_fixed_width() const
     {
         return gtk_column_view_column_get_fixed_width(_native);
     }
@@ -317,5 +319,15 @@ namespace mousetrap
     bool ColumnView::get_is_reorderable() const
     {
         return gtk_column_view_get_reorderable(GTK_COLUMN_VIEW(operator NativeWidget()));
+    }
+
+    bool ColumnView::get_single_click_activate() const
+    {
+        return gtk_column_view_get_single_click_activate(GTK_COLUMN_VIEW(operator NativeWidget()));
+    }
+
+    void ColumnView::set_single_click_activate(bool b)
+    {
+        gtk_column_view_set_single_click_activate(GTK_COLUMN_VIEW(operator NativeWidget()), b);
     }
 }

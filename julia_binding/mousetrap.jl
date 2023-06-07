@@ -390,6 +390,67 @@ module mousetrap
     const Vector4ui = Vector4{Csize_t}
     export Vector4ui
 
+####### time.jl
+
+    struct Time
+        _ns::UInt64
+    end
+    export Time
+
+    as_minutes(time::Time) ::Cdouble = detail.ns_to_minutes(time._ns)
+    export as_minutes
+
+    as_seconds(time::Time) ::Cdouble = detail.ns_to_seconds(time._ns)
+    export as_seconds
+
+    as_milliseconds(time::Time) ::Cdouble = detail.ns_to_milliseconds(time._ns)
+    export as_milliseconds
+
+    as_microseconds(time::Time) ::Cdouble = detail.ns_to_microseconds(time._ns)
+    export as_microseconds
+
+    as_nanoseconds(time::Time) ::Int64 = time._ns
+    export as_nanoseconds
+
+    minutes(n::AbstractFloat) = Time(detail.minutes_to_ns(n))
+    export minutes
+
+    seconds(n::AbstractFloat) = Time(detail.seconds_to_ns(n))
+    export seconds
+
+    milliseconds(n::AbstractFloat) = Time(detail.milliseconds_to_ns(n))
+    export milliseconds
+
+    microseconds(n::AbstractFloat) = Time(detail.microseconds_to_ns(n))
+    export microseconds
+
+    nanoseconds(n::Int64) = Time(n)
+    export nanoseconds
+
+    import Base.+
+    +(a::Time, b::Time) = Time(a._ns + b._ns)
+
+    import Base.-
+    -(a::Time, b::Time) = Time(a._ns - b._ns)
+
+    import Base.==
+    ==(a::Time, b::Time) = a._ns == b._ns
+
+    import Base.!=
+    !=(a::Time, b::Time) = a._ns != b._ns
+
+    import Base.<
+    <(a::Time, b::Time) = a._ns < b._ns
+
+    import Base.<= 
+    <=(a::Time, b::Time) = a._ns <= b._ns
+
+    import Base.>
+    >(a::Time, b::Time) = a._ns > b._ns
+
+    import Base.>=
+    >=(a::Time, b::Time) = a._ns >= b._ns
+
 ####### signal_components.jl
 
     macro add_signal(T, snake_case, Return_t)
@@ -771,33 +832,33 @@ module mousetrap
     macro add_signal_text_changed(x) return :(@add_signal $x text_changed Cvoid) end
     macro add_signal_redo(x) return :(@add_signal $x redo Cvoid) end
     macro add_signal_undo(x) return :(@add_signal $x undo Cvoid) end
-    macro add_signal_drag_begin(x) return :(@add_signal $x drag_begin Cvoid Cdouble start_x Cdouble start_y)
-    macro add_signal_drag(x) return :(@add_signal $x drag Cvoid Cdouble offset_x Cdouble offset_y)
-    macro add_signal_drag_end(x) return :(@add_signal $x drag_end Cvoid Cdouble offset_x Cdouble offset_y)
-    macro add_signal_click_pressed(x) return :(@add_signal $x click_pressed Cvoid Cint n_press Cdouble x Cdouble y)
-    macro add_signal_click_released(x) return :(@add_signal $x click_released Cvoid Cint n_press Cdouble x Cdouble y)
-    macro add_signal_click_stopped(x) return :(@add_signal $x click_stopped Cvoid)
-    macro add_signal_focus_gained(x) return :(@add_signal $x focus_gained Cvoid)
-    macro add_signal_focus_lost(x) return :(@add_signal $x focus_lost Cvoid)
-    macro add_signal_key_pressed(x) return :(@add_signal $x key_pressed Bool Cint key_value Cint key_code ModifierState modifier)        
-    macro add_signal_key_released(x) return :(@add_signal $x key_released Bool Cint key_value Cint key_code ModifierState modifier)        
-    macro add_signal_modifiers_changed(x) return :(@add_signal $x modifiers_changed Bool Cint key_value Cint key_code ModifierState modifier)        
-    macro add_signal_pressed(x) return :(@add_signal $x pressed Cvoid Cdouble x Cdouble y)
-    macro add_signal_press_cancelled(x) return :(@add_signal $x press_cancelled Cvoid)
-    macro add_signal_motion_enter(x) return :(@add_signal $x motion_enter Cvoid Cdouble x Cdouble y)
-    macro add_signal_motion(x) return :(@add_signal $x motion Cvoid Cdouble x Cdouble y)
-    macro add_signal_motion_leave(x) return :(@add_signal $x motion_leave Cvoid)
-    macro add_signal_scale_changed(x) return :(@add_signal $x scale_changed Cvoid Cdouble scale)
-    macro add_signal_rotation_changed(x) return :(@add_signal $x rotation_changed Cvoid Cdouble angle_absolute_rads Cdouble angle_delta_rads)
-    macro add_signal_scroll_decelerate(x) return :(@add_signal $x scroll_decelerate Cvoid Cdouble x_velocity Cdouble y_velocity)
-    macro add_signal_scroll_begin(x) return :(@add_signal $x scroll_begin Cvoid)
-    macro add_signal_scroll(x) return :(@add_signal $x scroll Bool Cdouble delta_x Cdouble delta_y)
-    macro add_signal_scroll_end(x) return :(@add_signal $x scroll_end Cvoid)
-    macro add_signal_stylus_up(x) return :(@add_signal $x stylus_up Cvoid Cdouble x Cdouble y)
-    macro add_signal_stylus_down(x) return :(@add_signal $x stylus_down Cvoid Cdouble x Cdouble y)
-    macro add_signal_proximity(x) return :(@add_signal $x proximity Cvoid Cdouble x Cdouble y)
-    macro add_signal_swipe(x) return :(@add_signal $x swipe Cvoid Cdouble x_velocity Cdouble y_velocity)
-    macro add_signal_pan(x) return :(@add_signal $x pan Cvoid PanDirection direction Cdouble offset)
+    macro add_signal_drag_begin(x) return :(@add_signal $x drag_begin Cvoid Cdouble start_x Cdouble start_y) end
+    macro add_signal_drag(x) return :(@add_signal $x drag Cvoid Cdouble offset_x Cdouble offset_y) end
+    macro add_signal_drag_end(x) return :(@add_signal $x drag_end Cvoid Cdouble offset_x Cdouble offset_y) end
+    macro add_signal_click_pressed(x) return :(@add_signal $x click_pressed Cvoid Cint n_press Cdouble x Cdouble y) end
+    macro add_signal_click_released(x) return :(@add_signal $x click_released Cvoid Cint n_press Cdouble x Cdouble y) end
+    macro add_signal_click_stopped(x) return :(@add_signal $x click_stopped Cvoid) end
+    macro add_signal_focus_gained(x) return :(@add_signal $x focus_gained Cvoid) end
+    macro add_signal_focus_lost(x) return :(@add_signal $x focus_lost Cvoid) end
+    macro add_signal_key_pressed(x) return :(@add_signal $x key_pressed Bool Cint key_value Cint key_code ModifierState modifier) end    
+    macro add_signal_key_released(x) return :(@add_signal $x key_released Bool Cint key_value Cint key_code ModifierState modifier) end      
+    macro add_signal_modifiers_changed(x) return :(@add_signal $x modifiers_changed Bool Cint key_value Cint key_code ModifierState modifier) end        
+    macro add_signal_pressed(x) return :(@add_signal $x pressed Cvoid Cdouble x Cdouble y) end
+    macro add_signal_press_cancelled(x) return :(@add_signal $x press_cancelled Cvoid) end
+    macro add_signal_motion_enter(x) return :(@add_signal $x motion_enter Cvoid Cdouble x Cdouble y) end
+    macro add_signal_motion(x) return :(@add_signal $x motion Cvoid Cdouble x Cdouble y) end
+    macro add_signal_motion_leave(x) return :(@add_signal $x motion_leave Cvoid) end
+    macro add_signal_scale_changed(x) return :(@add_signal $x scale_changed Cvoid Cdouble scale) end
+    macro add_signal_rotation_changed(x) return :(@add_signal $x rotation_changed Cvoid Cdouble angle_absolute_rads Cdouble angle_delta_rads) end
+    macro add_signal_scroll_decelerate(x) return :(@add_signal $x scroll_decelerate Cvoid Cdouble x_velocity Cdouble y_velocity) end
+    macro add_signal_scroll_begin(x) return :(@add_signal $x scroll_begin Cvoid) end
+    macro add_signal_scroll(x) return :(@add_signal $x scroll Bool Cdouble delta_x Cdouble delta_y) end
+    macro add_signal_scroll_end(x) return :(@add_signal $x scroll_end Cvoid) end
+    macro add_signal_stylus_up(x) return :(@add_signal $x stylus_up Cvoid Cdouble x Cdouble y) end
+    macro add_signal_stylus_down(x) return :(@add_signal $x stylus_down Cvoid Cdouble x Cdouble y) end
+    macro add_signal_proximity(x) return :(@add_signal $x proximity Cvoid Cdouble x Cdouble y) end
+    macro add_signal_swipe(x) return :(@add_signal $x swipe Cvoid Cdouble x_velocity Cdouble y_velocity) end
+    macro add_signal_pan(x) return :(@add_signal $x pan Cvoid PanDirection direction Cdouble offset) end
 
 
 
@@ -861,7 +922,7 @@ module mousetrap
     set_surpress_info(domain::LogDomain, b::Bool) = detail.log_set_surpress_info(domain, b)
     export set_surpress_info
 
-    get_surpress_debug(dbut thomain::LogDomain) ::Bool = detail.log_get_surpress_debug(domain, b)
+    get_surpress_debug(domain::LogDomain) ::Bool = detail.log_get_surpress_debug(domain, b)
     export set_surpress_debug
 
     get_surpress_info(domain::LogDomain) ::Bool = detail.log_get_surpress_info(domain, b)
@@ -1505,8 +1566,8 @@ module mousetrap
 
     @export_function Icon create_from_file! Bool path String
 
-    function create_from_theme!(icon::Icon, theme::IconTheme, id::IconID, square_resolution::Unsigned, scale::Unsigned = Unsigned(1))
-        detail.create_from_theme!(icon._internal, theme._internal.cpp_object, id, square_resolution, scale)
+    function create_from_theme!(icon::Icon, theme::IconTheme, id::IconID, square_resolution::Integer, scale::Integer = 1)
+        detail.create_from_theme!(icon._internal, theme._internal.cpp_object, id, UInt64(square_resolution), UInt64(scale))
     end
     export create_from_theme!
 
@@ -1546,10 +1607,10 @@ module mousetrap
     @export_type Image
     Image() = Image(detail._Image())
     Image(path::String) = Image(detail._Image(path))
-    Image(width::Unsigned, height::Unsigned, color::RGBA = RGBA(0, 0, 0, 1)) = Image(detail._Image(width, height, color))
+    Image(width::Integer, height::Integer, color::RGBA = RGBA(0, 0, 0, 1)) = Image(detail._Image(UInt64(width), UInt64(height), color))
 
-    function create!(image::Image, width::Unsigned, height::Unsigned, color::RGBA = RGBA(0, 0, 0, 1))
-        detail.create!(image._internal, width, height, color)
+    function create!(image::Image, width::Integer, height::Integer, color::RGBA = RGBA(0, 0, 0, 1))
+        detail.create!(image._internal, UInt64(width), UInt64(height), color)
     end
     export create!
 
@@ -1558,26 +1619,26 @@ module mousetrap
     @export_function Image get_n_pixels Int64
     @export_function Image get_size Vector2f
 
-    function as_scaled(image::Image, size_x::Unsigned, size_y::Unsigned, interpolation::InterpolationType)
-        return Image(detail.as_scaled(image._internal, size_x, size_y, interpolation))
+    function as_scaled(image::Image, size_x::Integer, size_y::Integer, interpolation::InterpolationType)
+        return Image(detail.as_scaled(image._internal, UInt64(size_x), UInt64(size_y), interpolation))
     end
     export as_scaled
 
-    function as_cropped(image::Image, offset_x::Integer, offset_y::Integer, new_width::Unsigned, new_height::Unsigned)
-        return Image(detail.as_cropped(image._internal, offset_x, offset_y, new_width, new_height))
+    function as_cropped(image::Image, offset_x::Integer, offset_y::Integer, new_width::Integer, new_height::Integer)
+        return Image(detail.as_cropped(image._internal, offset_x, offset_y, UInt64(new_width), UInt64(new_height)))
     end
     export as_cropped
 
-    function set_pixel!(image::Image, x::Unsigned, y::Unsigned, color::RGBA)
-        detail.set_pixel_rgba!(image._internal, x, y, color)
+    function set_pixel!(image::Image, x::Integer, y::Integer, color::RGBA)
+        detail.set_pixel_rgba!(image._internal, UInt64(x), UInt64(y), color)
     end
-    function set_pixel!(image::Image, x::Unsigned, y::Unsigned, color::HSVA)
-        detail.set_pixel_hsva!(image._internal, x, y, color)
+    function set_pixel!(image::Image, x::Integer, y::Integer, color::HSVA)
+        detail.set_pixel_hsva!(image._internal, UInt64(x), UInt64(y), color)
     end
     export set_pixel!
 
-    function get_pixel(image::Image, x::Unsigned, y::Unsigned) ::RGBA
-        return detail.get_pixel(image._internal, x, y)
+    function get_pixel(image::Image, x::Integer, y::Integer) ::RGBA
+        return detail.get_pixel(image._internal, UInt64(x), UInt64(y))
     end
     export get_pixel
 
@@ -1859,6 +1920,13 @@ module mousetrap
     export add_icon!
 
     @add_signal_items_changed MenuModel
+
+###### menubar.jl
+
+    @export_type MenuBar Widget
+    MenuBar(model::MenuModel) = MenuBar(detail._MenuBar(model._internal))
+
+    @add_widget_signals MenuBar
 
 ####### popover_menu.jl
 
@@ -2197,12 +2265,318 @@ module mousetrap
 
     @add_signal_pan PanEventController
 
-###### menubar.jl
+###### selection_model.jl
 
-    @export_type MenuBar Widget
-    MenuBar(model::MenuModel) = MenuBar(detail._MenuBar(model._internal))
+    @export_enum SelectionMode begin
+        SELECTION_MODE_NONE
+        SELECTION_MODE_SINGLE
+        SELECTION_MODE_MULTIPLE
+    end
 
-    @add_widget_signals MenuBar
+    @export_type SelectionModel SignalEmitter
+    SelectionModel(internal::Ptr{Cvoid}) = SelectionModel(detail._SelectionModel(internal))
+
+    function get_selection(model::SelectionModel) ::Vector{UInt64} 
+        return detail.get_selection(model._internal)
+    end
+    export get_selection
+
+    @export_function SelectionModel select_all! Cvoid
+    @export_function SelectionModel unselect_all! Cvoid
+
+    select!(model::SelectionModel, i::Integer, unselect_others::Bool = true) = detail.select!(model._internal, i, unselect_others)
+    export select!
+
+    unselect!(model::SelectionModel, i::Integer) = detail.unselect!(model._internal)
+    export unselect!
+
+###### list_view.jl
+
+    @export_type ListView Widget
+    ListView(orientation::Orientation, selection_mode::SelectionMode) = ListView(detai._ListView(orientation, selection_mode))    
+
+    struct ListViewIterator
+        _internal::Ptr{Cvoid}
+    end
+    export ListViewIterator
+
+    push_back!(list_view::ListView, widget::Widget) = detail.push_back!(list_view._internal, widget._internal.cpp_object, Ptr{Cvoid}())
+    push_back!(list_view::ListView, widget::Widget, iterator::ListViewIterator) = detail.push_back!(list_view._internal, widget._internal.cpp_object, iterator._internal)
+    export push_back!
+
+    push_front!(list_view::ListView, widget::Widget) = detail.push_front!(list_view._internal, widget._internal.cpp_object, Ptr{Cvoid}())
+    push_front!(list_view::ListView, widget::Widget, iterator::ListViewIterator) =detail.push_front!(list_view._internal, widget._internal.cpp_object, iterator._internal)
+    export push_front!
+
+    insert!(list_view::ListView, widget::Widget, index::Integer) = detail.insert!(list_view._internal, UInt64(index), widget._internal.cpp_object, Ptr{Cvoid}())
+    insert!(list_view::ListView, widget::Widget, index::Integer, iterator::ListViewIterator) = detail.insert!(list_view._internal, UInt64(index), widget._internal.cpp_object, iterator._internal)
+    export insert!
+
+    remove!(list_view::ListView, index::Integer) = detail.remove!(list_view._internal, UInt64(index), Ptr{Cvoid}())
+    remove!(list_view::ListView, index::Integer, iterator::ListViewIterator) = detail.remove!(list_view._internal, UInt64(index), iterator._internal)
+    export remove!
+
+    clear!(list_view::ListView) = detail.clear!(list_view._internal,Ptr{Cvoid}())
+    clear!(list_view::ListView, iterator::ListViewIterator) = detail.clear!(list_view._internal, iterator._internal)
+    export clear!
+
+    set_widget_at!(list_view::ListView, index::Integer, widget::Widget) = detail.set_widget_at!(list_view._internal, UInt64(index), widget._internal.cpp_object, Ptr{Cvoid}())
+    set_widget_at!(list_view::ListView, index::Integer, widget::Widget, iterator::ListViewIterator) = detail.set_widget_at!(list_view._internal, UInt64(index), widget._internal.cpp_object, iterator._internal)
+    export set_widget_at!
+
+    get_selection_model(list_view::ListView) ::SelectionModel = SelectionModel(detail.get_selection_model(list_view._internal))
+    export get_selection_model
+
+    @export_function ListView set_enable_rubberband_selection Cvoid Bool b
+    @export_function ListView get_enabled_rubberband_selection Bool
+    @export_function ListView set_show_separators Cvoid Bool b
+    @export_function ListView get_show_separators Bool
+    @export_function ListView set_single_click_activate Cvoid Bool b
+    @export_function ListVIew get_single_click_activate Bool
+    @export_function ListView get_n_items Cuint
+    @export_function ListView set_orientation Cvoid Orientation orientation
+    @export_function ListView get_orientation Orientation
+
+    @add_widget_signals ListView
+    @add_signal_activate ListView
+
+###### grid_view.jl
+
+    @export_type GridView Widget
+    GridView(orientation::Orientation, selection_mode::SelectionMode) = GridView(detail._GridView(orientation, selection_mode))
+
+    push_back!(grid_view::GridView, widget::Widget) = detail.push_back!(grid_view._internal, widget._internal.cpp_object)
+    export push_back!
+
+    push_front!(grid_view::GridView, widget::Widget) = detail.push_ront!(grid_view._internal, widget._internal.cpp_object)
+    export push_front!
+
+    insert!(grid_view::GridView, widget::Widget, index::Integer) = detail.insert!(grid_view._internal, widget._internal.cpp_object, index)
+    export insert!
+
+    remove!(grid_view::GridView, widget::Widget) = detail.remove!(grid_view._internal, widget._internal.cpp_object)
+    export remove!
+
+    clear!(grid_view::GridView) = detail.clear!(grid_view._internal)
+    export clear!
+
+    @export_function GridView get_n_items Int64
+    @export_function GridView set_enable_rubberband_selection Cvoid Bool b
+    @export_function GridView get_enabled_rubberband_selection Bool
+   
+    set_max_n_columns!(grid_view::GridView, n::Integer) = detail.set_max_n_columns!(grid_view._internal, UInt64(n))
+    export set_max_n_columns!
+
+    get_max_n_columns(grid_view::GridView) ::Int64 = detail.get_max_n_columns(grid_view._internal)
+    export get_max_n_columns
+
+    set_min_n_columns!(grid_view::GridView, n::Integer) = detail.set_min_n_columns!(grid_view._internal, UInt64(n))
+    export set_min_n_columns!
+
+    get_min_n_columns(grid_view::GridView) ::Int64 = detail.get_min_n_columns(grid_view._internal)
+    export get_min_n_columns
+
+    @export_function GridView set_orientation Cvoid Orientation orientation
+    @export_functino GridView get_orientation Orientation
+
+    get_selection_model(grid_view::GridView) ::SelectionModel = SelectionModel(detail.get_selection_model(grid_view._internal))
+    export get_selection_model
+
+    @add_widget_signals GridView
+    @add_signal_activate GridView
+
+###### grid.jl
+
+    @export_type Grid Widget
+    Grid() = Grid(detail._Grid())
+
+    function insert!(grid::Grid, widget::Widget, row_i::Signed, column_i::Signed; n_horizontal_cells::Unsigned = Unsigned(1), n_vertical_cells::Unsigned = Unsigned(1))
+        detail.insert!(grid._internal, widget._internal.cpp_object, row_i, column_i, n_horizontal_cells, n_vertical_cells)
+    end
+    export insert!
+
+    remove!(grid::GridView, widget::Widget) = detail.remove!(grid._internal, widget._internal.cpp_object)
+    export remove!
+
+    get_position(grid::GridView, widget::Widget) ::Vector2i = detail.get_position(grid._internal, widget._internal.cpp_object)
+    export get_position
+
+    get_size(grid::GridView, widget::Widget) ::Vector2i = detail.get_size(grid._internal, widget._internal.cpp_object)
+    export get_size
+
+    @export_function Grid insert_row_at! Cvoid Signed row_i
+    @export_function Grid remove_row_at! Cvoid Signed row_i
+    @export_function Grid insert_column_at! Cvoid Signed column_i
+    @export_function Grid remove_column_at! Cvoid Signed column_i
+    @export_function Grid set_row_spacing! Cvoid AbstractFloat spacing
+    @export_function Grid get_column_spacing Cfloat
+    @export_function Grid set_column_spacing! Cvoid AbstractFloat spacing
+    @export_function Grid get_column_spacing Cfloat
+    @export_function Grid set_rows_homogeneous! Cvoid Bool b
+    @export_function Grid get_rows_homogeneous Bool
+    @export_function Grid set_columns_homogeneous! Cvoid Bool b
+    @export_function Grid get_columns_homogeneous Bool
+    @export_function Grid set_orientation! Cvoid Orientation orientation
+    @export_function Grid get_orientation Orientation
+
+    @add_widget_signals Grid
+
+###### stack.jl
+
+    @export_type Stack Widget
+    Stack() = Stack(detail._Stack())
+
+    @export_type StackSidebar Widget
+    StackSidebar(stack::Stack) = StackSidebar(detail._StackSidebar(stack._internal))
+
+    @export_type StackSwitcher Wigget
+    StackSwitcher(stack::Stack) = StackSwitcher(detail._StackSwitcher(stack._internal))
+
+    @export_enum StackTransitionType begin
+        STACK_TRANSITION_TYPE_NONE
+        STACK_TRANSITION_TYPE_CROSSFADE
+        STACK_TRANSITION_TYPE_SLIDE_RIGHT
+        STACK_TRANSITION_TYPE_SLIDE_LEFT
+        STACK_TRANSITION_TYPE_SLIDE_UP
+        STACK_TRANSITION_TYPE_SLIDE_DOWN
+        STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT
+        STACK_TRANSITION_TYPE_SLIDE_UP_DOWN
+        STACK_TRANSITION_TYPE_OVER_UP
+        STACK_TRANSITION_TYPE_OVER_DOWN
+        STACK_TRANSITION_TYPE_OVER_LEFT
+        STACK_TRANSITION_TYPE_OVER_RIGHT
+        STACK_TRANSITION_TYPE_UNDER_UP
+        STACK_TRANSITION_TYPE_UNDER_DOWN
+        STACK_TRANSITION_TYPE_UNDER_LEFT
+        STACK_TRANSITION_TYPE_UNDER_RIGHT
+        STACK_TRANSITION_TYPE_OVER_UP_DOWN
+        STACK_TRANSITION_TYPE_OVER_LEFT_RIGHT
+        STACK_TRANSITION_TYPE_ROTATE_LEFT
+        STACK_TRANSITION_TYPE_ROTATE_RIGHT
+        STACK_TRANSITION_TYPE_ROTATE_LEFT_RIGHT
+    end
+
+    get_selection_model(stack::Stack) ::SelectionModel = SelectionModel(detail.get_selection_model(stack._internal))
+    export get_selection_model
+    
+    const StackID = String
+    export StackID
+
+    add_child!(stack::Stack, child::Widget, title::String) ::StackID = detail.add_child!(stack._internal, child._internal.cpp_object, title)
+    export add_child!
+
+    remove_child!(stack::Stack, id::StackID) = detail.remove_child!(stack._internal, id)
+    export remove_child!
+
+    set_visible_child!(stack::Stack, id::StackID) = detail.set_visible_child!(stack._internal, id)
+    export set_visible_child!
+
+    get_visible_child(stack::Stack) ::StackID = detail.get_visible_child(stack._internal)
+    export get_visible_child
+
+    @export_function Stack set_transition_type Cvoid StackTransitionType transition
+    @export_function Stack get_transition_type StackTransitionType
+
+    set_transition_duration!(stack::Stack, duration::Time) = detail.set_transition_duration!(stack._internal, as_microseconds(duration))
+    export set_transition_duration!
+
+    get_transition_duration(stack::Stack) ::Time = microseconds(detail.get_transition_duration(stack._internal))
+    export get_transition_duration
+
+    @export_function Stack set_is_horizontally_homogeneous Cvoid Bool b
+    @export_function Stack get_is_horizontally_homogeneous Bool
+    @export_function Stack set_is_vertically_homogeneous Cvoid Bool b
+    @export_function Stack get_is_vertically_homogeneous Bool
+    @export_fucntion Stack set_should_interpolate_size Cvoid Bool b
+    @export_function Stack get_should_interpolate_size Bool
+
+    @add_widget_signals Stack
+    @add_widget_signals StackSidebar
+    @add_widget_signals StackSwitcher
+
+###### column_view.jl
+
+    @export_type ColumnViewColumn SignalEmitter
+    ColumnViewColumn(internal::Ptr{Cvoid}) = ColumnViewColumn(detail._ColumnViewColumn(internal))
+
+    @export_function ColumnViewColumn set_title Cvoid String title
+    @export_function ColumnViewColumn get_title String
+    @export_function ColumnViewColumn set_fixed_width Cvoid AbstractFloat width
+    @export_function ColumnViewColumn get_fixed_width Cfloat
+    
+    set_header_menu!(column::ColumnViewColumn, model::MenuModel) = detail.set_header_menu!(column._internal, model._internal)
+    export set_header_menu!
+
+    @export_function ColumnViewColumn set_is_visible! Cvoid Bool b
+    @export_function ColumnViewColumn get_is_visible Bool
+    @export_function ColumnViewColumn set_is_resizable! Cvoid Bool b
+    @export_function ColumnViewColumn get_is_resizable Bool
+
+    @export_type ColumnView Widget
+    ColumnView(selection_mode::SelectionMode) = ColumnView(detail._ColumnView(selection_mode))
+
+    push_back_column!(column_view::ColumnView, title::String) = detail.push_back_column!(column_view._internal, title)
+    export push_back_column!
+    
+    push_front_column!(column_view::ColumnView, title::String) = detail.push_front_column!(column_view._internal, title)
+    export push_front_column!
+
+    insert_column!(column_view::ColumnView, index::Integer, title::String) = detail.insert_column!(column_view._internal, UInt64(index), title)
+    export insert_column!
+
+    remove_column!(column_view::ColumnView, column::ColumnViewColumn) = detail.remove_column!(column_view._internal, column._internal)
+    export remove_column!
+
+    function get_column_at(column_view::ColumnView, index::Integer) ::ColumnViewColumn 
+        return ColumnViewColumn(detail.get_column_at(column_view._internal, UInt64(index)))
+    end
+    export get_column_at
+
+    function get_column_with_title(column_view::ColumnView, title::String) ::ColumnViewColumn 
+        return ColumnViewColumn(detail.get_column_with_title(column_view._internal, title))
+    end
+    export get_column_with_title
+
+    has_column_with_title(column_view::ColumnView, title::String) ::Bool = return detail.get_column_with_title(column_view._internal, title)
+    export has_column_with_title
+
+    function set_widget!(column_view::ColumnView, column::ColumnViewColumn, row_i::Integer, widget::Widget)
+        detail.set_widget!(column_view._internal, column._internal, UInt64(row_i), widget._internal.cpp_object)
+    end
+    export set_widget!
+
+    function push_back_row!(column_view::ColumnView, widgets::Widget...)
+        pointers = Ptr{Cvoid}[x._internal.cpp_object for x in widgets]
+        detail.push_back_row!(column_view._internal, pointers)
+    end
+    export push_back_row!
+
+    function push_front_row!(column_view::ColumnView, widgets::Widget...)
+        pointers = Ptr{Cvoid}[x._internal.cpp_object for x in widgets]
+        detail.push_front_row!(column_view._internal, pointers)
+    end
+    export push_front_row!
+
+    function insert_row!(column_view::ColumnView, index::Integer, widgets::Widget...)
+        pointers = Ptr{Cvoid}[x._internal.cpp_object for x in widgets]
+        detail.insert_row!(column_view._internal, UInt64(index), pointers)
+    end
+    export push_back_row!
+
+    get_selection_model(column_view::ColumnView) ::SelectionModel = SelectionModel(detail.get_selection_model(column_view._internal))
+    export get_selection_model
+
+    @export_function ColumnView set_enable_rubberband_selection Cvoid Bool b
+    @export_function ColumnView get_enabled_rubberband_selection Bool
+    @export_function ColumnView set_show_row_separators Cvoid Bool b
+    @export_function ColumnView get_show_row_separators Bool
+    @export_function ColumnView set_show_column_separators Cvoid Bool b
+    @export_function ColumnView get_show_column_separators Bool
+    @export_function ColumnView set_single_click_activate! Cvoid Bool b
+    @export_function ColumnView get_single_click_activate Bool
+    @export_function ColumnView get_n_rows Int64
+    @export_function ColumnView get_n_columns Int64
+
 
 ###### key_code.jl
 

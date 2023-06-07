@@ -41,7 +41,6 @@ namespace mousetrap
             using Iterator = detail::_ListViewItem*;
 
             /// @brief number of pixels a nested list item should be offset to the right
-            /// \todo make non-const
             static inline const size_t indent_per_depth = 20;
 
             /// @brief ctor list view
@@ -71,11 +70,11 @@ namespace mousetrap
             Iterator push_front(const Widget& widget, Iterator iterator = nullptr);
 
             /// @brief add a widget at a specific position to the list
-            /// @param index
             /// @param widget
+            /// @param index
             /// @param iterator iterator to sub-list, or nullptr to add to the toplevel list
             /// @return iterator to list the widget was inserted in
-            Iterator insert(size_t index, const Widget& widget, Iterator iterator = nullptr);
+            Iterator insert(const Widget& widget, size_t index, Iterator iterator = nullptr);
 
             /// @brief remove n-th element from list specified by iterator
             /// @param index

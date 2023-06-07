@@ -28,6 +28,8 @@ namespace mousetrap
         };
         using ColumnViewInternal = _ColumnViewInternal;
         DEFINE_INTERNAL_MAPPING(ColumnView);
+
+        using ColumnViewColumnInternal = GtkColumnViewColumn;
     }
     #endif
 
@@ -61,7 +63,7 @@ namespace mousetrap
 
                     /// @brief get fixed width of column
                     /// @return width
-                    float get_fixed_with() const;
+                    float get_fixed_width() const;
 
                     /// @brief set the menumodel to use for the header menu, this menu is accessible by clicked the columns header bar
                     /// @param menu_model
@@ -83,10 +85,12 @@ namespace mousetrap
                     /// @return true if resizable, false otherwise
                     bool get_is_resizable() const;
 
-                protected:
                     /// @brief construct as thin wrapper \for_internal_use_only
                     /// @param native native GtkColumnViewColumn
-                    Column(GtkColumnViewColumn*);
+                    Column(detail::ColumnViewColumnInternal*);
+
+                    /// @brief expose internal
+                    NativeObject get_internal() const;
 
                 private:
                     GtkColumnViewColumn* _native = nullptr;
@@ -153,7 +157,7 @@ namespace mousetrap
             template<typename... WidgetRef_ts>
             void push_back_row(WidgetRef_ts... widget_by_column);
 
-            /// @brief convenience functino that maps widgets to columns and appends them as a new row at end of the list
+            /// @brief convenience function that maps widgets to columns and appends them as a new row at end of the list
             /// @tparam WidgetRef_ts has to be Widget, Widget& or const Widget&
             /// @param widget_by_column
             template<typename... WidgetRef_ts>

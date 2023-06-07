@@ -80,6 +80,10 @@ namespace mousetrap
             /// @param i index
             void unselect(size_t i);
 
+            /// @brief if the selection mode is SelectionMode::SINGLE, determines whether no items can be selected
+            /// @param b true to allow no selection
+            void set_allow_no_selection_if_single(bool b);
+
         protected:
             detail::SelectionModelInternal* _internal = nullptr;
     };

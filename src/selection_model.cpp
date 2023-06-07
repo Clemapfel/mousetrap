@@ -4,6 +4,7 @@
 //
 
 #include <mousetrap/selection_model.hpp>
+#include <mousetrap/log.hpp>
 
 namespace mousetrap
 {
@@ -22,6 +23,8 @@ namespace mousetrap
           CTOR_SIGNAL(SelectionModel, selection_changed)
     {
         g_object_ref(_internal);
+        if (GTK_IS_SINGLE_SELECTION(internal))
+            gtk_single_selection_set_autoselect(GTK_SINGLE_SELECTION(internal), false);
     }
 
     SelectionModel::SelectionModel(SelectionMode mode, GListModel* model)
@@ -74,5 +77,16 @@ namespace mousetrap
     void SelectionModel::unselect(size_t i)
     {
         gtk_selection_model_unselect_item(operator GtkSelectionModel*(), i);
+    }
+
+    void SelectionModel::set_allow_no_selection_if_single(bool b)
+    {
+        if (not GTK_IS_SINGLE_SELECTION(operator GtkSelectionModel*()))
+        {
+            log::warning("In SelectionModel::set_allow_no_selection_if_single: Selection model has a mode other than SelectionMode::SINGLE, this function will have no effect", MOUSETRAP_DOMAIN);
+            return;
+        }
+
+        gtk_single_selection_set_autoselect(GTK_SINGLE_SELECTION(operator GtkSelectionModel*()), not b);
     }
 }

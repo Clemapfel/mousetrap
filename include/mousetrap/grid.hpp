@@ -55,7 +55,7 @@ namespace mousetrap
             /// @brief get how many cells a widget should occupy
             /// @param widget
             /// @return number of rows, number of columns
-            Vector2ui get_bounds(const Widget& widget) const;
+            Vector2ui get_size(const Widget& widget) const;
 
             /// @brief insert a new row at given index
             /// @param index may be negative
@@ -91,19 +91,19 @@ namespace mousetrap
 
             /// @brief set whether all rows should allocate the same size
             /// @param b true if allocation should be homogenous, false otherwise
-            void set_rows_homogenous(bool b);
+            void set_rows_homogeneous(bool b);
 
             /// @brief get whether all rows should allocate the same size
             /// @return true if allocation should be homogenous, false otherwise
-            bool get_rows_homogenous() const;
+            bool get_rows_homogeneous() const;
 
             /// @brief set whether all columns should allocate the same size
             /// @param b true if allocation should be homogenous, false otherwise
-            void set_columns_homogenous(bool b);
+            void set_columns_homogeneous(bool b);
 
             /// @brief get whether all columns should allocate the same size
             /// @return true if allocation should be homogenous, false otherwise
-            bool get_columns_homogenous() const;
+            bool get_columns_homogeneous() const;
 
             /// @copydoc mousetrap::Orientable::get_orientation
             Orientation get_orientation() const;

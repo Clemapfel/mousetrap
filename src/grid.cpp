@@ -50,7 +50,7 @@ namespace mousetrap
         return Vector2i(column, row);
     }
 
-    Vector2ui Grid::get_bounds(const Widget& widget) const
+    Vector2ui Grid::get_size(const Widget& widget) const
     {
         int column, row, width, height;
         gtk_grid_query_child(GTK_GRID(_internal), widget.operator GtkWidget *(), &column, &row, &width, &height);
@@ -97,22 +97,22 @@ namespace mousetrap
         return gtk_grid_get_row_spacing(GTK_GRID(_internal));
     }
 
-    void Grid::set_rows_homogenous(bool b)
+    void Grid::set_rows_homogeneous(bool b)
     {
         gtk_grid_set_row_homogeneous(GTK_GRID(_internal), b);
     }
 
-    bool Grid::get_rows_homogenous() const
+    bool Grid::get_rows_homogeneous() const
     {
         return gtk_grid_get_row_homogeneous(GTK_GRID(_internal));
     }
 
-    void Grid::set_columns_homogenous(bool b)
+    void Grid::set_columns_homogeneous(bool b)
     {
         gtk_grid_set_column_homogeneous(GTK_GRID(_internal), b);
     }
 
-    bool Grid::get_columns_homogenous() const
+    bool Grid::get_columns_homogeneous() const
     {
         return gtk_grid_get_column_homogeneous(GTK_GRID(_internal));
     }

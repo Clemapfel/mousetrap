@@ -120,7 +120,7 @@ namespace mousetrap
 
             /// @brief set whether the stacks height should be equal to the largest height of any of itss children at all times
             /// @return true to equalize the height, false otherwise
-            bool get_is_vertically_homogenous() const;
+            bool get_is_vertically_homogeneous() const;
 
             /// @brief set whether, when switching between to children, the stack should move from one size to the other linearly, instead of switching immediately
             /// @param b true if sizes should be interpolated, false otherwise

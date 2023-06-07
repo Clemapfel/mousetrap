@@ -112,9 +112,6 @@ namespace mousetrap::detail
         g_signal_connect(self->factory, "unbind", G_CALLBACK(on_list_item_factory_unbind), self);
 
         self->selection_model = new SelectionModel(mode, G_LIST_MODEL(self->list_store));
-        if (mode == SelectionMode::SINGLE)
-            gtk_single_selection_set_can_unselect(GTK_SINGLE_SELECTION(self->selection_model->operator GtkSelectionModel *()), true);
-
         self->native = native;
         gtk_grid_view_set_model(self->native, self->selection_model->operator GtkSelectionModel*());
         gtk_grid_view_set_factory(self->native, GTK_LIST_ITEM_FACTORY(self->factory));

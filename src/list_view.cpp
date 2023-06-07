@@ -172,9 +172,6 @@ namespace mousetrap::detail
         self->selection_mode = (GtkSelectionMode) mode;
         self->selection_model = new SelectionModel(mode, G_LIST_MODEL(self->tree_list_model));
 
-        if (mode == SelectionMode::SINGLE)
-            gtk_single_selection_set_can_unselect(GTK_SINGLE_SELECTION(self->selection_model->operator GtkSelectionModel *()), true);
-
         self->factory = GTK_SIGNAL_LIST_ITEM_FACTORY(gtk_signal_list_item_factory_new());
         g_signal_connect(self->factory, "bind", G_CALLBACK(on_list_item_factory_bind), self);
         g_signal_connect(self->factory, "unbind", G_CALLBACK(on_list_item_factory_unbind), self);
@@ -251,10 +248,10 @@ namespace mousetrap
             return nullptr;
         }
 
-        return insert(0, widget, it);
+        return insert(widget, 0, it);
     }
 
-    ListView::Iterator ListView::insert(size_t i, const Widget& widget, Iterator it)
+    ListView::Iterator ListView::insert(const Widget& widget, size_t i, Iterator it)
     {
         if (widget.operator GtkWidget*() == this->operator GtkWidget*())
         {
