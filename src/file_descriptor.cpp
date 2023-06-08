@@ -28,6 +28,11 @@ namespace mousetrap
             g_object_unref(_native);
     }
 
+    NativeObject FileDescriptor::get_internal() const
+    {
+        return G_OBJECT(_native);
+    }
+
     bool FileDescriptor::create_from_path(const FilePath& path)
     {
         _native = g_file_new_for_path(path.c_str());

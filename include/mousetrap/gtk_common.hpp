@@ -9,6 +9,12 @@
 
 #include <iostream> //TODO
 
+namespace mousetrap
+{
+    /// @brief garbage collected object \for_internal_use_only
+    using NativeObject = GObject*;
+}
+
 namespace mousetrap::detail
 {
     template <typename T>

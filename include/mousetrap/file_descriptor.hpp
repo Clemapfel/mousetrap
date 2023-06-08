@@ -7,6 +7,7 @@
 #include <mousetrap/gtk_common.hpp>
 #include <string>
 #include <vector>
+#include "signal_emitter.hpp"
 
 namespace mousetrap
 {
@@ -35,6 +36,9 @@ namespace mousetrap
 
             /// @brief destruct, does not mutate any data on disk
             ~FileDescriptor();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief copy ctor
             /// @param other

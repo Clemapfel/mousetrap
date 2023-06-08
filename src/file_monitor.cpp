@@ -10,7 +10,15 @@ namespace mousetrap
     namespace detail
     {
         DECLARE_NEW_TYPE(FileMonitorInternal, file_monitor_internal, FILE_MONITOR_INTERNAL)
-        DEFINE_NEW_TYPE_TRIVIAL_FINALIZE(FileMonitorInternal, file_monitor_internal, FILE_MONITOR_INTERNAL)
+
+        static void file_monitor_internal_finalize(GObject *object)
+        {
+            auto* self = MOUSETRAP_FILE_MONITOR_INTERNAL(object);
+            G_OBJECT_CLASS(file_monitor_internal_parent_class)->finalize(object);
+
+            delete self->f;
+        }
+
         DEFINE_NEW_TYPE_TRIVIAL_INIT(FileMonitorInternal, file_monitor_internal, FILE_MONITOR_INTERNAL)
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(FileMonitorInternal, file_monitor_internal, FILE_MONITOR_INTERNAL)
 
@@ -20,7 +28,7 @@ namespace mousetrap
             file_monitor_internal_init(self);
 
             self->native = native;
-            self->f = new std::function<void(FileMonitorEvent event, FileDescriptor self, FileDescriptor other)>();
+            self->f = new std::function<void(FileMonitor&, FileMonitorEvent event, FileDescriptor self, FileDescriptor other)>();
             return self;
         }
     }
@@ -48,14 +56,15 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
-    void FileMonitor::on_changed(GFileMonitor* self, GFile* file, GFile* other, GFileMonitorEvent event, detail::FileMonitorInternal* instance)
+    void FileMonitor::on_changed(GFileMonitor*, GFile* file, GFile* other, GFileMonitorEvent event, detail::FileMonitorInternal* instance)
     {
         if (not (*instance->f))
             return;
 
         auto self_descriptor = G_IS_FILE(file) ? FileDescriptor(file) : FileDescriptor("");
         auto other_descriptor = G_IS_FILE(other) ? FileDescriptor(other) : FileDescriptor("");
-        (*instance->f)((FileMonitorEvent) event, self_descriptor, other_descriptor);
+        auto self = FileMonitor(instance);
+        (*instance->f)(self, (FileMonitorEvent) event, self_descriptor, other_descriptor);
     }
 
     FileMonitor::operator GObject*() const

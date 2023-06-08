@@ -851,13 +851,93 @@ static void implement_expander(jlcxx::Module& module)
 
 static void implement_file_chooser(jlcxx::Module& module) {}
 
+// ### FILE MONITOR
+
+static void implement_file_monitor(jlcxx::Module& module)
+{
+    define_enum_in(module, FileMonitorEvent);
+    module.add_enum_value(FileMonitorEvent, FILE_MONITOR_EVENT, CHANGED);
+    module.add_enum_value(FileMonitorEvent, FILE_MONITOR_EVENT, CHANGES_DONE_HINT);
+    module.add_enum_value(FileMonitorEvent, FILE_MONITOR_EVENT, DELETED);
+    module.add_enum_value(FileMonitorEvent, FILE_MONITOR_EVENT, CREATED);
+    module.add_enum_value(FileMonitorEvent, FILE_MONITOR_EVENT, ATTRIBUTE_CHANGED);
+    module.add_enum_value(FileMonitorEvent, FILE_MONITOR_EVENT, RENAMED);
+    module.add_enum_value(FileMonitorEvent, FILE_MONITOR_EVENT, MOVED_IN);
+    module.add_enum_value(FileMonitorEvent, FILE_MONITOR_EVENT, MOVED_OUT);
+
+    auto monitor = module.add_type(FileMonitor)
+        .constructor([](void* internal){
+            return new FileMonitor((detail::FileMonitorInternal*) internal);
+        }, USE_FINALIZERS)
+        .add_type_method(FileMonitor, cancel, !)
+        .add_type_method(FileMonitor, is_cancelled)
+        .method("on_file_changed!", [](FileMonitor& self, jl_value_t* task){
+            self.on_file_changed([](FileMonitor& self, FileMonitorEvent event, const FileDescriptor& file_self, const FileDescriptor& file_other, jl_value_t* task){
+                jl_safe_call("FileMonitor::on_file_changed", task,
+                     jlcxx::box<FileMonitor&>(self),
+                     jlcxx::box<FileMonitorEvent>(event),
+                     jl_box_voidpointer(file_self.get_internal()),
+                     jl_box_voidpointer(file_other.get_internal())
+                );
+            }, task);
+        })
+    ;
+}
+
+// ### FILE DESCRIPTOR
+
+static void implement_file_descriptor(jlcxx::Module& module)
+{
+    auto file = module.add_type(FileDescriptor)
+        .add_constructor()
+        .constructor([](void* internal){
+            return new FileDescriptor(G_FILE(internal));
+        }, USE_FINALIZERS)
+        .add_constructor(const std::string&)
+        .add_type_method(FileDescriptor, create_from_path, !)
+        .add_type_method(FileDescriptor, create_from_uri, !)
+        .add_type_method(FileDescriptor, get_name)
+        .add_type_method(FileDescriptor, get_path)
+        .add_type_method(FileDescriptor, get_uri)
+        .add_type_method(FileDescriptor, get_path_relative_to)
+        .add_type_method(FileDescriptor, get_parent)
+        .add_type_method(FileDescriptor, get_file_extension)
+        .add_type_method(FileDescriptor, exists)
+        .add_type_method(FileDescriptor, is_folder)
+        .add_type_method(FileDescriptor, is_symlink)
+        .add_type_method(FileDescriptor, read_symlink)
+        .add_type_method(FileDescriptor, is_executable)
+        .add_type_method(FileDescriptor, get_content_type)
+        .method("query_info", [](FileDescriptor& file, const std::string& query) {
+            return file.query_info(query.c_str());
+        })
+        .add_type_method(FileDescriptor, hash)
+        .method("create_monitor", [](FileDescriptor& file) -> void* {
+            return file.create_monitor().get_internal();
+        })
+        .method("get_children", [](FileDescriptor& file, bool recursive) -> jl_value_t* {
+
+            auto children = file.get_children(recursive);
+            static auto* ctor = jl_eval_string("Vector{Ptr{Cvoid}}");
+            static auto* resize = jl_get_function(jl_base_module, "resize!");
+
+            auto* out = jl_calln(ctor);
+            jl_calln(resize, out, jl_box_int64(children.size()));
+
+            for (size_t i = 0; i < children.size(); ++i)
+                jl_arrayset((jl_array_t*) out, jl_box_voidpointer(children.at(i).get_internal()), i);
+
+            return out;
+        })
+    ;
+
+    module.method("file_descriptor_equal", [](FileDescriptor& a, FileDescriptor& b) -> bool {
+        return a == b;
+    });
+}
+
 // ### TODO
 
-static void implement_file_descriptor(jlcxx::Module& module) {}
-
-// ### TODO
-
-static void implement_file_monitor(jlcxx::Module& module) {}
 
 // ### TODO
 
@@ -2125,6 +2205,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_application(module);
     implement_window(module);
 
+    implement_file_monitor(module);
+    implement_file_descriptor(module);
+    implement_file_system(module);
+
     implement_event_controller(module);
     implement_drag_event_controller(module);
     implement_click_event_controller(module);
@@ -2172,9 +2256,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_entry(module);
     implement_expander(module);
     implement_file_chooser(module);
-    implement_file_descriptor(module);
-    implement_file_monitor(module);
-    implement_file_system(module);
+
     implement_fixed(module);
     implement_frame(module);
     implement_frame_clock(module);

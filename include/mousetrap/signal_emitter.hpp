@@ -43,9 +43,6 @@ namespace mousetrap
     }
     #endif
 
-    /// @brief garbage collected object \for_internal_use_only
-    using NativeObject = GObject*;
-
     /// @brief object that can emit GLib signals \for_internal_use_only
     class SignalEmitter
     {

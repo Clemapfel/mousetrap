@@ -52,7 +52,7 @@ namespace mousetrap
         {
             GObject parent;
             GFileMonitor* native;
-            std::function<void(FileMonitorEvent event, FileDescriptor self, FileDescriptor other)>* f;
+            std::function<void(FileMonitor&, FileMonitorEvent event, FileDescriptor self, FileDescriptor other)>* f;
         };
         using FileMonitorInternal = _FileMonitorInternal;
         DEFINE_INTERNAL_MAPPING(FileMonitor);
@@ -90,7 +90,7 @@ namespace mousetrap
             /// @brief register callback to be called when file changes
             /// @tparam Function_t
             /// @tparam Data_t arbitrary data
-            /// @param f function with signature `(FileMonitorEvent event_type, const FileDescriptor& self, const FileDescriptor& other, Data_t) -> void`
+            /// @param f function with signature `(FileMonitor&, FileMonitorEvent, const FileDescriptor& self, const FileDescriptor& other, Data_t) -> void`
             /// @param data arbitrary data, will be forwarded to f
             template<typename Function_t, typename Data_t>
             void on_file_changed(Function_t f, Data_t data);
@@ -98,7 +98,7 @@ namespace mousetrap
             /// @brief register callback to be called when file changes
             /// @brief register callback to be called when file changes
             /// @tparam Function_t
-            /// @param f function with signature `(FileMonitorEvent event_type, const FileDescriptor& self, const FileDescriptor& other) -> void`
+            /// @param f function with signature `(FileMonitor&, FileMonitorEvent, const FileDescriptor& self, const FileDescriptor& other, Data_t) -> void`
             template<typename Function_t>
             void on_file_changed(Function_t f);
 

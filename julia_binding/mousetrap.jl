@@ -1,4 +1,5 @@
-using Revise
+using Revise # TODO
+_IMPORTED = false
 
 module mousetrap
 
@@ -67,6 +68,54 @@ module mousetrap
         function __init__() @initcxx end
         @wrapmodule("./libjulia_binding.so")
     end
+
+####### log.jl
+
+    const LogDomain = String;
+    export LogDomain
+
+    const MOUSETRAP_DOMAIN::String = detail.MOUSETRAP_DOMAIN
+
+    macro debug(domain, message)
+        return :(mousetrap.detail.log_debug($message, $domain))
+    end
+    export debug
+
+    macro info(domain, message)
+        return :(mousetrap.detail.log_info($message, $domain))
+    end
+    export info
+
+    macro warning(domain, message)
+        return :(mousetrap.detail.log_warning($message, $domain))
+    end
+    export warning
+
+    macro critical(domain, message)
+        return :(mousetrap.detail.log_critical($message, $domain))
+    end
+    export critical
+
+    macro fatal(domain, message)
+        return :(mousetrap.detail.log_fatal($message, $domain))
+    end
+    export fatal
+
+    set_surpress_debug(domain::LogDomain, b::Bool) = detail.log_set_surpress_debug(domain, b)
+    export set_surpress_debug
+
+    set_surpress_info(domain::LogDomain, b::Bool) = detail.log_set_surpress_info(domain, b)
+    export set_surpress_info
+
+    get_surpress_debug(domain::LogDomain) ::Bool = detail.log_get_surpress_debug(domain, b)
+    export set_surpress_debug
+
+    get_surpress_info(domain::LogDomain) ::Bool = detail.log_get_surpress_info(domain, b)
+    export set_surpress_info
+
+    set_log_file(path::String) = detail.log_set_file(path)
+    export set_log_file
+
 
 ####### common.jl
 
@@ -256,6 +305,19 @@ module mousetrap
 
     import Base: clamp
     clamp(x::AbstractFloat, lower::AbstractFloat, upper::AbstractFloat) = if x < lower return lower elseif x > upper return upper else return x end
+
+
+    function from_julia_index(x::Integer) ::UInt64
+        if x == 0
+            @critical MOUSETRAP_DOMAIN "In from_julia_index: Index `0` is out of bounds, indices are 1-based"
+        else
+            return UInt64(x - 1)
+        end
+    end
+
+    function to_julia_index(x::UInt64) ::Int64
+        return Int64(x + 1)
+    end
 
 ###### vector.jl
 
@@ -452,6 +514,13 @@ module mousetrap
 
     import Base.>=
     >=(a::Time, b::Time) = a._ns >= b._ns
+
+    import Dates
+    Base.convert(::Type{Dates.Minute}, time::Time) = Dates.Minute(as_minutes(time))
+    Base.convert(::Type{Dates.Second}, time::Time) = Dates.Second(as_seconds(time))
+    Base.convert(::Type{Dates.Millisecond}, time::Time) = Dates.Millisecond(as_millisecond(time))
+    Base.convert(::Type{Dates.Microsecond}, time::Time) = Dates.Microsecond(as_microsecond(time))
+    Base.convert(::Type{Dates.Nanosecond}, time::Time) = Dates.Nanosecond(as_nanoseconds(time))
 
 ####### signal_components.jl
 
@@ -862,11 +931,6 @@ module mousetrap
     macro add_signal_swipe(x) return :(@add_signal $x swipe Cvoid Cdouble x_velocity Cdouble y_velocity) end
     macro add_signal_pan(x) return :(@add_signal $x pan Cvoid PanDirection direction Cdouble offset) end
 
-
-
-
-
-
 ####### types.jl
 
     abstract type SignalEmitter end
@@ -877,61 +941,6 @@ module mousetrap
 
     abstract type EventController end
     export EventController
-
-####### log.jl
-
-    const LogDomain = String;
-    export LogDomain
-
-    macro debug(domain, message)
-        @assert domain isa mousetrap.LogDomain
-        @assert message isa String
-        return :(mousetrap.detail.log_debug($message, $domain))
-    end
-    export debug
-
-    macro info(domain, message)
-        @assert domain isa mousetrap.LogDomain
-        @assert message isa String
-        return :(mousetrap.detail.log_info($message, $domain))
-    end
-    export info
-
-    macro warning(domain, message)
-        @assert domain isa mousetrap.LogDomain
-        @assert message isa String
-        return :(mousetrap.detail.log_warning($message, $domain))
-    end
-    export warning
-
-    macro critical(domain, message)
-        @assert domain isa mousetrap.LogDomain
-        @assert message isa String
-        return :(mousetrap.detail.log_critical($message, $domain))
-    end
-    export critical
-
-    macro fatal(domain, message)
-        @assert domain isa mousetrap.LogDomain
-        @assert message isa String
-        return :(mousetrap.detail.log_fatal($message, $domain))
-    end
-    export fatal
-
-    set_surpress_debug(domain::LogDomain, b::Bool) = detail.log_set_surpress_debug(domain, b)
-    export set_surpress_debug
-
-    set_surpress_info(domain::LogDomain, b::Bool) = detail.log_set_surpress_info(domain, b)
-    export set_surpress_info
-
-    get_surpress_debug(domain::LogDomain) ::Bool = detail.log_get_surpress_debug(domain, b)
-    export set_surpress_debug
-
-    get_surpress_info(domain::LogDomain) ::Bool = detail.log_get_surpress_info(domain, b)
-    export set_surpress_info
-
-    set_log_file(path::String) = detail.log_set_file(path)
-    export set_log_file
 
 ####### adjustment.jl
 
@@ -1359,151 +1368,6 @@ module mousetrap
     @add_signal_toggled CheckButton
     @add_signal_activate CheckButton
 
-####### check_button.jl
-
-####### key_file.jl
-
-    @export_type KeyFile SignalEmitter
-    KeyFile() = KeyFile(detail._KeyFile())
-    KeyFile(path::String) = KeyFile(detail._KeyFile(path))
-
-    const GroupID = String
-    export GroupID
-
-    const KeyID = String
-    export KeyID
-
-    @export_function KeyFile as_string String
-    @export_function KeyFile create_from_file! Bool String path
-    @export_function KeyFile create_from_string! Bool String file
-    @export_function KeyFile save_to_file Bool String path
-    @export_function KeyFile get_groups Vector{GroupID}
-    @export_function KeyFile get_keys Vector{KeyID} GroupID group
-    @export_function KeyFile has_key Bool GroupID group KeyID key
-    @export_function KeyFile has_group Bool GroupID group
-    @export_function KeyFile set_comment_above_group! Cvoid GroupID group String comment
-    @export_function KeyFile set_comment_above_key! Cvoid GroupID group KeyID key String comment
-    @export_function KeyFile get_comment_above_group String GroupID group
-    @export_function KeyFile get_comment_above_key String GroupID group KeyID key
-
-    export set_value!
-    export get_value
-
-    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Bool)
-        detail.set_value_as_bool!(file._internal, group, key, value)
-    end
-
-    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::AbstractFloat)
-        detail.set_value_as_double!(file._internal, group, key, convert(Cdouble, value))
-    end
-
-    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Signed)
-        detail.set_value_as_int!(file._internal, group, key, convert(Cint, value))
-    end
-
-    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Unsigned)
-        detail.set_value_as_uint!(file._internal, group, key, convert(Cuint, value))
-    end
-
-    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::String)
-        detail.set_value_as_string!(file._internal, group, key, value)
-    end
-
-    #function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::RGBA)
-    #    detail.set_value_as_float_list!(file._internal, group, key, Cfloat[value.r, value.g, value.b, value.a])
-    #end
-
-    #function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Image)
-    #   TODO
-    #end
-
-    ##
-
-    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{Bool})
-        detail.set_value_as_bool_list!(file._internal, group, key, value)
-    end
-
-    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{<: AbstractFloat})
-        vec::Vector{Cdouble} = []
-        for x in value
-            push!(vec, convert(Cdouble, x))
-        end
-        detail.set_value_as_double_list!(file._internal, group, key, vec)
-    end
-
-    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{<: Signed})
-        vec::Vector{Cint} = []
-        for x in value
-            push!(vec, convert(Cint, x))
-        end
-        detail.set_value_as_int_list!(file._internal, group, key, vec)
-    end
-
-    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{<: Unsigned})
-        vec::Vector{Cuint} = []
-        for x in value
-            push!(vec, convert(Cuint, x))
-        end
-        detail.set_value_as_uint_list!(file._internal, group, key, vec)
-    end
-
-    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{String})
-        detail.set_value_as_string_list!(file._internal, group, key, value)
-    end
-
-    ##
-
-    function get_value(file::KeyFile, type::Type{Bool}, group::GroupID, key::KeyID)
-        return detail.get_value_as_bool(file._internal, group, key)
-    end
-
-    function get_value(file::KeyFile, type::Type{<: AbstractFloat}, group::GroupID, key::KeyID)
-        return detail.get_value_as_double(file._internal, group, key)
-    end
-
-    function get_value(file::KeyFile, type::Type{<: Signed}, group::GroupID, key::KeyID)
-        return detail.get_value_as_int(file._internal, group, key)
-    end
-
-    function get_value(file::KeyFile, type::Type{<: Unsigned}, group::GroupID, key::KeyID)
-        return detail.get_value_as_uint(file._internal, group, key)
-    end
-
-    function get_value(file::KeyFile, type::Type{String}, group::GroupID, key::KeyID)
-        return detail.get_value_as_string(file._internal, group, key)
-    end
-
-    #function get_value(file::KeyFile, type::Type{RGBA}, group::GroupID, key::KeyID)
-    #    vec = get_value(file, Vector{Cfloat}, group, key)
-    #    return RGBA(vec[1], vec[2], vec[3], vec[4])
-    #end
-
-    #function get_value(file::KeyFile, type::Type{Image}, group::GroupID, key::KeyID)
-    #    TODO
-    #end
-
-    ##
-
-    function get_value(file::KeyFile, type::Type{Vector{Bool}}, group::GroupID, key::KeyID)
-        return convert(Vector{Bool}, detail.get_value_as_bool_list(file._internal, group, key))
-    end
-
-    function get_value(file::KeyFile, type::Type{Vector{T}}, group::GroupID, key::KeyID) where T <: AbstractFloat
-        return convert(Vector{T}, detail.get_value_as_double_list(file._internal, group, key))
-    end
-
-    function get_value(file::KeyFile, type::Type{Vector{T}}, group::GroupID, key::KeyID) where T <: Signed
-        return convert(Vector{T}, detail.get_value_as_int_list(file._internal, group, key))
-    end
-
-    function get_value(file::KeyFile, type::Type{Vector{T}}, group::GroupID, key::KeyID) where T <: Unsigned
-        return convert(Vector{T}, detail.get_value_as_uint_list(file._internal, group, key))
-    end
-
-    function get_value(file::KeyFile, type::Type{Vector{String}}, group::GroupID, key::KeyID)
-        return convert(Vector{String}, detail.get_value_as_string_list(file._internal, group, key))
-    end
-
 ####### color.jl
 
     abstract type Color end
@@ -1643,6 +1507,225 @@ module mousetrap
         return detail.get_pixel(image._internal, UInt64(x), UInt64(y))
     end
     export get_pixel
+
+####### key_file.jl
+
+    @export_type KeyFile SignalEmitter
+    KeyFile() = KeyFile(detail._KeyFile())
+    KeyFile(path::String) = KeyFile(detail._KeyFile(path))
+
+    const GroupID = String
+    export GroupID
+
+    const KeyID = String
+    export KeyID
+
+    @export_function KeyFile as_string String
+    @export_function KeyFile create_from_file! Bool String path
+    @export_function KeyFile create_from_string! Bool String file
+    @export_function KeyFile save_to_file Bool String path
+    @export_function KeyFile get_groups Vector{GroupID}
+    @export_function KeyFile get_keys Vector{KeyID} GroupID group
+    @export_function KeyFile has_key Bool GroupID group KeyID key
+    @export_function KeyFile has_group Bool GroupID group
+    @export_function KeyFile set_comment_above_group! Cvoid GroupID group String comment
+    @export_function KeyFile set_comment_above_key! Cvoid GroupID group KeyID key String comment
+    @export_function KeyFile get_comment_above_group String GroupID group
+    @export_function KeyFile get_comment_above_key String GroupID group KeyID key
+
+    export set_value!
+    export get_value
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Bool)
+        detail.set_value_as_bool!(file._internal, group, key, value)
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::AbstractFloat)
+        detail.set_value_as_double!(file._internal, group, key, convert(Cdouble, value))
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Signed)
+        detail.set_value_as_int!(file._internal, group, key, convert(Cint, value))
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Unsigned)
+        detail.set_value_as_uint!(file._internal, group, key, convert(Cuint, value))
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::String)
+        detail.set_value_as_string!(file._internal, group, key, value)
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::RGBA)
+        detail.set_value_as_float_list!(file._internal, group, key, Cfloat[value.r, value.g, value.b, value.a])
+    end
+
+    #function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Image)
+    #   TODO
+    #end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{Bool})
+        detail.set_value_as_bool_list!(file._internal, group, key, value)
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{<: AbstractFloat})
+        vec::Vector{Cdouble} = []
+        for x in value
+            push!(vec, convert(Cdouble, x))
+        end
+        detail.set_value_as_double_list!(file._internal, group, key, vec)
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{<: Signed})
+        vec::Vector{Cint} = []
+        for x in value
+            push!(vec, convert(Cint, x))
+        end
+        detail.set_value_as_int_list!(file._internal, group, key, vec)
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{<: Unsigned})
+        vec::Vector{Cuint} = []
+        for x in value
+            push!(vec, convert(Cuint, x))
+        end
+        detail.set_value_as_uint_list!(file._internal, group, key, vec)
+    end
+
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{String})
+        detail.set_value_as_string_list!(file._internal, group, key, value)
+    end
+
+    ##
+
+    function get_value(file::KeyFile, type::Type{Bool}, group::GroupID, key::KeyID)
+        return detail.get_value_as_bool(file._internal, group, key)
+    end
+
+    function get_value(file::KeyFile, type::Type{<: AbstractFloat}, group::GroupID, key::KeyID)
+        return detail.get_value_as_double(file._internal, group, key)
+    end
+
+    function get_value(file::KeyFile, type::Type{<: Signed}, group::GroupID, key::KeyID)
+        return detail.get_value_as_int(file._internal, group, key)
+    end
+
+    function get_value(file::KeyFile, type::Type{<: Unsigned}, group::GroupID, key::KeyID)
+        return detail.get_value_as_uint(file._internal, group, key)
+    end
+
+    function get_value(file::KeyFile, type::Type{String}, group::GroupID, key::KeyID)
+        return detail.get_value_as_string(file._internal, group, key)
+    end
+
+    function get_value(file::KeyFile, type::Type{RGBA}, group::GroupID, key::KeyID)
+        vec = get_value(file, Vector{Cfloat}, group, key)
+        return RGBA(vec[1], vec[2], vec[3], vec[4])
+    end
+
+    #function get_value(file::KeyFile, type::Type{Image}, group::GroupID, key::KeyID)
+    #    TODO
+    #end
+
+    ##
+
+    function get_value(file::KeyFile, type::Type{Vector{Bool}}, group::GroupID, key::KeyID)
+        return convert(Vector{Bool}, detail.get_value_as_bool_list(file._internal, group, key))
+    end
+
+    function get_value(file::KeyFile, type::Type{Vector{T}}, group::GroupID, key::KeyID) where T <: AbstractFloat
+        return convert(Vector{T}, detail.get_value_as_double_list(file._internal, group, key))
+    end
+
+    function get_value(file::KeyFile, type::Type{Vector{T}}, group::GroupID, key::KeyID) where T <: Signed
+        return convert(Vector{T}, detail.get_value_as_int_list(file._internal, group, key))
+    end
+
+    function get_value(file::KeyFile, type::Type{Vector{T}}, group::GroupID, key::KeyID) where T <: Unsigned
+        return convert(Vector{T}, detail.get_value_as_uint_list(file._internal, group, key))
+    end
+
+    function get_value(file::KeyFile, type::Type{Vector{String}}, group::GroupID, key::KeyID)
+        return convert(Vector{String}, detail.get_value_as_string_list(file._internal, group, key))
+    end
+
+####### file_descriptor.jl
+
+    @export_type FileMonitor SignalEmitter
+    @export_type FileDescriptor SignalEmitter
+
+    # Monitor
+
+    @export_enum FileMonitorEvent begin
+        FILE_MONITOR_EVENT_CHANGED
+        FILE_MONITOR_EVENT_CHANGES_DONE_HINT
+        FILE_MONITOR_EVENT_DELETED
+        FILE_MONITOR_EVENT_CREATED
+        FILE_MONITOR_EVENT_ATTRIBUTE_CHANGED
+        FILE_MONITOR_EVENT_RENAMED
+        FILE_MONITOR_EVENT_MOVED_IN
+        FILE_MONITOR_EVENT_MOVED_OUT
+    end
+
+    @export_function FileMonitor cancel! Cvoid
+    @export_function FileMonitor is_cancelled Bool
+
+    function on_file_changed!(f, monitor::FileMonitor, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, Cvoid, (FileMonitor, FileMonitorEvent, FileDescriptor, FileDescriptor, Data_t))
+        detail.on_file_changed!(monitor._internal, function(monitor_ref, event, self_descriptor_internal::Ptr{Cvoid}, other_descriptor_internal::Ptr{Cvoid})
+            typed_f(FileMonitor(monitor_ref[]), event, FileDescriptor(self_descriptor_internal), FileDescriptor(other_descriptor_internal), data)
+        end)
+    end
+    function on_file_changed!(f, monitor::FileMonitor)
+        typed_f = TypedFunction(f, Cvoid, (FileMonitor, FileMonitorEvent, FileDescriptor, FileDescriptor))
+        detail.on_file_changed!(monitor._internal, function(monitor_ref, event, self_descriptor_internal::Ptr{Cvoid}, other_descriptor_internal::Ptr{Cvoid})
+            typed_f(FileMonitor(monitor_ref[]), event, FileDescriptor(self_descriptor_internal), FileDescriptor(other_descriptor_internal))
+        end)
+    end
+    export on_file_changed!
+
+    # Descriptor
+
+    FileDescriptor(internal::Ptr{Cvoid}) = FileDescriptor(detail._FileDescriptor(internal))
+    FileDescriptor(path::String) = FileDescriptor(detail._FileDescriptor(path))
+
+    import Base.==
+    ==(a::FileDescriptor, b::FileDescriptor) = detail.file_descriptor_equal(a._internal, b._internal)
+
+    import Base.!=
+    !=(a::FileDescriptor, b::FileDescriptor) = return !(a == b)
+
+    @export_function FileDescriptor create_from_path! Bool String path
+    @export_function FileDescriptor create_from_uri! Bool String uri
+    @export_function FileDescriptor get_name String
+    @export_function FileDescriptor get_path String
+    @export_function FileDescriptor get_uri String
+    
+    get_path_relative_to(self::FileDescriptor, other::FileDescriptor) = detail.get_path_relative_to(self._internal, other._internal)
+    export get_path_relative_to
+
+    get_parent(self::FileDescriptor) = FileDescriptor(detail.get_parent(self._internal))
+    export get_parent
+
+    @export_function FileDescriptor get_file_extension String
+    @export_function FileDescriptor exists Bool 
+    @export_function FileDescriptor is_folder Bool
+    @export_function FileDescriptor is_symlink Bool
+    
+    read_symlink(self::FileDescriptor) = FileDescriptor(detail.read_symlink(self._internal))
+    export read_symlink
+
+    @export_function FileDescriptor get_content_type String
+    @export_function FileDescriptor query_info String
+    
+    create_monitor(descriptor::FileDescriptor) ::FileMonitor = FileMonitor(detail._FileMonitor(detail.create_monitor(descriptor._internal)))
+    export create_monitor
+
+    function get_children(descriptor::FileDescriptor; recursive::Bool = false) ::Vector{FileDescriptor}
+        children::Vector{Ptr{Cvoid}} = detail.get_children(descriptor._internal, recursive)
+        return FileDescriptor[FileDescriptor(ptr) for ptr in children]
+    end
+    export get_children
 
 ####### image_display.jl
 
@@ -2515,7 +2598,7 @@ module mousetrap
     @export_function ColumnViewColumn get_is_resizable Bool
 
     @export_type ColumnView Widget
-    ColumnView(selection_mode::SelectionMode) = ColumnView(detail._ColumnView(selection_mode))
+    ColumnView(selection_mode::SelectionMode = SELECTION_MODE_NONE) = ColumnView(detail._ColumnView(selection_mode))
 
     push_back_column!(column_view::ColumnView, title::String) = detail.push_back_column!(column_view._internal, title)
     export push_back_column!
@@ -2548,8 +2631,16 @@ module mousetrap
     export set_widget!
 
     function push_back_row!(column_view::ColumnView, widgets::Widget...)
-        pointers = Ptr{Cvoid}[x._internal.cpp_object for x in widgets]
-        detail.push_back_row!(column_view._internal, pointers)
+        
+        if length(widgets) > get_n_columns(column_view)
+            @warning MOUSETRAP_DOMAIN "In ColumnView::push_back_rows: Attempting to push $(length(widgets)) widgets, but ColumnView only has $(get_n_columns(column_view)) columns"
+        end
+
+        row_i = get_n_rows(column_view)
+        for i in 1:get_n_columns(column_view)
+            column = get_column_at(column_view, i)
+            set_widget!(column_view, column, row_i, widgets[i])
+        end
     end
     export push_back_row!
 
@@ -2596,14 +2687,16 @@ connect_signal_activate!(app) do app::Application
 
     window = Window(app)
 
-    view = ListView(ORIENTATION_HORIZONTAL)
-    push_back!(view, Label("A"))
-    push_back!(view, Label("B"))
-    set_child!(window, view)
+    file = FileDescriptor("/home/clem/Workspace/mousetrap/julia_binding/mousetrap.jl")
+    monitor = create_monitor(file)
+    on_file_changed!(monitor) do monitor::FileMonitor, event::FileMonitorEvent, self::FileDescriptor, other::FileDescriptor
+        println(event, " : ", get_path(self))
+    end
+
     present!(window)
 end
 
-exit(run(app))
+@show run(app)
 
 
 
