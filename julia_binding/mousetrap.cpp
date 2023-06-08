@@ -667,15 +667,6 @@ static void implement_column_view(jlcxx::Module& module)
         .method("set_widget!", [](ColumnView& view, ColumnView::Column& column, size_t row_i, void* widget){
             view.set_widget(column, row_i, *((Widget*) widget));
         })
-        .method("push_back_row!", [](ColumnView& view, jl_value_t* ptr_vec) {
-            log::fatal("In ColumnView::push_back_row!: TODO");
-        })
-        .method("push_front_row!", [](ColumnView& view, jl_value_t* ptr_vec) {
-            log::fatal("In ColumnView::push_front_row!: TODO");
-        })
-        .method("insert_row!", [](ColumnView& view, size_t index, jl_value_t* ptr_vec) {
-            log::fatal("In ColumnView::insert_row!: TODO");
-        })
         .add_type_method(ColumnView, set_enable_rubberband_selection, !)
         .add_type_method(ColumnView, get_enable_rubberband_selection)
         .add_type_method(ColumnView, set_show_row_separators, !)

@@ -308,11 +308,11 @@ module mousetrap
 
 
     function from_julia_index(x::Integer) ::UInt64
-        return x
+        return x - 1
     end
 
-    function to_julia_index(x::UInt64) ::Int64
-        return x
+    function to_julia_index(x::Integer) ::Int64
+        return x + 1
     end
 
 ###### vector.jl
@@ -927,6 +927,81 @@ module mousetrap
     macro add_signal_swipe(x) return :(@add_signal $x swipe Cvoid Cdouble x_velocity Cdouble y_velocity) end
     macro add_signal_pan(x) return :(@add_signal $x pan Cvoid PanDirection direction Cdouble offset) end
 
+    macro add_signal_selection_changed(T)
+
+        snake_case = :selection_changed
+
+        Arg1_t = Int64
+        arg1_name = :position
+
+        Arg2_t = Int64
+        arg2_name = :n_items
+
+        Return_t = Cvoid
+
+        out = Expr(:block)
+
+        connect_signal_name = :connect_signal_ * snake_case * :!
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T)
+                typed_f = TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t))
+                detail.$connect_signal_name(x._internal, function(x)
+                    typed_f($T(x[1][]), to_julia_index(x[2]), x[3])
+                end)
+            end
+        )))
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                typed_f = TypedFunction(f, $Return_t, ($T, $Arg1_t, $Arg2_t, Data_t))
+                detail.$connect_signal_name(x._internal, function(x)
+                    typed_f($T(x[1][]), to_julia_index(x[2]), x[3], data)
+                end)
+            end
+        )))
+
+        emit_signal_name = :emit_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $emit_signal_name(x::$T, $arg1_name::$Arg1_t, $arg2_name::$Arg2_t) ::$Return_t
+                return convert($Return_t, detail.$emit_signal_name(x._internal, from_julia_index($arg1_name), $arg2_name))
+            end
+        )))
+
+        disconnect_signal_name = :disconnect_signal_ * snake_case * :!
+
+        push!(out.args, esc(:(
+            function $disconnect_signal_name(x::$T)
+                detail.$disconnect_signal_name(x._internal)
+            end
+        )))
+
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
+
+        push!(out.args, esc(:(
+            function $set_signal_blocked_name(x::$T, b)
+                detail.$set_signal_blocked_name(x._internal, b)
+            end
+        )))
+
+        get_signal_blocked_name = :get_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $get_signal_blocked_name(x::$T)
+                return detail.$get_signal_blocked_name(x._internal)
+            end
+        )))
+
+        push!(out.args, esc(:(export $connect_signal_name)))
+        push!(out.args, esc(:(export $disconnect_signal_name)))
+        push!(out.args, esc(:(export $set_signal_blocked_name)))
+        push!(out.args, esc(:(export $get_signal_blocked_name)))
+        push!(out.args, esc(:(export $emit_signal_name)))
+
+        return out
+    end
+
 ####### types.jl
 
     abstract type SignalEmitter end
@@ -1433,6 +1508,7 @@ module mousetrap
     IconTheme(window::Window) = IconTheme(detail._IconTheme(window._internal))
 
     const IconID = String
+    export IconID
 
     # Icon
 
@@ -1502,15 +1578,15 @@ module mousetrap
     export as_cropped
 
     function set_pixel!(image::Image, x::Integer, y::Integer, color::RGBA)
-        detail.set_pixel_rgba!(image._internal, UInt64(x), UInt64(y), color)
+        detail.set_pixel_rgba!(image._internal, from_julia_index(x), from_julia_index(y), color)
     end
     function set_pixel!(image::Image, x::Integer, y::Integer, color::HSVA)
-        detail.set_pixel_hsva!(image._internal, UInt64(x), UInt64(y), color)
+        detail.set_pixel_hsva!(image._internal, from_julia_index(x), from_julia_index(y), color)
     end
     export set_pixel!
 
     function get_pixel(image::Image, x::Integer, y::Integer) ::RGBA
-        return detail.get_pixel(image._internal, UInt64(x), UInt64(y))
+        return detail.get_pixel(image._internal, from_julia_index(x), from_julia_index(y))
     end
     export get_pixel
 
@@ -1921,7 +1997,7 @@ module mousetrap
     LevelBar(min::AbstractFloat, max::AbstractFloat) = LevelBar(detail._internal(min, max))
 
     @export_function LevelBar add_marker! Cvoid String name AbstractFloat value
-    @export_function LevelBar remove_mark! Cvoid String name AbstractFloat value
+    @export_function LevelBar remove_marker! Cvoid String name AbstractFloat value
     @export_function LevelBar set_inverted! Cvoid Bool b
     @export_function LevelBar get_inverted Bool
     @export_function LevelBar set_mode! Cvoid LevelBarMode mode
@@ -2236,6 +2312,7 @@ module mousetrap
     end
     export insert!
 
+    @add_widget_signals DropDown
 
 ###### event_controller.jl
 
@@ -2355,7 +2432,7 @@ module mousetrap
     export shift_pressed
 
     mouse_button_01_pressed(modifier_state::ModifierState) ::Bool = return detail.mouse_button_01_pressed(modifier_state);
-    export shift_mouse_button_01_pressedpressed
+    export mouse_button_01_pressed
 
     mouse_button_02_pressed(modifier_state::ModifierState) ::Bool = return detail.mouse_button_02_pressed(modifier_state);
     export mouse_button_02_pressed
@@ -2511,19 +2588,22 @@ module mousetrap
     @export_type SelectionModel SignalEmitter
     SelectionModel(internal::Ptr{Cvoid}) = SelectionModel(detail._SelectionModel(internal))
 
-    function get_selection(model::SelectionModel) ::Vector{UInt64} 
-        return detail.get_selection(model._internal)
+    function get_selection(model::SelectionModel) ::Vector{Int64} 
+        selection = detail.get_selection(model._internal)
+        return Int64[to_julia_index(x) for x in selection]
     end
     export get_selection
 
     @export_function SelectionModel select_all! Cvoid
     @export_function SelectionModel unselect_all! Cvoid
 
-    select!(model::SelectionModel, i::Integer, unselect_others::Bool = true) = detail.select!(model._internal, i, unselect_others)
+    select!(model::SelectionModel, i::Integer, unselect_others::Bool = true) = detail.select!(model._internal, from_julia_index(i), unselect_others)
     export select!
 
-    unselect!(model::SelectionModel, i::Integer) = detail.unselect!(model._internal)
+    unselect!(model::SelectionModel, i::Integer) = detail.unselect!(model._internal, from_julia_index(i))
     export unselect!
+
+    @add_signal_selection_changed SelectionModel
 
 ###### list_view.jl
 
@@ -2543,20 +2623,20 @@ module mousetrap
     push_front!(list_view::ListView, widget::Widget, iterator::ListViewIterator) =detail.push_front!(list_view._internal, widget._internal.cpp_object, iterator._internal)
     export push_front!
 
-    insert!(list_view::ListView, widget::Widget, index::Integer) = detail.insert!(list_view._internal, UInt64(index), widget._internal.cpp_object, Ptr{Cvoid}())
-    insert!(list_view::ListView, widget::Widget, index::Integer, iterator::ListViewIterator) = detail.insert!(list_view._internal, UInt64(index), widget._internal.cpp_object, iterator._internal)
+    insert!(list_view::ListView, widget::Widget, index::Integer) = detail.insert!(list_view._internal, from_julia_index(index), widget._internal.cpp_object, Ptr{Cvoid}())
+    insert!(list_view::ListView, widget::Widget, index::Integer, iterator::ListViewIterator) = detail.insert!(list_view._internal, from_julia_index(index), widget._internal.cpp_object, iterator._internal)
     export insert!
 
-    remove!(list_view::ListView, index::Integer) = detail.remove!(list_view._internal, UInt64(index), Ptr{Cvoid}())
-    remove!(list_view::ListView, index::Integer, iterator::ListViewIterator) = detail.remove!(list_view._internal, UInt64(index), iterator._internal)
+    remove!(list_view::ListView, index::Integer) = detail.remove!(list_view._internal, from_julia_index(index), Ptr{Cvoid}())
+    remove!(list_view::ListView, index::Integer, iterator::ListViewIterator) = detail.remove!(list_view._internal, from_julia_index(index), iterator._internal)
     export remove!
 
     clear!(list_view::ListView) = detail.clear!(list_view._internal,Ptr{Cvoid}())
     clear!(list_view::ListView, iterator::ListViewIterator) = detail.clear!(list_view._internal, iterator._internal)
     export clear!
 
-    set_widget_at!(list_view::ListView, index::Integer, widget::Widget) = detail.set_widget_at!(list_view._internal, UInt64(index), widget._internal.cpp_object, Ptr{Cvoid}())
-    set_widget_at!(list_view::ListView, index::Integer, widget::Widget, iterator::ListViewIterator) = detail.set_widget_at!(list_view._internal, UInt64(index), widget._internal.cpp_object, iterator._internal)
+    set_widget_at!(list_view::ListView, index::Integer, widget::Widget) = detail.set_widget_at!(list_view._internal, from_julia_index(index), widget._internal.cpp_object, Ptr{Cvoid}())
+    set_widget_at!(list_view::ListView, index::Integer, widget::Widget, iterator::ListViewIterator) = detail.set_widget_at!(list_view._internal, from_julia_index(index), widget._internal.cpp_object, iterator._internal)
     export set_widget_at!
 
     get_selection_model(list_view::ListView) ::SelectionModel = SelectionModel(detail.get_selection_model(list_view._internal))
@@ -2586,7 +2666,7 @@ module mousetrap
     push_front!(grid_view::GridView, widget::Widget) = detail.push_ront!(grid_view._internal, widget._internal.cpp_object)
     export push_front!
 
-    insert!(grid_view::GridView, widget::Widget, index::Integer) = detail.insert!(grid_view._internal, widget._internal.cpp_object, index)
+    insert!(grid_view::GridView, index::Integer, widget::Widget) = detail.insert!(grid_view._internal, from_julia_index(index), widget._internal.cpp_object)
     export insert!
 
     remove!(grid_view::GridView, widget::Widget) = detail.remove!(grid_view._internal, widget._internal.cpp_object)
@@ -2626,23 +2706,34 @@ module mousetrap
     Grid() = Grid(detail._Grid())
 
     function insert!(grid::Grid, widget::Widget, row_i::Signed, column_i::Signed; n_horizontal_cells::Unsigned = Unsigned(1), n_vertical_cells::Unsigned = Unsigned(1))
-        detail.insert!(grid._internal, widget._internal.cpp_object, row_i, column_i, n_horizontal_cells, n_vertical_cells)
+        detail.insert!(grid._internal, widget._internal.cpp_object, row_i - 1, column_i - 1, n_horizontal_cells, n_vertical_cells)
     end
     export insert!
 
-    remove!(grid::GridView, widget::Widget) = detail.remove!(grid._internal, widget._internal.cpp_object)
+    remove!(grid::Grid, widget::Widget) = detail.remove!(grid._internal, widget._internal.cpp_object)
     export remove!
 
-    get_position(grid::GridView, widget::Widget) ::Vector2i = detail.get_position(grid._internal, widget._internal.cpp_object)
+    function get_position(grid::Grid, widget::Widget) ::Vector2i 
+        native_pos::Vector2i = detail.get_position(grid._internal, widget._internal.cpp_object)
+        return Vector2i(native_pos.x + 1, native_pos.y + 1)
+    end
     export get_position
 
-    get_size(grid::GridView, widget::Widget) ::Vector2i = detail.get_size(grid._internal, widget._internal.cpp_object)
+    get_size(grid::Grid, widget::Widget) ::Vector2i = detail.get_size(grid._internal, widget._internal.cpp_object)
     export get_size
 
-    @export_function Grid insert_row_at! Cvoid Signed row_i
-    @export_function Grid remove_row_at! Cvoid Signed row_i
-    @export_function Grid insert_column_at! Cvoid Signed column_i
-    @export_function Grid remove_column_at! Cvoid Signed column_i
+    insert_row_at!(grid::Grid, row_i::Signed) = detail.insert_row_at!(grid._internal, row_i -1)
+    export insert_row_at!
+
+    remove_row_at!(grid::Grid, row_i::Signed) = detail.remove_row_at!(grid._internal, row_i -1)
+    export remove_row_at!
+
+    insert_column_at!(grid::Grid, column_i::Signed) = detail.insert_column_at!(grid._internal, column_i -1)
+    export insert_column_at!
+
+    remove_column_at!(grid::Grid, column_i::Signed) = detail.remove_column_at!(grid._internal, column_i -1)
+    export insert_column_at!
+
     @export_function Grid set_row_spacing! Cvoid AbstractFloat spacing
     @export_function Grid get_column_spacing Cfloat
     @export_function Grid set_column_spacing! Cvoid AbstractFloat spacing
@@ -2756,14 +2847,14 @@ module mousetrap
     push_front_column!(column_view::ColumnView, title::String) = detail.push_front_column!(column_view._internal, title)
     export push_front_column!
 
-    insert_column!(column_view::ColumnView, index::Integer, title::String) = detail.insert_column!(column_view._internal, UInt64(index), title)
+    insert_column!(column_view::ColumnView, index::Integer, title::String) = detail.insert_column!(column_view._internal, from_julia_index(index), title)
     export insert_column!
 
     remove_column!(column_view::ColumnView, column::ColumnViewColumn) = detail.remove_column!(column_view._internal, column._internal)
     export remove_column!
 
     function get_column_at(column_view::ColumnView, index::Integer) ::ColumnViewColumn 
-        return ColumnViewColumn(detail.get_column_at(column_view._internal, UInt64(index)))
+        return ColumnViewColumn(detail.get_column_at(column_view._internal, from_julia_index(index)))
     end
     export get_column_at
 
@@ -2776,7 +2867,7 @@ module mousetrap
     export has_column_with_title
 
     function set_widget!(column_view::ColumnView, column::ColumnViewColumn, row_i::Integer, widget::Widget)
-        detail.set_widget!(column_view._internal, column._internal, UInt64(row_i), widget._internal.cpp_object)
+        detail.set_widget!(column_view._internal, column._internal, from_julia_index(row_i), widget._internal.cpp_object)
     end
     export set_widget!
 
@@ -2795,16 +2886,32 @@ module mousetrap
     export push_back_row!
 
     function push_front_row!(column_view::ColumnView, widgets::Widget...)
-        pointers = Ptr{Cvoid}[x._internal.cpp_object for x in widgets]
-        detail.push_front_row!(column_view._internal, pointers)
+        
+        if length(widgets) > get_n_columns(column_view)
+            @warning MOUSETRAP_DOMAIN "In ColumnView::push_back_rows: Attempting to push $(length(widgets)) widgets, but ColumnView only has $(get_n_columns(column_view)) columns"
+        end
+
+        row_i = 1
+        for i in 1:get_n_columns(column_view)
+            column = get_column_at(column_view, i)
+            set_widget!(column_view, column, row_i, widgets[i])
+        end
     end
     export push_front_row!
 
     function insert_row!(column_view::ColumnView, index::Integer, widgets::Widget...)
-        pointers = Ptr{Cvoid}[x._internal.cpp_object for x in widgets]
-        detail.insert_row!(column_view._internal, UInt64(index), pointers)
+        
+        if length(widgets) > get_n_columns(column_view)
+            @warning MOUSETRAP_DOMAIN "In ColumnView::push_back_rows: Attempting to push $(length(widgets)) widgets, but ColumnView only has $(get_n_columns(column_view)) columns"
+        end
+
+        row_i = index
+        for i in 1:get_n_columns(column_view)
+            column = get_column_at(column_view, i)
+            set_widget!(column_view, column, row_i, widgets[i])
+        end
     end
-    export push_back_row!
+    export push_front_row!
 
     get_selection_model(column_view::ColumnView) ::SelectionModel = SelectionModel(detail.get_selection_model(column_view._internal))
     export get_selection_model
@@ -2820,7 +2927,6 @@ module mousetrap
     @export_function ColumnView get_n_rows Int64
     @export_function ColumnView get_n_columns Int64
 
-
 ###### key_code.jl
 
     # TODO
@@ -2833,15 +2939,17 @@ mousetrap.main() do app::Application
 
     window = Window(app)
 
-    drop_down = DropDown()
-    push_front!(drop_down, Label("List 01"), Label("Label 01")) do drop_down::DropDown
-        println("01")
+    view = ListView(ORIENTATION_HORIZONTAL, SELECTION_MODE_SINGLE)
+    for i in 1:9
+        push_back!(view, Label("0" * string(i)))
     end
-    push_front!(drop_down, Label("List 02"), Label("Label 02")) do drop_down::DropDown
-        println("02")
+
+    model = get_selection_model(view)
+    connect_signal_selection_changed!(model) do instance::SelectionModel, position::Int64, n_items::Int64
+        println("position: " * string(position))
     end
-    
-    set_child!(window, drop_down)
+
+    set_child!(window, view)
     present!(window)
 end
 
