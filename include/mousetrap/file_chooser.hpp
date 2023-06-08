@@ -102,8 +102,8 @@ namespace mousetrap
             std::string* initial_name;
             bool currently_shown;
 
-            std::function<void(const std::vector<FileDescriptor>&)>* on_accept;
-            std::function<void()>* on_cancel;
+            std::function<void(FileChooser&, const std::vector<FileDescriptor>&)>* on_accept;
+            std::function<void(FileChooser&)>* on_cancel;
         };
         using FileChooserInternal = _FileChooserInternal;
         DEFINE_INTERNAL_MAPPING(FileChooser);
@@ -134,24 +134,24 @@ namespace mousetrap
             operator NativeObject() const override;
 
             /// @brief register callback to be called when user has made a selection
-            /// @param function function with signature `(const std::vector<FileDescriptor>&, Data_t) -> void`
+            /// @param function function with signature `(FileChooser&, const std::vector<FileDescriptor>&, Data_t) -> void`
             /// @param data arbitrary data
             template<typename Function_t, typename Data_t>
             void on_accept(Function_t function, Data_t data);
 
             /// @brief register callback to be called when user has made a selection
-            /// @param function function with signature `(const std::vector<FileDescriptor>&) -> void`
+            /// @param function function with signature `(FileChooser&, const std::vector<FileDescriptor>&) -> void`
             template<typename Function_t>
             void on_accept(Function_t function);
 
             /// @brief register callback to be called when user has made a selection
-            /// @param function function with signature `(Data_t) -> void`
+            /// @param function function with signature `(FileChooser&; Data_t) -> void`
             /// @param data arbitrary data
             template<typename Function_t, typename Data_t>
             void on_cancel(Function_t function, Data_t data);
 
             /// @brief register callback to be called when user has made a selection
-            /// @param function function with signature `() -> void`
+            /// @param function function with signature `(FileChooser&) -> void`
             template<typename Function_t>
             void on_cancel(Function_t function);
 
@@ -220,36 +220,36 @@ namespace mousetrap
     template<typename Function_t, typename Data_t>
     void FileChooser::on_accept(Function_t function, Data_t data)
     {
-        _internal->on_accept = new std::function<void(const std::vector<FileDescriptor>&)>([f = function, d = data](const std::vector<FileDescriptor>& files)
+        _internal->on_accept = new std::function<void(FileChooser&, const std::vector<FileDescriptor>&)>([f = function, d = data](FileChooser& self, const std::vector<FileDescriptor>& files)
         {
-           f(files, d);
+           f(self, files, d);
         });
     }
 
     template<typename Function_t>
     void FileChooser::on_accept(Function_t function)
     {
-        _internal->on_accept = new std::function<void(const std::vector<FileDescriptor>&)>([f = function](const std::vector<FileDescriptor>& files)
+        _internal->on_accept = new std::function<void(FileChooser&, const std::vector<FileDescriptor>&)>([f = function](FileChooser& self, const std::vector<FileDescriptor>& files)
         {
-          f(files);
+          f(self, files);
         });
     }
 
     template<typename Function_t, typename Data_t>
     void FileChooser::on_cancel(Function_t function, Data_t data)
     {
-        _internal->on_cancel = new std::function<void()>([f = function, d = data]()
+        _internal->on_cancel = new std::function<void(FileChooser&)>([f = function, d = data](FileChooser& self)
         {
-            f(d);
+            f(self, d);
         });
     }
 
     template<typename Function_t>
     void FileChooser::on_cancel(Function_t function)
     {
-        _internal->on_cancel = new std::function<void()>([f = function]()
+        _internal->on_cancel = new std::function<void(FileChooser&)>([f = function](FileChooser& self)
         {
-           f();
+           f(self);
         });
     }
 }

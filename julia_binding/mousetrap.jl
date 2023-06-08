@@ -1050,6 +1050,16 @@ module mousetrap
 
     Base.show(io::IO, x::Application) = mousetrap.show(x, :id)
 
+    function main(f; application_id::String = "Julia.app") ::Int64
+        app = Application(application_id)
+        typed_f = TypedFunction(f, Any, (Application,))
+        connect_signal_activate!(app) do app::Application
+            typed_f(app)
+        end
+        return run(app)
+    end
+    # sic, no export
+
 ####### window.jl
 
     @export_enum WindowCloseRequestResult begin
@@ -1726,6 +1736,90 @@ module mousetrap
         return FileDescriptor[FileDescriptor(ptr) for ptr in children]
     end
     export get_children
+
+    # File System
+
+    create_file_at(destination::FileDescriptor, replace::Bool) ::Bool = detail.create_file_at(destination._internal)
+    export create_file_at!
+
+    create_directory_at(destination::FileDescriptor) ::Bool = detail.create_directory_at(destination._internal)
+    export create_directory_at!
+
+    delete_at(file::FileDescriptor) ::Bool = detail.delete_at(file._internal)
+    export delete_at!
+
+    function copy!(from::FileDescriptor, to::FileDescriptor, allow_overwrite::Bool; make_backup::Bool = false, follow_symlink::Bool = false) ::Bool
+        detail.copy!(from._internal, to._internal, allow_overwrite, make_backup, follow_symlink)
+    end
+    export copy!
+
+    function move!(from::FileDescriptor, to::FileDescriptor, allow_overwrite::Bool; make_backup::Bool = false, follow_symlink::Bool = false) ::Bool
+        detail.move!(from._internal, to._internal, allow_overwrite, make_backup, follow_symlink)
+    end
+    export move!
+
+    move_to_trash!(file::FileDescriptor) = detail.move_to_trash!(file._internal)
+
+####### file_chooser.jl
+
+    @export_type FileFilter SignalEmitter
+    FileFilter(name::String) = FileFilter(detail._FileFilter(name))
+    
+    get_name(filter::FileFilter) ::String = detail.get_name(filter._internal)
+    export get_name
+
+    @export_function FileFilter add_allowed_pattern! Cvoid String pattern
+    @export_function FileFilter add_allow_all_supported_image_formats! Cvoid
+    @export_function FileFilter add_allowed_suffix! Cvoid String suffix
+    @export_function FileFilter add_allowed_mime_type Cvoid String mime_type_id
+
+    @export_enum FileChooserAction begin
+        FILE_CHOOSER_ACTION_OPEN_FILE
+        FILE_CHOOSER_ACTION_OPEN_MULTIPLE_FILES
+        FILE_CHOOSER_ACTION_SAVE
+        FILE_CHOOSER_ACTION_SELECT_FOLDER
+        FILE_CHOOSER_ACTION_SELECT_MULTIPLE_FOLDERS
+    end
+
+    @export_type FileChooser SignalEmitter
+    FileChooser(action::FileChooserAction; title::String = "") = FileChooser(detail._FileChooser(action, title))
+
+    @export_function FileChooser set_accept_label! Cvoid String label
+    @export_function FileChooser get_accept_label String
+    @export_function FileChooser present! Cvoid
+    @export_function FileChooser cancel! Cvoid
+    @export_function FileChooser set_is_modal! Cvoid Bool modal
+    @export_function FileChooser get_is_modal Bool
+
+    function on_accept!(f, chooser::FileChooser, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, Cvoid, (FileChooser, Vector{FileDescriptor}, Data_t))
+        detail.on_accept!(chooser._internal, function(file_chooser_ref, descriptor_ptrs::Vector{Ptr{Cvoid}})
+            descriptors = FileDescriptor[FileDescriptor(ptr) for ptr in descriptor_ptrs]
+            typed_f(FileChooser(file_chooser_ref[]), descriptors, data)
+        end)
+    end
+    function on_accept!(f, chooser::FileChooser)
+        typed_f = TypedFunction(f, Cvoid, (FileChooser, Vector{FileDescriptor}))
+        detail.on_accept!(chooser._internal, function(file_chooser_ref, descriptor_ptrs::Vector{Ptr{Cvoid}})
+            descriptors = FileDescriptor[FileDescriptor(ptr) for ptr in descriptor_ptrs]
+            typed_f(FileChooser(file_chooser_ref[]), descriptors)
+        end)
+    end
+    export on_accept!
+
+    function on_cancel!(f, chooser::FileChooser, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, Cvoid, (FileChooser, Data_t))
+        detail.on_cancel!(chooser._internal, function(file_chooser_ref)
+            typed_f(FileChooser(file_chooser_ref[]), data)
+        end)
+    end
+    function on_cancel!(f, chooser::FileChooser)
+        typed_f = TypedFunction(f, Cvoid, (FileChooser,))
+        detail.on_cancel!(chooser._internal, function(file_chooser_ref)
+            typed_f(FileChooser(file_chooser_ref[]))
+        end)
+    end
+    export on_cancel!
 
 ####### image_display.jl
 
@@ -2679,24 +2773,25 @@ end # module mousetrap
 
 using .mousetrap
 
-using CxxWrap
-
-app = Application("example.app")
-
-connect_signal_activate!(app) do app::Application
+@show mousetrap.main() do app::Application
 
     window = Window(app)
 
-    file = FileDescriptor("/home/clem/Workspace/mousetrap/julia_binding/mousetrap.jl")
-    monitor = create_monitor(file)
-    on_file_changed!(monitor) do monitor::FileMonitor, event::FileMonitorEvent, self::FileDescriptor, other::FileDescriptor
-        println(event, " : ", get_path(self))
+    chooser = FileChooser(FILE_CHOOSER_ACTION_OPEN_FILE)
+    on_accept!(chooser) do chooser::FileChooser, files::Vector{FileDescriptor}
+        for x in files
+            println(get_path(x))
+        end
+        println("accept")
     end
 
+    on_cancel!(chooser) do chooser::FileChooser
+        println("cancel")
+    end
+
+    present!(chooser)
     present!(window)
 end
-
-@show run(app)
 
 
 

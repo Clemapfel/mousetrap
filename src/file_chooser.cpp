@@ -32,6 +32,15 @@ namespace mousetrap
 
     void FileFilter::add_allowed_suffix(const std::string& suffix)
     {
+        if (suffix[0] == '.')
+        {
+            std::string no_dot = "";
+            for (auto c : suffix)
+                no_dot.push_back(c);
+
+            log::warning("In FileFilter::add_allowed_suffix: Suffix `" + suffix + "` starts with a `.` which will not match any file formats; did you mean to specify `" + no_dot + "`?");
+        }
+
         gtk_file_filter_add_suffix(_native, suffix.c_str());
     }
 
@@ -323,6 +332,11 @@ namespace mousetrap
         _internal->action = action;
     }
 
+    FileChooserAction FileChooser::get_file_chooser_action() const
+    {
+            return _internal->action;
+    }
+
     void FileChooser::add_filter(const FileFilter& file_filter)
     {
         auto* gtk_filter = file_filter.operator GtkFileFilter*();
@@ -430,7 +444,10 @@ namespace mousetrap
             if (error->code == 2) // dismissed by user
             {
                 if (internal->on_cancel != nullptr and (*internal->on_cancel))
-                    (*internal->on_cancel)();
+                {
+                    auto self = FileChooser(internal);
+                    (*internal->on_cancel)(self);
+                }
             }
             else
                 log::critical(std::string("In FileChooser::on_file_dialog_ready_callback: ") + error->message, MOUSETRAP_DOMAIN);
@@ -440,7 +457,10 @@ namespace mousetrap
         }
 
         if (internal->on_accept != nullptr and (*internal->on_accept))
-            (*internal->on_accept)(files);
+        {
+            auto self = FileChooser(internal);
+            (*internal->on_accept)(self, files);
+        }
     }
     #endif
 }
