@@ -310,9 +310,9 @@ DEFINE_ADD_SIGNAL_ARG0(text_changed, void)
 DEFINE_ADD_SIGNAL_ARG0(undo, void)
 DEFINE_ADD_SIGNAL_ARG0(redo, void)
 DEFINE_ADD_SIGNAL_ARG2(selection_changed, void, gint, position, gint, n_items)
-DEFINE_ADD_SIGNAL_ARG3(key_pressed, bool, guint, keyval, guint, keycode, ModifierState, modifier) // TODO
-DEFINE_ADD_SIGNAL_ARG3(key_released, void, guint, keyval, guint, keycode, ModifierState, modifier) // TODO
-DEFINE_ADD_SIGNAL_ARG3(modifiers_changed, bool, guint, keyval, guint, keycode, ModifierState, modifier) // TODO
+DEFINE_ADD_SIGNAL_ARG3(key_pressed, bool, guint, keyval, guint, keycode, ModifierState, modifier)
+DEFINE_ADD_SIGNAL_ARG3(key_released, void, guint, keyval, guint, keycode, ModifierState, modifier)
+DEFINE_ADD_SIGNAL_ARG3(modifiers_changed, bool, guint, keyval, guint, keycode, ModifierState, modifier)
 DEFINE_ADD_SIGNAL_ARG2(motion_enter, void, double, x, double, y)
 DEFINE_ADD_SIGNAL_ARG2(motion, void, double, x, double, y)
 DEFINE_ADD_SIGNAL_ARG0(motion_leave, void)
@@ -410,6 +410,7 @@ static void implement_action(jlcxx::Module& module)
         }, task);
     });
 
+    add_signal_activated<Action>(action);
 }
 
 // ### ALIGNMENT

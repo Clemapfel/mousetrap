@@ -599,7 +599,7 @@ module mousetrap
             function $connect_signal_name(f, x::$T)
                 typed_f = TypedFunction(f, $Return_t, ($T, $Arg1_t))
                 detail.$connect_signal_name(x._internal, function(x)
-                    typed_f($T(x[]))
+                    typed_f($T(x[1][]), x[2])
                 end)
             end
         )))
@@ -608,7 +608,7 @@ module mousetrap
             function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
                 typed_f = TypedFunction(f, $Return_t, ($T, $Arg1_t, Data_t))
                 detail.$connect_signal_name(x._internal, function(x)
-                    typed_f($T(x[]), data)
+                    typed_f($T(x[1][]), x[2], data)
                 end)
             end
         )))
@@ -927,6 +927,73 @@ module mousetrap
     macro add_signal_swipe(x) return :(@add_signal $x swipe Cvoid Cdouble x_velocity Cdouble y_velocity) end
     macro add_signal_pan(x) return :(@add_signal $x pan Cvoid PanDirection direction Cdouble offset) end
 
+    macro add_signal_activated(T)
+
+        out = Expr(:block)
+        snake_case = :activated
+        Return_t = Cvoid
+
+        connect_signal_name = :connect_signal_ * snake_case * :!
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T)
+                typed_f = TypedFunction(f, $Return_t, ($T,))
+                detail.$connect_signal_name(x._internal, function(x)
+                    typed_f($T(x[1][]))
+                end)
+            end
+        )))
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                typed_f = TypedFunction(f, $Return_t, ($T, Data_t))
+                detail.$connect_signal_name(x._internal, function(x)
+                    typed_f($T(x[1][]), data)
+                end)
+            end
+        )))
+
+        emit_signal_name = :emit_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $emit_signal_name(x::$T) ::$Return_t
+                return convert($Return_t, detail.$emit_signal_name(x._internal, nothing))
+            end
+        )))
+
+        disconnect_signal_name = :disconnect_signal_ * snake_case * :!
+
+        push!(out.args, esc(:(
+            function $disconnect_signal_name(x::$T)
+                detail.$disconnect_signal_name(x._internal)
+            end
+        )))
+
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
+
+        push!(out.args, esc(:(
+            function $set_signal_blocked_name(x::$T, b)
+                detail.$set_signal_blocked_name(x._internal, b)
+            end
+        )))
+
+        get_signal_blocked_name = :get_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $get_signal_blocked_name(x::$T)
+                return detail.$get_signal_blocked_name(x._internal)
+            end
+        )))
+
+        push!(out.args, esc(:(export $connect_signal_name)))
+        push!(out.args, esc(:(export $disconnect_signal_name)))
+        push!(out.args, esc(:(export $set_signal_blocked_name)))
+        push!(out.args, esc(:(export $get_signal_blocked_name)))
+        push!(out.args, esc(:(export $emit_signal_name)))
+
+        return out
+    end
+
     macro add_signal_selection_changed(T)
 
         snake_case = :selection_changed
@@ -1243,6 +1310,8 @@ module mousetrap
         end)
     end
     export set_stateful_function!
+
+    @add_signal_activated Action
 
     Base.show(io::IO, x::Action) = mousetrap.show_aux(io, x, :id, :enabled, :shortcuts, :is_stateful, :state)
 
@@ -2938,6 +3007,17 @@ using .mousetrap
 mousetrap.main() do app::Application
 
     window = Window(app)
+
+    action = Action("test", app)
+    set_function!(action) do x
+        println("called")
+    end
+
+    connect_signal_activated!(action) do x::Action
+        println(get_id(x))
+    end
+
+    activate(action)
 
     view = ListView(ORIENTATION_HORIZONTAL, SELECTION_MODE_SINGLE)
     for i in 1:9
