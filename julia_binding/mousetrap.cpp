@@ -158,7 +158,7 @@ static HSVA unbox_hsva(jl_value_t* in)
 template<typename T, typename Arg_t> \
 void add_signal_##snake_case(Arg_t type) \
 { \
-    type.method("connect_signal_" + std::string(#snake_case) + "!", [](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [&](T& instance, jl_function_t* task) \
     { \
         instance.connect_signal_##snake_case([](T& instance, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
@@ -750,9 +750,40 @@ static void implement_drag_event_controller(jlcxx::Module& module)
     add_signal_drag_end<DragEventController>(drag);
 }
 
-// ### TODO
+// ### DROP DOWN
 
-static void implement_drop_down(jlcxx::Module& module) {}
+static void implement_drop_down(jlcxx::Module& module)
+{
+    auto drop_down = module.add_type(DropDown)
+        .add_constructor()
+        .add_type_method(DropDown, remove, !)
+        .add_type_method(DropDown, set_show_arrow, !)
+        .add_type_method(DropDown, get_show_arrow)
+        .add_type_method(DropDown, set_selected, !)
+        .add_type_method(DropDown, get_selected)
+        .add_type_method(DropDown, get_item_at)
+    ;
+
+    drop_down.method("push_back!", [](DropDown& drop_down, void* list_widget, void* label_widget, jl_value_t* task){
+        return drop_down.push_back(*((Widget*) list_widget), *((Widget*) label_widget), [](DropDown& self, jl_value_t* task) {
+            jl_safe_call("DropDown::item_selection_changed", task, jlcxx::box<DropDown&>(self));
+        }, task);
+    });
+
+    drop_down.method("push_front!", [](DropDown& drop_down, void* list_widget, void* label_widget, jl_value_t* task){
+        return drop_down.push_front(*((Widget*) list_widget), *((Widget*) label_widget), [](DropDown& self, jl_value_t* task) {
+            jl_safe_call("DropDown::item_selection_changed", task, jlcxx::box<DropDown&>(self));
+        }, task);
+    });
+
+    drop_down.method("push_front!", [](DropDown& drop_down, size_t i, void* list_widget, void* label_widget, jl_value_t* task){
+        return drop_down.insert(i, *((Widget*) list_widget), *((Widget*) label_widget), [](DropDown& self, jl_value_t* task) {
+            jl_safe_call("DropDown::item_selection_changed", task, jlcxx::box<DropDown&>(self));
+        }, task);
+    });
+
+    add_widget_signals<DropDown>(drop_down);
+}
 
 // ### ENTRY
 
@@ -956,7 +987,7 @@ static void implement_file_system(jlcxx::Module& module)
     });
 }
 
-// ### TODO
+// ### FILE CHOOSER
 
 static void implement_file_chooser(jlcxx::Module& module)
 {

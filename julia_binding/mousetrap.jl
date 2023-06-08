@@ -308,15 +308,11 @@ module mousetrap
 
 
     function from_julia_index(x::Integer) ::UInt64
-        if x == 0
-            @critical MOUSETRAP_DOMAIN "In from_julia_index: Index `0` is out of bounds, indices are 1-based"
-        else
-            return UInt64(x - 1)
-        end
+        return x
     end
 
     function to_julia_index(x::UInt64) ::Int64
-        return Int64(x + 1)
+        return x
     end
 
 ###### vector.jl
@@ -2181,6 +2177,66 @@ module mousetrap
     @add_widget_signals PopoverButton
     @add_signal_activate PopoverButton
 
+###### drop_down.jl
+
+    @export_type DropDown Widget
+    DropDown() = DropDown(detail._DropDown())
+
+    const DropDownItemID = String
+    export DropDownItemID
+
+    @export_function DropDown remove! Cvoid DropDownItemID id
+    @export_function DropDown set_show_arrow! Cvoid Bool b
+    @export_function DropDown get_show_arrow Bool
+    @export_function DropDown set_selected Cvoid DropDownItemID id
+    @export_function DropDown get_selected DropDownItemID
+
+    get_item_at(drop_down::DropDown, i::Integer) = detail.get_item_at(drop_down._internal, from_julia_index(i))
+    export get_item_at
+
+    function push_back!(f, drop_down::DropDown, list_widget::Widget, label_widget::Widget, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, Cvoid, (DropDown, Data_t))
+        detail.push_back!(drop_down._internal, list_widget._internal.cpp_object, label_widget._internal.cpp_object, function (drop_down_internal_ref)
+            f(DropDown(drop_down_internal_ref[]), data)
+        end)
+    end
+    function push_back!(f, drop_down::DropDown, list_widget::Widget, label_widget::Widget)
+        typed_f = TypedFunction(f, Cvoid, (DropDown,))
+        detail.push_back!(drop_down._internal, list_widget._internal.cpp_object, label_widget._internal.cpp_object, function (drop_down_internal_ref)
+            f(DropDown(drop_down_internal_ref[]))
+        end)
+    end
+    export push_back!
+
+    function push_front!(f, drop_down::DropDown, list_widget::Widget, label_widget::Widget, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, Cvoid, (DropDown, Data_t))
+        detail.push_front!(drop_down._internal, list_widget._internal.cpp_object, label_widget._internal.cpp_object, function (drop_down_internal_ref)
+            f(DropDown(drop_down_internal_ref[]), data)
+        end)
+    end
+    function push_front!(f, drop_down::DropDown, list_widget::Widget, label_widget::Widget)
+        typed_f = TypedFunction(f, Cvoid, (DropDown,))
+        detail.push_front!(drop_down._internal, list_widget._internal.cpp_object, label_widget._internal.cpp_object, function (drop_down_internal_ref)
+            f(DropDown(drop_down_internal_ref[]))
+        end)
+    end
+    export push_front!
+
+    function insert!(f, drop_down::DropDown, index::Integer, list_widget::Widget, label_widget::Widget, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, Cvoid, (DropDown, Data_t))
+        detail.insert!(drop_down._internal, from_julia_index(index), list_widget._internal.cpp_object, label_widget._internal.cpp_object, function (drop_down_internal_ref)
+            f(DropDown(drop_down_internal_ref[]), data)
+        end)
+    end
+    function insert!(f, drop_down::DropDown, index::Integer, list_widget::Widget, label_widget::Widget)
+        typed_f = TypedFunction(f, Cvoid, (DropDown,))
+        detail.insert!(drop_down._internal, from_julia_index(index), list_widget._internal.cpp_object, label_widget._internal.cpp_object, function (drop_down_internal_ref)
+            f(DropDown(drop_down_internal_ref[]))
+        end)
+    end
+    export insert!
+
+
 ###### event_controller.jl
 
     abstract type EventController end
@@ -2773,23 +2829,19 @@ end # module mousetrap
 
 using .mousetrap
 
-@show mousetrap.main() do app::Application
+mousetrap.main() do app::Application
 
     window = Window(app)
 
-    chooser = FileChooser(FILE_CHOOSER_ACTION_OPEN_FILE)
-    on_accept!(chooser) do chooser::FileChooser, files::Vector{FileDescriptor}
-        for x in files
-            println(get_path(x))
-        end
-        println("accept")
+    drop_down = DropDown()
+    push_front!(drop_down, Label("List 01"), Label("Label 01")) do drop_down::DropDown
+        println("01")
     end
-
-    on_cancel!(chooser) do chooser::FileChooser
-        println("cancel")
+    push_front!(drop_down, Label("List 02"), Label("Label 02")) do drop_down::DropDown
+        println("02")
     end
-
-    present!(chooser)
+    
+    set_child!(window, drop_down)
     present!(window)
 end
 

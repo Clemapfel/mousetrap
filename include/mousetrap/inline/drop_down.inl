@@ -22,7 +22,6 @@ namespace mousetrap
         id,
         &list_widget,
         &label_widget,
-        this,
         [f = f_in, data = data_in](DropDown& instance){
             f(instance, data);
         });
@@ -63,7 +62,7 @@ namespace mousetrap
             f(instance, data);
         });
 
-        g_list_store_prepend(_internal->model, item);
+        g_list_store_insert(_internal->model, 0, item);
         return ItemID{id};
     }
 
@@ -81,7 +80,7 @@ namespace mousetrap
             f(instance);
         });
 
-        g_list_store_prepend(_internal->model, item);
+        g_list_store_insert(_internal->model, 0, item);
         return ItemID{id};
     }
 

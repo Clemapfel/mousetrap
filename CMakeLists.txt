@@ -194,7 +194,7 @@ set(MOUSETRAP_HEADER_FILES
         include/mousetrap/inline/spin_button.inl
         include/mousetrap/inline/widget.inl
         include/mousetrap/key_codes.hpp
-)
+        include/mousetrap/inline/file_chooser.inl)
 
 set(MOUSETRAP_SOURCE_FILES
     src/adjustment.cpp
