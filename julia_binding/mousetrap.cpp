@@ -429,15 +429,15 @@ static void implement_application(jlcxx::Module& module)
 {
     auto application = module.add_type(Application)
         .add_constructor(const std::string&)
-        .add_type_method(Application, run)
-        .add_type_method(Application, quit)
-        .add_type_method(Application, hold)
-        .add_type_method(Application, release)
+        .add_type_method(Application, run, !)
+        .add_type_method(Application, quit, !)
+        .add_type_method(Application, hold, !)
+        .add_type_method(Application, release, !)
         .add_type_method(Application, mark_as_busy, !)
         .add_type_method(Application, unmark_as_busy, !)
         .add_type_method(Application, get_id)
-        .add_type_method(Application, add_action)
-        .add_type_method(Application, remove_action)
+        .add_type_method(Application, add_action, !)
+        .add_type_method(Application, remove_action, !)
         .add_type_method(Application, has_action)
         .add_type_method(Application, get_action)
     ;
@@ -1771,6 +1771,34 @@ static void implement_music(jlcxx::Module& module) {}
 static void implement_notebook(jlcxx::Module& module)
 {
     auto notebook = module.add_type(Notebook)
+        .add_constructor()
+        .method("push_front!", [](Notebook& self, void* child_widget, void* label_widget){
+            return self.push_front(*((Widget*) child_widget), *((Widget*) label_widget));
+        })
+        .method("push_back!", [](Notebook& self, void* child_widget, void* label_widget){
+            return self.push_back(*((Widget*) child_widget), *((Widget*) label_widget));
+        })
+        .method("insert!", [](Notebook& self, size_t new_position, void* child_widget, void* label_widget) {
+            return self.insert(new_position, *((Widget*) child_widget), *((Widget*) label_widget));
+        })
+        .add_type_method(Notebook, remove, !)
+        .add_type_method(Notebook, next_page, !)
+        .add_type_method(Notebook, previous_page, !)
+        .add_type_method(Notebook, goto_page, !)
+        .add_type_method(Notebook, get_current_page)
+        .add_type_method(Notebook, get_n_pages)
+        .add_type_method(Notebook, set_is_scrollable, !)
+        .add_type_method(Notebook, get_is_scrollable)
+        .add_type_method(Notebook, set_has_border, !)
+        .add_type_method(Notebook, get_has_border)
+        .add_type_method(Notebook, set_tabs_visible, !)
+        .add_type_method(Notebook, get_tabs_visible)
+        .add_type_method(Notebook, set_quick_change_menu_enabled, !)
+        .add_type_method(Notebook, get_quick_change_menu_enabled)
+        .add_type_method(Notebook, set_tab_position, !)
+        .add_type_method(Notebook, get_tab_position)
+        .add_type_method(Notebook, set_tabs_reorderable, !)
+        .add_type_method(Notebook, get_tabs_reorderable)
     ;
 
     add_widget_signals<Notebook>(notebook, "Notebook");
@@ -2498,7 +2526,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_expander(module);
     implement_file_chooser(module);
 
-    impmlement_fixed(module);
+    implement_fixed(module);
     implement_frame(module);
     implement_frame_clock(module);
     implement_gl_common(module);

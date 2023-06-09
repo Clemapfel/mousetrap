@@ -91,7 +91,7 @@ namespace mousetrap
 
             /// @brief return index of current page
             /// @return index of current page, -1 if no page exists
-            int32_t get_current_page() const;
+            int64_t get_current_page() const;
 
             /// @brief get number of pages
             /// @return size_t

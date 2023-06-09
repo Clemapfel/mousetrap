@@ -5,7 +5,7 @@ module mousetrap
 
 ####### typed_function.jl
 
-    const detail = Main.detail
+    const detail = Main.detail # TODO
 
     """
     # TypedFunction
@@ -942,7 +942,6 @@ module mousetrap
 
     ## TODO: JUMP
 
-
     macro add_signal_activate(x) return :(@add_signal $x activate Cvoid) end
     macro add_signal_shutdown(x) return :(@add_signal $x shutdown Cvoid) end
     macro add_signal_clicked(x) return :(@add_signal $x clicked Cvoid) end
@@ -982,6 +981,8 @@ module mousetrap
     macro add_signal_proximity(x) return :(@add_signal $x proximity Cvoid Cdouble x Cdouble y) end
     macro add_signal_swipe(x) return :(@add_signal $x swipe Cvoid Cdouble x_velocity Cdouble y_velocity) end
     macro add_signal_pan(x) return :(@add_signal $x pan Cvoid PanDirection direction Cdouble offset) end
+    macro add_signal_paint(x) return :(@add_signal $x paint Cvoid) end
+    macro add_signal_update(x) return :(@add_signal $x paint Cvoid) end
 
     macro add_signal_activated(T)
 
@@ -1192,6 +1193,72 @@ module mousetrap
         return out
     end
 
+    macro add_notebook_signal(T, snake_case)
+
+        out = Expr(:block)
+
+        Return_t = Cvoid
+        connect_signal_name = :connect_signal_ * snake_case * :!
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T)
+                typed_f = TypedFunction(f, $Return_t, ($T, Integer))
+                detail.$connect_signal_name(x._internal, function(x)
+                    typed_f($T(x[1][]), to_julia_index(x[3]))
+                end)
+            end
+        )))
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                typed_f = TypedFunction(f, $Return_t, ($T, Integer, Data_t))
+                detail.$connect_signal_name(x._internal, function(x)
+                    typed_f($T(x[1][]), to_julia_index(x[3]), data)
+                end)
+            end
+        )))
+
+        emit_signal_name = :emit_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $emit_signal_name(x::$T, page_index::Integer) ::$Return_t
+                return convert($Return_t, detail.$emit_signal_name(x._internal, from_julia_index(page_index)))
+            end
+        )))
+
+        disconnect_signal_name = :disconnect_signal_ * snake_case * :!
+
+        push!(out.args, esc(:(
+            function $disconnect_signal_name(x::$T)
+                detail.$disconnect_signal_name(x._internal)
+            end
+        )))
+
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
+
+        push!(out.args, esc(:(
+            function $set_signal_blocked_name(x::$T, b)
+                detail.$set_signal_blocked_name(x._internal, b)
+            end
+        )))
+
+        get_signal_blocked_name = :get_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $get_signal_blocked_name(x::$T)
+                return detail.$get_signal_blocked_name(x._internal)
+            end
+        )))
+
+        push!(out.args, esc(:(export $connect_signal_name)))
+        push!(out.args, esc(:(export $disconnect_signal_name)))
+        push!(out.args, esc(:(export $set_signal_blocked_name)))
+        push!(out.args, esc(:(export $get_signal_blocked_name)))
+        push!(out.args, esc(:(export $emit_signal_name)))
+
+        return out
+    end
+
 ####### application.jl
 
     @export_type Application SignalEmitter
@@ -1199,23 +1266,23 @@ module mousetrap
 
     Application(id::String) = Application(detail._Application(id))
 
-    import Base.run
-    run(x::Application) = mousetrap.detail.run(x._internal)
+    run!(x::Application) = mousetrap.detail.run!(x._internal)
+    export run!
 
-    @export_function Application quit Cvoid
-    @export_function Application hold Cvoid
-    @export_function Application release Cvoid
+    @export_function Application quit! Cvoid
+    @export_function Application hold! Cvoid
+    @export_function Application release! Cvoid
     @export_function Application mark_as_busy! Cvoid
     @export_function Application unmark_as_busy! Cvoid
     @export_function Application get_id String
 
-    add_action(app::Application, action::Action) = detail.add_action(app._internal, action._internal)
+    add_action!(app::Application, action::Action) = detail.add_action!(app._internal, action._internal)
     export add_action
 
     get_action(app::Application, id::String) ::Action = return Action(detail.get_action(app._internal, id))
     export get_action
 
-    @export_function Application remove_action Cvoid String id
+    @export_function Application remove_action! Cvoid String id
     @export_function Application has_action Bool String id
 
     @add_signal_activate Application
@@ -1227,9 +1294,17 @@ module mousetrap
         app = Application(application_id)
         typed_f = TypedFunction(f, Any, (Application,))
         connect_signal_activate!(app) do app::Application
-            typed_f(app)
+            try 
+                typed_f(app)
+            catch(exception)
+                printstyled(stderr, "[ERROR] "; bold = true, color = :red)
+                printstyled(stderr, "In mousetrap.main: "; bold = true)
+                Base.showerror(stderr, exception, catch_backtrace())
+                print(stderr, "\n")
+                quit!(app)
+            end
         end
-        return run(app)
+        return run!(app)
     end
     # sic, no export
 
@@ -2950,6 +3025,52 @@ module mousetrap
     @add_widget_signals StackSidebar
     @add_widget_signals StackSwitcher
 
+###### notebook.jl
+
+    @export_type Notebook Widget
+    Notebook() = Notebook(detail._Notebook())
+
+    function push_front!(notebook::Notebook, child_widget::Widget, label_widget::Widget) ::Int64
+        return detail.push_front!(notebook._internal, child_widget._internal.cpp_object, label_widget._internal.cpp_object)
+    end
+    export push_front!
+
+    function push_back!(notebook::Notebook, child_widget::Widget, label_widget::Widget) ::Int64
+        return detail.push_back!(notebook._internal, child_widget._internal.cpp_object, label_widget._internal.cpp_object)
+    end
+    export push_back!
+
+    function insert!(notebook::Notebook, index::Integer, child_widget::Widget, label_widget::Widget) ::Int64
+        return detail.insert!(notebook._internal, from_julia_index(index), child_widget._internal.cpp_object, label_widget._internal.cpp_object)
+    end
+    export insert!
+
+    @export_function Notebook remove! Cvoid Int64 position
+    @export_function Notebook next_page! Cvoid
+    @export_function Notebook previous_page! Cvoid
+    @export_function Notebook goto_page! Cvoid Int64 position
+    
+    @export_function Notebook get_current_page Int64
+    @export_function Notebook get_n_pages Int64
+    @export_function Notebook set_is_scrollable! Cvoid Bool b
+    @export_function Notebook get_is_scrollable Bool
+    @export_function Notebook set_has_border! Cvoid Bool b
+    @export_function Notebook get_has_border Bool
+    @export_function Notebook set_tabs_visible! Cvoid Bool b
+    @export_function Notebook get_tabs_visible Bool
+    @export_function Notebook set_quick_change_menu_enabled! Cvoid Bool b
+    @export_function Notebook get_quick_change_menu_enabled Cvoid Bool b
+    @export_function Notebook set_tab_position! Cvoid RelativePosition relative_position
+    @export_function Notebook get_tab_position RelativePosition
+    @export_function Notebook set_tabs_reorderable! Cvoid Bool b
+    @export_function Notebook get_tabs_reorderable Bool
+
+    @add_widget_signals Notebook
+    @add_notebook_signal Notebook page_added
+    @add_notebook_signal Notebook page_reordered
+    @add_notebook_signal Notebook page_removed
+    @add_notebook_signal Notebook page_selection_changed
+
 ###### column_view.jl
 
     @export_type ColumnViewColumn SignalEmitter
@@ -3173,6 +3294,20 @@ module mousetrap
     @add_widget_signals Revealer
     @add_signal_revealed Revealer
 
+####### frame_clock.jl
+
+    @export_type FrameClock SignalEmitter
+    FrameClock(internal::Ptr{Cvoid}) = FrameClock(detail._FrameClock(internal))
+
+    get_time_since_last_frame(frame_clock::FrameClock) ::Time = microseconds(detail.get_time_since_last_frame(frame_clock._internal))
+    export get_time_since_last_frame
+
+    get_target_frame_duration(frame_clock::FrameClock) ::Time = microseconds(detal.get_target_frame_duration(frame_clock._internal))
+    export get_target_frame_duration
+
+    @add_signal_update FrameClock
+    @add_signal_paint FrameClock
+
 ####### blend_mode.jl
 
     @export_enum BlendMode begin
@@ -3196,14 +3331,25 @@ module mousetrap
     
 end # module mousetrap
 
+
 @info "Done (" * string(round(time() - __mousetrap_compile_time_start; digits=2)) * "s)"
 
 mt = mousetrap
 mt.main() do app::mt.Application
 
     window = mt.Window(app)
-    
-    mt.set_child!(window, mt.Label("abc"))
+
+    notebook = mt.Notebook()
+    mt.push_back!(notebook, mt.Label("Child 01"), mt.Label("Label 01"))
+    mt.push_back!(notebook, mt.Label("Child 02"), mt.Label("Label 02"))
+    mt.push_back!(notebook, mt.Label("Child 03"), mt.Label("Label 03"))
+
+    println("Pages: ", mt.get_n_pages(notebook))
+    mt.connect_signal_page_selection_changed!(notebook) do x::mt.Notebook, i::Int64
+        println(i)
+    end
+
+    mt.set_child!(window, notebook)
     mt.present!(window)
 end
 

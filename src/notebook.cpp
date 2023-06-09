@@ -49,13 +49,13 @@ namespace mousetrap
     }
     
     Notebook::Notebook(detail::NotebookInternal* internal)
-        : Widget(GTK_WIDGET(internal)),
+        : Widget(GTK_WIDGET(internal->native)),
           CTOR_SIGNAL(Notebook, page_added),
           CTOR_SIGNAL(Notebook, page_reordered),
           CTOR_SIGNAL(Notebook, page_removed),
           CTOR_SIGNAL(Notebook, page_selection_changed)
     {
-        _internal = g_object_ref(_internal);
+        _internal = g_object_ref(internal);
     }
 
     Notebook::~Notebook()
@@ -175,7 +175,7 @@ namespace mousetrap
         gtk_notebook_set_current_page(GTK_NOTEBOOK(operator NativeWidget()), i >= get_n_pages() ? -1 : i);
     }
 
-    int32_t Notebook::get_current_page() const
+    int64_t Notebook::get_current_page() const
     {
         return gtk_notebook_get_current_page(GTK_NOTEBOOK(operator NativeWidget()));
     }

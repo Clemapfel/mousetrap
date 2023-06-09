@@ -53,18 +53,16 @@ int main()
     {
         auto window = Window(app);
 
-        auto bar = HeaderBar();
-        bar.push_front(Label("A"));
-        bar.push_front(Label("A"));
-        bar.push_front(Label("A"));
+        auto notebook = Notebook();
+        notebook.push_back(Label("Child 01"), Label("Label 01"));
+        notebook.push_back(Label("Child 02"), Label("Label 02"));
+        notebook.push_back(Label("Child 02"), Label("Label 02"));
 
-        bar.push_back(Label("B"));
-        bar.push_back(Label("B"));
-        bar.push_back(Label("B"));
+        notebook.connect_signal_page_selection_changed([](Notebook& notebook, void*, uint32_t index){
+            std::cout << "Index: " << index << std::endl;
+        });
 
-        bar.clear_front();
-
-        window.set_titlebar_widget(bar);
+        window.set_child(notebook);
         window.present();
     });
 
