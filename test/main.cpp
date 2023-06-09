@@ -53,17 +53,18 @@ int main()
     {
         auto window = Window(app);
 
-        auto file = KeyFile();
-        file.set_value_as<std::vector<std::string>>("group", "key", {"abc", "def"});
-        auto out = file.get_value_as<std::vector<std::string>>("group", "key");
+        auto bar = HeaderBar();
+        bar.push_front(Label("A"));
+        bar.push_front(Label("A"));
+        bar.push_front(Label("A"));
 
-        auto grid = GridView();
-        auto button = CheckButton();
-        button.set_child(Label("Label"));
+        bar.push_back(Label("B"));
+        bar.push_back(Label("B"));
+        bar.push_back(Label("B"));
 
-        grid.push_back(button);
-        grid.set_margin(50);
-        window.set_child(grid);
+        bar.clear_front();
+
+        window.set_titlebar_widget(bar);
         window.present();
     });
 

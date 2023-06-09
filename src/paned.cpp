@@ -51,6 +51,11 @@ namespace mousetrap
         gtk_paned_set_start_child(GTK_PANED(operator NativeWidget()), widget.operator NativeWidget());
     }
 
+    void Paned::remove_start_child()
+    {
+        gtk_paned_set_start_child(GTK_PANED(operator NativeWidget()), nullptr);
+    }
+
     void Paned::set_start_child_resizable(bool b)
     {
         gtk_paned_set_resize_start_child(GTK_PANED(operator NativeWidget()), b);
@@ -78,6 +83,11 @@ namespace mousetrap
         gtk_paned_set_end_child(GTK_PANED(operator NativeWidget()), widget.operator NativeWidget());
     }
 
+    void Paned::remove_end_child()
+    {
+        gtk_paned_set_end_child(GTK_PANED(operator NativeWidget()), nullptr);
+    }
+
     void Paned::set_end_child_resizable(bool b)
     {
         gtk_paned_set_resize_end_child(GTK_PANED(operator NativeWidget()), b);
@@ -103,7 +113,7 @@ namespace mousetrap
         gtk_paned_set_wide_handle(GTK_PANED(operator NativeWidget()), b);
     }
 
-    bool Paned::get_has_widget_handle() const
+    bool Paned::get_has_wide_handle() const
     {
         return gtk_paned_get_wide_handle(GTK_PANED(operator NativeWidget()));
     }

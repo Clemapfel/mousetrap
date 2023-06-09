@@ -32,7 +32,7 @@ namespace mousetrap
         return Time(int64_t(ceil(n * 1e+3)));
     }
 
-    Time nanoseconds(size_t n)
+    Time nanoseconds(int64_t n)
     {
         return Time(n);
     }

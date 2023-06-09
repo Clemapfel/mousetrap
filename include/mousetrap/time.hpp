@@ -85,17 +85,18 @@ namespace mousetrap
             /// @returns false if nanosecond length of this is smaller than or equal to other, true otherwise
             bool operator>=(const Time& other);
 
+            // TODO
+            Time(int64_t n_nanoseconds);
+            // TODO
+
         private:
             friend Time minutes(double);
             friend Time seconds(double);
             friend Time milliseconds(double);
             friend Time microseconds(double);
-            friend Time nanoseconds(size_t);
+            friend Time nanoseconds(int64_t);
 
             friend class Clock;
-
-            Time(int64_t n_nanoseconds);
-
             std::chrono::duration<int64_t, std::nano> _ns; // in nanoseconds
     };
 

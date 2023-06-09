@@ -67,7 +67,7 @@
 #include <mousetrap/revealer.hpp>
 #include <mousetrap/rotate_event_controller.hpp>
 #include <mousetrap/scale.hpp>
-#include <mousetrap/scale_mode.hpp>
+#include <mousetrap/texture_scale_mode.hpp>
 #include <mousetrap/scroll_event_controller.hpp>
 #include <mousetrap/scrollbar.hpp>
 #include <mousetrap/viewport.hpp>

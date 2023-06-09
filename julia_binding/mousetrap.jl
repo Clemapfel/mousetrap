@@ -1,9 +1,11 @@
-using Revise # TODO
-_IMPORTED = false
+@info "Compiling module `mousetrap`..."
+__mousetrap_compile_time_start = time()
 
 module mousetrap
 
 ####### typed_function.jl
+
+    const detail = Main.detail
 
     """
     # TypedFunction
@@ -61,13 +63,16 @@ module mousetrap
         return Base.convert(instance._return_t, instance._apply([Base.convert(instance._arg_ts[i], args[i]) for i in 1:length(args)]...))
     end
 
-####### detail.jl
+####### types.jl
 
-    module detail
-        using CxxWrap
-        function __init__() @initcxx end
-        @wrapmodule("./libjulia_binding.so")
-    end
+    abstract type SignalEmitter end
+    export SignalEmitter
+
+    abstract type Widget end
+    export Widget
+
+    abstract type EventController end
+    export EventController
 
 ####### log.jl
 
@@ -450,6 +455,10 @@ module mousetrap
     const Vector4ui = Vector4{Csize_t}
     export Vector4ui
 
+    Base.show(io::IO, x::Vector2{T}) where T = print(io, "Vector2{" * string(T) * "}(" * string(x.x) * ", " * string(x.y) * ")")
+    Base.show(io::IO, x::Vector3{T}) where T = print(io, "Vector3{" * string(T) * "}(" * string(x.x) * ", " * string(x.y) * ", " * string(x.z) * ")")
+    Base.show(io::IO, x::Vector4{T}) where T = print(io, "Vector4{" * string(T) * "}(" * string(x.x) * ", " * string(x.y) * ", " * string(x.z) * ", " * string(x.w) * ")")
+
 ####### time.jl
 
     struct Time
@@ -517,6 +526,52 @@ module mousetrap
     Base.convert(::Type{Dates.Millisecond}, time::Time) = Dates.Millisecond(as_millisecond(time))
     Base.convert(::Type{Dates.Microsecond}, time::Time) = Dates.Microsecond(as_microsecond(time))
     Base.convert(::Type{Dates.Nanosecond}, time::Time) = Dates.Nanosecond(as_nanoseconds(time))
+
+    @export_type Clock SignalEmitter
+    Clock() = Clock(detail._Clock())
+
+    restart!(clock::Clock) ::Time = microseconds(detail.restart!(clock._internal))
+    export restart!
+
+    elapsed(clock::Clock) ::Time = microseconds(detail.elapsed(clock._internal))
+    export elapsed
+
+####### angle.jl
+
+    struct Angle
+        _rads::Cfloat
+    end
+    export Angle
+
+    degrees(x::Number) = return Angle(convert(Cfloat, deg2rad(x)))
+    export degrees
+
+    radians(x::Number) = return Angle(convert(Cfloat, x))
+    export radians
+
+    as_degrees(angle::Angle) = return rad2deg(angle._rads)
+    export as_degrees
+
+    as_radians(angle::Angle) = return angle._rads
+    export as_radians
+
+    import Base: +
+    +(a::Angle, b::Angle) = return Angle(a._rads + b._rads)
+
+    import Base: -
+    -(a::Angle, b::Angle) = return Angle(a._rads - b._rads)
+
+    import Base: *
+    *(a::Angle, b::Angle) = return Angle(a._rads * b._rads)
+
+    import Base: /
+    /(a::Angle, b::Angle) = return Angle(a._rads / b._rads)
+
+    import Base: ==
+    ==(a::Angle, b::Angle) = return a._rads == b._rads
+
+    import Base: !=
+    !=(a::Angle, b::Angle) = return a._rads != b._rads
 
 ####### signal_components.jl
 
@@ -887,6 +942,7 @@ module mousetrap
 
     ## TODO: JUMP
 
+
     macro add_signal_activate(x) return :(@add_signal $x activate Cvoid) end
     macro add_signal_shutdown(x) return :(@add_signal $x shutdown Cvoid) end
     macro add_signal_clicked(x) return :(@add_signal $x clicked Cvoid) end
@@ -931,6 +987,73 @@ module mousetrap
 
         out = Expr(:block)
         snake_case = :activated
+        Return_t = Cvoid
+
+        connect_signal_name = :connect_signal_ * snake_case * :!
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T)
+                typed_f = TypedFunction(f, $Return_t, ($T,))
+                detail.$connect_signal_name(x._internal, function(x)
+                    typed_f($T(x[1][]))
+                end)
+            end
+        )))
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                typed_f = TypedFunction(f, $Return_t, ($T, Data_t))
+                detail.$connect_signal_name(x._internal, function(x)
+                    typed_f($T(x[1][]), data)
+                end)
+            end
+        )))
+
+        emit_signal_name = :emit_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $emit_signal_name(x::$T) ::$Return_t
+                return convert($Return_t, detail.$emit_signal_name(x._internal, nothing))
+            end
+        )))
+
+        disconnect_signal_name = :disconnect_signal_ * snake_case * :!
+
+        push!(out.args, esc(:(
+            function $disconnect_signal_name(x::$T)
+                detail.$disconnect_signal_name(x._internal)
+            end
+        )))
+
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
+
+        push!(out.args, esc(:(
+            function $set_signal_blocked_name(x::$T, b)
+                detail.$set_signal_blocked_name(x._internal, b)
+            end
+        )))
+
+        get_signal_blocked_name = :get_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $get_signal_blocked_name(x::$T)
+                return detail.$get_signal_blocked_name(x._internal)
+            end
+        )))
+
+        push!(out.args, esc(:(export $connect_signal_name)))
+        push!(out.args, esc(:(export $disconnect_signal_name)))
+        push!(out.args, esc(:(export $set_signal_blocked_name)))
+        push!(out.args, esc(:(export $get_signal_blocked_name)))
+        push!(out.args, esc(:(export $emit_signal_name)))
+
+        return out
+    end
+
+    macro add_signal_revealed(T)
+
+        out = Expr(:block)
+        snake_case = :revealed
         Return_t = Cvoid
 
         connect_signal_name = :connect_signal_ * snake_case * :!
@@ -1069,94 +1192,6 @@ module mousetrap
         return out
     end
 
-####### types.jl
-
-    abstract type SignalEmitter end
-    export SignalEmitter
-
-    abstract type Widget end
-    export Widget
-
-    abstract type EventController end
-    export EventController
-
-####### adjustment.jl
-
-    @export_type Adjustment SignalEmitter
-
-    function Adjustment(value::Number, lower::Number, upper::Number, increment::Number)
-        return Adjustment(detail._Adjustment(
-            convert(Cfloat, value),
-            convert(Cfloat, lower),
-            convert(Cfloat, upper),
-            convert(Cfloat, increment)
-        ));
-    end
-
-    @export_function Adjustment get_lower Float32
-    @export_function Adjustment get_upper Float32
-    @export_function Adjustment get_value Float32
-    @export_function Adjustment get_increment Float32
-
-    set_lower!(adjustment::Adjustment, x::Number) = detail.set_lower!(adjustment._internal, convert(Cfloat, x))
-    export set_lower!
-
-    set_upper!(adjustment::Adjustment, x::Number) = detail.set_upper!(adjustment._internal, convert(Cfloat, x))
-    export set_upper!
-
-    set_value!(adjustment::Adjustment, x::Number) = detail.set_value!(adjustment._internal, convert(Cfloat, x))
-    export set_value!
-
-    set_increment!(adjustment::Adjustment, x::Number) = detail.set_increment!(adjustment._internal, convert(Cfloat, x))
-    export set_increment!
-
-    Base.show(io::IO, x::Adjustment) = mousetrap.show_aux(io, x, :value, :lower, :upper, :increment)
-
-####### alignment.jl
-
-    @export_enum Alignment begin
-        ALIGNMENT_START
-        ALIGNMENT_CENTER
-        ALIGNMENT_END
-    end
-
-####### angle.jl
-
-    struct Angle
-        _rads::Cfloat
-    end
-    export Angle
-
-    degrees(x::Number) = return Angle(convert(Cfloat, deg2rad(x)))
-    export degrees
-
-    radians(x::Number) = return Angle(convert(Cfloat, x))
-    export radians
-
-    as_degrees(angle::Angle) = return rad2deg(angle._rads)
-    export as_degrees
-
-    as_radians(angle::Angle) = return angle._rads
-    export as_radians
-
-    import Base: +
-    +(a::Angle, b::Angle) = return Angle(a._rads + b._rads)
-
-    import Base: -
-    -(a::Angle, b::Angle) = return Angle(a._rads - b._rads)
-
-    import Base: *
-    *(a::Angle, b::Angle) = return Angle(a._rads * b._rads)
-
-    import Base: /
-    /(a::Angle, b::Angle) = return Angle(a._rads / b._rads)
-
-    import Base: ==
-    ==(a::Angle, b::Angle) = return a._rads == b._rads
-
-    import Base: !=
-    !=(a::Angle, b::Angle) = return a._rads != b._rads
-
 ####### application.jl
 
     @export_type Application SignalEmitter
@@ -1186,9 +1221,9 @@ module mousetrap
     @add_signal_activate Application
     @add_signal_shutdown Application
 
-    Base.show(io::IO, x::Application) = mousetrap.show(x, :id)
+    Base.show(io::IO, x::Application) = show_aux(x, :id)
 
-    function main(f; application_id::String = "Julia.app") ::Int64
+    function main(f; application_id::String = "mousetrap.jl") ::Int64
         app = Application(application_id)
         typed_f = TypedFunction(f, Any, (Application,))
         connect_signal_activate!(app) do app::Application
@@ -1262,6 +1297,8 @@ module mousetrap
     @add_signal_activate_default_widget Window
     @add_signal_activate_focused_widget Window
 
+    Base.show(io::IO, x::Window) = show_aux(io, x, :title)
+
 ####### action.jl
 
     @export_type Action SignalEmitter
@@ -1314,6 +1351,53 @@ module mousetrap
     @add_signal_activated Action
 
     Base.show(io::IO, x::Action) = mousetrap.show_aux(io, x, :id, :enabled, :shortcuts, :is_stateful, :state)
+
+####### adjustment.jl
+
+    @export_type Adjustment SignalEmitter
+
+    function Adjustment(value::Number, lower::Number, upper::Number, increment::Number)
+        return Adjustment(detail._Adjustment(
+            convert(Cfloat, value),
+            convert(Cfloat, lower),
+            convert(Cfloat, upper),
+            convert(Cfloat, increment)
+        ));
+    end
+
+    @export_function Adjustment get_lower Float32
+    @export_function Adjustment get_upper Float32
+    @export_function Adjustment get_value Float32
+    @export_function Adjustment get_increment Float32
+
+    set_lower!(adjustment::Adjustment, x::Number) = detail.set_lower!(adjustment._internal, convert(Cfloat, x))
+    export set_lower!
+
+    set_upper!(adjustment::Adjustment, x::Number) = detail.set_upper!(adjustment._internal, convert(Cfloat, x))
+    export set_upper!
+
+    set_value!(adjustment::Adjustment, x::Number) = detail.set_value!(adjustment._internal, convert(Cfloat, x))
+    export set_value!
+
+    set_increment!(adjustment::Adjustment, x::Number) = detail.set_increment!(adjustment._internal, convert(Cfloat, x))
+    export set_increment!
+
+    Base.show(io::IO, x::Adjustment) = mousetrap.show_aux(io, x, :value, :lower, :upper, :increment)
+
+####### alignment.jl
+
+    @export_enum Alignment begin
+        ALIGNMENT_START
+        ALIGNMENT_CENTER
+        ALIGNMENT_END
+    end
+
+####### orientation.jl
+
+    @export_enum Orientation begin
+        ORIENTATION_HORIZONTAL
+        ORIENTATION_VERTICAL
+    end
 
 ####### cursor_type.jl
 
@@ -1370,30 +1454,6 @@ module mousetrap
     export set_child!
 
     Base.show(io::IO, x::AspectFrame) = mousetrap.show_aux(io, x, :ratio, :child_x_alignment, :child_y_alignment)
-
-####### blend_mode.jl
-
-    @export_enum BlendMode begin
-        BLEND_MODE_NONE
-        BLEND_MODE_ADD
-        BLEND_MODE_SUBTRACT
-        BLEND_MODE_REVERSE_SUBTRACT
-        BLEND_MODE_MULTIPLY
-        BLEND_MODE_MIN
-        BLEND_MODE_MAX
-    end
-
-    function set_current_blend_mode(blend_mode::BlendMode; allow_alpha_blending = true)
-        detail.set_current_blend_mode(blend_mode, allow_alpha_blending)
-    end
-    export set_current_blend_mode
-
-####### orientation.jl
-
-    @export_enum Orientation begin
-        ORIENTATION_HORIZONTAL
-        ORIENTATION_VERTICAL
-    end
 
 ####### box.jl
 
@@ -1711,9 +1771,9 @@ module mousetrap
         detail.set_value_as_float_list!(file._internal, group, key, Cfloat[value.r, value.g, value.b, value.a])
     end
 
-    #function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Image)
-    #   TODO
-    #end
+    function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Image)
+       detail.set_value_as_image!(file._internal, group, key, value._internal)
+    end
 
     function set_value!(file::KeyFile, group::GroupID, key::KeyID, value::Vector{Bool})
         detail.set_value_as_bool_list!(file._internal, group, key, value)
@@ -1774,11 +1834,9 @@ module mousetrap
         return RGBA(vec[1], vec[2], vec[3], vec[4])
     end
 
-    #function get_value(file::KeyFile, type::Type{Image}, group::GroupID, key::KeyID)
-    #    TODO
-    #end
-
-    ##
+    function get_value(file::KeyFile, type::Type{Image}, group::GroupID, key::KeyID)
+        return Image(detail.get_value_as_image(file._internal, group, key))
+    end
 
     function get_value(file::KeyFile, type::Type{Vector{Bool}}, group::GroupID, key::KeyID)
         return convert(Vector{Bool}, detail.get_value_as_bool_list(file._internal, group, key))
@@ -1976,6 +2034,9 @@ module mousetrap
 
     create_from_icon!(image_display::ImageDisplay, icon::Icon) = detail.create_from_icon!(image_display._internal, icon._internal)
     export create_from_icon!
+
+    create_as_file_preview!(image_display::ImageDisplay, file::FileDescriptor) = detail.create_as_file_preview!(image_display._internal, file._internal)
+    export create_as_file_preview!
 
     @export_function ImageDisplay clear! Cvoid
     @export_function ImageDisplay set_scale! Cvoid Cint scale
@@ -2996,43 +3057,154 @@ module mousetrap
     @export_function ColumnView get_n_rows Int64
     @export_function ColumnView get_n_columns Int64
 
+###### header_bar.jl
+
+    @export_type HeaderBar Widget
+    HeaderBar() = HeaderBar(detail._HeaderBar())
+    HeaderBar(layout::String) = HeaderBar(detail._HeaderBar(layout))
+
+    @export_function HeaderBar set_layout! Cvoid String layout
+    @export_function HeaderBar get_layout String
+    @export_function HeaderBar set_show_title_buttons! Cvoid Bool b
+    @export_function HeaderBar get_show_title_buttons Bool
+
+    set_title_widget!(header_bar::HeaderBar, widget::Widget) = detail.set_title_widget!(header_bar._internal, widget._internal.cpp_object)
+    export set_title_widget!
+
+    push_front!(header_bar::HeaderBar, widget::Widget) = detail.push_front!(header_bar._internal, widget._internal.cpp_object)
+    export push_front!
+    
+    push_back!(header_bar::HeaderBar, widget::Widget) = detail.push_back!(header_bar._internal, widget._internal.cpp_object)
+    export push_back!
+
+    remove!(header_bar::HeaderBar, widget::Widget) = detail.remove!(header_bar._internal, widget._internal.cpp_object)
+    export remove!
+
+    @add_widget_signals HeaderBar
+
+###### paned.jl
+
+    @export_type Paned Widget
+    Paned(orientation::Orientation) = Paned(detail._paned(orientation))
+
+    @export_function Paned get_position Cint
+    @export_function Paned set_position! Cvoid Integer position
+
+    @export_function Paned set_has_wide_handle Cvoid Bool b
+    @export_function Paned get_has_wide_handle Bool
+    @export_function Paned set_orientation Cvoid Orientation orientation
+    @export_function Paned get_orientation Orientation
+
+    @export_function Paned set_start_child_resizable! Cvoid Bool b 
+    @export_function Paned get_start_child_resizable Bool
+    @export_function Paned set_start_child_shrinkable Cvoid Bool b
+    @export_function Paned get_start_child_shrinkable Bool
+
+    set_start_child!(paned::Paned, child::Widget) = detail.set_start_child!(paned._internal, child._internal.cpp_object)
+    export set_start_child!
+
+    @export_function Paned remove_start_child Cvoid
+
+    @export_function Paned set_end_child_resizable! Cvoid Bool b 
+    @export_function Paned get_end_child_resizable Bool
+    @export_function Paned set_end_child_shrinkable Cvoid Bool b
+    @export_function Paned get_end_child_shrinkable Bool
+
+    set_end_child!(paned::Paned, child::Widget) = detail.set_end_child!(paned._internal, child._internal.cpp_object)
+    export set_end_child!
+
+    @export_function Paned remove_end_child Cvoid
+
+###### progress_bar.jl
+
+    @export_type ProgressBar Widget
+    ProgressBar() = ProgressBar(detail._ProgressBar())
+
+    @export_enum ProgressBarDisplayMode begin
+        PROGRESS_BAR_DISPLAY_MODE_SHOW_TEXT
+        PROGRESS_BAR_DISPLAY_MODE_SHOW_PERCENTAGE
+    end 
+
+    @export_function ProgressBar pulse Cvoid
+    @export_function ProgressBar set_fraction! Cvoid AbstractFloat zero_to_one
+    @export_function ProgressBar get_fraction Cfloat
+    @export_function ProgressBar set_is_inverted! Cvoid Bool b
+    @export_function ProgressBar get_is_inverted Bool
+    @export_function ProgressBar set_text! Cvoid String text
+    @export_function ProgressBar get_text String
+    @export_function ProgressBar set_display_mode! Cvoid ProgressBarDisplayMode mode
+    @export_function ProgressBar get_display_mode ProgressBarDisplayMode
+    @export_function ProgressBar set_orientation! Cvoid Orientation orientation
+    @export_function ProgressBar get_orientation Orientation
+
+###### revealer.jl
+
+    @export_enum RevealerTransitionType begin
+        REVEALER_TRANSITION_TYPE_NONE
+        REVEALER_TRANSITION_TYPE_CROSSFADE
+        REVEALER_TRANSITION_TYPE_SLIDE_RIGHT
+        REVEALER_TRANSITION_TYPE_SLIDE_LEFT
+        REVEALER_TRANSITION_TYPE_SLIDE_UP
+        REVEALER_TRANSITION_TYPE_SLIDE_DOWN
+        REVEALER_TRANSITION_TYPE_SWING_RIGHT
+        REVEALER_TRANSITION_TYPE_SWING_LEFT
+        REVEALER_TRANSITION_TYPE_SWING_UP
+        REVEALER_TRANSITION_TYPE_SWING_DOWN
+    end
+
+    @export_type Revealer Widget
+    Revealer(transition_type::RevealerTransitionType = REVEALER_TRANSITION_TYPE_CROSSFADE) = Revealer(detail._Revealer(transition_type))
+
+    set_child!(revealer::Revealer, child::Widget) = detail.set_child!(revealer._internal, child._internal.cpp_object)
+    export set_child!
+
+    @export_function Revealer remove_child! Cvoid
+    @export_function Revealer set_revealed! Cvoid Bool child_visible
+    @export_function Revealer get_revealed Bool
+    @export_function Revealer set_transition_type! Cvoid RevealerTransitionType type
+    @export_function Revealer get_transition_type RevealerTransitionType
+    
+    set_transition_duration!(revealer::Revealer, duration::Time) = detail.set_transition_duration!(revealer._internal, as_microseconds(duration))
+    export set_transition_duration!
+
+    get_transition_duration(revealer::Revealer) ::Time = microseconds(detail.get_transition_duration(revealer._internal))
+    export get_transition_duration
+
+    @add_widget_signals Revealer
+    @add_signal_revealed Revealer
+
+####### blend_mode.jl
+
+    @export_enum BlendMode begin
+        BLEND_MODE_NONE
+        BLEND_MODE_ADD
+        BLEND_MODE_SUBTRACT
+        BLEND_MODE_REVERSE_SUBTRACT
+        BLEND_MODE_MULTIPLY
+        BLEND_MODE_MIN
+        BLEND_MODE_MAX
+    end
+
+    function set_current_blend_mode(blend_mode::BlendMode; allow_alpha_blending = true)
+        detail.set_current_blend_mode(blend_mode, allow_alpha_blending)
+    end
+    export set_current_blend_mode
+
 ###### key_code.jl
 
     # TODO
-
+    
 end # module mousetrap
 
-using .mousetrap
+@info "Done (" * string(round(time() - __mousetrap_compile_time_start; digits=2)) * "s)"
 
-mousetrap.main() do app::Application
+mt = mousetrap
+mt.main() do app::mt.Application
 
-    window = Window(app)
-
-    action = Action("test", app)
-    set_function!(action) do x
-        println("called")
-    end
-
-    connect_signal_activated!(action) do x::Action
-        println(get_id(x))
-    end
-
-    activate(action)
-
-    view = ListView(ORIENTATION_HORIZONTAL, SELECTION_MODE_SINGLE)
-    for i in 1:9
-        push_back!(view, Label("0" * string(i)))
-    end
-
-    model = get_selection_model(view)
-    connect_signal_selection_changed!(model) do instance::SelectionModel, position::Int64, n_items::Int64
-        println("position: " * string(position))
-    end
-
-    set_child!(window, view)
-    present!(window)
+    window = mt.Window(app)
+    
+    mt.set_child!(window, mt.Label("abc"))
+    mt.present!(window)
 end
-
-
 
 

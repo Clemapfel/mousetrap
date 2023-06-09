@@ -156,14 +156,14 @@ static HSVA unbox_hsva(jl_value_t* in)
 
 #define DEFINE_ADD_SIGNAL_ARG0(snake_case, return_t) \
 template<typename T, typename Arg_t> \
-void add_signal_##snake_case(Arg_t type) \
+void add_signal_##snake_case(Arg_t type, const std::string& name) \
 { \
-    type.method("connect_signal_" + std::string(#snake_case) + "!", [&](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [name](T& instance, jl_function_t* task) \
     { \
-        instance.connect_signal_##snake_case([](T& instance, jl_function_t* task) -> return_t { \
+        instance.connect_signal_##snake_case([name](T& instance, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
                 jl_safe_call( \
-                    ("emit_signal_" + std::string(#snake_case)).c_str(), \
+                    (name + "::emit_signal_" + std::string(#snake_case)).c_str(), \
                     task,                                   \
                     jl_wrap(jlcxx::box<T&>(instance))\
                 ) \
@@ -178,14 +178,14 @@ void add_signal_##snake_case(Arg_t type) \
 
 #define DEFINE_ADD_SIGNAL_ARG1(snake_case, return_t, arg1_t, arg1_name) \
 template<typename T, typename Arg_t> \
-void add_signal_##snake_case(Arg_t type) \
+void add_signal_##snake_case(Arg_t type, const std::string& name) \
 { \
-    type.method("connect_signal_" + std::string(#snake_case) + "!", [](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [name](T& instance, jl_function_t* task) \
     { \
-        instance.connect_signal_##snake_case([](T& instance, arg1_t arg1_name, jl_function_t* task) -> return_t { \
+        instance.connect_signal_##snake_case([name](T& instance, arg1_t arg1_name, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
                 jl_safe_call( \
-                    ("emit_signal_" + std::string(#snake_case)).c_str(), \
+                    (name + "::emit_signal_" + std::string(#snake_case)).c_str(), \
                     task, \
                     jl_wrap(jlcxx::box<T&>(instance), jlcxx::box<arg1_t>(arg1_name)) \
                 ) \
@@ -200,14 +200,14 @@ void add_signal_##snake_case(Arg_t type) \
 
 #define DEFINE_ADD_SIGNAL_ARG2(snake_case, return_t, arg1_t, arg1_name, arg2_t, arg2_name) \
 template<typename T, typename Arg_t> \
-void add_signal_##snake_case(Arg_t type) \
+void add_signal_##snake_case(Arg_t type, const std::string& name) \
 { \
-    type.method("connect_signal_" + std::string(#snake_case) + "!", [](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [name](T& instance, jl_function_t* task) \
     { \
-        instance.connect_signal_##snake_case([](T& instance, arg1_t arg1_name, arg2_t arg2_name, jl_function_t* task) -> return_t { \
+        instance.connect_signal_##snake_case([name](T& instance, arg1_t arg1_name, arg2_t arg2_name, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
                 jl_safe_call( \
-                    ("emit_signal_" + std::string(#snake_case)).c_str(), \
+                    (name + "::emit_signal_" + std::string(#snake_case)).c_str(), \
                     task, \
                     jl_wrap(jlcxx::box<T&>(instance), jlcxx::box<arg1_t>(arg1_name), jlcxx::box<arg2_t>(arg2_name)) \
                 ) \
@@ -219,14 +219,14 @@ void add_signal_##snake_case(Arg_t type) \
 
 #define DEFINE_ADD_SIGNAL_ARG3(snake_case, return_t, arg1_t, arg1_name, arg2_t, arg2_name, arg3_t, arg3_name) \
 template<typename T, typename Arg_t> \
-void add_signal_##snake_case(Arg_t type) \
+void add_signal_##snake_case(Arg_t type, const std::string& name) \
 { \
-    type.method("connect_signal_" + std::string(#snake_case) + "!", [](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [name](T& instance, jl_function_t* task) \
     { \
-        instance.connect_signal_##snake_case([](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, jl_function_t* task) -> return_t { \
+        instance.connect_signal_##snake_case([name](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
                 jl_safe_call( \
-                    ("emit_signal_" + std::string(#snake_case)).c_str(), \
+                    (name + "::emit_signal_" + std::string(#snake_case)).c_str(), \
                     task, \
                     jl_wrap(jlcxx::box<T&>(instance), jlcxx::box<arg1_t>(arg1_name), jlcxx::box<arg2_t>(arg2_name), jlcxx::box<arg3_t>(arg3_name)) \
                 ) \
@@ -241,14 +241,14 @@ void add_signal_##snake_case(Arg_t type) \
 
 #define DEFINE_ADD_SIGNAL_ARG4(snake_case, return_t, arg1_t, arg1_name, arg2_t, arg2_name, arg3_t, arg3_name, arg4_t, arg4_name) \
 template<typename T, typename Arg_t> \
-void add_signal_##snake_case(Arg_t type) \
+void add_signal_##snake_case(Arg_t type, const std::string& name) \
 { \
-    type.method("connect_signal_" + std::string(#snake_case) + "!", [](T& instance, jl_function_t* task) \
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [name](T& instance, jl_function_t* task) \
     { \
-        instance.connect_signal_##snake_case([](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, arg4_t arg4_name, jl_function_t* task) -> return_t { \
+        instance.connect_signal_##snake_case([name](T& instance, arg1_t arg1_name, arg2_t arg2_name, arg3_t arg3_name, arg4_t arg4_name, jl_function_t* task) -> return_t { \
             return jlcxx::unbox<return_t>( \
                 jl_safe_call( \
-                    ("emit_signal_" + std::string(#snake_case)).c_str(), \
+                    (name + "::emit_signal_" + std::string(#snake_case)).c_str(), \
                     task, \
                     jl_wrap(jlcxx::box<T&>(instance), jlcxx::box<arg1_t>(arg1_name), jlcxx::box<arg2_t>(arg2_name), jlcxx::box<arg3_t>(arg3_name), jlcxx::box<arg4_t>(arg4_name)) \
                 ) \
@@ -263,11 +263,11 @@ void add_signal_##snake_case(Arg_t type) \
 
 #define DEFINE_ADD_WIDGET_SIGNAL(snake_case) \
 template<typename T, typename Arg_t>                               \
-void add_signal_##snake_case(Arg_t type) {\
-    type.method("connect_signal_" + std::string(#snake_case) + "!", [](T& instance, jl_function_t* task) \
+void add_signal_##snake_case(Arg_t type, const std::string& name) {\
+    type.method("connect_signal_" + std::string(#snake_case) + "!", [name](T& instance, jl_function_t* task) \
     { \
-        instance.connect_signal_##snake_case([](Widget& instance, jl_function_t* task) -> void { \
-            jl_safe_call(("emit_signal_" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(dynamic_cast<T&>(instance))); \
+        instance.connect_signal_##snake_case([name](Widget& instance, jl_function_t* task) -> void { \
+            jl_safe_call((name + "::emit_signal_" + std::string(#snake_case)).c_str(), task, jlcxx::box<T&>(dynamic_cast<T&>(instance))); \
         }, task); \
     }) \
     .method("emit_signal_" + std::string(#snake_case), [](T& instance) { \
@@ -285,15 +285,15 @@ DEFINE_ADD_WIDGET_SIGNAL(map)
 DEFINE_ADD_WIDGET_SIGNAL(unmap)
 
 template<typename T, typename Arg_t>
-void add_widget_signals(Arg_t& type)
+void add_widget_signals(Arg_t& type, const std::string& name)
 {
-    add_signal_realize<T>(type);
-    add_signal_unrealize<T>(type);
-    add_signal_destroy<T>(type);
-    add_signal_hide<T>(type);
-    add_signal_show<T>(type);
-    add_signal_map<T>(type);
-    add_signal_unmap<T>(type);
+    add_signal_realize<T>(type, name);
+    add_signal_unrealize<T>(type, name);
+    add_signal_destroy<T>(type, name);
+    add_signal_hide<T>(type, name);
+    add_signal_show<T>(type, name);
+    add_signal_map<T>(type, name);
+    add_signal_unmap<T>(type, name);
 }
 
 DEFINE_ADD_SIGNAL_ARG0(activate, void)
@@ -351,8 +351,8 @@ DEFINE_ADD_SIGNAL_ARG0(closed, void)
 DEFINE_ADD_SIGNAL_ARG0(play, void)
 DEFINE_ADD_SIGNAL_ARG0(stop, void)
 DEFINE_ADD_SIGNAL_ARG3(items_changed, void, gint, position, gint, n_removed, gint, n_added)
-DEFINE_ADD_SIGNAL_ARG0(revealed, void)
-DEFINE_ADD_SIGNAL_ARG1(activated, void, void*, _) // TODO
+DEFINE_ADD_SIGNAL_ARG1(revealed, void, void*, _)
+DEFINE_ADD_SIGNAL_ARG1(activated, void, void*, _)
 
 // ### ADJUSTMENT
 
@@ -370,8 +370,8 @@ void implement_adjustment(jlcxx::Module& module)
         .add_type_method(Adjustment, set_increment, !)
     ;
 
-    add_signal_value_changed<Adjustment>(adjustment);
-    add_signal_properties_changed<Adjustment>(adjustment);
+    add_signal_value_changed<Adjustment>(adjustment, "Adjustment");
+    add_signal_properties_changed<Adjustment>(adjustment, "Adjustment");
 }
 
 // ### ACTION
@@ -410,7 +410,7 @@ static void implement_action(jlcxx::Module& module)
         }, task);
     });
 
-    add_signal_activated<Action>(action);
+    add_signal_activated<Action>(action, "Action");
 }
 
 // ### ALIGNMENT
@@ -442,8 +442,8 @@ static void implement_application(jlcxx::Module& module)
         .add_type_method(Application, get_action)
     ;
 
-    add_signal_activate<Application>(application);
-    add_signal_shutdown<Application>(application);
+    add_signal_activate<Application>(application, "Application");
+    add_signal_shutdown<Application>(application, "Application");
 }
 
 // ### ASPECT FRAME
@@ -465,7 +465,7 @@ static void implement_aspect_frame(jlcxx::Module& module)
             instance.set_child(*((Widget*) widget));
         });
 
-    add_widget_signals<AspectFrame>(aspect_frame);
+    add_widget_signals<AspectFrame>(aspect_frame, "AspectFrame");
 }
 
 // ### BLEND MODE
@@ -515,7 +515,7 @@ static void implement_box(jlcxx::Module& module)
         .add_type_method(Box, set_orientation, !)
     ;
 
-    add_widget_signals<Box>(box);
+    add_widget_signals<Box>(box, "Box");
 }
 
 // ### BUTTON
@@ -535,9 +535,9 @@ static void implement_button(jlcxx::Module& module)
         .add_type_method(Button, set_action, !)
     ;
 
-    add_widget_signals<Button>(button);
-    add_signal_activate<Button>(button);
-    add_signal_clicked<Button>(button);
+    add_widget_signals<Button>(button, "Button");
+    add_signal_activate<Button>(button, "Button");
+    add_signal_clicked<Button>(button, "Button");
 }
 
 // ### CENTER BOX
@@ -562,7 +562,7 @@ static void implement_center_box(jlcxx::Module& module)
         .add_type_method(CenterBox, set_orientation, !)
     ;
 
-    add_widget_signals<CenterBox>(center_box);
+    add_widget_signals<CenterBox>(center_box, "CenterBox");
 }
 
 // ### CHECK BUTTON
@@ -588,9 +588,9 @@ static void implement_check_button(jlcxx::Module& module)
         .add_type_method(CheckButton, remove_child);
     #endif
 
-    add_widget_signals<CheckButton>(check_button);
-    add_signal_toggled<CheckButton>(check_button);
-    add_signal_activate<CheckButton>(check_button);
+    add_widget_signals<CheckButton>(check_button, "CheckButton");
+    add_signal_toggled<CheckButton>(check_button, "CheckButton");
+    add_signal_activate<CheckButton>(check_button, "CheckButton");
 }
 
 // ### CLICK EVENT CONTROLLER
@@ -601,9 +601,9 @@ static void implement_click_event_controller(jlcxx::Module& module)
         .add_constructor()
     ;
 
-    add_signal_click_pressed<ClickEventController>(click);
-    add_signal_click_released<ClickEventController>(click);
-    add_signal_click_stopped<ClickEventController>(click);
+    add_signal_click_pressed<ClickEventController>(click, "ClickEventController");
+    add_signal_click_released<ClickEventController>(click, "ClickEventController");
+    add_signal_click_stopped<ClickEventController>(click, "ClickEventController");
 }
 
 // ### TODO
@@ -635,7 +635,7 @@ static void implement_color(jlcxx::Module& module)
     });
 }
 
-// ### TODO
+// ### COLUMN VIEW
 
 using ColumnViewColumn = ColumnView::Column;
 
@@ -683,8 +683,8 @@ static void implement_column_view(jlcxx::Module& module)
         })
     ;
 
-    add_widget_signals<ColumnView>(column_view);
-    add_signal_activate<ColumnView>(column_view);
+    add_widget_signals<ColumnView>(column_view, "ColumnView");
+    add_signal_activate<ColumnView>(column_view, "ColumnView");
 }
 
 // ### CURSOR_TYPE
@@ -737,9 +737,9 @@ static void implement_drag_event_controller(jlcxx::Module& module)
         })
     ;
 
-    add_signal_drag_begin<DragEventController>(drag);
-    add_signal_drag<DragEventController>(drag);
-    add_signal_drag_end<DragEventController>(drag);
+    add_signal_drag_begin<DragEventController>(drag, "DragEventController");
+    add_signal_drag<DragEventController>(drag, "DragEventController");
+    add_signal_drag_end<DragEventController>(drag, "DragEventController");
 }
 
 // ### DROP DOWN
@@ -774,7 +774,7 @@ static void implement_drop_down(jlcxx::Module& module)
         }, task);
     });
 
-    add_widget_signals<DropDown>(drop_down);
+    add_widget_signals<DropDown>(drop_down, "DropDown");
 }
 
 // ### ENTRY
@@ -797,9 +797,9 @@ static void implement_entry(jlcxx::Module& module)
         .add_type_method(Entry, remove_secondary_icon)
     ;
 
-    add_widget_signals<Entry>(entry);
-    add_signal_activate<Entry>(entry);
-    add_signal_text_changed<Entry>(entry);
+    add_widget_signals<Entry>(entry, "Entry");
+    add_signal_activate<Entry>(entry, "Entry");
+    add_signal_text_changed<Entry>(entry, "Entry");
 }
 
 // ### EVENT CONTROLLER
@@ -866,8 +866,8 @@ static void implement_expander(jlcxx::Module& module)
         .add_type_method(Expander, set_expanded)
     ;
 
-    add_widget_signals<Expander>(expander);
-    add_signal_activate<Expander>(expander);
+    add_widget_signals<Expander>(expander, "Expander");
+    add_signal_activate<Expander>(expander, "Expander");
 }
 
 // ### FILE MONITOR
@@ -1060,7 +1060,7 @@ static void implement_fixed(jlcxx::Module& module)
         })
     ;
 
-    add_widget_signals<Fixed>(fixed);
+    add_widget_signals<Fixed>(fixed, "Fixed");
 }
 
 // ### FOCUS EVENT CONTROLLER
@@ -1073,8 +1073,8 @@ static void implement_focus_event_controller(jlcxx::Module& module)
         .add_type_method(FocusEventController, self_is_focused)
     ;
 
-    add_signal_focus_gained<FocusEventController>(focus);
-    add_signal_focus_lost<FocusEventController>(focus);
+    add_signal_focus_gained<FocusEventController>(focus, "FocusEventController");
+    add_signal_focus_lost<FocusEventController>(focus, "FocusEventController");
 }
 
 // ### FRAME
@@ -1095,7 +1095,7 @@ static void implement_frame(jlcxx::Module& module)
         .add_type_method(Frame, get_label_x_alignment)
     ;
 
-    add_widget_signals<Frame>(frame);
+    add_widget_signals<Frame>(frame, "Frame");
 }
 
 // ### TODO
@@ -1152,7 +1152,7 @@ static void implement_grid(jlcxx::Module& module)
         .add_type_method(Grid, set_orientation, !)
     ;
 
-    add_widget_signals<Grid>(grid);
+    add_widget_signals<Grid>(grid, "Grid");
 }
 
 // ### GRID VIEW
@@ -1192,13 +1192,38 @@ static void implement_grid_view(jlcxx::Module& module)
         .add_type_method(GridView, get_orientation)
     ;
 
-    add_widget_signals<GridView>(grid);
-    add_signal_activate<GridView>(grid);
+    add_widget_signals<GridView>(grid, "GridView");
+    add_signal_activate<GridView>(grid, "GridView");
 }
 
-// ### TODO
+// ### HEADER BAR
 
-static void implement_header_bar(jlcxx::Module& module) {}
+static void implement_header_bar(jlcxx::Module& module)
+{
+    auto bar = module.add_type(HeaderBar)
+        .add_constructor()
+        .add_constructor(const std::string&)
+        .add_type_method(HeaderBar, set_layout, !)
+        .add_type_method(HeaderBar, get_layout)
+        .add_type_method(HeaderBar, set_show_title_buttons, !)
+        .add_type_method(HeaderBar, get_show_title_buttons)
+        .method("set_title_widget!", [](HeaderBar& bar, void* widget){
+            bar.set_title_widget(*((Widget*) widget));
+        })
+        .add_type_method(HeaderBar, remove_title_widget)
+        .method("push_front!", [](HeaderBar& bar, void* widget){
+            bar.push_front(*((Widget*) widget));
+        })
+        .method("push_back!", [](HeaderBar& bar, void* widget){
+            bar.push_back(*((Widget*) widget));
+        })
+        .method("remove!", [](HeaderBar& bar, void* widget){
+            bar.remove(*((Widget*) widget));
+        })
+    ;
+
+    add_widget_signals<HeaderBar>(bar, "HeaderBar");
+}
 
 // ### ICON
 
@@ -1289,12 +1314,12 @@ static void implement_image_display(jlcxx::Module& module)
         .add_type_method(ImageDisplay, create_from_file, !)
         .add_type_method(ImageDisplay, create_from_image, !)
         .add_type_method(ImageDisplay, create_from_icon, !)
-        // TODO: .add_type_method(ImageDisplay, create_as_file_preview, !)
+        .add_type_method(ImageDisplay, create_as_file_preview, !)
         .add_type_method(ImageDisplay, clear, !)
         .add_type_method(ImageDisplay, set_scale, !)
     ;
 
-    add_widget_signals<ImageDisplay>(image_display);
+    add_widget_signals<ImageDisplay>(image_display, "ImageDisplay");
 }
 
 // ### JUSTIFY MODE
@@ -1322,9 +1347,9 @@ static void implement_key_event_controller(jlcxx::Module& module)
         .add_type_method(KeyEventController, should_shortcut_trigger_trigger)
     ;
 
-    add_signal_key_pressed<KeyEventController>(key);
-    add_signal_key_released<KeyEventController>(key);
-    add_signal_modifiers_changed<KeyEventController>(key);
+    add_signal_key_pressed<KeyEventController>(key, "KeyEventController");
+    add_signal_key_released<KeyEventController>(key, "KeyEventController");
+    add_signal_modifiers_changed<KeyEventController>(key, "KeyEventController");
 
     module.method("shift_pressed", [](ModifierState state) -> bool {
         return KeyEventController::shift_pressed(state);
@@ -1409,6 +1434,9 @@ static void implement_key_file(jlcxx::Module& module)
     define_get_value_as(double, "double");
     define_set_value_as(double, "double");
 
+    define_set_value_as(Image&, "image");
+    define_get_value_as(Image&, "image");
+
     define_get_value_as_list(std::string, "string");
 
     key_file.method("set_value_as_string_list!", [](KeyFile& file, KeyFile::GroupID group, KeyFile::KeyID key, jl_value_t* list){
@@ -1438,11 +1466,6 @@ static void implement_key_file(jlcxx::Module& module)
 
     define_get_value_as_list(double, "double");
     define_set_value_as_list(double, "double");
-
-    // TODO _as_image
-    // TODO _as_rgba
-
-    #undef define_access_value_as
 }
 
 // ### LABEL
@@ -1484,7 +1507,7 @@ static void implement_label(jlcxx::Module& module)
         .add_type_method(Label, get_selectable)
     ;
 
-    add_widget_signals<Label>(label);
+    add_widget_signals<Label>(label, "Label");
 }
 
 // ### LEVEL BAR
@@ -1513,7 +1536,7 @@ static void implement_level_bar(jlcxx::Module& module)
         .add_type_method(LevelBar, get_orientation)
     ;
 
-    add_widget_signals<LevelBar>(level_bar);
+    add_widget_signals<LevelBar>(level_bar, "LevelBar");
 }
 
 // ### LIST VIEW
@@ -1555,8 +1578,8 @@ static void implement_list_view(jlcxx::Module& module)
         .add_type_method(ListView, set_orientation)
     ;
 
-    add_widget_signals<ListView>(list_view);
-    add_signal_activate<ListView>(list_view);
+    add_widget_signals<ListView>(list_view, "ListView");
+    add_signal_activate<ListView>(list_view, "ListView");
 }
 
 // ### LOG
@@ -1657,8 +1680,8 @@ static void implement_long_press_event_controller(jlcxx::Module& module)
         .add_type_method(LongPressEventController, get_delay_factor)
     ;
 
-    add_signal_pressed<LongPressEventController>(long_press);
-    add_signal_press_cancelled<LongPressEventController>(long_press);
+    add_signal_pressed<LongPressEventController>(long_press, "LongPressEventController");
+    add_signal_press_cancelled<LongPressEventController>(long_press, "LongPressEventController");
 }
 
 // ### MENU MODEL
@@ -1696,7 +1719,7 @@ static void implement_menu_model(jlcxx::Module& module)
         .add_type_method(MenuModel, add_icon, !)
     ;
 
-    add_signal_items_changed<MenuModel>(menu_model);
+    add_signal_items_changed<MenuModel>(menu_model, "MenuModel");
 }
 
 // ### MENU BAR
@@ -1707,7 +1730,7 @@ static void implement_menu_bar(jlcxx::Module& module)
         .add_constructor(const MenuModel&)
     ;
 
-    add_widget_signals<MenuBar>(menubar);
+    add_widget_signals<MenuBar>(menubar, "MenuBar");
 }
 
 // ### MOTION EVENT CONTROLLER
@@ -1718,9 +1741,9 @@ static void implement_motion_event_controller(jlcxx::Module& module)
         .add_constructor()
     ;
 
-    add_signal_motion_enter<MotionEventController>(motion);
-    add_signal_motion<MotionEventController>(motion);
-    add_signal_motion_leave<MotionEventController>(motion);
+    add_signal_motion_enter<MotionEventController>(motion, "MotionEventController");
+    add_signal_motion<MotionEventController>(motion, "MotionEventController");
+    add_signal_motion_leave<MotionEventController>(motion, "MotionEventController");
 }
 
 // ### TODO
@@ -1762,7 +1785,7 @@ static void implement_overlay(jlcxx::Module& module)
         })
     ;
 
-    add_widget_signals<Overlay>(overlay);
+    add_widget_signals<Overlay>(overlay, "Overlay");
 }
 
 // ### PAN EVENT CONTROLLER
@@ -1781,12 +1804,42 @@ static void implement_pan_event_controller(jlcxx::Module& module)
         .add_type_method(PanEventController, get_orientation)
     ;
 
-    add_signal_pan<PanEventController>(pan);
+    add_signal_pan<PanEventController>(pan, "PanEventController");
 }
 
-// ### TODO
+// ### PANED
 
-static void implement_paned(jlcxx::Module& module) {}
+static void implement_paned(jlcxx::Module& module)
+{
+    auto paned = module.add_type(Paned)
+        .add_constructor(Orientation)
+        .add_type_method(Paned, get_position)
+        .add_type_method(Paned, set_position, !)
+        .method("set_start_child!", [](Paned& paned, void* widget){
+            paned.set_start_child(*((Widget*) widget));
+        })
+        .add_type_method(Paned, remove_start_child, !)
+        .add_type_method(Paned, set_start_child_resizable, !)
+        .add_type_method(Paned, get_start_child_resizable)
+        .add_type_method(Paned, set_start_child_shrinkable, !)
+        .add_type_method(Paned, get_start_child_shrinkable)
+        .method("set_end_child!", [](Paned& paned, void* widget){
+            paned.set_end_child(*((Widget*) widget));
+        })
+        .add_type_method(Paned, remove_end_child, !)
+        .add_type_method(Paned, set_end_child_resizable, !)
+        .add_type_method(Paned, get_end_child_resizable)
+        .add_type_method(Paned, set_end_child_shrinkable, !)
+        .add_type_method(Paned, get_end_child_shrinkable)
+
+        .add_type_method(Paned, set_has_wide_handle, !)
+        .add_type_method(Paned, get_has_wide_handle)
+        .add_type_method(Paned, set_orientation, !)
+        .add_type_method(Paned, get_orientation)
+    ;
+
+    add_widget_signals<Paned>(paned, "Paned");
+}
 
 // ### PINCH ZOOM EVENT CONTROLLER
 
@@ -1797,7 +1850,7 @@ static void implement_pinch_zoom_event_controller(jlcxx::Module& module)
         .add_type_method(PinchZoomEventController, get_scale_delta)
     ;
 
-    add_signal_scale_changed<PinchZoomEventController>(pinch);
+    add_signal_scale_changed<PinchZoomEventController>(pinch, "PinchZoomEventController");
 }
 
 // ### POPOVER
@@ -1823,8 +1876,8 @@ static void implement_popover(jlcxx::Module& module)
         .add_type_method(Popover, get_has_base_arrow)
     ;
 
-    add_widget_signals<Popover>(popover);
-    add_signal_closed<Popover>(popover);
+    add_widget_signals<Popover>(popover, "Popover");
+    add_signal_closed<Popover>(popover, "Popover");
 }
 
 // ### POPOVER BUTTON
@@ -1852,8 +1905,8 @@ static void implement_popover_button(jlcxx::Module& module)
         .add_type_method(PopoverButton, get_is_circular)
     ;
 
-    add_widget_signals<PopoverButton>(popover_button);
-    add_signal_activate<PopoverButton>(popover_button);
+    add_widget_signals<PopoverButton>(popover_button, "PopoverButton");
+    add_signal_activate<PopoverButton>(popover_button, "PopoverButton");
 }
 
 // ### POPOVER MENU
@@ -1864,13 +1917,35 @@ static void implement_popover_menu(jlcxx::Module& module)
         .add_constructor(const MenuModel&)
     ;
 
-    add_widget_signals<PopoverMenu>(popover_menu);
-    add_signal_closed<PopoverMenu>(popover_menu);
+    add_widget_signals<PopoverMenu>(popover_menu, "PopoverMenu");
+    add_signal_closed<PopoverMenu>(popover_menu, "PopoverMenu");
 }
 
-// ### TODO
+// ### PROGRESS BAR
 
-static void implement_progress_bar(jlcxx::Module& module) {}
+static void implement_progress_bar(jlcxx::Module& module)
+{
+    define_enum_in(module, ProgressBarDisplayMode);
+    module.add_enum_value(ProgressBarDisplayMode, PROGRESS_BAR_DISPLAY_MODE, SHOW_TEXT);
+    module.add_enum_value(ProgressBarDisplayMode, PROGRESS_BAR_DISPLAY_MODE, SHOW_PERCENTAGE);
+
+    auto bar = module.add_type(ProgressBar)
+        .add_constructor()
+        .add_type_method(ProgressBar, pulse)
+        .add_type_method(ProgressBar, set_fraction, !)
+        .add_type_method(ProgressBar, get_fraction)
+        .add_type_method(ProgressBar, set_is_inverted, !)
+        .add_type_method(ProgressBar, get_is_inverted)
+        .add_type_method(ProgressBar, set_text, !)
+        .add_type_method(ProgressBar, get_text)
+        .add_type_method(ProgressBar, set_display_mode, !)
+        .add_type_method(ProgressBar, get_display_mode)
+        .add_type_method(ProgressBar, set_orientation, !)
+        .add_type_method(ProgressBar, get_orientation)
+    ;
+
+    add_widget_signals<ProgressBar>(bar, "ProgressBar");
+}
 
 // ### RELATIVE POSITION
 
@@ -1895,9 +1970,43 @@ static void implement_render_task(jlcxx::Module& module) {}
 
 static void implement_render_texture(jlcxx::Module& module) {}
 
-// ### TODO
+// ### REVEALER
 
-static void implement_revealer(jlcxx::Module& module) {}
+static void implement_revealer(jlcxx::Module& module)
+{
+    define_enum_in(module, RevealerTransitionType);
+    module.add_enum_value(RevealerTransitionType, REVEALER_TRANSITION_TYPE, NONE);
+    module.add_enum_value(RevealerTransitionType, REVEALER_TRANSITION_TYPE, CROSSFADE);
+    module.add_enum_value(RevealerTransitionType, REVEALER_TRANSITION_TYPE, SLIDE_RIGHT);
+    module.add_enum_value(RevealerTransitionType, REVEALER_TRANSITION_TYPE, SLIDE_LEFT);
+    module.add_enum_value(RevealerTransitionType, REVEALER_TRANSITION_TYPE, SLIDE_DOWN);
+    module.add_enum_value(RevealerTransitionType, REVEALER_TRANSITION_TYPE, SLIDE_UP);
+    module.add_enum_value(RevealerTransitionType, REVEALER_TRANSITION_TYPE, SWING_RIGHT);
+    module.add_enum_value(RevealerTransitionType, REVEALER_TRANSITION_TYPE, SWING_LEFT);
+    module.add_enum_value(RevealerTransitionType, REVEALER_TRANSITION_TYPE, SWING_UP);
+    module.add_enum_value(RevealerTransitionType, REVEALER_TRANSITION_TYPE, SWING_DOWN);
+
+    auto revealer = module.add_type(Revealer)
+        .add_constructor(RevealerTransitionType)
+        .method("set_child!", [](Revealer& self, void* child) {
+            self.set_child(*((Widget*) child));
+        })
+        .add_type_method(Revealer, remove_child, !)
+        .add_type_method(Revealer, set_revealed, !)
+        .add_type_method(Revealer, get_revealed)
+        .add_type_method(Revealer, set_transition_type, !)
+        .add_type_method(Revealer, get_transition_type)
+        .method("set_transition_duration!", [](Revealer& self, float mys){
+            self.set_transition_duration(microseconds(mys));
+        })
+        .method("get_transition_duration", [](Revealer& self) -> float {
+            return self.get_transition_duration().as_microseconds();
+        })
+    ;
+
+    add_widget_signals<Revealer>(revealer, "Revealer");
+    add_signal_revealed<Revealer>(revealer, "Revealer");
+}
 
 // ### ROTATE EVENT CONTROLLER
 
@@ -1910,7 +2019,7 @@ static void implement_rotate_event_controller(jlcxx::Module& module)
         })
     ;
 
-    add_signal_rotation_changed<RotateEventController>(rotate);
+    add_signal_rotation_changed<RotateEventController>(rotate, "RotateEventController");
 }
 
 // ### TODO
@@ -1919,7 +2028,7 @@ static void implement_scale(jlcxx::Module& module) {}
 
 // ### TODO
 
-static void implement_scale_mode(jlcxx::Module& module) {}
+static void implement_texture_scale_mode(jlcxx::Module& module) {}
 
 // ### SCROLL EVENT CONTROLLER
 
@@ -1929,10 +2038,10 @@ static void implement_scroll_event_controller(jlcxx::Module& module)
         .add_constructor(bool, bool)
     ;
 
-    add_signal_kinetic_scroll_decelerate<ScrollEventController>(scroll);
-    add_signal_scroll_begin<ScrollEventController>(scroll);
-    add_signal_scroll<ScrollEventController>(scroll);
-    add_signal_scroll_end<ScrollEventController>(scroll);
+    add_signal_kinetic_scroll_decelerate<ScrollEventController>(scroll, "ScrollEventController");
+    add_signal_scroll_begin<ScrollEventController>(scroll, "ScrollEventController");
+    add_signal_scroll<ScrollEventController>(scroll, "ScrollEventController");
+    add_signal_scroll_end<ScrollEventController>(scroll, "ScrollEventController");
 }
 
 // ### TODO
@@ -1962,7 +2071,7 @@ static void implement_selection_model(jlcxx::Module& module)
         .add_type_method(SelectionModel, unselect, !)
     ;
 
-    add_signal_selection_changed<SelectionModel>(selection);
+    add_signal_selection_changed<SelectionModel>(selection, "SelectionModel");
 }
 
 // ### TODO
@@ -2074,17 +2183,17 @@ static void implement_stack(jlcxx::Module& module)
         .add_type_method(Stack, get_should_interpolate_size)
     ;
 
-    add_widget_signals<Stack>(stack);
+    add_widget_signals<Stack>(stack, "Stack");
 
     auto sidebar = module.add_type(StackSidebar)
         .add_constructor(const Stack&)
     ;
-    add_widget_signals<StackSidebar>(sidebar);
+    add_widget_signals<StackSidebar>(sidebar, "SideBar");
 
     auto switcher = module.add_type(StackSwitcher)
         .add_constructor(const Stack&)
     ;
-    add_widget_signals<StackSwitcher>(switcher);
+    add_widget_signals<StackSwitcher>(switcher, "StackSwitcher");
 }
 
 // ### STYLUS EVENT CONTROLLER
@@ -2126,10 +2235,10 @@ static void implement_stylus_event_controller(jlcxx::Module& module)
         .add_type_method(StylusEventController, get_axis_value)
     ;
 
-    add_signal_stylus_down<StylusEventController>(stylus);
-    add_signal_stylus_up<StylusEventController>(stylus);
-    add_signal_proximity<StylusEventController>(stylus);
-    add_signal_motion<StylusEventController>(stylus);
+    add_signal_stylus_down<StylusEventController>(stylus, "StylusEventController");
+    add_signal_stylus_up<StylusEventController>(stylus, "StylusEventController");
+    add_signal_proximity<StylusEventController>(stylus, "StylusEventController");
+    add_signal_motion<StylusEventController>(stylus, "StylusEventController");
 }
 
 // ### SWIPE EVENT CONTROLLER
@@ -2142,7 +2251,7 @@ static void implement_swipe_event_controller(jlcxx::Module& module)
             return box_vector2f(x.get_velocity());
         });
 
-    add_signal_swipe<SwipeEventController>(swipe);
+    add_signal_swipe<SwipeEventController>(swipe, "SwipeEventController");
 }
 
 // ### TODO
@@ -2177,26 +2286,26 @@ static void implement_text_view(jlcxx::Module& module)
         .add_type_method(TextView, get_bottom_margin)
     ;
 
-    add_widget_signals<TextView>(text_view);
-    add_signal_text_changed<TextView>(text_view);
-    add_signal_undo<TextView>(text_view);
-    add_signal_redo<TextView>(text_view);
+    add_widget_signals<TextView>(text_view, "TextView");
+    add_signal_text_changed<TextView>(text_view, "TextView");
+    add_signal_undo<TextView>(text_view, "TextView");
+    add_signal_redo<TextView>(text_view, "TextView");
 }
 
 // ### TIME
 
 static void implement_time(jlcxx::Module& module)
 {
-    module.method("ns_to_minutes", [](double ns) -> double {
+    module.method("ns_to_minutes", [](size_t ns) -> double {
         return nanoseconds(ns).as_minutes();
     });
-    module.method("ns_to_seconds", [](double ns) -> double {
+    module.method("ns_to_seconds", [](size_t ns) -> double {
         return nanoseconds(ns).as_seconds();
     });
-    module.method("ns_to_milliseconds", [](double ns) -> double {
+    module.method("ns_to_milliseconds", [](size_t ns) -> double {
         return nanoseconds(ns).as_milliseconds();
     });
-    module.method("ns_to_microseconds", [](double ns) -> double {
+    module.method("ns_to_microseconds", [](size_t ns) -> double {
         return nanoseconds(ns).as_microseconds();
     });
     module.method("minutes_to_ns", [](double x) -> int64_t {
@@ -2211,6 +2320,16 @@ static void implement_time(jlcxx::Module& module)
     module.method("microseconds_to_ns", [](double x) -> int64_t {
         return milliseconds(x).as_nanoseconds();
     });
+
+    auto clock = module.add_type(Clock)
+        .add_constructor()
+        .method("restart!", [](Clock& clock) -> double {
+            return clock.restart().as_microseconds();
+        })
+        .method("elapsed", [](Clock& clock) -> double {
+            return clock.elapsed().as_microseconds();
+        })
+    ;
 }
 
 // ### TODO
@@ -2219,7 +2338,10 @@ static void implement_texture(jlcxx::Module& module) {}
 
 // ### TODO
 
-static void implement_toggle_button(jlcxx::Module& module) {}
+static void implement_toggle_button(jlcxx::Module& module)
+{
+
+}
 
 // ### TODO
 
@@ -2276,10 +2398,10 @@ static void implement_window(jlcxx::Module& module)
         })
     ;
 
-    add_widget_signals<Window>(window);
-    add_signal_close_request<Window>(window);
-    add_signal_activate_default_widget<Window>(window);
-    add_signal_activate_focused_widget<Window>(window);
+    add_widget_signals<Window>(window, "Window");
+    add_signal_close_request<Window>(window, "Window");
+    add_signal_activate_default_widget<Window>(window, "Window");
+    add_signal_activate_focused_widget<Window>(window, "Window");
 }
 
 // ### TODO
@@ -2382,7 +2504,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_revealer(module);
 
     implement_scale(module);
-    implement_scale_mode(module);
+    implement_texture_scale_mode(module);
 
     implement_scrollbar(module);
     implement_separator(module);

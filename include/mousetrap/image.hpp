@@ -8,7 +8,7 @@
 #include <mousetrap/gtk_common.hpp>
 #include <mousetrap/color.hpp>
 #include <mousetrap/vector.hpp>
-#include <mousetrap/scale_mode.hpp>
+#include <mousetrap/texture_scale_mode.hpp>
 
 #include <vector>
 

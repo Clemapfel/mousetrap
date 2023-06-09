@@ -58,6 +58,7 @@ namespace mousetrap
     void ProgressBar::set_text(const std::string& text)
     {
         gtk_progress_bar_set_text(GTK_PROGRESS_BAR(operator NativeWidget()), text.c_str());
+        set_display_mode(ProgressBarDisplayMode::SHOW_TEXT);
     }
 
     std::string ProgressBar::get_text() const
@@ -65,14 +66,14 @@ namespace mousetrap
         return gtk_progress_bar_get_text(GTK_PROGRESS_BAR(operator NativeWidget()));
     }
 
-    void ProgressBar::set_show_text_or_percentage(bool b)
+    void ProgressBar::set_display_mode(ProgressBarDisplayMode mode)
     {
-        gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(operator NativeWidget()), b);
+        gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(operator NativeWidget()), (bool) mode);
     }
 
-    bool ProgressBar::get_show_text_or_percentage() const
+    ProgressBarDisplayMode ProgressBar::get_display_mode() const
     {
-        return gtk_progress_bar_get_show_text(GTK_PROGRESS_BAR(operator NativeWidget()));
+        return (ProgressBarDisplayMode) gtk_progress_bar_get_show_text(GTK_PROGRESS_BAR(operator NativeWidget()));
     }
 
     void ProgressBar::set_orientation(Orientation orientation)

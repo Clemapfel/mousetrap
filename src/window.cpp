@@ -95,7 +95,8 @@ namespace mousetrap
 
     std::string Window::get_title() const
     {
-        return gtk_window_get_title(GTK_WINDOW(_internal));
+        auto* title = gtk_window_get_title(GTK_WINDOW(_internal));
+        return title != nullptr ? std::string(title) : "";
     }
 
     void Window::set_destroy_with_parent(bool b)

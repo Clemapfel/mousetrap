@@ -51,6 +51,9 @@ namespace mousetrap
             /// @param widget
             void set_start_child(const Widget&);
 
+            /// @brief remove start child
+            void remove_start_child();
+
             /// @brief set whether the start child will increase in size if the separator bar is dragged away from it
             /// @param b true if enabled, false otherwise
             void set_start_child_resizable(bool);
@@ -70,6 +73,9 @@ namespace mousetrap
             /// @brief set end child
             /// @param widget
             void set_end_child(const Widget&);
+
+            /// @brief remove end child
+            void remove_end_child();
 
             /// @brief set whether the end child will increase in size if the separator bar is dragged away from it
             /// @param b true if enabled, false otherwise
@@ -93,7 +99,7 @@ namespace mousetrap
 
             /// @brief get whether the separator bar is a wide bar instead of a 1-px line
             /// @return true if wide, false otherwise
-            bool get_has_widget_handle() const;
+            bool get_has_wide_handle() const;
 
             /// @copydoc mousetrap::Orientable::set_orientation
             void set_orientation(Orientation) override;
