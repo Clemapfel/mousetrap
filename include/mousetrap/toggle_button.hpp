@@ -53,7 +53,7 @@ namespace mousetrap
 
             /// @brief set whether the button is pressed in
             /// @param b true if active, false otherwise
-            void set_active(bool b);
+            void set_is_active(bool b);
 
             /// @brief set widget to use as the label for the button
             /// @param widget

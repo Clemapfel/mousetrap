@@ -58,14 +58,9 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
-    Adjustment* Scale::get_adjustment()
+    Adjustment Scale::get_adjustment() const
     {
-        return _internal->adjustment;
-    }
-
-    const Adjustment* Scale::get_adjustment() const
-    {
-        return _internal->adjustment;
+        return Adjustment((detail::AdjustmentInternal*) _internal->adjustment->get_internal());
     }
 
     float Scale::get_lower() const

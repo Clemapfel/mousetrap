@@ -182,7 +182,7 @@ namespace mousetrap
         try
         {
             auto button = SpinButton(instance);
-            res = instance->text_to_value_function(&button, text);
+            res = instance->text_to_value_function(button, text);
         }
         catch (std::exception& e)
         {
@@ -201,7 +201,7 @@ namespace mousetrap
         try
         {
             auto button = SpinButton(instance);
-            std::string res = instance->value_to_text_function(&button, value);
+            std::string res = instance->value_to_text_function(button, value);
             gtk_editable_set_text(GTK_EDITABLE(instance->native), res.c_str());
             return TRUE;
         }

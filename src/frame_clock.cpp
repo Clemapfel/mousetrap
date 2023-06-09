@@ -29,21 +29,6 @@ namespace mousetrap
         g_object_unref(_internal);
     }
 
-    FrameClock::FrameClock(FrameClock&& other) noexcept
-        : CTOR_SIGNAL(FrameClock, update),
-          CTOR_SIGNAL(FrameClock, paint)
-    {
-        _internal = g_object_ref(other._internal);
-        other._internal = nullptr;
-    }
-
-    FrameClock& FrameClock::operator=(FrameClock&& other) noexcept
-    {
-        _internal = g_object_ref(other._internal);
-        other._internal = nullptr;
-        return *this;
-    }
-
     Time FrameClock::get_target_frame_duration() const
     {
         return microseconds(gdk_frame_clock_get_frame_time(_internal));

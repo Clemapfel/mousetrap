@@ -49,7 +49,7 @@ namespace mousetrap
 
             /// @brief set whether the switch is in the "on" position
             /// @param b true if "on", false otherwise
-            void set_active(bool);
+            void set_is_active(bool);
 
         private:
             detail::SwitchInternal* _internal = nullptr;

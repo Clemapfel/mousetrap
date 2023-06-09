@@ -58,13 +58,9 @@ namespace mousetrap
             /// @brief expose internal
             NativeObject get_internal() const;
 
-            /// @brief get adjustment
-            /// @returns reference to adjustment, modifying it modifies the scale
-            Adjustment* get_adjustment();
-
             /// @brief get const reference to adjustment
             /// @returns adjustmnet, cannot be modified but its values reflect those of the scale
-            const Adjustment* get_adjustment() const;
+            Adjustment get_adjustment() const;
 
             /// @brief get lower bound of the range
             /// @return float

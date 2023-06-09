@@ -359,6 +359,9 @@ DEFINE_ADD_SIGNAL_ARG1(activated, void, void*, _)
 void implement_adjustment(jlcxx::Module& module)
 {
     auto adjustment = module.add_type(Adjustment)
+        .constructor([](void* internal){
+            return new Adjustment(GTK_ADJUSTMENT(internal));
+        }, USE_FINALIZERS)
         .add_constructor(float, float, float, float)
         .add_type_method(Adjustment, get_lower)
         .add_type_method(Adjustment, get_upper)
@@ -2072,9 +2075,28 @@ static void implement_rotate_event_controller(jlcxx::Module& module)
     add_signal_rotation_changed<RotateEventController>(rotate, "RotateEventController");
 }
 
-// ### TODO
+// ### SCALE
 
-static void implement_scale(jlcxx::Module& module) {}
+static void implement_scale(jlcxx::Module& module)
+{
+    auto scale = module.add_type(Scale)
+        .add_constructor(float, float, float, Orientation)
+        .method("get_adjustment", [](Scale& self) -> void* {
+            return self.get_adjustment().get_internal();
+        })
+        .add_type_method(Scale, get_lower)
+        .add_type_method(Scale, get_upper)
+        .add_type_method(Scale, get_value)
+        .add_type_method(Scale, get_increment)
+        .add_type_method(Scale, set_lower, !)
+        .add_type_method(Scale, set_upper, !)
+        .add_type_method(Scale, set_value, !)
+        .add_type_method(Scale, set_increment, !)
+    ;
+
+    add_widget_signals<Scale>(scale, "Scale");
+    add_signal_value_changed<Scale>(scale, "Scale");
+}
 
 // ### TODO
 
@@ -2094,9 +2116,21 @@ static void implement_scroll_event_controller(jlcxx::Module& module)
     add_signal_scroll_end<ScrollEventController>(scroll, "ScrollEventController");
 }
 
-// ### TODO
+// ### SCROLLBAR
 
-static void implement_scrollbar(jlcxx::Module& module) {}
+static void implement_scrollbar(jlcxx::Module& module)
+{
+    auto scrollbar = module.add_type(Scrollbar)
+        .add_constructor(Orientation)
+        .method("get_adjustment", [](Scrollbar& self) -> void* {
+            return self.get_adjustment().get_internal();
+        })
+        .add_type_method(Scrollbar, set_orientation, !)
+        .add_type_method(Scrollbar, get_orientation)
+    ;
+
+    add_widget_signals<Scrollbar>(scrollbar, "Scrollbar");
+}
 
 // ### SELECTION MODEL
 
@@ -2124,9 +2158,18 @@ static void implement_selection_model(jlcxx::Module& module)
     add_signal_selection_changed<SelectionModel>(selection, "SelectionModel");
 }
 
-// ### TODO
+// ### SEPARATOR
 
-static void implement_separator(jlcxx::Module& module) {}
+static void implement_separator(jlcxx::Module& module)
+{
+    auto separator = module.add_type(Separator)
+        .add_constructor(float, Orientation)
+        .add_type_method(Separator, set_orientation)
+        .add_type_method(Separator, get_orientation)
+    ;
+
+    add_widget_signals<Separator>(separator, "Separator");
+}
 
 // ### TODO
 
@@ -2161,9 +2204,62 @@ static void implement_sound(jlcxx::Module& module) {}
 
 static void implement_sound_buffer(jlcxx::Module& module) {}
 
-// ### TODO
+// ### SPIN BUTTON
 
-static void implement_spin_button(jlcxx::Module& module) {}
+static void implement_spin_button(jlcxx::Module& module)
+{
+    auto spin = module.add_type(SpinButton)
+        .add_constructor(float, float, float, Orientation)
+        .method("get_adjustment", [](SpinButton& self) -> void* {
+            return self.get_adjustment()->get_internal();
+        })
+        .add_type_method(SpinButton, get_lower)
+        .add_type_method(SpinButton, get_upper)
+        .add_type_method(SpinButton, get_value)
+        .add_type_method(SpinButton, get_increment)
+        .add_type_method(SpinButton, set_lower, !)
+        .add_type_method(SpinButton, set_upper, !)
+        .add_type_method(SpinButton, set_value, !)
+        .add_type_method(SpinButton, set_increment, !)
+        .add_type_method(SpinButton, set_n_digits, !)
+        .add_type_method(SpinButton, get_n_digits)
+        .add_type_method(SpinButton, set_should_wrap, !)
+        .add_type_method(SpinButton, get_should_wrap)
+        .add_type_method(SpinButton, set_acceleration_rate, !)
+        .add_type_method(SpinButton, get_acceleration_rate)
+        .add_type_method(SpinButton, set_should_snap_to_ticks, !)
+        .add_type_method(SpinButton, get_should_snap_to_ticks)
+        .add_type_method(SpinButton, set_allow_only_numeric, !)
+        .add_type_method(SpinButton, get_allow_only_numeric)
+        .method("set_text_to_value_function!", [](SpinButton& button, jl_value_t* task) {
+            button.set_text_to_value_function([](const SpinButton& button, const std::string& text, jl_value_t* task) -> float {
+                auto* res = jl_safe_call("SpinButton::text_to_value", task, jlcxx::box<const SpinButton&>(button), jl_box_string(text));
+                if (res != nullptr)
+                    return jl_unbox_float32(res);
+                else
+                    return button.get_value();
+            }, task);
+        })
+        .add_type_method(SpinButton, reset_text_to_value_function, !)
+        .method("set_value_to_text_function!", [](SpinButton& button, jl_value_t* task) {
+            button.set_value_to_text_function([](const SpinButton& button, float value, jl_value_t* task) -> std::string {
+                auto* res = jl_safe_call("SpinButton::text_to_value", task, jlcxx::box<const SpinButton&>(button), jl_box_float32(value));
+                if (res != nullptr)
+                {
+                    auto* str = jl_string_ptr(res);
+                    if (str != nullptr)
+                        return std::string(str);
+                }
+                return std::string();
+            }, task);
+        })
+        .add_type_method(SpinButton, reset_value_to_text_function)
+    ;
+
+    add_widget_signals<SpinButton>(spin, "SpinButton");
+    add_signal_value_changed<SpinButton>(spin, "SpinButton");
+    add_signal_wrapped<SpinButton>(spin, "SpinButton");
+}
 
 // ### TODO
 
@@ -2304,9 +2400,19 @@ static void implement_swipe_event_controller(jlcxx::Module& module)
     add_signal_swipe<SwipeEventController>(swipe, "SwipeEventController");
 }
 
-// ### TODO
+// ### SWITCH
 
-static void implement_switch(jlcxx::Module& module) {}
+static void implement_switch(jlcxx::Module& module)
+{
+    auto widget = module.add_type(Switch)
+        .add_constructor()
+        .add_type_method(Switch, get_is_active)
+        .add_type_method(Switch, set_is_active)
+    ;
+
+    add_widget_signals<Switch>(widget, "Switch");
+    add_signal_activate<Switch>(widget, "Switch");
+}
 
 // ### TEXT VIEW
 
@@ -2390,20 +2496,265 @@ static void implement_texture(jlcxx::Module& module) {}
 
 static void implement_toggle_button(jlcxx::Module& module)
 {
+    auto toggle = module.add_type(ToggleButton)
+        .add_constructor()
+        .add_type_method(ToggleButton, get_is_active)
+        .add_type_method(ToggleButton, set_is_active, !)
+    ;
 
+    add_signal_toggled<ToggleButton>(toggle, "ToggleButton");
+    add_signal_activate<ToggleButton>(toggle, "ToggleButton");
+    add_signal_clicked<ToggleButton>(toggle, "ToggleButton");
 }
 
-// ### TODO
+// ### VIEWPORT
 
-static void implement_transition_type(jlcxx::Module& module) {}
+static void implement_viewport(jlcxx::Module& module)
+{
+    define_enum_in(module, ScrollbarVisibilityPolicy);
+    module.add_enum_value(ScrollbarVisibilityPolicy, SCROLLBAR_VISIBILITY_POLICY, NEVER);
+    module.add_enum_value(ScrollbarVisibilityPolicy, SCROLLBAR_VISIBILITY_POLICY, ALWAYS);
+    module.add_enum_value(ScrollbarVisibilityPolicy, SCROLLBAR_VISIBILITY_POLICY, AUTOMATIC);
 
-// ### TODO
+    define_enum_in(module, CornerPlacement);
+    module.add_enum_value(CornerPlacement, CORNER_PLACEMENT, TOP_LEFT);
+    module.add_enum_value(CornerPlacement, CORNER_PLACEMENT, TOP_RIGHT);
+    module.add_enum_value(CornerPlacement, CORNER_PLACEMENT, BOTTOM_LEFT);
+    module.add_enum_value(CornerPlacement, CORNER_PLACEMENT, BOTTOM_RIGHT);
 
-static void implement_viewport(jlcxx::Module& module) {}
+    define_enum_in(module, ScrollType);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, NONE);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, JUMP);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, STEP_BACKWARD);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, STEP_FORWARD);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, STEP_UP);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, STEP_DOWN);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, STEP_LEFT);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, STEP_RIGHT);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, PAGE_BACKWARD);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, PAGE_FORWARD);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, PAGE_UP);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, PAGE_DOWN);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, PAGE_LEFT);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, PAGE_RIGHT);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, SCROLL_START);
+    module.add_enum_value(ScrollType, SCROLL_TYPE, SCROLL_END);
 
-// ### TODO
+    auto viewport = module.add_type(Viewport)
+        .add_constructor()
+        .add_type_method(Viewport, set_propagate_natural_height, !)
+        .add_type_method(Viewport, get_propagate_natural_height)
+        .add_type_method(Viewport, set_propagate_natural_width, !)
+        .add_type_method(Viewport, get_propagate_natural_width)
+        .add_type_method(Viewport, set_horizontal_scrollbar_policy, !)
+        .add_type_method(Viewport, get_horizontal_scrollbar_policy)
+        .add_type_method(Viewport, set_vertical_scrollbar_policy, !)
+        .add_type_method(Viewport, get_vertical_scrollbar_policy)
+        .add_type_method(Viewport, set_scrollbar_placement, !)
+        .add_type_method(Viewport, get_scrollbar_placement)
+        .add_type_method(Viewport, set_has_frame, !)
+        .add_type_method(Viewport, get_has_frame)
+        .method("get_horizontal_adjustment", [](Viewport& self) -> void* {
+            return self.get_horizontal_adjustment().get_internal();
+        })
+        .method("get_vertical_adjustment", [](Viewport& self) -> void* {
+            return self.get_horizontal_adjustment().get_internal();
+        })
+        .add_type_method(Viewport, set_kinetic_scrolling_enabled, !)
+        .add_type_method(Viewport, get_kinetic_scrolling_enabled)
+        .method("set_child!", [](Viewport& self, void* child){
+            self.set_child(*((Widget*) child));
+        })
+        .add_type_method(Viewport, remove_child)
+    ;
 
-static void implement_widget(jlcxx::Module& module) {}
+    add_widget_signals<Viewport>(viewport, "Viewport");
+    add_signal_scroll_child<Viewport>(viewport, "Viewport");
+}
+
+// ### WIDGET
+
+static void implement_widget(jlcxx::Module& module)
+{
+    define_enum_in(module, TickCallbackResult);
+    module.add_enum_value(TickCallbackResult, TICK_CALLBACK_RESULT, CONTINUE);
+    module.add_enum_value(TickCallbackResult, TICK_CALLBACK_RESULT, DISCONTINUE);
+
+    module.method("activate!", [](void* widget) {
+        ((Widget*) widget)->activate();
+    });
+    module.method("get_size_request", [](void* widget) {
+        return box_vector2f(((Widget*) widget)->get_size_request());
+    });
+    module.method("set_margin_top!", [](void* widget, float x){
+        ((Widget*) widget)->set_margin_top(x);
+    });
+    module.method("get_margin_top", [](void* widget) -> float {
+        return ((Widget*) widget)->get_margin_top();
+    });
+    module.method("set_margin_bottom!", [](void* widget, float x){
+        ((Widget*) widget)->set_margin_bottom(x);
+    });
+    module.method("get_margin_bottom", [](void* widget) -> float {
+        return ((Widget*) widget)->get_margin_bottom();
+    });
+    module.method("set_margin_start!", [](void* widget, float x){
+        ((Widget*) widget)->set_margin_start(x);
+    });
+    module.method("get_margin_start", [](void* widget) -> float {
+        return ((Widget*) widget)->get_margin_start();
+    });
+    module.method("set_margin_end!", [](void* widget, float x){
+        ((Widget*) widget)->set_margin_end(x);
+    });
+    module.method("get_margin_end", [](void* widget) -> float {
+        return ((Widget*) widget)->get_margin_end();
+    });
+    module.method("set_margin_horizontal!", [](void* widget, float x){
+        ((Widget*) widget)->set_margin_horizontal(x);
+    });
+    module.method("set_margin_vertical!", [](void* widget, float x){
+        ((Widget*) widget)->set_margin_vertical(x);
+    });
+    module.method("set_margin!", [](void* widget, float x){
+        ((Widget*) widget)->set_margin(x);
+    });
+    module.method("set_expand_horizontally!", [](void* widget, bool x){
+        ((Widget*) widget)->set_expand_horizontally(x);
+    });
+    module.method("get_expand_horizontally", [](void* widget) -> bool {
+        return ((Widget*) widget)->get_expand_horizontally();
+    });
+    module.method("set_expand_vertically!", [](void* widget, bool x){
+        ((Widget*) widget)->set_expand_vertically(x);
+    });
+    module.method("get_expand_vertically", [](void* widget) -> bool {
+        return ((Widget*) widget)->get_expand_vertically();
+    });
+    module.method("set_expand!", [](void* widget, bool x){
+        ((Widget*) widget)->set_expand(x);
+    });
+    module.method("set_horizontal_alignment!", [](void* widget, Alignment x) {
+        ((Widget*) widget)->set_horizontal_alignment(x);
+    });
+    module.method("get_horizontal_alignment!", [](void* widget) -> Alignment {
+        return ((Widget*) widget)->get_horizontal_alignment();
+    });
+    module.method("set_vertical_alignment!", [](void* widget, Alignment x) {
+        ((Widget*) widget)->set_vertical_alignment(x);
+    });
+    module.method("get_vertical_alignment!", [](void* widget) -> Alignment {
+        return ((Widget*) widget)->get_vertical_alignment();
+    });
+    module.method("set_alignment!", [](void* widget, Alignment x) {
+        ((Widget*) widget)->set_alignment(x);
+    });
+    module.method("set_opacity!", [](void* widget, float x){
+        ((Widget*) widget)->set_opacity(x);
+    });
+    module.method("get_opacity", [](void* widget) -> float {
+        return ((Widget*) widget)->get_opacity();
+    });
+    module.method("set_is_visible!", [](void* widget, bool x){
+        ((Widget*) widget)->set_is_visible(x);
+    });
+    module.method("get_is_visible", [](void* widget) -> bool {
+        return ((Widget*) widget)->get_is_visible();
+    });
+    module.method("set_tooltip_text!", [](void* widget, const std::string& text){
+        ((Widget*) widget)->set_tooltip_text(text);
+    });
+    module.method("set_tooltip_widget!", [](void* self, void* tooltip) {
+        ((Widget*) self)->set_tooltip_widget(*((Widget*) tooltip));
+    });
+    module.method("remove_tooltip_widget!", [](void* widget){
+        ((Widget*) widget)->remove_tooltip_widget();
+    });
+    module.method("set_cursor!", [](void* self, CursorType cursor) {
+        ((Widget*) self)->set_cursor(cursor);
+    });
+    module.method("set_cursor_from_image!", [](void* self, Image& image, int offset_x, int offset_y){
+        ((Widget*) self)->set_cursor_from_image(image, Vector2i(offset_x, offset_y));
+    });
+    module.method("hide!", [](void* widget){
+        ((Widget*) widget)->hide();
+    });
+    module.method("show!", [](void* widget){
+        ((Widget*) widget)->hide();
+    });
+    module.method("add_controller!", [](void* widget, void* controller){
+        ((Widget*) widget)->add_controller(*((EventController*) controller));
+    });
+    module.method("remove_controller!", [](void* widget, void* controller){
+        ((Widget*) widget)->remove_controller(*((EventController*) controller));
+    });
+    module.method("set_is_focusable!", [](void* widget, bool x){
+        ((Widget*) widget)->set_is_focusable(x);
+    });
+    module.method("get_is_focusable", [](void* widget) -> bool {
+        return ((Widget*) widget)->get_is_focusable();
+    });
+    module.method("grab_focus!", [](void* widget){
+        ((Widget*) widget)->grab_focus();
+    });
+    module.method("get_has_focus", [](void* widget) -> bool {
+        return ((Widget*) widget)->get_has_focus();
+    });
+    module.method("set_focus_on_click!", [](void* widget, bool x){
+        ((Widget*) widget)->set_focus_on_click(x);
+    });
+    module.method("get_focus_on_click", [](void* widget) -> bool {
+        return ((Widget*) widget)->get_focus_on_click();
+    });
+    module.method("get_is_realized", [](void* widget) -> bool {
+        return ((Widget*) widget)->get_is_realized();
+    });
+    module.method("get_minimum_size", [](void* widget) -> jl_value_t* {
+        return box_vector2f(((Widget*) widget)->get_minimum_size());
+    });
+    module.method("get_natural_size", [](void* widget) -> jl_value_t* {
+        return box_vector2f(((Widget*) widget)->get_natural_size());
+    });
+    module.method("get_position", [](void* widget) -> jl_value_t* {
+        return box_vector2f(((Widget*) widget)->get_position());
+    });
+    module.method("get_allocated_size", [](void* widget) -> jl_value_t* {
+        return box_vector2f(((Widget*) widget)->get_allocated_size());
+    });
+    module.method("unparent!", [](void* widget){
+        ((Widget*) widget)->unparent();
+    });
+    module.method("set_can_respond_to_input!", [](void* widget, bool x){
+        ((Widget*) widget)->set_can_respond_to_input(x);
+    });
+    module.method("get_can_respond_to_input", [](void* widget) -> bool {
+        return ((Widget*) widget)->get_can_respond_to_input();
+    });
+    module.method("get_frame_clock", [](void* widget) -> FrameClock {
+        return ((Widget*) widget)->get_frame_clock();
+    });
+    // module.method("get_clipboard", [](void* widget) -> Clipboard {
+    // TODO    return ((Widget*) widget)->get_clipboard();
+    // })
+    module.method("set_hide_on_overflow!", [](void* widget, bool x){
+        ((Widget*) widget)->set_hide_on_overflow(x);
+    });
+    module.method("get_hide_on_overflow", [](void* widget) -> bool {
+        return ((Widget*) widget)->get_hide_on_overflow();
+    });
+    module.method("set_tick_callback!", [](void* widget, jl_value_t* task){
+        ((Widget*) widget)->set_tick_callback([](FrameClock clock, jl_value_t* task){
+            auto* res = jl_safe_call("Widget::tick_callback", jlcxx::box<FrameClock&>(clock));
+            if (res != nullptr)
+                return jlcxx::unbox<TickCallbackResult>(res);
+            else
+                return TickCallbackResult::DISCONTINUE;
+        }, task);
+    });
+    module.method("remove_tick_callback!", [](void* widget) {
+        ((Widget*) widget)->remove_tick_callback();
+    });
+}
 
 // ### WINDOW
 
@@ -2569,7 +2920,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_switch(module);
     implement_texture(module);
     implement_toggle_button(module);
-    implement_transition_type(module);
     implement_viewport(module);
     implement_widget(module);
 }

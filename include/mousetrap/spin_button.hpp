@@ -25,8 +25,8 @@ namespace mousetrap
 
             GtkSpinButton* native;
             Adjustment* adjustment;
-            std::function<std::string(const SpinButton*, float)> value_to_text_function;
-            std::function<float(const SpinButton*, const std::string&)> text_to_value_function;
+            std::function<std::string(const SpinButton&, float)> value_to_text_function;
+            std::function<float(const SpinButton&, const std::string&)> text_to_value_function;
         };
         using SpinButtonInternal = _SpinButtonInternal;
         DEFINE_INTERNAL_MAPPING(SpinButton);
@@ -149,7 +149,7 @@ namespace mousetrap
             bool get_allow_only_numeric() const;
 
             /// @brief set function that transforms the spin button entry text to a numerical value
-            /// @tparam Function_t lambda or static function with signature <tt>(const SpinButton*, const std::string&, Data_t) -> float</tt>
+            /// @tparam Function_t lambda or static function with signature <tt>(const SpinButton&, const std::string&, Data_t) -> float</tt>
             /// @tparam Data_t arbitrary data
             /// @param function
             /// @param data
@@ -157,7 +157,7 @@ namespace mousetrap
             void set_text_to_value_function(Function_t function, Data_t data);
 
             /// @brief set function that transforms the spin button entry text to a numerical value
-            /// @tparam Function_t lambda or static function with signature <tt>(const SpinButton*, const std::string&) -> float</tt>
+            /// @tparam Function_t lambda or static function with signature <tt>(const SpinButton&, const std::string&) -> float</tt>
             /// @param function
             template<typename Function_t>
             void set_text_to_value_function(Function_t function);
@@ -165,7 +165,7 @@ namespace mousetrap
             void reset_text_to_value_function();
 
             /// @brief set function that transforms the spin button numerical value to a label
-            /// @tparam Function_t lambda or static function with signature <tt>(const SpinButton*, float, Data_t) -> std::string</tt>
+            /// @tparam Function_t lambda or static function with signature <tt>(const SpinButton&, float, Data_t) -> std::string</tt>
             /// @tparam Data_t arbitrary data
             /// @param function
             /// @param data
@@ -173,7 +173,7 @@ namespace mousetrap
             void set_value_to_text_function(Function_t function, Data_t data);
 
             /// @brief set function that transforms the spin button numerical value to a label
-            /// @tparam Function_t lambda or static function with signature <tt>(const SpinButton*, float) -> std::string</tt>
+            /// @tparam Function_t lambda or static function with signature <tt>(const SpinButton&, float) -> std::string</tt>
             /// @param function
             template<typename Function_t>
             void set_value_to_text_function(Function_t function);

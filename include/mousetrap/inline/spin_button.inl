@@ -7,7 +7,7 @@ namespace mousetrap
     template<typename Function_t, typename Data_t>
     void SpinButton::set_text_to_value_function(Function_t f_in, Data_t data_in)
     {
-        _internal->text_to_value_function = [f = f_in, data = data_in](const SpinButton* instance, const std::string& text) -> float
+        _internal->text_to_value_function = [f = f_in, data = data_in](const SpinButton& instance, const std::string& text) -> float
         {
             return f(instance, text, data);
         };
@@ -19,7 +19,7 @@ namespace mousetrap
     template<typename Function_t>
     void SpinButton::set_text_to_value_function(Function_t f_in)
     {
-        _internal->text_to_value_function = [f = f_in](const SpinButton* instance, const std::string& text) -> float
+        _internal->text_to_value_function = [f = f_in](const SpinButton& instance, const std::string& text) -> float
         {
             return f(instance, text);
         };
@@ -31,7 +31,7 @@ namespace mousetrap
     template<typename Function_t, typename Data_t>
     void SpinButton::set_value_to_text_function(Function_t f_in, Data_t data_in)
     {
-        _internal->value_to_text_function = [f = f_in, data = data_in](const SpinButton* instance, float value)
+        _internal->value_to_text_function = [f = f_in, data = data_in](const SpinButton& instance, float value)
         {
             return f(instance, value, data);
         };
@@ -43,7 +43,7 @@ namespace mousetrap
     template<typename Function_t>
     void SpinButton::set_value_to_text_function(Function_t f_in)
     {
-        _internal->value_to_text_function = [f = f_in](const SpinButton* instance, float value)
+        _internal->value_to_text_function = [f = f_in](const SpinButton& instance, float value)
         {
             return f(instance, value);
         };

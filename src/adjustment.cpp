@@ -10,7 +10,8 @@
 namespace mousetrap
 {
     Adjustment::Adjustment(detail::AdjustmentInternal* in)
-    : CTOR_SIGNAL(Adjustment, value_changed), CTOR_SIGNAL(Adjustment, properties_changed)
+        : CTOR_SIGNAL(Adjustment, value_changed),
+          CTOR_SIGNAL(Adjustment, properties_changed)
     {
         _internal = g_object_ref_sink(in);
     }

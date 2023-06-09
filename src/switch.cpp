@@ -36,7 +36,7 @@ namespace mousetrap
         return gtk_switch_get_active(GTK_SWITCH(_internal));
     }
 
-    void Switch::set_active(bool b)
+    void Switch::set_is_active(bool b)
     {
         gtk_switch_set_active(GTK_SWITCH(_internal), b);
     }

@@ -44,21 +44,6 @@ namespace mousetrap
             /// @brief expose internal
             NativeObject get_internal() const;
 
-            /// @brief copy ctor deleted
-            FrameClock(const FrameClock&);
-
-            /// @brief move ctor, safely transfers ownership
-            /// @param other
-            FrameClock(FrameClock&& other) noexcept;
-
-            /// @brief copy assignment deleted
-            FrameClock& operator=(const FrameClock&);
-
-            /// @brief move assignment, safely transfers ownership
-            /// @param other
-            /// @return self after mutation
-            FrameClock& operator=(FrameClock&& other) noexcept;
-
             /// @brief expose as GObject \for_internal_use_only
             operator GObject*() const;
 

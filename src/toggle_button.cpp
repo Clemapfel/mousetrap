@@ -42,7 +42,7 @@ namespace mousetrap
         return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(_internal)) == TRUE;
     }
 
-    void ToggleButton::set_active(bool b)
+    void ToggleButton::set_is_active(bool b)
     {
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(_internal), b ? TRUE : FALSE);
     }

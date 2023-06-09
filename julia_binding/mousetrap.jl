@@ -983,6 +983,9 @@ module mousetrap
     macro add_signal_pan(x) return :(@add_signal $x pan Cvoid PanDirection direction Cdouble offset) end
     macro add_signal_paint(x) return :(@add_signal $x paint Cvoid) end
     macro add_signal_update(x) return :(@add_signal $x paint Cvoid) end
+    macro add_signal_value_changed(x) return :(@add_signal $x value_changed Cvoid) end
+    macro add_signal_wrapped(x) return :(@add_signal $x wrapped Cvoid) end
+    macro add_signal_scroll_child(x) return :(@add_signal $x scroll_child Cvoid ScrollType type Bool is_horizontal) end
 
     macro add_signal_activated(T)
 
@@ -1440,6 +1443,8 @@ module mousetrap
         ));
     end
 
+    Adjustment(internal::Ptr{Cvoid}) = Adjustment(detail._Adjustment(internal))
+
     @export_function Adjustment get_lower Float32
     @export_function Adjustment get_upper Float32
     @export_function Adjustment get_value Float32
@@ -1652,6 +1657,96 @@ module mousetrap
     @add_widget_signals CheckButton
     @add_signal_toggled CheckButton
     @add_signal_activate CheckButton
+
+####### switch.jl
+
+    @export_type Switch Widget
+    Switch() = Switch(detail._Switch())
+
+    @export_function Switch get_is_active Bool
+    @export_function Switch set_is_active! Cvoid Bool b
+
+    @add_widget_signals Switch
+    @add_signal_activate Switch
+
+####### toggle_button.jl
+
+    @export_type ToggleButton Widget
+    ToggleButton() = ToggleButton(detail._ToggleButton())
+
+    @export_function ToggleButton get_is_active Bool
+    @export_function ToggleButton set_is_active! Cvoid Bool b
+
+    @add_widget_signals ToggleButton
+    @add_signal_activate ToggleButton
+    @add_signal_clicked ToggleButton
+    @add_signal_toggled ToggleButton
+
+####### viewport.jl
+
+    @export_enum ScrollbarVisibilityPolicy begin
+        SCROLLBAR_VISIBILITY_POLICY_NEVER
+        SCROLLBAR_VISIBILITY_POLICY_ALWAYS
+        SCROLLBAR_VISIBILITY_POLICY_AUTOMATIC
+    end
+
+    @export_enum CornerPlacement begin
+        CORNER_PLACEMENT_TOP_LEFT
+        CORNER_PLACEMENT_TOP_RIGHT
+        CORNER_PLACEMENT_BOTTOM_LEFT
+        CORNER_PLACEMENT_BOTTOM_RIGHT
+    end
+
+    @export_type Viewport Widget
+    Viewport() = Viewport(detail._Viewport())
+
+    @export_function Viewport set_propagate_natural_height! Cvoid Bool b
+    @export_function Viewport get_propagate_natural_height Bool
+    @export_function Viewport set_propagate_natural_width! Cvoid Bool b
+    @export_function Viewport get_propagate_natural_width Bool
+    @export_function Viewport set_horizontal_scrollbar_policy! Cvoid ScrollbarVisibilityPolicy policy
+    @export_function Viewport set_vertical_scrollbar_policy! Cvoid ScrollbarVisibilityPolicy policy
+    @export_function Viewport get_horizontal_scrollbar_policy ScrollbarVisibilityPolicy
+    @export_function Viewport get_vertical_scrollbar_policy ScrollbarVisibilityPolicy
+    @export_function Viewport set_scrollbar_placement! Cvoid CornerPlacement placement
+    @export_function Viewport get_scrollbar_placement CornerPlacement
+    @export_function Viewport set_has_frame! Cvoid Bool b
+    @export_function Viewport get_has_frame Bool
+    @export_function Viewport set_kinetic_scrolling_enabled! Cvoid Bool b
+    @export_function Viewport get_kinetic_scrolling_enabled Bool
+    
+    get_horizontal_adjustment(viewport::Viewport) ::Adjustment = Adjustment(detail.get_horizontal_adjustment(viewport._internal))
+    export get_horizontal_adjustment
+
+    get_vertical_adjustment(viewport::Viewport) ::Adjustment = Adjustment(detail.get_vertical_adjustment(viewport._internal))
+    export get_vertical_adjustment
+
+    set_child!(viewport::Viewport, child::Widget) = detail.set_child(viewport._internal, child._internal.cpp_object)
+    export set_child!
+
+    @export_function Viewport remove_child Cvoid
+
+    @export_enum ScrollType begin
+        SCROLL_TYPE_NONE
+        SCROLL_TYPE_JUMP
+        SCROLL_TYPE_STEP_BACKWARD
+        SCROLL_TYPE_STEP_FORWARD
+        SCROLL_TYPE_STEP_UP
+        SCROLL_TYPE_STEP_DOWN
+        SCROLL_TYPE_STEP_LEFT
+        SCROLL_TYPE_STEP_RIGHT
+        SCROLL_TYPE_PAGE_BACKWARD
+        SCROLL_TYPE_PAGE_FORWARD
+        SCROLL_TYPE_PAGE_UP
+        SCROLL_TYPE_PAGE_DOWN
+        SCROLL_TYPE_PAGE_LEFT
+        SCROLL_TYPE_PAGE_RIGHT
+        SCROLL_TYPE_SCROLL_START
+        SCROLL_TYPE_SCROLL_END
+    end
+
+    @add_widget_signals Viewport
+    @add_signal_scroll_child Viewport
 
 ####### color.jl
 
@@ -3294,6 +3389,117 @@ module mousetrap
     @add_widget_signals Revealer
     @add_signal_revealed Revealer
 
+###### scale.jl
+
+    @export_type Scale Widget
+    function Scale(lower::AbstractFloat, upper::AbstractFloat, step_increment::AbstractFloat, orientation::Orientation = ORIENTATION_HORIZONTAL)
+        return Scale(detail._Scale(lower, upper, step_increment, orientation))
+    end
+
+    get_adjustment(scale::Scale) ::Adjustment = return Adjustment(detail.get_adjustment(scale._internal))
+    export get_adjustment 
+
+    @export_function Scale get_lower Cfloat
+    @export_function Scale get_upper Cfloat
+    @export_function Scale get_step_increment Cfloat
+    @export_function Scale get_value Cfloat
+
+    @export_function Scale set_lower! Cvoid AbstractFloat value
+    @export_function Scale set_upper! Cvoid AbstractFloat value
+    @export_function Scale set_step_increment! Cvoid AbstractFloat value
+    @export_function Scale set_value! Cvoid AbstractFloat value
+
+    @add_widget_signals Scale
+    @add_signal_value_changed Scale
+
+###### spin_button.jl
+
+    @export_type SpinButton Widget
+    function SpinButton(lower::AbstractFloat, upper::AbstractFloat, step_increment::AbstractFloat, orientation::Orientation = ORIENTATION_HORIZONTAL)
+        return SpinButton(detail._SpinButton(Cfloat(lower), Cfloat(upper), Cfloat(step_increment), orientation))
+    end
+
+    get_adjustment(spin_button::SpinButton) ::Adjustment = return Adjustment(detail.get_adjustment(spin_button._internal))
+    export get_adjustment 
+
+    @export_function SpinButton get_lower Cfloat
+    @export_function SpinButton get_upper Cfloat
+    @export_function SpinButton get_step_increment Cfloat
+    @export_function SpinButton get_value Cfloat
+
+    @export_function SpinButton set_lower! Cvoid AbstractFloat value
+    @export_function SpinButton set_upper! Cvoid AbstractFloat value
+    @export_function SpinButton set_step_increment! Cvoid AbstractFloat value
+    @export_function SpinButton set_value! Cvoid AbstractFloat value
+
+    @export_function SpinButton set_n_digits! Cvoid Integer n
+    @export_function SpinButton get_n_digits Int64
+    @export_function SpinButton set_should_wrap! Cvoid Bool b
+    @export_function SpinButton get_should_wrap Bool
+    @export_function SpinButton set_acceleration_rate! Cvoid AbstractFloat factor
+    @export_function SpinButton get_acceleration_rate Cfloat
+    @export_function SpinButton set_should_snap_to_ticks! Cvoid Bool b
+    @export_function SpinButton get_should_snap_to_ticks Bool
+    @export_function SpinButton set_allow_only_numeric! Cvoid Bool b
+    @export_function SpinButton get_allow_only_numeric Bool
+
+    function set_text_to_value_function!(f, spin_button::SpinButton, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, AbstractFloat, (SpinButton, String, Data_t))
+        detail.set_text_to_value_function!(spin_button._internal, function (spin_button_ref, text::String)
+            return typed_f(SpinButton(spin_button_ref[]), text, data)
+        end)
+    end
+    function set_text_to_value_function!(f, spin_button::SpinButton)
+        typed_f = TypedFunction(f, AbstractFloat, (SpinButton, String))
+        detail.set_text_to_value_function!(spin_button._internal, function (spin_button_ref, text::String)
+            return typed_f(SpinButton(spin_button_ref[]), text)
+        end)
+    end
+    export set_text_to_value_function!
+
+    @export_function SpinButton reset_value_to_text_function! Cvoid
+
+    function set_value_to_text_function!(f, spin_button::SpinButton, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, String, (SpinButton, AbstractFloat, Data_t))
+        detail.set_value_to_text_function!(spin_button._internal, function (spin_button_ref, value::Cfloat)
+            return typed_f(SpinButton(spin_button_ref[]), value, data)
+        end)
+    end
+    function set_value_to_text_function!(f, spin_button::SpinButton)
+        typed_f = TypedFunction(f, String, (SpinButton, AbstractFloat))
+        detail.set_value_to_text_function!(spin_button._internal, function (spin_button_ref, value::Cfloat)
+            return typed_f(SpinButton(spin_button_ref[]), value)
+        end)
+    end
+    export set_value_to_text_function!
+
+    @export_function SpinButton reset_text_to_value_function! Cvoid
+
+    @add_widget_signals SpinButton
+    @add_signal_value_changed SpinButton
+    @add_signal_wrapped SpinButton
+
+###### scrollbar.jl
+
+    @export_type Scrollbar Widget
+    Scrollbar() = Scrollbar(detail._ScrollBar)
+
+    get_adjustment(scrollbar::Scrollbar) ::Adjustment = return Adjustment(detail.get_adjustment(scrollbar._internal))
+    export get_adjustment 
+
+    @export_function Scrollbar set_orientation! Cvoid Orientation orientation
+    @export_function Scrollbar get_orientation Orientation
+
+    @add_widget_signals Scrollbar
+
+###### separator.jl
+
+    @export_type Separator Widget
+    Separator(orientation::Orientation = ORIENTATION_HORIZONTAL; opacity::AbstractFloat = 1) = Separator(detail._Separator(opacity, orientation))
+
+    @export_function Separator set_orientation! Cvoid Orientation orientation
+    @export_function Separator get_orientation Orientation
+
 ####### frame_clock.jl
 
     @export_type FrameClock SignalEmitter
@@ -3307,6 +3513,133 @@ module mousetrap
 
     @add_signal_update FrameClock
     @add_signal_paint FrameClock
+
+####### widget.jl
+
+    macro export_widget_function(name, return_t)
+
+        return_t = esc(return_t)
+
+        mousetrap.eval(:(export $name))
+        return :($name(widget::Widget) = Base.convert($return_t, detail.$name(widget._internal.cpp_object)))
+    end
+
+    macro export_widget_function(name, return_t, arg1_type, arg1_name)
+
+        return_t = esc(return_t)
+        arg1_name = esc(arg1_name)
+        arg1_type = esc(arg1_type)
+
+        mousetrap.eval(:(export $name))
+        out = :($name(widget::Widget, $arg1_name::$arg1_type) = Base.convert($return_t, detail.$name(widget._internal.cpp_object, $arg1_name)))
+        return out
+    end
+
+    @export_enum TickCallbackResult begin
+        TICK_CALLBACK_RESULT_CONTINUE
+        TICK_CALLBACK_RESULT_DISCONTINUE
+    end
+
+    @export_widget_function activate! Cvoid
+    @export_widget_function get_size_request Vector2f
+
+    @export_widget_function set_margin_top! Cvoid AbstractFloat margin
+    @export_widget_function get_margin_top Cfloat
+    @export_widget_function set_margin_bottom! Cvoid AbstractFloat margin
+    @export_widget_function get_margin_bottom Cfloat
+    @export_widget_function set_margin_start! Cvoid AbstractFloat margin
+    @export_widget_function get_margin_start Cfloat
+    @export_widget_function set_margin_end! Cvoid AbstractFloat margin
+    @export_widget_function get_margin_end Cfloat
+    @export_widget_function set_margin_horizontal! Cvoid AbstractFloat margin
+    @export_widget_function set_margin_vertical! Cvoid AbstractFloat margin
+    @export_widget_function set_margin_margin! Cvoid AbstractFloat margin
+
+    @export_widget_function set_expand_horizontally! Cvoid Bool b
+    @export_widget_function get_expand_horizontally Bool
+    @export_widget_function set_expand_vertically! Cvoid Bool b
+    @export_widget_function get_expand_vertically Bool
+    @export_widget_function set_expand! Cvoid Bool b
+
+    @export_widget_function set_horizontal_alignment! Cvoid Alignment alignment
+    @export_widget_function get_horizontal_alignemtn Alignment
+    @export_widget_function set_vertical_alignment! Cvoid Alignment alignment
+    @export_widget_function get_vertical_alignment Alignment
+    @export_widget_function set_alignment! Cvoid Alignment both
+
+    @export_widget_function set_opacity! Cvoid AbstractFloat opacity
+    @export_widget_function get_opacity Cfloat
+    @export_widget_function set_is_visible! Cvoid Bool b
+    @export_widget_function get_is_visible Bool
+
+    @export_widget_function set_tooltip_text Cvoid String text
+    set_tooltip_widget!(widget::Widget, tooltip::Widget) = detail.set_tooltip_widget!(widget._internal.cpp_object, tooltip._internal.cpp_object)
+    export set_tooltip_widget
+    
+    @export_widget_function remove_tooltip_widget! Cvoid
+    
+    @export_widget_function set_cursor! Cvoid CursorType cursor
+    
+    function set_cursor_from_image!(widget::Widget, image::Image, offset::Vector2i)
+        detail.set_cursor_from_image(widget._internal.cpp_object, image._internal, offset.x, offset.y)
+    end
+    export set_cursor_from_image!
+
+    @export_widget_function hide! Cvoid
+    @export_widget_function show! Cvoid
+
+    function add_controller!(widget::Widget, controller::EventController)
+        detail.add_controller(widget._internal.cpp_object, controller._internal.cpp_object)
+    end
+    export add_controller!
+
+    function remove_controller!(widget::Widget, controller::EventController)
+        detail.remove_controller(widget._internal.cpp_object, controller._internal.cpp_object)
+    end
+    export remove_controller!
+
+    @export_widget_function set_is_focusable! Cvoid Bool b
+    @export_widget_function get_is_focusable Bool
+    @export_widget_function grab_focus! Cvoid
+    @export_widget_function get_has_focus Bool
+    @export_widget_function set_focus_on_click! Cvoid Bool b
+    @export_widget_function get_focus_on_click Bool
+    @export_widget_function set_can_respond_to_input! Cvoid Bool b
+    @export_widget_function get_can_respond_to_input Bool
+
+    @export_widget_function get_is_realized Bool
+    @export_widget_function get_minimum_size Vector2f
+    @export_widget_function get_natural_size Vector2f
+    @export_widget_function get_position Vector2f
+    @export_widget_function get_allocated_size Vector2f
+
+    @export_widget_function unparent! Cvoid
+    
+    @export_widget_function set_hide_on_overflow! Cvoid Bool b
+    @export_widget_function get_hide_on_overflow Bool
+
+    get_frame_clock(widget::Widget) = FrameClock(detail.get_frame_clock(widget._internal.cpp_object))
+    export get_frame_clock
+
+    # TODO: get_clipboard(widget::Widget) = Clipboard(detail.get_clipboard(widget._internal.cpp_object))
+    export get_clipboard
+
+    @export_widget_function remove_tick_callback! Cvoid
+
+    function set_tick_callback!(f, widget::Widget, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, TickCallbackResult, (FrameClock, Data_t))
+        detail.set_tick_callback!(widget._internal.cpp_object, function(frame_clock_ref)
+            typed_f(FrameClock(frame_clock_ref[]), data)
+        end)
+    end
+    function set_tick_callback!(f, widget::Widget)
+        typed_f = TypedFunction(f, TickCallbackResult, (FrameClock,))
+        detail.set_tick_callback!(widget._internal.cpp_object, function(frame_clock_ref)
+            typed_f(FrameClock(frame_clock_ref[]))
+        end)
+    end
+    export set_tick_callback!
+
 
 ####### blend_mode.jl
 
@@ -3331,7 +3664,6 @@ module mousetrap
     
 end # module mousetrap
 
-
 @info "Done (" * string(round(time() - __mousetrap_compile_time_start; digits=2)) * "s)"
 
 mt = mousetrap
@@ -3339,17 +3671,10 @@ mt.main() do app::mt.Application
 
     window = mt.Window(app)
 
-    notebook = mt.Notebook()
-    mt.push_back!(notebook, mt.Label("Child 01"), mt.Label("Label 01"))
-    mt.push_back!(notebook, mt.Label("Child 02"), mt.Label("Label 02"))
-    mt.push_back!(notebook, mt.Label("Child 03"), mt.Label("Label 03"))
-
-    println("Pages: ", mt.get_n_pages(notebook))
-    mt.connect_signal_page_selection_changed!(notebook) do x::mt.Notebook, i::Int64
-        println(i)
+    clock = mt.get_frame_clock(window)
+    mt.connect_signal_paint!(clock) do x
+        println("paint: ", c)
     end
-
-    mt.set_child!(window, notebook)
     mt.present!(window)
 end
 
