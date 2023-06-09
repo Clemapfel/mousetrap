@@ -16,6 +16,15 @@
 
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    class FrameClock;
+    namespace detail
+    {
+        using FrameClockInternal = GdkFrameClock;
+        DEFINE_INTERNAL_MAPPING(FrameClock);
+    }
+    #endif
+
     /// @brief clock that is updated every render unit
     /// \signals
     /// \signal_update{FrameClock}
@@ -27,10 +36,13 @@ namespace mousetrap
         public:
             /// @brief construct from GdkFrameClock \for_internal_use_only. Use the callback of widget::add_tick_callback to get an initialized mousetrap::FrameClock
             /// @param clock
-            FrameClock(GdkFrameClock* clock);
+            FrameClock(detail::FrameClockInternal* clock);
 
             /// @brief destruct
             ~FrameClock();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief copy ctor deleted
             FrameClock(const FrameClock&);
@@ -52,7 +64,7 @@ namespace mousetrap
 
             /// @brief get duration of one frame
             /// @return mousetrap::Time
-            Time get_frame_time() const;
+            Time get_target_frame_duration() const;
 
             /// @brief get duration since the laste render cycle
             /// @return mousetrap::Time
@@ -62,6 +74,6 @@ namespace mousetrap
             float get_fps() const;
 
         private:
-            GdkFrameClock* _native = nullptr;
+            detail::FrameClockInternal* _internal = nullptr;
     };
 }

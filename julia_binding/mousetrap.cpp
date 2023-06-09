@@ -1098,13 +1098,26 @@ static void implement_frame(jlcxx::Module& module)
     add_widget_signals<Frame>(frame, "Frame");
 }
 
-// ### TODO
+// ### FRAME CLOCK
 
-static void implement_frame_clock(jlcxx::Module& module) {}
+static void implement_frame_clock(jlcxx::Module& module)
+{
+    auto frame_clock = module.add_type(FrameClock)
+        .constructor([](void* internal){
+            return new FrameClock(GDK_FRAME_CLOCK(internal));
+        }, USE_FINALIZERS)
+        .method("get_target_frame_duration", [](FrameClock& self){
+            return self.get_target_frame_duration().as_microseconds();
+        })
+        .method("get_time_since_last_frame", [](FrameClock& self){
+            return self.get_time_since_last_frame().as_microseconds();
+        })
+        .add_type_method(FrameClock, get_fps)
+    ;
 
-// ### TODO
-
-static void implement_geometry(jlcxx::Module& module) {}
+    add_signal_update<FrameClock>(frame_clock, "FrameClock");
+    add_signal_paint<FrameClock>(frame_clock, "FrameClock");
+}
 
 // ### TODO
 
@@ -1560,7 +1573,6 @@ static void implement_list_view(jlcxx::Module& module)
         .method("clear!", [](ListView& view, void* iterator) -> void {
             view.clear((ListView::Iterator) iterator);
         })
-        // TODO: get_widget_at
         .method("set_widget_at!", [](ListView& view, size_t index, void* widget, void* iterator) -> void {
             view.set_widget_at(index, *((Widget*) widget), (ListView::Iterator) iterator);
         })
@@ -1756,7 +1768,17 @@ static void implement_music(jlcxx::Module& module) {}
 
 // ### TODO
 
-static void implement_notebook(jlcxx::Module& module) {}
+static void implement_notebook(jlcxx::Module& module)
+{
+    auto notebook = module.add_type(Notebook)
+    ;
+
+    add_widget_signals<Notebook>(notebook, "Notebook");
+    add_signal_page_added<Notebook>(notebook, "Notebook");
+    add_signal_page_removed<Notebook>(notebook, "Notebook");
+    add_signal_page_reordered<Notebook>(notebook, "Notebook");
+    add_signal_page_selection_changed<Notebook>(notebook, "Notebook");
+}
 
 // ### ORIENTATION
 
@@ -2476,10 +2498,9 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_expander(module);
     implement_file_chooser(module);
 
-    implement_fixed(module);
+    impmlement_fixed(module);
     implement_frame(module);
     implement_frame_clock(module);
-    implement_geometry(module);
     implement_gl_common(module);
     implement_gl_transform(module);
     implement_header_bar(module);
