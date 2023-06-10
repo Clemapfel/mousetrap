@@ -3717,6 +3717,57 @@ module mousetrap
     end
     export set_tick_callback!
 
+####### clipboard.jl
+
+    @export_type Clipboard SignalEmitter
+    @export_function Clipboard is_local Bool
+
+    @export_function Clipboard contains_string Bool
+
+    set_string!(clipboard::Clipboard, string::String) = detail.set_string!(clipboard._internal, string)
+    export set_string!
+
+    function get_string(f, clipboard::Clipboard, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, Cvoid, (Clipboard, String, Data_t))
+        detail.get_string(clipboard._internal, function(internal_ref, string)
+            typed_f(Clipboard(internal_ref[]), String(string), data)
+        end)
+    end
+    function get_string(f, clipboard::Clipboard)
+        typed_f = TypedFunction(f, Cvoid, (Clipboard, String, Data_t))
+        detail.get_string(clipboard._internal, function(internal_ref, string)
+            typed_f(Clipboard(internal_ref[]), String(string))
+        end)
+    end
+    export get_string
+
+    @export_function Clipboard contains_image Bool
+
+    set_image!(clipboard::Clipboard, image::Image) = detail.set_image!(clipboard._internal, image._internal)
+    export
+
+    function get_image(f, clipboard::Clipboard, data::Data_t) where Data_t
+        typed_f = TypedFunction(f, Cvoid, (Clipboard, Image, Data_t))
+        detail.get_image(clipboard._internal, function(internal_ref, image_ref)
+            typed_f(Clipboard(internal_ref[], Image(image_ref[]), data))
+        end)
+    end
+    function get_image(f, clipboard::Clipboard)
+        typed_f = TypedFunction(f, Cvoid, (Clipboard, Image))
+        detail.get_image(clipboard._internal, function(internal_ref, image_ref)
+            typed_f(Clipboard(internal_ref[], Image(image_ref[])))
+        end)
+    end
+    export get_string
+
+    @export_function Clipboard contains_file Bool
+
+    set_file!(clipboard::Clipboard, file::FileDescriptor) = detail.set_file!(clipboard._internal, file._internal)
+    export set_file!
+
+    get_clipboard(widget::Widget) ::Clipboard = Clipboard(detail.get_clipboard(widget._internal.cpp_object))
+    export get_clipboard
+
 ####### blend_mode.jl
 
     @export_enum BlendMode begin

@@ -668,9 +668,39 @@ static void implement_click_event_controller(jlcxx::Module& module)
     add_signal_click_stopped<ClickEventController>(click, "ClickEventController");
 }
 
-// ### TODO
+// ### CLIPBOARD
 
-static void implement_clipboard(jlcxx::Module& module) {}
+static void implement_clipboard(jlcxx::Module& module)
+{
+    auto clipboard = module.add_type(Clipboard)
+        .constructor([](void* internal) -> Clipboard*{
+            return new Clipboard((detail::ClipboardInternal*) internal);
+        }, USE_FINALIZERS)
+        .add_type_method(Clipboard, contains_string)
+        .add_type_method(Clipboard, contains_image)
+        .add_type_method(Clipboard, contains_file)
+        .add_type_method(Clipboard, is_local)
+        .method("set_string", [](Clipboard& self, const std::string& string){
+            self.set_string(string);
+        })
+        .method("get_string", [](Clipboard& self, jl_value_t* task){
+            self.get_string([](Clipboard& self, const std::string& result, jl_value_t* task){
+                jl_safe_call("Clipboard::get_string", jlcxx::box<Clipboard&>(self), jlcxx::box<const std::string&>(result));
+            }, task);
+        })
+        .method("set_image", [](Clipboard& self, Image& image){
+            self.set_image(image);
+        })
+        .method("get_image", [](Clipboard& self, jl_value_t* task){
+            self.get_string([](Clipboard& self, Image& result, jl_value_t* task){
+                jl_safe_call("Clipboard::get_image", jlcxx::box<Clipboard&>(self), jlcxx::box<Image&>(result));
+            }, task);
+        })
+        .method("set_file", [](Clipboard& self, FileDescriptor& file){
+            self.set_file(file);
+        })
+    ;
+}
 
 // ### COLOR
 
@@ -3160,9 +3190,9 @@ static void implement_widget(jlcxx::Module& module)
     module.method("get_frame_clock", [](void* widget) -> void* {
         return ((Widget*) widget)->get_frame_clock().get_internal();
     });
-    // module.method("get_clipboard", [](void* widget) -> void* {
-    // TODO    return ((Widget*) widget)->get_clipboard().get_internal();
-    // })
+    module.method("get_clipboard", [](void* widget) -> void* {
+        return ((Widget*) widget)->get_clipboard().get_internal();
+    });
     module.method("set_hide_on_overflow!", [](void* widget, bool x){
         ((Widget*) widget)->set_hide_on_overflow(x);
     });

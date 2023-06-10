@@ -114,6 +114,7 @@ namespace mousetrap
 
             static void get_string_callback_wrapper(GObject* clipboard, GAsyncResult* result, detail::ClipboardInternal* data);
             static void get_image_callback_wrapper(GObject* clipboard, GAsyncResult* result, detail::ClipboardInternal* data);
+            static void get_file_callback_wrapper(GObject* clipboard, GAsyncResult* result, detail::ClipboardInternal* data);
     };
 }
 
