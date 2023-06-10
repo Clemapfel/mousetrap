@@ -160,6 +160,11 @@ namespace mousetrap
         return *this;
     }
 
+    GLNativeHandle Shape::get_native_handle() const
+    {
+        return _internal->vertex_array_id;
+    }
+
     NativeObject Shape::get_internal() const
     {
         return G_OBJECT(_internal);

@@ -114,7 +114,7 @@ namespace mousetrap
 
             /// @brief get native OpenGL handle
             /// @return handle
-            GLNativeHandle get_native_handle() const;
+            virtual GLNativeHandle get_native_handle() const;
 
             /// @brief expose as gobject, \for_internal_use_only
             operator GObject*() const override;

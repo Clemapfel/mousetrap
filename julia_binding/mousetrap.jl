@@ -414,6 +414,7 @@ module mousetrap
     x::T
     y::T
     z::T
+    w::T
     """
     const Vector4{T} = SVector{4, T}
     export Vector4
@@ -432,7 +433,7 @@ module mousetrap
         end
     end
 
-    function Base.setproperty!(v::Vector2{T}, symbol::Symbol, value) where T
+    function Base.setproperty!(v::Vector4{T}, symbol::Symbol, value) where T
         if symbol == :x
             v[1] = convert(T, value)
         elseif symbol == :y
@@ -442,7 +443,7 @@ module mousetrap
         elseif symbol == :w
             v[4] = convert(T, value)
         else
-            throw(ErrorException("type Vector2 has no field " * string(symbol)))
+            throw(ErrorException("type Vector4 has no field " * string(symbol)))
         end
     end
 
@@ -458,6 +459,14 @@ module mousetrap
     Base.show(io::IO, x::Vector2{T}) where T = print(io, "Vector2{" * string(T) * "}(" * string(x.x) * ", " * string(x.y) * ")")
     Base.show(io::IO, x::Vector3{T}) where T = print(io, "Vector3{" * string(T) * "}(" * string(x.x) * ", " * string(x.y) * ", " * string(x.z) * ")")
     Base.show(io::IO, x::Vector4{T}) where T = print(io, "Vector4{" * string(T) * "}(" * string(x.x) * ", " * string(x.y) * ", " * string(x.z) * ", " * string(x.w) * ")")
+
+####### geometry.jl
+
+    struct Rectangle
+        top_left::Vector2f
+        size::Vector2f
+    end
+    export Rectangle
 
 ####### time.jl
 
@@ -986,6 +995,7 @@ module mousetrap
     macro add_signal_value_changed(x) return :(@add_signal $x value_changed Cvoid) end
     macro add_signal_wrapped(x) return :(@add_signal $x wrapped Cvoid) end
     macro add_signal_scroll_child(x) return :(@add_signal $x scroll_child Cvoid ScrollType type Bool is_horizontal) end
+    macro add_signal_resize(x) return :(@add_signal $x resize Cvoid Cint width Cint height) end
 
     macro add_signal_activated(T)
 
@@ -1226,6 +1236,73 @@ module mousetrap
         push!(out.args, esc(:(
             function $emit_signal_name(x::$T, page_index::Integer) ::$Return_t
                 return convert($Return_t, detail.$emit_signal_name(x._internal, from_julia_index(page_index)))
+            end
+        )))
+
+        disconnect_signal_name = :disconnect_signal_ * snake_case * :!
+
+        push!(out.args, esc(:(
+            function $disconnect_signal_name(x::$T)
+                detail.$disconnect_signal_name(x._internal)
+            end
+        )))
+
+        set_signal_blocked_name = :set_signal_ * snake_case * :_blocked * :!
+
+        push!(out.args, esc(:(
+            function $set_signal_blocked_name(x::$T, b)
+                detail.$set_signal_blocked_name(x._internal, b)
+            end
+        )))
+
+        get_signal_blocked_name = :get_signal_ * snake_case * :_blocked
+
+        push!(out.args, esc(:(
+            function $get_signal_blocked_name(x::$T)
+                return detail.$get_signal_blocked_name(x._internal)
+            end
+        )))
+
+        push!(out.args, esc(:(export $connect_signal_name)))
+        push!(out.args, esc(:(export $disconnect_signal_name)))
+        push!(out.args, esc(:(export $set_signal_blocked_name)))
+        push!(out.args, esc(:(export $get_signal_blocked_name)))
+        push!(out.args, esc(:(export $emit_signal_name)))
+
+        return out
+    end
+
+    macro add_signal_render(T)
+
+        out = Expr(:block)
+        snake_case = :render
+        Return_t = Bool
+
+        connect_signal_name = :connect_signal_ * snake_case * :!
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T)
+                typed_f = TypedFunction(f, $Return_t, ($T,))
+                detail.$connect_signal_name(x._internal, function(x)
+                    typed_f($T(x[1][]))
+                end)
+            end
+        )))
+
+        push!(out.args, esc(:(
+            function $connect_signal_name(f, x::$T, data::Data_t) where Data_t
+                typed_f = TypedFunction(f, $Return_t, ($T, Data_t))
+                detail.$connect_signal_name(x._internal, function(x)
+                    typed_f($T(x[1][]), data)
+                end)
+            end
+        )))
+
+        emit_signal_name = :emit_signal_ * snake_case
+
+        push!(out.args, esc(:(
+            function $emit_signal_name(x::$T) ::$Return_t
+                return convert($Return_t, detail.$emit_signal_name(x._internal, Ptr{Cvoid}()))
             end
         )))
 
@@ -3640,7 +3717,6 @@ module mousetrap
     end
     export set_tick_callback!
 
-
 ####### blend_mode.jl
 
     @export_enum BlendMode begin
@@ -3658,6 +3734,450 @@ module mousetrap
     end
     export set_current_blend_mode
 
+####### gl_transform.jl
+
+    @export_type GLTransform SignalEmitter
+    GLTransform() = GLTransform(detail._GLTransform())
+
+    import Base.setindex!
+    function Base.setindex!(transform::GLTransform, x::Integer, y::Integer, value::AbstractFloat) 
+        if x == 0 || x > 4 || y == 0 || y > 4
+            throw(BoundsError(transform, (x, y)))
+        end
+               
+        detail.setindex!(transform._internal, from_julia_index(x), from_julia_index(y), value)
+    end
+
+    import Base.getindex
+    function Base.getindex(transform::GLTransform, x::Integer, y::Integer) ::Cfloat 
+        if x == 0 || x > 4 || y == 0 || y > 4
+            throw(BoundsError(transform, (x, y)))
+        end
+               
+        return detail.setindex(transform._internal, from_julia_index(x), from_julia_index(y))
+    end
+
+    apply_to(transform::GLTransform, v::Vector2f) ::Vector2f = return detail.apply_to_2f(transform, v.x, v.y)
+    apply_to(transform::GLTransform, v::Vector3f) ::Vector3f = return detail.apply_to_3f(transform, v.x, v.y, v.z)
+    export apply_to
+
+    combine_with(self::GLTransform, other::GLTransform) = GLTransform(detail.combin_with(self._internal, other._internal))
+    export combine_with
+
+    function rotate!(transform::GLTransform, angle::Angle, origin::Vector2f = Vector2f(0, 0)) 
+        detail.rotate!(transform._internal, as_radians(angle), origin.x, origin.y)
+    end
+    export rotate!
+
+    function tanslate!(transform::GLTransform, offset::Vector2f)
+        detail.translate!(transform._internal, offset.x, offset.y)
+    end
+    export translate!
+
+    function scale!(transform::GLTransform, x_scale::AbstractFloat, y_scale::AbstractFloat)
+        detail.scale!(transform._internal, x_scale, y_scale)
+    end
+    export scale!
+
+    @export_function GLTransform reset! Cvoid
+
+###### shader.jl
+
+    @export_type Shader SignalEmitter
+    Shader() = Shader(detail._Shader())
+
+    @export_enum ShaderType begin
+        SHADER_TYPE_FRAGMENT
+        SHADER_TYPE_VERTEX
+    end
+
+    @export_function Shader get_program_id Cuint
+    @export_function Shader get_fragment_shader_id Cuint
+    @export_function Shader get_vertex_shader_id Cuint
+
+    function create_from_string!(shader::Shader, code::String) ::Bool
+        return detail.create_from_string!(shader._internal, code)
+    end
+    export create_from_string!
+
+    function create_from_file!(shader::Shader, file::String) ::Bool
+        return detail.create_from_file!(shader._internal, file)
+    end
+    export create_from_file!
+
+    @export_function Shader get_uniform_location Cint String name
+    
+    @export_function Shader set_uniform_float! Cint String name Cfloat float
+    @export_function Shader set_uniform_int! Cint String name Cint float
+    @export_function Shader set_uniform_uint! Cint String name Cuint float
+
+    set_uniform_vec2!(shader::Shader, name::String, vec2::Vector2f) = detail.set_uniform_vec2!(shader._internal, name, vec2)
+    export set_uniform_vec2!
+
+    set_uniform_vec3!(shader::Shader, name::String, vec2::Vector2f) = detail.set_uniform_vec3!(shader._internal, name, vec2)
+    export set_uniform_vec3!
+
+    set_uniform_vec4!(shader::Shader, name::String, vec2::Vector2f) = detail.set_uniform_vec4!(shader._internal, name, vec2)
+    export set_uniform_vec4!
+
+    set_uniform_transform!(shader::Shader, name::String, transform::GLTransform) = detail.set_uniform_transform!(shader._internal, name, transform._internal)
+    export set_uniform_transform!
+
+    get_vertex_position_location() = return detail.shader_get_vertex_position_location()
+    export get_vertex_position_location
+
+    get_vertex_color_location() = return detail.shader_get_vertex_color_location()
+    export get_vertex_color_location
+
+    get_vertex_texture_coordinate_location() = return detail.shader_get_vertex_texture_coordinate_location()
+    export get_vertex_texture_coordinate_location
+
+###### texture.jl
+
+    abstract type TextureObject <: SignalEmitter end
+
+    @export_enum TextureWrapMode begin
+        TEXTURE_WRAP_MODE_ZERO
+        TEXTURE_WRAP_MODE_ONE
+        TEXTURE_WRAP_MODE_REPEAT
+        TEXTURE_WRAP_MODE_MIRROR
+        TEXTURE_WRAP_MODE_STRETCH
+    end
+
+    @export_enum TextureScaleMode begin
+        TEXTURE_SCALE_MODE_NEAREST
+        TEXTURE_SCALE_MODE_LINEAR
+    end
+    
+    @export_type Texture TextureObject
+    Texture() = Texture(detail._Texture())
+
+    @export_type RenderTexture TextureObject
+    RenderTexture() = RenderTexture(detail._RenderTexture())
+
+    download(texture::TextureObject) ::Image = Image(detail.texture_download(texture._internal.cpp_object))
+    export download
+
+    bind(texture::TextureObject) = detail.texture_bind(texture._internal.cpp_object)
+    export bind
+
+    unbind(texture::TextureObject) = detail.texture_unbind(texture._internal.cpp_object)
+    export unbind
+
+    create_from_image!(texture::TextureObject) = detail::texture_create_from_image!(texture._internal.cpp_object)
+    export create_from_image!
+
+    create_from_image!(texture::TextureObject, image::Image) = detail.texture_create_from_image(texture._internal.cpp_object, image._internal)
+    export create_from_image!
+
+    set_wrap_mode!(texture::TextureObject, mode::TextureWrapMode) = detail.texture_set_wrap_mode(texture._internal.cpp_object, mode)
+    export set_wrap_mode!
+
+    set_scale_mode!(texture::TextureObject, mode::TextureWrapMode) = detail.set_scale_mode(texture._internal.cpp_object, mode)
+    export set_scale_mode!
+
+    get_wrap_mode(texture::TextureObject) ::TextureWrapMode = detail.texture_get_wrap_mode(texture._internal.cpp_object)
+    export get_wrap_mode
+
+    get_scale_mode(texture::TextureObject) ::TextureScaleMode = detail.texture_get_scale_mode(texture._internal.cpp_object)
+    export get_scale_mode
+
+    get_size(texture::TextureObject) ::Vector2i = detail.texture_get_size(texture._internal.cpp_object)
+    export get_size
+
+    get_native_handle(texture::TextureObject) ::Cuint = detail.texture_get_native_handle(texture._internal.cpp_object)
+    export get_native_handle
+
+###### shape.jl
+
+    @export_type Shape SignalEmitter
+    Shape() = Shape(detail._Shape())
+
+    @export_function Shape get_native_handle Cuint
+
+    as_point!(shape::Shape, position::Vector2f) = detail.as_point!(shape._internal, position)
+    export as_point!
+
+    function Point(position::Vector2f) ::Shape
+        out = Shape()
+        as_point!(shape, position) 
+        return out
+    end
+    export Point
+
+    function as_points!(shape::Shape, positions::Vector{Vector2f}) 
+        return detail.as_point!(shape._internal, positions)
+    end
+    export as_points!
+
+    function Points(positions::Vector{Vector2f}) ::Shape
+        out = Shape()
+        as_points!(shape, position) 
+        return out
+    end
+    export Point
+
+    as_triangle!(shape::Shape, a::Vector2f, b::Vector2f, c::Vector2f) = detail.as_triangle!(shape._internal, a, b, c)
+    export as_triangle!
+
+    function Triangle(a::Vector2f, b::Vector2f, c::Vector2f) ::Shape
+        out = Shape()
+        as_triangle!(out, a, b, c)
+        return out
+    end
+    export Triangle
+
+    as_rectangle!(shape::Shape, top_left::Vector2f, size::Vector2f) = detail.as_rectangle!(shape._internal, top_left, size)
+    export as_rectangle!
+
+    function Rectangle(top_left::Vector2f, size::Vector2f) ::Shape
+        out = Shape()
+        as_rectangle!(out, top_left, size)
+        return out
+    end
+    export Rectangle
+
+    as_ellipse!(shape::Shape, center::Vector2f, radius::AbstractFloat, n_outer_vertices::Unsigned) = detail.as_circle!(shape._internal, radius, n_outer_vertices)
+    export as_circle!
+
+    function Circle(center::Vector2f, radius::AbstractFloat, n_outer_vertices::Unsigned) ::Shape
+        out = Shape()
+        as_circle!(out, center, radius, n_outer_vertices)
+        return out
+    end
+    export Circle
+
+    as_ellipse!(shape::Shape, center::Vector2f, x_radius::AbstractFloat, y_radius::AbstractFloat, n_outer_vertices::Unsigned) = detail.as_ellipse!(shape._internal, x_radius, y_radius, n_outer_vertices)
+    export as_ellipse!
+
+    function Circle(center::Vector2f, x_radius::AbstractFloat, y_radius::AbstractFloat, n_outer_vertices::Unsigned) ::Shape
+        out = Shape()
+        as_ellipse!(out, x_radius, y_radius, n_outer_vertices)
+        return out
+    end
+    export Circle
+
+    as_line!(shape::Shape, a::Vector2f, b::Vector2f) = detail.as_line!(shape._internal, a, b)
+    export as_line!
+
+    function Line(a::Vector2f, b::Vector2f)
+        out = Shape()
+        as_line!(out, a, b)
+        return out
+    end
+    export Line
+
+    as_lines!(shape::Shape, points::Vector{Pair{Vector2f, Vector2f}}) = detail.as_lines!(shape._internal, points)
+    export as_lines!
+
+    function Lines(points::Vector{Pair{Vector2f, Vector2f}})
+        out = Shape()
+        as_lines!(out, points)
+        return out
+    end
+
+    as_line_strip!(shape::Shape, points::Vector{Vector2f}) = detail.as_line_strip!(shape._internal, points)
+    export as_line_strip!
+
+    function LineStrip(points::Vector2{Vector2f})
+        out = Shape()
+        as_line_strip!(out, points)
+        return out
+    end
+    export LineStrip
+
+    as_polygon!(shape::Shape, points::Vector{Vector2f}) = detail.as_polygon!(shape._internal, points)
+    export as_polygon!
+
+    function Polygon(points::Vector2{Vector2f})
+        out = Shape()
+        as_polygon!(out, points)
+        return out
+    end
+    export Polygon
+
+    function as_rectangular_frame!(shape::Shape, top_left::Vector2f, outer_size::Vector2f, x_width::AbstractFloat, y_width::AbstractFloat)
+        detail.as_rectangular_frame!(shape._internal, top_left, outer_size, x_width, y_width)
+    end
+    export as_rectangular_frame!
+
+    function RectangularFrame(top_left::Vector2f, outer_size::Vector2f, x_width::AbstractFloat, y_width::AbstractFloat)
+        out = Shape()
+        as_rectangular_frame!(out, top_left, outer_size, x_width, y_width)
+        return out
+    end
+    export RectangularFrame
+
+    function as_circular_ring!(shape::Shape, center::Vector2f, outer_radius::AbstractFloat, thickness::AbstractFloat, n_outer_vertices::Unsigned)
+        detail.as_circular_ring!(shape._internal, center, outer_radius, thickness, n_outer_vertices)
+    end
+    export as_circular_ring!
+
+    function CircularRing(center::Vector2f, outer_radius::AbstractFloat, thickness::AbstractFloat, n_outer_vertices::Unsigned)
+        out = Shape()
+        as_circular_ring!(shape, center, outer_radius, thickness, n_outer_vertices)
+        return out
+    end
+    export CircularRing
+
+    function as_elliptical_ring!(shape::Shape, center::Vector2f, outer_x_radius::AbstractFloat, outer_y_radius::AbstractFloat, x_thickness::AbstractFloat, y_thickness::AbstractFloat, n_outer_vertices::Unsigned)
+        detail.as_elliptical_ring!(shape._internal, center, outer_x_radius, outer_y_radius, x_thickness, y_thickness, n_outer_vertices)
+    end
+    export as_elliptical_ring!
+
+    function EllipticalRing(center::Vector2f, outer_x_radius::AbstractFloat, outer_y_radius::AbstractFloat, x_thickness::AbstractFloat, y_thickness::AbstractFloat, n_outer_vertices::Unsigned) ::Shape
+        out = Shape()
+        as_elliptical_ring!(out, outer_x_radius, outer_y_radius, x_thickness, y_thickness, n_outer_vertices)
+        return out
+    end
+    export EllipticalRing
+
+    as_wireframe!(shape::Shape, points::Vector{Vector2f}) = detail.as_wireframe!(shape._internal, points)
+    export as_wireframe!
+
+    function Wireframe(points::Vector{Vector2f})
+        out = Shape()
+        as_wireframe!(out, points)
+        return out
+    end
+    export Wireframe
+
+    as_outline!(self::Shape, other::Shape) = detail.as_outline!(self._internal, other._internal)
+    export as_outline!
+
+    function Outline(other::Shape)
+        out = Shape()
+        as_outline!(out, other)
+        return out
+    end
+    export Outline
+
+    render(shape::Shape, shader::Shader, transform::GLTransform) = detail.render(shape._internal, shader._internal, transform._internal)
+    export render
+
+    @export_function Shape get_vertex_color RGBA Integer index
+    @export_function Shape set_vertex_color! Cvoid Integer index RGBA color
+    
+    @export_function Shape get_vertex_texture_coordinate Vector2f Integer index
+    @export_function Shape set_vertex_texture_coordinate Cvoid Integer index Vector2f coordinate
+
+    @export_function Shape get_vertex_position Vector3f
+    @export_function Shape set_vertex_position! Cvoid Integer index Vector3f position
+
+    @export_function Shape get_n_vertices Int64
+
+    @export_function Shape set_is_visible! Cvoid Bool b
+    @export_function Shape get_is_visible Bool
+
+    @export_function Shape get_bounding_box Rectangle
+    @export_function Shape get_size Vector2f
+
+    @export_function Shape set_centroid! Cvoid Vector2f centroid
+    @export_function Shape get_centroid Vector2f
+    @export_function Shape set_top_left! Cvoid Vector2f top_left
+    @export_function Shape get_top_left Vector2f
+    
+    function rotate!(shape::Shape, angle::Angle, origin::Vector2f = Vector2f(0, 0))
+        detail.rotate!(shape._internal, as_radians(angle), origin.x, origin.y)
+    end
+    export rotate!
+
+    set_texture!(shape::Shape, texture::TextureObject) = detail.set_texture!(shape._internal, texture._internal.cpp_object)
+    export set_texture!
+
+###### render_task.jl
+
+    @export_type RenderTask SignalEmitter
+    
+    function RenderTask(shape::Shape; 
+        shader::Union{Shader, Nothing} = nothing, 
+        transform::Union{GLTransform, Nothing} = nothing, 
+        blend_mode::BlendMode = BLEND_MODE_NORMAL
+    )
+        shader_ptr = isnothing(shader) ? Ptr{Cvoid}(0) : shader._internal.cpp_object
+        transform_ptr = isnothing(transform) ? Ptr{Cvoid}(0) : transform._internal.cpp_object
+    
+        return RenderTask(detail._RenderTask(shape._internal, shader_ptr, transform_ptr, blend_mode))
+    end
+    export RenderTask
+
+    @export_function RenderTask render Cvoid
+    
+    @export_function RenderTask set_uniform_float! Cvoid String name Cfloat v
+    @export_function RenderTask get_uniform_float Cfloat String name
+
+    @export_function RenderTask set_uniform_int! Cvoid String name Cint v
+    @export_function RenderTask get_uniform_int Cint String name
+
+    @export_function RenderTask set_uniform_uint! Cvoid String name Cuint v
+    @export_function RenderTask get_uniform_uint Cuint String name
+
+    set_uniform_vec2!(task::RenderTask, name::String, v::Vector2f) = detail.set_uniform_vec2!(task._internal, name, v)
+    export set_uniform_vec2!
+
+    get_uniform_vec2(task::RenderTask, name::String) ::Vector2f = detail.get_uniform_vec2(task._internal, name)
+    export get_uniform_vec2
+
+    set_uniform_vec3!(task::RenderTask, name::String, v::Vector3f) = detail.set_uniform_vec3!(task._internal, name, v)
+    export set_uniform_vec3!
+
+    get_uniform_vec3(task::RenderTask, name::String) ::Vector3f = detail.get_uniform_vec3(task._internal, name)
+    export get_uniform_vec3
+
+    set_uniform_vec4!(task::RenderTask, name::String, v::Vector4f) = detail.set_uniform_vec4!(task._internal, name, v)
+    export set_uniform_vec4!
+
+    get_uniform_vec4(task::RenderTask, name::String) ::Vector4f = detail.get_uniform_vec4(task._internal, name)
+    export get_uniform_vec4
+
+    set_uniform_rgba!(task::RenderTask, name::String, rgba::RGBA) = detail.set_uniform_rgba!(task._internal, name, rbga)
+    export set_uniform_rgba!
+
+    get_uniform_rgba(task::RenderTask, name::String) ::RGBA = detail.get_uniform_rgba(task._internal, name, rgba)
+    export get_uniform_rgba
+
+    set_uniform_hsva!(task::RenderTask, name::String, hsva::RGBA) = detail.set_uniform_hsva!(task._internal, name, rbga)
+    export set_uniform_hsva!
+
+    get_uniform_hsva(task::RenderTask, name::String) ::HSVA = detail.get_uniform_hsva(task._internal, name, hsva)
+    export get_uniform_rgba
+
+    set_uniform_transform!(task::RenderTask, name::String, transform::GLTransform) = detail.set_uniform_transform(task._internal, transform._internal)
+    export set_uniform_transform!
+
+    get_uniform_transform(task::RenderTask, name::String) ::GLTransform = GLTransform(detail.get_uniform_transform(task._internal, name))
+    export get_uniform_transform
+    
+###### render_area.jl
+
+    @export_type RenderArea Widget
+    RenderArea() = RenderArea(detail._RenderArea())
+
+    add_render_task!(area::RenderArea, task::RenderTask) = detail.add_render_task!(area._internal, task._internal)
+    export add_render_task!
+
+    @export_function RenderArea clear_render_tasks! Cvoid
+
+    @export_function RenderArea make_current Cvoid
+    @export_function RenderArea clear Cvoid
+    @export_function RenderArea render_render_tasks Cvoid
+    @export_function RenderArea flush Cvoid
+    
+    function from_gl_coordinates(area::RenderArea, gl_coordinates::Vector2f) ::Vector2f 
+        return detail.from_gl_coordinates(area._internal, gl_coordinates)
+    end
+    export from_gl_coordinates
+
+    function to_gl_coordiantes(area::RenderArea, absolute_widget_space_coordinates::Vector2f) ::Vector2f 
+        return detail.to_gl_coordinates(area._internal, absolute_widget_space_coordinates)
+    end
+    export to_gl_coordinates
+
+    @add_widget_signals RenderArea
+    @add_signal_resize RenderArea
+    @add_signal_render RenderArea
+
+
 ###### key_code.jl
 
     # TODO
@@ -3670,12 +4190,5 @@ mt = mousetrap
 mt.main() do app::mt.Application
 
     window = mt.Window(app)
-
-    clock = mt.get_frame_clock(window)
-    mt.connect_signal_paint!(clock) do x
-        println("paint: ", c)
-    end
     mt.present!(window)
 end
-
-

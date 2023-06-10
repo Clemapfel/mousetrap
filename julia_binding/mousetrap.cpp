@@ -80,6 +80,42 @@ static Vector2f unbox_vector2i(jl_value_t* in)
     };
 }
 
+static jl_value_t* box_vector3f(Vector3f in)
+{
+    static auto* ctor = jl_eval_string("mousetrap.Vector3f");
+    return jl_calln(ctor, jl_box_float32(in.x), jl_box_float32(in.y), jl_box_float32(in.z));
+}
+
+static Vector3f unbox_vector3f(jl_value_t* in)
+{
+    return Vector3f {
+        jl_unbox_float32(jl_get_property(in, "x")),
+        jl_unbox_float32(jl_get_property(in, "y")),
+        jl_unbox_float32(jl_get_property(in, "z"))
+    };
+}
+
+static jl_value_t* box_vector4f(Vector4f in)
+{
+    static auto* ctor = jl_eval_string("mousetrap.Vector4f");
+    return jl_calln(ctor,
+        jl_box_float32(in.x),
+        jl_box_float32(in.y),
+        jl_box_float32(in.z),
+        jl_box_float32(in.z)
+    );
+}
+
+static Vector4f unbox_vector4f(jl_value_t* in)
+{
+    return Vector4f {
+        jl_unbox_float32(jl_get_property(in, "x")),
+        jl_unbox_float32(jl_get_property(in, "y")),
+        jl_unbox_float32(jl_get_property(in, "z")),
+        jl_unbox_float32(jl_get_property(in, "w"))
+    };
+}
+
 static jl_value_t* box_rgba(RGBA in)
 {
     static auto* ctor = jl_eval_string("return mousetrap.RGBA");
@@ -213,6 +249,9 @@ void add_signal_##snake_case(Arg_t type, const std::string& name) \
                 ) \
             ); \
         }, task); \
+    }) \
+    .method("emit_signal_" + std::string(#snake_case), [](T& instance, arg1_t arg1_name, arg2_t arg2_name) -> return_t { \
+        return instance.emit_signal_##snake_case(arg1_name, arg2_name); \
     }); \
     type._DEFINE_ADD_SIGNAL_INVARIANT(snake_case)      \
 }
@@ -332,12 +371,11 @@ DEFINE_ADD_SIGNAL_ARG1(scale_changed, void, double, scale)
 DEFINE_ADD_SIGNAL_ARG2(rotation_changed, void, double, angle_absolute_radians, double, angle_delta_radians)
 DEFINE_ADD_SIGNAL_ARG0(properties_changed, void)
 DEFINE_ADD_SIGNAL_ARG0(value_changed, void)
-DEFINE_ADD_SIGNAL_ARG1(render, bool, GdkGLContext*, context) // TODO
 DEFINE_ADD_SIGNAL_ARG2(resize, void, gint, width, gint, height)
-DEFINE_ADD_SIGNAL_ARG2(page_added, void, void*, _, guint, page_index) // TODO
-DEFINE_ADD_SIGNAL_ARG2(page_removed, void, void*, _, guint, page_index) // TODO
-DEFINE_ADD_SIGNAL_ARG2(page_reordered, void, void*, _, guint, page_index) // TODO
-DEFINE_ADD_SIGNAL_ARG2(page_selection_changed, void, void*, _, guint, page_index) // TODO
+DEFINE_ADD_SIGNAL_ARG2(page_added, void, void*, _, guint, page_index)
+DEFINE_ADD_SIGNAL_ARG2(page_removed, void, void*, _, guint, page_index)
+DEFINE_ADD_SIGNAL_ARG2(page_reordered, void, void*, _, guint, page_index)
+DEFINE_ADD_SIGNAL_ARG2(page_selection_changed, void, void*, _, guint, page_index)
 DEFINE_ADD_SIGNAL_ARG0(wrapped, void)
 DEFINE_ADD_SIGNAL_ARG2(pressed, void, double, x, double, y)
 DEFINE_ADD_SIGNAL_ARG0(press_cancelled, void)
@@ -353,6 +391,27 @@ DEFINE_ADD_SIGNAL_ARG0(stop, void)
 DEFINE_ADD_SIGNAL_ARG3(items_changed, void, gint, position, gint, n_removed, gint, n_added)
 DEFINE_ADD_SIGNAL_ARG1(revealed, void, void*, _)
 DEFINE_ADD_SIGNAL_ARG1(activated, void, void*, _)
+
+template<typename T, typename Arg_t>
+void add_signal_render(Arg_t type, const std::string& name)
+{
+    type.method("connect_signal_render!", [name](T& instance, jl_function_t* task)
+    {
+        instance.connect_signal_render([name](T& instance, GdkGLContext* context, jl_function_t* task) -> bool {
+            return jlcxx::unbox<bool>(
+                jl_safe_call(
+                    (name + "::emit_signal_render").c_str(),
+                    task,
+                    jl_wrap(jlcxx::box<T&>(instance), jlcxx::box<void*>((void*) context))
+                )
+            );
+        }, task);
+    })
+    .method("emit_signal_render", [](T& instance) {
+        instance.emit_signal_render((GdkGLContext*) nullptr);
+    });
+    type._DEFINE_ADD_SIGNAL_INVARIANT(render)
+}
 
 // ### ADJUSTMENT
 
@@ -1122,13 +1181,39 @@ static void implement_frame_clock(jlcxx::Module& module)
     add_signal_paint<FrameClock>(frame_clock, "FrameClock");
 }
 
-// ### TODO
+// ### GL TRANSFORM
 
-static void implement_gl_common(jlcxx::Module& module) {}
-
-// ### TODO
-
-static void implement_gl_transform(jlcxx::Module& module) {}
+static void implement_gl_transform(jlcxx::Module& module)
+{
+    auto transform = module.add_type(GLTransform)
+        .add_constructor()
+        .method("apply_to_2f", [](GLTransform& self, float x, float y){
+            return box_vector2f(self.apply_to(Vector2f(x, y)));
+        })
+        .method("apply_to_3f", [](GLTransform& self, float x, float y, float z){
+            return box_vector3f(self.apply_to(Vector3f(x, y, z)));
+        })
+        .add_type_method(GLTransform, combine_with)
+        .method("rotate!", [](GLTransform& self, float angle_rads, float x, float y){
+            self.rotate(radians(angle_rads), Vector2f(x, y));
+        })
+        .method("translate!", [](GLTransform& self, float x, float y){
+            self.translate(Vector2f(x, y));
+        })
+        .method("scale!", [](GLTransform& self, float x, float y){
+            self.scale(x, y);
+        })
+        .method("reset!", [](GLTransform& self){
+            self.reset();
+        })
+        .method("setindex!", [](GLTransform& self, size_t x, size_t y, float value){
+            self.transform[x][y] = value;
+        })
+        .method("getindex", [](GLTransform& self, size_t x, size_t y){
+            return self.transform[x][y];
+        })
+    ;
+}
 
 // ### GRID
 
@@ -1763,13 +1848,9 @@ static void implement_motion_event_controller(jlcxx::Module& module)
 
 // ### TODO
 
-static void implement_msaa_render_texture(jlcxx::Module& module) {}
-
-// ### TODO
-
 static void implement_music(jlcxx::Module& module) {}
 
-// ### TODO
+// ### NOTEBOOK
 
 static void implement_notebook(jlcxx::Module& module)
 {
@@ -2011,17 +2092,94 @@ static void implement_relative_position(jlcxx::Module& module)
     module.add_enum_value(RelativePosition, RELATIVE_POSITION, BELOW);
 }
 
-// ### TODO
+// ### RENDER AREA
 
-static void implement_render_area(jlcxx::Module& module) {}
+static void implement_render_area(jlcxx::Module& module)
+{
+    auto render_area = module.add_type(RenderArea)
+        .add_constructor()
+        .method("add_render_task!", [](RenderArea& area, RenderTask& task){
+            area.add_render_task(task);
+        })
+        .add_type_method(RenderArea, clear_render_tasks, !)
+        .add_type_method(RenderArea, render_render_tasks)
+        .add_type_method(RenderArea, queue_render)
+        .add_type_method(RenderArea, make_current)
+        .method("from_gl_coordinates", [](RenderArea& area, jl_value_t* in) -> jl_value_t* {
+            auto vec2_in = unbox_vector2f(in);
+            return box_vector2f(area.from_gl_coordinates(vec2_in));
+        })
+        .method("to_gl_coordinates", [](RenderArea& area, jl_value_t* in) -> jl_value_t* {
+            auto vec2_in = unbox_vector2f(in);
+            return box_vector2f(area.to_gl_coordinates(vec2_in));
+        })
+        .method("flush", [](RenderArea&){
+            RenderArea::flush();
+        })
+        .method("clear", [](RenderArea&){
+            RenderArea::clear();
+        })
+    ;
 
-// ### TODO
+    add_widget_signals<RenderArea>(render_area, "RenderArea");
+    add_signal_resize<RenderArea>(render_area, "RenderArea");
+    add_signal_render<RenderArea>(render_area, "RenderArea");
+}
 
-static void implement_render_task(jlcxx::Module& module) {}
+// ### RENDER TASK
 
-// ### TODO
-
-static void implement_render_texture(jlcxx::Module& module) {}
+static void implement_render_task(jlcxx::Module& module)
+{
+    auto render_task = module.add_type(RenderTask)
+        .constructor([](Shape& shape, void* shader_maybe, void* transform_maybe, BlendMode blend_mode) -> RenderTask* {
+            return new RenderTask(
+                shape,
+                (Shader*) shader_maybe,
+                (transform_maybe == nullptr ? GLTransform() : *((GLTransform*) transform_maybe)),
+                blend_mode
+            );
+        }, USE_FINALIZERS)
+        .add_type_method(RenderTask, render)
+        .add_type_method(RenderTask, set_uniform_float)
+        .add_type_method(RenderTask, set_uniform_int)
+        .add_type_method(RenderTask, set_uniform_uint)
+        .method("set_uniform_vec2", [](RenderTask& task, const std::string& name, jl_value_t* vec){
+            task.set_uniform_vec2(name, unbox_vector2f(vec));
+        })
+        .method("set_uniform_vec3", [](RenderTask& task, const std::string& name, jl_value_t* vec){
+            task.set_uniform_vec3(name, unbox_vector3f(vec));
+        })
+        .method("set_uniform_vec4", [](RenderTask& task, const std::string& name, jl_value_t* vec){
+            task.set_uniform_vec4(name, unbox_vector4f(vec));
+        })
+        .add_type_method(RenderTask, set_uniform_transform)
+        .method("set_uniform_rgba", [](RenderTask& task, const std::string& name, jl_value_t* rgba){
+            task.set_uniform_rgba(name, unbox_rgba(rgba));
+        })
+        .method("set_uniform_hsva", [](RenderTask& task, const std::string& name, jl_value_t* hsva){
+            task.set_uniform_hsva(name, unbox_hsva(hsva));
+        })
+        .add_type_method(RenderTask, get_uniform_float)
+        .add_type_method(RenderTask, get_uniform_int)
+        .add_type_method(RenderTask, get_uniform_uint)
+        .method("get_uniform_vec2", [](RenderTask& task, const std::string& name) -> jl_value_t* {
+            return box_vector2f(task.get_uniform_vec2(name));
+        })
+        .method("set_uniform_vec3", [](RenderTask& task, const std::string& name) -> jl_value_t* {
+            return box_vector3f(task.get_uniform_vec3(name));
+        })
+        .method("set_uniform_vec4", [](RenderTask& task, const std::string& name) -> jl_value_t* {
+            return box_vector4f(task.get_uniform_vec4(name));
+        })
+        .add_type_method(RenderTask, get_uniform_transform)
+        .method("set_uniform_rgba", [](RenderTask& task, const std::string& name) -> jl_value_t* {
+            return box_rgba(task.get_uniform_rgba(name));
+        })
+        .method("set_uniform_hsva", [](RenderTask& task, const std::string& name) -> jl_value_t* {
+            return box_hsva(task.get_uniform_hsva(name));
+        })
+    ;
+}
 
 // ### REVEALER
 
@@ -2098,10 +2256,6 @@ static void implement_scale(jlcxx::Module& module)
     add_signal_value_changed<Scale>(scale, "Scale");
 }
 
-// ### TODO
-
-static void implement_texture_scale_mode(jlcxx::Module& module) {}
-
 // ### SCROLL EVENT CONTROLLER
 
 static void implement_scroll_event_controller(jlcxx::Module& module)
@@ -2171,13 +2325,229 @@ static void implement_separator(jlcxx::Module& module)
     add_widget_signals<Separator>(separator, "Separator");
 }
 
-// ### TODO
+// ### SHADER
 
-static void implement_shader(jlcxx::Module& module) {}
+static void implement_shader(jlcxx::Module& module)
+{
+    define_enum_in(module, ShaderType);
+    module.add_enum_value(ShaderType, SHADER_TYPE, FRAGMENT);
+    module.add_enum_value(ShaderType, SHADER_TYPE, VERTEX);
 
-// ### TODO
+    auto shader = module.add_type(Shader)
+        .add_type_method(Shader, get_program_id)
+        .add_type_method(Shader, get_fragment_shader_id)
+        .add_type_method(Shader, get_vertex_shader_id)
+        .add_type_method(Shader, create_from_string, !)
+        .add_type_method(Shader, create_from_file, !)
+        .add_type_method(Shader, get_uniform_location)
+        .add_type_method(Shader, set_uniform_float, !)
+        .add_type_method(Shader, set_uniform_int, !)
+        .add_type_method(Shader, set_uniform_uint, !)
+        .method("set_uniform_vec2!", [](Shader& shader, const std::string& name, jl_value_t* vec2){
+            shader.set_uniform_vec2(name, Vector2f(
+                jl_unbox_float32(jl_get_property(vec2, "x")),
+                jl_unbox_float32(jl_get_property(vec2, "y"))
+            ));
+        })
+        .method("set_uniform_vec3!", [](Shader& shader, const std::string& name, jl_value_t* vec3){
+            shader.set_uniform_vec2(name, Vector3f(
+                jl_unbox_float32(jl_get_property(vec3, "x")),
+                jl_unbox_float32(jl_get_property(vec3, "y")),
+                jl_unbox_float32(jl_get_property(vec3, "z"))
+            ));
+        })
+        .method("set_uniform_vec4!", [](Shader& shader, const std::string& name, jl_value_t* vec4){
+            shader.set_uniform_vec2(name, Vector4f(
+                jl_unbox_float32(jl_get_property(vec4, "x")),
+                jl_unbox_float32(jl_get_property(vec4, "y")),
+                jl_unbox_float32(jl_get_property(vec4, "z")),
+                jl_unbox_float32(jl_get_property(vec4, "w"))
+            ));
+        })
+        .method("set_uniform_transform!", [](Shader& shader, const std::string& name, GLTransform& transform){
+            shader.set_uniform_transform(name, transform);
+        })
+    ;
 
-static void implement_shape(jlcxx::Module& module) {}
+    module.method("shader_get_vertex_position_location", [](){
+        return Shader::get_vertex_position_location();
+    });
+    module.method("shader_get_vertex_color_location", [](){
+        return Shader::get_vertex_color_location();
+    });
+    module.method("shader_get_vertex_texture_coordinate_location", [](){
+        return Shader::get_vertex_texture_coordinate_location();
+    });
+}
+
+// ### SHAPE
+
+static void implement_shape(jlcxx::Module& module)
+{
+    auto vertex = module.add_type(Vertex)
+        .constructor([](float x, float y, jl_value_t* rgba){
+            return new Vertex(x, y, RGBA(
+                jl_unbox_float32(jl_get_property(rgba, "r")),
+                jl_unbox_float32(jl_get_property(rgba, "g")),
+                jl_unbox_float32(jl_get_property(rgba, "b")),
+                jl_unbox_float32(jl_get_property(rgba, "a"))
+            ));
+        }, USE_FINALIZERS)
+        .method("get_position", [](Vertex& vertex) -> jl_value_t* {
+            return box_vector3f(vertex.position);
+        })
+        .method("set_position!", [](Vertex& vertex, jl_value_t* vec3){
+            vertex.position = unbox_vector3f(vec3);
+        })
+        .method("get_color", [](Vertex& vertex) -> jl_value_t* {
+            return box_rgba(vertex.color);
+        })
+        .method("set_color!", [](Vertex& vertex, jl_value_t* rgba){
+            vertex.color = unbox_rgba(rgba);
+        })
+        .method("get_texture_coordinates", [](Vertex& vertex) -> jl_value_t* {
+            return box_vector2f(vertex.position);
+        })
+        .method("set_texture_coordinates!", [](Vertex& vertex, jl_value_t* vec3){
+            vertex.position = unbox_vector3f(vec3);
+        })
+    ;
+
+    static auto unbox_vector_of_vec2 = [](jl_value_t* in) -> std::vector<Vector2f> {
+        std::vector<Vector2f> out;
+        out.resize(jl_array_len(in));
+
+        for (size_t i = 0; i < jl_array_len(in); ++i)
+            out.push_back(unbox_vector2f(jl_arrayref((jl_array_t*) in, i)));
+
+        return out;
+    };
+
+    auto shape = module.add_type(Shape)
+        .add_constructor()
+        .add_type_method(Shape, get_native_handle)
+        .method("as_point!", [](Shape& shape, jl_value_t* vec2){
+            shape.as_point(unbox_vector2f(vec2));
+        })
+        .method("as_points!", [](Shape& shape, jl_value_t* vector_of_vec2_in){
+            shape.as_points(unbox_vector_of_vec2(vector_of_vec2_in));
+        })
+        .method("as_triangle!", [](Shape& shape, jl_value_t* a, jl_value_t* b, jl_value_t* c){
+            shape.as_triangle(
+                unbox_vector2f(a),
+                unbox_vector2f(b),
+                unbox_vector2f(c)
+            );
+        })
+        .method("as_rectangle!", [](Shape& shape, jl_value_t* top_left, jl_value_t* size){
+            shape.as_rectangle(
+                unbox_vector2f(top_left),
+                unbox_vector2f(size)
+            );
+        })
+        .method("as_circle!", [](Shape& shape, jl_value_t* center, float radius, size_t n_outer_vertices){
+            shape.as_circle(unbox_vector2f(center), radius, n_outer_vertices);
+        })
+        .method("as_ellipse!", [](Shape& shape, jl_value_t* center, float x_radius, float y_radius, size_t n_outer_vertices){
+            shape.as_ellipse(unbox_vector2f(center), x_radius, y_radius, n_outer_vertices);
+        })
+        .method("as_line!", [](Shape& shape, jl_value_t* a, jl_value_t* b){
+            shape.as_line(unbox_vector2f(a), unbox_vector2f(b));
+        })
+        .method("as_lines!", [](Shape& shape, jl_value_t* vec_of_tuple){
+            std::vector<std::pair<Vector2f, Vector2f>> vec;
+            vec.resize(jl_array_len(vec_of_tuple));
+
+            for (size_t i = 0; i < jl_array_len(vec_of_tuple); ++i)
+            {
+                static auto* getindex = jl_get_function(jl_base_module, "getindex");
+
+                auto* tuple = jl_arrayref((jl_array_t*) vec_of_tuple, i);
+                vec.emplace_back(
+                    unbox_vector2f(jl_calln(getindex, tuple, jl_box_int64(0))),
+                    unbox_vector2f(jl_calln(getindex, tuple, jl_box_int64(1)))
+                );
+            }
+
+            shape.as_lines(vec);
+        })
+        .method("as_line_strip!", [](Shape& shape, jl_value_t* vector_of_vec2_in)
+        {
+            shape.as_line_strip(unbox_vector_of_vec2(vector_of_vec2_in));
+        })
+        .method("as_polygon!", [](Shape& shape, jl_value_t* vector_of_vec2_in){
+            shape.as_polygon(unbox_vector_of_vec2(vector_of_vec2_in));
+        })
+        .method("as_rectangular_frame!", [](Shape& shape, jl_value_t* top_left, jl_value_t* outer_size, float x_width, float y_width){
+            shape.as_rectangular_frame(unbox_vector2f(top_left), unbox_vector2f(outer_size), x_width, y_width);
+        })
+        .method("as_circular_ring!", [](Shape& shape, jl_value_t* center, float outer_radius, float thickness, size_t n_outer_vertices){
+            shape.as_circular_ring(unbox_vector2f(center), outer_radius, thickness, n_outer_vertices);
+        })
+        .method("as_elliptical_ring!", [](Shape& shape, jl_value_t* center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices){
+            shape.as_elliptical_ring(unbox_vector2f(center), x_radius, y_radius, x_thickness, y_thickness, n_outer_vertices);
+        })
+        .method("as_wireframe!", [](Shape& shape, jl_value_t* vector_of_vec2_in){
+            shape.as_wireframe(unbox_vector_of_vec2(vector_of_vec2_in));
+        })
+        .method("as_outline!", [](Shape& shape, Shape& other){
+            shape.as_outline(other);
+        })
+        .method("render", [](Shape& shape, const Shader& shader, GLTransform& transform){
+            shape.render(shader, transform);
+        })
+        .method("get_vertex_color", [](Shape& shape, size_t index) -> jl_value_t* {
+            return box_rgba(shape.get_vertex_color(index));
+        })
+        .method("set_vertex_color!", [](Shape& shape, size_t index, jl_value_t* rgba){
+            shape.set_vertex_color(index, unbox_rgba(rgba));
+        })
+        .method("get_vertex_texture_coordinate", [](Shape& shape, size_t index) -> jl_value_t* {
+            return box_vector2f(shape.get_vertex_texture_coordinate(index));
+        })
+        .method("set_vertex_texture_coordinate!", [](Shape& shape, size_t index, jl_value_t* vec2){
+            shape.set_vertex_texture_coordinate(index, unbox_vector2f(vec2));
+        })
+        .method("get_vertex_position", [](Shape& shape, size_t index) -> jl_value_t* {
+            return box_vector2f(shape.get_vertex_position(index));
+        })
+        .method("set_vertex_position!", [](Shape& shape, size_t index, jl_value_t* vec){
+            shape.set_vertex_position(index, unbox_vector3f(vec));
+        })
+        .add_type_method(Shape, get_n_vertices)
+        .method("set_color!", [](Shape& shape, jl_value_t* rgba){
+            shape.set_color(unbox_rgba(rgba));
+        })
+        .add_type_method(Shape, set_is_visible, !)
+        .add_type_method(Shape, get_is_visible)
+        .method("get_bounding_box", [](Shape& shape) -> jl_value_t* {
+            static auto* rectangle_ctor = jl_eval_string("mousetrap.Rectangle");
+            auto bounds = shape.get_bounding_box();
+            return jl_calln(rectangle_ctor, box_vector2f(bounds.top_left), box_vector2f(bounds.size));
+        })
+        .method("get_size", [](Shape& shape) -> jl_value_t* {
+            return box_vector2f(shape.get_size());
+        })
+        .method("set_centroid!", [](Shape& shape, jl_value_t* vec){
+            shape.set_centroid(unbox_vector2f(vec));
+        })
+        .method("get_centroid", [](Shape& shape) -> jl_value_t* {
+            return box_vector2f(shape.get_size());
+        })
+        .method("set_top_left!", [](Shape& shape, jl_value_t* pos){
+            shape.set_top_left(unbox_vector2f(pos));
+        })
+        .method("get_top_left", [](Shape& shape) -> jl_value_t* {
+            return box_vector2f(shape.get_top_left());
+        })
+        .method("rotate!", [](Shape& shape, float angle_rad, float origin_x, float origin_y){
+            shape.rotate(radians(angle_rad), Vector2f(origin_x, origin_y));
+        })
+        .method("set_texture!", [](Shape& shape, void* texture){
+            shape.set_texture((TextureObject*) texture);
+        })
+    ;
+}
 
 // ### SHORTCUT EVENT CONTROLLER
 
@@ -2302,7 +2672,6 @@ static void implement_stack(jlcxx::Module& module)
         .method("add_child!", [](Stack& stack, void* widget, const std::string& title) -> std::string {
             return stack.add_child(*((Widget*) widget), title);
         })
-        // TODO: get_child
         .method("remove_child!", [](Stack& stack, const std::string& id) {
             stack.remove_child(id);
         })
@@ -2488,11 +2857,69 @@ static void implement_time(jlcxx::Module& module)
     ;
 }
 
-// ### TODO
+// ### TEXTURE
 
-static void implement_texture(jlcxx::Module& module) {}
+static void implement_texture(jlcxx::Module& module)
+{
+    define_enum_in(module, TextureWrapMode);
+    module.add_enum_value(TextureWrapMode, TEXTURE_WRAP_MODE, ZERO);
+    module.add_enum_value(TextureWrapMode, TEXTURE_WRAP_MODE, ONE);
+    module.add_enum_value(TextureWrapMode, TEXTURE_WRAP_MODE, REPEAT);
+    module.add_enum_value(TextureWrapMode, TEXTURE_WRAP_MODE, MIRROR);
+    module.add_enum_value(TextureWrapMode, TEXTURE_WRAP_MODE, STRETCH);
 
-// ### TODO
+    define_enum_in(module, TextureScaleMode);
+    module.add_enum_value(TextureScaleMode, TEXTURE_SCALE_MODE, NEAREST);
+    module.add_enum_value(TextureScaleMode, TEXTURE_SCALE_MODE, LINEAR);
+
+    auto texture = module.add_type(Texture)
+        .add_constructor()
+    ;
+
+    auto render_texture = module.add_type(RenderTexture)
+        .add_constructor()
+        .add_type_method(RenderTexture, bind_as_render_target)
+        .add_type_method(RenderTexture, unbind_as_render_target)
+    ;
+
+    module.method("texture_download", [](void* texture) -> Image {
+        return ((Texture*) texture)->download();
+    });
+    module.method("texture_bind", [](void* texture) -> void {
+        ((Texture*) texture)->bind();
+    });
+    module.method("texture_unbind", [](void* texture) -> void {
+        ((Texture*) texture)->unbind();
+    });
+    module.method("texture_create_from_image!", [](void* texture, size_t width, size_t height) {
+        ((Texture*) texture)->create(width, height);
+    });
+    module.method("texture_create_from_file!", [](void* texture, const std::string& path) {
+        ((Texture*) texture)->create_from_file(path);
+    });
+    module.method("texture_set_wrap_mode!", [](void* texture, TextureWrapMode mode){
+        ((Texture*) texture)->set_wrap_mode(mode);
+    });
+    module.method("texture_set_scale_mode!", [](void* texture, TextureScaleMode mode){
+        ((Texture*) texture)->set_scale_mode(mode);
+    });
+    module.method("texture_get_wrap_mode", [](void* texture){
+        return ((Texture*) texture)->get_wrap_mode();
+    });
+    module.method("texture_get_scale_mode", [](void* texture){
+        return ((Texture*) texture)->get_scale_mode();
+    });
+    module.method("texture_get_size", [](void* texture) -> jl_value_t* {
+        return box_vector2i(((Texture*) texture)->get_size());
+    });
+    module.method("texture_get_native_handle", [](void* texture) -> GLNativeHandle{
+        return ((Texture*) texture)->get_native_handle();
+    });
+
+    // TODO: MSAA RENDER TEXTURE
+}
+
+// ### TOGGLE BUTTON
 
 static void implement_toggle_button(jlcxx::Module& module)
 {
@@ -2730,11 +3157,11 @@ static void implement_widget(jlcxx::Module& module)
     module.method("get_can_respond_to_input", [](void* widget) -> bool {
         return ((Widget*) widget)->get_can_respond_to_input();
     });
-    module.method("get_frame_clock", [](void* widget) -> FrameClock {
-        return ((Widget*) widget)->get_frame_clock();
+    module.method("get_frame_clock", [](void* widget) -> void* {
+        return ((Widget*) widget)->get_frame_clock().get_internal();
     });
-    // module.method("get_clipboard", [](void* widget) -> Clipboard {
-    // TODO    return ((Widget*) widget)->get_clipboard();
+    // module.method("get_clipboard", [](void* widget) -> void* {
+    // TODO    return ((Widget*) widget)->get_clipboard().get_internal();
     // })
     module.method("set_hide_on_overflow!", [](void* widget, bool x){
         ((Widget*) widget)->set_hide_on_overflow(x);
@@ -2880,8 +3307,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_fixed(module);
     implement_frame(module);
     implement_frame_clock(module);
-    implement_gl_common(module);
-    implement_gl_transform(module);
+
     implement_header_bar(module);
     implement_key_file(module);
 
@@ -2892,36 +3318,33 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_level_bar(module);
     implement_log(module);
 
-    implement_msaa_render_texture(module);
-    implement_music(module);
     implement_notebook(module);
     implement_overlay(module);
     implement_paned(module);
 
-    implement_render_area(module);
-    implement_render_task(module);
-    implement_render_texture(module);
     implement_revealer(module);
-
     implement_scale(module);
-    implement_texture_scale_mode(module);
-
     implement_scrollbar(module);
     implement_separator(module);
-    implement_shader(module);
-    implement_shape(module);
-
-    implement_sound(module);
-    implement_sound_buffer(module);
     implement_spin_button(module);
     implement_spinner(module);
-    implement_stack(module);
-
     implement_switch(module);
-    implement_texture(module);
     implement_toggle_button(module);
+    implement_sound(module);
+    implement_sound_buffer(module);
+    implement_music(module);
+
+    implement_stack(module);
     implement_viewport(module);
+
     implement_widget(module);
+
+    implement_gl_transform(module);
+    implement_texture(module);
+    implement_shader(module);
+    implement_shape(module);
+    implement_render_task(module);
+    implement_render_area(module);
 }
 
 void export_key_codes(jlcxx::Module& module)

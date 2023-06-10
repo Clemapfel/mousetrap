@@ -53,6 +53,11 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
+    GLNativeHandle RenderTexture::get_native_handle() const
+    {
+        return _internal->framebuffer_handle;
+    }
+
     RenderTexture::RenderTexture(RenderTexture&& other)
     {
         _internal->framebuffer_handle = other._internal->framebuffer_handle;

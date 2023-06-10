@@ -91,6 +91,12 @@ namespace mousetrap
             /// @return vector, in GL coordinates ([-1, 1], [-1, 1]) with origin at (0, 0)
             Vector2f to_gl_coordinates(Vector2f widget_space_coordinate);
 
+            /// @brief flush the current state of the bound frame buffer, exactly equivalent to `glFlush()`. Call  RenderArea::queue_render` in order for the screen to update
+            static void flush();
+
+            /// @brief clear the currently bound framebuffer, equivalent to `glClearColor(0, 0, 0, 0); glClear(GL_COLOR_BUFFER_BIT);`
+            static void clear();
+
         private:
             static void on_realize(GtkWidget* area, detail::RenderAreaInternal*);
             static void on_resize(GtkGLArea* area, gint width, gint height, detail::RenderAreaInternal*);

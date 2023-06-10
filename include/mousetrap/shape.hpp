@@ -29,7 +29,7 @@ namespace mousetrap
         /// @param color
         Vertex(float x, float y, RGBA color)
             : position(x, y, 0), color(color), texture_coordinates(0, 0)
-            {}
+        {}
 
         /// @brief position in 3d space, gl coordinates
         Vector3f position;
@@ -130,6 +130,10 @@ namespace mousetrap
             /// @param other
             /// @returns reference to self after assignment
             Shape& operator=(Shape&&) noexcept;
+
+            /// @brief access OpenGL vertex buffer id
+            /// @returns id
+            GLNativeHandle get_native_handle() const;
 
             /// @brief construct as 2d point that point is always rendered as exactly 1 fragment
             /// @param position position gl coordinates

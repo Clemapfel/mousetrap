@@ -39,6 +39,9 @@ namespace mousetrap
             /// @brief expose internal
             NativeObject get_internal() const override;
 
+            /// @brief get framebuffer id
+            GLNativeHandle get_native_handle() const;
+
             /// @brief copy ctor deleted
             RenderTexture(const RenderTexture&) = delete;
 

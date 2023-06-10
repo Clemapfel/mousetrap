@@ -149,6 +149,17 @@ namespace mousetrap
         _internal->tasks->clear();
     }
 
+    void RenderArea::flush()
+    {
+        glFlush();
+    }
+
+    void RenderArea::clear()
+    {
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
     GdkGLContext* RenderArea::on_create_context(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal*)
     {
         assert(detail::GL_INITIALIZED == true);
@@ -171,8 +182,7 @@ namespace mousetrap
     {
         gtk_gl_area_make_current(area);
 
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
+        RenderArea::clear();
 
         glEnable(GL_BLEND);
         set_current_blend_mode(BlendMode::NORMAL);
@@ -183,7 +193,7 @@ namespace mousetrap
             task.render();
         }
 
-        glFlush();
+        RenderArea::flush();
         return TRUE;
     }
 
