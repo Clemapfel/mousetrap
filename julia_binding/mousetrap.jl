@@ -3744,7 +3744,7 @@ module mousetrap
     @export_function Clipboard contains_image Bool
 
     set_image!(clipboard::Clipboard, image::Image) = detail.set_image!(clipboard._internal, image._internal)
-    export
+    export set_image!
 
     function get_image(f, clipboard::Clipboard, data::Data_t) where Data_t
         typed_f = TypedFunction(f, Cvoid, (Clipboard, Image, Data_t))
