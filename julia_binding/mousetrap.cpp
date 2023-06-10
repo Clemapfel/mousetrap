@@ -2661,11 +2661,22 @@ static void implement_spin_button(jlcxx::Module& module)
     add_signal_wrapped<SpinButton>(spin, "SpinButton");
 }
 
-// ### TODO
+// ### SPINNER
 
-static void implement_spinner(jlcxx::Module& module) {}
+static void implement_spinner(jlcxx::Module& module)
+{
+    auto spinner = module.add_type(Spinner)
+        .add_constructor()
+        .add_type_method(Spinner, set_is_spinning, !)
+        .add_type_method(Spinner, get_is_spinning)
+        .add_type_method(Spinner, start, !)
+        .add_type_method(Spinner, stop, !)
+    ;
 
-// ### TODO
+    add_widget_signals<Spinner>(spinner, "Spinner");
+}
+
+// ### STACK
 
 static void implement_stack(jlcxx::Module& module)
 {
@@ -2946,7 +2957,7 @@ static void implement_texture(jlcxx::Module& module)
         return ((Texture*) texture)->get_native_handle();
     });
 
-    // TODO: MSAA RENDER TEXTURE
+    // MSAA RENDER TEXTURE
 }
 
 // ### TOGGLE BUTTON
@@ -3262,10 +3273,6 @@ static void implement_window(jlcxx::Module& module)
     add_signal_activate_focused_widget<Window>(window, "Window");
 }
 
-// ### TODO
-
-static void implement_wrap_mode(jlcxx::Module& module) {}
-
 // ### MAIN
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& module)
@@ -3375,11 +3382,13 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& module)
     implement_shape(module);
     implement_render_task(module);
     implement_render_area(module);
+
+    export_key_codes(module);
 }
 
 void export_key_codes(jlcxx::Module& module)
 {
-    #ifdef UNDEF
+    #ifndef UNDEF
     module.set_const("KEY_VoidSymbol", (guint) mousetrap::KEY_VoidSymbol);
     module.set_const("KEY_BackSpace", (guint) mousetrap::KEY_BackSpace);
     module.set_const("KEY_Tab", (guint) mousetrap::KEY_Tab);

@@ -121,7 +121,6 @@ module mousetrap
     set_log_file(path::String) = detail.log_set_file(path)
     export set_log_file
 
-
 ####### common.jl
 
     function safe_call(scope::String, f, args...)
@@ -3430,6 +3429,16 @@ module mousetrap
     @export_function ProgressBar set_orientation! Cvoid Orientation orientation
     @export_function ProgressBar get_orientation Orientation
 
+###### spinner.jl
+
+    @export_type Spinner Widget
+    Spinner() = Spinner(detail._Spinner())
+
+    @export_function Spinner set_is_spinning! Cvoid Bool b
+    @export_function Spinner get_is_spinning Bool
+    @export_function Spinner start! Cvoid
+    @export_function Spinner stop! Cvoid
+
 ###### revealer.jl
 
     @export_enum RevealerTransitionType begin
@@ -4228,10 +4237,9 @@ module mousetrap
     @add_signal_resize RenderArea
     @add_signal_render RenderArea
 
-
 ###### key_code.jl
 
-    # TODO
+    include("./key_codes.jl")
     
 end # module mousetrap
 
@@ -4241,5 +4249,12 @@ mt = mousetrap
 mt.main() do app::mt.Application
 
     window = mt.Window(app)
+    
+    spin_button = mt.SpinButton(0.0, 1.0, 0.01)
+    mt.connect_signal_value_changed!(spin_button) do x::mt.SpinButton
+        println(mt.get_value(x))
+    end
+
+    mt.set_child!(window, spin_button)
     mt.present!(window)
 end
