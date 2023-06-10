@@ -5,5 +5,5 @@
     // it has no impact on actual compilation using a traditional compiler
 
     #define SIGNAL_CLASS_NAME(signal_name) has_signal_##signal_name
-    #define HAS_SIGNAL(T, name) public SIGNAL_CLASS_NAME(name)<T>
+    //#define HAS_SIGNAL(T, name) public SIGNAL_CLASS_NAME(name)<T>
 #endif

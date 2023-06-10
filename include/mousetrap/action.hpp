@@ -86,10 +86,10 @@ namespace mousetrap
             /// @brief move assignment deleted, actions should not be moved
             Action& operator=(Action&&) noexcept = delete;
 
-            /// @copydoc SignalEmitter::get_native
+            /// @brief expose as GObject
             operator NativeObject() const override;
 
-            /// @copydoc SignalEmitter::get_internal
+            /// @brief get internal
             NativeObject get_internal() const override;
 
             /// @brief create action as stateless, given function is executed when action is triggered
