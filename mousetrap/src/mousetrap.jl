@@ -3,9 +3,20 @@ __mousetrap_compile_time_start = time()
 
 module mousetrap
 
-####### typed_function.jl
+####### detail.jl
 
-    const detail = Main.detail # TODO
+    @info "Importing `libmousetrap.so`..."
+    __cxxwrap_compile_time_start = time()
+
+    module detail
+        using CxxWrap
+        function __init__() @initcxx end
+        @wrapmodule("libjulia_binding.so")
+    end
+
+    @info "Done (" * string(round(time() - __cxxwrap_compile_time_start; digits=2)) * "s)"
+
+####### typed_function.jl
 
     """
     # TypedFunction
@@ -280,7 +291,7 @@ module mousetrap
     function show_aux(io::IO, x::T, fields::Symbol...) where T
 
         out = ""
-        
+
         tostring(x) = string(x)
         tostring(x::String) = "\"" * x * "\""
 
@@ -519,7 +530,7 @@ module mousetrap
     import Base.<
     <(a::Time, b::Time) = a._ns < b._ns
 
-    import Base.<= 
+    import Base.<=
     <=(a::Time, b::Time) = a._ns <= b._ns
 
     import Base.>
@@ -970,9 +981,9 @@ module mousetrap
     macro add_signal_click_stopped(x) return :(@add_signal $x click_stopped Cvoid) end
     macro add_signal_focus_gained(x) return :(@add_signal $x focus_gained Cvoid) end
     macro add_signal_focus_lost(x) return :(@add_signal $x focus_lost Cvoid) end
-    macro add_signal_key_pressed(x) return :(@add_signal $x key_pressed Bool Cint key_value Cint key_code ModifierState modifier) end    
-    macro add_signal_key_released(x) return :(@add_signal $x key_released Bool Cint key_value Cint key_code ModifierState modifier) end      
-    macro add_signal_modifiers_changed(x) return :(@add_signal $x modifiers_changed Bool Cint key_value Cint key_code ModifierState modifier) end        
+    macro add_signal_key_pressed(x) return :(@add_signal $x key_pressed Bool Cint key_value Cint key_code ModifierState modifier) end
+    macro add_signal_key_released(x) return :(@add_signal $x key_released Bool Cint key_value Cint key_code ModifierState modifier) end
+    macro add_signal_modifiers_changed(x) return :(@add_signal $x modifiers_changed Bool Cint key_value Cint key_code ModifierState modifier) end
     macro add_signal_pressed(x) return :(@add_signal $x pressed Cvoid Cdouble x Cdouble y) end
     macro add_signal_press_cancelled(x) return :(@add_signal $x press_cancelled Cvoid) end
     macro add_signal_motion_enter(x) return :(@add_signal $x motion_enter Cvoid Cdouble x Cdouble y) end
@@ -1373,7 +1384,7 @@ module mousetrap
         app = Application(application_id)
         typed_f = TypedFunction(f, Any, (Application,))
         connect_signal_activate!(app) do app::Application
-            try 
+            try
                 typed_f(app)
             catch(exception)
                 printstyled(stderr, "[ERROR] "; bold = true, color = :red)
@@ -1383,7 +1394,12 @@ module mousetrap
                 quit!(app)
             end
         end
-        return run!(app)
+
+        try
+            return run!(app)
+        finally
+            quit!(app)
+        end
     end
     # sic, no export
 
@@ -1790,7 +1806,7 @@ module mousetrap
     @export_function Viewport get_has_frame Bool
     @export_function Viewport set_kinetic_scrolling_enabled! Cvoid Bool b
     @export_function Viewport get_kinetic_scrolling_enabled Bool
-    
+
     get_horizontal_adjustment(viewport::Viewport) ::Adjustment = Adjustment(detail.get_horizontal_adjustment(viewport._internal))
     export get_horizontal_adjustment
 
@@ -2155,7 +2171,7 @@ module mousetrap
     @export_function FileDescriptor get_name String
     @export_function FileDescriptor get_path String
     @export_function FileDescriptor get_uri String
-    
+
     get_path_relative_to(self::FileDescriptor, other::FileDescriptor) = detail.get_path_relative_to(self._internal, other._internal)
     export get_path_relative_to
 
@@ -2163,16 +2179,16 @@ module mousetrap
     export get_parent
 
     @export_function FileDescriptor get_file_extension String
-    @export_function FileDescriptor exists Bool 
+    @export_function FileDescriptor exists Bool
     @export_function FileDescriptor is_folder Bool
     @export_function FileDescriptor is_symlink Bool
-    
+
     read_symlink(self::FileDescriptor) = FileDescriptor(detail.read_symlink(self._internal))
     export read_symlink
 
     @export_function FileDescriptor get_content_type String
     @export_function FileDescriptor query_info String
-    
+
     create_monitor(descriptor::FileDescriptor) ::FileMonitor = FileMonitor(detail._FileMonitor(detail.create_monitor(descriptor._internal)))
     export create_monitor
 
@@ -2209,7 +2225,7 @@ module mousetrap
 
     @export_type FileFilter SignalEmitter
     FileFilter(name::String) = FileFilter(detail._FileFilter(name))
-    
+
     get_name(filter::FileFilter) ::String = detail.get_name(filter._internal)
     export get_name
 
@@ -2728,7 +2744,7 @@ module mousetrap
     get_current_button(gesture::SingleClickGesture) ::ButtonID = return detail.get_current_button(gesture._internal.cpp_object)
     export get_current_button
 
-    set_only_listens_to_button!(gesture::SingleClickGesture, button::ButtonID) = detail.set_only_listens_to_button!(gesture._internal.cpp_object) 
+    set_only_listens_to_button!(gesture::SingleClickGesture, button::ButtonID) = detail.set_only_listens_to_button!(gesture._internal.cpp_object)
     export set_only_listens_to_button
 
     get_only_listens_to_button(gesture::SingleClickGesture) = return detail.get_only_listens_to_button(gesture._internal.cpp_object)
@@ -2850,7 +2866,7 @@ module mousetrap
     get_angle_delta(controller::RotateEventController) ::Angle = return radians(detail.get_angle_delta(controller._internal))
 
     @add_signal_rotation_changed RotateEventController
-    
+
 ###### scroll_event_controller.jl
 
     @export_type ScrollEventController EventController
@@ -2964,7 +2980,7 @@ module mousetrap
     @export_type SelectionModel SignalEmitter
     SelectionModel(internal::Ptr{Cvoid}) = SelectionModel(detail._SelectionModel(internal))
 
-    function get_selection(model::SelectionModel) ::Vector{Int64} 
+    function get_selection(model::SelectionModel) ::Vector{Int64}
         selection = detail.get_selection(model._internal)
         return Int64[to_julia_index(x) for x in selection]
     end
@@ -2984,7 +3000,7 @@ module mousetrap
 ###### list_view.jl
 
     @export_type ListView Widget
-    ListView(orientation::Orientation, selection_mode::SelectionMode = SELECTION_MODE_NONE) = ListView(detail._ListView(orientation, selection_mode))    
+    ListView(orientation::Orientation, selection_mode::SelectionMode = SELECTION_MODE_NONE) = ListView(detail._ListView(orientation, selection_mode))
 
     struct ListViewIterator
         _internal::Ptr{Cvoid}
@@ -3054,7 +3070,7 @@ module mousetrap
     @export_function GridView get_n_items Int64
     @export_function GridView set_enable_rubberband_selection Cvoid Bool b
     @export_function GridView get_enabled_rubberband_selection Bool
-   
+
     set_max_n_columns!(grid_view::GridView, n::Integer) = detail.set_max_n_columns!(grid_view._internal, UInt64(n))
     export set_max_n_columns!
 
@@ -3089,7 +3105,7 @@ module mousetrap
     remove!(grid::Grid, widget::Widget) = detail.remove!(grid._internal, widget._internal.cpp_object)
     export remove!
 
-    function get_position(grid::Grid, widget::Widget) ::Vector2i 
+    function get_position(grid::Grid, widget::Widget) ::Vector2i
         native_pos::Vector2i = detail.get_position(grid._internal, widget._internal.cpp_object)
         return Vector2i(native_pos.x + 1, native_pos.y + 1)
     end
@@ -3160,7 +3176,7 @@ module mousetrap
 
     get_selection_model(stack::Stack) ::SelectionModel = SelectionModel(detail.get_selection_model(stack._internal))
     export get_selection_model
-    
+
     const StackID = String
     export StackID
 
@@ -3220,7 +3236,7 @@ module mousetrap
     @export_function Notebook next_page! Cvoid
     @export_function Notebook previous_page! Cvoid
     @export_function Notebook goto_page! Cvoid Int64 position
-    
+
     @export_function Notebook get_current_page Int64
     @export_function Notebook get_n_pages Int64
     @export_function Notebook set_is_scrollable! Cvoid Bool b
@@ -3251,7 +3267,7 @@ module mousetrap
     @export_function ColumnViewColumn get_title String
     @export_function ColumnViewColumn set_fixed_width Cvoid AbstractFloat width
     @export_function ColumnViewColumn get_fixed_width Cfloat
-    
+
     set_header_menu!(column::ColumnViewColumn, model::MenuModel) = detail.set_header_menu!(column._internal, model._internal)
     export set_header_menu!
 
@@ -3265,7 +3281,7 @@ module mousetrap
 
     push_back_column!(column_view::ColumnView, title::String) = detail.push_back_column!(column_view._internal, title)
     export push_back_column!
-    
+
     push_front_column!(column_view::ColumnView, title::String) = detail.push_front_column!(column_view._internal, title)
     export push_front_column!
 
@@ -3275,12 +3291,12 @@ module mousetrap
     remove_column!(column_view::ColumnView, column::ColumnViewColumn) = detail.remove_column!(column_view._internal, column._internal)
     export remove_column!
 
-    function get_column_at(column_view::ColumnView, index::Integer) ::ColumnViewColumn 
+    function get_column_at(column_view::ColumnView, index::Integer) ::ColumnViewColumn
         return ColumnViewColumn(detail.get_column_at(column_view._internal, from_julia_index(index)))
     end
     export get_column_at
 
-    function get_column_with_title(column_view::ColumnView, title::String) ::ColumnViewColumn 
+    function get_column_with_title(column_view::ColumnView, title::String) ::ColumnViewColumn
         return ColumnViewColumn(detail.get_column_with_title(column_view._internal, title))
     end
     export get_column_with_title
@@ -3294,7 +3310,7 @@ module mousetrap
     export set_widget!
 
     function push_back_row!(column_view::ColumnView, widgets::Widget...)
-        
+
         if length(widgets) > get_n_columns(column_view)
             @warning MOUSETRAP_DOMAIN "In ColumnView::push_back_rows: Attempting to push $(length(widgets)) widgets, but ColumnView only has $(get_n_columns(column_view)) columns"
         end
@@ -3308,7 +3324,7 @@ module mousetrap
     export push_back_row!
 
     function push_front_row!(column_view::ColumnView, widgets::Widget...)
-        
+
         if length(widgets) > get_n_columns(column_view)
             @warning MOUSETRAP_DOMAIN "In ColumnView::push_back_rows: Attempting to push $(length(widgets)) widgets, but ColumnView only has $(get_n_columns(column_view)) columns"
         end
@@ -3322,7 +3338,7 @@ module mousetrap
     export push_front_row!
 
     function insert_row!(column_view::ColumnView, index::Integer, widgets::Widget...)
-        
+
         if length(widgets) > get_n_columns(column_view)
             @warning MOUSETRAP_DOMAIN "In ColumnView::push_back_rows: Attempting to push $(length(widgets)) widgets, but ColumnView only has $(get_n_columns(column_view)) columns"
         end
@@ -3365,7 +3381,7 @@ module mousetrap
 
     push_front!(header_bar::HeaderBar, widget::Widget) = detail.push_front!(header_bar._internal, widget._internal.cpp_object)
     export push_front!
-    
+
     push_back!(header_bar::HeaderBar, widget::Widget) = detail.push_back!(header_bar._internal, widget._internal.cpp_object)
     export push_back!
 
@@ -3387,7 +3403,7 @@ module mousetrap
     @export_function Paned set_orientation Cvoid Orientation orientation
     @export_function Paned get_orientation Orientation
 
-    @export_function Paned set_start_child_resizable! Cvoid Bool b 
+    @export_function Paned set_start_child_resizable! Cvoid Bool b
     @export_function Paned get_start_child_resizable Bool
     @export_function Paned set_start_child_shrinkable Cvoid Bool b
     @export_function Paned get_start_child_shrinkable Bool
@@ -3397,7 +3413,7 @@ module mousetrap
 
     @export_function Paned remove_start_child Cvoid
 
-    @export_function Paned set_end_child_resizable! Cvoid Bool b 
+    @export_function Paned set_end_child_resizable! Cvoid Bool b
     @export_function Paned get_end_child_resizable Bool
     @export_function Paned set_end_child_shrinkable Cvoid Bool b
     @export_function Paned get_end_child_shrinkable Bool
@@ -3415,7 +3431,7 @@ module mousetrap
     @export_enum ProgressBarDisplayMode begin
         PROGRESS_BAR_DISPLAY_MODE_SHOW_TEXT
         PROGRESS_BAR_DISPLAY_MODE_SHOW_PERCENTAGE
-    end 
+    end
 
     @export_function ProgressBar pulse Cvoid
     @export_function ProgressBar set_fraction! Cvoid AbstractFloat zero_to_one
@@ -3465,7 +3481,7 @@ module mousetrap
     @export_function Revealer get_revealed Bool
     @export_function Revealer set_transition_type! Cvoid RevealerTransitionType type
     @export_function Revealer get_transition_type RevealerTransitionType
-    
+
     set_transition_duration!(revealer::Revealer, duration::Time) = detail.set_transition_duration!(revealer._internal, as_microseconds(duration))
     export set_transition_duration!
 
@@ -3483,7 +3499,7 @@ module mousetrap
     end
 
     get_adjustment(scale::Scale) ::Adjustment = return Adjustment(detail.get_adjustment(scale._internal))
-    export get_adjustment 
+    export get_adjustment
 
     @export_function Scale get_lower Cfloat
     @export_function Scale get_upper Cfloat
@@ -3506,7 +3522,7 @@ module mousetrap
     end
 
     get_adjustment(spin_button::SpinButton) ::Adjustment = return Adjustment(detail.get_adjustment(spin_button._internal))
-    export get_adjustment 
+    export get_adjustment
 
     @export_function SpinButton get_lower Cfloat
     @export_function SpinButton get_upper Cfloat
@@ -3571,7 +3587,7 @@ module mousetrap
     Scrollbar() = Scrollbar(detail._ScrollBar)
 
     get_adjustment(scrollbar::Scrollbar) ::Adjustment = return Adjustment(detail.get_adjustment(scrollbar._internal))
-    export get_adjustment 
+    export get_adjustment
 
     @export_function Scrollbar set_orientation! Cvoid Orientation orientation
     @export_function Scrollbar get_orientation Orientation
@@ -3661,11 +3677,11 @@ module mousetrap
     @export_widget_function set_tooltip_text Cvoid String text
     set_tooltip_widget!(widget::Widget, tooltip::Widget) = detail.set_tooltip_widget!(widget._internal.cpp_object, tooltip._internal.cpp_object)
     export set_tooltip_widget
-    
+
     @export_widget_function remove_tooltip_widget! Cvoid
-    
+
     @export_widget_function set_cursor! Cvoid CursorType cursor
-    
+
     function set_cursor_from_image!(widget::Widget, image::Image, offset::Vector2i)
         detail.set_cursor_from_image(widget._internal.cpp_object, image._internal, offset.x, offset.y)
     end
@@ -3700,7 +3716,7 @@ module mousetrap
     @export_widget_function get_allocated_size Vector2f
 
     @export_widget_function unparent! Cvoid
-    
+
     @export_widget_function set_hide_on_overflow! Cvoid Bool b
     @export_widget_function get_hide_on_overflow Bool
 
@@ -3800,20 +3816,20 @@ module mousetrap
     GLTransform() = GLTransform(detail._GLTransform())
 
     import Base.setindex!
-    function Base.setindex!(transform::GLTransform, x::Integer, y::Integer, value::AbstractFloat) 
+    function Base.setindex!(transform::GLTransform, x::Integer, y::Integer, value::AbstractFloat)
         if x == 0 || x > 4 || y == 0 || y > 4
             throw(BoundsError(transform, (x, y)))
         end
-               
+
         detail.setindex!(transform._internal, from_julia_index(x), from_julia_index(y), value)
     end
 
     import Base.getindex
-    function Base.getindex(transform::GLTransform, x::Integer, y::Integer) ::Cfloat 
+    function Base.getindex(transform::GLTransform, x::Integer, y::Integer) ::Cfloat
         if x == 0 || x > 4 || y == 0 || y > 4
             throw(BoundsError(transform, (x, y)))
         end
-               
+
         return detail.setindex(transform._internal, from_julia_index(x), from_julia_index(y))
     end
 
@@ -3824,7 +3840,7 @@ module mousetrap
     combine_with(self::GLTransform, other::GLTransform) = GLTransform(detail.combin_with(self._internal, other._internal))
     export combine_with
 
-    function rotate!(transform::GLTransform, angle::Angle, origin::Vector2f = Vector2f(0, 0)) 
+    function rotate!(transform::GLTransform, angle::Angle, origin::Vector2f = Vector2f(0, 0))
         detail.rotate!(transform._internal, as_radians(angle), origin.x, origin.y)
     end
     export rotate!
@@ -3866,7 +3882,7 @@ module mousetrap
     export create_from_file!
 
     @export_function Shader get_uniform_location Cint String name
-    
+
     @export_function Shader set_uniform_float! Cint String name Cfloat float
     @export_function Shader set_uniform_int! Cint String name Cint float
     @export_function Shader set_uniform_uint! Cint String name Cuint float
@@ -3908,7 +3924,7 @@ module mousetrap
         TEXTURE_SCALE_MODE_NEAREST
         TEXTURE_SCALE_MODE_LINEAR
     end
-    
+
     @export_type Texture TextureObject
     Texture() = Texture(detail._Texture())
 
@@ -3960,19 +3976,19 @@ module mousetrap
 
     function Point(position::Vector2f) ::Shape
         out = Shape()
-        as_point!(shape, position) 
+        as_point!(shape, position)
         return out
     end
     export Point
 
-    function as_points!(shape::Shape, positions::Vector{Vector2f}) 
+    function as_points!(shape::Shape, positions::Vector{Vector2f})
         return detail.as_point!(shape._internal, positions)
     end
     export as_points!
 
     function Points(positions::Vector{Vector2f}) ::Shape
         out = Shape()
-        as_points!(shape, position) 
+        as_points!(shape, position)
         return out
     end
     export Point
@@ -4117,7 +4133,7 @@ module mousetrap
 
     @export_function Shape get_vertex_color RGBA Integer index
     @export_function Shape set_vertex_color! Cvoid Integer index RGBA color
-    
+
     @export_function Shape get_vertex_texture_coordinate Vector2f Integer index
     @export_function Shape set_vertex_texture_coordinate Cvoid Integer index Vector2f coordinate
 
@@ -4136,7 +4152,7 @@ module mousetrap
     @export_function Shape get_centroid Vector2f
     @export_function Shape set_top_left! Cvoid Vector2f top_left
     @export_function Shape get_top_left Vector2f
-    
+
     function rotate!(shape::Shape, angle::Angle, origin::Vector2f = Vector2f(0, 0))
         detail.rotate!(shape._internal, as_radians(angle), origin.x, origin.y)
     end
@@ -4148,21 +4164,21 @@ module mousetrap
 ###### render_task.jl
 
     @export_type RenderTask SignalEmitter
-    
-    function RenderTask(shape::Shape; 
-        shader::Union{Shader, Nothing} = nothing, 
-        transform::Union{GLTransform, Nothing} = nothing, 
+
+    function RenderTask(shape::Shape;
+        shader::Union{Shader, Nothing} = nothing,
+        transform::Union{GLTransform, Nothing} = nothing,
         blend_mode::BlendMode = BLEND_MODE_NORMAL
     )
         shader_ptr = isnothing(shader) ? Ptr{Cvoid}(0) : shader._internal.cpp_object
         transform_ptr = isnothing(transform) ? Ptr{Cvoid}(0) : transform._internal.cpp_object
-    
+
         return RenderTask(detail._RenderTask(shape._internal, shader_ptr, transform_ptr, blend_mode))
     end
     export RenderTask
 
     @export_function RenderTask render Cvoid
-    
+
     @export_function RenderTask set_uniform_float! Cvoid String name Cfloat v
     @export_function RenderTask get_uniform_float Cfloat String name
 
@@ -4207,7 +4223,7 @@ module mousetrap
 
     get_uniform_transform(task::RenderTask, name::String) ::GLTransform = GLTransform(detail.get_uniform_transform(task._internal, name))
     export get_uniform_transform
-    
+
 ###### render_area.jl
 
     @export_type RenderArea Widget
@@ -4222,13 +4238,13 @@ module mousetrap
     @export_function RenderArea clear Cvoid
     @export_function RenderArea render_render_tasks Cvoid
     @export_function RenderArea flush Cvoid
-    
-    function from_gl_coordinates(area::RenderArea, gl_coordinates::Vector2f) ::Vector2f 
+
+    function from_gl_coordinates(area::RenderArea, gl_coordinates::Vector2f) ::Vector2f
         return detail.from_gl_coordinates(area._internal, gl_coordinates)
     end
     export from_gl_coordinates
 
-    function to_gl_coordiantes(area::RenderArea, absolute_widget_space_coordinates::Vector2f) ::Vector2f 
+    function to_gl_coordiantes(area::RenderArea, absolute_widget_space_coordinates::Vector2f) ::Vector2f
         return detail.to_gl_coordinates(area._internal, absolute_widget_space_coordinates)
     end
     export to_gl_coordinates
@@ -4240,7 +4256,7 @@ module mousetrap
 ###### key_code.jl
 
     include("./key_codes.jl")
-    
+
 end # module mousetrap
 
 @info "Done (" * string(round(time() - __mousetrap_compile_time_start; digits=2)) * "s)"
@@ -4249,7 +4265,7 @@ mt = mousetrap
 mt.main() do app::mt.Application
 
     window = mt.Window(app)
-    
+
     spin_button = mt.SpinButton(0.0, 1.0, 0.01)
     mt.connect_signal_value_changed!(spin_button) do x::mt.SpinButton
         println(mt.get_value(x))
