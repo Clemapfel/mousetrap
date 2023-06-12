@@ -51,13 +51,13 @@ namespace mousetrap
             void set_end_child(const Widget&);
 
             /// @brief remove start widget
-            void remove_start_widget();
+            void remove_start_child();
 
             /// @brief remove center widget
-            void remove_center_widget();
+            void remove_center_child();
 
             /// @brief remove end widget
-            void remove_end_widget();
+            void remove_end_child();
 
             /// @copydoc Box::get_orientation
             Orientation get_orientation() const;

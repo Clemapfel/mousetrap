@@ -41,7 +41,7 @@ namespace mousetrap
         gtk_center_box_set_start_widget(GTK_CENTER_BOX(operator NativeWidget()), widget.operator NativeWidget());
     }
 
-    void CenterBox::remove_start_widget()
+    void CenterBox::remove_start_child()
     {
         gtk_center_box_set_start_widget(GTK_CENTER_BOX(operator NativeWidget()), nullptr);
     }
@@ -54,7 +54,7 @@ namespace mousetrap
         gtk_center_box_set_end_widget(GTK_CENTER_BOX(operator NativeWidget()), widget.operator NativeWidget());
     }
 
-    void CenterBox::remove_end_widget()
+    void CenterBox::remove_end_child()
     {
         gtk_center_box_set_end_widget(GTK_CENTER_BOX(operator NativeWidget()), nullptr);
     }
@@ -67,7 +67,7 @@ namespace mousetrap
         gtk_center_box_set_center_widget(GTK_CENTER_BOX(operator NativeWidget()), widget.operator NativeWidget());
     }
 
-    void CenterBox::remove_center_widget()
+    void CenterBox::remove_center_child()
     {
         gtk_center_box_set_center_widget(GTK_CENTER_BOX(operator NativeWidget()), nullptr);
     }

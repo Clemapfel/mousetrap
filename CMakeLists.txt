@@ -18,12 +18,6 @@ cmake_minimum_required(VERSION 3.12)
 #       Additional Dependencies when using this option:
 #           Doxygen
 #
-#   MOUSETRAP_BUILD_JULIA_BINDING: boolean
-#       Whether to generate the Julia Binding
-#       Additional Dependencies when using this option:
-#           Julia
-#           JLcxx
-#
 
 ### PROJECT ###
 
@@ -343,37 +337,4 @@ endif()
 ### INSTALL ###
 
 include(cmake/install-rules.cmake)
-
-### JULIA BINDING ###
-
-option(MOUSETRAP_BUILD_JULIA_BINDING OFF)
-if (MOUSETRAP_BUILD_JULIA_BINDING)
-
-    find_package(JlCxx REQUIRED)
-    find_package(mousetrap REQUIRED)
-
-    add_library("${PROJECT_PREFIX}julia_binding" SHARED
-        julia_binding/mousetrap.cpp
-    )
-
-    target_link_libraries("${PROJECT_PREFIX}julia_binding" PUBLIC
-        ${MOUSETRAP_LIBRARIES}
-        JlCxx::cxxwrap_julia
-    )
-
-    target_include_directories("${PROJECT_PREFIX}julia_binding" PUBLIC
-        "${MOUSETRAP_INCLUDE_DIRECTORIES}"
-        "${Julia_INCLUDE_DIRS}"
-    )
-
-    target_compile_features("${PROJECT_PREFIX}julia_binding" PUBLIC
-        cxx_std_17
-    )
-
-    set(JULIA_BINDING_DIRECTORY "${CMAKE_SOURCE_DIR}/julia_binding")
-
-    set_target_properties("${PROJECT_PREFIX}julia_binding" PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${JULIA_BINDING_DIRECTORY}"
-    )
-endif()
 

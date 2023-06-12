@@ -24,6 +24,8 @@ Installing these dependencies is OS-specific, the following section will provide
 
 ### Debian / Ubuntu
 
+Execute, in any public directory:
+
 ```shell
 sudo apt-get install aptitude   
 sudo aptitude install cmake \  # install CMake
@@ -48,9 +50,15 @@ Where `OpenGL` is usually installed automatically on Fedora.
 
 ### MacOS
 
-\todo This section is not yet complete.
+Install [homebrew](https://brew.sh/), then, in any public directory:
 
-Consider using [Homebrew](https://brew.sh/) to install the listed dependencies
+```shell
+sudo dnf install cmake \  # install CMake
+  gtk4 \                  # install GTK4
+  glm  \                  # install GLM
+  glew \                  # install GLEW
+  sfml                    # install SFML
+```
 
 ### Windows
 
@@ -87,7 +95,7 @@ cd ../..
 rm -r mousetrap
 ```
 
-Where `sudo` is necessary to install to the default library and include directory. If we want to install mousetrap to a different location, we can add `-DCMAKE_INSTALL_PREFIX=/path/to/custom/location` at the end of `cmake ..`. This is usually not recommended.
+Where `sudo` is necessary to install to the default library / include directory.
 
 ### Windows
 
