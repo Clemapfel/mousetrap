@@ -31,12 +31,36 @@ struct Notifier
     }
 };
 
+class _Window : public Widget
+{
+    private:
+        detail::WindowInternal* _internal;
+
+    public:
+        _Window(Application& app)
+            : Widget(gtk_window_new())
+        {
+            _internal = GTK_WINDOW(Widget::operator NativeWidget());
+            gtk_window_set_application(_internal, app.operator GtkApplication *());
+        }
+
+        NativeObject get_internal() const override
+        {
+            return G_OBJECT(_internal);
+        }
+
+        void present()
+        {
+            gtk_window_present(_internal);
+        }
+};
+
 int main()
 {
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
     {
-        auto window = Window(app);
+        auto window = _Window(app);
 
         auto* notifier = new Notifier();
         detail::attach_pointer_to(G_OBJECT(window.get_internal()), notifier);
