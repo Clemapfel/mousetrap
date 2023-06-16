@@ -52,7 +52,7 @@ namespace mousetrap
           CTOR_SIGNAL(Widget, map),
           CTOR_SIGNAL(Widget, unmap)
     {
-        detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
+        detail::attach_ref_to(G_OBJECT(_internal), _internal->native);
         g_object_ref(_internal);
     }
 

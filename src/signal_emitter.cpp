@@ -17,6 +17,8 @@ namespace mousetrap
         {
             auto* self = MOUSETRAP_SIGNAL_EMITTER_INTERNAL(object);   
             delete self->signal_handlers;
+
+            std::cout << "finalized " << object << std::endl;
             G_OBJECT_CLASS(signal_emitter_internal_parent_class)->finalize(object);
         }
         
@@ -43,13 +45,14 @@ namespace mousetrap
         if (_internal == nullptr)
         {
             _internal = detail::signal_emitter_internal_new();
-            detail::attach_ref_to(operator NativeObject(), _internal);
+            //detail::attach_ref_to(operator NativeObject(), _internal);
+            g_object_ref(_internal);
         }
     }
 
     SignalEmitter::~SignalEmitter()
     {
-        if (G_IS_OBJECT(_internal))
+        if (_internal != nullptr)
             g_object_unref(_internal);
     }
     
@@ -60,7 +63,7 @@ namespace mousetrap
         auto it = _internal->signal_handlers->find(signal_id);
         if (it == _internal->signal_handlers->end())
         {
-            log::critical("In Widget::set_signal_blocked: no signal with id \"" + signal_id + "\" connected.", MOUSETRAP_DOMAIN);
+            log::critical("In SignalEmitter::set_signal_blocked: no signal with id \"" + signal_id + "\" connected.", MOUSETRAP_DOMAIN);
             return;
         }
 

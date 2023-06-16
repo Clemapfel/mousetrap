@@ -31,40 +31,53 @@ struct Notifier
     }
 };
 
-class _Window : public Widget
+class _Button : public Widget,
+    HAS_SIGNAL(_Button, clicked)
 {
     private:
-        detail::WindowInternal* _internal;
+        detail::ButtonInternal* _internal;
 
     public:
-        _Window(Application& app)
-            : Widget(gtk_window_new())
+        _Button()
+            : Widget(gtk_button_new()),
+              CTOR_SIGNAL(_Button, clicked)
         {
-            _internal = GTK_WINDOW(Widget::operator NativeWidget());
-            gtk_window_set_application(_internal, app.operator GtkApplication *());
+            _internal = GTK_BUTTON(Widget::operator NativeWidget());
         }
 
-        NativeObject get_internal() const override
+        _Button(GtkButton* internal)
+            : Widget(GTK_WIDGET(internal)),
+              CTOR_SIGNAL(_Button, clicked),
+            _internal(internal)
+        {}
+
+        NativeObject get_internal() const
         {
             return G_OBJECT(_internal);
         }
-
-        void present()
-        {
-            gtk_window_present(_internal);
-        }
 };
+
+namespace mousetrap::detail
+{
+    using _ButtonInternal = GtkButton;
+    DEFINE_INTERNAL_MAPPING(_Button);
+}
 
 int main()
 {
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
     {
-        auto window = _Window(app);
+        auto window = Window(app);
 
-        auto* notifier = new Notifier();
-        detail::attach_pointer_to(G_OBJECT(window.get_internal()), notifier);
+        auto dropdown = DropDown();
+        dropdown.push_back(Label("!"), Label("!"), [](DropDown& dd){
+            std::cout << "selected !" << std::endl;
+        });
 
+        detail::attach_pointer_to(G_OBJECT(dropdown.get_internal()), new Notifier());
+
+        window.set_child(dropdown);
         window.present();
     });
 

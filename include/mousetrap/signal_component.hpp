@@ -69,7 +69,7 @@ namespace mousetrap
                     if (internal_maybe == nullptr)                                  \
                     {\
                         _internal = detail::has_signal_##snake_case##_internal_new(_instance->get_internal()); \
-                        detail::attach_ref_to(_internal->instance, _internal);          \
+                        /*detail::attach_ref_to(_internal->instance, _internal);    */      \
                         detail::set_data<detail::SIGNAL_INTERNAL_CLASS_NAME(CamelCase)>(_instance->get_internal(), g_signal_id, _internal);                                                           \
                     }                                                               \
                     else                                                            \
@@ -193,7 +193,7 @@ namespace mousetrap
             template <typename Function_t, typename Data_t> \
             void connect_signal_##snake_case(Function_t f, Data_t data) \
             { \
-                initialize(); \
+                initialize();                                                                                            \
                 _internal->function = [f, data](void* instance, arg_list) -> return_t \
                 { \
                     return f(*((T*) instance), arg_name_only_list, data); \
