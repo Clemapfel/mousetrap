@@ -9,12 +9,12 @@
 namespace mousetrap
 {
     Time::Time(int64_t n_nanoseconds)
-    : _ns(std::chrono::nanoseconds(n_nanoseconds))
+        : _ns(std::chrono::nanoseconds(n_nanoseconds))
     {}
 
     Time minutes(double n)
     {
-        return Time(int64_t(ceil(n * 1e+9) * 60));
+        return Time(int64_t(n * 6e+01));
     }
 
     Time seconds(double n)
@@ -115,14 +115,13 @@ namespace mousetrap
     }
 
     Clock::Clock()
-    : _start(std::chrono::steady_clock::now())
+        : _start(std::chrono::steady_clock::now())
     {}
 
     Time Clock::elapsed()
     {
         auto now = std::chrono::steady_clock::now();
-
-        std::chrono::duration<int64_t, std::nano> elapsed = now - _start;
+        std::chrono::nanoseconds elapsed = now - _start;
         return Time(elapsed.count());
     }
 

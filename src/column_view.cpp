@@ -253,7 +253,7 @@ namespace mousetrap
     {
         if (column._native == nullptr)
         {
-            log::critical("In ColumnView::set_widget: Column does not exist, no insetion will take place", MOUSETRAP_DOMAIN);
+            log::critical("In ColumnView::set_widget: Column does not exist, no insertion will take place", MOUSETRAP_DOMAIN);
             return;
         }
 

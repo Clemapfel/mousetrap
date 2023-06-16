@@ -113,7 +113,7 @@ namespace mousetrap
         _internal->size = image.get_size();
     }
 
-    void ImageDisplay::create_from_file(const std::string& path)
+    bool ImageDisplay::create_from_file(const std::string& path)
     {
         gtk_image_clear(GTK_IMAGE(operator NativeWidget()));
 
@@ -124,6 +124,7 @@ namespace mousetrap
         {
             log::critical("In ImageDisplay::create_from_file: Unable to open file at \"" + path + "\": " + std::string(error->message), MOUSETRAP_DOMAIN);
             g_error_free(error);
+            return false;
         }
 
         gtk_image_set_from_pixbuf(GTK_IMAGE(operator NativeWidget()), pixbuf);
@@ -132,6 +133,7 @@ namespace mousetrap
         _internal->size.y = gdk_pixbuf_get_height(pixbuf);
 
         g_object_unref(pixbuf);
+        return true;
     }
 
     void ImageDisplay::create_from_icon(const Icon& icon)

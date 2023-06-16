@@ -60,7 +60,8 @@ namespace mousetrap
 
             /// @brief load from image on disk
             /// @param path
-            void create_from_file(const std::string& path);
+            /// @return true if succesfull, false otherwise
+            bool create_from_file(const std::string& path);
 
             /// @brief load from image
             /// @param image

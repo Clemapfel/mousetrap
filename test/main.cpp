@@ -18,56 +18,33 @@
 
 using namespace mousetrap;
 
-class Child : public CompoundWidget
+struct Notifier
 {
-    public:
-        Child(size_t id)
-            : _label(std::to_string(id))
-        {
-            _overlay.set_child(_separator);
-            _overlay.add_overlay(_label);
+    Notifier()
+    {
+        std::cout << "initialized " << this << std::endl;
+    }
 
-            _frame.set_child(_overlay);
-            _aspect_frame.set_child(_frame);
-        }
-
-    protected:
-        Widget& as_widget() override
-        {
-            return _aspect_frame;
-        }
-
-    private:
-        Separator _separator;
-        Label _label;
-        Frame _frame;
-        Overlay _overlay;
-        AspectFrame _aspect_frame = AspectFrame(1);
+    ~Notifier()
+    {
+        std::cout << "destroyed " << this << std::endl;
+    }
 };
 
 int main()
 {
     auto app = Application("test.app");
-    auto app2 = std::move(app);
-    app2.connect_signal_activate([](Application& app)
+    app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
 
-        auto notebook = Notebook();
-        notebook.push_back(Label("Child 01"), Label("Label 01"));
-        notebook.push_back(Label("Child 02"), Label("Label 02"));
-        notebook.push_back(Label("Child 02"), Label("Label 02"));
+        auto* notifier = new Notifier();
+        detail::attach_pointer_to(G_OBJECT(window.get_internal()), notifier);
 
-        notebook.connect_signal_page_selection_changed([](Notebook& notebook, void*, uint32_t index){
-            std::cout << "Index: " << index << std::endl;
-        });
-
-        window.set_child(notebook);
         window.present();
     });
 
-    // start main loop
-    return app2.run();
+    return app.run();
 }
 
 #if false
