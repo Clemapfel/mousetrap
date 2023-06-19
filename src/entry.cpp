@@ -57,12 +57,12 @@ namespace mousetrap
         return gtk_entry_get_has_frame(GTK_ENTRY(operator NativeWidget()));
     }
 
-    void Entry::set_max_length(size_t n)
+    void Entry::set_max_width_char(int32_t n)
     {
         gtk_entry_set_max_length(GTK_ENTRY(operator NativeWidget()), n);
     }
 
-    int Entry::get_max_length() const
+    int32_t Entry::get_max_width_char() const
     {
         return gtk_entry_get_max_length(GTK_ENTRY(operator NativeWidget()));
     }

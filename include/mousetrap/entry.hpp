@@ -56,11 +56,11 @@ namespace mousetrap
 
             /// @brief set maximum number of characters for the text display or -1 for unlimited
             /// @param n
-            void set_max_length(size_t);
+            void set_max_width_char(int32_t);
 
             /// @brief get maximum number of characters for the text display, or -1 if unlimited
             /// @return size_t
-            int get_max_length() const;
+            int32_t get_max_width_char() const;
 
             /// @brief should the text entry have a dark outline
             /// @param b

@@ -103,12 +103,12 @@ namespace mousetrap
         return (JustifyMode) gtk_label_get_justify(GTK_LABEL(operator NativeWidget()));
     }
 
-    void Label::set_max_width_chars(size_t n_chars)
+    void Label::set_max_width_chars(int32_t n_chars)
     {
         gtk_label_set_max_width_chars(GTK_LABEL(operator NativeWidget()), n_chars);
     }
 
-    size_t Label::get_max_width_chars() const
+    int32_t Label::get_max_width_chars() const
     {
         return gtk_label_get_max_width_chars(GTK_LABEL(operator NativeWidget()));
     }

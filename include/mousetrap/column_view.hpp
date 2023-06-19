@@ -65,7 +65,7 @@ namespace mousetrap
                     /// @return width
                     float get_fixed_width() const;
 
-                    /// @brief set the menumodel to use for the header menu, this menu is accessible by clicked the columns header bar
+                    /// @brief set the menu model to use for the header menu, this menu is accessible by clicking the columns header bar
                     /// @param menu_model
                     void set_header_menu(const MenuModel& menu_model);
 

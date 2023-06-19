@@ -114,13 +114,13 @@ namespace mousetrap
             /// @return mode
             JustifyMode get_justify_mode() const;
 
-            /// @brief set maximum allowed number of characters in one line
+            /// @brief set maximum allowed number of characters in one line, or -1 if unlimited
             /// @param n_chars
-            void set_max_width_chars(size_t n_chars);
+            void set_max_width_chars(int32_t n_chars);
 
             /// @brief get maximum allowed number of characters in one line
             /// @return size_t
-            size_t get_max_width_chars() const;
+            int32_t get_max_width_chars() const;
 
             /// @brief set horizontal offset of text
             /// @param offset
