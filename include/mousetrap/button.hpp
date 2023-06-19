@@ -8,6 +8,7 @@
 #include <mousetrap/widget.hpp>
 #include <mousetrap/signal_component.hpp>
 #include <mousetrap/action.hpp>
+#include <mousetrap/icon.hpp>
 
 #ifdef DOXYGEN
     #include "../../docs/doxygen.inl"
@@ -69,6 +70,10 @@ namespace mousetrap
 
             /// @brief remove child
             void remove_child();
+
+            /// @brief set child to an icon
+            /// @param icon
+            void set_icon(const Icon&);
 
             /// @brief set action triggered when the button is activated, if the action is disabled the button is also disabled automatically
             void set_action(const Action&);

@@ -70,14 +70,16 @@ int main()
     {
         auto window = Window(app);
 
-        auto dropdown = DropDown();
-        dropdown.push_back(Label("!"), Label("!"), [](DropDown& dd){
-            std::cout << "selected !" << std::endl;
-        });
+        auto stack = Stack();
+        stack.add_child(Label("01"), "01");
+        stack.add_child(Label("02"), "02");
 
-        detail::attach_pointer_to(G_OBJECT(dropdown.get_internal()), new Notifier());
+        auto switcher = StackSwitcher(stack);
+        auto box = Box(Orientation::VERTICAL);
+        box.push_back(stack);
+        box.push_back(switcher);
 
-        window.set_child(dropdown);
+        window.set_child(box);
         window.present();
     });
 

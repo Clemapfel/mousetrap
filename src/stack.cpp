@@ -63,7 +63,7 @@ namespace mousetrap
     // ###
 
     StackSwitcher::StackSwitcher(const Stack& stack)
-    : Widget(gtk_stack_sidebar_new())
+        : Widget(gtk_stack_switcher_new())
     {
         _internal = GTK_STACK_SWITCHER(Widget::operator NativeObject());
         g_object_ref(_internal);

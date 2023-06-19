@@ -195,12 +195,12 @@ namespace mousetrap
         }
     }
 
-    void DropDown::set_show_arrow(bool b)
+    void DropDown::set_always_show_arrow(bool b)
     {
         gtk_drop_down_set_show_arrow(_internal->native, b);
     }
 
-    bool DropDown::get_show_arrow() const
+    bool DropDown::get_always_show_arrow() const
     {
         return gtk_drop_down_get_show_arrow(_internal->native);
     }

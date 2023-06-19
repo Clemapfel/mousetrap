@@ -1036,8 +1036,8 @@ namespace mousetrap
 
     /// @see https://docs.gtk.org/gtk4/signal.EventControllerKey.key-pressed.html
     DECLARE_SIGNAL_MANUAL(ModifiersChanged, modifiers_changed, MODIFIERS_CHANGED, "modifiers", bool,
-        SPLAT(KeyValue keyval, KeyCode keycode, ModifierState modifier),
-        SPLAT(keyval, keycode, modifier)
+        SPLAT(ModifierState modifier),
+        SPLAT(modifier)
     );
     /// @class has_signal_modifiers_changed
     /// @brief \signal_modifiers_changed_brief

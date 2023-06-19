@@ -122,11 +122,11 @@ namespace mousetrap
 
             /// @brief set whether a downward arrow should be shown next to the currently active label widget
             /// @param b
-            void set_show_arrow(bool b);
+            void set_always_show_arrow(bool b);
 
             /// @brief get whether a downward arrow is shown next to the currently active label widget
             /// @return bool
-            bool get_show_arrow() const;
+            bool get_always_show_arrow() const;
 
             /// @brief set currently selected item
             /// @param id

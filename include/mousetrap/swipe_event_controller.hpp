@@ -27,7 +27,7 @@ namespace mousetrap
         public:
             /// @brief construct
             /// @param orientation
-            SwipeEventController(Orientation);
+            SwipeEventController();
 
             /// @brief construct from internal
             SwipeEventController(detail::SwipeEventControllerInternal*);
