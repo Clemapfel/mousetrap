@@ -21,7 +21,14 @@ namespace mousetrap
     /// @brief a widget that allows to display multiple widgets above a common child
     /// \signals
     /// \widget_signals{Overlay}
-    class Overlay : public Widget
+    class Overlay : public Widget,
+        HAS_SIGNAL(Overlay, realize),
+        HAS_SIGNAL(Overlay, unrealize),
+        HAS_SIGNAL(Overlay, destroy),
+        HAS_SIGNAL(Overlay, hide),
+        HAS_SIGNAL(Overlay, show),
+        HAS_SIGNAL(Overlay, map),
+        HAS_SIGNAL(Overlay, unmap)
     {
         public:
             /// @brief construct empty

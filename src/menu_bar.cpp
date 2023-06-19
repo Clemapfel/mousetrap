@@ -35,7 +35,14 @@ namespace mousetrap
     }
     
     MenuBar::MenuBar(const MenuModel& model)
-        : Widget(gtk_popover_menu_bar_new_from_model(model.operator GMenuModel*()))
+        : Widget(gtk_popover_menu_bar_new_from_model(model.operator GMenuModel*())),
+          CTOR_SIGNAL(MenuBar, realize),
+          CTOR_SIGNAL(MenuBar, unrealize),
+          CTOR_SIGNAL(MenuBar, destroy),
+          CTOR_SIGNAL(MenuBar, hide),
+          CTOR_SIGNAL(MenuBar, show),
+          CTOR_SIGNAL(MenuBar, map),
+          CTOR_SIGNAL(MenuBar, unmap)
     {
         _internal = detail::menu_bar_internal_new(GTK_POPOVER_MENU_BAR(Widget::operator NativeWidget()), (detail::MenuModelInternal*) model.get_internal());
         g_object_ref(_internal);
@@ -43,7 +50,14 @@ namespace mousetrap
     }
     
     MenuBar::MenuBar(detail::MenuBarInternal* internal)
-        : Widget(GTK_WIDGET(internal->native))
+        : Widget(GTK_WIDGET(internal->native)),
+          CTOR_SIGNAL(MenuBar, realize),
+          CTOR_SIGNAL(MenuBar, unrealize),
+          CTOR_SIGNAL(MenuBar, destroy),
+          CTOR_SIGNAL(MenuBar, hide),
+          CTOR_SIGNAL(MenuBar, show),
+          CTOR_SIGNAL(MenuBar, map),
+          CTOR_SIGNAL(MenuBar, unmap)
     {
         _internal = g_object_ref(internal);
     }

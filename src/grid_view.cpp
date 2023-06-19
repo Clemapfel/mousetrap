@@ -128,7 +128,14 @@ namespace mousetrap
 {
     GridView::GridView(Orientation orientation, SelectionMode mode)
         : Widget(gtk_grid_view_new(nullptr, nullptr)),
-          CTOR_SIGNAL(GridView, activate)
+          CTOR_SIGNAL(GridView, activate),
+          CTOR_SIGNAL(GridView, realize),
+          CTOR_SIGNAL(GridView, unrealize),
+          CTOR_SIGNAL(GridView, destroy),
+          CTOR_SIGNAL(GridView, hide),
+          CTOR_SIGNAL(GridView, show),
+          CTOR_SIGNAL(GridView, map),
+          CTOR_SIGNAL(GridView, unmap)
     {
         _internal =  detail::grid_view_internal_new(GTK_GRID_VIEW(operator NativeWidget()), orientation, mode);
         detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
@@ -137,7 +144,14 @@ namespace mousetrap
     
     GridView::GridView(detail::GridViewInternal* internal) 
         : Widget(GTK_WIDGET(internal->native)),
-          CTOR_SIGNAL(GridView, activate)
+          CTOR_SIGNAL(GridView, activate),
+          CTOR_SIGNAL(GridView, realize),
+          CTOR_SIGNAL(GridView, unrealize),
+          CTOR_SIGNAL(GridView, destroy),
+          CTOR_SIGNAL(GridView, hide),
+          CTOR_SIGNAL(GridView, show),
+          CTOR_SIGNAL(GridView, map),
+          CTOR_SIGNAL(GridView, unmap)
     {
         _internal = g_object_ref(_internal);
     }

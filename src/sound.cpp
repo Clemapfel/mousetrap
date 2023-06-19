@@ -2,6 +2,8 @@
 // Created by clem on 3/16/23.
 //
 
+#ifdef UNDEF
+
 #include <mousetrap/sound.hpp>
 #include <mousetrap/log.hpp>
 
@@ -156,3 +158,5 @@ namespace mousetrap
         return Vector3f(vec.x, vec.y, vec.z);
     }
 }
+
+#endif

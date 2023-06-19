@@ -30,7 +30,14 @@ namespace mousetrap
     /// \signal_activate{GridView}
     /// \widget_signals{GridView}
     class GridView : public Widget,
-        HAS_SIGNAL(GridView, activate)
+        HAS_SIGNAL(GridView, activate),
+        HAS_SIGNAL(GridView, realize),
+        HAS_SIGNAL(GridView, unrealize),
+        HAS_SIGNAL(GridView, destroy),
+        HAS_SIGNAL(GridView, hide),
+        HAS_SIGNAL(GridView, show),
+        HAS_SIGNAL(GridView, map),
+        HAS_SIGNAL(GridView, unmap)
     {
         public:
             /// @brief construct

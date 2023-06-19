@@ -7,14 +7,28 @@
 namespace mousetrap
 {
     ProgressBar::ProgressBar()
-        : Widget(gtk_progress_bar_new())
+        : Widget(gtk_progress_bar_new()),
+          CTOR_SIGNAL(ProgressBar, realize),
+          CTOR_SIGNAL(ProgressBar, unrealize),
+          CTOR_SIGNAL(ProgressBar, destroy),
+          CTOR_SIGNAL(ProgressBar, hide),
+          CTOR_SIGNAL(ProgressBar, show),
+          CTOR_SIGNAL(ProgressBar, map),
+          CTOR_SIGNAL(ProgressBar, unmap)
     {
         _internal = GTK_PROGRESS_BAR(operator NativeWidget());
         g_object_ref(_internal);
     }
     
     ProgressBar::ProgressBar(detail::ProgressBarInternal* internal) 
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(ProgressBar, realize),
+          CTOR_SIGNAL(ProgressBar, unrealize),
+          CTOR_SIGNAL(ProgressBar, destroy),
+          CTOR_SIGNAL(ProgressBar, hide),
+          CTOR_SIGNAL(ProgressBar, show),
+          CTOR_SIGNAL(ProgressBar, map),
+          CTOR_SIGNAL(ProgressBar, unmap)
     {
         _internal = g_object_ref(internal);
     }

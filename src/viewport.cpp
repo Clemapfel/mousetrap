@@ -10,14 +10,28 @@ namespace mousetrap
 {
     Viewport::Viewport()
         : Widget(gtk_scrolled_window_new()),
-          CTOR_SIGNAL(Viewport, scroll_child)
+          CTOR_SIGNAL(Viewport, scroll_child),
+          CTOR_SIGNAL(Viewport, realize),
+          CTOR_SIGNAL(Viewport, unrealize),
+          CTOR_SIGNAL(Viewport, destroy),
+          CTOR_SIGNAL(Viewport, hide),
+          CTOR_SIGNAL(Viewport, show),
+          CTOR_SIGNAL(Viewport, map),
+          CTOR_SIGNAL(Viewport, unmap)
     {
-        _internal = g_object_ref_sink(GTK_SCROLLED_WINDOW(Widget::operator NativeWidget()));
+        _internal = g_object_ref_sink(GTK_SCROLLED_WINDOW(Viewport::operator NativeWidget()));
     }
     
     Viewport::Viewport(detail::ViewportInternal* internal)
         : Widget(GTK_WIDGET(internal)), 
-          CTOR_SIGNAL(Viewport, scroll_child)
+          CTOR_SIGNAL(Viewport, scroll_child),
+          CTOR_SIGNAL(Viewport, realize),
+          CTOR_SIGNAL(Viewport, unrealize),
+          CTOR_SIGNAL(Viewport, destroy),
+          CTOR_SIGNAL(Viewport, hide),
+          CTOR_SIGNAL(Viewport, show),
+          CTOR_SIGNAL(Viewport, map),
+          CTOR_SIGNAL(Viewport, unmap)
     {
         _internal = g_object_ref(internal);
     }

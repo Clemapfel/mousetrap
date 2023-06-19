@@ -9,14 +9,28 @@
 namespace mousetrap
 {
     Frame::Frame()
-        : Widget(gtk_frame_new(""))
+        : Widget(gtk_frame_new("")),
+          CTOR_SIGNAL(Frame, realize),
+          CTOR_SIGNAL(Frame, unrealize),
+          CTOR_SIGNAL(Frame, destroy),
+          CTOR_SIGNAL(Frame, hide),
+          CTOR_SIGNAL(Frame, show),
+          CTOR_SIGNAL(Frame, map),
+          CTOR_SIGNAL(Frame, unmap)
     {
         _internal = g_object_ref_sink(GTK_FRAME(Widget::operator NativeWidget()));
         remove_label_widget();
     }
     
     Frame::Frame(detail::FrameInternal* internal) 
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Frame, realize),
+          CTOR_SIGNAL(Frame, unrealize),
+          CTOR_SIGNAL(Frame, destroy),
+          CTOR_SIGNAL(Frame, hide),
+          CTOR_SIGNAL(Frame, show),
+          CTOR_SIGNAL(Frame, map),
+          CTOR_SIGNAL(Frame, unmap)
     {
         _internal = g_object_ref(internal);
     }

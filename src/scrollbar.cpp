@@ -8,13 +8,27 @@
 namespace mousetrap
 {
     Scrollbar::Scrollbar(Orientation orientation)
-        : Widget(gtk_scrollbar_new((GtkOrientation) orientation, nullptr))
+        : Widget(gtk_scrollbar_new((GtkOrientation) orientation, nullptr)),
+          CTOR_SIGNAL(Scrollbar, realize),
+          CTOR_SIGNAL(Scrollbar, unrealize),
+          CTOR_SIGNAL(Scrollbar, destroy),
+          CTOR_SIGNAL(Scrollbar, hide),
+          CTOR_SIGNAL(Scrollbar, show),
+          CTOR_SIGNAL(Scrollbar, map),
+          CTOR_SIGNAL(Scrollbar, unmap)
     {
         _internal = g_object_ref_sink(GTK_SCROLLBAR(Widget::operator NativeWidget()));
     }
 
     Scrollbar::Scrollbar(detail::ScrollbarInternal* internal)
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Scrollbar, realize),
+          CTOR_SIGNAL(Scrollbar, unrealize),
+          CTOR_SIGNAL(Scrollbar, destroy),
+          CTOR_SIGNAL(Scrollbar, hide),
+          CTOR_SIGNAL(Scrollbar, show),
+          CTOR_SIGNAL(Scrollbar, map),
+          CTOR_SIGNAL(Scrollbar, unmap)
     {
         _internal = g_object_ref(internal);
     }

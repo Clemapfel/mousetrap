@@ -21,7 +21,14 @@ namespace mousetrap
     /// @brief container widget that assures childs size conforms to given aspect ratio
     /// \signals
     /// \widget_signals{AspectFrame}
-    class AspectFrame : public Widget
+    class AspectFrame : public Widget,
+        HAS_SIGNAL(AspectFrame, realize),
+        HAS_SIGNAL(AspectFrame, unrealize),
+        HAS_SIGNAL(AspectFrame, destroy),
+        HAS_SIGNAL(AspectFrame, hide),
+        HAS_SIGNAL(AspectFrame, show),
+        HAS_SIGNAL(AspectFrame, map),
+        HAS_SIGNAL(AspectFrame, unmap)
     {
         public:
             /// @brief construct

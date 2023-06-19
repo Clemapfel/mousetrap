@@ -24,7 +24,14 @@ namespace mousetrap
     /// \signal_closed{Popover}
     /// \widget_signals{Popover}
     class Popover : public Widget,
-        HAS_SIGNAL(Popover, closed)
+        HAS_SIGNAL(Popover, closed),
+        HAS_SIGNAL(Popover, realize),
+        HAS_SIGNAL(Popover, unrealize),
+        HAS_SIGNAL(Popover, destroy),
+        HAS_SIGNAL(Popover, hide),
+        HAS_SIGNAL(Popover, show),
+        HAS_SIGNAL(Popover, map),
+        HAS_SIGNAL(Popover, unmap)
     {
         public:
             /// @brief construct with no child

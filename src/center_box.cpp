@@ -9,7 +9,14 @@
 namespace mousetrap
 {
     CenterBox::CenterBox(Orientation orientation)
-        : Widget(gtk_center_box_new())
+        : Widget(gtk_center_box_new()),
+          CTOR_SIGNAL(CenterBox, realize),
+          CTOR_SIGNAL(CenterBox, unrealize),
+          CTOR_SIGNAL(CenterBox, destroy),
+          CTOR_SIGNAL(CenterBox, hide),
+          CTOR_SIGNAL(CenterBox, show),
+          CTOR_SIGNAL(CenterBox, map),
+          CTOR_SIGNAL(CenterBox, unmap)
     {
         _internal = GTK_CENTER_BOX(operator NativeWidget());
         g_object_ref_sink(_internal);
@@ -18,7 +25,14 @@ namespace mousetrap
     }
     
     CenterBox::CenterBox(detail::CenterBoxInternal* internal) 
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(CenterBox, realize),
+          CTOR_SIGNAL(CenterBox, unrealize),
+          CTOR_SIGNAL(CenterBox, destroy),
+          CTOR_SIGNAL(CenterBox, hide),
+          CTOR_SIGNAL(CenterBox, show),
+          CTOR_SIGNAL(CenterBox, map),
+          CTOR_SIGNAL(CenterBox, unmap)
     {
         _internal = g_object_ref(internal);
     }

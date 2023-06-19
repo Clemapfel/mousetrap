@@ -10,13 +10,27 @@
 namespace mousetrap
 {
     Grid::Grid()
-        : Widget(gtk_grid_new())
+        : Widget(gtk_grid_new()),
+          CTOR_SIGNAL(Grid, realize),
+          CTOR_SIGNAL(Grid, unrealize),
+          CTOR_SIGNAL(Grid, destroy),
+          CTOR_SIGNAL(Grid, hide),
+          CTOR_SIGNAL(Grid, show),
+          CTOR_SIGNAL(Grid, map),
+          CTOR_SIGNAL(Grid, unmap)
     {
         _internal = g_object_ref_sink(GTK_GRID(Widget::operator NativeWidget()));
     }
     
     Grid::Grid(detail::GridInternal* internal)
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Grid, realize),
+          CTOR_SIGNAL(Grid, unrealize),
+          CTOR_SIGNAL(Grid, destroy),
+          CTOR_SIGNAL(Grid, hide),
+          CTOR_SIGNAL(Grid, show),
+          CTOR_SIGNAL(Grid, map),
+          CTOR_SIGNAL(Grid, unmap)
     {
         _internal = g_object_ref(internal);
     }

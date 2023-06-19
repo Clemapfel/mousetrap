@@ -11,7 +11,14 @@ namespace mousetrap
     CheckButton::CheckButton()
         : Widget(gtk_check_button_new()),
           CTOR_SIGNAL(CheckButton, activate),
-          CTOR_SIGNAL(CheckButton, toggled)
+          CTOR_SIGNAL(CheckButton, toggled),
+          CTOR_SIGNAL(CheckButton, realize),
+          CTOR_SIGNAL(CheckButton, unrealize),
+          CTOR_SIGNAL(CheckButton, destroy),
+          CTOR_SIGNAL(CheckButton, hide),
+          CTOR_SIGNAL(CheckButton, show),
+          CTOR_SIGNAL(CheckButton, map),
+          CTOR_SIGNAL(CheckButton, unmap)
     {
         _internal = GTK_CHECK_BUTTON(operator NativeWidget());
         g_object_ref_sink(_internal);
@@ -20,7 +27,14 @@ namespace mousetrap
     CheckButton::CheckButton(detail::CheckButtonInternal* internal)
         : Widget(GTK_WIDGET(internal)),
           CTOR_SIGNAL(CheckButton, activate),
-          CTOR_SIGNAL(CheckButton, toggled)
+          CTOR_SIGNAL(CheckButton, toggled),
+          CTOR_SIGNAL(CheckButton, realize),
+          CTOR_SIGNAL(CheckButton, unrealize),
+          CTOR_SIGNAL(CheckButton, destroy),
+          CTOR_SIGNAL(CheckButton, hide),
+          CTOR_SIGNAL(CheckButton, show),
+          CTOR_SIGNAL(CheckButton, map),
+          CTOR_SIGNAL(CheckButton, unmap)
     {
         _internal = g_object_ref(internal);
     }

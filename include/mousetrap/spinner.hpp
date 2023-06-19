@@ -20,7 +20,14 @@ namespace mousetrap
     /// @brief spinning "loading" icon, signifies a task is being executed continously, see also mousetrap::ProgressBar
     /// \signals
     /// \widget_signals{Spinner}
-    class Spinner : public Widget
+    class Spinner : public Widget,
+        HAS_SIGNAL(Spinner, realize),
+        HAS_SIGNAL(Spinner, unrealize),
+        HAS_SIGNAL(Spinner, destroy),
+        HAS_SIGNAL(Spinner, hide),
+        HAS_SIGNAL(Spinner, show),
+        HAS_SIGNAL(Spinner, map),
+        HAS_SIGNAL(Spinner, unmap)
     {
         public:
             /// @brief construct

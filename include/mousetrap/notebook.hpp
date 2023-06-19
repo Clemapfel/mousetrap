@@ -41,7 +41,14 @@ namespace mousetrap
         HAS_SIGNAL(Notebook, page_added),
         HAS_SIGNAL(Notebook, page_reordered),
         HAS_SIGNAL(Notebook, page_removed),
-        HAS_SIGNAL(Notebook, page_selection_changed)
+        HAS_SIGNAL(Notebook, page_selection_changed),
+        HAS_SIGNAL(Notebook, realize),
+        HAS_SIGNAL(Notebook, unrealize),
+        HAS_SIGNAL(Notebook, destroy),
+        HAS_SIGNAL(Notebook, hide),
+        HAS_SIGNAL(Notebook, show),
+        HAS_SIGNAL(Notebook, map),
+        HAS_SIGNAL(Notebook, unmap)
     {
         public:
             /// @brief construct empty

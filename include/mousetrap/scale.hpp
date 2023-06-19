@@ -39,7 +39,14 @@ namespace mousetrap
     /// \signal_value_changed{Scale}
     /// \widget_signals{Scale}
     class Scale : public Widget,
-        HAS_SIGNAL(Scale, value_changed)
+        HAS_SIGNAL(Scale, value_changed),
+        HAS_SIGNAL(Scale, realize),
+        HAS_SIGNAL(Scale, unrealize),
+        HAS_SIGNAL(Scale, destroy),
+        HAS_SIGNAL(Scale, hide),
+        HAS_SIGNAL(Scale, show),
+        HAS_SIGNAL(Scale, map),
+        HAS_SIGNAL(Scale, unmap)
     {
         public:
             /// @brief construct

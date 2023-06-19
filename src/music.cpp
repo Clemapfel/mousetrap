@@ -2,6 +2,8 @@
 // Created by clem on 3/26/23.
 //
 
+#ifdef UNDEF
+
 #include <mousetrap/music.hpp>
 #include <mousetrap/log.hpp>
 
@@ -151,3 +153,5 @@ namespace mousetrap
         _internal->native->setLoopPoints(sf::Music::TimeSpan(sf::microseconds(start_mys), sf::seconds(end_mys - start_mys)));
     }
 }
+
+#endif

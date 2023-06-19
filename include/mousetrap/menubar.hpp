@@ -26,7 +26,14 @@ namespace mousetrap
     /// @brief display menu as a menubar
     /// \signals
     /// \widget_signals{MenuBar}
-    class MenuBar : public Widget
+    class MenuBar : public Widget,
+        HAS_SIGNAL(MenuBar, realize),
+        HAS_SIGNAL(MenuBar, unrealize),
+        HAS_SIGNAL(MenuBar, destroy),
+        HAS_SIGNAL(MenuBar, hide),
+        HAS_SIGNAL(MenuBar, show),
+        HAS_SIGNAL(MenuBar, map),
+        HAS_SIGNAL(MenuBar, unmap)
     {
         public:
             /// @brief create from menu model

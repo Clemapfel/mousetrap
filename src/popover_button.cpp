@@ -43,7 +43,14 @@ namespace mousetrap
     
     PopoverButton::PopoverButton()
         : Widget(gtk_menu_button_new()),
-          CTOR_SIGNAL(PopoverButton, activate)
+          CTOR_SIGNAL(PopoverButton, activate),
+          CTOR_SIGNAL(PopoverButton, realize),
+          CTOR_SIGNAL(PopoverButton, unrealize),
+          CTOR_SIGNAL(PopoverButton, destroy),
+          CTOR_SIGNAL(PopoverButton, hide),
+          CTOR_SIGNAL(PopoverButton, show),
+          CTOR_SIGNAL(PopoverButton, map),
+          CTOR_SIGNAL(PopoverButton, unmap)
     {
         _internal = detail::popover_button_internal_new(GTK_MENU_BUTTON(Widget::operator NativeWidget()));
         g_object_ref(_internal);
@@ -53,7 +60,14 @@ namespace mousetrap
 
     PopoverButton::PopoverButton(detail::PopoverButtonInternal* internal) 
         : Widget(GTK_WIDGET(internal)),
-          CTOR_SIGNAL(PopoverButton, activate)
+          CTOR_SIGNAL(PopoverButton, activate),
+          CTOR_SIGNAL(PopoverButton, realize),
+          CTOR_SIGNAL(PopoverButton, unrealize),
+          CTOR_SIGNAL(PopoverButton, destroy),
+          CTOR_SIGNAL(PopoverButton, hide),
+          CTOR_SIGNAL(PopoverButton, show),
+          CTOR_SIGNAL(PopoverButton, map),
+          CTOR_SIGNAL(PopoverButton, unmap)
     {
         _internal = g_object_ref(internal);
     }

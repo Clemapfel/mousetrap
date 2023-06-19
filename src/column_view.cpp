@@ -149,7 +149,14 @@ namespace mousetrap
 
     ColumnView::ColumnView(SelectionMode mode)
         : Widget(gtk_column_view_new(nullptr)),
-          CTOR_SIGNAL(ColumnView, activate)
+          CTOR_SIGNAL(ColumnView, activate),
+          CTOR_SIGNAL(ColumnView, realize),
+          CTOR_SIGNAL(ColumnView, unrealize),
+          CTOR_SIGNAL(ColumnView, destroy),
+          CTOR_SIGNAL(ColumnView, hide),
+          CTOR_SIGNAL(ColumnView, show),
+          CTOR_SIGNAL(ColumnView, map),
+          CTOR_SIGNAL(ColumnView, unmap)
     {
         _internal = detail::column_view_internal_new(GTK_COLUMN_VIEW(Widget::operator NativeWidget()), mode);
         detail::attach_ref_to(G_OBJECT(GTK_COLUMN_VIEW(Widget::operator NativeWidget())), _internal->native);
@@ -158,7 +165,14 @@ namespace mousetrap
 
     ColumnView::ColumnView(detail::ColumnViewInternal* internal)
         : Widget(GTK_WIDGET(internal->native)),
-          CTOR_SIGNAL(ColumnView, activate)
+          CTOR_SIGNAL(ColumnView, activate),
+          CTOR_SIGNAL(ColumnView, realize),
+          CTOR_SIGNAL(ColumnView, unrealize),
+          CTOR_SIGNAL(ColumnView, destroy),
+          CTOR_SIGNAL(ColumnView, hide),
+          CTOR_SIGNAL(ColumnView, show),
+          CTOR_SIGNAL(ColumnView, map),
+          CTOR_SIGNAL(ColumnView, unmap)
     {
         _internal = g_object_ref(internal);
     }

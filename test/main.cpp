@@ -70,7 +70,7 @@ int main()
     {
         auto window = Window(app);
         auto button = Button();
-        button.connect_signal_realize([](Button&){
+        button.connect_signal_destroy([](Button&){
             std::cout << "clicked" << std::endl;
         });
 

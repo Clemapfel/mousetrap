@@ -9,17 +9,31 @@ namespace mousetrap
     TextView::TextView()
         : Widget(gtk_text_view_new()),
           CTOR_SIGNAL(TextView, text_changed),
-          CTOR_SIGNAL(TextView, undo),
-          CTOR_SIGNAL(TextView, redo)
+          // CTOR_SIGNAL(TextView, undo),
+          // CTOR_SIGNAL(TextView, redo),
+          CTOR_SIGNAL(TextView, realize),
+          CTOR_SIGNAL(TextView, unrealize),
+          CTOR_SIGNAL(TextView, destroy),
+          CTOR_SIGNAL(TextView, hide),
+          CTOR_SIGNAL(TextView, show),
+          CTOR_SIGNAL(TextView, map),
+          CTOR_SIGNAL(TextView, unmap)
     {
-        _internal = g_object_ref(GTK_TEXT_VIEW(Widget::operator NativeWidget()));
+        _internal = g_object_ref(GTK_TEXT_VIEW(TextView::operator NativeWidget()));
     }
     
     TextView::TextView(detail::TextViewInternal* internal)
         : Widget(GTK_WIDGET(internal)),
           CTOR_SIGNAL(TextView, text_changed),
-          CTOR_SIGNAL(TextView, undo),
-          CTOR_SIGNAL(TextView, redo)
+          // CTOR_SIGNAL(TextView, undo),
+          // CTOR_SIGNAL(TextView, redo),
+          CTOR_SIGNAL(TextView, realize),
+          CTOR_SIGNAL(TextView, unrealize),
+          CTOR_SIGNAL(TextView, destroy),
+          CTOR_SIGNAL(TextView, hide),
+          CTOR_SIGNAL(TextView, show),
+          CTOR_SIGNAL(TextView, map),
+          CTOR_SIGNAL(TextView, unmap)
     {
         _internal = g_object_ref(internal);
     }

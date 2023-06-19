@@ -36,7 +36,14 @@ namespace mousetrap
     SpinButton::SpinButton(float min, float max, float step, Orientation orientation)
         : Widget(gtk_spin_button_new_with_range(min, max, step)),
           CTOR_SIGNAL(SpinButton, value_changed),
-          CTOR_SIGNAL(SpinButton, wrapped)
+          CTOR_SIGNAL(SpinButton, wrapped),
+          CTOR_SIGNAL(SpinButton, realize),
+          CTOR_SIGNAL(SpinButton, unrealize),
+          CTOR_SIGNAL(SpinButton, destroy),
+          CTOR_SIGNAL(SpinButton, hide),
+          CTOR_SIGNAL(SpinButton, show),
+          CTOR_SIGNAL(SpinButton, map),
+          CTOR_SIGNAL(SpinButton, unmap)
     {
         _internal = detail::spin_button_internal_new(GTK_SPIN_BUTTON(Widget::operator NativeWidget()));
         g_object_ref(_internal);
@@ -47,7 +54,14 @@ namespace mousetrap
     SpinButton::SpinButton(detail::SpinButtonInternal* internal)
         : Widget(GTK_WIDGET(internal->native)),
           CTOR_SIGNAL(SpinButton, value_changed),
-          CTOR_SIGNAL(SpinButton, wrapped)
+          CTOR_SIGNAL(SpinButton, wrapped),
+          CTOR_SIGNAL(SpinButton, realize),
+          CTOR_SIGNAL(SpinButton, unrealize),
+          CTOR_SIGNAL(SpinButton, destroy),
+          CTOR_SIGNAL(SpinButton, hide),
+          CTOR_SIGNAL(SpinButton, show),
+          CTOR_SIGNAL(SpinButton, map),
+          CTOR_SIGNAL(SpinButton, unmap)
     {
         _internal = g_object_ref(internal);
     }

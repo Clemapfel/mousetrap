@@ -39,7 +39,14 @@ namespace mousetrap
     
     PopoverMenu::PopoverMenu(const MenuModel& model)
         : Widget(gtk_popover_menu_new_from_model(model.operator GMenuModel*())),
-        CTOR_SIGNAL(PopoverMenu, closed)
+          CTOR_SIGNAL(PopoverMenu, closed),
+          CTOR_SIGNAL(PopoverMenu, realize),
+          CTOR_SIGNAL(PopoverMenu, unrealize),
+          CTOR_SIGNAL(PopoverMenu, destroy),
+          CTOR_SIGNAL(PopoverMenu, hide),
+          CTOR_SIGNAL(PopoverMenu, show),
+          CTOR_SIGNAL(PopoverMenu, map),
+          CTOR_SIGNAL(PopoverMenu, unmap)
     {
         _internal = detail::popover_menu_internal_new(
             GTK_POPOVER_MENU(operator NativeWidget()),
@@ -51,7 +58,14 @@ namespace mousetrap
 
     PopoverMenu::PopoverMenu(detail::PopoverMenuInternal* internal)
         : Widget(GTK_WIDGET(internal->native)),
-          CTOR_SIGNAL(PopoverMenu, closed)
+          CTOR_SIGNAL(PopoverMenu, closed),
+          CTOR_SIGNAL(PopoverMenu, realize),
+          CTOR_SIGNAL(PopoverMenu, unrealize),
+          CTOR_SIGNAL(PopoverMenu, destroy),
+          CTOR_SIGNAL(PopoverMenu, hide),
+          CTOR_SIGNAL(PopoverMenu, show),
+          CTOR_SIGNAL(PopoverMenu, map),
+          CTOR_SIGNAL(PopoverMenu, unmap)
     {
         _internal = g_object_ref(internal);
     }

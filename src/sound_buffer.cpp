@@ -2,6 +2,8 @@
 // Created by clem on 3/16/23.
 //
 
+#ifdef UNDEF
+
 #include <mousetrap/sound_buffer.hpp>
 
 namespace mousetrap
@@ -82,3 +84,5 @@ namespace mousetrap
         return _internal->native->getSamples();
     }
 }
+
+#endif

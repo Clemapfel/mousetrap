@@ -40,7 +40,14 @@ namespace mousetrap
           CTOR_SIGNAL(Notebook, page_added),
           CTOR_SIGNAL(Notebook, page_reordered),
           CTOR_SIGNAL(Notebook, page_removed),
-          CTOR_SIGNAL(Notebook, page_selection_changed)
+          CTOR_SIGNAL(Notebook, page_selection_changed),
+          CTOR_SIGNAL(Notebook, realize),
+          CTOR_SIGNAL(Notebook, unrealize),
+          CTOR_SIGNAL(Notebook, destroy),
+          CTOR_SIGNAL(Notebook, hide),
+          CTOR_SIGNAL(Notebook, show),
+          CTOR_SIGNAL(Notebook, map),
+          CTOR_SIGNAL(Notebook, unmap)
     {
         gtk_notebook_popup_disable(GTK_NOTEBOOK(operator NativeWidget()));
         _internal = detail::notebook_internal_new(GTK_NOTEBOOK(operator NativeWidget()));
@@ -53,7 +60,14 @@ namespace mousetrap
           CTOR_SIGNAL(Notebook, page_added),
           CTOR_SIGNAL(Notebook, page_reordered),
           CTOR_SIGNAL(Notebook, page_removed),
-          CTOR_SIGNAL(Notebook, page_selection_changed)
+          CTOR_SIGNAL(Notebook, page_selection_changed),
+          CTOR_SIGNAL(Notebook, realize),
+          CTOR_SIGNAL(Notebook, unrealize),
+          CTOR_SIGNAL(Notebook, destroy),
+          CTOR_SIGNAL(Notebook, hide),
+          CTOR_SIGNAL(Notebook, show),
+          CTOR_SIGNAL(Notebook, map),
+          CTOR_SIGNAL(Notebook, unmap)
     {
         _internal = g_object_ref(internal);
     }

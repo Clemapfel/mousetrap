@@ -10,7 +10,14 @@ namespace mousetrap
 {
     Revealer::Revealer(RevealerTransitionType type)
         : Widget(gtk_revealer_new()),
-          CTOR_SIGNAL(Revealer, revealed)
+          CTOR_SIGNAL(Revealer, revealed),
+          CTOR_SIGNAL(Revealer, realize),
+          CTOR_SIGNAL(Revealer, unrealize),
+          CTOR_SIGNAL(Revealer, destroy),
+          CTOR_SIGNAL(Revealer, hide),
+          CTOR_SIGNAL(Revealer, show),
+          CTOR_SIGNAL(Revealer, map),
+          CTOR_SIGNAL(Revealer, unmap)
     {
         _internal = g_object_ref(GTK_REVEALER(Widget::operator NativeWidget()));
 
@@ -20,7 +27,14 @@ namespace mousetrap
     
     Revealer::Revealer(detail::RevealerInternal* internal)
         : Widget(GTK_WIDGET(internal)),
-          CTOR_SIGNAL(Revealer, revealed)
+          CTOR_SIGNAL(Revealer, revealed),
+          CTOR_SIGNAL(Revealer, realize),
+          CTOR_SIGNAL(Revealer, unrealize),
+          CTOR_SIGNAL(Revealer, destroy),
+          CTOR_SIGNAL(Revealer, hide),
+          CTOR_SIGNAL(Revealer, show),
+          CTOR_SIGNAL(Revealer, map),
+          CTOR_SIGNAL(Revealer, unmap)
     {
         _internal = g_object_ref(internal);
     }

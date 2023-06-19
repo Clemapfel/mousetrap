@@ -38,7 +38,14 @@ namespace mousetrap
     /// \signal_activate{ColumnView}
     /// \widget_signals{ColumnView}
     class ColumnView : public Widget,
-        HAS_SIGNAL(ColumnView, activate)
+        HAS_SIGNAL(ColumnView, activate),
+        HAS_SIGNAL(ColumnView, realize),
+        HAS_SIGNAL(ColumnView, unrealize),
+        HAS_SIGNAL(ColumnView, destroy),
+        HAS_SIGNAL(ColumnView, hide),
+        HAS_SIGNAL(ColumnView, show),
+        HAS_SIGNAL(ColumnView, map),
+        HAS_SIGNAL(ColumnView, unmap)
     {
         public:
             class Column

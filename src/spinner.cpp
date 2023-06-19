@@ -7,14 +7,28 @@
 namespace mousetrap
 {
     Spinner::Spinner()
-        : Widget(gtk_spinner_new())
+        : Widget(gtk_spinner_new()),
+          CTOR_SIGNAL(Spinner, realize),
+          CTOR_SIGNAL(Spinner, unrealize),
+          CTOR_SIGNAL(Spinner, destroy),
+          CTOR_SIGNAL(Spinner, hide),
+          CTOR_SIGNAL(Spinner, show),
+          CTOR_SIGNAL(Spinner, map),
+          CTOR_SIGNAL(Spinner, unmap)
     {
         _internal = GTK_SPINNER(Widget::operator NativeWidget());
         g_object_ref_sink(_internal);
     }
     
     Spinner::Spinner(detail::SpinnerInternal* internal)
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Spinner, realize),
+          CTOR_SIGNAL(Spinner, unrealize),
+          CTOR_SIGNAL(Spinner, destroy),
+          CTOR_SIGNAL(Spinner, hide),
+          CTOR_SIGNAL(Spinner, show),
+          CTOR_SIGNAL(Spinner, map),
+          CTOR_SIGNAL(Spinner, unmap)
     {
         _internal = g_object_ref(internal);
     }

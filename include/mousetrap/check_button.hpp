@@ -42,7 +42,14 @@ namespace mousetrap
     /// \widget_signals{CheckButton}
     class CheckButton : public Widget,
         HAS_SIGNAL(CheckButton, activate),
-        HAS_SIGNAL(CheckButton, toggled)
+        HAS_SIGNAL(CheckButton, toggled),
+        HAS_SIGNAL(CheckButton, realize),
+        HAS_SIGNAL(CheckButton, unrealize),
+        HAS_SIGNAL(CheckButton, destroy),
+        HAS_SIGNAL(CheckButton, hide),
+        HAS_SIGNAL(CheckButton, show),
+        HAS_SIGNAL(CheckButton, map),
+        HAS_SIGNAL(CheckButton, unmap)
     {
         public:
             /// @brief construct button

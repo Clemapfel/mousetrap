@@ -20,7 +20,14 @@ namespace mousetrap
     /// @brief widget that is usually used in the decoration of a window
     /// \signals
     /// \widget_signals{HeaderBar}
-    class HeaderBar : public Widget
+    class HeaderBar : public Widget,
+        HAS_SIGNAL(HeaderBar, realize),
+        HAS_SIGNAL(HeaderBar, unrealize),
+        HAS_SIGNAL(HeaderBar, destroy),
+        HAS_SIGNAL(HeaderBar, hide),
+        HAS_SIGNAL(HeaderBar, show),
+        HAS_SIGNAL(HeaderBar, map),
+        HAS_SIGNAL(HeaderBar, unmap)
     {
         public:
             /// @brief construct

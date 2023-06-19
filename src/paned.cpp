@@ -9,7 +9,14 @@
 namespace mousetrap
 {
     Paned::Paned(Orientation orientation)
-        : Widget(gtk_paned_new((GtkOrientation) orientation))
+        : Widget(gtk_paned_new((GtkOrientation) orientation)),
+          CTOR_SIGNAL(Paned, realize),
+          CTOR_SIGNAL(Paned, unrealize),
+          CTOR_SIGNAL(Paned, destroy),
+          CTOR_SIGNAL(Paned, hide),
+          CTOR_SIGNAL(Paned, show),
+          CTOR_SIGNAL(Paned, map),
+          CTOR_SIGNAL(Paned, unmap)
     {
         _internal = g_object_ref_sink(GTK_PANED(Widget::operator NativeWidget()));
 
@@ -19,7 +26,14 @@ namespace mousetrap
     }
     
     Paned::Paned(detail::PanedInternal* internal) 
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Paned, realize),
+          CTOR_SIGNAL(Paned, unrealize),
+          CTOR_SIGNAL(Paned, destroy),
+          CTOR_SIGNAL(Paned, hide),
+          CTOR_SIGNAL(Paned, show),
+          CTOR_SIGNAL(Paned, map),
+          CTOR_SIGNAL(Paned, unmap)
     {
         _internal = g_object_ref(internal);
     }

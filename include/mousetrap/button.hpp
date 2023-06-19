@@ -33,7 +33,13 @@ namespace mousetrap
     class Button : public Widget,
         HAS_SIGNAL(Button, activate),
         HAS_SIGNAL(Button, clicked),
-        HAS_SIGNAL(Button, realize)
+        HAS_SIGNAL(Button, realize),
+        HAS_SIGNAL(Button, unrealize),
+        HAS_SIGNAL(Button, destroy),
+        HAS_SIGNAL(Button, hide),
+        HAS_SIGNAL(Button, show),
+        HAS_SIGNAL(Button, map),
+        HAS_SIGNAL(Button, unmap)
     {
         public:
             /// @brief construct

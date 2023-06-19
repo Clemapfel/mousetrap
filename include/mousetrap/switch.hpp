@@ -28,7 +28,14 @@ namespace mousetrap
     /// \signal_activate{Switch}
     /// \widget_signals{Switch}
     class Switch : public Widget,
-        HAS_SIGNAL(Switch, activate)
+        HAS_SIGNAL(Switch, activate),
+        HAS_SIGNAL(Switch, realize),
+        HAS_SIGNAL(Switch, unrealize),
+        HAS_SIGNAL(Switch, destroy),
+        HAS_SIGNAL(Switch, hide),
+        HAS_SIGNAL(Switch, show),
+        HAS_SIGNAL(Switch, map),
+        HAS_SIGNAL(Switch, unmap)
     {
         public:
             /// @brief construct

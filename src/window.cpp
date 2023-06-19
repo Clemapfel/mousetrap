@@ -13,7 +13,14 @@ namespace mousetrap
         : Widget(gtk_application_window_new(app.operator GtkApplication*())),
           CTOR_SIGNAL(Window, close_request),
           CTOR_SIGNAL(Window, activate_default_widget),
-          CTOR_SIGNAL(Window, activate_focused_widget)
+          CTOR_SIGNAL(Window, activate_focused_widget),
+          CTOR_SIGNAL(Window, realize),
+          CTOR_SIGNAL(Window, unrealize),
+          CTOR_SIGNAL(Window, destroy),
+          CTOR_SIGNAL(Window, hide),
+          CTOR_SIGNAL(Window, show),
+          CTOR_SIGNAL(Window, map),
+          CTOR_SIGNAL(Window, unmap)
     {
         _internal = GTK_WINDOW(Widget::operator NativeWidget());
         gtk_application_add_window(app.operator GtkApplication*(), GTK_WINDOW(_internal));
@@ -24,7 +31,14 @@ namespace mousetrap
         : Widget(GTK_WIDGET(internal)),
           CTOR_SIGNAL(Window, close_request),
           CTOR_SIGNAL(Window, activate_default_widget),
-          CTOR_SIGNAL(Window, activate_focused_widget)
+          CTOR_SIGNAL(Window, activate_focused_widget),
+          CTOR_SIGNAL(Window, realize),
+          CTOR_SIGNAL(Window, unrealize),
+          CTOR_SIGNAL(Window, destroy),
+          CTOR_SIGNAL(Window, hide),
+          CTOR_SIGNAL(Window, show),
+          CTOR_SIGNAL(Window, map),
+          CTOR_SIGNAL(Window, unmap)
     {
         _internal = g_object_ref(internal);
     }

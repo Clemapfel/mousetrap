@@ -40,7 +40,14 @@ namespace mousetrap
     /// @brief displays exactly one of multiple widgets. Use mousetrap::StackSwitcher and mousetrap::StackSidebar to allow a user to switch them through the GUI
     /// \signals
     /// \widget_signals{Stack}
-    class Stack : public Widget
+    class Stack : public Widget,
+        HAS_SIGNAL(Stack, realize),
+        HAS_SIGNAL(Stack, unrealize),
+        HAS_SIGNAL(Stack, destroy),
+        HAS_SIGNAL(Stack, hide),
+        HAS_SIGNAL(Stack, show),
+        HAS_SIGNAL(Stack, map),
+        HAS_SIGNAL(Stack, unmap)
     {
         /// @brief id of a stack page, the id is the title of the page and may be used to display the name of that stack page
         using ID = std::string;
@@ -137,7 +144,14 @@ namespace mousetrap
     /// @brief widget to choose page of stack, uses page id as label
     /// \signals
     /// \widget_signals{StackSidebar}
-    class StackSidebar : public Widget
+    class StackSidebar : public Widget,
+        HAS_SIGNAL(StackSidebar, realize),
+        HAS_SIGNAL(StackSidebar, unrealize),
+        HAS_SIGNAL(StackSidebar, destroy),
+        HAS_SIGNAL(StackSidebar, hide),
+        HAS_SIGNAL(StackSidebar, show),
+        HAS_SIGNAL(StackSidebar, map),
+        HAS_SIGNAL(StackSidebar, unmap)
     {
         public:
             /// @brief construct
@@ -160,7 +174,14 @@ namespace mousetrap
     /// @brief widget to choose page of stack, uses page id as label
     /// \signals
     /// \widget_signals{StackSwitcher}
-    class StackSwitcher : public Widget
+    class StackSwitcher : public Widget,
+        HAS_SIGNAL(StackSwitcher, realize),
+        HAS_SIGNAL(StackSwitcher, unrealize),
+        HAS_SIGNAL(StackSwitcher, destroy),
+        HAS_SIGNAL(StackSwitcher, hide),
+        HAS_SIGNAL(StackSwitcher, show),
+        HAS_SIGNAL(StackSwitcher, map),
+        HAS_SIGNAL(StackSwitcher, unmap)
     {
         public:
             /// @brief construct

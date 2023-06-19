@@ -40,7 +40,14 @@ namespace mousetrap
     /// \widget_signals{SpinButton}
     class SpinButton : public Widget, public Orientable,
         HAS_SIGNAL(SpinButton, value_changed),
-        HAS_SIGNAL(SpinButton, wrapped)
+        HAS_SIGNAL(SpinButton, wrapped),
+        HAS_SIGNAL(SpinButton, realize),
+        HAS_SIGNAL(SpinButton, unrealize),
+        HAS_SIGNAL(SpinButton, destroy),
+        HAS_SIGNAL(SpinButton, hide),
+        HAS_SIGNAL(SpinButton, show),
+        HAS_SIGNAL(SpinButton, map),
+        HAS_SIGNAL(SpinButton, unmap)
     {
         public:
             /// @brief construct with range

@@ -30,8 +30,15 @@ namespace mousetrap
     /// \signal_redo{TextView}
     class TextView : public Widget,
         HAS_SIGNAL(TextView, text_changed),
-        HAS_SIGNAL(TextView, undo),
-        HAS_SIGNAL(TextView, redo)
+        // HAS_SIGNAL(TextView, undo),
+        // HAS_SIGNAL(TextView, redo),
+        HAS_SIGNAL(TextView, realize),
+        HAS_SIGNAL(TextView, unrealize),
+        HAS_SIGNAL(TextView, destroy),
+        HAS_SIGNAL(TextView, hide),
+        HAS_SIGNAL(TextView, show),
+        HAS_SIGNAL(TextView, map),
+        HAS_SIGNAL(TextView, unmap)
     {
         public:
             /// @brief construct

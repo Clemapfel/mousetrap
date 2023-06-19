@@ -27,7 +27,14 @@ namespace mousetrap
     /// \signal_activate{Expander}
     /// \widget_signals{Expander}
     class Expander : public Widget,
-        HAS_SIGNAL(Expander, activate)
+        HAS_SIGNAL(Expander, activate),
+        HAS_SIGNAL(Expander, realize),
+        HAS_SIGNAL(Expander, unrealize),
+        HAS_SIGNAL(Expander, destroy),
+        HAS_SIGNAL(Expander, hide),
+        HAS_SIGNAL(Expander, show),
+        HAS_SIGNAL(Expander, map),
+        HAS_SIGNAL(Expander, unmap)
     {
         public:
             /// @brief expand

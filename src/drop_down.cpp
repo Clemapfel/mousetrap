@@ -109,7 +109,14 @@ namespace mousetrap
     }
 
     DropDown::DropDown()
-        : Widget(gtk_drop_down_new(nullptr, nullptr))
+        : Widget(gtk_drop_down_new(nullptr, nullptr)),
+          CTOR_SIGNAL(DropDown, realize),
+          CTOR_SIGNAL(DropDown, unrealize),
+          CTOR_SIGNAL(DropDown, destroy),
+          CTOR_SIGNAL(DropDown, hide),
+          CTOR_SIGNAL(DropDown, show),
+          CTOR_SIGNAL(DropDown, map),
+          CTOR_SIGNAL(DropDown, unmap)
     {
         _internal = detail::drop_down_internal_new(GTK_DROP_DOWN(Widget::operator NativeWidget()));
         detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
@@ -129,7 +136,14 @@ namespace mousetrap
     }
     
     DropDown::DropDown(detail::DropDownInternal* internal)
-        : Widget(GTK_WIDGET(internal->native))
+        : Widget(GTK_WIDGET(internal->native)),
+          CTOR_SIGNAL(DropDown, realize),
+          CTOR_SIGNAL(DropDown, unrealize),
+          CTOR_SIGNAL(DropDown, destroy),
+          CTOR_SIGNAL(DropDown, hide),
+          CTOR_SIGNAL(DropDown, show),
+          CTOR_SIGNAL(DropDown, map),
+          CTOR_SIGNAL(DropDown, unmap)
     {
         _internal = g_object_ref(internal);
     }

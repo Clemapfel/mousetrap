@@ -98,7 +98,14 @@ namespace mousetrap
     RenderArea::RenderArea()
         : Widget(gtk_gl_area_new()),
           CTOR_SIGNAL(RenderArea, render),
-          CTOR_SIGNAL(RenderArea, resize)
+          CTOR_SIGNAL(RenderArea, resize),
+          CTOR_SIGNAL(RenderArea, realize),
+          CTOR_SIGNAL(RenderArea, unrealize),
+          CTOR_SIGNAL(RenderArea, destroy),
+          CTOR_SIGNAL(RenderArea, hide),
+          CTOR_SIGNAL(RenderArea, show),
+          CTOR_SIGNAL(RenderArea, map),
+          CTOR_SIGNAL(RenderArea, unmap)
     {
         _internal = detail::render_area_internal_new(GTK_GL_AREA(operator NativeWidget()));
         detail::attach_ref_to(G_OBJECT(GTK_GL_AREA(operator NativeWidget())), _internal);
@@ -121,7 +128,14 @@ namespace mousetrap
     RenderArea::RenderArea(detail::RenderAreaInternal* internal)
         : Widget(GTK_WIDGET(internal->native)),
           CTOR_SIGNAL(RenderArea, render),
-          CTOR_SIGNAL(RenderArea, resize)
+          CTOR_SIGNAL(RenderArea, resize),
+          CTOR_SIGNAL(RenderArea, realize),
+          CTOR_SIGNAL(RenderArea, unrealize),
+          CTOR_SIGNAL(RenderArea, destroy),
+          CTOR_SIGNAL(RenderArea, hide),
+          CTOR_SIGNAL(RenderArea, show),
+          CTOR_SIGNAL(RenderArea, map),
+          CTOR_SIGNAL(RenderArea, unmap)
     {
         _internal = g_object_ref(internal);
 

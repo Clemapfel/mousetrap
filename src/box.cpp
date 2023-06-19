@@ -12,14 +12,28 @@
 namespace mousetrap
 {
     Box::Box(Orientation orientation)
-        : Widget(gtk_box_new((GtkOrientation) orientation, 0))
+        : Widget(gtk_box_new((GtkOrientation) orientation, 0)),
+          CTOR_SIGNAL(Box, realize),
+          CTOR_SIGNAL(Box, unrealize),
+          CTOR_SIGNAL(Box, destroy),
+          CTOR_SIGNAL(Box, hide),
+          CTOR_SIGNAL(Box, show),
+          CTOR_SIGNAL(Box, map),
+          CTOR_SIGNAL(Box, unmap)
     {
         _internal = GTK_BOX(operator NativeWidget());
         g_object_ref_sink(_internal);
     }
 
     Box::Box(detail::BoxInternal* internal)
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Box, realize),
+          CTOR_SIGNAL(Box, unrealize),
+          CTOR_SIGNAL(Box, destroy),
+          CTOR_SIGNAL(Box, hide),
+          CTOR_SIGNAL(Box, show),
+          CTOR_SIGNAL(Box, map),
+          CTOR_SIGNAL(Box, unmap)
     {
         _internal = g_object_ref(_internal);
     }

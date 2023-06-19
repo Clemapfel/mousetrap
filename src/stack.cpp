@@ -37,7 +37,14 @@ namespace mousetrap
     }
     
     StackSidebar::StackSidebar(const Stack& stack)
-        : Widget(gtk_stack_sidebar_new())
+        : Widget(gtk_stack_sidebar_new()),
+          CTOR_SIGNAL(StackSidebar, realize),
+          CTOR_SIGNAL(StackSidebar, unrealize),
+          CTOR_SIGNAL(StackSidebar, destroy),
+          CTOR_SIGNAL(StackSidebar, hide),
+          CTOR_SIGNAL(StackSidebar, show),
+          CTOR_SIGNAL(StackSidebar, map),
+          CTOR_SIGNAL(StackSidebar, unmap)
     {
         _internal = GTK_STACK_SIDEBAR(Widget::operator NativeObject());
         g_object_ref(_internal);
@@ -45,7 +52,14 @@ namespace mousetrap
     }
     
     StackSidebar::StackSidebar(detail::StackSidebarInternal* internal)
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(StackSidebar, realize),
+          CTOR_SIGNAL(StackSidebar, unrealize),
+          CTOR_SIGNAL(StackSidebar, destroy),
+          CTOR_SIGNAL(StackSidebar, hide),
+          CTOR_SIGNAL(StackSidebar, show),
+          CTOR_SIGNAL(StackSidebar, map),
+          CTOR_SIGNAL(StackSidebar, unmap)
     {
         _internal = g_object_ref(internal);
     }
@@ -63,7 +77,14 @@ namespace mousetrap
     // ###
 
     StackSwitcher::StackSwitcher(const Stack& stack)
-        : Widget(gtk_stack_switcher_new())
+        : Widget(gtk_stack_switcher_new()),
+          CTOR_SIGNAL(StackSwitcher, realize),
+          CTOR_SIGNAL(StackSwitcher, unrealize),
+          CTOR_SIGNAL(StackSwitcher, destroy),
+          CTOR_SIGNAL(StackSwitcher, hide),
+          CTOR_SIGNAL(StackSwitcher, show),
+          CTOR_SIGNAL(StackSwitcher, map),
+          CTOR_SIGNAL(StackSwitcher, unmap)
     {
         _internal = GTK_STACK_SWITCHER(Widget::operator NativeObject());
         g_object_ref(_internal);
@@ -71,7 +92,14 @@ namespace mousetrap
     }
 
     StackSwitcher::StackSwitcher(detail::StackSwitcherInternal* internal)
-    : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(StackSwitcher, realize),
+          CTOR_SIGNAL(StackSwitcher, unrealize),
+          CTOR_SIGNAL(StackSwitcher, destroy),
+          CTOR_SIGNAL(StackSwitcher, hide),
+          CTOR_SIGNAL(StackSwitcher, show),
+          CTOR_SIGNAL(StackSwitcher, map),
+          CTOR_SIGNAL(StackSwitcher, unmap)
     {
         _internal = g_object_ref(internal);
     }
@@ -89,7 +117,14 @@ namespace mousetrap
     // ###
 
     Stack::Stack()
-        : Widget(gtk_stack_new())
+        : Widget(gtk_stack_new()),
+          CTOR_SIGNAL(Stack, realize),
+          CTOR_SIGNAL(Stack, unrealize),
+          CTOR_SIGNAL(Stack, destroy),
+          CTOR_SIGNAL(Stack, hide),
+          CTOR_SIGNAL(Stack, show),
+          CTOR_SIGNAL(Stack, map),
+          CTOR_SIGNAL(Stack, unmap)
     {
         _internal = detail::stack_internal_new(GTK_STACK(operator NativeWidget()));
         detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
@@ -97,7 +132,14 @@ namespace mousetrap
     }
     
     Stack::Stack(detail::StackInternal* internal)
-        : Widget(GTK_WIDGET(internal->native))
+        : Widget(GTK_WIDGET(internal->native)),
+          CTOR_SIGNAL(Stack, realize),
+          CTOR_SIGNAL(Stack, unrealize),
+          CTOR_SIGNAL(Stack, destroy),
+          CTOR_SIGNAL(Stack, hide),
+          CTOR_SIGNAL(Stack, show),
+          CTOR_SIGNAL(Stack, map),
+          CTOR_SIGNAL(Stack, unmap)
     {
         _internal = g_object_ref(internal);
     }

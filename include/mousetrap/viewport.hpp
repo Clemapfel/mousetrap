@@ -53,7 +53,14 @@ namespace mousetrap
     /// \signal_scroll_child{Viewport}
     /// \widget_signals{Viewport}
     class Viewport : public Widget,
-        HAS_SIGNAL(Viewport, scroll_child)
+        HAS_SIGNAL(Viewport, scroll_child),
+        HAS_SIGNAL(Viewport, realize),
+        HAS_SIGNAL(Viewport, unrealize),
+        HAS_SIGNAL(Viewport, destroy),
+        HAS_SIGNAL(Viewport, hide),
+        HAS_SIGNAL(Viewport, show),
+        HAS_SIGNAL(Viewport, map),
+        HAS_SIGNAL(Viewport, unmap)
     {
         public:
             /// @brief create

@@ -34,7 +34,14 @@ namespace mousetrap
     /// \signal_activate{ListView}
     /// \widget_signals{ListView}
     class ListView : public Widget,
-        HAS_SIGNAL(ListView, activate)
+        HAS_SIGNAL(ListView, activate),
+        HAS_SIGNAL(ListView, realize),
+        HAS_SIGNAL(ListView, unrealize),
+        HAS_SIGNAL(ListView, destroy),
+        HAS_SIGNAL(ListView, hide),
+        HAS_SIGNAL(ListView, show),
+        HAS_SIGNAL(ListView, map),
+        HAS_SIGNAL(ListView, unmap)
     {
         public:
             /// @brief iterator to a list, specifying it as the target during an operationt that adds an item to a list view will create a sublist at that iterator

@@ -9,7 +9,15 @@
 namespace mousetrap
 {
     AspectFrame::AspectFrame(float ratio, float x_align, float y_align)
-        : Widget(gtk_aspect_frame_new(x_align, y_align, ratio, false))
+        : Widget(gtk_aspect_frame_new(x_align, y_align, ratio, false)),
+          CTOR_SIGNAL(AspectFrame, realize),
+          CTOR_SIGNAL(AspectFrame, unrealize),
+          CTOR_SIGNAL(AspectFrame, destroy),
+          CTOR_SIGNAL(AspectFrame, hide),
+          CTOR_SIGNAL(AspectFrame, show),
+          CTOR_SIGNAL(AspectFrame, map),
+          CTOR_SIGNAL(AspectFrame, unmap)
+          
     {
         _internal = GTK_ASPECT_FRAME(operator NativeWidget());
         g_object_ref_sink(_internal);
@@ -25,7 +33,14 @@ namespace mousetrap
     }
     
     AspectFrame::AspectFrame(detail::AspectFrameInternal* internal)
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(AspectFrame, realize),
+          CTOR_SIGNAL(AspectFrame, unrealize),
+          CTOR_SIGNAL(AspectFrame, destroy),
+          CTOR_SIGNAL(AspectFrame, hide),
+          CTOR_SIGNAL(AspectFrame, show),
+          CTOR_SIGNAL(AspectFrame, map),
+          CTOR_SIGNAL(AspectFrame, unmap)
     {
         _internal = g_object_ref(internal);
     }

@@ -193,7 +193,14 @@ namespace mousetrap
 {
     ListView::ListView(Orientation orientation, SelectionMode mode)
         : Widget(gtk_list_view_new(nullptr, nullptr)),
-          CTOR_SIGNAL(ListView, activate)
+          CTOR_SIGNAL(ListView, activate),
+          CTOR_SIGNAL(ListView, realize),
+          CTOR_SIGNAL(ListView, unrealize),
+          CTOR_SIGNAL(ListView, destroy),
+          CTOR_SIGNAL(ListView, hide),
+          CTOR_SIGNAL(ListView, show),
+          CTOR_SIGNAL(ListView, map),
+          CTOR_SIGNAL(ListView, unmap)
     {
         _internal = detail::list_view_internal_new(GTK_LIST_VIEW(operator NativeWidget()), orientation, mode);
         detail::attach_ref_to(G_OBJECT(_internal->list_view), _internal);
@@ -201,7 +208,14 @@ namespace mousetrap
 
     ListView::ListView(detail::ListViewInternal* internal)
         : Widget(GTK_WIDGET(internal->list_view)),
-          CTOR_SIGNAL(ListView, activate)
+          CTOR_SIGNAL(ListView, activate),
+          CTOR_SIGNAL(ListView, realize),
+          CTOR_SIGNAL(ListView, unrealize),
+          CTOR_SIGNAL(ListView, destroy),
+          CTOR_SIGNAL(ListView, hide),
+          CTOR_SIGNAL(ListView, show),
+          CTOR_SIGNAL(ListView, map),
+          CTOR_SIGNAL(ListView, unmap)
     {
         _internal = g_object_ref(internal);
     }

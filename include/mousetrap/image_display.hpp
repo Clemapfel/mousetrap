@@ -23,7 +23,14 @@ namespace mousetrap
     #endif
 
     /// @brief widget that display an iamge
-    class ImageDisplay : public Widget
+    class ImageDisplay : public Widget,
+        HAS_SIGNAL(ImageDisplay, realize),
+        HAS_SIGNAL(ImageDisplay, unrealize),
+        HAS_SIGNAL(ImageDisplay, destroy),
+        HAS_SIGNAL(ImageDisplay, hide),
+        HAS_SIGNAL(ImageDisplay, show),
+        HAS_SIGNAL(ImageDisplay, map),
+        HAS_SIGNAL(ImageDisplay, unmap)
     {
         public:
             /// @brief default ctor, initialize as 0x0 image

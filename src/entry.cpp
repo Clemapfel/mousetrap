@@ -10,7 +10,14 @@ namespace mousetrap
     Entry::Entry()
         : Widget(gtk_entry_new()),
           CTOR_SIGNAL(Entry, activate),
-          CTOR_SIGNAL(Entry, text_changed)
+          CTOR_SIGNAL(Entry, text_changed),
+          CTOR_SIGNAL(Entry, realize),
+          CTOR_SIGNAL(Entry, unrealize),
+          CTOR_SIGNAL(Entry, destroy),
+          CTOR_SIGNAL(Entry, hide),
+          CTOR_SIGNAL(Entry, show),
+          CTOR_SIGNAL(Entry, map),
+          CTOR_SIGNAL(Entry, unmap)
     {
         _internal = g_object_ref_sink(GTK_ENTRY(Widget::operator NativeWidget()));
     }
@@ -18,7 +25,14 @@ namespace mousetrap
     Entry::Entry(detail::EntryInternal* internal)
         : Widget(gtk_entry_new()),
           CTOR_SIGNAL(Entry, activate),
-          CTOR_SIGNAL(Entry, text_changed)
+          CTOR_SIGNAL(Entry, text_changed),
+          CTOR_SIGNAL(Entry, realize),
+          CTOR_SIGNAL(Entry, unrealize),
+          CTOR_SIGNAL(Entry, destroy),
+          CTOR_SIGNAL(Entry, hide),
+          CTOR_SIGNAL(Entry, show),
+          CTOR_SIGNAL(Entry, map),
+          CTOR_SIGNAL(Entry, unmap)
     {
         _internal = g_object_ref(internal);
     }

@@ -12,7 +12,13 @@ namespace mousetrap
         : Widget(gtk_button_new()),
           CTOR_SIGNAL(Button, activate),
           CTOR_SIGNAL(Button, clicked),
-          CTOR_SIGNAL(Button, realize)
+          CTOR_SIGNAL(Button, realize),
+          CTOR_SIGNAL(Button, unrealize),
+          CTOR_SIGNAL(Button, destroy),
+          CTOR_SIGNAL(Button, hide),
+          CTOR_SIGNAL(Button, show),
+          CTOR_SIGNAL(Button, map),
+          CTOR_SIGNAL(Button, unmap)
     {
         _internal = GTK_BUTTON(operator NativeWidget());
         g_object_ref(_internal);
@@ -22,7 +28,13 @@ namespace mousetrap
         : Widget(GTK_WIDGET(internal)),
           CTOR_SIGNAL(Button, activate),
           CTOR_SIGNAL(Button, clicked),
-          CTOR_SIGNAL(Button, realize)
+          CTOR_SIGNAL(Button, realize),
+          CTOR_SIGNAL(Button, unrealize),
+          CTOR_SIGNAL(Button, destroy),
+          CTOR_SIGNAL(Button, hide),
+          CTOR_SIGNAL(Button, show),
+          CTOR_SIGNAL(Button, map),
+          CTOR_SIGNAL(Button, unmap)
     {
         _internal = g_object_ref(internal);
     }

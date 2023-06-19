@@ -24,7 +24,14 @@ namespace mousetrap
     /// \signal_revealed{Revealer}
     /// \widget_signals{Revealer}
     class Revealer : public Widget,
-        HAS_SIGNAL(Revealer, revealed)
+        HAS_SIGNAL(Revealer, revealed),
+        HAS_SIGNAL(Revealer, realize),
+        HAS_SIGNAL(Revealer, unrealize),
+        HAS_SIGNAL(Revealer, destroy),
+        HAS_SIGNAL(Revealer, hide),
+        HAS_SIGNAL(Revealer, show),
+        HAS_SIGNAL(Revealer, map),
+        HAS_SIGNAL(Revealer, unmap)
     {
         public:
             /// @brief construct

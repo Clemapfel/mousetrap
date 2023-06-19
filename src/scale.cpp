@@ -34,7 +34,14 @@ namespace mousetrap
     
     Scale::Scale(float min, float max, float step, Orientation orientation)
         : Widget(gtk_scale_new_with_range((GtkOrientation) orientation, min, max, step)),
-          CTOR_SIGNAL(Scale, value_changed)
+          CTOR_SIGNAL(Scale, value_changed),
+          CTOR_SIGNAL(Scale, realize),
+          CTOR_SIGNAL(Scale, unrealize),
+          CTOR_SIGNAL(Scale, destroy),
+          CTOR_SIGNAL(Scale, hide),
+          CTOR_SIGNAL(Scale, show),
+          CTOR_SIGNAL(Scale, map),
+          CTOR_SIGNAL(Scale, unmap)
     {
         _internal = detail::scale_internal_new(GTK_SCALE(operator NativeWidget()));
         g_object_ref(_internal);
@@ -43,7 +50,14 @@ namespace mousetrap
     
     Scale::Scale(detail::ScaleInternal* internal)
         : Widget(GTK_WIDGET(internal->native)),
-          CTOR_SIGNAL(Scale, value_changed)
+          CTOR_SIGNAL(Scale, value_changed),
+          CTOR_SIGNAL(Scale, realize),
+          CTOR_SIGNAL(Scale, unrealize),
+          CTOR_SIGNAL(Scale, destroy),
+          CTOR_SIGNAL(Scale, hide),
+          CTOR_SIGNAL(Scale, show),
+          CTOR_SIGNAL(Scale, map),
+          CTOR_SIGNAL(Scale, unmap)
     {
         _internal = g_object_ref(internal);
     }

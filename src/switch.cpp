@@ -8,15 +8,29 @@ namespace mousetrap
 {
     Switch::Switch()
         : Widget(gtk_switch_new()),
-          CTOR_SIGNAL(Switch, activate)
+          CTOR_SIGNAL(Switch, activate),
+          CTOR_SIGNAL(Switch, realize),
+          CTOR_SIGNAL(Switch, unrealize),
+          CTOR_SIGNAL(Switch, destroy),
+          CTOR_SIGNAL(Switch, hide),
+          CTOR_SIGNAL(Switch, show),
+          CTOR_SIGNAL(Switch, map),
+          CTOR_SIGNAL(Switch, unmap)
     {
-        _internal = GTK_SWITCH(Widget::operator NativeWidget());
+        _internal = GTK_SWITCH(Switch::operator NativeWidget());
         g_object_ref(_internal);
     }
 
     Switch::Switch(detail::SwitchInternal* internal)
         : Widget(GTK_WIDGET(internal)),
-          CTOR_SIGNAL(Switch, activate)
+          CTOR_SIGNAL(Switch, activate),
+          CTOR_SIGNAL(Switch, realize),
+          CTOR_SIGNAL(Switch, unrealize),
+          CTOR_SIGNAL(Switch, destroy),
+          CTOR_SIGNAL(Switch, hide),
+          CTOR_SIGNAL(Switch, show),
+          CTOR_SIGNAL(Switch, map),
+          CTOR_SIGNAL(Switch, unmap)
     {
         _internal = g_object_ref(internal);
     }

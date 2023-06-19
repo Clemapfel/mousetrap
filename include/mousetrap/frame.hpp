@@ -21,7 +21,14 @@ namespace mousetrap
     /// @brief draws frame around widget, rounded corners. Has exactly one child and an optional label widget
     /// \signals
     /// \widget_signals{Frame}
-    class Frame : public Widget
+    class Frame : public Widget,
+        HAS_SIGNAL(Frame, realize),
+        HAS_SIGNAL(Frame, unrealize),
+        HAS_SIGNAL(Frame, destroy),
+        HAS_SIGNAL(Frame, hide),
+        HAS_SIGNAL(Frame, show),
+        HAS_SIGNAL(Frame, map),
+        HAS_SIGNAL(Frame, unmap)
     {
         public:
             /// @brief construct

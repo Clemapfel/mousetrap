@@ -35,7 +35,14 @@ namespace mousetrap
 
     /// @brief popover menu button, if pressed, shows it's attached popover or popover menu automatically
     class PopoverButton : public Widget,
-        HAS_SIGNAL(PopoverButton, activate)
+        HAS_SIGNAL(PopoverButton, activate),
+        HAS_SIGNAL(PopoverButton, realize),
+        HAS_SIGNAL(PopoverButton, unrealize),
+        HAS_SIGNAL(PopoverButton, destroy),
+        HAS_SIGNAL(PopoverButton, hide),
+        HAS_SIGNAL(PopoverButton, show),
+        HAS_SIGNAL(PopoverButton, map),
+        HAS_SIGNAL(PopoverButton, unmap)
     {
         public:
             /// @brief construct with no child or popover attached

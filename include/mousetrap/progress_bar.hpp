@@ -27,7 +27,14 @@ namespace mousetrap
     /// @brief widget that displays progress
     /// \signals
     /// \widget_signals{ProgressBar}
-    class ProgressBar : public Widget
+    class ProgressBar : public Widget,
+        HAS_SIGNAL(ProgressBar, realize),
+        HAS_SIGNAL(ProgressBar, unrealize),
+        HAS_SIGNAL(ProgressBar, destroy),
+        HAS_SIGNAL(ProgressBar, hide),
+        HAS_SIGNAL(ProgressBar, show),
+        HAS_SIGNAL(ProgressBar, map),
+        HAS_SIGNAL(ProgressBar, unmap)
     {
         public:
             /// @brief construct

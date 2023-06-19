@@ -4,6 +4,8 @@
 
 #pragma once
 
+#ifdef UNDEF // disabled for now to decrease number of dependencies
+
 #include <mousetrap/signal_emitter.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 
@@ -76,3 +78,5 @@ namespace mousetrap
             detail::SoundBufferInternal* _internal = nullptr;
     };
 }
+
+#endif

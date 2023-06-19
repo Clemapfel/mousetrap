@@ -8,13 +8,27 @@
 namespace mousetrap
 {
     Fixed::Fixed()
-        : Widget(gtk_fixed_new())
+        : Widget(gtk_fixed_new()),
+          CTOR_SIGNAL(Fixed, realize),
+          CTOR_SIGNAL(Fixed, unrealize),
+          CTOR_SIGNAL(Fixed, destroy),
+          CTOR_SIGNAL(Fixed, hide),
+          CTOR_SIGNAL(Fixed, show),
+          CTOR_SIGNAL(Fixed, map),
+          CTOR_SIGNAL(Fixed, unmap)
     {
         _internal = g_object_ref_sink(GTK_FIXED(Widget::operator NativeWidget()));
     }
     
     Fixed::Fixed(detail::FixedInternal* internal) 
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Fixed, realize),
+          CTOR_SIGNAL(Fixed, unrealize),
+          CTOR_SIGNAL(Fixed, destroy),
+          CTOR_SIGNAL(Fixed, hide),
+          CTOR_SIGNAL(Fixed, show),
+          CTOR_SIGNAL(Fixed, map),
+          CTOR_SIGNAL(Fixed, unmap)
     {
         _internal = g_object_ref(internal);
     }

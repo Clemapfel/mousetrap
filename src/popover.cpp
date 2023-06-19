@@ -10,14 +10,28 @@ namespace mousetrap
 {
     Popover::Popover()
         : Widget(gtk_popover_new()),
-          CTOR_SIGNAL(Popover, closed)
+          CTOR_SIGNAL(Popover, closed),
+          CTOR_SIGNAL(Popover, realize),
+          CTOR_SIGNAL(Popover, unrealize),
+          CTOR_SIGNAL(Popover, destroy),
+          CTOR_SIGNAL(Popover, hide),
+          CTOR_SIGNAL(Popover, show),
+          CTOR_SIGNAL(Popover, map),
+          CTOR_SIGNAL(Popover, unmap)
     {
         _internal = g_object_ref_sink(GTK_POPOVER(Widget::operator NativeWidget()));
     }
     
     Popover::Popover(detail::PopoverInternal* internal)
         : Widget(GTK_WIDGET(internal)),
-          CTOR_SIGNAL(Popover, closed)
+          CTOR_SIGNAL(Popover, closed),
+          CTOR_SIGNAL(Popover, realize),
+          CTOR_SIGNAL(Popover, unrealize),
+          CTOR_SIGNAL(Popover, destroy),
+          CTOR_SIGNAL(Popover, hide),
+          CTOR_SIGNAL(Popover, show),
+          CTOR_SIGNAL(Popover, map),
+          CTOR_SIGNAL(Popover, unmap)
     {
         _internal = g_object_ref(internal);
     }

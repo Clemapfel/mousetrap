@@ -10,14 +10,28 @@ namespace mousetrap
 {
     Expander::Expander()
         : Widget(gtk_expander_new(nullptr)),
-          CTOR_SIGNAL(Expander, activate)
+          CTOR_SIGNAL(Expander, activate),
+          CTOR_SIGNAL(Expander, realize),
+          CTOR_SIGNAL(Expander, unrealize),
+          CTOR_SIGNAL(Expander, destroy),
+          CTOR_SIGNAL(Expander, hide),
+          CTOR_SIGNAL(Expander, show),
+          CTOR_SIGNAL(Expander, map),
+          CTOR_SIGNAL(Expander, unmap)
     {
         _internal = g_object_ref_sink(GTK_EXPANDER(Widget::operator NativeWidget()));
     }
     
     Expander::Expander(detail::ExpanderInternal* internal) 
         : Widget(GTK_WIDGET(internal)),
-          CTOR_SIGNAL(Expander, activate)
+          CTOR_SIGNAL(Expander, activate),
+          CTOR_SIGNAL(Expander, realize),
+          CTOR_SIGNAL(Expander, unrealize),
+          CTOR_SIGNAL(Expander, destroy),
+          CTOR_SIGNAL(Expander, hide),
+          CTOR_SIGNAL(Expander, show),
+          CTOR_SIGNAL(Expander, map),
+          CTOR_SIGNAL(Expander, unmap)
     {
         _internal = g_object_ref(internal);
     }

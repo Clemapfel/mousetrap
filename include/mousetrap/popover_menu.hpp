@@ -28,7 +28,14 @@ namespace mousetrap
     /// \signal_closed{PopoverMenu}
     /// \widget_signals{PopoverMenu}
     class PopoverMenu : public Widget,
-        HAS_SIGNAL(PopoverMenu, closed)
+        HAS_SIGNAL(PopoverMenu, closed),
+        HAS_SIGNAL(PopoverMenu, realize),
+        HAS_SIGNAL(PopoverMenu, unrealize),
+        HAS_SIGNAL(PopoverMenu, destroy),
+        HAS_SIGNAL(PopoverMenu, hide),
+        HAS_SIGNAL(PopoverMenu, show),
+        HAS_SIGNAL(PopoverMenu, map),
+        HAS_SIGNAL(PopoverMenu, unmap)
     {
             friend class PopoverButton;
 

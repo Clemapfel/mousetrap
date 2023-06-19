@@ -22,7 +22,14 @@ namespace mousetrap
     /// @brief container widget that arranges each of its children in series
     /// \signals
     /// \widget_signals{Box}
-    class Box : public Widget
+    class Box : public Widget,
+        HAS_SIGNAL(Box, realize),
+        HAS_SIGNAL(Box, unrealize),
+        HAS_SIGNAL(Box, destroy),
+        HAS_SIGNAL(Box, hide),
+        HAS_SIGNAL(Box, show),
+        HAS_SIGNAL(Box, map),
+        HAS_SIGNAL(Box, unmap)
     {
         public:
             /// @brief construct

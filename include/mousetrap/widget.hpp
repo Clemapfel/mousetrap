@@ -60,14 +60,7 @@ namespace mousetrap
     #endif
 
     /// @brief Widget, super class of all renderable entities
-    class Widget : public SignalEmitter/*,
-        HAS_SIGNAL(Widget, realize),
-        HAS_SIGNAL(Widget, unrealize),
-        HAS_SIGNAL(Widget, destroy),
-        HAS_SIGNAL(Widget, hide),
-        HAS_SIGNAL(Widget, show),
-        HAS_SIGNAL(Widget, map),
-        HAS_SIGNAL(Widget, unmap)*/
+    class Widget : public SignalEmitter
     {
         template<typename T>
         friend struct WidgetImplementation;

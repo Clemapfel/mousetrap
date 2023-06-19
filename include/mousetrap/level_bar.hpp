@@ -32,7 +32,14 @@ namespace mousetrap
     /// @brief level bar to indicate a value as a fraction of a whole
     /// \signals
     /// \widget_signals{LevelBar}
-    class LevelBar : public Widget
+    class LevelBar : public Widget,
+        HAS_SIGNAL(LevelBar, realize),
+        HAS_SIGNAL(LevelBar, unrealize),
+        HAS_SIGNAL(LevelBar, destroy),
+        HAS_SIGNAL(LevelBar, hide),
+        HAS_SIGNAL(LevelBar, show),
+        HAS_SIGNAL(LevelBar, map),
+        HAS_SIGNAL(LevelBar, unmap)
     {
         public:
             /// @brief construct

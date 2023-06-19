@@ -32,7 +32,14 @@ namespace mousetrap
     class Window : public Widget,
         HAS_SIGNAL(Window, close_request),
         HAS_SIGNAL(Window, activate_default_widget),
-        HAS_SIGNAL(Window, activate_focused_widget)
+        HAS_SIGNAL(Window, activate_focused_widget),
+        HAS_SIGNAL(Window, realize),
+        HAS_SIGNAL(Window, unrealize),
+        HAS_SIGNAL(Window, destroy),
+        HAS_SIGNAL(Window, hide),
+        HAS_SIGNAL(Window, show),
+        HAS_SIGNAL(Window, map),
+        HAS_SIGNAL(Window, unmap)
     {
         public:
             /// @brief construct

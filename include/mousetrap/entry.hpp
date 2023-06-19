@@ -30,7 +30,14 @@ namespace mousetrap
     /// \widget_signals{Entry}
     class Entry : public Widget,
         HAS_SIGNAL(Entry, activate),
-        HAS_SIGNAL(Entry, text_changed)
+        HAS_SIGNAL(Entry, text_changed),
+        HAS_SIGNAL(Entry, realize),
+        HAS_SIGNAL(Entry, unrealize),
+        HAS_SIGNAL(Entry, destroy),
+        HAS_SIGNAL(Entry, hide),
+        HAS_SIGNAL(Entry, show),
+        HAS_SIGNAL(Entry, map),
+        HAS_SIGNAL(Entry, unmap)
     {
         public:
             /// @brief construct

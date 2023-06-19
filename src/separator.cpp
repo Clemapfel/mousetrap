@@ -8,7 +8,14 @@
 namespace mousetrap
 {
     Separator::Separator(float opacity, Orientation orientation)
-        : Widget(gtk_separator_new((GtkOrientation) orientation))
+        : Widget(gtk_separator_new((GtkOrientation) orientation)),
+          CTOR_SIGNAL(Separator, realize),
+          CTOR_SIGNAL(Separator, unrealize),
+          CTOR_SIGNAL(Separator, destroy),
+          CTOR_SIGNAL(Separator, hide),
+          CTOR_SIGNAL(Separator, show),
+          CTOR_SIGNAL(Separator, map),
+          CTOR_SIGNAL(Separator, unmap)
     {
         _internal = g_object_ref_sink(GTK_SEPARATOR(Widget::operator NativeWidget()));
 
@@ -21,7 +28,14 @@ namespace mousetrap
     }
     
     Separator::Separator(detail::SeparatorInternal* internal)
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Separator, realize),
+          CTOR_SIGNAL(Separator, unrealize),
+          CTOR_SIGNAL(Separator, destroy),
+          CTOR_SIGNAL(Separator, hide),
+          CTOR_SIGNAL(Separator, show),
+          CTOR_SIGNAL(Separator, map),
+          CTOR_SIGNAL(Separator, unmap)
     {
         _internal = g_object_ref(internal);
     }

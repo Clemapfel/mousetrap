@@ -45,7 +45,14 @@ namespace mousetrap
     }
 
     ImageDisplay::ImageDisplay(detail::ImageDisplayInternal* internal) 
-        : Widget(GTK_WIDGET(internal->native))
+        : Widget(GTK_WIDGET(internal->native)),
+          CTOR_SIGNAL(ImageDisplay, realize),
+          CTOR_SIGNAL(ImageDisplay, unrealize),
+          CTOR_SIGNAL(ImageDisplay, destroy),
+          CTOR_SIGNAL(ImageDisplay, hide),
+          CTOR_SIGNAL(ImageDisplay, show),
+          CTOR_SIGNAL(ImageDisplay, map),
+          CTOR_SIGNAL(ImageDisplay, unmap)
     {
         _internal = g_object_ref(_internal);
     }
@@ -67,14 +74,28 @@ namespace mousetrap
     }
 
     ImageDisplay::ImageDisplay()
-        : Widget(gtk_image_new())
+        : Widget(gtk_image_new()),
+          CTOR_SIGNAL(ImageDisplay, realize),
+          CTOR_SIGNAL(ImageDisplay, unrealize),
+          CTOR_SIGNAL(ImageDisplay, destroy),
+          CTOR_SIGNAL(ImageDisplay, hide),
+          CTOR_SIGNAL(ImageDisplay, show),
+          CTOR_SIGNAL(ImageDisplay, map),
+          CTOR_SIGNAL(ImageDisplay, unmap)
     {
         initialize();
         update_size(0, 0);
     }
 
     ImageDisplay::ImageDisplay(GtkImage* image)
-        : Widget(GTK_WIDGET(image))
+        : Widget(GTK_WIDGET(image)),
+          CTOR_SIGNAL(ImageDisplay, realize),
+          CTOR_SIGNAL(ImageDisplay, unrealize),
+          CTOR_SIGNAL(ImageDisplay, destroy),
+          CTOR_SIGNAL(ImageDisplay, hide),
+          CTOR_SIGNAL(ImageDisplay, show),
+          CTOR_SIGNAL(ImageDisplay, map),
+          CTOR_SIGNAL(ImageDisplay, unmap)
     {
         initialize();
         update_size(0, 0);

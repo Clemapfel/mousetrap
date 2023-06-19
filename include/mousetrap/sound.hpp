@@ -2,6 +2,8 @@
 // Copyright (c) Clemens Cords (mail@clemens-cords.com), created 3/16/23
 //
 
+#ifdef UNDER // disable for now to reduce number of dependencies
+
 #pragma once
 
 #include <mousetrap/sound_buffer.hpp>
@@ -128,3 +130,5 @@ namespace mousetrap
             detail::SoundInternal* _internal = nullptr;
     };
 }
+
+#endif

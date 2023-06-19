@@ -50,7 +50,14 @@ namespace mousetrap
     /// \widget_signals{RenderArea}
     class RenderArea : public Widget,
         HAS_SIGNAL(RenderArea, render),
-        HAS_SIGNAL(RenderArea, resize)
+        HAS_SIGNAL(RenderArea, resize),
+        HAS_SIGNAL(RenderArea, realize),
+        HAS_SIGNAL(RenderArea, unrealize),
+        HAS_SIGNAL(RenderArea, destroy),
+        HAS_SIGNAL(RenderArea, hide),
+        HAS_SIGNAL(RenderArea, show),
+        HAS_SIGNAL(RenderArea, map),
+        HAS_SIGNAL(RenderArea, unmap)
     {
         public:
             /// @brief constrcut

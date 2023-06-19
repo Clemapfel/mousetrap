@@ -22,7 +22,14 @@ namespace mousetrap
     /// @brief paned, displays two children with a draggable area in between, dragging the area resizes the respective two widgets
     /// \signals
     /// \widget_signals{Paned}
-    class Paned : public Widget, public Orientable
+    class Paned : public Widget, public Orientable,
+        HAS_SIGNAL(Paned, realize),
+        HAS_SIGNAL(Paned, unrealize),
+        HAS_SIGNAL(Paned, destroy),
+        HAS_SIGNAL(Paned, hide),
+        HAS_SIGNAL(Paned, show),
+        HAS_SIGNAL(Paned, map),
+        HAS_SIGNAL(Paned, unmap)
     {
         public:
             /// @brief construct empty

@@ -22,7 +22,14 @@ namespace mousetrap
     /// @brief container widget that arranges a widget in the center with two widgets surrounding it
     /// \signals
     /// \widget_signals{CenterBox}
-    class CenterBox : public Widget
+    class CenterBox : public Widget,
+        HAS_SIGNAL(CenterBox, realize),
+        HAS_SIGNAL(CenterBox, unrealize),
+        HAS_SIGNAL(CenterBox, destroy),
+        HAS_SIGNAL(CenterBox, hide),
+        HAS_SIGNAL(CenterBox, show),
+        HAS_SIGNAL(CenterBox, map),
+        HAS_SIGNAL(CenterBox, unmap)
     {
         public:
             /// @brief construct, widgets will be arrange left and right if orientation is horizontal, top and bottom otherwise

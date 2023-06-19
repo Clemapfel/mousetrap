@@ -55,7 +55,14 @@ namespace mousetrap
     /// @see https://docs.gtk.org/Pango/pango_markup.html
     /// \signals
     /// \widget_signals{Label}
-    class Label : public Widget
+    class Label : public Widget,
+        HAS_SIGNAL(Label, realize),
+        HAS_SIGNAL(Label, unrealize),
+        HAS_SIGNAL(Label, destroy),
+        HAS_SIGNAL(Label, hide),
+        HAS_SIGNAL(Label, show),
+        HAS_SIGNAL(Label, map),
+        HAS_SIGNAL(Label, unmap)
     {
         public:
             /// @brief construct as empty

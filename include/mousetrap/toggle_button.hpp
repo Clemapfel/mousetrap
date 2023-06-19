@@ -32,7 +32,14 @@ namespace mousetrap
     class ToggleButton : public Widget,
         HAS_SIGNAL(ToggleButton, toggled),
         HAS_SIGNAL(ToggleButton, activate),
-        HAS_SIGNAL(ToggleButton, clicked)
+        HAS_SIGNAL(ToggleButton, clicked),
+        HAS_SIGNAL(ToggleButton, realize),
+        HAS_SIGNAL(ToggleButton, unrealize),
+        HAS_SIGNAL(ToggleButton, destroy),
+        HAS_SIGNAL(ToggleButton, hide),
+        HAS_SIGNAL(ToggleButton, show),
+        HAS_SIGNAL(ToggleButton, map),
+        HAS_SIGNAL(ToggleButton, unmap)
     {
         public:
             /// @brief construct

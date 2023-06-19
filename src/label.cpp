@@ -12,7 +12,14 @@ namespace mousetrap
     {}
 
     Label::Label(const std::string& str)
-        : Widget(gtk_label_new(str.c_str()))
+        : Widget(gtk_label_new(str.c_str())),
+          CTOR_SIGNAL(Label, realize),
+          CTOR_SIGNAL(Label, unrealize),
+          CTOR_SIGNAL(Label, destroy),
+          CTOR_SIGNAL(Label, hide),
+          CTOR_SIGNAL(Label, show),
+          CTOR_SIGNAL(Label, map),
+          CTOR_SIGNAL(Label, unmap)
     {
         gtk_label_set_use_markup(GTK_LABEL(Widget::operator NativeWidget()), true);
         _internal = GTK_LABEL(Widget::operator NativeWidget());
@@ -20,7 +27,14 @@ namespace mousetrap
     }
     
     Label::Label(detail::LabelInternal* internal)
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Label, realize),
+          CTOR_SIGNAL(Label, unrealize),
+          CTOR_SIGNAL(Label, destroy),
+          CTOR_SIGNAL(Label, hide),
+          CTOR_SIGNAL(Label, show),
+          CTOR_SIGNAL(Label, map),
+          CTOR_SIGNAL(Label, unmap)
     {
         _internal = g_object_ref(internal);
     }

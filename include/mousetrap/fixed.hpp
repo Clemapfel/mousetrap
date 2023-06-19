@@ -21,7 +21,14 @@ namespace mousetrap
     /// @brief container that positions a widget at a specific pixel position
     /// \signals
     /// \widget_signals{Fixed}
-    class Fixed : public Widget
+    class Fixed : public Widget,
+        HAS_SIGNAL(Fixed, realize),
+        HAS_SIGNAL(Fixed, unrealize),
+        HAS_SIGNAL(Fixed, destroy),
+        HAS_SIGNAL(Fixed, hide),
+        HAS_SIGNAL(Fixed, show),
+        HAS_SIGNAL(Fixed, map),
+        HAS_SIGNAL(Fixed, unmap)
     {
         public:
             /// @brief construct

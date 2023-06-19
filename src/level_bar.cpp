@@ -3,13 +3,27 @@
 namespace mousetrap
 {
     LevelBar::LevelBar(float min, float max)
-        : Widget(gtk_level_bar_new_for_interval(min, max))
+        : Widget(gtk_level_bar_new_for_interval(min, max)),
+          CTOR_SIGNAL(LevelBar, realize),
+          CTOR_SIGNAL(LevelBar, unrealize),
+          CTOR_SIGNAL(LevelBar, destroy),
+          CTOR_SIGNAL(LevelBar, hide),
+          CTOR_SIGNAL(LevelBar, show),
+          CTOR_SIGNAL(LevelBar, map),
+          CTOR_SIGNAL(LevelBar, unmap)
     {
         g_object_ref_sink(GTK_LEVEL_BAR(Widget::operator NativeWidget()));
     }
     
     LevelBar::LevelBar(detail::LevelBarInternal* internal) 
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(LevelBar, realize),
+          CTOR_SIGNAL(LevelBar, unrealize),
+          CTOR_SIGNAL(LevelBar, destroy),
+          CTOR_SIGNAL(LevelBar, hide),
+          CTOR_SIGNAL(LevelBar, show),
+          CTOR_SIGNAL(LevelBar, map),
+          CTOR_SIGNAL(LevelBar, unmap)
     {
         _internal = g_object_ref(internal);
     }

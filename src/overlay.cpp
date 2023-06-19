@@ -9,13 +9,27 @@
 namespace mousetrap
 {
     Overlay::Overlay()
-        : Widget(gtk_overlay_new())
+        : Widget(gtk_overlay_new()),
+          CTOR_SIGNAL(Overlay, realize),
+          CTOR_SIGNAL(Overlay, unrealize),
+          CTOR_SIGNAL(Overlay, destroy),
+          CTOR_SIGNAL(Overlay, hide),
+          CTOR_SIGNAL(Overlay, show),
+          CTOR_SIGNAL(Overlay, map),
+          CTOR_SIGNAL(Overlay, unmap)
     {
         _internal = g_object_ref_sink(GTK_OVERLAY(Widget::operator NativeWidget()));
     }
     
     Overlay::Overlay(detail::OverlayInternal* internal)
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(Overlay, realize),
+          CTOR_SIGNAL(Overlay, unrealize),
+          CTOR_SIGNAL(Overlay, destroy),
+          CTOR_SIGNAL(Overlay, hide),
+          CTOR_SIGNAL(Overlay, show),
+          CTOR_SIGNAL(Overlay, map),
+          CTOR_SIGNAL(Overlay, unmap)
     {
         g_object_ref(internal);
     }

@@ -4,6 +4,8 @@
 
 #pragma once
 
+#ifdef UNDEF // disabled for now to decrease number of dependencies
+
 #include <SFML/Audio/Music.hpp>
 
 #include <mousetrap/vector.hpp>
@@ -116,3 +118,5 @@ namespace mousetrap
             detail::MusicInternal* _internal = nullptr;
     };
 }
+
+#endif

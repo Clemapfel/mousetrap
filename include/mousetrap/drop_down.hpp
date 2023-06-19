@@ -35,7 +35,14 @@ namespace mousetrap
     /// @brief drop down menu, present a popup with a list of items
     /// \signals
     /// \widget_signals{DropDown}
-    class DropDown : public Widget
+    class DropDown : public Widget,
+        HAS_SIGNAL(DropDown, realize),
+        HAS_SIGNAL(DropDown, unrealize),
+        HAS_SIGNAL(DropDown, destroy),
+        HAS_SIGNAL(DropDown, hide),
+        HAS_SIGNAL(DropDown, show),
+        HAS_SIGNAL(DropDown, map),
+        HAS_SIGNAL(DropDown, unmap)
     {
         public:
             /// @brief id of an item, keep track of this to refer to items after initialization

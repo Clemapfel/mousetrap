@@ -7,7 +7,14 @@
 namespace mousetrap
 {
     HeaderBar::HeaderBar()
-        : Widget(gtk_header_bar_new())
+        : Widget(gtk_header_bar_new()),
+          CTOR_SIGNAL(HeaderBar, realize),
+          CTOR_SIGNAL(HeaderBar, unrealize),
+          CTOR_SIGNAL(HeaderBar, destroy),
+          CTOR_SIGNAL(HeaderBar, hide),
+          CTOR_SIGNAL(HeaderBar, show),
+          CTOR_SIGNAL(HeaderBar, map),
+          CTOR_SIGNAL(HeaderBar, unmap)
     {
         _internal = g_object_ref_sink(GTK_HEADER_BAR(Widget::operator NativeWidget()));
         gtk_header_bar_set_title_widget(GTK_HEADER_BAR(Widget::operator NativeWidget()), nullptr);
@@ -20,7 +27,14 @@ namespace mousetrap
     }
     
     HeaderBar::HeaderBar(detail::HeaderBarInternal* internal) 
-        : Widget(GTK_WIDGET(internal))
+        : Widget(GTK_WIDGET(internal)),
+          CTOR_SIGNAL(HeaderBar, realize),
+          CTOR_SIGNAL(HeaderBar, unrealize),
+          CTOR_SIGNAL(HeaderBar, destroy),
+          CTOR_SIGNAL(HeaderBar, hide),
+          CTOR_SIGNAL(HeaderBar, show),
+          CTOR_SIGNAL(HeaderBar, map),
+          CTOR_SIGNAL(HeaderBar, unmap)
     {
         _internal = g_object_ref(internal);
     }
