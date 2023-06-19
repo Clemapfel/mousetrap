@@ -69,17 +69,12 @@ int main()
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
+        auto button = Button();
+        button.connect_signal_realize([](Button&){
+            std::cout << "clicked" << std::endl;
+        });
 
-        auto stack = Stack();
-        stack.add_child(Label("01"), "01");
-        stack.add_child(Label("02"), "02");
-
-        auto switcher = StackSwitcher(stack);
-        auto box = Box(Orientation::VERTICAL);
-        box.push_back(stack);
-        box.push_back(switcher);
-
-        window.set_child(box);
+        window.set_child(button);
         window.present();
     });
 

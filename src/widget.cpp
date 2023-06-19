@@ -43,28 +43,28 @@ namespace mousetrap
     }
 
     Widget::Widget(NativeWidget widget)
-        : _internal(detail::widget_internal_new(widget)),
+        : _internal(detail::widget_internal_new(widget))/*,
           CTOR_SIGNAL(Widget, realize),
           CTOR_SIGNAL(Widget, unrealize),
           CTOR_SIGNAL(Widget, destroy),
           CTOR_SIGNAL(Widget, hide),
           CTOR_SIGNAL(Widget, show),
           CTOR_SIGNAL(Widget, map),
-          CTOR_SIGNAL(Widget, unmap)
+          CTOR_SIGNAL(Widget, unmap)*/
     {
         detail::attach_ref_to(G_OBJECT(_internal), _internal->native);
         g_object_ref(_internal);
     }
 
     Widget::Widget(detail::WidgetInternal* internal)
-        : _internal(internal),
+        : _internal(internal)/*,
           CTOR_SIGNAL(Widget, realize),
           CTOR_SIGNAL(Widget, unrealize),
           CTOR_SIGNAL(Widget, destroy),
           CTOR_SIGNAL(Widget, hide),
           CTOR_SIGNAL(Widget, show),
           CTOR_SIGNAL(Widget, map),
-          CTOR_SIGNAL(Widget, unmap)
+          CTOR_SIGNAL(Widget, unmap)*/
     {
         g_object_ref(_internal);
     }
@@ -81,7 +81,7 @@ namespace mousetrap
 
     Widget::operator NativeWidget() const
     {
-        return _internal->native;
+        return GTK_WIDGET(_internal->native);
     }
     
     NativeObject Widget::get_internal() const

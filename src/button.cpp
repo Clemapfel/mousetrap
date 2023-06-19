@@ -11,7 +11,8 @@ namespace mousetrap
     Button::Button()
         : Widget(gtk_button_new()),
           CTOR_SIGNAL(Button, activate),
-          CTOR_SIGNAL(Button, clicked)
+          CTOR_SIGNAL(Button, clicked),
+          CTOR_SIGNAL(Button, realize)
     {
         _internal = GTK_BUTTON(operator NativeWidget());
         g_object_ref(_internal);
@@ -20,7 +21,8 @@ namespace mousetrap
     Button::Button(detail::ButtonInternal* internal) 
         : Widget(GTK_WIDGET(internal)),
           CTOR_SIGNAL(Button, activate),
-          CTOR_SIGNAL(Button, clicked)
+          CTOR_SIGNAL(Button, clicked),
+          CTOR_SIGNAL(Button, realize)
     {
         _internal = g_object_ref(internal);
     }

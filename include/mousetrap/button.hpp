@@ -32,7 +32,8 @@ namespace mousetrap
     /// \widget_signals{Button}
     class Button : public Widget,
         HAS_SIGNAL(Button, activate),
-        HAS_SIGNAL(Button, clicked)
+        HAS_SIGNAL(Button, clicked),
+        HAS_SIGNAL(Button, realize)
     {
         public:
             /// @brief construct

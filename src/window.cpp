@@ -39,6 +39,11 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
+    Window::operator NativeObject() const
+    {
+        return get_internal();
+    }
+
     void Window::set_application(Application& app)
     {
         gtk_window_set_application(GTK_WINDOW(_internal), app.operator GtkApplication*());
@@ -53,7 +58,6 @@ namespace mousetrap
     {
         gtk_window_close(GTK_WINDOW(_internal));
     }
-
 
     void Window::set_maximized(bool b)
     {

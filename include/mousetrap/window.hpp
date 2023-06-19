@@ -48,6 +48,9 @@ namespace mousetrap
             /// @brief expose internal
             NativeObject get_internal() const override;
 
+            /// @brief override signal emitter
+            operator NativeObject() const override;
+
             /// @brief link with application
             /// @param application
             void set_application(Application& application);
