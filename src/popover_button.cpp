@@ -83,12 +83,12 @@ namespace mousetrap
         gtk_menu_button_set_child(_internal->native, nullptr);
     }
 
-    void PopoverButton::set_popover_position(RelativePosition type)
+    void PopoverButton::set_relative_position(RelativePosition type)
     {
         gtk_popover_set_position(gtk_menu_button_get_popover(_internal->native), (GtkPositionType) type);
     }
 
-    RelativePosition PopoverButton::get_popover_position() const
+    RelativePosition PopoverButton::get_relative_position() const
     {
         return (RelativePosition) gtk_popover_get_position(gtk_menu_button_get_popover(_internal->native));
     }

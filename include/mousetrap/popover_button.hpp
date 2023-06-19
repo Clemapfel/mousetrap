@@ -67,11 +67,11 @@ namespace mousetrap
 
             /// @brief set relative position, applied to any popover attached
             /// @param relative_position
-            void set_popover_position(RelativePosition relative_position);
+            void set_relative_position(RelativePosition relative_position);
 
             /// @brief get relative position of any potential popover
             /// @return relative position
-            RelativePosition get_popover_position() const;
+            RelativePosition get_relative_position() const;
 
             /// @brief remove bound PopoverMenu or Popover
             void remove_popover();
