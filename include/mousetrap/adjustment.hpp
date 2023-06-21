@@ -70,7 +70,7 @@ namespace mousetrap
 
             /// @brief get minimum step increment
             /// @return float
-            float get_increment() const;
+            float get_step_increment() const;
 
             /// @brief set lower bounds, clamped to upper bound
             /// @param new_value
@@ -86,7 +86,7 @@ namespace mousetrap
 
             /// @brief set minimum step increment
             /// @param new_value
-            void set_increment(float new_value);
+            void set_step_increment(float new_value);
 
         private:
             detail::AdjustmentInternal* _internal = nullptr;

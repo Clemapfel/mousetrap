@@ -58,7 +58,7 @@ namespace mousetrap
         return gtk_adjustment_get_lower(_internal);
     }
 
-    float Adjustment::get_increment() const
+    float Adjustment::get_step_increment() const
     {
         return gtk_adjustment_get_minimum_increment(_internal);
     }
@@ -108,12 +108,12 @@ namespace mousetrap
         }
     }
 
-    void Adjustment::set_increment(float value)
+    void Adjustment::set_step_increment(float value)
     {
         if (value < 0)
         {
             std::stringstream str;
-            str << "In Adjustment:set_increment: " << value << " is not a valid increment, increment has to be positive";
+            str << "In Adjustment:set_step_increment: " << value << " is not a valid increment, increment has to be positive";
             log::warning(str.str(), MOUSETRAP_DOMAIN);
         }
 

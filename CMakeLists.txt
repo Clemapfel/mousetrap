@@ -61,7 +61,7 @@ endif()
 
 find_library(OpenGL REQUIRED NAMES GL)
 find_library(GLEW REQUIRED NAMES GLEW)
-find_package(SFML COMPONENTS audio REQUIRED)
+#find_package(SFML COMPONENTS audio REQUIRED)
 
 # GTK4
 find_package(PkgConfig)
@@ -297,7 +297,7 @@ target_link_libraries(mousetrap PUBLIC
     ${OpenGL}
     ${GLEW}
     ${GTK_LIBRARIES}
-    sfml-audio
+    #sfml-audio
 )
 
 target_compile_features(mousetrap PUBLIC
