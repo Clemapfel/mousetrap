@@ -287,6 +287,12 @@ add_library(mousetrap STATIC
     ${MOUSETRAP_HEADER_FILES}
     ${MOUSETRAP_SOURCE_FILES}
 )
+message(WARNING ${GTK_INCLUDE_DIRS})
+
+#message(WARNING "GTK4: ${GTK4_INCLUDE_DIR}")
+#message(WARNING "Glib: ${GLIB_INCLUDE_DIR}")
+
+set(OVERRIDE_INCLUDE_DIRS "${GTK4_INCLUDE_DIR};${GLIB_INCLUDE_DIR};${GLIB_INCLUDE_DIR}/include")
 
 target_include_directories(mousetrap PUBLIC
     "${CMAKE_SOURCE_DIR}/include"
