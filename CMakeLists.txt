@@ -59,7 +59,7 @@ endif()
 
 ### DEPENDENCIES ###
 
-find_library(OpenGL REQUIRED NAMES GL)
+find_library(OpenGL NAMES GL)
 find_library(GLEW REQUIRED NAMES GLEW)
 #find_package(SFML COMPONENTS audio REQUIRED)
 
