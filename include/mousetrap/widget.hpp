@@ -14,6 +14,7 @@
 #include <mousetrap/cursor_type.hpp>
 #include <mousetrap/alignment.hpp>
 #include <mousetrap/image.hpp>
+#include <mousetrap/action.hpp>
 
 #include <map>
 #include <string>
@@ -53,6 +54,7 @@ namespace mousetrap
             std::function<TickCallbackResult(GdkFrameClock*)> tick_callback;
             guint tick_callback_id;
             GtkWidget* tooltip_widget;
+            GtkShortcutController* shortcut_controller_maybe;
         };
         using WidgetInternal = _WidgetInternal;
         DEFINE_INTERNAL_MAPPING(Widget);
@@ -327,6 +329,10 @@ namespace mousetrap
             /// @brief get whether a child widget inside this widget should be cutoff when it leaves this widgets boundary
             /// @return true if child shut be cutoff, true if it should be fully visible
             bool get_hide_on_overflow() const;
+
+            /// @brief Convenience function that automatically adds the action to a shortcut controller of this widget
+            /// @param action Action
+            void set_listens_for_shortcut_actions(Action&);
 
         protected:
             /// @brief ctor protected. Only inheriting classes should call this

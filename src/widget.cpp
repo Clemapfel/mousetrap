@@ -8,6 +8,7 @@
 #include <mousetrap/widget.hpp>
 #include <mousetrap/event_controller.hpp>
 #include <mousetrap/clipboard.hpp>
+#include <mousetrap/shortcut_event_controller.hpp>
 
 namespace mousetrap
 {
@@ -37,6 +38,7 @@ namespace mousetrap
             self->tooltip_widget = nullptr;
             self->tick_callback = nullptr;
             self->tick_callback_id = guint(-1);
+            self->shortcut_controller_maybe = nullptr;
 
             return self;
         }
@@ -509,8 +511,22 @@ namespace mousetrap
     {
         return FrameClock(gtk_widget_get_frame_clock(operator NativeWidget()));
     }
-}
 
+    void Widget::set_listens_for_shortcut_actions(Action& action)
+    {
+        if (action.get_shortcuts().empty())
+            log::warning("In Widget::set_listens_for_shortcut_actions: Action with id `" + action.get_id() + "` does not have any shortcut triggers registered.");
+
+        if (_internal->shortcut_controller_maybe == nullptr)
+        {
+            _internal->shortcut_controller_maybe = (GtkShortcutController*) gtk_shortcut_controller_new();
+            gtk_widget_add_controller(operator NativeWidget(), (GtkEventController*) _internal->shortcut_controller_maybe);
+        }
+
+        auto temp = ShortcutEventController((detail::ShortcutEventControllerInternal*) _internal->shortcut_controller_maybe);
+        temp.add_action(action);
+    }
+}
 
 namespace mousetrap::detail
 {

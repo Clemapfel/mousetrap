@@ -6,44 +6,10 @@ In this chapter, we will learn:
 + How to connect an event controller to any widget
 
 --- 
-<details><summary><b><tt>main.cpp</tt> for this chapter</b></summary>
 
-Snippets from this section can be run using the following main.cpp:
+## Introduction: Event Model
 
-```cpp
-#include <mousetrap.hpp>
-using namespace mousetrap;
-
-int main()
-{
-    auto app = Application("example.app");
-    app.connect_signal_activate([](Application& app)
-    {
-        auto window = Window(app);
-        static auto separator = Separator();
-        separator.set_size_request({300, 300});
-        separator.set_expand(true);
-        separator.set_focusable(true);
-        separator.connect_signal_show([](Widget& self){
-            self->grab_focus()
-        });
-
-        // snippet goes here, then add the event controller to...
-        
-        window.add_controller(/* controller here */)
-        window.set_child(separator);
-        window.present();
-    });
-    return app.run();
-}
-```
-</details>
-
----
-
-## Event Model
-
-So far, we were able to react to a user interacting with the GUI through widgets. For example, if the user pressed the left mouse button while hovering over a `Button`, that button will emit the signal `clicked`, which can trigger our custom behavior. While this mechanism works, is can also be fairly limiting. Pre-defined widgets have an equally pre-defined way of interacting with them. We cannot react to the user pressing a keyboard key using just `Button`. In this chapter, we will change this using **event controllers**.
+So far, we were able to react to a user interacting with the GUI through widgets. For example, if the user pressed the left mouse button while hovering over a `Button`, that button will emit the signal `clicked`, which can trigger our custom behavior. While this mechanism works, is can also be fairly limiting. Pre-defined widgets will only have pre-defined way of interacting with them. We cannot react to the user pressing a keyboard key using just `Button`. To do that, we will need an **event controller**. 
 
 ### What is an Event?
 
@@ -51,52 +17,61 @@ When the user interacts with a computer in the physical world, they will control
 
 Pressing a keyboard key is an event, releasing the key is a new event. Moving the cursor by one unit is an event, pressing a stylus against a touchpad is an event, etc. Mousetrap is based on GTK4, which has very powerful and versatile event abstraction. We don't have to deal with OS-specific events directly, instead, the GTK backend will automatically transform and distribute events for us, regardless of the operating system or peripheral.
 
-To receive events, we need an \a{EventController}. The `EventController` class is abstract, meaning we cannot use it directly. Instead, we deal with one or more of its children. Each child class handles a conceptual type of event. 
+To receive events, we need an [`EventController`]. The `EventController` type is abstract, meaning we cannot use it directly. Instead, we deal with one or more of its subtypes. Each child class handles one one conceptual type of event. 
 
-In order for an event controller to be able to capture events, it needs to first be connected to a widget. Then, when the widget holds **input focus**, events are forwarded to the controller, whose signals we can then connect custom behavior to.
+**In order for an event controller to be able to capture events, it needs to be connected to a widget**. Then, when the widget holds **input focus**, events are forwarded to the event controller, whose signals we can then connect custom behavior to.
 
 ## Input Focus
 
-The concept of [**input focus**](https://en.wikipedia.org/wiki/Focus_(computing)) is important to understand. In mousetrap (and GUIs in general), each widget has a hidden property that indicates whether the widget currently **holds focus**. If a widget holds focus, all its children hold focus as well. For example, if the focused widget is a box, all widgets inside that box also hold focus.
+The concept of [**input focus**](https://en.wikipedia.org/wiki/Focus_(computing)) is important to understand. In mousetrap (and GUIs in general), each widget has a hidden property that indicates whether the widget currently **holds focus**. If a widget holds focus, all its children hold focus as well. For example, if the focused widget is a `Box`, all widgets inside that box also hold focus.
 
-**Only a widget holding focus can receive input events**. Which widget gets focus next is controlled by a somewhat complex heuristic, usually using things like which window is on top and where the user last interacted with the GUI. For most situations, this mechanism works very well and we don't have to worry about it much, in the rare cases we do, we can control the focus directly.
+**Only a widget holding focus can receive input events**. Which widget acquires focus is controlled by a somewhat complex heuristic, usually using things like which window is on top and where the user last interacted with the GUI. For most situations, this mechanism works very well and we don't have to worry about it much, in the rare cases we do, we can control the focus directly.
 
 ### Preventing Focus
 
-Only `focusable` widgets can hold focus. We can make a widget focusable by calling `Widget::set_is_focusable`. Not all widgets are focusable by default. To know which are and are not focusable, we can use common sense: Any widget that has a way of interacting with it (such as a `Button`, `Entry`, `Scale`, `SpinButton` etc.) will be focusable by default. Widgets that have no native way of interacting with them are not focusable unless we specifically request them to be. This includes widget like `Label`, `ImageDisplay`, `Spinner`, etc.
+Only `focusable` widgets can hold focus. We can make a widget focusable by calling [`set_is_focusable!`](@ref). Not all widgets are focusable by default. To know which are and are not focusable, we can use common sense: Any widget that has a way of interacting with it (such as a `Button`, `Entry`, `Scale`, `SpinButton` etc.) will be focusable by default. Widgets that have no native way of interacting with them are not focusable unless we specifically request them to be. This includes widget like `Label`, `ImageDisplay`, `Separator`, etc.
 
-By setting `Widget::set_can_respond_to_input` to false, a widget can not only not be interacted with, but will also be unable to hold focus. This applies to it and all of its children.
+If a container widget has at least one focusable child, it itself is focusable.
+
+To prevent a widget from being able to gain focus, we can either disable it entirely by setting [`set_can_respond_to_input!`](@ref) to `false`, or we can delcare it as not focusable 
+using `set_is_focusable!`.
 
 ### Requesting Focus
 
-`Widget::grab_focus` will make a widget attempt to receive the current focus. If this is impossible, for example because the widget is disabled or not yet shown, nothing will happen. We can check if a widget currently has focus by calling `Widget::get_has_focus`.
+[`grab_focus!`](@ref) will make a widget attempt to gain input focus, stealing it from whatever other widget is currently focused. If this is impossible, for example because the widget is disabled or not yet shown, nothing will happen. We can check if a widget currently has focus by calling [`get_has_focus`](@ref).
 
-Many widgets will automatically grab focus if interacted with, for example, if the user places the text cursor inside an `Entry`, that entry will grab focus. Pressing enter now `activate`s the entry, even if another widget held focus before. If a `Button` is clicked, it will usually grab focus. We can make any widget, even those that do not require interaction, grab focus when clicked by setting `Widget::set_focus_on_click` to `true`.
+Many widgets will automatically grab focus if interacted with, for example, if the user places the text cursor inside an `Entry`, that entry will grab focus. Pressing enter now `activate`s the entry, even if another widget held focus before. If a `Button` is clicked, it will usually grab focus. We can make any widget, even those that do not require interaction, grab focus when clicked by setting [`set_focus_on_click`](@ref) to `true`.
 
-## Connecting a Controller
+The user can also decide which widget should hold focus, usually by pressing the tab key. If [`set_focus_visible`](@ref) was set to `true` for the toplevel window, the focused widget 
+will highlighted, usually using a transparent border.
 
-Using our newly gained knowledge about focus, we'll create our first event controller: `FocusEventController`. This controller reacts to a widget gaining or loosing input focus. This way, we can easily monitor whether a widget has focus.
+## Event Controllers
 
-After creating an event controller, it will not yet react to any events. We need to **add the controller to a widget**. For this chapter, we will assume that this widget is the top-level window.
+### Connecting a Controller
+
+Using our newly gained knowledge about focus, we'll create our first event controller: `FocusEventController`. This controller reacts to a widget gaining or loosing input focus.
+
+After creating an event controller, it will not yet react to any events. We need to **add the controller to a widget**. For this chapter, we will assume that this widget is the top-level window, called `window` in the code snippet in this chapter.
 
 We create and connect a `FocusEventController` like so:
 
-```cpp
-auto focus_controller = FocusEventController();
-window.add_controller(focus_controller);
+```julia
+focus_controller = FocusEventController()
+add_controller!(window, focus_controller)
 ```
 
-Where `window` is the main application window.
+While the controller will now receive, nothing will happen. We need to connect to one of more of its signals, using the familiar signal handler callback mechanism.
 
 ## Gaining / Loosing Focus: FocusEventController
 
-After having connected the controller to a widget, it is ready to receive events. To react to these, we connect to one or more of the signals of an event controller.
-
 `FocusEventController` has two signals:
 
-\signals
-\signal_focus_gained{FocusEventController}
-\signal_focus_lost{FocusEventController}
+```@eval
+@type_signals(FocusEventController, 
+    :focus_gained,
+    :focus_lost
+)
+```
 
 After connecting to these signals:
 

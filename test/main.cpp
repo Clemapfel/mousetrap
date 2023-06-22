@@ -69,12 +69,12 @@ int main()
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
-        auto button = Button();
-        button.connect_signal_destroy([](Button&){
-            std::cout << "clicked" << std::endl;
+        auto action = Action("test.action", app);
+        action.set_function([](Action&){
+            std::cout << "activated" << std::endl;
         });
-
-        window.set_child(button);
+        action.add_shortcut("<Control>space");
+        window.set_listens_for_shortcut_actions(action);
         window.present();
     });
 
