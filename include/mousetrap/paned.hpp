@@ -6,7 +6,7 @@
 #pragma once
 
 #include <mousetrap/widget.hpp>
-
+#include <mousetrap/orientation.hpp>
 
 namespace mousetrap
 {
@@ -22,7 +22,7 @@ namespace mousetrap
     /// @brief paned, displays two children with a draggable area in between, dragging the area resizes the respective two widgets
     /// \signals
     /// \widget_signals{Paned}
-    class Paned : public Widget, public Orientable,
+    class Paned : public Widget,
         HAS_SIGNAL(Paned, realize),
         HAS_SIGNAL(Paned, unrealize),
         HAS_SIGNAL(Paned, destroy),
@@ -109,10 +109,10 @@ namespace mousetrap
             bool get_has_wide_handle() const;
 
             /// @copydoc mousetrap::Orientable::set_orientation
-            void set_orientation(Orientation) override;
+            void set_orientation(Orientation);
 
             /// @copydoc mousetrap::Orientable::get_orientation
-            Orientation get_orientation() const override;
+            Orientation get_orientation() const;
 
         private:
             detail::PanedInternal* _internal = nullptr;

@@ -9,7 +9,7 @@
 #include <mousetrap/time.hpp>
 #include <mousetrap/transition_type.hpp>
 #include <mousetrap/selection_model.hpp>
-#include <mousetrap/selectable.hpp>
+
 
 namespace mousetrap
 {

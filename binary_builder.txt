@@ -2,7 +2,7 @@
 
 Mousetrap
 https://github.com/Clemapfel/mousetrap
-ad538fc0760a18371dbedbd67029cbfc6259cb88
+9d483d325148caeb63f2c008958408b83bc9ce14
 
 CxxWrap
 https://github.com/JuliaInterop/libcxxwrap-julia

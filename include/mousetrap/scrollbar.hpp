@@ -5,7 +5,7 @@
 #pragma once
 
 #include <mousetrap/widget.hpp>
-
+#include <mousetrap/orientation.hpp>
 #include <mousetrap/adjustment.hpp>
 
 namespace mousetrap

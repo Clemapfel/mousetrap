@@ -6,8 +6,8 @@
 #pragma once
 
 #include <mousetrap/widget.hpp>
-#include <mousetrap/selectable.hpp>
-
+#include <mousetrap/orientation.hpp>
+#include <mousetrap/selection_model.hpp>
 
 #ifdef DOXYGEN
     #include "../../docs/doxygen.inl"

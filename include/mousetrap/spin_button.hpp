@@ -7,7 +7,7 @@
 
 #include <mousetrap/widget.hpp>
 #include <mousetrap/adjustment.hpp>
-
+#include <mousetrap/orientation.hpp>
 
 #ifdef DOXYGEN
     #include "../../docs/doxygen.inl"
@@ -38,7 +38,7 @@ namespace mousetrap
     /// \signal_value_changed{SpinButton}
     /// \signal_wrapped{SpinButton}
     /// \widget_signals{SpinButton}
-    class SpinButton : public Widget, public Orientable,
+    class SpinButton : public Widget,
         HAS_SIGNAL(SpinButton, value_changed),
         HAS_SIGNAL(SpinButton, wrapped),
         HAS_SIGNAL(SpinButton, realize),
@@ -69,11 +69,11 @@ namespace mousetrap
 
             /// @brief get orientation
             /// @return mousetrap::Orientation
-            Orientation get_orientation() const override;
+            Orientation get_orientation() const;
 
             /// @brief set orientation
             /// @param orientation
-            void set_orientation(Orientation orientation) override;
+            void set_orientation(Orientation orientation);
 
             /// @brief get adjustment, modifying it will modify the spin button
             /// @return adjusment

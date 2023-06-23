@@ -7,6 +7,7 @@
 
 #include <mousetrap/box.hpp>
 #include <mousetrap/log.hpp>
+#include <mousetrap/orientation.hpp>
 
 namespace mousetrap
 {
@@ -127,5 +128,13 @@ namespace mousetrap
         return gtk_box_get_spacing(GTK_BOX(operator NativeWidget()));
     }
 
-    IMPLEMENT_ORIENTABLE(Box);
+    void Box::set_orientation(Orientation orientation)
+    {
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(operator NativeWidget()), (GtkOrientation) orientation);
+    }
+
+    Orientation Box::get_orientation() const
+    {
+        return (Orientation) gtk_orientable_get_orientation(GTK_ORIENTABLE(operator NativeWidget()));
+    }
 }

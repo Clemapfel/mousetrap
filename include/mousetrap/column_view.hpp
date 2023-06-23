@@ -8,7 +8,7 @@
 #include <mousetrap/menu_model.hpp>
 #include <mousetrap/gtk_common.hpp>
 #include <mousetrap/selection_model.hpp>
-#include <mousetrap/selectable.hpp>
+
 
 namespace mousetrap
 {

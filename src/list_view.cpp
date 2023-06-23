@@ -5,6 +5,7 @@
 
 #include <mousetrap/list_view.hpp>
 #include <mousetrap/log.hpp>
+#include <mousetrap/selection_model.hpp>
 
 namespace mousetrap::detail
 {

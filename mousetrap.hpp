@@ -51,7 +51,7 @@
 #include <mousetrap/msaa_render_texture.hpp>
 #include <mousetrap/music.hpp>
 #include <mousetrap/notebook.hpp>
-
+#include <mousetrap/orientation.hpp>
 #include <mousetrap/orientation.hpp>
 #include <mousetrap/overlay.hpp>
 #include <mousetrap/pan_event_controller.hpp>
@@ -71,7 +71,7 @@
 #include <mousetrap/scroll_event_controller.hpp>
 #include <mousetrap/scrollbar.hpp>
 #include <mousetrap/viewport.hpp>
-#include <mousetrap/selectable.hpp>
+
 #include <mousetrap/selection_model.hpp>
 #include <mousetrap/separator.hpp>
 #include <mousetrap/shader.hpp>

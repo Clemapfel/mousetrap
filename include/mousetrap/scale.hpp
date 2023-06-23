@@ -9,7 +9,7 @@
 
 #include <mousetrap/widget.hpp>
 #include <mousetrap/adjustment.hpp>
-
+#include <mousetrap/orientation.hpp>
 #include <mousetrap/relative_position.hpp>
 
 #ifdef DOXYGEN
