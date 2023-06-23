@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 3.18)
 #       Additional Dependencies when using this option:
 #           Doxygen
 #
-#   MOUSETRAP_USE_GTK_OVERRIDES: boolean
+#   MOUSETRAP_USE_OVERRIDES: boolean
 #       Whether to use hard-coded library paths for the GKT4 libraries.
 #       If set to true, the following cmake variables also need to be set:
 #          | CMake Variable         | Needed File             | Default Location on Debian / Fedora |
@@ -32,6 +32,7 @@ cmake_minimum_required(VERSION 3.18)
 #          | GDK_PIXBUF_INCLUDE_DIR | gdk-pixbuf/gdk-pixbuf.h | /usr/include/gdk-pixbuf-2.0
 #          | GRAPHENE_INCLUDE_DIR   | graphene.h              | /usr/include/graphene-1.0
 #          | GRAPHENE_LIB_DIR       | graphene-config.h       | /usr/lib64/graphene-1.0/include
+#          | GL_INCLUDE_DIR         | GLu.h                   | /usr/include/GL
 #
 
 ### PROJECT ###
@@ -58,8 +59,8 @@ find_library(OpenGL NAMES GL)
 find_library(GLEW REQUIRED NAMES GLEW)
 
 # GTK4
-option(MOUSETRAP_USE_GTK_OVERRIDES OFF)
-if (MOUSETRAP_USE_GTK_OVERRIDES)
+option(MOUSETRAP_USE_OVERRIDES OFF)
+if (MOUSETRAP_USE_OVERRIDES)
 
     # set(GTK4_INCLUDE_DIR "/usr/include/gtk-4.0")
     # set(GLIB_INCLUDE_DIR "/usr/include/glib-2.0")
@@ -83,9 +84,8 @@ if (MOUSETRAP_USE_GTK_OVERRIDES)
     find_library(GOBJECT REQUIRED NAMES gobject-2.0)
     find_library(GLIB REQUIRED NAMES glib-2.0)
 
-    message(WARNING ${GLIB})
-
     set(GTK_LIBRARIES "${GTK4};${CAIRO};${PANGO};${HARFBUZZ};${GDK_PIXBUF};${GRAPHENE};${GIO};${GOBJECT};${GLIB}")
+
 else()
     find_package(PkgConfig)
     pkg_check_modules(GTK gtk4)
@@ -315,6 +315,7 @@ add_library(mousetrap STATIC
 target_include_directories(mousetrap PUBLIC
     "${CMAKE_SOURCE_DIR}/include"
     "${GTK_INCLUDE_DIRS}"
+    "${GL_INCLUDE_DIR}"
 )
 
 target_link_libraries(mousetrap PUBLIC
@@ -330,7 +331,7 @@ target_compile_features(mousetrap PUBLIC
 set_target_properties(mousetrap PROPERTIES
     LINKER_LANGUAGE CXX
     POSITION_INDEPENDENT_CODE ON
-    INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
+    INTERFACE_INCLUDE_DIRECTORIES "${GL_INCLUDE_DIR};${GTK_INCLUDE_DIRS}"
     INTERFACE_LINK_LIBRARIES "${OpenGL};${GLEW};${GTK_LIBRARIES}"
 )
 
