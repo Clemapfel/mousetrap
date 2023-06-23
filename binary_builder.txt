@@ -2,7 +2,7 @@
 
 Mousetrap
 https://github.com/Clemapfel/mousetrap
-9d483d325148caeb63f2c008958408b83bc9ce14
+6de049878d3f5a947c9e50834bcbd1dd25459b1e
 
 CxxWrap
 https://github.com/JuliaInterop/libcxxwrap-julia
@@ -59,6 +59,8 @@ OpenGLMathematics
     https://github.com/JuliaBinaryWrappers/OpenGLMathematics_jll.jl
 GLU
     https://github.com/JuliaBinaryWrappers/GLU_jll.jl
+adwaita_icon_theme
+    https://github.com/JuliaBinaryWrappers/adwaita_icon_theme_jll.jl
 
 X11
     https://github.com/JuliaBinaryWrappers/X11_jll.jl
