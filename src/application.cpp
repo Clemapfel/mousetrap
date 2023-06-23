@@ -149,6 +149,16 @@ namespace mousetrap
             g_application_unmark_busy(G_APPLICATION(_internal->native));
     }
 
+    bool Application::is_marked_as_busy() const
+    {
+        return _internal->busy;
+    }
+
+    bool Application::is_holding() const
+    {
+        return _internal->holding;
+    }
+
     void Application::add_action(const Action& action)
     {
         if (G_ACTION(action.operator NativeObject()) == nullptr)

@@ -105,6 +105,12 @@ namespace mousetrap
             /// @brief undo a previous call to mousetrap::Application::mark_as_busy
             void unmark_as_busy();
 
+            /// @brief get whether `mark_as_busy` was called
+            bool is_marked_as_busy() const;
+
+            /// @brief get whether application is currently holding, preventing exiting
+            bool is_holding() const;
+
             /// @brief add an action to application, see the manual page on actions for details
             /// @param action pointer to action, the user is responsible for making sure the action stays in scope
             void add_action(const Action& action);
