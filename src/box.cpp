@@ -7,7 +7,6 @@
 
 #include <mousetrap/box.hpp>
 #include <mousetrap/log.hpp>
-#include <mousetrap/orientable.hpp>
 
 namespace mousetrap
 {

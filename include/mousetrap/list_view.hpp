@@ -9,7 +9,7 @@
 #include <vector>
 
 #include <mousetrap/widget.hpp>
-#include <mousetrap/orientable.hpp>
+
 #include <mousetrap/selectable.hpp>
 
 #ifdef DOXYGEN

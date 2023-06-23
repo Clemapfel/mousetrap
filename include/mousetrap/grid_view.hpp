@@ -7,7 +7,7 @@
 
 #include <mousetrap/widget.hpp>
 #include <mousetrap/selectable.hpp>
-#include <mousetrap/orientable.hpp>
+
 
 #ifdef DOXYGEN
     #include "../../docs/doxygen.inl"

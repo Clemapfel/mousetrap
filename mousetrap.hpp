@@ -51,7 +51,7 @@
 #include <mousetrap/msaa_render_texture.hpp>
 #include <mousetrap/music.hpp>
 #include <mousetrap/notebook.hpp>
-#include <mousetrap/orientable.hpp>
+
 #include <mousetrap/orientation.hpp>
 #include <mousetrap/overlay.hpp>
 #include <mousetrap/pan_event_controller.hpp>
