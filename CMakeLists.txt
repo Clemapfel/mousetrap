@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.18)
 
 #
 # MOUSETRAP: GUI Library
@@ -18,12 +18,27 @@ cmake_minimum_required(VERSION 3.12)
 #       Additional Dependencies when using this option:
 #           Doxygen
 #
+#   MOUSETRAP_USE_GTK_OVERRIDES: boolean
+#       Whether to use hard-coded library paths for the GKT4 libraries.
+#       If set to true, the following cmake variables also need to be set:
+#          | CMake Variable         | Needed File             | Default Location on Debian / Fedora |
+#          |------------------------|-------------------------|-------------------------------------|
+#          | GTK4_INCLUDE_DIR       | gtk/gtk.                | /usr/include/gtk-4.0
+#          | GLIB_INCLUDE_DIR       | glib.h                  | /usr/include/glib-2.0
+#          | GLIB_LIB_DIR           | gilbconfig.h            | /usr/lib64/glib-2.0/include
+#          | CAIRO_INCLUDE_DIR      | cairo.h                 | /usr/include/cairo
+#          | PANGO_INCLUDE_DIR      | pango/pango.h           | /usr/include/pango-1.0
+#          | HARFBUZZ_INCLUDE_DIR   | hb.h                    | /usr/include/harfbuzz
+#          | GDK_PIXBUF_INCLUDE_DIR | gdk-pixbuf/gdk-pixbuf.h | /usr/include/gdk-pixbuf-2.0
+#          | GRAPHENE_INCLUDE_DIR   | graphene.h              | /usr/include/graphene-1.0
+#          | GRAPHENE_LIB_DIR       | graphene-config.h       | /usr/lib64/graphene-1.0/include
+#
 
 ### PROJECT ###
 
 project(mousetrap
     VERSION 0.1.0
-    DESCRIPTION "TODO" # TODO
+    DESCRIPTION ""
     LANGUAGES CXX
 )
 
@@ -34,41 +49,48 @@ endif()
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set(PROJECT_PREFIX "")#"mousetrap_") # TODO
 
-### DOCUMENTATION ###
-
-option(MOUSETRAP_BUILD_DOCUMENTATION OFF)
-if (${MOUSETRAP_BUILD_DOCUMENTATION})
-
-    find_package(Doxygen REQUIRED)
-    set(PROJECT_DOCUMENTATION_DIR "${CMAKE_SOURCE_DIR}/docs")
-    if (NOT EXISTS "${PROJECT_DOCUMENTATION_DIR}")
-        message(WARNING "Directory mousetrap/docs is missing, unable to build documentation.")
-    else()
-        configure_file(
-            "${PROJECT_DOCUMENTATION_DIR}/Doxyfile.in"
-            "${PROJECT_DOCUMENTATION_DIR}/Doxyfile"
-            @ONLY
-        )
-        add_custom_target("${PROJECT_PREFIX}docs"
-            COMMAND doxygen
-            WORKING_DIRECTORY "${PROJECT_DOCUMENTATION_DIR}"
-            DEPENDS docs/Doxyfile.in
-        )
-    endif()
-endif()
-
 ### DEPENDENCIES ###
 
+# OpenGL
 find_library(OpenGL NAMES GL)
+
+# GLEW
 find_library(GLEW REQUIRED NAMES GLEW)
-#find_package(SFML COMPONENTS audio REQUIRED)
 
 # GTK4
-find_package(PkgConfig)
-pkg_check_modules(GTK gtk4)
+option(MOUSETRAP_USE_GTK_OVERRIDES OFF)
+if (MOUSETRAP_USE_GTK_OVERRIDES)
 
-if (NOT GTK_FOUND)
-    message(FATAL_ERROR "Missing Dependency: unable to locate GTK4")
+    # set(GTK4_INCLUDE_DIR "/usr/include/gtk-4.0")
+    # set(GLIB_INCLUDE_DIR "/usr/include/glib-2.0")
+    # set(GLIB_LIB_DIR "/usr/lib64/glib-2.0/include")
+    # set(CAIRO_INCLUDE_DIR "/usr/include/cairo")
+    # set(PANGO_INCLUDE_DIR "/usr/include/pango-1.0")
+    # set(HARFBUZZ_INCLUDE_DIR "/usr/include/harfbuzz")
+    # set(GDK_PIXBUF_INCLUDE_DIR "/usr/include/gdk-pixbuf-2.0")
+    # set(GRAPHENE_INCLUDE_DIR "/usr/include/graphene-1.0")
+    # set(GRAPHENE_LIB_DIR "/usr/lib64/graphene-1.0/include")
+
+    set(GTK_INCLUDE_DIRS "${GTK4_INCLUDE_DIR};${GLIB_INCLUDE_DIR};${GLIB_LIB_DIR};${CAIRO_INCLUDE_DIR};${PANGO_INCLUDE_DIR};${HARFBUZZ_INCLUDE_DIR};${GDK_PIXBUF_INCLUDE_DIR};${GRAPHENE_INCLUDE_DIR};${GRAPHENE_LIB_DIR}")
+
+    find_library(GTK4 REQUIRED NAMES gtk-4)
+    find_library(CAIRO REQUIRED NAMES cairo)
+    find_library(PANGO REQUIRED NAMES pango-1.0)
+    find_library(HARFBUZZ REQUIRED NAMES harfbuzz)
+    find_library(GDK_PIXBUF REQUIRED NAMES gdk_pixbuf-2.0)
+    find_library(GRAPHENE REQUIRED NAMES graphene-1.0)
+    find_library(GIO REQUIRED NAMES gio-2.0)
+    find_library(GOBJECT REQUIRED NAMES gobject-2.0)
+    find_library(GLIB REQUIRED NAMES glib-2.0)
+
+    set(GTK_LIBRARIES "${GTK4};${CAIRO};${PANGO};${HARFBUZZ};${GDK_PIXBUF};${GRAPHENE};${GIO};${GOBJECT};${GLIB}")
+else()
+    find_package(PkgConfig)
+    pkg_check_modules(GTK gtk4)
+
+    if (NOT GTK_FOUND)
+        message(FATAL_ERROR "Missing Dependency: unable to locate GTK4")
+    endif()
 endif()
 
 # OpenGL Math
@@ -297,7 +319,6 @@ target_link_libraries(mousetrap PUBLIC
     ${OpenGL}
     ${GLEW}
     ${GTK_LIBRARIES}
-    #sfml-audio
 )
 
 target_compile_features(mousetrap PUBLIC
@@ -310,6 +331,29 @@ set_target_properties(mousetrap PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
     INTERFACE_LINK_LIBRARIES "${OpenGL};${GLEW};${GTK_LIBRARIES}"
 )
+
+### DOCUMENTATION ###
+
+option(MOUSETRAP_BUILD_DOCUMENTATION OFF)
+if (${MOUSETRAP_BUILD_DOCUMENTATION})
+
+    find_package(Doxygen REQUIRED)
+    set(PROJECT_DOCUMENTATION_DIR "${CMAKE_SOURCE_DIR}/docs")
+    if (NOT EXISTS "${PROJECT_DOCUMENTATION_DIR}")
+        message(WARNING "Directory mousetrap/docs is missing, unable to build documentation.")
+    else()
+        configure_file(
+                "${PROJECT_DOCUMENTATION_DIR}/Doxyfile.in"
+                "${PROJECT_DOCUMENTATION_DIR}/Doxyfile"
+                @ONLY
+        )
+        add_custom_target("${PROJECT_PREFIX}docs"
+                COMMAND doxygen
+                WORKING_DIRECTORY "${PROJECT_DOCUMENTATION_DIR}"
+                DEPENDS docs/Doxyfile.in
+                )
+    endif()
+endif()
 
 ### TEST ###
 
