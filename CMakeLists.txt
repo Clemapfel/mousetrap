@@ -213,7 +213,7 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/inline/widget.inl
     include/mousetrap/key_codes.hpp
     include/mousetrap/inline/file_chooser.inl
-)
+        include/mousetrap/color_chooser.hpp)
 
 set(MOUSETRAP_SOURCE_FILES
     src/adjustment.cpp
@@ -305,7 +305,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/window.cpp
     src/action.cpp
     src/popover_menu.cpp
-)
+        src/color_chooser.cpp)
 
 add_library(mousetrap STATIC
     ${MOUSETRAP_HEADER_FILES}

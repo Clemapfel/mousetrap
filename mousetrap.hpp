@@ -71,7 +71,7 @@
 #include <mousetrap/scroll_event_controller.hpp>
 #include <mousetrap/scrollbar.hpp>
 #include <mousetrap/viewport.hpp>
-
+#include <mousetrap/color_chooser.hpp>
 #include <mousetrap/selection_model.hpp>
 #include <mousetrap/separator.hpp>
 #include <mousetrap/shader.hpp>

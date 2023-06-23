@@ -18,63 +18,18 @@
 
 using namespace mousetrap;
 
-struct Notifier
-{
-    Notifier()
-    {
-        std::cout << "initialized " << this << std::endl;
-    }
-
-    ~Notifier()
-    {
-        std::cout << "destroyed " << this << std::endl;
-    }
-};
-
-class _Button : public Widget,
-    HAS_SIGNAL(_Button, clicked)
-{
-    private:
-        detail::ButtonInternal* _internal;
-
-    public:
-        _Button()
-            : Widget(gtk_button_new()),
-              CTOR_SIGNAL(_Button, clicked)
-        {
-            _internal = GTK_BUTTON(Widget::operator NativeWidget());
-        }
-
-        _Button(GtkButton* internal)
-            : Widget(GTK_WIDGET(internal)),
-              CTOR_SIGNAL(_Button, clicked),
-            _internal(internal)
-        {}
-
-        NativeObject get_internal() const
-        {
-            return G_OBJECT(_internal);
-        }
-};
-
-namespace mousetrap::detail
-{
-    using _ButtonInternal = GtkButton;
-    DEFINE_INTERNAL_MAPPING(_Button);
-}
-
 int main()
 {
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
-        auto action = Action("test.action", app);
-        action.set_function([](Action&){
-            std::cout << "activated" << std::endl;
+
+        auto color_chooser = ColorChooser("test color");
+        color_chooser.on_color_selected([](ColorChooser&, RGBA color){
+            std::cout << color.operator std::string() << std::endl;
         });
-        action.add_shortcut("<Control>space");
-        window.set_listens_for_shortcut_actions(action);
+        color_chooser.present();
         window.present();
     });
 
