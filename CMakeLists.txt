@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 3.18)
 #       If set to true, the following cmake variables also need to be set:
 #          | CMake Variable         | Needed File             | Default Location on Debian / Fedora |
 #          |------------------------|-------------------------|-------------------------------------|
-#          | GTK4_INCLUDE_DIR       | gtk/gtk.                | /usr/include/gtk-4.0
+#          | GTK4_INCLUDE_DIR       | gtk/gtk.h               | /usr/include/gtk-4.0
 #          | GLIB_INCLUDE_DIR       | glib.h                  | /usr/include/glib-2.0
 #          | GLIB_LIB_DIR           | gilbconfig.h            | /usr/lib64/glib-2.0/include
 #          | CAIRO_INCLUDE_DIR      | cairo.h                 | /usr/include/cairo
@@ -82,6 +82,8 @@ if (MOUSETRAP_USE_GTK_OVERRIDES)
     find_library(GIO REQUIRED NAMES gio-2.0)
     find_library(GOBJECT REQUIRED NAMES gobject-2.0)
     find_library(GLIB REQUIRED NAMES glib-2.0)
+
+    message(WARNING ${GLIB})
 
     set(GTK_LIBRARIES "${GTK4};${CAIRO};${PANGO};${HARFBUZZ};${GDK_PIXBUF};${GRAPHENE};${GIO};${GOBJECT};${GLIB}")
 else()

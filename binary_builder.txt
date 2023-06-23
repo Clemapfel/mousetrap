@@ -1,0 +1,77 @@
+## SOURCES
+
+Mousetrap
+https://github.com/Clemapfel/mousetrap
+46eae7eb0133aca319bae59ab56d4fde0d096ce3
+
+CxxWrap
+https://github.com/JuliaInterop/libcxxwrap-julia
+main
+
+Mousetrap Julia binding
+https://github.com/Clemapfel/mousetrap_julia_binding
+1816ae49f84fa34ec0802249276d4ac16254efde
+
+GTK4_INCLUDE_DIR
+https://github.com/GNOME/gtk
+main
+/
+
+GLIB_INCLUDE_DIR
+https://github.com/GNOME/glib
+main
+/glib
+
+GLIB_LIB_DIR TODO
+
+CAIRO_INCLUDE_DIR
+https://github.com/msteinert/cairo
+master
+/src
+
+PANGO_INCLUDE_DIR
+https://github.com/GNOME/pango
+main
+/pango
+
+HARFBUZZ_INCLUDE_DIR
+https://github.com/harfbuzz/harfbuzz
+main
+/src
+
+GDK_PIXBUF_INCLUDE_DIR
+https://github.com/GNOME/gdk-pixbuf
+master
+/
+
+GRAPHENE_INCLUDE_DIR
+https://github.com/ebassi/graphene
+master
+/include
+
+## BINARY DEPENDENCIES
+
+GLEW
+    https://github.com/JuliaBinaryWrappers/GLEW_jll.jl
+GTK4
+    https://github.com/JuliaBinaryWrappers/GTK4_jll.jl
+OpenGLMathematics
+    https://github.com/JuliaBinaryWrappers/OpenGLMathematics_jll.jl
+X11
+    https://github.com/JuliaBinaryWrappers/X11_jll.jl
+
+## Script
+cd mousetrap
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
+         -DMOUSETRAP_USE_GTK_OVERRIDES=ON \
+         -DGTK4_INCLUDE_DIR=/workspace/destdir/include/gtk-4.0 \
+         -DGLIB_INCLUDE_DIR="/workspace/destdir/include/glib-2.0;/workspace/destdir/include/glib-2.0/glib" \
+         -DGLIB_LIB_DIR=/workspace/destdir/lib/glib-2.0/include \
+         -DCAIRO_INCLUDE_DIR=/workspace/destdir/include/cairo \
+         -DPANGO_INCLUDE_DIR=/workspace/destdir/include/pango-1.0/ \
+	 -DHARFBUZZ_INCLUDE_DIR=/workspace/destdir/include/harfbuzz \
+	 -DGDK_PIXBUF_INCLUDE_DIR=/workspace/destdir/include/gdk-pixbuf-2.0 \
+	 -DGRAPHENE_INCLUDE_DIR=/workspace/destdir/include/graphene-1.0 \
+	 -DGRAPHENE_LIB_DIR="/workspace/destdir/lib/graphene-1.0/include;/workspace/destdir/include/GL" 
