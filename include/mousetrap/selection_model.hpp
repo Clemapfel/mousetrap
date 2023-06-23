@@ -61,6 +61,10 @@ namespace mousetrap
             /// @brief expose as GObject \for_internal_use_only
             operator NativeObject() const override;
 
+            /// @brief get mode of selection
+            /// @return selection mode
+            SelectionMode get_selection_mode() const;
+
             /// @brief get indices of selected items
             /// @return vector of indices, may be empty
             [[nodiscard]] std::vector<size_t> get_selection();

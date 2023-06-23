@@ -59,6 +59,16 @@ namespace mousetrap
         return out;
     }
 
+    SelectionMode SelectionModel::get_selection_mode() const
+    {
+        if (GTK_IS_SINGLE_SELECTION(_internal))
+            return SelectionMode::SINGLE;
+        else if (GTK_IS_MULTI_SELECTION(_internal))
+            return SelectionMode::MULTIPLE;
+        else
+            return SelectionMode::NONE;
+    }
+
     void SelectionModel::select_all()
     {
         gtk_selection_model_select_all(operator GtkSelectionModel*());
