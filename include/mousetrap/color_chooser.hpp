@@ -23,7 +23,8 @@ namespace mousetrap
             GObject parent;
 
             GtkColorDialog* native;
-            std::function<void(ColorChooser&, RGBA)>* on_color_selected;
+            std::function<void(ColorChooser&, RGBA)>* on_accept;
+            std::function<void(ColorChooser&)>* on_cancel;
             GdkRGBA* last_color;
         };
         using ColorChooserInternal = _ColorChooserInternal;
@@ -47,12 +48,22 @@ namespace mousetrap
             /// @brief set callback called when the user selects a color
             /// @param function Function with signature `(ColorChooser&, RGBA, Data_t) -> void`
             template<typename Function_t, typename Data_t>
-            void on_color_selected(Function_t, Data_t);
+            void on_accept(Function_t, Data_t);
 
             /// @brief set callback called when the user selects a color
             /// @param function Function with signature `(ColorChooser&, RGBA) -> void`
             template<typename Function_t>
-            void on_color_selected(Function_t);
+            void on_accept(Function_t);
+
+            /// @brief set callback called when the user selects a color
+            /// @param function Function with signature `(ColorChooser&, Data_t) -> void`
+            template<typename Function_t, typename Data_t>
+            void on_cancel(Function_t, Data_t);
+
+            /// @brief set callback called when the user selects a color
+            /// @param function Function with signature `(ColorChooser&) -> void`
+            template<typename Function_t>
+            void on_cancel(Function_t);
 
             /// @brief get current color, this will be the last selected color
             /// @return rgba
@@ -67,18 +78,34 @@ namespace mousetrap
     };
 
     template<typename Function_t, typename Data_t>
-    void ColorChooser::on_color_selected(Function_t f_in, Data_t data_in)
+    void ColorChooser::on_accept(Function_t f_in, Data_t data_in)
     {
-        _internal->on_color_selected = new std::function<void(ColorChooser&, RGBA)>([f = f_in, data = data_in](ColorChooser& self, RGBA rgba){
+        _internal->on_accept = new std::function<void(ColorChooser&, RGBA)>([f = f_in, data = data_in](ColorChooser& self, RGBA rgba){
            f(self, rgba, data);
         });
     }
 
     template<typename Function_t>
-    void ColorChooser::on_color_selected(Function_t f_in)
+    void ColorChooser::on_accept(Function_t f_in)
     {
-        _internal->on_color_selected = new std::function<void(ColorChooser&, RGBA)>([f = f_in](ColorChooser& self, RGBA rgba){
+        _internal->on_accept = new std::function<void(ColorChooser&, RGBA)>([f = f_in](ColorChooser& self, RGBA rgba){
             f(self, rgba);
+        });
+    }
+
+    template<typename Function_t, typename Data_t>
+    void ColorChooser::on_cancel(Function_t f_in, Data_t data_in)
+    {
+        _internal->on_cancel = new std::function<void(ColorChooser&)>([f = f_in, data = data_in](ColorChooser& self){
+            f(self, data);
+        });
+    }
+
+    template<typename Function_t>
+    void ColorChooser::on_cancel(Function_t f_in)
+    {
+        _internal->on_cancel = new std::function<void(ColorChooser&)>([f = f_in](ColorChooser& self){
+            f(self);
         });
     }
 

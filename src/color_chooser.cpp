@@ -15,7 +15,8 @@ namespace mousetrap::detail
     static void color_chooser_internal_finalize(GObject* object)
     {
         auto* self = MOUSETRAP_COLOR_CHOOSER_INTERNAL(object);
-        delete self->on_color_selected;
+        delete self->on_accept;
+        delete self->on_cancel;
         gdk_rgba_free(self->last_color);
         G_OBJECT_CLASS(color_chooser_internal_parent_class)->finalize(object);
     }
@@ -25,7 +26,7 @@ namespace mousetrap::detail
     static ColorChooserInternal*color_chooser_internal_new()
     {
         auto* self = (ColorChooserInternal*) g_object_new(color_chooser_internal_get_type(), nullptr);
-       color_chooser_internal_init(self);
+        color_chooser_internal_init(self);
 
         self->native = gtk_color_dialog_new();
         gtk_color_dialog_set_with_alpha(self->native, true);
@@ -36,7 +37,9 @@ namespace mousetrap::detail
         self->last_color->blue = 1;
         self->last_color->alpha = 1;
 
-        self->on_color_selected = nullptr;
+        self->on_accept = nullptr;
+        self->on_cancel = nullptr;
+
         return self;
     }
 }
@@ -87,24 +90,32 @@ namespace mousetrap
         GError* error_maybe = nullptr;
         auto* result_rgba = gtk_color_dialog_choose_rgba_finish(GTK_COLOR_DIALOG(self), result, &error_maybe);
 
-        if (error_maybe != nullptr)
-        {
-            log::critical("In ColorChooser::on_color_selected: " + std::string(error_maybe->message));
-            g_error_free(error_maybe);
-        }
-
         using namespace detail;
         auto* instance = MOUSETRAP_COLOR_CHOOSER_INTERNAL(data);
-
         auto temp = ColorChooser(instance);
+
+        if (error_maybe != nullptr)
+        {
+            if (error_maybe->code == 2) // dismissed by user
+            {
+                if (instance->on_cancel != nullptr)
+                    (*instance->on_cancel)(temp);
+            }
+            else
+                log::critical("In ColorChooser::on_color_selected: " + std::string(error_maybe->message));
+
+            g_error_free(error_maybe);
+            return;
+        }
+
         auto color = RGBA();
         color.r = result_rgba->red;
         color.g = result_rgba->green;
         color.b = result_rgba->blue;
         color.a = result_rgba->alpha;
 
-        if (instance->on_color_selected != nullptr)
-            (*instance->on_color_selected)(temp, color);
+        if (instance->on_accept != nullptr)
+            (*instance->on_accept)(temp, color);
 
         instance->last_color = gdk_rgba_copy(result_rgba);
         gdk_rgba_free(result_rgba);
