@@ -2,7 +2,7 @@
 
 Mousetrap
 https://github.com/Clemapfel/mousetrap
-5fbf7962f331ad96b98b19fed3b4a588275502bf
+18a4f1cae5c5a72b57bb265b7653578d04c7fb6f
 
 CxxWrap
 https://github.com/JuliaInterop/libcxxwrap-julia
@@ -11,43 +11,6 @@ main
 Mousetrap Julia binding
 https://github.com/Clemapfel/mousetrap_julia_binding
 1816ae49f84fa34ec0802249276d4ac16254efde
-
-GTK4_INCLUDE_DIR
-https://github.com/GNOME/gtk
-main
-/
-
-GLIB_INCLUDE_DIR
-https://github.com/GNOME/glib
-main
-/glib
-
-GLIB_LIB_DIR TODO
-
-CAIRO_INCLUDE_DIR
-https://github.com/msteinert/cairo
-master
-/src
-
-PANGO_INCLUDE_DIR
-https://github.com/GNOME/pango
-main
-/pango
-
-HARFBUZZ_INCLUDE_DIR
-https://github.com/harfbuzz/harfbuzz
-main
-/src
-
-GDK_PIXBUF_INCLUDE_DIR
-https://github.com/GNOME/gdk-pixbuf
-master
-/
-
-GRAPHENE_INCLUDE_DIR
-https://github.com/ebassi/graphene
-master
-/include
 
 ## BINARY DEPENDENCIES
 
@@ -61,27 +24,35 @@ GLU
     https://github.com/JuliaBinaryWrappers/GLU_jll.jl
 adwaita_icon_theme
     https://github.com/JuliaBinaryWrappers/adwaita_icon_theme_jll.jl
+libcxxwrap_julia
+    https://github.com/JuliaBinaryWrappers/libcxxwrap_julia_jll.jl
+libjulia
+    https://github.com/JuliaBinaryWrappers/libjulia_jll.jl
 
-X11
-    https://github.com/JuliaBinaryWrappers/X11_jll.jl
-Mesa
-    https://github.com/JuliaBinaryWrappers/Mesa_jll.jl
-GLFW
-    https://github.com/JuliaBinaryWrappers/GLFW_jll.jl
 
 ## Script
 cd mousetrap
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
+cmake .. -DCMAKE_INSTALL_LIBDIR=$prefix/lib64 \
+         -DCMAKE_INSTALL_INCLUDEDIR=$prefix/include \
          -DMOUSETRAP_USE_OVERRIDES=ON \
-         -DGTK4_INCLUDE_DIR=/workspace/destdir/include/gtk-4.0 \
-         -DGLIB_INCLUDE_DIR="/workspace/destdir/include/glib-2.0;/workspace/destdir/include/glib-2.0/glib" \
-         -DGLIB_LIB_DIR=/workspace/destdir/lib/glib-2.0/include \
-         -DCAIRO_INCLUDE_DIR=/workspace/destdir/include/cairo \
-         -DPANGO_INCLUDE_DIR=/workspace/destdir/include/pango-1.0/ \
-         -DHARFBUZZ_INCLUDE_DIR=/workspace/destdir/include/harfbuzz \
-         -DGDK_PIXBUF_INCLUDE_DIR=/workspace/destdir/include/gdk-pixbuf-2.0 \
-         -DGRAPHENE_INCLUDE_DIR=/workspace/destdir/include/graphene-1.0 \
-         -DGRAPHENE_LIB_DIR=/workspace/destdir/lib/graphene-1.0/include \
-         -DGL_INCLUDE_DIR=/workspace/destdir/include/GL
+         -DGTK4_INCLUDE_DIR=$prefix/include/gtk-4.0 \
+         -DGLIB_INCLUDE_DIR="$prefix/include/glib-2.0;$prefix/include/glib-2.0/glib" \
+         -DGLIB_LIB_DIR=$prefix/lib/glib-2.0/include \
+         -DCAIRO_INCLUDE_DIR=$prefix/include/cairo \
+         -DPANGO_INCLUDE_DIR=$prefix/include/pango-1.0/ \
+         -DHARFBUZZ_INCLUDE_DIR=$prefix/include/harfbuzz \
+         -DGDK_PIXBUF_INCLUDE_DIR=$prefix/include/gdk-pixbuf-2.0 \
+         -DGRAPHENE_INCLUDE_DIR=$prefix/include/graphene-1.0 \
+         -DGRAPHENE_LIB_DIR=$prefix/lib/graphene-1.0/include \
+         -DGL_INCLUDE_DIR=$prefix/include/GL
+ make install -j 4
+
+ cd ../..
+ cd mousetrap_julia_binding
+ mkdir build
+ cd build
+ cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
+     -DJulia_INCLUDE_DIRS="$prefix/include;$prefix/include/julia"
+make install -j 4

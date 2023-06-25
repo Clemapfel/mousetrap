@@ -1,65 +1,53 @@
 # Chapter 6: Menus
 
 In this chapter, we will learn:
-+ How to create complex, nested Menus
++ How to create complex, nested menus
 + How to display menus using `PopoverMenu` and `MenuBar`
-+ Best-practice style-guides for menus
++ Best-practice style guide for menus
 
 ---
 
-We've already seen a basic use of menus in the [chapter on actions](03_actions.md#menus). We recall that a menu has two components, a **model** of type `mousetrap::MenuModel`, and a **view**, which is a widget displaying the menu. We can have multiple views for the same model, if the model changes, all views are updated automatically. 
+In the [chapter on actions](./03_actions) we learned that we can trigger an action using [`Button`](@ref), by assigning an action to it using [`set_action!`](@ref). 
+this works if we want to have a GUI element that has a few actions, in reality, an application can have hundreds of different actions. Asking users to trigger these using 
+an equal number of buttons would be unsustainable. For situations like these, we should instead turn to **menus**.
 
 ## MenuModel Architecture
 
-\a{MenuModel} is a list of items, in a specific order. If item A is added before item B at runtime, then A will appear above item B.
+In mousetrap, menus follows the [model-view architectural pattern](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller). To create a menu, we need 
+the menus model, which holds information about how the menu is structured, along with a view, which takes the models and transforms it into an interactable
+widget users can manipulate. 
 
-\collapsible_note_begin{Running snippets from this section}
+!!! Note "Running Snippets from this Section"
 
-For this section, we'll be using the following `main.cpp`:
+    To follow along with code snippets from this section, we can use the following `.jl` file:
+    ```julia
+    using mousetrap
+    main() do app::Application
+        window = Window(app)
 
-```cpp
-#include <mousetrap.hpp>
-using namespace mousetrap;
+        # create the model
+        model = MenuModel()
 
-int main()
-{
-    auto app = Application("example.menus.app");
-    app.connect_signal_activate([](Application& app)
-    {
-        auto window = Window(app);
-        
-        // declare dummy action
-        auto action = Action("example.print_called", app);
-        action.set_function([](Action&){
-            std::cout << "called" << std::endl;
-        });
-        
-        // outermost model
-        auto model = MenuModel();
-        
-        // snippet goes here
-        
-        // create model view
-        auto popover_menu = PopoverMenu(model);
-        auto menu_button = PopoverButton();
-        menu_button.set_popover_menu(popover_menu);
-        menu_button.set_margin(75);
+        # snippe here
 
-        // add button to window
-        window.set_child(menu_button);
-        window.present();
-    });
+        # create the view
+        popover_menu = PopoverMenu(model)
+        popover_button = PopoverButton()
+        set_popover_menu!(popover_button)
 
-    return app.run();
-}
-```
-\collapsible_note_end
+        # add view to window 
+        set_child!(window, popover_button)
+        present!(window)
+    end
+    ```
 
-There are multiple different types of menu items, all with their own purpose. Which of `MenuModel`s function we use to add an item determines its type.
+## Menu Items
+
+[`MenuModel`](@ref), the model component of mousetrap menus, is a list of **menu items**, in a specific order. If item A is added before item B at runtime, then A will appear above item B. There are multiple different types of menu items, all with their own purpose. The function we choose to add an item to the model determines the items type. There are 4 types of menu items, which we will go over here.
 
 ### Item Type #1: Action
 
-The first and most simple item type is one we have already seen. Added via `MenuModel::add_action`, which takes both a label and an action, this item is a simple button with text. If the user clicks the button, the action is executed.
+The first and most simple item type is one we have already seen. Added via [`add_action!`](@ref), which takes both a label and an action, this item is a simple button with text. If the user clicks the button, the action is executed.
 
 Similar to `Button`, if the action is disabled (via `Action::set_enabled`), the menu item will appear "greyed out", and cannot be activated.
 
