@@ -21,7 +21,8 @@ namespace mousetrap
     /// @brief draws frame around widget, rounded corners. Has exactly one child and an optional label widget
     /// \signals
     /// \widget_signals{Frame}
-    class Frame : public Widget,
+    class Frame : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Frame, realize),
         HAS_SIGNAL(Frame, unrealize),
         HAS_SIGNAL(Frame, destroy),

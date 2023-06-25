@@ -97,7 +97,7 @@ namespace mousetrap::detail
         file_chooser_internal_init(self);
 
         #if USE_NATIVE_FILE_CHOOSER
-            self->native = g_object_ref((GtkFileChooserNative*) native);
+            self->native = (GtkFileChooserNative*) native;
         #else
             self->native = (GtkFileDialog*) native;
         #endif

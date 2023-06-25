@@ -11,6 +11,8 @@ namespace mousetrap
 {
     void set_current_blend_mode(BlendMode mode, bool allow_alpha_blend)
     {
+        detail::throw_if_gl_is_uninitialized();
+
         // source: [1] https://github.com/SFML/SFML/blob/master/src/SFML/Graphics/BlendMode.cpp#L36
 
         //

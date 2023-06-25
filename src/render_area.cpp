@@ -3,6 +3,7 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
+#include <mousetrap/gl_common.hpp>
 #include <mousetrap/render_area.hpp>
 #include <mousetrap/render_task.hpp>
 
@@ -12,7 +13,7 @@ namespace mousetrap
     {
         GdkGLContext* initialize_opengl()
         {
-            if (not detail::GL_INITIALIZED)
+            if (not GL_INITIALIZED)
             {
                 bool failed = false;
                 GError *error_maybe = nullptr;
@@ -58,8 +59,7 @@ namespace mousetrap
                     log::warning(str.str());
                 }
 
-                log::info("succesfully initialized OpenGL");
-                detail::GL_INITIALIZED = true;
+                detail::mark_gl_initialized();
             }
 
             return GL_CONTEXT;
@@ -176,7 +176,6 @@ namespace mousetrap
 
     GdkGLContext* RenderArea::on_create_context(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal*)
     {
-        assert(detail::GL_INITIALIZED == true);
         gdk_gl_context_make_current(detail::GL_CONTEXT);
         return detail::GL_CONTEXT;
     }

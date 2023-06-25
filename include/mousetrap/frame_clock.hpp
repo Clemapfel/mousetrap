@@ -29,7 +29,8 @@ namespace mousetrap
     /// \signals
     /// \signal_update{FrameClock}
     /// \signal_paint{FrameClock}
-    class FrameClock : public SignalEmitter,
+    class FrameClock : public detail::notify_if_gtk_uninitialized,
+        public SignalEmitter,
         HAS_SIGNAL(FrameClock, update),
         HAS_SIGNAL(FrameClock, paint)
     {

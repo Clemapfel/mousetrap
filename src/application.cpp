@@ -56,8 +56,9 @@ namespace mousetrap
             log::critical("In Application::Application: id " + id + " is not a valid application id", MOUSETRAP_DOMAIN);
 
         _internal = detail::application_internal_new(id);
-        connect_signal("startup", detail::initialize_opengl);
-        connect_signal("startup", detail::mark_gtk_initialized);
+
+        g_signal_connect(_internal->native, "startup", G_CALLBACK(detail::initialize_opengl), nullptr);
+        g_signal_connect(_internal->native, "startup", G_CALLBACK(detail::mark_gtk_initialized), nullptr);
     }
 
     Application::Application(detail::ApplicationInternal* internal)
@@ -65,7 +66,6 @@ namespace mousetrap
           CTOR_SIGNAL(Application, shutdown)
     {
         _internal = g_object_ref(internal);
-        connect_signal("startup", detail::initialize_opengl);
     }
 
     Application::~Application()

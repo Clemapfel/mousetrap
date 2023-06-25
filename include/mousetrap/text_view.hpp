@@ -28,7 +28,8 @@ namespace mousetrap
     /// \signal_text_changed{TextView}
     /// \signal_undo{TextView}
     /// \signal_redo{TextView}
-    class TextView : public Widget,
+    class TextView : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(TextView, text_changed),
         // HAS_SIGNAL(TextView, undo),
         // HAS_SIGNAL(TextView, redo),

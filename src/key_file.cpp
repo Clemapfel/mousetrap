@@ -636,6 +636,22 @@ namespace mousetrap
     }
 
     template<>
+    void KeyFile::set_value_as(GroupID group, KeyID key, int64_t value)
+    {
+        g_key_file_set_integer(_native, group.c_str(), key.c_str(), static_cast<int32_t>(value));
+    }
+
+    template<>
+    void KeyFile::set_value_as(GroupID group, KeyID key, std::vector<int64_t> value)
+    {
+        std::vector<int32_t> as_int32;
+        for (auto& v : value)
+            as_int32.push_back(v);
+
+        g_key_file_set_integer_list(_native, group.c_str(), key.c_str(), as_int32.data(), as_int32.size());
+    }
+
+    template<>
     void KeyFile::set_value_as(GroupID group, KeyID key, size_t value)
     {
         if (value > std::numeric_limits<gint64>::max())

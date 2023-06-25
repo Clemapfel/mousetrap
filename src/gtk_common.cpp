@@ -12,14 +12,14 @@ namespace mousetrap::detail
         if (not GTK_INITIALIZED)
             GTK_INITIALIZED = true;
         else
-            log::critical("In detail::mark_gtk_initialized: Attempting to initialize the backend even though it is already initialized-", MOUSETRAP_DOMAIN);
+            log::critical("In detail::mark_gtk_initialized: Attempting to initialize the GTK4 backend, even though it is already initialized-", MOUSETRAP_DOMAIN);
     }
 
-    void throw_if_uninitialized()
+    void throw_if_gtk_is_uninitialized()
     {
         if (GTK_INITIALIZED)
             return;
 
-        log::fatal("Attempting to create an object that depends on the mousetrap backend, even though the backend was not yet initialized. Make sure any mousetrap object is only instantiated after `Application` emitted it's `activate` signal.", MOUSETRAP_DOMAIN);
+        log::fatal(detail::notify_if_gtk_uninitialized::message, MOUSETRAP_DOMAIN);
     }
 }

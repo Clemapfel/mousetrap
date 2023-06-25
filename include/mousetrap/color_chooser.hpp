@@ -32,18 +32,24 @@ namespace mousetrap
     }
     #endif
 
-    class ColorChooser
+    /// @brief dialog that allows useres to choose a color
+    /// @note this object is only available for GTK4.10+
+    class ColorChooser : public detail::notify_if_gtk_uninitialized
     {
         public:
             /// @brief create the dialog
             /// @param title title to use for the window
-            ColorChooser(const std::string& title = "");
+            /// @param modal whether the dialog should pause all other windows
+            ColorChooser(const std::string& title = "", bool modal = false);
 
             /// @brief construct from internal
             ColorChooser(detail::ColorChooserInternal*);
 
             /// @brief dtor
             ~ColorChooser();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief set callback called when the user selects a color
             /// @param function Function with signature `(ColorChooser&, RGBA, Data_t) -> void`

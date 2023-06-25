@@ -35,7 +35,7 @@ namespace mousetrap
     };
 
     /// @brief filter, can be selected by the user, only files that pass the filter will be displayed in file chooser
-    class FileFilter
+    class FileFilter : public detail::notify_if_gtk_uninitialized
     {
         public:
             /// @brief construct
@@ -112,7 +112,7 @@ namespace mousetrap
 
     /// @brief native file chooser dialog
     /// \note The graphical element of this widget changes depending on the installed GTK4 version. For GTK4.10+ GtkFileDialog is used, for older version, the now deprecated GtkFileChooserNative is used
-    class FileChooser : public SignalEmitter
+    class FileChooser : public detail::notify_if_gtk_uninitialized, public SignalEmitter
     {
         public:
             /// @brief construct

@@ -40,7 +40,8 @@ namespace mousetrap
     /// @brief displays exactly one of multiple widgets. Use mousetrap::StackSwitcher and mousetrap::StackSidebar to allow a user to switch them through the GUI
     /// \signals
     /// \widget_signals{Stack}
-    class Stack : public Widget,
+    class Stack : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Stack, realize),
         HAS_SIGNAL(Stack, unrealize),
         HAS_SIGNAL(Stack, destroy),
@@ -144,7 +145,8 @@ namespace mousetrap
     /// @brief widget to choose page of stack, uses page id as label
     /// \signals
     /// \widget_signals{StackSidebar}
-    class StackSidebar : public Widget,
+    class StackSidebar : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(StackSidebar, realize),
         HAS_SIGNAL(StackSidebar, unrealize),
         HAS_SIGNAL(StackSidebar, destroy),
@@ -174,7 +176,8 @@ namespace mousetrap
     /// @brief widget to choose page of stack, uses page id as label
     /// \signals
     /// \widget_signals{StackSwitcher}
-    class StackSwitcher : public Widget,
+    class StackSwitcher : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(StackSwitcher, realize),
         HAS_SIGNAL(StackSwitcher, unrealize),
         HAS_SIGNAL(StackSwitcher, destroy),

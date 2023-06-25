@@ -22,7 +22,8 @@ namespace mousetrap
     /// @brief paned, displays two children with a draggable area in between, dragging the area resizes the respective two widgets
     /// \signals
     /// \widget_signals{Paned}
-    class Paned : public Widget,
+    class Paned : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Paned, realize),
         HAS_SIGNAL(Paned, unrealize),
         HAS_SIGNAL(Paned, destroy),

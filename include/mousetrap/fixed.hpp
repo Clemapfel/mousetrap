@@ -21,7 +21,8 @@ namespace mousetrap
     /// @brief container that positions a widget at a specific pixel position
     /// \signals
     /// \widget_signals{Fixed}
-    class Fixed : public Widget,
+    class Fixed : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Fixed, realize),
         HAS_SIGNAL(Fixed, unrealize),
         HAS_SIGNAL(Fixed, destroy),

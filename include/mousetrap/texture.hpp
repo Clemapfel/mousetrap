@@ -32,7 +32,8 @@ namespace mousetrap
     #endif
 
     /// @brief texture object, image living GPU-side, immutable
-    class Texture : public TextureObject, public SignalEmitter
+    class Texture : public detail::notify_if_gl_uninitialized, 
+        public TextureObject, public SignalEmitter
     {
         public:
             /// @brief construct as texture of size 0x0

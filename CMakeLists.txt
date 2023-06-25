@@ -62,16 +62,6 @@ find_library(GLEW REQUIRED NAMES GLEW)
 option(MOUSETRAP_USE_OVERRIDES OFF)
 if (MOUSETRAP_USE_OVERRIDES)
 
-    # set(GTK4_INCLUDE_DIR "/usr/include/gtk-4.0")
-    # set(GLIB_INCLUDE_DIR "/usr/include/glib-2.0")
-    # set(GLIB_LIB_DIR "/usr/lib64/glib-2.0/include")
-    # set(CAIRO_INCLUDE_DIR "/usr/include/cairo")
-    # set(PANGO_INCLUDE_DIR "/usr/include/pango-1.0")
-    # set(HARFBUZZ_INCLUDE_DIR "/usr/include/harfbuzz")
-    # set(GDK_PIXBUF_INCLUDE_DIR "/usr/include/gdk-pixbuf-2.0")
-    # set(GRAPHENE_INCLUDE_DIR "/usr/include/graphene-1.0")
-    # set(GRAPHENE_LIB_DIR "/usr/lib64/graphene-1.0/include")
-
     set(GTK_INCLUDE_DIRS "${GTK4_INCLUDE_DIR};${GLIB_INCLUDE_DIR};${GLIB_LIB_DIR};${CAIRO_INCLUDE_DIR};${PANGO_INCLUDE_DIR};${HARFBUZZ_INCLUDE_DIR};${GDK_PIXBUF_INCLUDE_DIR};${GRAPHENE_INCLUDE_DIR};${GRAPHENE_LIB_DIR}")
 
     find_library(GTK4 REQUIRED NAMES gtk-4)

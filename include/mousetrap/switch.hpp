@@ -27,7 +27,8 @@ namespace mousetrap
     /// \signals
     /// \signal_activate{Switch}
     /// \widget_signals{Switch}
-    class Switch : public Widget,
+    class Switch : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Switch, activate),
         HAS_SIGNAL(Switch, realize),
         HAS_SIGNAL(Switch, unrealize),

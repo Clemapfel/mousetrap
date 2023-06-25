@@ -27,7 +27,8 @@ namespace mousetrap
     /// \signals
     /// \signal_closed{PopoverMenu}
     /// \widget_signals{PopoverMenu}
-    class PopoverMenu : public Widget,
+    class PopoverMenu : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(PopoverMenu, closed),
         HAS_SIGNAL(PopoverMenu, realize),
         HAS_SIGNAL(PopoverMenu, unrealize),

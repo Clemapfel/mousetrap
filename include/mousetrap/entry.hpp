@@ -28,7 +28,8 @@ namespace mousetrap
     /// \signal_activate{Entry}
     /// \signal_text_changed{Entry}
     /// \widget_signals{Entry}
-    class Entry : public Widget,
+    class Entry : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Entry, activate),
         HAS_SIGNAL(Entry, text_changed),
         HAS_SIGNAL(Entry, realize),

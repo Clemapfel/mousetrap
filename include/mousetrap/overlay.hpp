@@ -21,7 +21,8 @@ namespace mousetrap
     /// @brief a widget that allows to display multiple widgets above a common child
     /// \signals
     /// \widget_signals{Overlay}
-    class Overlay : public Widget,
+    class Overlay : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Overlay, realize),
         HAS_SIGNAL(Overlay, unrealize),
         HAS_SIGNAL(Overlay, destroy),

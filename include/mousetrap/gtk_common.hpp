@@ -13,21 +13,40 @@ namespace mousetrap
 {
     /// @brief garbage collected object \for_internal_use_only
     using NativeObject = GObject*;
-
-    static inline bool GTK_INITIALIZED = false;
+    inline bool GTK_INITIALIZED = false;
 }
 
 namespace mousetrap::detail
 {
     void mark_gtk_initialized();
-    void throw_if_uninitialized();
+    void throw_if_gtk_is_uninitialized();
 
-    struct notify_if_uninitialized
+    struct notify_if_gtk_uninitialized
     {
-        inline notify_if_uninitialized()
+        inline notify_if_gtk_uninitialized()
         {
-            throw_if_uninitialized();
+            throw_if_gtk_is_uninitialized();
         }
+
+        static inline std::string message = R"([FATAL]
+Attempting to construct a widget, but the GTK4 backend has not yet been initialized. Make sure that, for all widgets, the widgets constructor is called **after** `Application` has emitted its `activate` signal.
+
+A typical `main.cpp` should look like this:
+```cpp
+#include <mousetrap.hpp>
+using namespace mousetrap
+
+int main()
+{
+    auto app = Application("application.name");
+    app.connect_signal_activate([](Application& app) {
+        // all initialization and construction of widgets should happen here
+    };
+    app.run();
+}
+```
+You have most likely attempted to construct a widget outside of the `activate` signal handler.
+)";
     };
 
     template <typename T>

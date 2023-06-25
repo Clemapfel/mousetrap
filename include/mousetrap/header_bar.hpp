@@ -20,7 +20,8 @@ namespace mousetrap
     /// @brief widget that is usually used in the decoration of a window
     /// \signals
     /// \widget_signals{HeaderBar}
-    class HeaderBar : public Widget,
+    class HeaderBar : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(HeaderBar, realize),
         HAS_SIGNAL(HeaderBar, unrealize),
         HAS_SIGNAL(HeaderBar, destroy),

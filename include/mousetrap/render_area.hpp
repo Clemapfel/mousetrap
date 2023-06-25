@@ -16,9 +16,6 @@ namespace mousetrap
 {
     namespace detail
     {
-        /// @brief whether OpenGL has been initialized yet
-        inline bool GL_INITIALIZED = false;
-
         /// @brief global OpenGL context
         inline GdkGLContext* GL_CONTEXT = nullptr;
 
@@ -48,7 +45,10 @@ namespace mousetrap
     /// \signal_render{RenderArea}
     /// \signal_resize{RenderArea}
     /// \widget_signals{RenderArea}
-    class RenderArea : public Widget,
+    class RenderArea :
+        public detail::notify_if_gtk_uninitialized,
+        public detail::notify_if_gl_uninitialized,
+        public Widget,
         HAS_SIGNAL(RenderArea, render),
         HAS_SIGNAL(RenderArea, resize),
         HAS_SIGNAL(RenderArea, realize),

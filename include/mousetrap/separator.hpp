@@ -21,7 +21,8 @@ namespace mousetrap
     /// @brief non-container widget that fills it's area with a dark color, used mousetrap::Widget::set_opacity to make it invisible
     /// \signals
     /// \widget_signals{Separator}
-    class Separator : public Widget,
+    class Separator : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Separator, realize),
         HAS_SIGNAL(Separator, unrealize),
         HAS_SIGNAL(Separator, destroy),

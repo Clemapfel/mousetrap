@@ -52,7 +52,8 @@ namespace mousetrap
     /// \signals
     /// \signal_scroll_child{Viewport}
     /// \widget_signals{Viewport}
-    class Viewport : public Widget,
+    class Viewport : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Viewport, scroll_child),
         HAS_SIGNAL(Viewport, realize),
         HAS_SIGNAL(Viewport, unrealize),

@@ -23,7 +23,7 @@ namespace mousetrap::detail
 
     DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(ColorChooserInternal,color_chooser_internal, COLOR_CHOOSER_INTERNAL)
 
-    static ColorChooserInternal*color_chooser_internal_new()
+    static ColorChooserInternal* color_chooser_internal_new()
     {
         auto* self = (ColorChooserInternal*) g_object_new(color_chooser_internal_get_type(), nullptr);
         color_chooser_internal_init(self);
@@ -46,11 +46,12 @@ namespace mousetrap::detail
 
 namespace mousetrap
 {
-    ColorChooser::ColorChooser(const std::string& title)
+    ColorChooser::ColorChooser(const std::string& title, bool modal)
         : _internal(detail::color_chooser_internal_new())
     {
         g_object_ref(_internal);
         gtk_color_dialog_set_title(_internal->native, title.c_str());
+        gtk_color_dialog_set_modal(_internal->native, modal);
     }
 
     ColorChooser::ColorChooser(detail::ColorChooserInternal* internal)
@@ -62,11 +63,16 @@ namespace mousetrap
         g_object_unref(_internal);
     }
 
+    NativeObject ColorChooser::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
     void ColorChooser::present()
     {
         gtk_color_dialog_choose_rgba(
             _internal->native,
-            nullptr,
+            GTK_WINDOW(gtk_window_new()),
             _internal->last_color,
             (GCancellable*) nullptr,
             on_color_selected_callback,

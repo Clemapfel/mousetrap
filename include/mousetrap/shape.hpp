@@ -97,7 +97,8 @@ namespace mousetrap
     #endif
 
     /// @brief opengl shape primitive, variable number of vertices
-    class Shape : public SignalEmitter
+    class Shape : public detail::notify_if_gl_uninitialized,
+        public SignalEmitter
     {
         public:
             /// @brief ctor, allocates vertex buffer gpu-side

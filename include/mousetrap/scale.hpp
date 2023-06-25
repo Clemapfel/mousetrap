@@ -38,7 +38,8 @@ namespace mousetrap
     /// \signals
     /// \signal_value_changed{Scale}
     /// \widget_signals{Scale}
-    class Scale : public Widget,
+    class Scale : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Scale, value_changed),
         HAS_SIGNAL(Scale, realize),
         HAS_SIGNAL(Scale, unrealize),

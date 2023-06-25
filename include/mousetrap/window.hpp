@@ -29,7 +29,8 @@ namespace mousetrap
     /// \signal_activate_default_widget{Window}
     /// \signal_activate_focused_widget{Window}
     /// \widget_signals{Window}
-    class Window : public Widget,
+    class Window : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Window, close_request),
         HAS_SIGNAL(Window, activate_default_widget),
         HAS_SIGNAL(Window, activate_focused_widget),

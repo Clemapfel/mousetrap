@@ -37,7 +37,8 @@ namespace mousetrap
     /// \signal_page_removed{Notebook}
     /// \signal_page_selection_changed{Notebook}
     /// \widget_signals{Notebook}
-    class Notebook : public Widget,
+    class Notebook : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Notebook, page_added),
         HAS_SIGNAL(Notebook, page_reordered),
         HAS_SIGNAL(Notebook, page_removed),

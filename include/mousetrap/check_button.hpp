@@ -40,7 +40,8 @@ namespace mousetrap
     /// \signal_activate{CheckButton}
     /// \signal_toggled{CheckButton}
     /// \widget_signals{CheckButton}
-    class CheckButton : public Widget,
+    class CheckButton : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(CheckButton, activate),
         HAS_SIGNAL(CheckButton, toggled),
         HAS_SIGNAL(CheckButton, realize),

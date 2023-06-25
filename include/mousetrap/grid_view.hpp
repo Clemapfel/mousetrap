@@ -29,7 +29,8 @@ namespace mousetrap
     /// \signals
     /// \signal_activate{GridView}
     /// \widget_signals{GridView}
-    class GridView : public Widget,
+    class GridView : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(GridView, activate),
         HAS_SIGNAL(GridView, realize),
         HAS_SIGNAL(GridView, unrealize),

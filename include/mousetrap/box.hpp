@@ -22,7 +22,8 @@ namespace mousetrap
     /// @brief container widget that arranges each of its children in series
     /// \signals
     /// \widget_signals{Box}
-    class Box : public Widget,
+    class Box : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Box, realize),
         HAS_SIGNAL(Box, unrealize),
         HAS_SIGNAL(Box, destroy),

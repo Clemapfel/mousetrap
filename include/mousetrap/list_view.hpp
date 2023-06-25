@@ -33,7 +33,8 @@ namespace mousetrap
     /// \signals
     /// \signal_activate{ListView}
     /// \widget_signals{ListView}
-    class ListView : public Widget,
+    class ListView : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(ListView, activate),
         HAS_SIGNAL(ListView, realize),
         HAS_SIGNAL(ListView, unrealize),

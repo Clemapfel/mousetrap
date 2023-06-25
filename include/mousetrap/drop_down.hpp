@@ -35,7 +35,8 @@ namespace mousetrap
     /// @brief drop down menu, present a popup with a list of items
     /// \signals
     /// \widget_signals{DropDown}
-    class DropDown : public Widget,
+    class DropDown : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(DropDown, realize),
         HAS_SIGNAL(DropDown, unrealize),
         HAS_SIGNAL(DropDown, destroy),

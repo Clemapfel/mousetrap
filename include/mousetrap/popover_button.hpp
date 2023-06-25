@@ -34,7 +34,8 @@ namespace mousetrap
     #endif
 
     /// @brief popover menu button, if pressed, shows it's attached popover or popover menu automatically
-    class PopoverButton : public Widget,
+    class PopoverButton : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(PopoverButton, activate),
         HAS_SIGNAL(PopoverButton, realize),
         HAS_SIGNAL(PopoverButton, unrealize),

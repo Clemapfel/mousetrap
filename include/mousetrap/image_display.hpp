@@ -23,7 +23,8 @@ namespace mousetrap
     #endif
 
     /// @brief widget that display an iamge
-    class ImageDisplay : public Widget,
+    class ImageDisplay : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(ImageDisplay, realize),
         HAS_SIGNAL(ImageDisplay, unrealize),
         HAS_SIGNAL(ImageDisplay, destroy),

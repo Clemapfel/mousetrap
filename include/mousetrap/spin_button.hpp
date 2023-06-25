@@ -38,7 +38,8 @@ namespace mousetrap
     /// \signal_value_changed{SpinButton}
     /// \signal_wrapped{SpinButton}
     /// \widget_signals{SpinButton}
-    class SpinButton : public Widget,
+    class SpinButton : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(SpinButton, value_changed),
         HAS_SIGNAL(SpinButton, wrapped),
         HAS_SIGNAL(SpinButton, realize),

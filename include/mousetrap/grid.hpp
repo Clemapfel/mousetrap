@@ -21,7 +21,8 @@ namespace mousetrap
     /// @brief displays widgets in a grid, one widget may take up more than one cell
     /// \signals
     /// \widget_signals{Grid}
-    class Grid : public Widget,
+    class Grid : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Grid, realize),
         HAS_SIGNAL(Grid, unrealize),
         HAS_SIGNAL(Grid, destroy),

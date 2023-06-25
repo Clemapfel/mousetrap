@@ -22,7 +22,8 @@ namespace mousetrap
     /// @brief container widget that arranges a widget in the center with two widgets surrounding it
     /// \signals
     /// \widget_signals{CenterBox}
-    class CenterBox : public Widget,
+    class CenterBox : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(CenterBox, realize),
         HAS_SIGNAL(CenterBox, unrealize),
         HAS_SIGNAL(CenterBox, destroy),

@@ -23,7 +23,8 @@ namespace mousetrap
     /// \signals
     /// \signal_revealed{Revealer}
     /// \widget_signals{Revealer}
-    class Revealer : public Widget,
+    class Revealer : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Revealer, revealed),
         HAS_SIGNAL(Revealer, realize),
         HAS_SIGNAL(Revealer, unrealize),

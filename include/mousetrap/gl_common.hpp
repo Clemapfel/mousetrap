@@ -12,14 +12,49 @@
 
 #include <mousetrap/vector.hpp>
 
-/// @brief is global GL state initialized
-inline bool GL_INITIALIZED = false;
+#include <string>
 
 /// @brief native open GL id
 using GLNativeHandle = GLuint;
 
 namespace mousetrap
 {
+    /// @brief whether OpenGL has been succesfully initialized yet
+    inline bool GL_INITIALIZED = false;
+
+    namespace detail
+    {
+        void mark_gl_initialized();
+        void throw_if_gl_is_uninitialized();
+
+        struct notify_if_gl_uninitialized
+        {
+            inline notify_if_gl_uninitialized()
+            {
+                throw_if_gl_is_uninitialized();
+            }
+
+            static inline std::string message = R"(
+    Attempting to interact with the global OpenGL context, but it has not yet been initialized. Make sure that any OpenGL-related objects are constructed **after** `Application` has emitted its `activate` signal.
+    A typical `main.cpp` should look like this:
+    ```cpp
+    #include <mousetrap.hpp>
+    using namespace mousetrap
+
+    int main()
+    {
+        auto app = Application("application.name");
+        app.connect_signal_activate([](Application& app) {
+            // all OpenGL-related things should happn here
+        };
+        app.run();
+    }
+    ```
+    You have most likely attempted to construct a widget outside of the `activate` signal handler.
+)";
+        };
+    }
+
     /// @brief convert relative widget space pos to OpenGL coordinates
     /// @param pos position in 2d space
     /// @returns mousetrap::Vector2f

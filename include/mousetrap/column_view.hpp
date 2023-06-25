@@ -37,7 +37,8 @@ namespace mousetrap
     /// \signals
     /// \signal_activate{ColumnView}
     /// \widget_signals{ColumnView}
-    class ColumnView : public Widget,
+    class ColumnView : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(ColumnView, activate),
         HAS_SIGNAL(ColumnView, realize),
         HAS_SIGNAL(ColumnView, unrealize),

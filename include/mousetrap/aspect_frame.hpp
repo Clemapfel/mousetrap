@@ -21,7 +21,8 @@ namespace mousetrap
     /// @brief container widget that assures childs size conforms to given aspect ratio
     /// \signals
     /// \widget_signals{AspectFrame}
-    class AspectFrame : public Widget,
+    class AspectFrame : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(AspectFrame, realize),
         HAS_SIGNAL(AspectFrame, unrealize),
         HAS_SIGNAL(AspectFrame, destroy),

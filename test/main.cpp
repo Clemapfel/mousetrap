@@ -25,18 +25,11 @@ int main()
     {
         auto window = Window(app);
 
-        auto color_chooser = ColorChooser("test color");
-        color_chooser.on_accept([](ColorChooser&, RGBA color){
-            std::cout << color.operator std::string() << std::endl;
-        });
-        color_chooser.on_cancel([](ColorChooser&) -> void {
-            std::cout << "cancel" << std::endl;
-        });
-        color_chooser.present();
+        auto shape = Shape::Rectangle({-0.5, -0.5}, {1.f, 1.f});
+
         window.present();
     });
 
-    auto label = Label();
     return app.run();
 }
 

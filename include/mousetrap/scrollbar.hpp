@@ -22,7 +22,8 @@ namespace mousetrap
     /// @brief a scrollbar, allows users to scroll a window or range using the scrollwheel or cursor
     /// \signals
     /// \widget_signals{Scrollbar}
-    class Scrollbar : public Widget,
+    class Scrollbar : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Scrollbar, realize),
         HAS_SIGNAL(Scrollbar, unrealize),
         HAS_SIGNAL(Scrollbar, destroy),

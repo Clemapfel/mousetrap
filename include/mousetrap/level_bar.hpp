@@ -32,7 +32,8 @@ namespace mousetrap
     /// @brief level bar to indicate a value as a fraction of a whole
     /// \signals
     /// \widget_signals{LevelBar}
-    class LevelBar : public Widget,
+    class LevelBar : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(LevelBar, realize),
         HAS_SIGNAL(LevelBar, unrealize),
         HAS_SIGNAL(LevelBar, destroy),

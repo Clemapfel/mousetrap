@@ -13,7 +13,7 @@
 namespace mousetrap
 {
     /// @brief transform, operates in OpenGL coordinate system
-    class GLTransform
+    class GLTransform : public detail::notify_if_gl_uninitialized
     {
         public:
             /// @brief construct a identity

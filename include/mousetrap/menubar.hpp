@@ -26,7 +26,8 @@ namespace mousetrap
     /// @brief display menu as a menubar
     /// \signals
     /// \widget_signals{MenuBar}
-    class MenuBar : public Widget,
+    class MenuBar : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(MenuBar, realize),
         HAS_SIGNAL(MenuBar, unrealize),
         HAS_SIGNAL(MenuBar, destroy),

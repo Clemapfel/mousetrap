@@ -27,7 +27,8 @@ namespace mousetrap
     /// @brief widget that displays progress
     /// \signals
     /// \widget_signals{ProgressBar}
-    class ProgressBar : public Widget,
+    class ProgressBar : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(ProgressBar, realize),
         HAS_SIGNAL(ProgressBar, unrealize),
         HAS_SIGNAL(ProgressBar, destroy),

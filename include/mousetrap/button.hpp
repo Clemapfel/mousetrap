@@ -30,7 +30,8 @@ namespace mousetrap
     /// \signal_clicked{Button}
     /// \signal_activate{Button}
     /// \widget_signals{Button}
-    class Button : public Widget,
+    class Button : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Button, activate),
         HAS_SIGNAL(Button, clicked),
         HAS_SIGNAL(Button, realize),

@@ -26,7 +26,8 @@ namespace mousetrap
     /// \signals
     /// \signal_activate{Expander}
     /// \widget_signals{Expander}
-    class Expander : public Widget,
+    class Expander : public detail::notify_if_gtk_uninitialized,
+        public Widget,
         HAS_SIGNAL(Expander, activate),
         HAS_SIGNAL(Expander, realize),
         HAS_SIGNAL(Expander, unrealize),

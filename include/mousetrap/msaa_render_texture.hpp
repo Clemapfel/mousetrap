@@ -37,7 +37,9 @@ namespace mousetrap
 
     /// @brief render texture that utilizes a multi-sampled buffer, which renders the resulting image anti-aliased
     /// \not_available_in_julia_binding
-    class MultisampledRenderTexture : public TextureObject, public SignalEmitter
+    class MultisampledRenderTexture : detail::notify_if_gl_uninitialized,
+        public TextureObject,
+        public SignalEmitter
     {
         public:
             /// @brief construct
