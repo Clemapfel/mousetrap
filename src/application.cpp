@@ -6,6 +6,7 @@
 #include <mousetrap/application.hpp>
 #include <mousetrap/log.hpp>
 #include <mousetrap/render_area.hpp>
+#include <mousetrap/gtk_common.hpp>
 
 #include <iostream>
 
@@ -56,6 +57,7 @@ namespace mousetrap
 
         _internal = detail::application_internal_new(id);
         connect_signal("startup", detail::initialize_opengl);
+        connect_signal("startup", detail::mark_gtk_initialized);
     }
 
     Application::Application(detail::ApplicationInternal* internal)

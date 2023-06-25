@@ -13,10 +13,23 @@ namespace mousetrap
 {
     /// @brief garbage collected object \for_internal_use_only
     using NativeObject = GObject*;
+
+    static inline bool GTK_INITIALIZED = false;
 }
 
 namespace mousetrap::detail
 {
+    void mark_gtk_initialized();
+    void throw_if_uninitialized();
+
+    struct notify_if_uninitialized
+    {
+        inline notify_if_uninitialized()
+        {
+            throw_if_uninitialized();
+        }
+    };
+
     template <typename T>
     static void toggle_notify_pointer(T* attachment, GObject* parent, gboolean last_ref)
     {

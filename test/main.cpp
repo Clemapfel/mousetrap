@@ -36,6 +36,7 @@ int main()
         window.present();
     });
 
+    auto label = Label();
     return app.run();
 }
 

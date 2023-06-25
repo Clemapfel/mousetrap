@@ -28,7 +28,7 @@ widget users can manipulate.
         # create the model
         model = MenuModel()
 
-        # snippe here
+        # snippet here
 
         # create the view
         popover_menu = PopoverMenu(model)
@@ -43,13 +43,13 @@ widget users can manipulate.
 
 ## Menu Items
 
-[`MenuModel`](@ref), the model component of mousetrap menus, is a list of **menu items**, in a specific order. If item A is added before item B at runtime, then A will appear above item B. There are multiple different types of menu items, all with their own purpose. The function we choose to add an item to the model determines the items type. There are 4 types of menu items, which we will go over here.
+[`MenuModel`](@ref), the model component of mousetrap menus, is a list of **menu items**, in a specific order. If item A is added before item B at runtime, then A will appear above item B. There are multiple different types of menu items, all with their own purpose. The function we choose to add an item to the model determines the items type. There are 4 types of menu items, which we will go over in this section.
 
 ### Item Type #1: Action
 
-The first and most simple item type is one we have already seen. Added via [`add_action!`](@ref), which takes both a label and an action, this item is a simple button with text. If the user clicks the button, the action is executed.
+The first and most simple item type is called "action". Added via [`add_action!`](@ref), which takes both a label and an [`Action`](@ref) instance, this item is a simple button with text. If the user clicks the button, the action is executed.
 
-Similar to `Button`, if the action is disabled (via `Action::set_enabled`), the menu item will appear "greyed out", and cannot be activated.
+Similar to `Button`, if the action is disabled (via [`set_enabled`](@ref)), the menu item will appear "greyed out" and cannot be activated.
 
 ```cpp
 model.add_action("Type 01: Action", action);

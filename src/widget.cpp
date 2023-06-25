@@ -9,6 +9,7 @@
 #include <mousetrap/event_controller.hpp>
 #include <mousetrap/clipboard.hpp>
 #include <mousetrap/shortcut_event_controller.hpp>
+#include <mousetrap/gtk_common.hpp>
 
 namespace mousetrap
 {
