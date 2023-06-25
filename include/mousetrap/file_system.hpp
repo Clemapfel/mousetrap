@@ -10,11 +10,17 @@
 #include <string>
 #include <vector>
 
-#ifndef DOXYGEN
-#endif
-
 namespace mousetrap
 {
+    #ifndef DOXYGEN
+    namespace detail
+    {
+        void open_uri_callback(GObject* source, GAsyncResult* result, void* data);
+        void open_file_callback(GObject* source, GAsyncResult* result, void* data);
+        void show_in_file_explorer_callback(GObject* source, GAsyncResult* result, void* data);
+    }
+    #endif
+
     /// @brief singleton file manager, mutates files
     struct file_system
     {
@@ -68,7 +74,17 @@ namespace mousetrap
         /// @param file target file to move
         static bool move_to_trash(const FileDescriptor& file);
 
+        /// @brief open a file or folder, this may present the user with an app selection
+        /// @param file
+        static void open_file(const FileDescriptor& file);
 
+        /// @brief open the folder that contains this file (or folder)
+        /// @param folder
+        static void show_in_file_explorer(const FileDescriptor& file);
+
+        /// @brief open an url such as link to a website, or a URI
+        /// @param url
+        static void open_url(const std::string& url);
     };
 
 }

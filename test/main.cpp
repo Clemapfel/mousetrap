@@ -25,18 +25,7 @@ int main()
     {
         auto window = Window(app);
 
-        auto* dialog = gtk_alert_dialog_new("testset");
-        const char* labels[] = {"test", "test2", nullptr};
-
-        gtk_alert_dialog_set_message(dialog, "message messsage");
-        gtk_alert_dialog_set_detail(dialog, "detail deatil");
-        gtk_alert_dialog_set_buttons(dialog, labels);
-        //gtk_alert_dialog_choose(dialog, GTK_WINDOW(gtk_window_new()), nullptr, nullptr, nullptr);
-
-
-        auto link = "https://docs.gtk.org/gtk4/ctor.FileLauncher.new.html";
-        auto* launcher = gtk_uri_launcher_new(link);
-        gtk_uri_launcher_launch(launcher, nullptr, nullptr, nullptr, nullptr);
+        file_system::open_file(FileDescriptor("/home/clem/Workspace/mousetrap/include/mousetrap"));
 
         window.present();
     });

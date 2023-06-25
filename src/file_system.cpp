@@ -5,6 +5,7 @@
 
 #include <mousetrap/file_system.hpp>
 #include <mousetrap/file_monitor.hpp>
+#include <mousetrap/file_descriptor.hpp>
 #include <mousetrap/log.hpp>
 
 #include <sstream>
@@ -160,5 +161,106 @@ namespace mousetrap
         }
 
         return out;
+    }
+
+    void detail::open_file_callback(GObject* source, GAsyncResult* result, void* data)
+    {
+        GError* error_maybe = nullptr;
+        bool success = gtk_file_launcher_launch_finish(GTK_FILE_LAUNCHER(source), result, &error_maybe);
+
+        auto file = FileDescriptor(G_FILE(data));
+
+        if (error_maybe != nullptr)
+        {
+            if (error_maybe->code != 2) // dismissed by user
+                log::critical("In file_system::open_file: When trying to open `" + file.get_path() + "`: " + std::string(error_maybe->message), MOUSETRAP_DOMAIN);
+
+            g_error_free(error_maybe);
+        }
+
+        g_object_unref(G_FILE(data));
+        g_object_unref(GTK_FILE_LAUNCHER(source));
+    }
+
+    void file_system::open_file(const FileDescriptor& file)
+    {
+        detail::throw_if_gtk_is_uninitialized();
+
+        auto* g_file = g_object_ref(file.operator GFile*());
+        auto* launcher = gtk_file_launcher_new(g_file);
+        gtk_file_launcher_launch(
+            launcher,
+            nullptr,
+            nullptr,
+            (GAsyncReadyCallback) detail::open_file_callback,
+            g_file
+        );
+    }
+
+    void detail::show_in_file_explorer_callback(GObject* source, GAsyncResult* result, void* data)
+    {
+        GError* error_maybe = nullptr;
+        bool success = gtk_file_launcher_open_containing_folder_finish(GTK_FILE_LAUNCHER(source), result, &error_maybe);
+
+        auto file = FileDescriptor(G_FILE(data));
+
+        if (error_maybe != nullptr)
+        {
+            if (error_maybe->code != 2) // dismissed by user
+                log::critical("In file_system::open_folder: When trying to open `" + file.get_path() + "`: " + std::string(error_maybe->message), MOUSETRAP_DOMAIN);
+
+            g_error_free(error_maybe);
+        }
+
+        g_object_unref(G_FILE(data));
+        g_object_unref(GTK_FILE_LAUNCHER(source));
+    }
+
+    void file_system::show_in_file_explorer(const FileDescriptor& file)
+    {
+        detail::throw_if_gtk_is_uninitialized();
+
+        auto* g_file = g_object_ref(file.operator GFile*());
+        auto* launcher = gtk_file_launcher_new(g_file);
+        gtk_file_launcher_open_containing_folder(
+        launcher,
+        nullptr,
+        nullptr,
+        (GAsyncReadyCallback) detail::show_in_file_explorer_callback,
+        g_file
+        );
+    }
+
+    void detail::open_uri_callback(GObject* source, GAsyncResult* result, void* data)
+    {
+        GError* error_maybe = nullptr;
+        bool success = gtk_uri_launcher_launch_finish(GTK_URI_LAUNCHER(source), result, &error_maybe);
+
+        auto* uri = (std::string*) data;
+
+        if (error_maybe != nullptr)
+        {
+            if (error_maybe->code != 2) // dismissed by user
+                log::critical("In file_system::open_url: When trying to open `" + *((std::string*) data) + "`: " + std::string(error_maybe->message), MOUSETRAP_DOMAIN);
+
+            g_error_free(error_maybe);
+        }
+
+        delete uri;
+        g_object_unref(GTK_URI_LAUNCHER(source));
+    }
+
+    void file_system::open_url(const std::string& url)
+    {
+        detail::throw_if_gtk_is_uninitialized();
+
+        auto* launcher = gtk_uri_launcher_new(url.c_str());
+        gtk_uri_launcher_launch(
+            launcher,
+            nullptr,
+            nullptr,
+            (GAsyncReadyCallback) detail::open_uri_callback,
+            new std::string(url)
+        );
     }
 }
