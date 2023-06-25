@@ -40,7 +40,7 @@ namespace mousetrap
             /// @brief create the dialog
             /// @param title title to use for the window
             /// @param modal whether the dialog should pause all other windows
-            ColorChooser(const std::string& title = "", bool modal = false);
+            ColorChooser(const std::string& title = "");
 
             /// @brief construct from internal
             ColorChooser(detail::ColorChooserInternal*);
@@ -77,6 +77,14 @@ namespace mousetrap
 
             /// @brief show the dialog to the user
             void present();
+
+            /// @brief set whether all other windows should be paused while this dialog is open
+            /// @param modal
+            void set_is_modal(bool);
+
+            /// @brief get whether all other windows should be paused while this dialog is open
+            /// @return model
+            bool get_is_modal() const;
 
         private:
             detail::ColorChooserInternal* _internal = nullptr;

@@ -46,12 +46,11 @@ namespace mousetrap::detail
 
 namespace mousetrap
 {
-    ColorChooser::ColorChooser(const std::string& title, bool modal)
+    ColorChooser::ColorChooser(const std::string& title)
         : _internal(detail::color_chooser_internal_new())
     {
         g_object_ref(_internal);
         gtk_color_dialog_set_title(_internal->native, title.c_str());
-        gtk_color_dialog_set_modal(_internal->native, modal);
     }
 
     ColorChooser::ColorChooser(detail::ColorChooserInternal* internal)
@@ -125,6 +124,16 @@ namespace mousetrap
 
         instance->last_color = gdk_rgba_copy(result_rgba);
         gdk_rgba_free(result_rgba);
+    }
+
+    bool ColorChooser::get_is_modal() const
+    {
+        return gtk_color_dialog_get_modal(_internal->native);
+    }
+
+    void ColorChooser::set_is_modal(bool b)
+    {
+        gtk_color_dialog_set_modal(_internal->native, b);
     }
 }
 

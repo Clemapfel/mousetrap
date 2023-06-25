@@ -203,7 +203,7 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/inline/widget.inl
     include/mousetrap/key_codes.hpp
     include/mousetrap/inline/file_chooser.inl
-        include/mousetrap/color_chooser.hpp)
+        include/mousetrap/color_chooser.hpp include/mousetrap/alert_dialog.hpp)
 
 set(MOUSETRAP_SOURCE_FILES
     src/adjustment.cpp

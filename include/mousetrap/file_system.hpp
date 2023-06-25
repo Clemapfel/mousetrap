@@ -10,6 +10,9 @@
 #include <string>
 #include <vector>
 
+#ifndef DOXYGEN
+#endif
+
 namespace mousetrap
 {
     /// @brief singleton file manager, mutates files
@@ -64,6 +67,9 @@ namespace mousetrap
         /// @brief attempt to move a file to the trash
         /// @param file target file to move
         static bool move_to_trash(const FileDescriptor& file);
+
+
     };
+
 }
 
