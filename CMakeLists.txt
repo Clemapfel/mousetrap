@@ -305,9 +305,10 @@ set(MOUSETRAP_SOURCE_FILES
     src/window.cpp
     src/action.cpp
     src/popover_menu.cpp
-        src/color_chooser.cpp)
+    src/color_chooser.cpp
+)
 
-add_library(mousetrap STATIC
+add_library(mousetrap SHARED
     ${MOUSETRAP_HEADER_FILES}
     ${MOUSETRAP_SOURCE_FILES}
 )
