@@ -25,10 +25,11 @@ int main()
     {
         auto window = Window(app);
 
-        file_system::open_file(FileDescriptor("/home/clem/Workspace/mousetrap/include/mousetrap"));
 
         window.present();
     });
+
+    file_system::open_url("https://docs.gtk.org/gtk4/method.FileLauncher.open_containing_folder.html");
 
     return app.run();
 }

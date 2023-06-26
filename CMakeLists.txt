@@ -53,7 +53,7 @@ set(PROJECT_PREFIX "")#"mousetrap_") # TODO
 ### DEPENDENCIES ###
 
 # OpenGL
-find_library(OpenGL NAMES GL)
+find_library(OpenGL REQUIRED NAMES GL)
 
 # GLEW
 find_library(GLEW REQUIRED NAMES GLEW)

@@ -2,15 +2,11 @@
 
 Mousetrap
 https://github.com/Clemapfel/mousetrap
-18a4f1cae5c5a72b57bb265b7653578d04c7fb6f
-
-CxxWrap
-https://github.com/JuliaInterop/libcxxwrap-julia
-main
+b154d9d6895892d4f2573ea5f9848a47497974d9
 
 Mousetrap Julia binding
 https://github.com/Clemapfel/mousetrap_julia_binding
-1816ae49f84fa34ec0802249276d4ac16254efde
+db7b93a86292be8c718d538f314a95b3d46a53a6
 
 ## BINARY DEPENDENCIES
 
@@ -30,12 +26,11 @@ libjulia
     https://github.com/JuliaBinaryWrappers/libjulia_jll.jl
 
 
-## Script
+## Script Linux
 cd mousetrap
 mkdir build
 cd build
 cmake .. -DCMAKE_INSTALL_LIBDIR=$prefix/lib64 \
-         -DCMAKE_INSTALL_INCLUDEDIR=$prefix/include \
          -DMOUSETRAP_USE_OVERRIDES=ON \
          -DGTK4_INCLUDE_DIR=$prefix/include/gtk-4.0 \
          -DGLIB_INCLUDE_DIR="$prefix/include/glib-2.0;$prefix/include/glib-2.0/glib" \
@@ -46,7 +41,7 @@ cmake .. -DCMAKE_INSTALL_LIBDIR=$prefix/lib64 \
          -DGDK_PIXBUF_INCLUDE_DIR=$prefix/include/gdk-pixbuf-2.0 \
          -DGRAPHENE_INCLUDE_DIR=$prefix/include/graphene-1.0 \
          -DGRAPHENE_LIB_DIR=$prefix/lib/graphene-1.0/include \
-         -DGL_INCLUDE_DIR=$prefix/include/GL
+         -DGL_INCLUDE_DIR="$prefix/include/GL;"
  make install -j 4
 
  cd ../..
