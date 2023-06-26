@@ -25,6 +25,7 @@ int main()
     {
         auto window = Window(app);
 
+        /*
         auto root = MenuModel();
         auto top_level = MenuModel();
         top_level.add_widget(Label("Test"));
@@ -46,6 +47,14 @@ int main()
 
         //window.set_child(menu_bar);
         window.set_child(popover_button);
+         */
+
+        auto dialog = AlertDialog({"Ok", "Cancel"}, "Test Dialog");
+        dialog.on_selection([](AlertDialog& self, int index){
+            std::cout << index << self.get_button_label(index) << std::endl;
+        });
+        dialog.present();
+
         window.present();
     });
 

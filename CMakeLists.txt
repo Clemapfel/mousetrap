@@ -314,7 +314,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/popover_menu.cpp
     src/color_chooser.cpp
     src/gtk_common.cpp
-)
+        src/alert_dialog.cpp)
 
 add_library(mousetrap SHARED
     ${MOUSETRAP_HEADER_FILES}

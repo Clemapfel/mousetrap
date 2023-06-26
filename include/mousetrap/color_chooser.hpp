@@ -94,6 +94,7 @@ namespace mousetrap
     template<typename Function_t, typename Data_t>
     void ColorChooser::on_accept(Function_t f_in, Data_t data_in)
     {
+        delete _internal->on_accept;
         _internal->on_accept = new std::function<void(ColorChooser&, RGBA)>([f = f_in, data = data_in](ColorChooser& self, RGBA rgba){
            f(self, rgba, data);
         });
@@ -102,6 +103,7 @@ namespace mousetrap
     template<typename Function_t>
     void ColorChooser::on_accept(Function_t f_in)
     {
+        delete _internal->on_accept;
         _internal->on_accept = new std::function<void(ColorChooser&, RGBA)>([f = f_in](ColorChooser& self, RGBA rgba){
             f(self, rgba);
         });
@@ -110,6 +112,7 @@ namespace mousetrap
     template<typename Function_t, typename Data_t>
     void ColorChooser::on_cancel(Function_t f_in, Data_t data_in)
     {
+        delete _internal->on_cancel;
         _internal->on_cancel = new std::function<void(ColorChooser&)>([f = f_in, data = data_in](ColorChooser& self){
             f(self, data);
         });
@@ -118,6 +121,7 @@ namespace mousetrap
     template<typename Function_t>
     void ColorChooser::on_cancel(Function_t f_in)
     {
+        delete _internal->on_cancel;
         _internal->on_cancel = new std::function<void(ColorChooser&)>([f = f_in](ColorChooser& self){
             f(self);
         });
