@@ -63,10 +63,6 @@ namespace mousetrap
             /// @return string
             std::string get_button_label(int index) const;
 
-            /// @brief get all button labels in order
-            /// @return vector
-            const std::vector<std::string>& get_button_labels() const;
-
             /// @brief get number of buttons
             /// @return number
             size_t get_n_buttons() const;
