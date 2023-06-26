@@ -36,10 +36,10 @@ set(PROJECT_PREFIX "")#"mousetrap_") # TODO
 ### DEPENDENCIES ###
 
 # OpenGL
-find_library(OpenGL NAMES GL) # optional on windows
+find_package(OpenGL REQUIRED)
 
 # GLEW
-find_library(GLEW REQUIRED NAMES GLEW glew glew32)
+find_package(GLEW REQUIRED)
 
 # GTK4
 find_package(PkgConfig)
@@ -325,45 +325,23 @@ target_compile_features(mousetrap PUBLIC
     cxx_std_17
 )
 
-if (${OpenGL}) # linux
-    target_include_directories(mousetrap PUBLIC
-        "${CMAKE_SOURCE_DIR}/include"
-        "${GTK_INCLUDE_DIRS}"
-        "${GL_INCLUDE_DIR}"
-    )
+target_include_directories(mousetrap PUBLIC
+    "${CMAKE_SOURCE_DIR}/include"
+    "${GTK_INCLUDE_DIRS}"
+)
 
-    target_link_libraries(mousetrap PUBLIC
-        ${GLEW}
-        ${GTK_LIBRARIES}
-        ${OpenGL}
-    )
+target_link_libraries(mousetrap PUBLIC
+    ${GLEW}
+    ${GTK_LIBRARIES}
+    ${OpenGL}
+)
 
-    set_target_properties(mousetrap PROPERTIES
-        LINKER_LANGUAGE CXX
-        POSITION_INDEPENDENT_CODE ON
-        INTERFACE_INCLUDE_DIRECTORIES "${GL_INCLUDE_DIR};${GTK_INCLUDE_DIRS}"
-        INTERFACE_LINK_LIBRARIES "${OpenGL};${GLEW};${GTK_LIBRARIES}"
-    )
-else() # windows
-    target_include_directories(mousetrap PUBLIC
-        "${CMAKE_SOURCE_DIR}/include"
-        "${GTK_INCLUDE_DIRS}"
-    )
-
-    target_link_libraries(mousetrap PUBLIC
-        ${GLEW}
-        ${GTK_LIBRARIES}
-    )
-
-    set_target_properties(mousetrap PROPERTIES
-        LINKER_LANGUAGE CXX
-        POSITION_INDEPENDENT_CODE ON
-        INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
-        INTERFACE_LINK_LIBRARIES "${GLEW};${GTK_LIBRARIES}"
-    )
-endif()
-
-
+set_target_properties(mousetrap PROPERTIES
+    LINKER_LANGUAGE CXX
+    POSITION_INDEPENDENT_CODE ON
+    INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${OpenGL};${GLEW};${GTK_LIBRARIES}"
+)
 
 ### DOCUMENTATION ###
 
@@ -381,10 +359,10 @@ if (${MOUSETRAP_BUILD_DOCUMENTATION})
                 @ONLY
         )
         add_custom_target("${PROJECT_PREFIX}docs"
-                COMMAND doxygen
-                WORKING_DIRECTORY "${PROJECT_DOCUMENTATION_DIR}"
-                DEPENDS docs/Doxyfile.in
-                )
+            COMMAND doxygen
+            WORKING_DIRECTORY "${PROJECT_DOCUMENTATION_DIR}"
+            DEPENDS docs/Doxyfile.in
+        )
     endif()
 endif()
 

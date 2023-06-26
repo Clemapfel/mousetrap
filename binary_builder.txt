@@ -2,16 +2,21 @@
 
 Mousetrap
 https://github.com/Clemapfel/mousetrap
-b49c3c0c450a7d3e43b69ebd72880d1324eb0e3f
+546d7188ff99c931d5c55d431e5182270450f1cf
 
 Mousetrap Julia binding
 https://github.com/Clemapfel/mousetrap_julia_binding
 db7b93a86292be8c718d538f314a95b3d46a53a6
 
+https://dllfile.net/download/18762
+5a86079d961bb4ba98127f91b8a505909284fa51
+
 ## BINARY DEPENDENCIES
 
 GLEW
     https://github.com/JuliaBinaryWrappers/GLEW_jll.jl
+GLFW
+    https://github.com/JuliaBinaryWrappers/GLFW_jll.jl
 GTK4
     https://github.com/JuliaBinaryWrappers/GTK4_jll.jl
 OpenGLMathematics
@@ -30,7 +35,6 @@ cd mousetrap
 mkdir build
 cd build
 cmake .. -DCMAKE_INSTALL_LIBDIR=$prefix/lib64 \
-         -DMOUSETRAP_USE_OVERRIDES=ON \
          -DGTK4_INCLUDE_DIR=$prefix/include/gtk-4.0 \
          -DGLIB_INCLUDE_DIR="$prefix/include/glib-2.0;$prefix/include/glib-2.0/glib" \
          -DGLIB_LIB_DIR=$prefix/lib/glib-2.0/include \
@@ -40,27 +44,13 @@ cmake .. -DCMAKE_INSTALL_LIBDIR=$prefix/lib64 \
          -DGDK_PIXBUF_INCLUDE_DIR=$prefix/include/gdk-pixbuf-2.0 \
          -DGRAPHENE_INCLUDE_DIR=$prefix/include/graphene-1.0 \
          -DGRAPHENE_LIB_DIR=$prefix/lib/graphene-1.0/include \
-         -DGL_INCLUDE_DIR="$prefix/include/GL;"
+         -DGL_INCLUDE_DIR="$prefix/include/GL"
+
  make install -j 4
 
- cmake .. -DCMAKE_INSTALL_LIBDIR=$prefix/lib64 \
-          -DCMAKE_LIBRARY_PATH="$prefix/lib;$prefix/lib64"
-          -DMOUSETRAP_USE_OVERRIDES=ON \
-          -DGTK4_INCLUDE_DIR=$prefix/include/gtk-4.0 \
-          -DGLIB_INCLUDE_DIR="$prefix/include/glib-2.0;$prefix/include/glib-2.0/glib" \
-          -DGLIB_LIB_DIR=$prefix/lib/glib-2.0/include \
-          -DCAIRO_INCLUDE_DIR=$prefix/include/cairo \
-          -DPANGO_INCLUDE_DIR=$prefix/include/pango-1.0/ \
-          -DHARFBUZZ_INCLUDE_DIR=$prefix/include/harfbuzz \
-          -DGDK_PIXBUF_INCLUDE_DIR=$prefix/include/gdk-pixbuf-2.0 \
-          -DGRAPHENE_INCLUDE_DIR=$prefix/include/graphene-1.0 \
-          -DGRAPHENE_LIB_DIR=$prefix/lib/graphene-1.0/include \
-          -DGL_INCLUDE_DIR="$prefix/include/GL;"
+ # WINDOWS
 
- cmake .. -DCMAKE_INSTALL_LIBDIR=$prefix/lib64 \
-
-
- cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_LIBRARIY_PATH="/workspace/destdir/bin;/workspace/destdir/lib"
+ cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_INSTALL_LIBDIR=$prefix/lib64
 
  cd ../..
  cd mousetrap_julia_binding
