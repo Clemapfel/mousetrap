@@ -331,9 +331,9 @@ target_include_directories(mousetrap PUBLIC
 )
 
 target_link_libraries(mousetrap PUBLIC
-    ${GLEW}
     ${GTK_LIBRARIES}
     ${OpenGL}
+    ${GLEW}
 )
 
 set_target_properties(mousetrap PROPERTIES
