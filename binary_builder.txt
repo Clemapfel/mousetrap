@@ -2,7 +2,7 @@
 
 Mousetrap
 https://github.com/Clemapfel/mousetrap
-b154d9d6895892d4f2573ea5f9848a47497974d9
+f0daaaf8a01c135f8d1a19b55848454329c338f3
 
 Mousetrap Julia binding
 https://github.com/Clemapfel/mousetrap_julia_binding
@@ -25,7 +25,6 @@ libcxxwrap_julia
 libjulia
     https://github.com/JuliaBinaryWrappers/libjulia_jll.jl
 
-
 ## Script Linux
 cd mousetrap
 mkdir build
@@ -43,6 +42,8 @@ cmake .. -DCMAKE_INSTALL_LIBDIR=$prefix/lib64 \
          -DGRAPHENE_LIB_DIR=$prefix/lib/graphene-1.0/include \
          -DGL_INCLUDE_DIR="$prefix/include/GL;"
  make install -j 4
+
+ cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_LIBRARIY_PATH="/workspace/destdir/bin;/workspace/destdir/lib"
 
  cd ../..
  cd mousetrap_julia_binding
