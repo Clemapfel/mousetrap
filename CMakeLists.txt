@@ -53,7 +53,7 @@ set(PROJECT_PREFIX "")#"mousetrap_") # TODO
 ### DEPENDENCIES ###
 
 # OpenGL
-find_library(OpenGL REQUIRED NAMES GL)
+find_library(OpenGL NAMES GL)
 
 # GLEW
 find_library(GLEW REQUIRED NAMES GLEW glew glew32)
@@ -309,11 +309,18 @@ target_include_directories(mousetrap PUBLIC
     "${GL_INCLUDE_DIR}"
 )
 
-target_link_libraries(mousetrap PUBLIC
-    ${OpenGL}
-    ${GLEW}
-    ${GTK_LIBRARIES}
-)
+if (${OpenGL}) # linux
+    target_link_libraries(mousetrap PUBLIC
+        ${OpenGL}
+        ${GLEW}
+        ${GTK_LIBRARIES}
+    )
+else() # windows
+    target_link_libraries(mousetrap PUBLIC
+        ${GLEW}
+        ${GTK_LIBRARIES}
+    )
+endif()
 
 target_compile_features(mousetrap PUBLIC
     cxx_std_17
