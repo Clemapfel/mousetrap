@@ -19,6 +19,10 @@ namespace mousetrap
         {
             auto* self = MOUSETRAP_MENU_MODEL_INTERNAL(object);
             G_OBJECT_CLASS(menu_model_internal_parent_class)->finalize(object);
+
+            for (auto& pair : *self->id_to_widget)
+                g_object_unref(pair.second);
+
             delete self->id_to_widget;
             delete self->submenus;
         }
@@ -87,7 +91,7 @@ namespace mousetrap
         g_menu_item_set_attribute_value(item, "custom", g_variant_new_string(id.c_str()));
         g_menu_append_item(_internal->native, item);
 
-        _internal->id_to_widget->insert({std::string(id), widget.operator NativeWidget()});
+        _internal->id_to_widget->insert({std::string(id), g_object_ref(widget.operator NativeWidget())});
         _internal->has_widget_in_toplevel = true;
         current_id += 1;
         g_object_unref(item);

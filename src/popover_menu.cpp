@@ -83,7 +83,7 @@ namespace mousetrap
     void PopoverMenu::refresh_widgets()
     {
         auto model = MenuModel(_internal->model);
-        for (auto& pair:model.get_widgets())
+        for (auto& pair: model.get_widgets())
         {
             if (gtk_popover_menu_add_child(GTK_POPOVER_MENU(operator NativeWidget()), pair.second, pair.first.c_str()) != TRUE)
             {

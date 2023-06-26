@@ -25,11 +25,29 @@ int main()
     {
         auto window = Window(app);
 
+        auto root = MenuModel();
+        auto top_level = MenuModel();
+        top_level.add_widget(Label("Test"));
+        root.add_submenu("top_level", top_level);
 
+        auto nested_01 = MenuModel();
+        nested_01.add_widget(Label("Test"));
+        top_level.add_submenu("nested_01", nested_01);
+
+        auto nested_02 = MenuModel();
+        nested_02.add_widget(Label("Test"));
+        nested_01.add_submenu("nested_02", nested_02);
+
+        auto menu_bar = MenuBar(root);
+
+        auto popover_menu = PopoverMenu(root);
+        auto popover_button = PopoverButton();
+        popover_button.set_popover_menu(popover_menu);
+
+        window.set_child(menu_bar);
+        //window.set_child(popover_button);
         window.present();
     });
-
-    file_system::open_url("https://docs.gtk.org/gtk4/method.FileLauncher.open_containing_folder.html");
 
     return app.run();
 }
