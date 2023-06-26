@@ -46,7 +46,7 @@
 #include <mousetrap/log.hpp>
 #include <mousetrap/long_press_event_controller.hpp>
 #include <mousetrap/menu_model.hpp>
-#include <mousetrap/menubar.hpp>
+#include <mousetrap/menu_bar.hpp>
 #include <mousetrap/motion_event_controller.hpp>
 #include <mousetrap/msaa_render_texture.hpp>
 #include <mousetrap/music.hpp>

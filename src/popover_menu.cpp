@@ -85,12 +85,13 @@ namespace mousetrap
         auto model = MenuModel(_internal->model);
         for (auto& pair: model.get_widgets())
         {
-            if (gtk_popover_menu_add_child(GTK_POPOVER_MENU(operator NativeWidget()), pair.second, pair.first.c_str()) != TRUE)
+            gtk_widget_unparent(pair.second);
+            if (not gtk_popover_menu_add_child(GTK_POPOVER_MENU(operator NativeWidget()), pair.second, pair.first.c_str()))
             {
-                continue; // TODO Why is triggered but widget insertion seem to be working fine?
+                continue; // `gtk_popover_menu_add_child` returns false, but insertion seems to be working fine
 
                 std::stringstream str;
-                str << "In PopoverMenu::refresh_widgets: Failed to add Widget of type " << G_STRINGIFY(pair.second) << " to submenu." << std::endl;
+                str << "In PopoverMenu::refresh_widgets: Failed to add Widget to PopoverMenu." << std::endl;
                 log::critical(str.str(), MOUSETRAP_DOMAIN);
             }
         }

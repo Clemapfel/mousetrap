@@ -26,6 +26,7 @@ namespace mousetrap
     /// @brief display menu as a menubar
     /// \signals
     /// \widget_signals{MenuBar}
+    /// \bug When trying to display a menu model that has a custom widget added to anything but the top-level submenu, that widget fails to insert
     class MenuBar : public detail::notify_if_gtk_uninitialized,
         public Widget,
         HAS_SIGNAL(MenuBar, realize),

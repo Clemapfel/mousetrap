@@ -86,14 +86,13 @@ namespace mousetrap
 
     void MenuModel::add_widget(const Widget& widget)
     {
-        auto id = std::to_string(current_id);
+        auto id = std::to_string(current_id++);
         auto* item = g_menu_item_new(id.c_str(), id.c_str());
         g_menu_item_set_attribute_value(item, "custom", g_variant_new_string(id.c_str()));
         g_menu_append_item(_internal->native, item);
 
         _internal->id_to_widget->insert({std::string(id), g_object_ref(widget.operator NativeWidget())});
         _internal->has_widget_in_toplevel = true;
-        current_id += 1;
         g_object_unref(item);
     }
 

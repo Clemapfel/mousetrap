@@ -44,8 +44,8 @@ int main()
         auto popover_button = PopoverButton();
         popover_button.set_popover_menu(popover_menu);
 
-        window.set_child(menu_bar);
-        //window.set_child(popover_button);
+        //window.set_child(menu_bar);
+        window.set_child(popover_button);
         window.present();
     });
 
