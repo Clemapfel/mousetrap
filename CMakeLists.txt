@@ -18,28 +18,11 @@ cmake_minimum_required(VERSION 3.18)
 #       Additional Dependencies when using this option:
 #           Doxygen
 #
-#   MOUSETRAP_USE_OVERRIDES: boolean
-#       Whether to use hard-coded library paths for the GKT4 libraries.
-#       If set to true, the following cmake variables also need to be set:
-#          | CMake Variable         | Needed File             | Default Location on Debian / Fedora |
-#          |------------------------|-------------------------|-------------------------------------|
-#          | GTK4_INCLUDE_DIR       | gtk/gtk.h               | /usr/include/gtk-4.0
-#          | GLIB_INCLUDE_DIR       | glib.h                  | /usr/include/glib-2.0
-#          | GLIB_LIB_DIR           | gilbconfig.h            | /usr/lib64/glib-2.0/include
-#          | CAIRO_INCLUDE_DIR      | cairo.h                 | /usr/include/cairo
-#          | PANGO_INCLUDE_DIR      | pango/pango.h           | /usr/include/pango-1.0
-#          | HARFBUZZ_INCLUDE_DIR   | hb.h                    | /usr/include/harfbuzz
-#          | GDK_PIXBUF_INCLUDE_DIR | gdk-pixbuf/gdk-pixbuf.h | /usr/include/gdk-pixbuf-2.0
-#          | GRAPHENE_INCLUDE_DIR   | graphene.h              | /usr/include/graphene-1.0
-#          | GRAPHENE_LIB_DIR       | graphene-config.h       | /usr/lib64/graphene-1.0/include
-#          | GL_INCLUDE_DIR         | GLu.h                   | /usr/include/GL
-#
 
 ### PROJECT ###
 
 project(mousetrap
     VERSION 0.1.0
-    DESCRIPTION ""
     LANGUAGES CXX
 )
 
@@ -53,16 +36,18 @@ set(PROJECT_PREFIX "")#"mousetrap_") # TODO
 ### DEPENDENCIES ###
 
 # OpenGL
-find_library(OpenGL NAMES GL)
+find_library(OpenGL NAMES GL) # optional on windows
 
 # GLEW
 find_library(GLEW REQUIRED NAMES GLEW glew glew32)
 
 # GTK4
-option(MOUSETRAP_USE_OVERRIDES OFF)
-if (MOUSETRAP_USE_OVERRIDES)
+find_package(PkgConfig)
+pkg_check_modules(GTK gtk4)
 
-    set(GTK_INCLUDE_DIRS "${GTK4_INCLUDE_DIR};${GLIB_INCLUDE_DIR};${GLIB_LIB_DIR};${CAIRO_INCLUDE_DIR};${PANGO_INCLUDE_DIR};${HARFBUZZ_INCLUDE_DIR};${GDK_PIXBUF_INCLUDE_DIR};${GRAPHENE_INCLUDE_DIR};${GRAPHENE_LIB_DIR}")
+if (NOT GTK_FOUND)
+
+    # if pkg config fails, use manual overrides
 
     find_library(GTK4 REQUIRED NAMES gtk-4 gtk-4-1)
     find_library(CAIRO REQUIRED NAMES cairo)
@@ -74,18 +59,48 @@ if (MOUSETRAP_USE_OVERRIDES)
     find_library(GOBJECT REQUIRED NAMES gobject-2.0)
     find_library(GLIB REQUIRED NAMES glib-2.0)
 
-    set(GTK_LIBRARIES "${GTK4};${CAIRO};${PANGO};${HARFBUZZ};${GDK_PIXBUF};${GRAPHENE};${GIO};${GOBJECT};${GLIB}")
-
-else()
-    find_package(PkgConfig)
-    pkg_check_modules(GTK gtk4)
-
-    if (NOT GTK_FOUND)
-        message(FATAL_ERROR "Missing Dependency: unable to locate GTK4")
+    if (DEFINED ${GTK4_INCLUDE_DIR})
+        message(WARNING "`GTK4_INCLUDE_DIR` variable not set")
     endif()
+
+    if (DEFINED ${GLIB_INCLUDE_DIR})
+        message(WARNING "`GLIB_INCLUDE_DIR` variable not set")
+    endif()
+
+    if (DEFINED ${GLIB_LIB_DIR})
+        message(WARNING "`GLIB_LIB_DIR` variable not set")
+    endif()
+
+    if (DEFINED ${CAIRO_INCLUDE_DIR})
+        message(WARNING "`CAIRO_INCLUDE_DIR` variable not set")
+    endif()
+
+    if (DEFINED ${PANGO_INCLUDE_DIR})
+        message(WARNING "`PANGO_INCLUDE_DIR` variable not set")
+    endif()
+
+    if (DEFINED ${HARFBUZZ_INCLUDE_DIR})
+        message(WARNING "`HARFBUZZ_INCLUDE_DIR` variable not set")
+    endif()
+
+    if (DEFINED ${GDK_PIXBUF_INCLUDE_DIR})
+        message(WARNING "`GDK_PIXBUF_INCLUDE_DIR` variable not set")
+    endif()
+
+    if (DEFINED ${GRAPHENE_INCLUDE_DIR})
+        message(WARNING "`GRAPHENE_INCLUDE_DIR` variable not set")
+    endif()
+
+    if (DEFINED ${GRAPHENE_LIB_DIR})
+        message(WARNING "`GRAPHENE_LIB_DIR` variable not set")
+    endif()
+
+    set(GTK_INCLUDE_DIRS "${GTK4_INCLUDE_DIR};${GLIB_INCLUDE_DIR};${GLIB_LIB_DIR};${CAIRO_INCLUDE_DIR};${PANGO_INCLUDE_DIR};${HARFBUZZ_INCLUDE_DIR};${GDK_PIXBUF_INCLUDE_DIR};${GRAPHENE_INCLUDE_DIR};${GRAPHENE_LIB_DIR}")
+    set(GTK_LIBRARIES "${GTK4};${CAIRO};${PANGO};${HARFBUZZ};${GDK_PIXBUF};${GRAPHENE};${GIO};${GOBJECT};${GLIB}")
 endif()
 
 # OpenGL Math
+
 include(CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX(glm/glm.hpp GLM_FOUND)
 if(NOT GLM_FOUND)
@@ -203,7 +218,9 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/inline/widget.inl
     include/mousetrap/key_codes.hpp
     include/mousetrap/inline/file_chooser.inl
-        include/mousetrap/color_chooser.hpp include/mousetrap/alert_dialog.hpp)
+    include/mousetrap/color_chooser.hpp
+    include/mousetrap/alert_dialog.hpp
+)
 
 set(MOUSETRAP_SOURCE_FILES
     src/adjustment.cpp
@@ -296,42 +313,57 @@ set(MOUSETRAP_SOURCE_FILES
     src/action.cpp
     src/popover_menu.cpp
     src/color_chooser.cpp
-        src/gtk_common.cpp)
+    src/gtk_common.cpp
+)
 
 add_library(mousetrap SHARED
     ${MOUSETRAP_HEADER_FILES}
     ${MOUSETRAP_SOURCE_FILES}
 )
 
-target_include_directories(mousetrap PUBLIC
-    "${CMAKE_SOURCE_DIR}/include"
-    "${GTK_INCLUDE_DIRS}"
-    "${GL_INCLUDE_DIR}"
-)
-
-if (${OpenGL}) # linux
-    target_link_libraries(mousetrap PUBLIC
-        ${OpenGL}
-        ${GLEW}
-        ${GTK_LIBRARIES}
-    )
-else() # windows
-    target_link_libraries(mousetrap PUBLIC
-        ${GLEW}
-        ${GTK_LIBRARIES}
-    )
-endif()
-
 target_compile_features(mousetrap PUBLIC
     cxx_std_17
 )
 
-set_target_properties(mousetrap PROPERTIES
-    LINKER_LANGUAGE CXX
-    POSITION_INDEPENDENT_CODE ON
-    INTERFACE_INCLUDE_DIRECTORIES "${GL_INCLUDE_DIR};${GTK_INCLUDE_DIRS}"
-    INTERFACE_LINK_LIBRARIES "${OpenGL};${GLEW};${GTK_LIBRARIES}"
-)
+if (${OpenGL}) # linux
+    target_include_directories(mousetrap PUBLIC
+        "${CMAKE_SOURCE_DIR}/include"
+        "${GTK_INCLUDE_DIRS}"
+        "${GL_INCLUDE_DIR}"
+    )
+
+    target_link_libraries(mousetrap PUBLIC
+        ${GLEW}
+        ${GTK_LIBRARIES}
+        ${OpenGL}
+    )
+
+    set_target_properties(mousetrap PROPERTIES
+        LINKER_LANGUAGE CXX
+        POSITION_INDEPENDENT_CODE ON
+        INTERFACE_INCLUDE_DIRECTORIES "${GL_INCLUDE_DIR};${GTK_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${OpenGL};${GLEW};${GTK_LIBRARIES}"
+    )
+else() # windows
+    target_include_directories(mousetrap PUBLIC
+        "${CMAKE_SOURCE_DIR}/include"
+        "${GTK_INCLUDE_DIRS}"
+    )
+
+    target_link_libraries(mousetrap PUBLIC
+        ${GLEW}
+        ${GTK_LIBRARIES}
+    )
+
+    set_target_properties(mousetrap PROPERTIES
+        LINKER_LANGUAGE CXX
+        POSITION_INDEPENDENT_CODE ON
+        INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${GLEW};${GTK_LIBRARIES}"
+    )
+endif()
+
+
 
 ### DOCUMENTATION ###
 
