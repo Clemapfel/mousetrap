@@ -54,6 +54,9 @@ namespace mousetrap
             /// @brief expose internal
             NativeObject get_internal() const override;
 
+            /// @brief expose signal handler
+            operator NativeObject() const override;
+
             /// @brief get currently displayed test
             /// @returns string
             std::string get_text() const;

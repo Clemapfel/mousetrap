@@ -68,6 +68,11 @@ namespace mousetrap
         gtk_button_set_child(GTK_BUTTON(GTK_TOGGLE_BUTTON(_internal)), widget.operator GtkWidget*());
     }
 
+    void ToggleButton::set_icon(const Icon& icon)
+    {
+        gtk_button_set_child(GTK_BUTTON(operator NativeWidget()), gtk_image_new_from_gicon(icon.operator GIcon *()));
+    }
+
     void ToggleButton::remove_child()
     {
         gtk_button_set_child(GTK_BUTTON(GTK_TOGGLE_BUTTON(_internal)), nullptr);

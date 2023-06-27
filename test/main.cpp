@@ -18,6 +18,12 @@
 
 using namespace mousetrap;
 
+void c_f(GtkEntry* entry)
+{
+    auto temp = Entry(entry);
+    temp.emit_signal_activate();
+}
+
 int main()
 {
     auto app = Application("test.app");
@@ -25,7 +31,39 @@ int main()
     {
         auto window = Window(app);
 
-        /*
+        auto entry = Entry();
+        entry.set_text("test");
+        entry.connect_signal_realize([](Entry& self){
+            std::cout << "realized" << std::endl;
+        });
+        entry.connect_signal_activate([](Entry& self){
+            auto text = self.get_text();
+            auto out = RGBA();
+            std::cout << "test" << is_valid_html_code(text, out) << std::endl;
+        });
+        entry.connect_signal_text_changed([](Entry& self){
+            std::cout << "text changed" << std::endl;
+        });
+
+        auto text_view = TextView();
+        text_view.connect_signal_text_changed([](TextView&){
+            std::cout << "test view changed" << std::endl;
+        });
+
+        auto vbox = Box(Orientation::VERTICAL);
+        vbox.push_back(entry);
+        vbox.push_back(text_view);
+
+        window.set_child(vbox);
+        window.present();
+    });
+
+    return app.run();
+}
+
+#if false
+
+/*
         auto root = MenuModel();
         auto top_level = MenuModel();
         top_level.add_widget(Label("Test"));
@@ -54,14 +92,6 @@ int main()
             std::cout << index << self.get_button_label(index) << std::endl;
         });
         dialog.present();
-
-        window.present();
-    });
-
-    return app.run();
-}
-
-#if false
 
 #include <mousetrap/window.hpp>
 #include <mousetrap/header_bar.hpp>

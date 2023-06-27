@@ -7,6 +7,7 @@
 
 #include <mousetrap/widget.hpp>
 #include <mousetrap/action.hpp>
+#include <mousetrap/icon.hpp>
 
 #ifdef DOXYGEN
     #include "../../docs/doxygen.inl"
@@ -66,6 +67,10 @@ namespace mousetrap
             /// @brief set widget to use as the label for the button
             /// @param widget
             void set_child(const Widget&);
+
+            /// @brief use an icon as the buttons label
+            /// @param icon
+            void set_icon(const Icon&);
 
             /// @brief remove label widget
             void remove_child();

@@ -318,7 +318,7 @@ namespace mousetrap
             return RGBA(0, 0, 0, 1);
     }
 
-    bool is_html_code_valid(const std::string& text, RGBA& out)
+    bool is_valid_html_code(const std::string& text, RGBA& out)
     {
         static auto hex_char_to_int = [](char c) -> uint8_t
         {
@@ -386,6 +386,9 @@ namespace mousetrap
             if (as_hex.back() == -1)
                 goto on_error;
         }
+
+        if (as_hex.size() < 6)
+            goto on_error;
 
         out.r = hex_component_to_int(as_hex.at(0), as_hex.at(1)) / 255.f;
         out.g = hex_component_to_int(as_hex.at(2), as_hex.at(3)) / 255.f;

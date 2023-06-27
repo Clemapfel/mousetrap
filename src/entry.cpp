@@ -19,7 +19,8 @@ namespace mousetrap
           CTOR_SIGNAL(Entry, map),
           CTOR_SIGNAL(Entry, unmap)
     {
-        _internal = g_object_ref_sink(GTK_ENTRY(Widget::operator NativeWidget()));
+        _internal = GTK_ENTRY(operator NativeWidget());
+        g_object_ref(_internal);
     }
     
     Entry::Entry(detail::EntryInternal* internal)
@@ -43,6 +44,11 @@ namespace mousetrap
     }
 
     NativeObject Entry::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
+    Entry::operator NativeObject() const
     {
         return G_OBJECT(_internal);
     }

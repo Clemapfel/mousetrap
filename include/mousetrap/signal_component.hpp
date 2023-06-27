@@ -69,7 +69,7 @@ namespace mousetrap
                     if (internal_maybe == nullptr)                                  \
                     {\
                         _internal = detail::has_signal_##snake_case##_internal_new(_instance->get_internal()); \
-                        /*detail::attach_ref_to(_internal->instance, _internal);    */      \
+                        detail::attach_ref_to(_internal->instance, _internal);     \
                         detail::set_data<detail::SIGNAL_INTERNAL_CLASS_NAME(CamelCase)>(_instance->get_internal(), g_signal_id, _internal);                                                           \
                     }                                                               \
                     else                                                            \
@@ -86,8 +86,8 @@ namespace mousetrap
             \
             ~SIGNAL_CLASS_NAME(snake_case)() \
             { \
-                if (_internal != nullptr)   \
-                    g_object_unref(_internal);  \
+                if (_internal != nullptr)\
+                    g_object_unref(_internal);                                   \
             } \
         \
         public: \
@@ -343,7 +343,7 @@ namespace mousetrap
 
     /// @brief an argument of this type should not be interacted with
     using UnusedArgument_t = void*;
-    
+
     /// @see
     DECLARE_SIGNAL(Activate, activate, ACTIVATE, "activate", void);
     /// @class has_signal_activate

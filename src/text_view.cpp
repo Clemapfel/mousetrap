@@ -48,6 +48,11 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
+    TextView::operator NativeObject() const
+    {
+        return G_OBJECT(gtk_text_view_get_buffer(_internal));
+    }
+
     std::string TextView::get_text() const
     {
         auto* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(_internal));
