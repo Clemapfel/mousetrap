@@ -28,6 +28,8 @@ namespace mousetrap::detail
         alert_dialog_internal_init(self);
 
         self->native = gtk_alert_dialog_new("");
+        gtk_alert_dialog_set_modal(self->native, true);
+
         self->button_labels = new std::vector<std::string>();
         self->on_selection = nullptr;
         detail::attach_ref_to(G_OBJECT(self->native), self);
