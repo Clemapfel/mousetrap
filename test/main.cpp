@@ -31,8 +31,6 @@ int main()
     {
         auto window = Window(app);
 
-        auto render_area = RenderArea();
-
         auto entry = Entry();
         entry.set_text("test");
         entry.connect_signal_realize([](Entry& self){

@@ -3,7 +3,7 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
-#include <mousetrap/gl_common.hpp>
+#include <mousetrap/vector.hpp>
 #include <mousetrap/color.hpp>
 #include <mousetrap/log.hpp>
 

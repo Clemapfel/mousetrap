@@ -47,13 +47,6 @@ if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
 
     # GLEW
     find_library(GLEW REQUIRED NAMES glew glew32 GLEW GLEW32)
-
-    # OpenGL Math
-    include(CheckIncludeFileCXX)
-    CHECK_INCLUDE_FILE_CXX(glm/glm.hpp GLM_FOUND)
-    if(NOT GLM_FOUND)
-        message(FATAL_ERROR "[mousetrap] Missing Dependency: unable to locate GLM")
-    endif()
 endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/include/mousetrap/gl_common.hpp.in ${CMAKE_SOURCE_DIR}/include/mousetrap/gl_common.hpp @ONLY)
@@ -61,6 +54,13 @@ configure_file(${CMAKE_SOURCE_DIR}/include/mousetrap/gl_common.hpp.in ${CMAKE_SO
 # GTK4
 find_package(PkgConfig)
 pkg_check_modules(GTK REQUIRED gtk4)
+
+# Vector
+include(CheckIncludeFileCXX)
+CHECK_INCLUDE_FILE_CXX(glm/glm.hpp GLM_FOUND)
+if(NOT GLM_FOUND)
+    message(FATAL_ERROR "[mousetrap] Missing Dependency: unable to locate GLM")
+endif()
 
 ### MOUSETRAP ##
 

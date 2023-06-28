@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <mousetrap/gl_common.hpp>
+#include <mousetrap/vector.hpp>
 
 #include <vector>
 #include <unordered_set>

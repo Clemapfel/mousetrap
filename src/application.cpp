@@ -46,6 +46,14 @@ namespace mousetrap
 
             return self;
         }
+
+        #if MOUSETRAP_OPENGL_COMPONENT_ENABLED == FALSE
+        GdkGLContext* initialize_opengl()
+        {
+            log::info("In detail::initialize_opengl: OpenGL component was disabled.");
+            return nullptr;
+        }
+        #endif
     }
 
     Application::Application(const std::string& id)
@@ -57,10 +65,7 @@ namespace mousetrap
 
         _internal = detail::application_internal_new(id);
 
-        #if MOUSETRAP_ENABLE_OPENGL_COMPONENT
         g_signal_connect(_internal->native, "startup", G_CALLBACK(detail::initialize_opengl), nullptr);
-        #endif
-
         g_signal_connect(_internal->native, "startup", G_CALLBACK(detail::mark_gtk_initialized), nullptr);
     }
 
