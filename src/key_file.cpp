@@ -704,6 +704,12 @@ namespace mousetrap
     }
 
     template<>
+    void KeyFile::set_value_as(GroupID group, KeyID key, double value)
+    {
+        g_key_file_set_double(_native, group.c_str(), key.c_str(), value);
+    }
+
+    template<>
     void KeyFile::set_value_as(GroupID group, KeyID key, std::vector<double> value)
     {
         g_key_file_set_double_list(_native, group.c_str(), key.c_str(), value.data(), value.size());
