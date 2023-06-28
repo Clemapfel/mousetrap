@@ -6,6 +6,7 @@
 #include <mousetrap/log.hpp>
 
 #include <iostream>
+#include <array>
 
 namespace mousetrap
 {
