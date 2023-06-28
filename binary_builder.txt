@@ -2,11 +2,11 @@
 
 Mousetrap
 https://github.com/Clemapfel/mousetrap
-6cab0ef9f8d559ac661bcd9fb47ba8a29f85a0c3
+786a57e32e8ad78c905f0c6868605bbfe7f4133b
 
 Mousetrap Julia binding
 https://github.com/Clemapfel/mousetrap_julia_binding
-c35d70e37ae6adb4c1b11be3198903b5a52b5870
+9c6447623a6df74b32767cddc9d43259bd25756f
 
 https://dllfile.net/download/18762
 5a86079d961bb4ba98127f91b8a505909284fa51
@@ -47,8 +47,10 @@ make install -j 6
 
 # WINDOWS
 
-unzip to .dll
+unzip 18762
 mv opengl32.dll $prefix/bin/opengl32.dll
+cd mousetrap
+mkdir build
+cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DOpenGL=$prefix/bin/opengl32.dll
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DJulia_INCLUDE_DIRS=$prefix/include/julia -DJulia_LIBRARY=$prefix/bin/libjulia.dll -DOpenGL=$prefix/bin/opengl32.dll

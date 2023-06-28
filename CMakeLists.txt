@@ -36,10 +36,10 @@ set(PROJECT_PREFIX "")#"mousetrap_") # TODO
 ### DEPENDENCIES ###
 
 # OpenGL
-find_library(OpenGL REQUIRED NAMES GL opengl32)
+find_library(OpenGL REQUIRED NAMES GL opengl32 OPENGL32 OpenGL32)
 
 # GLEW
-find_library(GLEW REQUIRED NAMES GLEW glew glew32)
+find_library(GLEW REQUIRED NAMES glew glew32 GLEW GLEW32)
 
 # GTK4
 find_package(PkgConfig)
