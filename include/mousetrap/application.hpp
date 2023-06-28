@@ -12,6 +12,7 @@
 #include <mousetrap/menu_model.hpp>
 
 #include <string>
+#include <map>
 
 #ifdef DOXYGEN
     #include "../../docs/doxygen.inl"
@@ -31,7 +32,7 @@ namespace mousetrap
             GObject parent_instance;
 
             GtkApplication* native;
-            std::unordered_map<size_t, detail::ActionInternal*>* actions;
+            std::map<ActionID, detail::ActionInternal*>* actions;
 
             bool holding;
             bool busy;

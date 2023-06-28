@@ -40,7 +40,7 @@ namespace mousetrap
             application_internal_init(self);
 
             self->native = native;
-            self->actions = new std::unordered_map<size_t, detail::ActionInternal*>();
+            self->actions = new std::map<ActionID, detail::ActionInternal*>();
             self->holding = false;
             self->busy = false;
 
@@ -174,7 +174,7 @@ namespace mousetrap
         if (G_ACTION(action.operator NativeObject()) == nullptr)
             log::warning("In Application::add_action: Attempting to add action `" + action.get_id() + "` to application, but the actions behavior was not set yet. Call Action::set_function or Action::set_stateful_function first");
 
-        auto inserted = _internal->actions->insert({std::hash<std::string>()(action.get_id()), action._internal}).first->second;
+        auto inserted = _internal->actions->insert({action.get_id(), action._internal}).first->second;
         g_action_map_add_action(G_ACTION_MAP(_internal->native), G_ACTION(inserted->g_action));
 
         auto* app = GTK_APPLICATION(_internal->native);
@@ -197,18 +197,18 @@ namespace mousetrap
             return;
 
         auto* self = G_ACTION_MAP(_internal->native);
-        _internal->actions->erase(std::hash<std::string>()(id));
+        _internal->actions->erase(id);
         g_action_map_remove_action(self, ("app." + id).c_str());
     }
 
     bool Application::has_action(const ActionID& id)
     {
-        return _internal->actions->find(std::hash<std::string>()(id)) != _internal->actions->end();
+        return _internal->actions->find(id) != _internal->actions->end();
     }
 
     Action Application::get_action(const ActionID& id)
     {
-        auto it = _internal->actions->find(std::hash<std::string>()(id));
+        auto it = _internal->actions->find(id);
         if (it == _internal->actions->end())
         {
             log::critical("In Application::get_action: No action with id `" + id + "` registered");
