@@ -7,6 +7,7 @@
 #include <mousetrap/log.hpp>
 
 #include <iostream>
+#include <map>
 
 namespace mousetrap
 {

@@ -7,6 +7,7 @@
 #include <mousetrap/log.hpp>
 
 #include <iostream>
+#include <map>
 
 namespace mousetrap
 {
@@ -34,7 +35,7 @@ namespace mousetrap
             auto* self = (MenuModelInternal*) g_object_new(menu_model_internal_get_type(), nullptr);
             menu_model_internal_init(self);
             self->native = g_menu_new();
-            self->id_to_widget = new std::unordered_map<std::string, GtkWidget*>();
+            self->id_to_widget = new std::map<std::string, GtkWidget*>();
             self->submenus = new std::set<const MenuModel*>();
             self->has_widget_in_toplevel = false;
             return self;
@@ -166,9 +167,9 @@ namespace mousetrap
         return G_OBJECT(_internal->native);
     }
 
-    std::unordered_map<std::string, GtkWidget*> MenuModel::get_widgets() const
+    std::map<std::string, GtkWidget*> MenuModel::get_widgets() const
     {
-        auto out = std::unordered_map<std::string, GtkWidget*>(*_internal->id_to_widget);
+        auto out = std::map<std::string, GtkWidget*>(*_internal->id_to_widget);
 
         for (auto* submenu : (*_internal->submenus))
             for (auto& pair : submenu->get_widgets())

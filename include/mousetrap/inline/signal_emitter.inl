@@ -2,6 +2,8 @@
 // Copyright (c) Clemens Cords (mail@clemens-cords.com), created 3/17/23
 //
 
+#include <map>
+
 namespace mousetrap
 {
     namespace detail

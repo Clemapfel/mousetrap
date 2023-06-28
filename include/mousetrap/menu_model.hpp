@@ -12,6 +12,7 @@
 
 #include <string>
 #include <set>
+#include <map>
 
 namespace mousetrap
 {
@@ -24,7 +25,7 @@ namespace mousetrap
             GObject parent;
 
             GMenu* native;
-            std::unordered_map<std::string, GtkWidget*>* id_to_widget;
+            std::map<std::string, GtkWidget*>* id_to_widget;
             std::set<const MenuModel*>* submenus;
             bool has_widget_in_toplevel = false;
         };
@@ -118,7 +119,7 @@ namespace mousetrap
         protected:
             /// @brief get list of registered widgets \for_internal_use_only
             /// @return map with internal id to widget mapping
-            [[nodiscard]] std::unordered_map<std::string, GtkWidget*> get_widgets() const;
+            [[nodiscard]] std::map<std::string, GtkWidget*> get_widgets() const;
 
         private:
             static inline size_t current_id = 1;

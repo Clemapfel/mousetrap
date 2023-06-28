@@ -6,6 +6,8 @@
 #include <mousetrap/time.hpp>
 #include <iostream>
 
+#include <pma>
+
 namespace mousetrap
 {
     namespace detail

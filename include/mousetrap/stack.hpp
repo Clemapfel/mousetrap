@@ -10,6 +10,7 @@
 #include <mousetrap/transition_type.hpp>
 #include <mousetrap/selection_model.hpp>
 
+#include <map>
 
 namespace mousetrap
 {
