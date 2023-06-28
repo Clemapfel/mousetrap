@@ -31,7 +31,7 @@ namespace mousetrap
             GObject parent_instance;
 
             GtkApplication* native;
-            std::unordered_map<ActionID, detail::ActionInternal*>* actions;
+            std::unordered_map<size_t, detail::ActionInternal*>* actions;
 
             bool holding;
             bool busy;
