@@ -18,6 +18,8 @@ cmake_minimum_required(VERSION 3.18)
 #       Additional Dependencies when using this option:
 #           Doxygen
 #
+#   MOUSETRAP_USE_OPENGL: boolean
+#       If true, all OpenGL-related parts of mousetrap will not be available
 
 ### PROJECT ###
 
@@ -35,26 +37,26 @@ set(PROJECT_PREFIX "")#"mousetrap_") # TODO
 
 ### DEPENDENCIES ###
 
-# OpenGL
-find_library(OpenGL REQUIRED NAMES GL opengl32 OPENGL32 OpenGL32)
+option(MOUSETRAP_ENABLE_OPENGL_COMPONENT ON)
 
-# GLEW
-find_library(GLEW REQUIRED NAMES glew glew32 GLEW GLEW32)
+if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
+    # OpenGL
+    find_library(OpenGL REQUIRED NAMES GL opengl32 OPENGL32 OpenGL32)
+
+    # GLEW
+    find_library(GLEW REQUIRED NAMES glew glew32 GLEW GLEW32)
+
+    # OpenGL Math
+    include(CheckIncludeFileCXX)
+    CHECK_INCLUDE_FILE_CXX(glm/glm.hpp GLM_FOUND)
+    if(NOT GLM_FOUND)
+        message(FATAL_ERROR "Missing Dependency: unable to locate GLM")
+    endif()
+endif()
 
 # GTK4
 find_package(PkgConfig)
 pkg_check_modules(GTK REQUIRED gtk4)
-
-message(WARNING ${GTK_LIBRARIES})
-message(WARNING ${GTK_INCLUDE_DIRS})
-
-# OpenGL Math
-
-include(CheckIncludeFileCXX)
-CHECK_INCLUDE_FILE_CXX(glm/glm.hpp GLM_FOUND)
-if(NOT GLM_FOUND)
-    message(FATAL_ERROR "Missing Dependency: unable to locate GLM")
-endif()
 
 ### MOUSETRAP ##
 
@@ -65,7 +67,6 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/angle.hpp
     include/mousetrap/application.hpp
     include/mousetrap/aspect_frame.hpp
-    include/mousetrap/blend_mode.hpp
     include/mousetrap/box.hpp
     include/mousetrap/button.hpp
     include/mousetrap/center_box.hpp
@@ -106,7 +107,7 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/log.hpp
     include/mousetrap/long_press_event_controller.hpp
     include/mousetrap/menu_model.hpp
-        include/mousetrap/menu_bar.hpp
+    include/mousetrap/menu_bar.hpp
     include/mousetrap/motion_event_controller.hpp
     include/mousetrap/msaa_render_texture.hpp
     include/mousetrap/music.hpp
@@ -170,6 +171,10 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/color_chooser.hpp
     include/mousetrap/alert_dialog.hpp
 )
+
+if (MOUSETRAP_USE_OPENGL)
+    set(MOUSETRAP_HEADER_FILES "${MOUSETRAP_HEADER_FILES}")
+endif()
 
 set(MOUSETRAP_SOURCE_FILES
     src/adjustment.cpp

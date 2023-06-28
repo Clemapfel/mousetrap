@@ -2,7 +2,7 @@
 
 Mousetrap
 https://github.com/Clemapfel/mousetrap
-786a57e32e8ad78c905f0c6868605bbfe7f4133b
+21ffcef5e33a74c1a28818f14f0a381be10da0a0
 
 Mousetrap Julia binding
 https://github.com/Clemapfel/mousetrap_julia_binding
@@ -15,8 +15,6 @@ https://dllfile.net/download/18762
 
 GLEW
     https://github.com/JuliaBinaryWrappers/GLEW_jll.jl
-GLFW
-    https://github.com/JuliaBinaryWrappers/GLFW_jll.jl
 GTK4
     https://github.com/JuliaBinaryWrappers/GTK4_jll.jl
 OpenGLMathematics
@@ -27,30 +25,15 @@ libcxxwrap_julia
     https://github.com/JuliaBinaryWrappers/libcxxwrap_julia_jll.jl
 libjulia
     https://github.com/JuliaBinaryWrappers/libjulia_jll.jl
-
 adwaita_icon_theme
     https://github.com/JuliaBinaryWrappers/adwaita_icon_theme_jll.jl
 
-## Script Linux
-cd mousetrap
-mkdir build
-cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DGTK_INCLUDE_DIRS="$prefix/include/gtk-4.0;$prefix/include/glib-2.0;$prefix/include/glib-2.0/glib;$prefix/lib/glib-2.0/include;$prefix/include/cairo;$prefix/include/pango-1.0;$prefix/include/harfbuzz;$prefix/include/gdk-pixbuf-2.0;$prefix/include/graphene-1.0"
-make install -j 6
+## LINUX
 
-cd ../..
-cd mousetrap_julia_binding
-mkdir build
-cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DGTK_INCLUDE_DIRS="$prefix/include/gtk-4.0;$prefix/include/glib-2.0;$prefix/include/glib-2.0/glib;$prefix/lib/glib-2.0/include;$prefix/include/cairo;$prefix/include/pango-1.0;$prefix/include/harfbuzz;$prefix/include/gdk-pixbuf-2.0;$prefix/include/graphene-1.0;$prefix/lib/graphene-1.0/include"
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DJulia_INCLUDE_DIRS=$prefix/include/julia
-make install -j 6
 
 # WINDOWS
 
-unzip 18762
-mv opengl32.dll $prefix/bin/opengl32.dll
-cd mousetrap
-mkdir build
-cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DOpenGL=$prefix/bin/opengl32.dll
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DJulia_INCLUDE_DIRS=$prefix/include/julia -DJulia_LIBRARY=$prefix/bin/libjulia.dll -DOpenGL=$prefix/bin/opengl32.dll
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release -DOpenGL=$prefix/bin/opengl32.dll -DGLEW="$prefix/lib/libglew32.a;$prefix/bin/glew32.dll"
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DJulia_INCLUDE_DIRS=$prefix/include/julia -DJulia_LIBRARY=$prefix/bin/libjulia.dll
