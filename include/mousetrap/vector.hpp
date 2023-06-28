@@ -118,8 +118,7 @@ namespace mousetrap
         return not (a == b);
     }
 
-    #ifndef DOXYGEN
-
+    /*
     /// @brief compare two Vector2f, orders them by x, then y
     /// @tparam T number type
     template<typename T>
@@ -218,6 +217,5 @@ namespace mousetrap
 
     /// @brief set of Vector4ui
     using Vector4uiSet = Vector4Set<size_t>;
-
-    #endif // DOXYGEN
+     */
 }
