@@ -2,11 +2,11 @@
 
 Mousetrap
 https://github.com/Clemapfel/mousetrap
-546d7188ff99c931d5c55d431e5182270450f1cf
+6cab0ef9f8d559ac661bcd9fb47ba8a29f85a0c3
 
 Mousetrap Julia binding
 https://github.com/Clemapfel/mousetrap_julia_binding
-db7b93a86292be8c718d538f314a95b3d46a53a6
+c35d70e37ae6adb4c1b11be3198903b5a52b5870
 
 https://dllfile.net/download/18762
 5a86079d961bb4ba98127f91b8a505909284fa51
@@ -23,34 +23,31 @@ OpenGLMathematics
     https://github.com/JuliaBinaryWrappers/OpenGLMathematics_jll.jl
 GLU
     https://github.com/JuliaBinaryWrappers/GLU_jll.jl
-adwaita_icon_theme
-    https://github.com/JuliaBinaryWrappers/adwaita_icon_theme_jll.jl
 libcxxwrap_julia
     https://github.com/JuliaBinaryWrappers/libcxxwrap_julia_jll.jl
 libjulia
     https://github.com/JuliaBinaryWrappers/libjulia_jll.jl
 
+adwaita_icon_theme
+    https://github.com/JuliaBinaryWrappers/adwaita_icon_theme_jll.jl
+
 ## Script Linux
 cd mousetrap
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_LIBDIR=$prefix/lib64 \
-         -DGTK4_INCLUDE_DIR=$prefix/include/gtk-4.0 \
-         -DGLIB_INCLUDE_DIR="$prefix/include/glib-2.0;$prefix/include/glib-2.0/glib" \
-         -DGLIB_LIB_DIR=$prefix/lib/glib-2.0/include \
-         -DCAIRO_INCLUDE_DIR=$prefix/include/cairo \
-         -DPANGO_INCLUDE_DIR=$prefix/include/pango-1.0/ \
-         -DHARFBUZZ_INCLUDE_DIR=$prefix/include/harfbuzz \
-         -DGDK_PIXBUF_INCLUDE_DIR=$prefix/include/gdk-pixbuf-2.0 \
-         -DGRAPHENE_INCLUDE_DIR=$prefix/include/graphene-1.0 \
-         -DGRAPHENE_LIB_DIR=$prefix/lib/graphene-1.0/include \
-         -DGL_INCLUDE_DIR="$prefix/include/GL"
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DGTK_INCLUDE_DIRS="$prefix/include/gtk-4.0;$prefix/include/glib-2.0;$prefix/include/glib-2.0/glib;$prefix/lib/glib-2.0/include;$prefix/include/cairo;$prefix/include/pango-1.0;$prefix/include/harfbuzz;$prefix/include/gdk-pixbuf-2.0;$prefix/include/graphene-1.0"
+make install -j 6
 
- make install -j 4
+cd ../..
+cd mousetrap_julia_binding
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DJulia_INCLUDE_DIRS=$prefix/include/julia
+make install -j 6
 
- # WINDOWS
+# WINDOWS
 
- cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_INSTALL_LIBDIR=$prefix/lib64
+# cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_INSTALL_LIBDIR=$prefix/bin
 
  cd ../..
  cd mousetrap_julia_binding

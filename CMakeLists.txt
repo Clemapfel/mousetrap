@@ -39,65 +39,14 @@ set(PROJECT_PREFIX "")#"mousetrap_") # TODO
 find_package(OpenGL REQUIRED)
 
 # GLEW
-find_package(GLEW REQUIRED)
+find_library(GLEW REQUIRED NAMES GLEW glew glew32)
 
 # GTK4
 find_package(PkgConfig)
-pkg_check_modules(GTK gtk4)
+pkg_check_modules(GTK REQUIRED gtk4)
 
-if (NOT GTK_FOUND)
-
-    # if pkg config fails, use manual overrides
-
-    find_library(GTK4 REQUIRED NAMES gtk-4 gtk-4-1)
-    find_library(CAIRO REQUIRED NAMES cairo)
-    find_library(PANGO REQUIRED NAMES pango-1.0)
-    find_library(HARFBUZZ REQUIRED NAMES harfbuzz)
-    find_library(GDK_PIXBUF REQUIRED NAMES gdk_pixbuf-2.0)
-    find_library(GRAPHENE REQUIRED NAMES graphene-1.0)
-    find_library(GIO REQUIRED NAMES gio-2.0)
-    find_library(GOBJECT REQUIRED NAMES gobject-2.0)
-    find_library(GLIB REQUIRED NAMES glib-2.0)
-
-    if (DEFINED ${GTK4_INCLUDE_DIR})
-        message(WARNING "`GTK4_INCLUDE_DIR` variable not set")
-    endif()
-
-    if (DEFINED ${GLIB_INCLUDE_DIR})
-        message(WARNING "`GLIB_INCLUDE_DIR` variable not set")
-    endif()
-
-    if (DEFINED ${GLIB_LIB_DIR})
-        message(WARNING "`GLIB_LIB_DIR` variable not set")
-    endif()
-
-    if (DEFINED ${CAIRO_INCLUDE_DIR})
-        message(WARNING "`CAIRO_INCLUDE_DIR` variable not set")
-    endif()
-
-    if (DEFINED ${PANGO_INCLUDE_DIR})
-        message(WARNING "`PANGO_INCLUDE_DIR` variable not set")
-    endif()
-
-    if (DEFINED ${HARFBUZZ_INCLUDE_DIR})
-        message(WARNING "`HARFBUZZ_INCLUDE_DIR` variable not set")
-    endif()
-
-    if (DEFINED ${GDK_PIXBUF_INCLUDE_DIR})
-        message(WARNING "`GDK_PIXBUF_INCLUDE_DIR` variable not set")
-    endif()
-
-    if (DEFINED ${GRAPHENE_INCLUDE_DIR})
-        message(WARNING "`GRAPHENE_INCLUDE_DIR` variable not set")
-    endif()
-
-    if (DEFINED ${GRAPHENE_LIB_DIR})
-        message(WARNING "`GRAPHENE_LIB_DIR` variable not set")
-    endif()
-
-    set(GTK_INCLUDE_DIRS "${GTK4_INCLUDE_DIR};${GLIB_INCLUDE_DIR};${GLIB_LIB_DIR};${CAIRO_INCLUDE_DIR};${PANGO_INCLUDE_DIR};${HARFBUZZ_INCLUDE_DIR};${GDK_PIXBUF_INCLUDE_DIR};${GRAPHENE_INCLUDE_DIR};${GRAPHENE_LIB_DIR}")
-    set(GTK_LIBRARIES "${GTK4};${CAIRO};${PANGO};${HARFBUZZ};${GDK_PIXBUF};${GRAPHENE};${GIO};${GOBJECT};${GLIB}")
-endif()
+message(WARNING ${GTK_LIBRARIES})
+message(WARNING ${GTK_INCLUDE_DIRS})
 
 # OpenGL Math
 
