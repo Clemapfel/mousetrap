@@ -47,12 +47,8 @@ make install -j 6
 
 # WINDOWS
 
-# cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_INSTALL_LIBDIR=$prefix/bin
+unzip to .dll
+mv opengl32.dll $prefix/bin/opengl32.dll
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DOpenGL=$prefix/bin/opengl32.dll
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 
- cd ../..
- cd mousetrap_julia_binding
- mkdir build
- cd build
- cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
-     -DJulia_INCLUDE_DIRS="$prefix/include;$prefix/include/julia"
-make install -j 4
