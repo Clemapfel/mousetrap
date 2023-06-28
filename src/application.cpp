@@ -57,7 +57,10 @@ namespace mousetrap
 
         _internal = detail::application_internal_new(id);
 
+        #if MOUSETRAP_ENABLE_OPENGL_COMPONENT
         g_signal_connect(_internal->native, "startup", G_CALLBACK(detail::initialize_opengl), nullptr);
+        #endif
+
         g_signal_connect(_internal->native, "startup", G_CALLBACK(detail::mark_gtk_initialized), nullptr);
     }
 

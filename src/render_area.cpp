@@ -4,6 +4,9 @@
 //
 
 #include <mousetrap/gl_common.hpp>
+
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
 #include <mousetrap/render_area.hpp>
 #include <mousetrap/render_task.hpp>
 
@@ -261,3 +264,5 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

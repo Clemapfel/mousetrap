@@ -97,5 +97,5 @@
 #include <mousetrap/vector.hpp>
 #include <mousetrap/widget.hpp>
 #include <mousetrap/window.hpp>
-#include <mousetrap/wrap_mode.hpp>
+#include <mousetrap/texture_wrap_mode.hpp>
 #include <mousetrap/key_codes.hpp>

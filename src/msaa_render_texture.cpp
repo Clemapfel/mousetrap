@@ -2,6 +2,9 @@
 // Created by clem on 2/23/23.
 //
 
+#include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
 #include <mousetrap/msaa_render_texture.hpp>
 #include <mousetrap/log.hpp>
 
@@ -152,3 +155,5 @@ namespace mousetrap
             glDeleteTextures(1, &_internal->screen_texture);
     }
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

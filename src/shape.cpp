@@ -3,8 +3,10 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
-#include <mousetrap/shader.hpp>
 #include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
+#include <mousetrap/shader.hpp>
 #include <mousetrap/shape.hpp>
 #include <mousetrap/log.hpp>
 
@@ -1206,3 +1208,5 @@ namespace mousetrap
         return out;
     }
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

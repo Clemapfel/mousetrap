@@ -3,6 +3,9 @@
 // Created on 8/6/22 by clem (mail@clemens-cords.com)
 //
 
+#include <mousetrap/shader.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
 #include <iostream>
 #include <mousetrap/texture.hpp>
 
@@ -234,3 +237,5 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

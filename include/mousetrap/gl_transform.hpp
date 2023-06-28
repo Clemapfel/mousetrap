@@ -5,9 +5,10 @@
 
 #pragma once
 
-#include <mousetrap/angle.hpp>
 #include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
 
+#include <mousetrap/angle.hpp>
 #include <glm/gtx/transform.hpp>
 
 namespace mousetrap
@@ -56,3 +57,4 @@ namespace mousetrap
     };
 }
 
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

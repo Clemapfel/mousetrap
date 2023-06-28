@@ -5,6 +5,7 @@
 #pragma once
 
 #include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
 
 namespace mousetrap
 {
@@ -18,3 +19,5 @@ namespace mousetrap
         LINEAR = GL_LINEAR
     };
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

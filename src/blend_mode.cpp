@@ -3,9 +3,12 @@
 // Created on 9/26/22 by clem (mail@clemens-cords.com)
 //
 
-#include <mousetrap/blend_mode.hpp>
 #include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
 #include <mousetrap/log.hpp>
+#include <mousetrap/blend_mode.hpp>
+
 
 namespace mousetrap
 {
@@ -181,3 +184,5 @@ namespace mousetrap
         }
     }
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

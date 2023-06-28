@@ -5,12 +5,14 @@
 
 #pragma once
 
+#include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
 #include <vector>
 #include <string>
 #include <algorithm>
 #include <mutex>
 
-#include <mousetrap/gl_common.hpp>
 #include <mousetrap/shader.hpp>
 #include <mousetrap/color.hpp>
 #include <mousetrap/gl_transform.hpp>
@@ -371,3 +373,4 @@ namespace mousetrap
     };
 }
 
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

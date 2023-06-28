@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
 #include <mousetrap/texture.hpp>
 
 namespace mousetrap
@@ -70,4 +73,6 @@ namespace mousetrap
             detail::RenderTextureInternal* _internal = nullptr;
     };
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT
 

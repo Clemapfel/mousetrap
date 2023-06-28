@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
 #include <mousetrap/widget.hpp>
 #include <mousetrap/shape.hpp>
 #include <mousetrap/render_task.hpp>
@@ -113,3 +116,5 @@ namespace mousetrap
             detail::RenderAreaInternal* _internal = nullptr;
     };
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

@@ -4,6 +4,9 @@
 //
 
 #include <mousetrap/gl_common.hpp>
+
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
 #include <mousetrap/log.hpp>
 #include <iostream>
 
@@ -66,3 +69,5 @@ namespace mousetrap
         return {xy.x, xy.y, in.z};
     }
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

@@ -3,6 +3,9 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
+#include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
 #include <mousetrap/gl_transform.hpp>
 
 namespace mousetrap
@@ -52,3 +55,5 @@ namespace mousetrap
         transform = glm::mat4x4(1);
     }
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
 namespace mousetrap
 {
     /// @brief object that can be bound to a texture unit
@@ -17,3 +20,5 @@ namespace mousetrap
         virtual void unbind() const = 0;
     };
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

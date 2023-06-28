@@ -6,6 +6,8 @@
 #pragma once
 
 #include <string>
+#include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
 
 namespace mousetrap
 {
@@ -52,3 +54,5 @@ namespace mousetrap
     /// @return mousetrap::BlendMode
     BlendMode blend_mode_from_string(const std::string&);
 }
+
+#endif

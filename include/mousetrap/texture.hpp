@@ -5,8 +5,10 @@
 
 #pragma once
 
-#include <string>
 #include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
+#include <string>
 #include <mousetrap/image.hpp>
 #include <mousetrap/texture_object.hpp>
 #include <mousetrap/wrap_mode.hpp>
@@ -124,3 +126,5 @@ namespace mousetrap
             detail::TextureInternal* _internal = nullptr;
     };
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

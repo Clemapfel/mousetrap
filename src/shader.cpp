@@ -3,6 +3,9 @@
 // Created on 8/1/22 by clem (mail@clemens-cords.com)
 //
 
+#include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+
 #include <mousetrap/shader.hpp>
 #include <mousetrap/log.hpp>
 
@@ -11,8 +14,10 @@
 #include <fstream>
 #include <sstream>
 
-namespace mousetrap {
-    namespace detail {
+namespace mousetrap
+{
+    namespace detail
+    {
         DECLARE_NEW_TYPE(ShaderInternal, shader_internal, SHADER_INTERNAL)
 
         static void shader_internal_finalize(GObject* object)
@@ -263,3 +268,5 @@ namespace mousetrap {
         return G_OBJECT(_internal);
     }
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

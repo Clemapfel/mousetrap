@@ -5,6 +5,7 @@
 #pragma once
 
 #include <mousetrap/gl_common.hpp>
+#if MOUSETRAP_ENABLED_OPENGL_COMPONENT
 
 namespace mousetrap
 {
@@ -27,3 +28,5 @@ namespace mousetrap
         STRETCH = GL_CLAMP_TO_EDGE
     };
 }
+
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT
