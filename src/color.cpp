@@ -400,7 +400,7 @@ namespace mousetrap
             return false;
     }
 
-    std::string rgba_to_html_code(RGBA in, bool show_alpha = true)
+    std::string rgba_to_html_code(RGBA in)
     {
         auto sanitize_code = [](std::string& in) -> bool
         {
