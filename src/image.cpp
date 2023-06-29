@@ -85,7 +85,7 @@ namespace mousetrap
         if (G_IS_OBJECT(_data))
             g_object_unref(_data);
 
-        _data = gdk_pixbuf_new(GDK_COLORSPACE_RGB, GL_TRUE, 8, width, height);
+        _data = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, width, height);
         _size = {width, height};
 
         if (default_color.r != 0 or default_color.g != 0 or default_color.b != 0 or default_color.a != 0)
