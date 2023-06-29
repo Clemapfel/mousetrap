@@ -7,7 +7,7 @@
 
 #define MOUSETRAP_ENABLE_OPENGL_COMPONENT @MOUSETRAP_ENABLE_OPENGL_COMPONENT@
 
-// #if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
 
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -80,4 +80,4 @@ namespace mousetrap
     Vector3f from_gl_position(Vector3f);
 }
 
-// #endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

@@ -7,7 +7,7 @@
 
 #include <string>
 #include <mousetrap/gl_common.hpp>
-// #if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
 
 namespace mousetrap
 {

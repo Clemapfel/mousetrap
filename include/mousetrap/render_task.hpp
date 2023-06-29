@@ -6,7 +6,7 @@
 #pragma once
 
 #include <mousetrap/gl_common.hpp>
-// #if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
 #include <mousetrap/shape.hpp>
 #include <mousetrap/shader.hpp>
 #include <mousetrap/gl_transform.hpp>
@@ -162,4 +162,4 @@ namespace mousetrap
     };
 }
 
-// #endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT
+#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT
