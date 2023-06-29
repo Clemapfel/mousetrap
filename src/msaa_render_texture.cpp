@@ -3,7 +3,7 @@
 //
 
 #include <mousetrap/gl_common.hpp>
-#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+// #if MOUSETRAP_ENABLE_OPENGL_COMPONENT
 
 #include <mousetrap/msaa_render_texture.hpp>
 #include <mousetrap/log.hpp>
@@ -156,4 +156,4 @@ namespace mousetrap
     }
 }
 
-#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT
+// #endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

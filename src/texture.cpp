@@ -4,7 +4,7 @@
 //
 
 #include <mousetrap/shader.hpp>
-#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
+// #if MOUSETRAP_ENABLE_OPENGL_COMPONENT
 
 #include <iostream>
 #include <mousetrap/texture.hpp>
@@ -238,4 +238,4 @@ namespace mousetrap
     }
 }
 
-#endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT
+// #endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT
