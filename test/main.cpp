@@ -54,7 +54,9 @@ int main()
         vbox.push_back(entry);
         vbox.push_back(text_view);
 
-        window.set_child(vbox);
+        auto render_area = RenderArea();
+        window.set_child(render_area);
+
         window.present();
     });
 
