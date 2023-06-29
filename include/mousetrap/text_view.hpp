@@ -52,7 +52,7 @@ namespace mousetrap
             ~TextView();
 
             /// @brief expose internal
-            NativeObject get_internal() const;
+            NativeObject get_internal() const override;
 
             /// @brief expose native
             operator NativeObject() const override;

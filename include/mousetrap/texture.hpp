@@ -11,7 +11,7 @@
 #include <string>
 #include <mousetrap/image.hpp>
 #include <mousetrap/texture_object.hpp>
-#include <mousetrap/wrap_mode.hpp>
+#include <mousetrap/texture_wrap_mode.hpp>
 #include <mousetrap/texture_scale_mode.hpp>
 #include <mousetrap/signal_emitter.hpp>
 
