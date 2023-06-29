@@ -5,7 +5,7 @@
 #pragma once
 
 #include <mousetrap/gl_common.hpp>
-#if MOUSETRAP_ENABLED_OPENGL_COMPONENT
+#if MOUSETRAP_ENABLE_OPENGL_COMPONENT
 
 namespace mousetrap
 {
