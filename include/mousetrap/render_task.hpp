@@ -109,47 +109,47 @@ namespace mousetrap
             /// @brief access currently registered float
             /// @param uniform_name
             /// @return float
-            float get_uniform_float(const std::string& uniform_name);
+            float get_uniform_float(const std::string& uniform_name) const;
 
             /// @brief access currently registered int
             /// @param uniform_name
             /// @return int32_t
-            glm::int32_t get_uniform_int(const std::string& uniform_name);
+            int32_t get_uniform_int(const std::string& uniform_name) const;
 
             /// @brief access currently registered uint
             /// @param uniform_name
             /// @return uint32_t
-            glm::uint get_uniform_uint(const std::string& uniform_name);
+            uint32_t get_uniform_uint(const std::string& uniform_name) const;
 
             /// @brief access currently registered vec2
             /// @param uniform_name
             /// @return Vector2f
-            Vector2f get_uniform_vec2(const std::string& uniform_name);
+            Vector2f get_uniform_vec2(const std::string& uniform_name) const;
 
             /// @brief access currently registered vec3
             /// @param uniform_name
             /// @return Vector3f
-            Vector3f get_uniform_vec3(const std::string& uniform_name);
+            Vector3f get_uniform_vec3(const std::string& uniform_name) const;
 
             /// @brief access currently registered vec4
             /// @param uniform_name
             /// @return Vector4f
-            Vector4f get_uniform_vec4(const std::string& uniform_name);
+            Vector4f get_uniform_vec4(const std::string& uniform_name) const;
 
             /// @brief access currently registered transform (mat4x4)
             /// @param uniform_name
             /// @return GLTransform
-            GLTransform get_uniform_transform(const std::string& uniform_name);
+            GLTransform get_uniform_transform(const std::string& uniform_name) const;
 
             /// @brief access currently registered color (vec4)
             /// @param uniform_name
             /// @return RGBA
-            RGBA get_uniform_rgba(const std::string& uniform_name);
+            RGBA get_uniform_rgba(const std::string& uniform_name) const;
 
             /// @brief access currently registered color (vec4)
             /// @param uniform_name
             /// @return HSVA
-            HSVA get_uniform_hsva(const std::string& uniform_name);
+            HSVA get_uniform_hsva(const std::string& uniform_name) const;
 
             /// @brief perform the render step to the currently bound framebuffer
             void render() const;

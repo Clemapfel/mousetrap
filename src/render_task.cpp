@@ -166,7 +166,7 @@ namespace mousetrap
         set_uniform_vec4(uniform_name, value.operator glm::vec4());
     }
 
-    float RenderTask::get_uniform_float(const std::string& uniform_name)
+    float RenderTask::get_uniform_float(const std::string& uniform_name) const
     {
         auto it = _internal->_floats->find(uniform_name);
         if (it == _internal->_floats->end())
@@ -177,7 +177,7 @@ namespace mousetrap
         return it->second;
     }
 
-    glm::int32_t RenderTask::get_uniform_int(const std::string& uniform_name)
+    glm::int32_t RenderTask::get_uniform_int(const std::string& uniform_name) const
     {
         auto it = _internal->_ints->find(uniform_name);
         if (it == _internal->_ints->end())
@@ -188,7 +188,7 @@ namespace mousetrap
         return it->second;
     }
 
-    glm::uint RenderTask::get_uniform_uint(const std::string& uniform_name)
+    glm::uint RenderTask::get_uniform_uint(const std::string& uniform_name) const
     {
         auto it = _internal->_uints->find(uniform_name);
         if (it == _internal->_uints->end())
@@ -199,7 +199,7 @@ namespace mousetrap
         return it->second;
     }
 
-    Vector2f RenderTask::get_uniform_vec2(const std::string& uniform_name)
+    Vector2f RenderTask::get_uniform_vec2(const std::string& uniform_name) const
     {
         auto it = _internal->_vec2s->find(uniform_name);
         if (it == _internal->_vec2s->end())
@@ -210,7 +210,7 @@ namespace mousetrap
         return it->second;
     }
 
-    Vector3f RenderTask::get_uniform_vec3(const std::string& uniform_name)
+    Vector3f RenderTask::get_uniform_vec3(const std::string& uniform_name) const
     {
         auto it = _internal->_vec3s->find(uniform_name);
         if (it == _internal->_vec3s->end())
@@ -221,7 +221,7 @@ namespace mousetrap
         return it->second;
     }
 
-    Vector4f RenderTask::get_uniform_vec4(const std::string& uniform_name)
+    Vector4f RenderTask::get_uniform_vec4(const std::string& uniform_name) const
     {
         auto it = _internal->_vec4s->find(uniform_name);
         if (it == _internal->_vec4s->end())
@@ -232,7 +232,7 @@ namespace mousetrap
         return it->second;
     }
 
-    RGBA RenderTask::get_uniform_rgba(const std::string& uniform_name)
+    RGBA RenderTask::get_uniform_rgba(const std::string& uniform_name) const
     {
         auto it = _internal->_vec4s->find(uniform_name);
         if (it == _internal->_vec4s->end())
@@ -244,7 +244,7 @@ namespace mousetrap
         return RGBA(out.x, out.y, out.z, out.w);
     }
 
-    HSVA RenderTask::get_uniform_hsva(const std::string& uniform_name)
+    HSVA RenderTask::get_uniform_hsva(const std::string& uniform_name) const
     {
         auto it = _internal->_vec4s->find(uniform_name);
         if (it == _internal->_vec4s->end())
@@ -256,7 +256,7 @@ namespace mousetrap
         return HSVA(out.x, out.y, out.z, out.w);
     }
 
-    GLTransform RenderTask::get_uniform_transform(const std::string& uniform_name)
+    GLTransform RenderTask::get_uniform_transform(const std::string& uniform_name) const
     {
         auto it = _internal->_transforms->find(uniform_name);
         if (it == _internal->_transforms->end())
@@ -271,24 +271,6 @@ namespace mousetrap
     {
         return G_OBJECT(_internal);
     }
-
-    /*
-    const Shape* RenderTask::get_shape() const
-    {
-        std::cerr << "In RenderTask::get_shape: TODO" << std::endl;
-        return _shape;
-    }
-
-    const Shader* RenderTask::get_shader() const
-    {
-        return _shader == nullptr ? _internal->noop_shader : _shader;
-    }
-
-    const GLTransform* RenderTask::get_transform() const
-    {
-        return _transform == nullptr ? _internal->noop_transform : _transform;
-    }
-     */
 }
 
 #endif // MOUSETRAP_ENABLE_OPENGL_COMPONENT

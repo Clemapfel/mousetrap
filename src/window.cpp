@@ -89,7 +89,7 @@ namespace mousetrap
             gtk_window_unfullscreen(GTK_WINDOW(_internal));
     }
 
-    void Window::set_child(Widget& widget)
+    void Window::set_child(const Widget& widget)
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Window::set_child, this, ptr);

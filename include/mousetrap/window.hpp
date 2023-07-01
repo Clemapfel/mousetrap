@@ -83,7 +83,7 @@ namespace mousetrap
 
             /// @brief set the child of the window
             /// @param widget child
-            void set_child(Widget&);
+            void set_child(const Widget&);
 
             /// @brief remove child
             void remove_child();
