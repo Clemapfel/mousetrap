@@ -18,12 +18,6 @@ namespace mousetrap
     }
     #endif
 
-    enum class ProgressBarDisplayMode : bool
-    {
-        SHOW_TEXT = true,
-        SHOW_PERCENTAGE = false
-    };
-
     /// @brief widget that displays progress
     /// \signals
     /// \widget_signals{ProgressBar}
@@ -76,13 +70,13 @@ namespace mousetrap
             /// @brief get text next to the progress bar, or std::string() if mousetrap::ProgressBar::set_text was not called yet
             std::string get_text() const;
 
-            /// @brief set whether text (or the percentage if mousetrap::ProgressBar::set_text was not called yet) should appear next to the progress bar
-            /// @param mode
-            void set_display_mode(ProgressBarDisplayMode mode);
+            /// @brief set whether the percentage should be displayed, or, if `set_text` was set to a custom text, it will be displayed instead
+            /// @param b
+            void set_show_text(bool b);
 
-            /// @brief sgt whether text (or the percentage if mousetrap::ProgressBar::set_text was not called yet) should appear next to the progress bar
-            /// @return mode
-            ProgressBarDisplayMode get_display_mode() const;
+            /// @brief set whether the percentage should be displayed, or, if `get_text` was set to a custom text, it will be displayed instead
+            /// @return boolean
+            bool get_show_text() const;
 
             /// @brief set orientation
             Orientation get_orientation() const;

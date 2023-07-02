@@ -25,7 +25,7 @@ int main()
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
-        window.set_child( Label("Hello World"));
+        window.set_child(LevelBar(0, 1));
         window.present();
     });
 

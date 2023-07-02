@@ -113,7 +113,7 @@ namespace mousetrap
 
             /// @brief get current tool type the stylus
             /// @return tool type
-            ToolType get_device_type() const;
+            ToolType get_tool_type() const;
 
             /// @brief get whether device has specified axis
             /// @param axis

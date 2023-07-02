@@ -12,7 +12,7 @@ namespace mousetrap
           CTOR_SIGNAL(LevelBar, map),
           CTOR_SIGNAL(LevelBar, unmap)
     {
-        g_object_ref_sink(GTK_LEVEL_BAR(Widget::operator NativeWidget()));
+        _internal = g_object_ref(GTK_LEVEL_BAR(Widget::operator NativeWidget()));
     }
     
     LevelBar::LevelBar(detail::LevelBarInternal* internal) 

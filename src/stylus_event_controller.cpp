@@ -32,7 +32,7 @@ namespace mousetrap
         return gdk_device_tool_get_hardware_id(device);
     }
 
-    ToolType StylusEventController::get_device_type() const
+    ToolType StylusEventController::get_tool_type() const
     {
         auto* device = gtk_gesture_stylus_get_device_tool(GTK_GESTURE_STYLUS(get_internal()));
         if (device == nullptr)
