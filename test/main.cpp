@@ -34,6 +34,7 @@ int main()
         //gtk_window_set_child(GTK_WINDOW(window.operator NativeWidget()), list_row);
 
         auto list_view = ListView(Orientation::VERTICAL);
+
         list_view.push_back(Label("Test 01"));
         // list_view.push_back(Button());
         // list_view.push_back(Entry());

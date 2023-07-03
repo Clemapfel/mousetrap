@@ -91,6 +91,9 @@ namespace mousetrap
             /// @return n
             size_t get_n_children() const;
 
+            /// @brief get id of child at given position
+            Stack::ID get_child_at(size_t) const;
+
             /// @brief get id of page that is currently displayed
             /// @return id
             Stack::ID get_visible_child();
