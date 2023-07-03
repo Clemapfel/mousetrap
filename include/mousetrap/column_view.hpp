@@ -157,7 +157,7 @@ namespace mousetrap
             /// @param column column
             /// @param row_i row index
             /// @param widget widget to insert
-            void set_widget(const Column& column, size_t row_i, const Widget& widget);
+            void set_widget_at(const Column& column, size_t row_i, const Widget& widget);
 
             /// @brief convenience function that maps widgets to columns and appends them as a new row at end of the list
             /// @tparam WidgetRef_ts has to be Widget, Widget& or const Widget&

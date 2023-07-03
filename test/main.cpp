@@ -26,24 +26,15 @@ int main()
     {
         auto window = Window(app);
 
-        auto* list_row = gtk_list_box_new();
-        gtk_list_box_append(GTK_LIST_BOX(list_row), gtk_label_new("Test 01"));
-        gtk_list_box_append(GTK_LIST_BOX(list_row), gtk_button_new_with_label("Button 02"));
-        gtk_list_box_append(GTK_LIST_BOX(list_row), gtk_entry_new());
+        auto column_view = ColumnView();
+        column_view.push_back_column("01");
+        column_view.push_back_column("02");
+        column_view.push_back_column("03");
 
-        //gtk_window_set_child(GTK_WINDOW(window.operator NativeWidget()), list_row);
+        //for (size_t i = 0; i < 10; ++i)
+          //  column_view.push_back_row(Label("_"), Label("_"), Label("_"));
 
-        auto list_view = ListView(Orientation::VERTICAL);
-
-        list_view.push_back(Label("Test 01"));
-        // list_view.push_back(Button());
-        // list_view.push_back(Entry());
-
-        // auto box = Box(Orientation::HORIZONTAL);
-        // gtk_box_append(GTK_BOX(box.operator NativeWidget()), list_row);
-        // box.push_back(list_view);
-
-        window.set_child(list_view);
+        window.set_child(column_view);
         window.present();
     });
 

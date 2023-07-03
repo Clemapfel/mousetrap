@@ -159,7 +159,7 @@ namespace mousetrap
           CTOR_SIGNAL(ColumnView, unmap)
     {
         _internal = detail::column_view_internal_new(GTK_COLUMN_VIEW(Widget::operator NativeWidget()), mode);
-        detail::attach_ref_to(G_OBJECT(GTK_COLUMN_VIEW(Widget::operator NativeWidget())), _internal->native);
+        detail::attach_ref_to(G_OBJECT(GTK_COLUMN_VIEW(Widget::operator NativeWidget())), _internal);
         g_object_ref(_internal);
     }
 
@@ -263,7 +263,7 @@ namespace mousetrap
         return g_list_model_get_n_items(gtk_column_view_get_columns(GTK_COLUMN_VIEW(operator NativeWidget())));
     }
 
-    void ColumnView::set_widget(const Column& column, size_t row_i, const Widget& widget)
+    void ColumnView::set_widget_at(const Column& column, size_t row_i, const Widget& widget)
     {
         if (column._native == nullptr)
         {

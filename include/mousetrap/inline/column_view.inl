@@ -22,7 +22,7 @@ namespace mousetrap
                 continue;
 
             auto column = get_column_at(i);
-            set_widget(column, insert_i, refs.at(i));
+            set_widget_at(column, insert_i, refs.at(i));
         }
     }
 
@@ -43,7 +43,7 @@ namespace mousetrap
                 continue;
 
             auto column = get_column_at(i);
-            set_widget(column, insert_i, refs.at(i));
+            set_widget_at(column, insert_i, refs.at(i));
         }
     }
 
@@ -64,7 +64,7 @@ namespace mousetrap
                 continue;
 
             auto column = get_column_at(i);
-            set_widget(column, insert_i, refs.at(i));
+            set_widget_at(column, insert_i, refs.at(i));
         }
     }
 }
