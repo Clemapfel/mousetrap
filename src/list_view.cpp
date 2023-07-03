@@ -203,7 +203,7 @@ namespace mousetrap
           CTOR_SIGNAL(ListView, map),
           CTOR_SIGNAL(ListView, unmap)
     {
-        _internal = detail::list_view_internal_new(GTK_LIST_VIEW(operator NativeWidget()), orientation, mode);
+        _internal = g_object_ref(detail::list_view_internal_new(GTK_LIST_VIEW(operator NativeWidget()), orientation, mode));
         detail::attach_ref_to(G_OBJECT(_internal->list_view), _internal);
     }
 

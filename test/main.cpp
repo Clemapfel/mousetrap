@@ -25,7 +25,24 @@ int main()
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
-        window.set_child(LevelBar(0, 1));
+
+        auto* list_row = gtk_list_box_new();
+        gtk_list_box_append(GTK_LIST_BOX(list_row), gtk_label_new("Test 01"));
+        gtk_list_box_append(GTK_LIST_BOX(list_row), gtk_button_new_with_label("Button 02"));
+        gtk_list_box_append(GTK_LIST_BOX(list_row), gtk_entry_new());
+
+        //gtk_window_set_child(GTK_WINDOW(window.operator NativeWidget()), list_row);
+
+        auto list_view = ListView(Orientation::VERTICAL);
+        list_view.push_back(Label("Test 01"));
+        // list_view.push_back(Button());
+        // list_view.push_back(Entry());
+
+        // auto box = Box(Orientation::HORIZONTAL);
+        // gtk_box_append(GTK_BOX(box.operator NativeWidget()), list_row);
+        // box.push_back(list_view);
+
+        window.set_child(list_view);
         window.present();
     });
 
