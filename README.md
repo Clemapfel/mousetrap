@@ -1,20 +1,70 @@
-# TODO
+# Mousetrap: GTK4-based GUI Engine
 
-## Dependencies (C++)
+> **If you are looking to run mousetrap using Julia, you are in the wrong place. Please visit [mousetrap.jl](https://github.com/Clemapfel/mousetrap.jl) instead.**
 
-+ CMake 3.12 (or newer)
-+ C++ compiler supporting C++17, such as GCC, Clang or MSVC
-+ GTK4 (4.10+ recommended, but not necessary)
-+ Graphics Card supporting OpenGL 3.3 or newer
-+ SFML
-+ GLM
+Standalone C++ component of the mousetrap GUI engine.
 
-## Dependencies (Julia)
+---
 
-+ Julia 1.7 (1.9+ recommended but not necessary)
-+ GTK4 (4.10+ recommended, but not necessary)
-+ Graphics Card supporting OpenGL 3.3 or newer
-+ SFML
-+ `CxxWrap`
-+ `BinaryBuilder`
-+ `StaticArrays`
+## Table of Content
+
+1. [Showcase](#showcase)
+2. Installation<br>
+2.1 [Dependencies](#dependencies)<br>
+2.2 Installation<br>
+2.2.1 [Debian / Ubuntu](#debian--ubuntu)<br>
+2.2.2 [Fedora](#fedora)<br>
+2.2.3 [MacOS with Homebrew](#macos-with-homebrew)<br>
+2.2.4 [Windows](#windows)<br>
+3. [License](#license)
+4. [Credits](#credits)
+
+---
+
+## Showcase
+
+TODO
+
+---
+
+## Dependencies 
+
+TODO
+
+---
+
+## Installation
+
+### Debian / Ubuntu
+
+TODO
+
+### Fedora
+
+TODO
+
+### MacOS with Homebrew
+
+TODO
+
+### Windows 
+
+TODO
+
+---
+
+## Documentation
+
+TODO
+
+---
+
+## License
+
+TODO
+
+---
+
+## Credits
+
+TODO

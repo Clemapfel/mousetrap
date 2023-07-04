@@ -31,8 +31,8 @@ int main()
         column_view.push_back_column("02");
         column_view.push_back_column("03");
 
-        //for (size_t i = 0; i < 10; ++i)
-          //  column_view.push_back_row(Label("_"), Label("_"), Label("_"));
+        for (size_t i = 0; i < 10; ++i)
+            column_view.push_back_row(Label("_"), Label("_"), Label("_"));
 
         window.set_child(column_view);
         window.present();
