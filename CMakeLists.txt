@@ -299,20 +299,7 @@ target_include_directories(mousetrap PUBLIC
     "${GTK_INCLUDE_DIRS}"
 )
 
-if (MOUSETRAP_ENABLED_OPENGL_COMPONENT)
-
-    target_link_libraries(mousetrap PUBLIC
-        ${GTK_LIBRARIES}
-    )
-    set_target_properties(mousetrap PROPERTIES
-        LINKER_LANGUAGE CXX
-        POSITION_INDEPENDENT_CODE ON
-        INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
-        INTERFACE_LINK_LIBRARIES "${GTK_LIBRARIES}"
-    )
-
-else()
-
+if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
     target_link_libraries(mousetrap PUBLIC
         ${GTK_LIBRARIES}
         ${OpenGL}
@@ -323,6 +310,16 @@ else()
         POSITION_INDEPENDENT_CODE ON
         INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
         INTERFACE_LINK_LIBRARIES "${OpenGL};${GLEW};${GTK_LIBRARIES}"
+    )
+else()
+    target_link_libraries(mousetrap PUBLIC
+        ${GTK_LIBRARIES}
+    )
+    set_target_properties(mousetrap PROPERTIES
+        LINKER_LANGUAGE CXX
+        POSITION_INDEPENDENT_CODE ON
+        INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${GTK_LIBRARIES}"
     )
 endif()
 
