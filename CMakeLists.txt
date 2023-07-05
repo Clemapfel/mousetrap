@@ -43,7 +43,10 @@ endif()
 message("[mousetrap] OpenGL Component enabled: ${MOUSETRAP_ENABLE_OPENGL_COMPONENT}")
 if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
     # OpenGL
-    find_library(OpenGL REQUIRED NAMES GL opengl32 OPENGL32 OpenGL32)
+    find_package(OpenGL)
+    if (NOT ${OpenGL_FOUND}) # use library override
+        find_library(OpenGL REQUIRED NAMES OpenGL GL opengl32 OPENGL32 OpenGL32)
+    endif()
 
     # GLEW
     find_library(GLEW REQUIRED NAMES glew glew32 GLEW GLEW32)
