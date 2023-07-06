@@ -53,7 +53,7 @@ namespace mousetrap
         public:
             /// @brief construct new action
             /// @param id valid application id, see
-            Application(const ApplicationID& id);
+            Application(const ApplicationID& id, bool allow_multiple_instances = false);
 
             /// @brief construct from internal
             /// @param internal

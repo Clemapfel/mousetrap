@@ -62,6 +62,7 @@ namespace mousetrap
                 }
 
                 detail::mark_gl_initialized();
+                g_object_ref(GL_CONTEXT);   // intentional memory leak, should presist until the end of runtime
             }
 
             return GL_CONTEXT;
@@ -93,6 +94,7 @@ namespace mousetrap
 
             self->native = area;
             self->tasks = new std::vector<detail::RenderTaskInternal*>();
+
             return self;
         }
     }
@@ -110,8 +112,8 @@ namespace mousetrap
           CTOR_SIGNAL(RenderArea, unmap)
     {
         _internal = detail::render_area_internal_new(GTK_GL_AREA(operator NativeWidget()));
-        detail::attach_ref_to(G_OBJECT(GTK_GL_AREA(operator NativeWidget())), _internal);
-        g_object_ref(_internal);
+        detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
+        g_object_ref(_internal->native);
 
         gtk_gl_area_set_auto_render(GTK_GL_AREA(operator NativeWidget()), TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(GTK_GL_AREA(operator NativeWidget())), 1, 1);
@@ -124,7 +126,7 @@ namespace mousetrap
 
     RenderArea::~RenderArea()
     {
-        g_object_unref(_internal);
+        g_object_unref(_internal->native);
     }
 
     RenderArea::RenderArea(detail::RenderAreaInternal* internal)
@@ -176,7 +178,7 @@ namespace mousetrap
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    GdkGLContext* RenderArea::on_create_context(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal*)
+    GdkGLContext* RenderArea::on_create_context(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal* internal)
     {
         gdk_gl_context_make_current(detail::GL_CONTEXT);
         return detail::GL_CONTEXT;

@@ -9,6 +9,7 @@
 #include <mousetrap/shader.hpp>
 #include <mousetrap/shape.hpp>
 #include <mousetrap/log.hpp>
+#include <mousetrap/render_area.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -30,6 +31,8 @@ namespace mousetrap
             if (self->vertex_buffer_id != 0)
                 glDeleteBuffers(1, &self->vertex_buffer_id);
 
+            std::cout << "finalize Shape" << self << std::endl;
+
             delete self->color;
             delete self->vertices;
             delete self->indices;
@@ -43,6 +46,8 @@ namespace mousetrap
         {
             auto* self = (ShapeInternal*) g_object_new(shape_internal_get_type(), nullptr);
             shape_internal_init(self);
+
+            gdk_gl_context_make_current(detail::GL_CONTEXT);
 
             glGenVertexArrays(1, &self->vertex_array_id);
             glGenBuffers(1, &self->vertex_buffer_id);
@@ -63,7 +68,6 @@ namespace mousetrap
     Shape::Shape()
     {
         _internal = detail::shape_internal_new();
-        g_object_ref(_internal);
     }
 
     Shape::~Shape()

@@ -21,20 +21,30 @@ using namespace mousetrap;
 
 int main()
 {
-    auto app = Application("test.app");
-    app.connect_signal_activate([](Application& app)
+    for (size_t i = 0; i < 3; ++i)
     {
-        auto window = Window(app);
+        auto app = Application("test.app");
+        app.connect_signal_activate([](Application& app)
+        {
+            auto window = Window(app);
 
-        auto scrollbar = Scrollbar(Orientation::HORIZONTAL, Adjustment(0.5, 0, 1, 0.01));
+            auto area = RenderArea();
+            for (size_t i = 0; i < 3; ++i)
+            {
+                float x = 1 - rand() / float(RAND_MAX);
+                float y = 1 - rand() / float(RAND_MAX);
+                auto shape = Shape::Point({x, y});
+                area.add_render_task(RenderTask(shape));
+            }
 
-        scrollbar.get_adjustment().connect_signal_value_changed([](Adjustment& adjustment){
-            std::cout << adjustment.get_value() << std::endl;
+            auto frame = AspectFrame(1.0);
+            frame.set_child(area);
+            frame.set_size_request({150, 150});
+            window.set_child(frame);
+
+            window.present();
         });
 
-        window.set_child(scrollbar);
-        window.present();
-    });
-
-    return app.run();
+        app.run();
+    }
 }

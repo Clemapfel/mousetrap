@@ -30,11 +30,11 @@ namespace mousetrap
 
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(ApplicationInternal, application_internal, APPLICATION_INTERNAL)
 
-        static ApplicationInternal* application_internal_new(const std::string& id)
+        static ApplicationInternal* application_internal_new(const std::string& id, int32_t flags)
         {
             log::initialize();
 
-            auto* native = gtk_application_new(id.c_str(), (GApplicationFlags) gint32(0));
+            auto* native = gtk_application_new(id.c_str(), (GApplicationFlags) flags);
 
             auto* self = (ApplicationInternal*) g_object_new(application_internal_get_type(), nullptr);
             application_internal_init(self);
@@ -48,14 +48,18 @@ namespace mousetrap
         }
     }
 
-    Application::Application(const std::string& id)
+    Application::Application(const std::string& id, bool allow_multiple_instances)
         : CTOR_SIGNAL(Application, activate),
           CTOR_SIGNAL(Application, shutdown)
     {
         if (not g_application_id_is_valid(id.c_str()))
             log::critical("In Application::Application: id " + id + " is not a valid application id", MOUSETRAP_DOMAIN);
 
-        _internal = detail::application_internal_new(id);
+        int32_t flags = G_APPLICATION_DEFAULT_FLAGS;
+        if (allow_multiple_instances)
+            flags |= G_APPLICATION_NON_UNIQUE;
+
+        _internal = detail::application_internal_new(id, flags);
 
         g_signal_connect(_internal->native, "startup", G_CALLBACK(detail::initialize_opengl), nullptr);
         g_signal_connect(_internal->native, "startup", G_CALLBACK(detail::mark_gtk_initialized), nullptr);
