@@ -35,7 +35,7 @@ namespace mousetrap
         public:
             /// @brief construct
             /// @param orientation
-            Scrollbar(Orientation);
+            Scrollbar(Orientation, const Adjustment&);
 
             /// @brief construct from internal
             Scrollbar(detail::ScrollbarInternal*);

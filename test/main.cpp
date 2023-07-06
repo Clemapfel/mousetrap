@@ -26,15 +26,13 @@ int main()
     {
         auto window = Window(app);
 
-        auto column_view = ColumnView();
-        column_view.push_back_column("01");
-        column_view.push_back_column("02");
-        column_view.push_back_column("03");
+        auto scrollbar = Scrollbar(Orientation::HORIZONTAL, Adjustment(0.5, 0, 1, 0.01));
 
-        for (size_t i = 0; i < 10; ++i)
-            column_view.push_back_row(Label("_"), Label("_"), Label("_"));
+        scrollbar.get_adjustment().connect_signal_value_changed([](Adjustment& adjustment){
+            std::cout << adjustment.get_value() << std::endl;
+        });
 
-        window.set_child(column_view);
+        window.set_child(scrollbar);
         window.present();
     });
 

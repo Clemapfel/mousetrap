@@ -7,8 +7,8 @@
 
 namespace mousetrap
 {
-    Scrollbar::Scrollbar(Orientation orientation)
-        : Widget(gtk_scrollbar_new((GtkOrientation) orientation, nullptr)),
+    Scrollbar::Scrollbar(Orientation orientation, const Adjustment& adjustment)
+        : Widget(gtk_scrollbar_new((GtkOrientation) orientation, GTK_ADJUSTMENT(adjustment.get_internal()))),
           CTOR_SIGNAL(Scrollbar, realize),
           CTOR_SIGNAL(Scrollbar, unrealize),
           CTOR_SIGNAL(Scrollbar, destroy),
