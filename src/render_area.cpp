@@ -62,7 +62,6 @@ namespace mousetrap
                 }
 
                 detail::mark_gl_initialized();
-                g_object_ref(GL_CONTEXT);   // intentional memory leak, should presist until the end of runtime
             }
 
             return GL_CONTEXT;
@@ -113,7 +112,6 @@ namespace mousetrap
     {
         _internal = detail::render_area_internal_new(GTK_GL_AREA(operator NativeWidget()));
         detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
-        g_object_ref(_internal->native);
 
         gtk_gl_area_set_auto_render(GTK_GL_AREA(operator NativeWidget()), TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(GTK_GL_AREA(operator NativeWidget())), 1, 1);
@@ -125,9 +123,7 @@ namespace mousetrap
     }
 
     RenderArea::~RenderArea()
-    {
-        g_object_unref(_internal->native);
-    }
+    {}
 
     RenderArea::RenderArea(detail::RenderAreaInternal* internal)
         : Widget(GTK_WIDGET(internal->native)),
@@ -174,12 +170,14 @@ namespace mousetrap
 
     void RenderArea::clear()
     {
-        glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0, 0, 0, 0);
+
     }
 
     GdkGLContext* RenderArea::on_create_context(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal* internal)
     {
+        assert(GDK_IS_GL_CONTEXT(detail::GL_CONTEXT));
         gdk_gl_context_make_current(detail::GL_CONTEXT);
         return detail::GL_CONTEXT;
     }
@@ -187,6 +185,7 @@ namespace mousetrap
     void RenderArea::on_realize(GtkWidget* area, detail::RenderAreaInternal* internal)
     {
         gtk_gl_area_queue_render(GTK_GL_AREA(area));
+        g_object_ref(detail::GL_CONTEXT);
     }
 
     void RenderArea::on_resize(GtkGLArea* area, gint width, gint height, detail::RenderAreaInternal* internal)
@@ -197,6 +196,8 @@ namespace mousetrap
 
     gboolean RenderArea::on_render(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal* internal)
     {
+        std::cout << "context: " << GDK_IS_GL_CONTEXT(detail::GL_CONTEXT) << std::endl;
+
         gtk_gl_area_make_current(area);
 
         RenderArea::clear();

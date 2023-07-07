@@ -18,7 +18,6 @@ namespace mousetrap
             auto* self = MOUSETRAP_SIGNAL_EMITTER_INTERNAL(object);   
             delete self->signal_handlers;
 
-            std::cout << "finalized " << object << std::endl;
             G_OBJECT_CLASS(signal_emitter_internal_parent_class)->finalize(object);
         }
         

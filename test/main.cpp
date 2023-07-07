@@ -18,33 +18,53 @@
 
 using namespace mousetrap;
 
+struct ShapePage : public CompoundWidget
+{
+    RenderArea render_area;
+    AspectFrame aspect_frame;
+    Label label;
+    CenterBox center_box;
+
+    Widget& as_widget() override
+    {
+        return center_box;
+    }
+
+    ShapePage(const std::string& title, Shape shape)
+        : render_area(),
+          aspect_frame(1.0),
+          label(title),
+          center_box(Orientation::VERTICAL)
+    {
+        render_area.add_render_task(RenderTask(shape));
+        aspect_frame.set_child(render_area);
+        aspect_frame.set_size_request({150, 150});
+        center_box.set_start_child(aspect_frame);
+        center_box.set_end_child(label);
+    }
+};
+
+void add_page(Stack& stack, const std::string& title, const Shape& shape)
+{
+    stack.add_child(ShapePage(title, shape), title);
+}
 
 int main()
 {
-    for (size_t i = 0; i < 3; ++i)
-    {
-        auto app = Application("test.app");
-        app.connect_signal_activate([](Application& app)
-        {
-            auto window = Window(app);
+    auto app = Application("test.app");
+    app.connect_signal_activate([](Application& app){
+        auto window = Window(app);
+        auto stack = Stack();
 
-            auto area = RenderArea();
-            for (size_t i = 0; i < 3; ++i)
-            {
-                float x = 1 - rand() / float(RAND_MAX);
-                float y = 1 - rand() / float(RAND_MAX);
-                auto shape = Shape::Point({x, y});
-                area.add_render_task(RenderTask(shape));
-            }
+        add_page(stack, "Point", Shape::Point({0, 0}));
+        add_page(stack, "Points", Shape::Points({{-0.5, 0.5}, {0.5, 0.5}, {0.5, -0.5}}));
 
-            auto frame = AspectFrame(1.0);
-            frame.set_child(area);
-            frame.set_size_request({150, 150});
-            window.set_child(frame);
+        auto box = Box(Orientation::HORIZONTAL);
+        box.push_back(stack);
+        box.push_back(StackSidebar(stack));
 
-            window.present();
-        });
-
-        app.run();
-    }
+        window.set_child(box);
+        window.present();
+    });
+    app.run();
 }

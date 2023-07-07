@@ -31,8 +31,6 @@ namespace mousetrap
             if (self->vertex_buffer_id != 0)
                 glDeleteBuffers(1, &self->vertex_buffer_id);
 
-            std::cout << "finalize Shape" << self << std::endl;
-
             delete self->color;
             delete self->vertices;
             delete self->indices;
@@ -85,11 +83,10 @@ namespace mousetrap
     }
 
     Shape::Shape(const Shape& other)
+        : Shape()
     {
         glGenVertexArrays(1, &_internal->vertex_array_id);
         glGenBuffers(1, &_internal->vertex_buffer_id);
-
-        g_object_ref(other._internal);
 
         _internal->vertex_data = other._internal->vertex_data;
         _internal->color = other._internal->color;
@@ -125,8 +122,8 @@ namespace mousetrap
     }
 
     Shape::Shape(Shape&& other) noexcept
+        : Shape()
     {
-        g_object_ref(other._internal);
 
         _internal->vertex_array_id = other._internal->vertex_array_id;
         _internal->vertex_buffer_id = other._internal->vertex_buffer_id;
@@ -141,6 +138,7 @@ namespace mousetrap
 
         other._internal->vertex_buffer_id = 0;
         other._internal->vertex_array_id = 0;
+        other._internal = nullptr;
 
         update_data();
     }
