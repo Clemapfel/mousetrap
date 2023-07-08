@@ -64,7 +64,7 @@ namespace mousetrap
                 detail::mark_gl_initialized();
             }
 
-            return GL_CONTEXT;
+            return g_object_ref(GL_CONTEXT);
         }
     }
 
@@ -93,7 +93,6 @@ namespace mousetrap
 
             self->native = area;
             self->tasks = new std::vector<detail::RenderTaskInternal*>();
-
             return self;
         }
     }
@@ -185,7 +184,6 @@ namespace mousetrap
     void RenderArea::on_realize(GtkWidget* area, detail::RenderAreaInternal* internal)
     {
         gtk_gl_area_queue_render(GTK_GL_AREA(area));
-        g_object_ref(detail::GL_CONTEXT);
     }
 
     void RenderArea::on_resize(GtkGLArea* area, gint width, gint height, detail::RenderAreaInternal* internal)
@@ -196,8 +194,6 @@ namespace mousetrap
 
     gboolean RenderArea::on_render(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal* internal)
     {
-        std::cout << "context: " << GDK_IS_GL_CONTEXT(detail::GL_CONTEXT) << std::endl;
-
         gtk_gl_area_make_current(area);
 
         RenderArea::clear();

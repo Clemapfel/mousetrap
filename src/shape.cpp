@@ -402,8 +402,8 @@ namespace mousetrap
         {
             Vertex(top_left.x, top_left.y, *_internal->color),
             Vertex(top_left.x + size.x, top_left.y, *_internal->color),
-            Vertex(top_left.x + size.x, top_left.y + size.y, *_internal->color),
-            Vertex(top_left.x, top_left.y + size.y, *_internal->color)
+            Vertex(top_left.x + size.x, top_left.y - size.y, *_internal->color),
+            Vertex(top_left.x, top_left.y - size.y, *_internal->color)
         };
 
         _internal->vertices->at(0).texture_coordinates = {0, 0};

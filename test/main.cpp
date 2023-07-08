@@ -57,7 +57,7 @@ int main()
         auto stack = Stack();
 
 
-        auto shape = Shape::Point({0, 0});
+        auto shape = Shape::Rectangle({-0.5, 0.5}, {1, 1});
         auto task = RenderTask(shape);
         auto area = RenderArea();
         area.add_render_task(task);
