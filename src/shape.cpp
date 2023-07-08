@@ -348,10 +348,17 @@ namespace mousetrap
         return out;
     }
 
-    void Shape::as_point(Vector2f a)
+    void Shape::as_point(Vector2f p)
     {
-        as_points({a});
+        _internal->vertices->clear();
+        _internal->indices->clear();
+
+        _internal->vertices->push_back(Vertex(p.x, p.y, *_internal->color));
+        _internal->indices->push_back(0);
+
+        _internal->render_type = GL_POINTS;
         _internal->shape_type = detail::ShapeType::POINT;
+        initialize();
     }
 
     void Shape::as_points(const std::vector<Vector2f>& points)
@@ -365,6 +372,9 @@ namespace mousetrap
             _internal->vertices->push_back(Vertex(p.x, p.y, *_internal->color));
             _internal->indices->push_back(i);
         }
+
+        for (auto i : *(_internal->indices))
+            std::cout << "Points: " << i << std::endl;
 
         _internal->render_type = GL_POINTS;
         _internal->shape_type = detail::ShapeType::POINTS;

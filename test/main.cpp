@@ -56,8 +56,18 @@ int main()
         auto window = Window(app);
         auto stack = Stack();
 
-        add_page(stack, "Point", Shape::Point({0, 0}));
-        add_page(stack, "Points", Shape::Points({{-0.5, 0.5}, {0.5, 0.5}, {0.5, -0.5}}));
+
+        auto shape = Shape::Point({0, 0});
+        auto task = RenderTask(shape);
+        auto area = RenderArea();
+        area.add_render_task(task);
+        area.set_size_request({150, 150});
+
+        auto aspect_frame = AspectFrame(1.0);
+        aspect_frame.set_child(area);
+        stack.add_child(aspect_frame, "test");
+
+        //add_page(stack, "Point", Shape::Point({0, 0}));
 
         auto box = Box(Orientation::HORIZONTAL);
         box.push_back(stack);
