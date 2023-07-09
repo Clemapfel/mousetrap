@@ -72,8 +72,18 @@ int main()
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
+
+        auto area = RenderArea();
+        area.add_render_task(RenderTask(Shape::Lines({
+                         {{-0.5, 0.5}, {0.5, -0.5}}
+        })));
+
+        /*
         auto* gtk_window = do_css_accordion(window.operator NativeWidget());
         gtk_window_present(GTK_WINDOW(gtk_window));
+         */
+
+        window.present();
     });
     app.run();
 }

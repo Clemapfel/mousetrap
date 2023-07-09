@@ -64,7 +64,7 @@ namespace mousetrap
                 detail::mark_gl_initialized();
             }
 
-            return g_object_ref(GL_CONTEXT);
+            return g_object_ref(g_object_ref_sink(GL_CONTEXT)); // intentionally memory leak, should persist until end of runtime
         }
     }
 
