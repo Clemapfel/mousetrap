@@ -24,9 +24,14 @@ GtkWidget * do_css_accordion (GtkWidget *do_widget) {
 
     static GtkWidget *window = gtk_window_new();
     auto* container = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-    auto* child = gtk_button_new_with_label("test");
 
-    gtk_box_append (GTK_BOX (container), child);
+    auto level_bar = LevelBar(0, 1);
+    level_bar.set_value(0.5);
+    level_bar.set_expand_horizontally(true);
+    level_bar.set_size_request({200, 50});
+
+    //gtk_box_append (GTK_BOX (container), gtk_button_new_with_label("||||||||||||||||"));
+    gtk_box_append(GTK_BOX(container), level_bar.operator NativeWidget());
     gtk_window_set_child (GTK_WINDOW (window), container);
     gtk_widget_add_css_class (container, "accordion");
 
@@ -41,53 +46,18 @@ transition-duration: 1s;
 font: 20px Cantarell;
 }
 
-.accordion {
-background: linear-gradient(153deg, #151515, #151515 5px, transparent 5px) 0 0,
-            linear-gradient(333deg, #151515, #151515 5px, transparent 5px) 10px 5px,
-            linear-gradient(153deg, #222, #222 5px, transparent 5px) 0 5px,
-            linear-gradient(333deg, #222, #222 5px, transparent 5px) 10px 10px,
-            linear-gradient(90deg, #1b1b1b, #1b1b1b 10px, transparent 10px),
-            linear-gradient(#1d1d1d, #1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
-background-color: #131313;
-background-size: 20px 20px;
-}
+.accordion levelbar trough { background-color: magenta;border: 1px solid; padding: 2px; border-radius: 3px; color: white; border-color: #1b1b1b; background-color: #2d2d2d; box-shadow: inset 0 0 0 1px rgba(21, 83, 158, 0); }
 
-.accordion button {
-color: black;
-background-color: #bbb;
-border-style: solid;
-border-width: 2px 0 2px 2px;
-border-color: #333;
+.accordion levelbar trough:backdrop { color: #d6d6d6; border-color: #202020; background-color: #303030; box-shadow: none; }
 
-padding: 12px 4px;
-}
+.accordion levelbar block { background-color: magenta; border: 1px solid; border-radius: 1px; }
 
-.accordion button:first-child {
-border-radius: 5px 0 0 5px;
-}
 
-.accordion button:last-child {
-border-radius: 0 5px 5px 0;
-border-width: 2px;
-}
 
-.accordion button:hover {
-padding: 12px 48px;
-background-color: #4870bc;
-}
-
-.accordion button *:hover {
-color: white;
-}
-
-.accordion button:hover:active,
-.accordion button:active {
-background-color: #993401;
-}
 )";
 
     gtk_css_provider_load_from_data(provider, css.c_str(), css.size());
-    gtk_style_context_add_provider_for_display (gtk_widget_get_display (child), GTK_STYLE_PROVIDER (provider),
+    gtk_style_context_add_provider_for_display (gtk_widget_get_display (container), GTK_STYLE_PROVIDER (provider),
 
                                                 GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
