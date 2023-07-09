@@ -56,7 +56,9 @@ font: 20px Cantarell;
 
 )";
 
-    gtk_css_provider_load_from_data(provider, css.c_str(), css.size());
+    //gtk_css_provider_load_from_data(provider, css.c_str(), css.size());
+    gtk_css_provider_load_from_resource(provider, "resource:///org/gtk/libgtk/theme/Default/Default-dark.css");
+    gtk_css_provider_load_from_path(provider, "/home/clem/Workspace/mousetrap/gtk-contained.css");
     gtk_style_context_add_provider_for_display (gtk_widget_get_display (container), GTK_STYLE_PROVIDER (provider),
 
                                                 GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
