@@ -99,4 +99,9 @@ namespace mousetrap
 
         gtk_single_selection_set_autoselect(GTK_SINGLE_SELECTION(operator GtkSelectionModel*()), not b);
     }
+
+    size_t SelectionModel::get_n_items() const
+    {
+        return g_list_model_get_n_items(G_LIST_MODEL(operator GtkSelectionModel*()));
+    }
 }

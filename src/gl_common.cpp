@@ -16,8 +16,6 @@ namespace mousetrap::detail
     {
         if (not mousetrap::GL_INITIALIZED)
             mousetrap::GL_INITIALIZED = true;
-        else
-            log::critical("In detail::mark_gl_initialized: Attempting to initialize the OpenGL backend, even though it is already initialized-", MOUSETRAP_DOMAIN);
     }
 
     void throw_if_gl_is_uninitialized()

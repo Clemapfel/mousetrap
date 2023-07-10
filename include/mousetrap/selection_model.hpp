@@ -88,6 +88,10 @@ namespace mousetrap
             /// @param b true to allow no selection
             void set_allow_no_selection_if_single(bool b);
 
+            /// @brief get number of items
+            /// @return size_t
+            size_t get_n_items() const;
+
         protected:
             detail::SelectionModelInternal* _internal = nullptr;
     };

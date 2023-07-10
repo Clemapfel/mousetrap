@@ -373,9 +373,6 @@ namespace mousetrap
             _internal->indices->push_back(i);
         }
 
-        for (auto i : *(_internal->indices))
-            std::cout << "Points: " << i << std::endl;
-
         _internal->render_type = GL_POINTS;
         _internal->shape_type = detail::ShapeType::POINTS;
         initialize();

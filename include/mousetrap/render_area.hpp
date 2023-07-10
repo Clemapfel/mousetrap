@@ -24,6 +24,9 @@ namespace mousetrap
 
         /// @brief initialize the global OpenGL context
         GdkGLContext* initialize_opengl();
+
+        /// @brief free the global OpenGL context
+        void shutdown_opengl();
     }
 
     #ifndef DOXYGEN

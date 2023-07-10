@@ -63,6 +63,7 @@ namespace mousetrap
 
         g_signal_connect(_internal->native, "startup", G_CALLBACK(detail::initialize_opengl), nullptr);
         g_signal_connect(_internal->native, "startup", G_CALLBACK(detail::mark_gtk_initialized), nullptr);
+        g_signal_connect(_internal->native, "shutdown", G_CALLBACK(detail::shutdown_opengl), nullptr);
     }
 
     Application::Application(detail::ApplicationInternal* internal)

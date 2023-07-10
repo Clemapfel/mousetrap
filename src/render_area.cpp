@@ -15,13 +15,12 @@ namespace mousetrap
     {
         GdkGLContext* initialize_opengl()
         {
-            if (not GL_INITIALIZED)
+            if (not GDK_IS_GL_CONTEXT(detail::GL_CONTEXT))
             {
                 bool failed = false;
                 GError *error_maybe = nullptr;
                 detail::GL_CONTEXT = gdk_display_create_gl_context(gdk_display_get_default(), &error_maybe);
                 auto* context = detail::GL_CONTEXT;
-                g_object_ref_sink(context);
 
                 if (error_maybe != nullptr)
                 {
@@ -61,10 +60,19 @@ namespace mousetrap
                     log::warning(str.str());
                 }
 
+                if (g_object_is_floating(GL_CONTEXT))
+                    g_object_ref_sink(GL_CONTEXT);
+
                 detail::mark_gl_initialized();
             }
 
-            return g_object_ref(g_object_ref_sink(GL_CONTEXT)); // intentionally memory leak, should persist until end of runtime
+            return GL_CONTEXT; // intentional memory leak, should persist until end of runtime
+        }
+
+        void shutdown_opengl()
+        {
+            while (GDK_IS_GL_CONTEXT(GL_CONTEXT))
+                g_object_unref(GL_CONTEXT);
         }
     }
 
@@ -176,7 +184,8 @@ namespace mousetrap
 
     GdkGLContext* RenderArea::on_create_context(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal* internal)
     {
-        assert(GDK_IS_GL_CONTEXT(detail::GL_CONTEXT));
+        detail::initialize_opengl();
+        g_object_ref(detail::GL_CONTEXT);
         gdk_gl_context_make_current(detail::GL_CONTEXT);
         return detail::GL_CONTEXT;
     }
@@ -188,12 +197,14 @@ namespace mousetrap
 
     void RenderArea::on_resize(GtkGLArea* area, gint width, gint height, detail::RenderAreaInternal* internal)
     {
+        assert(GDK_IS_GL_CONTEXT(detail::GL_CONTEXT));
         gtk_gl_area_make_current(area);
         gtk_gl_area_queue_render(area);
     }
 
     gboolean RenderArea::on_render(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal* internal)
     {
+        assert(GDK_IS_GL_CONTEXT(detail::GL_CONTEXT));
         gtk_gl_area_make_current(area);
 
         RenderArea::clear();

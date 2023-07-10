@@ -68,22 +68,23 @@ font: 20px Cantarell;
 
 int main()
 {
-    auto app = Application("test.app");
-    app.connect_signal_activate([](Application& app)
+    for (size_t i = 0; i < 5; ++i)
     {
-        auto window = Window(app);
+        auto app = Application("test.app");
+        app.connect_signal_activate([](Application& app)
+        {
+            auto window = Window(app);
 
-        auto area = RenderArea();
-        area.add_render_task(RenderTask(Shape::Lines({
-                         {{-0.5, 0.5}, {0.5, -0.5}}
-        })));
+            auto render_area = RenderArea();
+            render_area.add_render_task(RenderTask(Shape::Rectangle({-0.5, 0.5}, {1, 1})));
 
-        /*
-        auto* gtk_window = do_css_accordion(window.operator NativeWidget());
-        gtk_window_present(GTK_WINDOW(gtk_window));
-         */
+            auto aspect_frame = AspectFrame(1.0);
+            aspect_frame.set_size_request({150, 150});
+            aspect_frame.set_child(render_area);
 
-        window.present();
-    });
-    app.run();
+            window.set_child(aspect_frame);
+            window.present();
+        });
+        app.run();
+    }
 }
