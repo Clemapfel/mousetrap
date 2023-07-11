@@ -131,37 +131,49 @@ namespace mousetrap
     void Application::hold()
     {
         if (not _internal->holding)
+        {
             g_application_hold(G_APPLICATION(_internal->native));
+            _internal->holding = true;
+        }
     }
 
     void Application::release()
     {
         if (not _internal->holding)
-            log::warning("In Application::release: Attempting to release application, but it is not currently holding");
+            log::warning("In Application::release: Attempting to release application, but it is not currently holding", MOUSETRAP_DOMAIN);
         else
+        {
             g_application_release(G_APPLICATION(_internal->native));
+            _internal->holding = false;
+        }
     }
 
     void Application::mark_as_busy()
     {
         if (not _internal->busy)
+        {
             g_application_mark_busy(G_APPLICATION(_internal->native));
+            _internal->busy = true;
+        }
     }
 
     void Application::unmark_as_busy()
     {
         if (not _internal->busy)
-            log::warning("In Application::unmark_as_busy: Application is not currently marked busy");
+            log::warning("In Application::unmark_as_busy: Application is not currently marked busy", MOUSETRAP_DOMAIN);
         else
+        {
             g_application_unmark_busy(G_APPLICATION(_internal->native));
+            _internal->busy = false;
+        }
     }
 
-    bool Application::is_marked_as_busy() const
+    bool Application::get_is_marked_as_busy() const
     {
         return _internal->busy;
     }
 
-    bool Application::is_holding() const
+    bool Application::get_is_holding() const
     {
         return _internal->holding;
     }

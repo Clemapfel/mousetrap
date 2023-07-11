@@ -63,6 +63,7 @@ namespace mousetrap
                 if (g_object_is_floating(GL_CONTEXT))
                     g_object_ref_sink(GL_CONTEXT);
 
+                g_object_ref(GL_CONTEXT);
                 detail::mark_gl_initialized();
             }
 
