@@ -57,11 +57,11 @@ namespace mousetrap
 
             /// @brief set whether the child is shown. If the state changes, the animation is played
             /// @param b false if the child should be hidden, true otherwise
-            void set_revealed(bool b);
+            void set_is_revealed(bool b);
 
             /// @brief get whether the child is currently being shown
             /// @return true if the child is visible, false otherwise
-            bool get_revealed() const;
+            bool get_is_revealed() const;
 
             /// @brief set animation style
             /// @param transition_type which animation style to use

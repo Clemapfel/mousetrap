@@ -90,6 +90,10 @@ namespace mousetrap
             /// @param scale (positive integer) or -1 for default size
             void set_scale(int scale);
 
+            /// @brief get_scale
+            /// @return integer, or -1 for default size
+            int get_scale() const;
+
         private:
             detail::ImageDisplayInternal* _internal = nullptr;
 

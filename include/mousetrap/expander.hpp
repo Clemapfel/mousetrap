@@ -67,11 +67,11 @@ namespace mousetrap
 
             /// @brief get whether expander is expanded
             /// @return false if child widget is currently hidden, true otherwise
-            bool get_expanded();
+            bool get_is_expanded();
 
             /// @brief set the expander state
             /// @param b false if child should be hidden, true otherwise
-            void set_expanded(bool);
+            void set_is_expanded(bool);
 
         private:
             detail::ExpanderInternal* _internal = nullptr;

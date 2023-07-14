@@ -79,6 +79,19 @@ int main()
             render_area.add_render_task(RenderTask(Shape::Rectangle({-0.5, 0.5}, {1, 1})));
 
             auto aspect_frame = AspectFrame(1.0);
+            assert(aspect_frame.get_child_x_alignment() == 0.5);
+            assert(aspect_frame.get_child_y_alignment() == 0.5);
+
+            std::cout << aspect_frame.get_child_x_alignment() << " " << aspect_frame.get_child_y_alignment() << std::endl;
+
+            aspect_frame.set_child_x_alignment(0.75);
+            aspect_frame.set_child_y_alignment(0.75);
+
+            std::cout << aspect_frame.get_child_x_alignment() << " " << aspect_frame.get_child_y_alignment() << std::endl;
+
+            assert(aspect_frame.get_child_x_alignment() == 0.75);
+            assert(aspect_frame.get_child_y_alignment() == 0.75);
+
             aspect_frame.set_size_request({150, 150});
             aspect_frame.set_child(render_area);
 

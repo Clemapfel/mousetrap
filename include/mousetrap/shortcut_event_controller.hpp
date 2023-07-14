@@ -50,6 +50,10 @@ namespace mousetrap
             /// @param action
             void add_action(const Action& action);
 
+            /// @brief remove an action
+            /// @param action
+            void remove_action(const Action& action);
+
             /// @brief set the controllers scope, ShortcutScope::GLOBAL by default
             /// @param scope
             void set_scope(ShortcutScope);

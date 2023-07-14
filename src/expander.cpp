@@ -59,12 +59,12 @@ namespace mousetrap
         gtk_expander_set_child(GTK_EXPANDER(operator NativeWidget()), nullptr);
     }
 
-    bool Expander::get_expanded()
+    bool Expander::get_is_expanded()
     {
         return gtk_expander_get_expanded(GTK_EXPANDER(operator NativeWidget()));
     }
 
-    void Expander::set_expanded(bool b)
+    void Expander::set_is_expanded(bool b)
     {
         gtk_expander_set_expanded(GTK_EXPANDER(operator NativeWidget()), b);
     }

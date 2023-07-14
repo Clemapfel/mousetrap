@@ -53,7 +53,7 @@ namespace mousetrap
         return _internal->native;
     }
 
-    bool Clipboard::is_local() const
+    bool Clipboard::get_is_local() const
     {
         return gdk_clipboard_is_local(_internal->native);
     }

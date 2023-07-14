@@ -132,7 +132,7 @@ namespace mousetrap
     std::string AlertDialog::get_message() const
     {
         auto* c_str = gtk_alert_dialog_get_message(_internal->native);
-        return (c_str != nullptr ? "" : std::string(c_str));
+        return (c_str == nullptr ? "" : std::string(c_str));
     }
 
     void AlertDialog::set_message(const std::string& message)
@@ -143,7 +143,7 @@ namespace mousetrap
     std::string AlertDialog::get_detailed_description() const
     {
         auto* c_str = gtk_alert_dialog_get_detail(_internal->native);
-        return (c_str != nullptr ? "" : std::string(c_str));
+        return (c_str == nullptr ? "" : std::string(c_str));
     }
 
     void AlertDialog::set_detailed_description(const std::string& message)

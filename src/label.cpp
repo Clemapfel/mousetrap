@@ -147,12 +147,12 @@ namespace mousetrap
         return gtk_label_get_yalign(GTK_LABEL(operator NativeWidget()));
     }
 
-    void Label::set_selectable(bool b)
+    void Label::set_is_selectable(bool b)
     {
         gtk_label_set_selectable(GTK_LABEL(operator NativeWidget()), b);
     }
 
-    bool Label::get_selectable() const
+    bool Label::get_is_selectable() const
     {
         return gtk_label_get_selectable(GTK_LABEL(operator NativeWidget()));
     }

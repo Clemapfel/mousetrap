@@ -198,4 +198,9 @@ namespace mousetrap
 
         gtk_image_set_pixel_size(GTK_IMAGE(operator NativeWidget()), scale);
     }
+
+    int ImageDisplay::get_scale() const
+    {
+        return gtk_image_get_pixel_size(GTK_IMAGE(operator NativeWidget()));
+    }
 }

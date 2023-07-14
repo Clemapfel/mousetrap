@@ -65,7 +65,7 @@ namespace mousetrap
 
             /// @brief check if the clipboards content was set from within the same application the widget belongs to
             /// @return boolean
-            bool is_local() const;
+            bool get_is_local() const;
 
             /// @brief override the data in the clipboard with a string
             /// @param string

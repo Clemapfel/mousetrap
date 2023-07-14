@@ -62,7 +62,7 @@ namespace mousetrap
         gtk_revealer_set_child(GTK_REVEALER(operator NativeWidget()), nullptr);
     }
 
-    void Revealer::set_revealed(bool b)
+    void Revealer::set_is_revealed(bool b)
     {
         gtk_revealer_set_reveal_child(GTK_REVEALER(operator NativeWidget()), b);
 
@@ -76,7 +76,7 @@ namespace mousetrap
         gtk_widget_set_vexpand(child, v);
     }
 
-    bool Revealer::get_revealed() const
+    bool Revealer::get_is_revealed() const
     {
         return gtk_revealer_get_reveal_child(GTK_REVEALER(operator NativeWidget()));
     }

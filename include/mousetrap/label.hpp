@@ -148,11 +148,11 @@ namespace mousetrap
 
             /// @brief set whether the user can highlight the text with the cursor
             /// @param b true if selection should be possible, false otherwise
-            void set_selectable(bool b);
+            void set_is_selectable(bool b);
 
             /// @brief get whether the user can highight thex text with the cursor
             /// @return true if selection is possible, false otherwise
-            bool get_selectable() const;
+            bool get_is_selectable() const;
 
         private:
             detail::LabelInternal* _internal = nullptr;
