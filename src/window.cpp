@@ -6,6 +6,7 @@
 #include <mousetrap/window.hpp>
 #include <mousetrap/application.hpp>
 #include <mousetrap/log.hpp>
+#include <mousetrap/render_area.hpp>
 
 namespace mousetrap
 {

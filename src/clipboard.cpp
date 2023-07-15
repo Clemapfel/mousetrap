@@ -123,7 +123,7 @@ namespace mousetrap
         auto* instance = (detail::ClipboardInternal*) self;
         auto image = Image();
 
-        if (error != nullptr)
+        if (error == nullptr)
         {
             auto size = Vector2ui(gdk_texture_get_width(texture), gdk_texture_get_height(texture));
 

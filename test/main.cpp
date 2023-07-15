@@ -17,6 +17,34 @@
 #include <mousetrap.hpp>
 
 using namespace mousetrap;
+
+int main()
+{
+    {
+        auto app = Application("test.id");
+        app.connect_signal_activate([](Application& app)
+        {
+            auto window = Window(app);
+            window.present();
+
+            auto column_view = ColumnView();
+            auto column = column_view.push_back_column("test");
+
+            std::cout << column_view.has_column_with_title("test") << std::endl;
+            column.set_title("newtest");
+            std::cout << column.get_title() << std::endl;
+            std::cout << column_view.has_column_with_title("newtest") << std::endl;
+
+            window.set_child(column_view),
+            window.close();
+        });
+        app.run();
+    }
+}
+
+#if FALSE
+
+using namespace mousetrap;
 #include <string>
 #include <gtk/gtk.h>
 
@@ -101,3 +129,4 @@ int main()
         app.run();
     }
 }
+#endif

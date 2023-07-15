@@ -142,7 +142,7 @@ namespace mousetrap
 
     bool ColumnView::Column::get_is_resizable() const
     {
-        return gtk_column_view_column_get_visible(_native);
+        return gtk_column_view_column_get_resizable(_native);
     }
 
     ///
