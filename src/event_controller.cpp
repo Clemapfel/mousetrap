@@ -70,5 +70,7 @@ namespace mousetrap
 
     SingleClickGesture::SingleClickGesture(GtkGestureSingle* gesture)
         : EventController(GTK_EVENT_CONTROLLER(gesture))
-    {}
+    {
+        set_only_listens_to_button(ButtonID::ANY);
+    }
 }

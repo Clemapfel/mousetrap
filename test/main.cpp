@@ -25,18 +25,20 @@ int main()
         app.connect_signal_activate([](Application& app)
         {
             auto window = Window(app);
+
+            auto fixed = Fixed();
+            static auto child = Label("test");
+            fixed.add_child(child, Vector2f(32, 32));
+            fixed.set_child_position(child, Vector2f(32, 32));
+
+            fixed.connect_signal_realize([](Fixed& self){
+                self.set_child_position(child, Vector2f(1234, 1234));
+                auto pos = self.get_child_position(child);
+                std::cout << pos.x << " " << pos.y << std::endl;
+            });
+
+            window.set_child(fixed);
             window.present();
-
-            auto column_view = ColumnView();
-            auto column = column_view.push_back_column("test");
-
-            std::cout << column_view.has_column_with_title("test") << std::endl;
-            column.set_title("newtest");
-            std::cout << column.get_title() << std::endl;
-            std::cout << column_view.has_column_with_title("newtest") << std::endl;
-
-            window.set_child(column_view),
-            window.close();
         });
         app.run();
     }
