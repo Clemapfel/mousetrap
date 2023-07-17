@@ -36,7 +36,7 @@ namespace mousetrap
     {
         public:
             /// @brief default ctor, initialize as image of size 0x0
-            Image() = default;
+            Image();
 
             /// @brief construct from file
             /// @param path

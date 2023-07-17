@@ -13,8 +13,13 @@ namespace mousetrap
 {
     Image::~Image()
     {
-        g_object_unref(_data);
+        if (G_IS_OBJECT(_data))
+            g_object_unref(_data);
     }
+
+    Image::Image()
+        : _data(nullptr)
+    {}
 
     Image::Image(GdkPixbuf* pixbuf)
         : _data(pixbuf)
@@ -45,9 +50,6 @@ namespace mousetrap
         if (G_IS_OBJECT(_data))
             g_object_unref(_data);
 
-        if (G_IS_OBJECT(other._data))
-            g_object_ref(other._data);
-
         _data = other._data;
         _size = other._size;
 
@@ -65,7 +67,6 @@ namespace mousetrap
     Image& Image::operator=(Image&& other) noexcept
     {
         g_object_unref(_data);
-        g_object_ref(other._data);
 
         _data = other._data;
         _size = other._size;
@@ -92,8 +93,6 @@ namespace mousetrap
             for (size_t x = 0; x < width; ++x)
                 for (size_t y = 0; y < height; ++y)
                     set_pixel(x, y, default_color);
-
-        g_object_ref(_data);
     }
 
     bool Image::create_from_file(const std::string& path)
@@ -115,7 +114,6 @@ namespace mousetrap
         _size.x = gdk_pixbuf_get_width(_data);
         _size.y = gdk_pixbuf_get_height(_data);
 
-        g_object_ref(_data);
         return true;
     }
 

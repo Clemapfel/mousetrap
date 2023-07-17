@@ -26,17 +26,13 @@ int main()
         {
             auto window = Window(app);
 
-            auto grid_view = ListView();
-            grid_view.push_back(Separator());
-            grid_view.push_back(Separator());
-            grid_view.push_back(Separator());
+            auto image = Image(1, 1, RGBA(1, 0, 1, 1));
+            auto flipped = image.as_flipped(true, true);
 
-            grid_view.connect_signal_activate_item([](ListView&, uint32_t i){
-               std::cout << "called " << i << std::endl;
-            });
-            grid_view.activate();
+            image.as_scaled(2, 2, InterpolationType::HYPERBOLIC);
+            image.as_cropped(0, 0, 2, 2);
 
-            window.set_child(grid_view);
+            window.set_child(ImageDisplay(flipped));
             window.present();
         });
         app.run();
