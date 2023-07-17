@@ -26,13 +26,15 @@ int main()
         {
             auto window = Window(app);
 
-            auto image = Image(1, 1, RGBA(1, 0, 1, 1));
-            auto flipped = image.as_flipped(true, true);
+            auto file_str = R"(
+            [group]
+            rgba = 1.0;0.0;1.0;1.0
+            )";
 
-            image.as_scaled(2, 2, InterpolationType::HYPERBOLIC);
-            image.as_cropped(0, 0, 2, 2);
+            auto file = KeyFile();
+            file.create_from_string(file_str);
+            std::cout << file.get_value_as<RGBA>("group", "rgba").operator std::string() << std::endl;
 
-            window.set_child(ImageDisplay(flipped));
             window.present();
         });
         app.run();

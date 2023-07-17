@@ -189,6 +189,7 @@ namespace mousetrap
     void ImageDisplay::clear()
     {
         gtk_image_clear(GTK_IMAGE(operator NativeWidget()));
+        update_size(0, 0);
     }
 
     void ImageDisplay::set_scale(int scale)
