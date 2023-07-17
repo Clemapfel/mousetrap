@@ -128,7 +128,7 @@ namespace mousetrap
 {
     GridView::GridView(Orientation orientation, SelectionMode mode)
         : Widget(gtk_grid_view_new(nullptr, nullptr)),
-          CTOR_SIGNAL(GridView, activate),
+          CTOR_SIGNAL(GridView, activate_item),
           CTOR_SIGNAL(GridView, realize),
           CTOR_SIGNAL(GridView, unrealize),
           CTOR_SIGNAL(GridView, destroy),
@@ -144,7 +144,7 @@ namespace mousetrap
     
     GridView::GridView(detail::GridViewInternal* internal) 
         : Widget(GTK_WIDGET(internal->native)),
-          CTOR_SIGNAL(GridView, activate),
+          CTOR_SIGNAL(GridView, activate_item),
           CTOR_SIGNAL(GridView, realize),
           CTOR_SIGNAL(GridView, unrealize),
           CTOR_SIGNAL(GridView, destroy),
@@ -198,9 +198,21 @@ namespace mousetrap
         g_list_store_remove_all(_internal->list_store);
     }
 
-    void GridView::remove(const Widget& widget)
+    int GridView::find(const Widget& widget) const
     {
-        size_t i = 0;
+        int i = 0;
+        for (i; i < g_list_model_get_n_items(G_LIST_MODEL(_internal->list_store)); ++i)
+        {
+            auto* item = detail::G_GRID_VIEW_ITEM(g_list_model_get_item(G_LIST_MODEL(_internal->list_store), i));
+            if (item->widget == widget.operator NativeWidget())
+                return i;
+        }
+
+        return -1;
+    }
+
+    void GridView::remove(size_t i)
+    {
         g_list_store_remove(G_LIST_STORE(_internal->list_store), i);
     }
 
@@ -218,7 +230,10 @@ namespace mousetrap
     {
         auto min = get_min_n_columns();
         if (min > n)
-            log::warning("In GridView::set_max_n_columns: Maximum number of columns is lower than minimum number", MOUSETRAP_DOMAIN);
+        {
+            log::warning("In GridView::set_max_n_columns: Maximum number of columns is lower than minimum number of columns", MOUSETRAP_DOMAIN);
+            n = min;
+        }
 
         gtk_grid_view_set_max_columns(_internal->native, n);
     }
@@ -230,6 +245,12 @@ namespace mousetrap
 
     void GridView::set_min_n_columns(size_t n)
     {
+        if (n == 0)
+        {
+            log::warning("In GridView::set_min_n_columns: Number of columns need to be at least 1", MOUSETRAP_DOMAIN);
+            n = 1;
+        }
+
         gtk_grid_view_set_min_columns(_internal->native, n);
     }
 

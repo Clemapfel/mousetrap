@@ -344,7 +344,6 @@ namespace mousetrap
     /// @brief an argument of this type should not be interacted with
     using UnusedArgument_t = void*;
 
-    /// @see
     DECLARE_SIGNAL(Activate, activate, ACTIVATE, "activate", void);
     /// @class has_signal_activate
     /// @brief \signal_activate_brief
@@ -958,6 +957,40 @@ namespace mousetrap
     /// \signal_disconnect
     ///
     /// @fn has_signal_selection_changed::has_signal_selection_changed
+    /// \signal_ctor
+
+    DECLARE_SIGNAL_MANUAL(ActivateItem, activate_item, ACTIVATE_ITEM, "activate", void,
+          SPLAT(guint position),
+          SPLAT(position)
+    );
+    /// @class has_signal_activate_item
+    /// @brief \signal_activate_item_brief
+    /// @tparam T instance type
+    ///
+    /// @fn void has_signal_activate_item::connect_signal_activate_item(Function_t)
+    /// \signal_connect{(T&, uint32_t position) -> void}
+    ///
+    /// @fn void has_signal_activate_item::connect_signal_activate_item(Function_t, Data_t)
+    /// \signal_connect_data{(T&, uint32_t position, Data_t) -> void}
+    ///
+    /// @fn void has_signal_activate_item::emit_signal_activate_item(int32_t position, int32_t n_items)
+    /// \signal_emit_brief
+    /// @param position index of the element that changed
+    /// @param n_items number of items that changed
+    ///
+    /// @var has_signal_activate_item::signal_id
+    /// \signal_id{https://docs.gtk.org/gtk4/signal.SelectionModel.selection-changed.html}
+    ///
+    /// @fn void has_signal_activate_item::set_signal_activate_item_blocked(bool)
+    /// \signal_set_blocked
+    ///
+    /// @fn bool has_signal_activate_item::get_signal_activate_item_blocked() const
+    /// \signal_get_blocked
+    ///
+    /// @fn void has_signal_activate_item::disconnect_signal_activate_item()
+    /// \signal_disconnect
+    ///
+    /// @fn has_signal_activate_item::has_signal_activate_item
     /// \signal_ctor
 
     using ModifierState = GdkModifierType;

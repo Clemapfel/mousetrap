@@ -31,11 +31,11 @@ namespace mousetrap
 
     /// @brief Container widget that displays a number of items in a single row, nested lists are possible
     /// \signals
-    /// \signal_activate{ListView}
+    /// \signal_activate_item{ListView}
     /// \widget_signals{ListView}
     class ListView : public detail::notify_if_gtk_uninitialized,
         public Widget,
-        HAS_SIGNAL(ListView, activate),
+        HAS_SIGNAL(ListView, activate_item),
         HAS_SIGNAL(ListView, realize),
         HAS_SIGNAL(ListView, unrealize),
         HAS_SIGNAL(ListView, destroy),
@@ -93,17 +93,17 @@ namespace mousetrap
             /// @param iterator iterator to list to clear, or nullptr to clear the toplevel list
             void clear(Iterator iterator = nullptr);
 
-            /// @brief get widget at i-th position in list
-            /// @param i index
-            /// @param iterator iterator to list, or nullptr to access the toplevel list
-            /// @return pointer to widget at that position, or nullptr if unable to retrieve widget
-            Widget* get_widget_at(size_t i, Iterator iterator = nullptr);
-
             /// @brief set widget at i-th position in list
             /// @param i index
+
             /// @param widget
             /// @param iterator iterator to list, or nullptr to set widget in toplevel list
             void set_widget_at(size_t i, const Widget& widget, Iterator iterator = nullptr);
+
+            /// @brief get index of widget, or -1 if widget is not in list
+            /// @param widget
+            /// @param iterator
+            int find(const Widget& widget, Iterator iterator = nullptr) const;
 
             /// @brief enable users to select multiple elements by click-dragging
             /// @param b true if enabled, false otherwise

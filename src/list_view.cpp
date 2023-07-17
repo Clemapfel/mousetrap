@@ -194,7 +194,7 @@ namespace mousetrap
 {
     ListView::ListView(Orientation orientation, SelectionMode mode)
         : Widget(gtk_list_view_new(nullptr, nullptr)),
-          CTOR_SIGNAL(ListView, activate),
+          CTOR_SIGNAL(ListView, activate_item),
           CTOR_SIGNAL(ListView, realize),
           CTOR_SIGNAL(ListView, unrealize),
           CTOR_SIGNAL(ListView, destroy),
@@ -209,7 +209,7 @@ namespace mousetrap
 
     ListView::ListView(detail::ListViewInternal* internal)
         : Widget(GTK_WIDGET(internal->list_view)),
-          CTOR_SIGNAL(ListView, activate),
+          CTOR_SIGNAL(ListView, activate_item),
           CTOR_SIGNAL(ListView, realize),
           CTOR_SIGNAL(ListView, unrealize),
           CTOR_SIGNAL(ListView, destroy),
@@ -348,6 +348,25 @@ namespace mousetrap
         auto* item =  detail::G_TREE_VIEW_ITEM(g_list_model_get_item(list, i));
         item->widget = widget.operator GtkWidget*();
         g_list_model_items_changed(G_LIST_MODEL(list), i, 0, 0);
+    }
+
+    int ListView::find(const Widget& widget, Iterator it) const
+    {
+        GListModel* list;
+        if (it == nullptr)
+            list = G_LIST_MODEL(_internal->root);
+        else
+            list = G_LIST_MODEL(it->children);
+
+        int i = 0;
+        for (i; i < g_list_model_get_n_items(list); ++i)
+        {
+            auto* item = detail::G_TREE_VIEW_ITEM(g_list_model_get_item(list, i));
+            if (item->widget == widget.operator NativeWidget())
+                return i;
+        }
+
+        return -1;
     }
 
     void ListView::set_enable_rubberband_selection(bool b)

@@ -26,18 +26,17 @@ int main()
         {
             auto window = Window(app);
 
-            auto fixed = Fixed();
-            static auto child = Label("test");
-            fixed.add_child(child, Vector2f(32, 32));
-            fixed.set_child_position(child, Vector2f(32, 32));
+            auto grid_view = ListView();
+            grid_view.push_back(Separator());
+            grid_view.push_back(Separator());
+            grid_view.push_back(Separator());
 
-            fixed.connect_signal_realize([](Fixed& self){
-                self.set_child_position(child, Vector2f(1234, 1234));
-                auto pos = self.get_child_position(child);
-                std::cout << pos.x << " " << pos.y << std::endl;
+            grid_view.connect_signal_activate_item([](ListView&, uint32_t i){
+               std::cout << "called " << i << std::endl;
             });
+            grid_view.activate();
 
-            window.set_child(fixed);
+            window.set_child(grid_view);
             window.present();
         });
         app.run();

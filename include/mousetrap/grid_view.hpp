@@ -27,11 +27,11 @@ namespace mousetrap
 
     /// @brief container, arranges widget in a grid
     /// \signals
-    /// \signal_activate{GridView}
+    /// \signal_activate_item{GridView}
     /// \widget_signals{GridView}
     class GridView : public detail::notify_if_gtk_uninitialized,
         public Widget,
-        HAS_SIGNAL(GridView, activate),
+        HAS_SIGNAL(GridView, activate_item),
         HAS_SIGNAL(GridView, realize),
         HAS_SIGNAL(GridView, unrealize),
         HAS_SIGNAL(GridView, destroy),
@@ -72,12 +72,17 @@ namespace mousetrap
             void clear();
 
             /// @brief remove widget
-            /// @param widget
-            void remove(const Widget& widget);
+            /// @param index
+            void remove(size_t);
 
             /// @brief get number of widgets
             /// @return n
             size_t get_n_items() const;
+
+            /// @brief get position of widget, or -1 if widget is not part of grid view
+            /// @param window
+            /// @return index
+            int find(const Widget& widget) const;
 
             /// @brief enable user interaction where a user can click-drag across the mousetrap::GridView to select multiple items
             /// @param b true to enable, false otherwise

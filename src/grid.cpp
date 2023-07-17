@@ -59,14 +59,14 @@ namespace mousetrap
 
     Vector2i Grid::get_position(const Widget& widget) const
     {
-        int column, row, width, height;
+        int column = 0, row = 0, width = 0, height = 0;
         gtk_grid_query_child(GTK_GRID(_internal), widget.operator GtkWidget *(), &column, &row, &width, &height);
         return Vector2i(column, row);
     }
 
     Vector2ui Grid::get_size(const Widget& widget) const
     {
-        int column, row, width, height;
+        int column = 0, row = 0, width = 0, height = 0;
         gtk_grid_query_child(GTK_GRID(_internal), widget.operator GtkWidget *(), &column, &row, &width, &height);
         return Vector2ui(width, height);
     }
@@ -98,7 +98,7 @@ namespace mousetrap
 
     float Grid::get_column_spacing() const
     {
-        return gtk_grid_get_column_homogeneous(GTK_GRID(_internal));
+        return gtk_grid_get_column_spacing(GTK_GRID(_internal));
     }
 
     void Grid::set_row_spacing(float v)

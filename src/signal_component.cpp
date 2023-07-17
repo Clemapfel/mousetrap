@@ -65,7 +65,11 @@ namespace mousetrap::detail
                               SPLAT(int32_t position, int32_t n_items),
                               SPLAT(position, n_items)
         );
-    
+
+    DEFINE_SIGNAL(ActivateItem, activate_item, ACTIVATE_ITEM, "activate", void,
+                          SPLAT(guint position),
+                          SPLAT(position)
+    );
 
     DEFINE_SIGNAL(KeyPressed, key_pressed, KEY_PRESSED, "key-pressed", bool,
                           SPLAT(KeyValue keyval, KeyCode keycode, ModifierState modifier),
