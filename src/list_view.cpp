@@ -284,6 +284,8 @@ namespace mousetrap
         if (it != nullptr)
             item->depth = it->depth + 1;
 
+        std::cout << "inserted: " << item->widget << std::endl;
+
         auto n =  g_list_model_get_n_items(G_LIST_MODEL(to_append_to));
         if (i > n)
             i = n == 0 ? 0 : n - 1;
@@ -362,7 +364,8 @@ namespace mousetrap
         for (i; i < g_list_model_get_n_items(list); ++i)
         {
             auto* item = detail::G_TREE_VIEW_ITEM(g_list_model_get_item(list, i));
-            if (item->widget == widget.operator NativeWidget())
+            std::cout << item->widget << std::endl;
+            if (gtk_widget_get_first_child(item->widget) == widget.operator NativeWidget())
                 return i;
         }
 

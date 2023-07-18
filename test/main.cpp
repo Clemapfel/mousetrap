@@ -26,14 +26,11 @@ int main()
         {
             auto window = Window(app);
 
-            auto file_str = R"(
-            [group]
-            rgba = 1.0;0.0;1.0;1.0
-            )";
-
-            auto file = KeyFile();
-            file.create_from_string(file_str);
-            std::cout << file.get_value_as<RGBA>("group", "rgba").operator std::string() << std::endl;
+            auto child = Label("test");
+            std::cout << child.operator NativeWidget() << std::endl;
+            auto list = ListView();
+            list.insert(child, 0);
+            std::cout << list.find(child) << std::endl;
 
             window.present();
         });
