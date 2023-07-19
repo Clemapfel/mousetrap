@@ -26,10 +26,13 @@ int main()
         {
             auto window = Window(app);
 
+            auto list = ListView();
+            list.push_back(Separator());
+            list.push_back(Separator());
+
             auto child = Label("test");
             std::cout << child.operator NativeWidget() << std::endl;
-            auto list = ListView();
-            list.insert(child, 0);
+            list.insert(child, 1);
             std::cout << list.find(child) << std::endl;
 
             window.present();

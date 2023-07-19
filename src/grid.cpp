@@ -52,6 +52,13 @@ namespace mousetrap
         gtk_grid_attach(GTK_GRID(_internal), widget.operator GtkWidget*(), row_column_index.x, row_column_index.y, n_horizontal_cells, n_vertical_cells);
     }
 
+    void Grid::insert_next_to(const Widget& to_insert, const Widget& already_in_grid, RelativePosition position, size_t n_horizontal_cells, size_t n_vertical_cells)
+    {
+        auto* ptr = &to_insert;
+        WARN_IF_SELF_INSERTION(Grid::insert, this, ptr);
+        gtk_grid_attach_next_to(GTK_GRID(_internal), to_insert.operator GtkWidget*(), already_in_grid.operator GtkWidget*(), (GtkPositionType) position, n_horizontal_cells, n_vertical_cells);
+    }
+
     void Grid::remove(const Widget& widget)
     {
         gtk_grid_remove(GTK_GRID(_internal), widget.operator GtkWidget*());

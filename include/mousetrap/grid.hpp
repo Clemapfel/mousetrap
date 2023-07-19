@@ -6,6 +6,7 @@
 
 #include <mousetrap/widget.hpp>
 #include <mousetrap/orientation.hpp>
+#include <mousetrap/relative_position.hpp>
 
 namespace mousetrap
 {
@@ -50,6 +51,14 @@ namespace mousetrap
             /// @param n_horizontal_cells how many horizontal cells should the widget occupy
             /// @param n_vertical_cells how many vertical cells should the widget occupy
             void insert(const Widget& widget, Vector2i row_column_index, size_t n_horizontal_cells = 1, size_t n_vertical_cells = 1);
+
+            /// @brief insert widget such that it is next to a widget already in the grid
+            /// @param to_insert new widget
+            /// @param already_in_grid already inserted widget
+            /// @param relative_position
+            /// @param n_horizontal_cells how many horizontal cells should the widget occupy
+            /// @param n_vertical_cells how many vertical cells should the widget occupy
+            void insert_next_to(const Widget& to_insert, const Widget& already_in_grid, RelativePosition, size_t n_horizontal_cells = 1, size_t n_vertical_cells = 1);
 
             /// @brief remove a widget from the grid
             /// @param widget

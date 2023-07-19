@@ -60,8 +60,8 @@ namespace mousetrap
 
     bool log::get_surpress_info(LogDomain domain)
     {
-        auto info_it = _allow_debug.find(domain);
-        return info_it == _allow_debug.end() or info_it->second == false;
+        auto info_it = _allow_info.find(domain);
+        return info_it == _allow_info.end() or info_it->second == false;
     }
 
     GLogWriterOutput log::log_writer(GLogLevelFlags log_level, const GLogField* fields, gsize n_fields, gpointer)
