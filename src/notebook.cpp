@@ -168,6 +168,31 @@ namespace mousetrap
         return out;
     }
 
+    void Notebook::move_page_to(size_t current_position, size_t new_position)
+    {
+        auto* pages = gtk_notebook_get_pages(GTK_NOTEBOOK(operator NativeWidget()));
+
+        auto n_pages = g_list_model_get_n_items(pages);
+        if (current_position >= n_pages)
+        {
+            log::critical("In Notebook::move_page_to: Index " + std::to_string(current_position) + " is out of bounds for a Notebook with " + std::to_string(n_pages) + " pages.", MOUSETRAP_DOMAIN);
+            g_object_unref(pages);
+            return;
+        }
+
+        if (new_position >= n_pages)
+        {
+            log::critical("In Notebook::move_page_to: Index " + std::to_string(new_position) + " is out of bounds for a Notebook with " + std::to_string(n_pages) + " pages.", MOUSETRAP_DOMAIN);
+            g_object_unref(pages);
+            return;
+        }
+
+        auto* page = GTK_NOTEBOOK_PAGE(g_list_model_get_item(pages, current_position));
+        gtk_notebook_reorder_child(GTK_NOTEBOOK(operator NativeWidget()), gtk_notebook_page_get_child(page), new_position);
+
+        g_object_unref(pages);
+    }
+
     void Notebook::remove(size_t position)
     {
         int pos = position >= get_n_pages() ? -1 : position;

@@ -26,15 +26,17 @@ int main()
         {
             auto window = Window(app);
 
-            auto list = ListView();
-            list.push_back(Separator());
-            list.push_back(Separator());
+            auto notebook = Notebook();
+            notebook.push_back(Label("01"), Label("01"));
+            notebook.push_back(Label("02"), Label("02"));
+            notebook.push_back(Label("03"), Label("03"));
 
-            auto child = Label("test");
-            std::cout << child.operator NativeWidget() << std::endl;
-            list.insert(child, 1);
-            std::cout << list.find(child) << std::endl;
+            notebook.connect_signal_page_reordered([](Notebook&, void*, size_t index){
+                std::cout << index << std::endl;
+            });
+            notebook.move_page_to(0, 1);
 
+            window.set_child(notebook);
             window.present();
         });
         app.run();

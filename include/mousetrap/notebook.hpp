@@ -83,6 +83,11 @@ namespace mousetrap
             /// @return index of the newly inserted page
             size_t insert(size_t new_position, const Widget& child_widget, const Widget& label_widget);
 
+            /// @brief move page that has child as widget to given position
+            /// @param child
+            /// @param new position
+            void move_page_to(size_t current_position, size_t new_position);
+
             /// @brief remove page at given position, removes last page if position is out of bounds
             /// @param position
             void remove(size_t position);
