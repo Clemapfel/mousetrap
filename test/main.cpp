@@ -26,17 +26,22 @@ int main()
         {
             auto window = Window(app);
 
-            auto notebook = Notebook();
-            notebook.push_back(Label("01"), Label("01"));
-            notebook.push_back(Label("02"), Label("02"));
-            notebook.push_back(Label("03"), Label("03"));
+            auto popover = Popover();
+            auto popover_button = PopoverButton();
+            popover_button.set_popover(popover);
 
-            notebook.connect_signal_page_reordered([](Notebook&, void*, size_t index){
-                std::cout << index << std::endl;
+            popover.connect_signal_closed([](Popover&){
+                std::cout << "called" << std::endl;
             });
-            notebook.move_page_to(0, 1);
 
-            window.set_child(notebook);
+            popover.present();
+            popover.popdown();
+
+            auto position = RelativePosition::BELOW;
+            popover_button.set_relative_position(position);
+            std::cout << (popover_button.get_relative_position() == position) << std::endl;
+
+            window.set_child(popover_button);
             window.present();
         });
         app.run();

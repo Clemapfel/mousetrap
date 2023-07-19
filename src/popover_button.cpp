@@ -71,6 +71,18 @@ namespace mousetrap
     {
         _internal = g_object_ref(internal);
     }
+
+    PopoverButton::PopoverButton(const Popover& popover)
+        : PopoverButton()
+    {
+        set_popover(popover);
+    }
+
+    PopoverButton::PopoverButton(const PopoverMenu& menu)
+        : PopoverButton()
+    {
+        set_popover_menu(menu);
+    }
     
     PopoverButton::~PopoverButton() 
     {
@@ -89,7 +101,8 @@ namespace mousetrap
 
         gtk_menu_button_set_child(_internal->native, child.operator GtkWidget*());
 
-        PopoverMenu(_internal->menu).refresh_widgets();
+        if (_internal->menu != nullptr)
+            PopoverMenu(_internal->menu).refresh_widgets();
     }
 
     void PopoverButton::remove_child()
@@ -99,22 +112,34 @@ namespace mousetrap
 
     void PopoverButton::set_relative_position(RelativePosition type)
     {
-        gtk_popover_set_position(gtk_menu_button_get_popover(_internal->native), (GtkPositionType) type);
+        auto* popover = gtk_menu_button_get_popover(_internal->native);
+        if (GTK_IS_POPOVER(popover))
+            gtk_popover_set_position(popover, (GtkPositionType) type);
+        else
+            log::critical("In PopoverButton::set_relative_position: No popover connected.", MOUSETRAP_DOMAIN);
     }
 
     RelativePosition PopoverButton::get_relative_position() const
     {
-        return (RelativePosition) gtk_popover_get_position(gtk_menu_button_get_popover(_internal->native));
+        auto* popover = gtk_menu_button_get_popover(_internal->native);
+
+        if (GTK_IS_POPOVER(popover))
+            return (RelativePosition) gtk_popover_get_position(popover);
+        else
+        {
+            log::critical("In PopoverButton::get_relative_position: No popover connected.", MOUSETRAP_DOMAIN);
+            return RelativePosition::ABOVE;
+        }
     }
 
-    void PopoverButton::set_popover(Popover& popover)
+    void PopoverButton::set_popover(const Popover& popover)
     {
         _internal->menu = nullptr;
         _internal->popover = (detail::PopoverInternal*) popover.get_internal();
         gtk_menu_button_set_popover(_internal->native, popover.operator GtkWidget*());
     }
 
-    void PopoverButton::set_popover_menu(PopoverMenu& popover_menu)
+    void PopoverButton::set_popover_menu(const PopoverMenu& popover_menu)
     {
         _internal->menu = (detail::PopoverMenuInternal*) popover_menu.get_internal();;
         _internal->popover = nullptr;

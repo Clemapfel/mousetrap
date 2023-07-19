@@ -46,8 +46,13 @@ namespace mousetrap
         HAS_SIGNAL(PopoverButton, unmap)
     {
         public:
-            /// @brief construct with no child or popover attached
-            PopoverButton();
+            /// @brief construct with no child and popover attached
+            /// @param popover
+            PopoverButton(const Popover&);
+
+            /// @brief construct with no child and popover menu attached
+            /// @param popover_menu
+            PopoverButton(const PopoverMenu&);
 
             /// @brief construct from internal
             PopoverButton(detail::PopoverButtonInternal*);
@@ -67,11 +72,11 @@ namespace mousetrap
 
             /// @brief attach a popover to the button, the button will take care of showing / hiding the popover
             /// @param popover Popover or nullptr to remove any popover or popover menu
-            void set_popover(Popover& popover);
+            void set_popover(const Popover& popover);
 
             /// @brief attach a popover menu to the button, the button will take care of showing / hiden the popover menu
             /// @param popover_menu
-            void set_popover_menu(PopoverMenu& popover_menu);
+            void set_popover_menu(const PopoverMenu& popover_menu);
 
             /// @brief set relative position, applied to any popover attached
             /// @param relative_position
@@ -115,6 +120,7 @@ namespace mousetrap
             bool get_is_circular() const;
 
         private:
+            PopoverButton();
             detail::PopoverButtonInternal* _internal = nullptr;
     };
 }
