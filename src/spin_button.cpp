@@ -144,7 +144,7 @@ namespace mousetrap
         return gtk_adjustment_get_lower(gtk_spin_button_get_adjustment(_internal->native));
     }
 
-    float SpinButton::get_increment() const
+    float SpinButton::get_step_increment() const
     {
         return gtk_adjustment_get_minimum_increment(gtk_spin_button_get_adjustment(_internal->native));
     }
@@ -174,7 +174,7 @@ namespace mousetrap
         gtk_adjustment_set_upper(gtk_spin_button_get_adjustment(_internal->native), value);
     }
 
-    void SpinButton::set_increment(float value)
+    void SpinButton::set_step_increment(float value)
     {
         gtk_adjustment_set_step_increment(gtk_spin_button_get_adjustment(_internal->native), value);
     }

@@ -98,7 +98,7 @@ namespace mousetrap
 
             /// @brief get minimum increment that two different slider positions allow for
             /// @return float
-            float get_increment() const;
+            float get_step_increment() const;
 
             /// @brief set lower bound of the range
             /// @param lower float
@@ -114,7 +114,7 @@ namespace mousetrap
 
             /// @brief set minimum step increment
             /// @param value float
-            void set_increment(float);
+            void set_step_increment(float);
 
             /// @brief set number of digits after the decimal point that should be displayed
             /// @param n

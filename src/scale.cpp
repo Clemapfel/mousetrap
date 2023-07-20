@@ -82,7 +82,7 @@ namespace mousetrap
         return gtk_adjustment_get_lower(gtk_range_get_adjustment(GTK_RANGE(GTK_SCALE(operator NativeWidget()))));
     }
 
-    float Scale::get_increment() const
+    float Scale::get_step_increment() const
     {
         return gtk_adjustment_get_minimum_increment(gtk_range_get_adjustment(GTK_RANGE(GTK_SCALE(operator NativeWidget()))));
     }
@@ -112,7 +112,7 @@ namespace mousetrap
         gtk_adjustment_set_upper(gtk_range_get_adjustment(GTK_RANGE(GTK_SCALE(operator NativeWidget()))), value);
     }
 
-    void Scale::set_increment(float value)
+    void Scale::set_step_increment(float value)
     {
         gtk_adjustment_set_step_increment(gtk_range_get_adjustment(GTK_RANGE(GTK_SCALE(operator NativeWidget()))), value);
     }

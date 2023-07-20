@@ -77,7 +77,8 @@ namespace mousetrap
 
     std::string ProgressBar::get_text() const
     {
-        return gtk_progress_bar_get_text(GTK_PROGRESS_BAR(operator NativeWidget()));
+        auto* text = gtk_progress_bar_get_text(GTK_PROGRESS_BAR(operator NativeWidget()));
+        return text == nullptr ? "" : std::string(text);
     }
 
     void ProgressBar::set_show_text(bool b)
