@@ -59,7 +59,7 @@ namespace mousetrap
     }
 
     PopoverButton::PopoverButton(detail::PopoverButtonInternal* internal) 
-        : Widget(GTK_WIDGET(internal)),
+        : Widget(GTK_WIDGET(internal->native)),
           CTOR_SIGNAL(PopoverButton, activate),
           CTOR_SIGNAL(PopoverButton, realize),
           CTOR_SIGNAL(PopoverButton, unrealize),

@@ -26,22 +26,17 @@ int main()
         {
             auto window = Window(app);
 
-            auto popover = Popover();
-            auto popover_button = PopoverButton();
-            popover_button.set_popover(popover);
+            static auto popover = Popover();
+            popover.set_child(Separator());
+            popover.set_relative_position(RelativePosition::ABOVE);
 
-            popover.connect_signal_closed([](Popover&){
+            auto button = PopoverButton(popover);
+            button.connect_signal_activate([](PopoverButton&){
                 std::cout << "called" << std::endl;
             });
+            button.activate();
 
-            popover.present();
-            popover.popdown();
-
-            auto position = RelativePosition::BELOW;
-            popover_button.set_relative_position(position);
-            std::cout << (popover_button.get_relative_position() == position) << std::endl;
-
-            window.set_child(popover_button);
+            window.set_child(button);
             window.present();
         });
         app.run();

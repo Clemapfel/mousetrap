@@ -48,17 +48,15 @@ namespace mousetrap
 
     void Popover::popup()
     {
-        gtk_popover_popup(GTK_POPOVER(operator NativeWidget()));
+        if (gtk_widget_get_parent(operator NativeWidget()) == nullptr)
+            log::critical("In Popover::popup: Popover cannot be shown because it does not have a parent.", MOUSETRAP_DOMAIN);
+        else
+            gtk_popover_popup(GTK_POPOVER(operator NativeWidget()));
     }
 
     void Popover::popdown()
     {
         gtk_popover_popdown(GTK_POPOVER(operator NativeWidget()));
-    }
-
-    void Popover::present()
-    {
-        gtk_popover_present(GTK_POPOVER(operator NativeWidget()));
     }
 
     void Popover::set_child(const Widget& child)
@@ -101,10 +99,5 @@ namespace mousetrap
     bool Popover::get_autohide() const
     {
         return gtk_popover_get_autohide(GTK_POPOVER(operator NativeWidget()));
-    }
-
-    void Popover::attach_to(const Widget& widget)
-    {
-        gtk_widget_set_parent(GTK_WIDGET(GTK_POPOVER(operator NativeWidget())), widget.operator GtkWidget*());
     }
 }

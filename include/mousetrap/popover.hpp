@@ -53,19 +53,12 @@ namespace mousetrap
             /// @brief hide the popover, does nothing if already hidden
             void popdown();
 
-            /// @brief allocate size for the popover in the layout of it's possible container, usually called automatically
-            void present();
-
             /// @brief set the popovers child
             /// @param widget
             void set_child(const Widget& widget);
 
             /// @brief remove child
             void remove_child();
-
-            /// @brief attach popover to another widget, that widget will become the popovers anchor
-            /// @param widget
-            void attach_to(const Widget&);
 
             /// @brief set position of popover relative to its anchor widget
             /// @param position
