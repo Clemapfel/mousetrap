@@ -25,7 +25,12 @@ int main()
         app.connect_signal_activate([](Application& app)
         {
             auto window = Window(app);
-            std::cout << window.get_hide_on_close() << std::endl;
+
+            auto grid = ListView();
+            grid.connect_signal_activate_item([](ListView&, size_t index){
+                std::cout << index << std::endl;
+            });
+
             window.present();
         });
         app.run();

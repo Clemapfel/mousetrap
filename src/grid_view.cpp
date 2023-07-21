@@ -153,7 +153,7 @@ namespace mousetrap
           CTOR_SIGNAL(GridView, map),
           CTOR_SIGNAL(GridView, unmap)
     {
-        _internal = g_object_ref(_internal);
+        _internal = g_object_ref(internal);
     }
     
     GridView::~GridView()
