@@ -28,12 +28,14 @@ namespace mousetrap
             self->native = scale;
             self->adjustment = new Adjustment(gtk_range_get_adjustment(GTK_RANGE(scale)));
             self->formatting_function = nullptr;
+
+            detail::attach_ref_to(G_OBJECT(self->native), self);
             return self;
         }
     }
     
     Scale::Scale(float min, float max, float step, Orientation orientation)
-        : Widget(gtk_scale_new_with_range((GtkOrientation) orientation, min, max, step)),
+        : Widget(gtk_scale_new((GtkOrientation) orientation, gtk_adjustment_new(glm::mix(min, max, 0.5), min, max, step, 0, 0))),
           CTOR_SIGNAL(Scale, value_changed),
           CTOR_SIGNAL(Scale, realize),
           CTOR_SIGNAL(Scale, unrealize),

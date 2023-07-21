@@ -26,11 +26,16 @@ int main()
         {
             auto window = Window(app);
 
-            auto revealer = Revealer();
-            revealer.set_transition_duration(seconds(1));
-            std::cout << revealer.get_transition_duration().as_seconds() << std::endl;
+            auto scale = Scale(0, 1, 0.01);
+            scale.connect_signal_value_changed([](Scale&){
+                std::cout << "called" << std::endl;
+            });
 
+            scale.set_value(0.6);
+
+            window.set_child(scale);
             window.present();
+            window.close();
         });
         app.run();
     }

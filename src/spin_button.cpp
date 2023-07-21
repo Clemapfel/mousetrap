@@ -29,6 +29,8 @@ namespace mousetrap
             self->native = scale;
             self->value_to_text_function = nullptr;
             self->text_to_value_function = nullptr;
+
+            detail::attach_ref_to(G_OBJECT(self->native), self);
             return self;
         }
     }
@@ -45,9 +47,10 @@ namespace mousetrap
           CTOR_SIGNAL(SpinButton, map),
           CTOR_SIGNAL(SpinButton, unmap)
     {
+        gtk_spin_button_set_adjustment(GTK_SPIN_BUTTON(Widget::operator NativeWidget()), gtk_adjustment_new(glm::mix(min, max, 0.5), min, max, step, 0, 0));
+
         _internal = detail::spin_button_internal_new(GTK_SPIN_BUTTON(Widget::operator NativeWidget()));
         g_object_ref(_internal);
-        detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
         set_orientation(orientation);
     }
 
