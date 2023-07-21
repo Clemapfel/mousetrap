@@ -256,7 +256,7 @@ namespace mousetrap
         gtk_stack_set_hhomogeneous(_internal->native, b);
     }
 
-    bool Stack::get_is_horizontally_homogenous() const
+    bool Stack::get_is_horizontally_homogeneous() const
     {
         return gtk_stack_get_hhomogeneous(_internal->native);
     }

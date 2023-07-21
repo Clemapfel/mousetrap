@@ -133,7 +133,7 @@ namespace mousetrap
             bool get_should_wrap() const;
 
             /// @brief set rate at which the step increment increases the longer increment or decrement button is held down
-            /// @param rate 0 for default rate, 1 for double the default rate, 2 for triple, etc.
+            /// @param rate 0 for no acceleration, 0.1 for 10%, 1 for 100%, etc.
             void set_acceleration_rate(float rate);
 
             /// @brief get rate at which the step increment increases the longer increment or decrement button is held down

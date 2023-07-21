@@ -33,9 +33,9 @@ namespace mousetrap
             if (mode == SelectionMode::SINGLE)
                 return GTK_SELECTION_MODEL(gtk_single_selection_new(model));
             else if (mode == SelectionMode::MULTIPLE)
-                return GTK_SELECTION_MODEL(gtk_single_selection_new(model));
-            else
                 return GTK_SELECTION_MODEL(gtk_multi_selection_new(model));
+            else
+                return GTK_SELECTION_MODEL(gtk_no_selection_new(model));
         }())
     {}
 

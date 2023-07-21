@@ -124,7 +124,7 @@ namespace mousetrap
 
             /// @brief get whether the stacks width should be equal to the largest width of any of itss children at all times
             /// @return true to equalize the width, false otherwise
-            bool get_is_horizontally_homogenous() const;
+            bool get_is_horizontally_homogeneous() const;
 
             /// @brief set whether the stacks height should be equal to the largest height of any of itss children at all times
             /// @param b true to equalize the height, false otherwise

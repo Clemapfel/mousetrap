@@ -112,7 +112,10 @@ namespace mousetrap
     void SpinButton::set_acceleration_rate(float v)
     {
         if (v < 0)
-            v = 0;
+        {
+            log::warning("In SpinButton::set_acceleration_rate: Acceleration rate may not be negative.", MOUSETRAP_DOMAIN);
+            return;
+        }
 
         gtk_spin_button_set_climb_rate(_internal->native, v);
     }

@@ -14,7 +14,7 @@ namespace mousetrap
 
     Time minutes(double n)
     {
-        return Time(int64_t(n * 6e+01));
+        return Time(int64_t(n * 6e+010));
     }
 
     Time seconds(double n)

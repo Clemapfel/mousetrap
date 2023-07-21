@@ -90,6 +90,14 @@ namespace mousetrap
             gtk_window_unfullscreen(GTK_WINDOW(_internal));
     }
 
+    void Window::set_minimized(bool b)
+    {
+        if (b)
+            gtk_window_minimize(GTK_WINDOW(_internal));
+        else
+            gtk_window_unminimize(GTK_WINDOW(_internal));
+    }
+
     void Window::set_child(const Widget& widget)
     {
         auto* ptr = &widget;
@@ -105,6 +113,11 @@ namespace mousetrap
     void Window::set_hide_on_close(bool b)
     {
         gtk_window_set_hide_on_close(GTK_WINDOW(_internal), b);
+    }
+
+    bool Window::get_hide_on_close() const
+    {
+        return gtk_window_get_hide_on_close(GTK_WINDOW(_internal));
     }
 
     void Window::set_title(const std::string& str)
@@ -195,5 +208,10 @@ namespace mousetrap
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Window::set_child, this, ptr);
         gtk_window_set_default_widget(GTK_WINDOW(_internal), widget.operator GtkWidget*());
+    }
+
+    void Window::destroy()
+    {
+        gtk_window_destroy(GTK_WINDOW(_internal));
     }
 }

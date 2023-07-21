@@ -63,7 +63,9 @@ namespace mousetrap
 
     void TextView::set_text(const std::string& text) const
     {
-        gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(_internal)), text.c_str(), text.size());
+        auto* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(_internal));
+        gtk_text_buffer_set_text(buffer, text.c_str(), text.size());
+        gtk_text_buffer_set_modified(buffer, true);
     }
 
     void TextView::set_cursor_visible(bool b)

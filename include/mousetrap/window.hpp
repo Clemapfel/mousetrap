@@ -71,12 +71,20 @@ namespace mousetrap
             /// @param b true if window should enter fullscreen mode, false otherwise
             void set_fullscreen(bool);
 
+            /// @brief attempt to minimize the window
+            /// @param b true if window should be minimized, false otherwise
+            void set_minimized(bool);
+
             /// @brief present the window to the user
             void present();
 
             /// @brief set whether mousetrap::Window::close should hide or destroy the window, true by default
             /// @param b true if window should only be hidden, false if it should be destroyed
             void set_hide_on_close(bool);
+
+            /// @brief get whether mousetrap::Window::close should hide or destroy the window, true by default
+            /// @return boolean
+            bool get_hide_on_close() const;
 
             /// @brief hide the window, it will be inaccesible until mousetrap::Window::present is called again
             void close();
@@ -154,6 +162,9 @@ namespace mousetrap
             /// @brief set default widget
             /// @param widget
             void set_default_widget(const Widget& widget);
+
+            /// @brief free all internal references
+            void destroy();
 
         private:
             detail::WindowInternal* _internal = nullptr;

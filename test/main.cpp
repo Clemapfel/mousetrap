@@ -25,17 +25,8 @@ int main()
         app.connect_signal_activate([](Application& app)
         {
             auto window = Window(app);
-
-            auto scale = Scale(0, 1, 0.01);
-            scale.connect_signal_value_changed([](Scale&){
-                std::cout << "called" << std::endl;
-            });
-
-            scale.set_value(0.6);
-
-            window.set_child(scale);
+            std::cout << window.get_hide_on_close() << std::endl;
             window.present();
-            window.close();
         });
         app.run();
     }
