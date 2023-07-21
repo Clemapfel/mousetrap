@@ -155,7 +155,7 @@ namespace mousetrap
         if (error != nullptr)
         {
             std::stringstream str;
-            str << "[WARNING] In file_system::move_to_trash: Unable to move file `" << file.get_name() << "` to trash: " << error->message;
+            str << "In file_system::move_to_trash: Unable to move file `" << file.get_name() << "` to trash: " << error->message;
             log::critical(str.str(), MOUSETRAP_DOMAIN);
             g_error_free(error);
         }
@@ -172,7 +172,7 @@ namespace mousetrap
 
         if (error_maybe != nullptr)
         {
-            if (error_maybe->code != 2) // dismissed by user
+            if (error_maybe->code != 2) // not dismissed by user
                 log::critical("In file_system::open_file: When trying to open `" + file.get_path() + "`: " + std::string(error_maybe->message), MOUSETRAP_DOMAIN);
 
             g_error_free(error_maybe);
