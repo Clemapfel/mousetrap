@@ -508,10 +508,19 @@ namespace mousetrap
             return false;
     }
 
+    /*
     FrameClock Widget::get_frame_clock() const
     {
-        return FrameClock(gtk_widget_get_frame_clock(operator NativeWidget()));
+        auto* clock = gtk_widget_get_frame_clock(operator NativeWidget());
+        if (clock == nullptr)
+        {
+            log::critical("In Widget::get_frame_clock: Widget is not yet realized, no FrameClock could be obtained.");
+            return FrameClock(nullptr);
+        }
+        else
+            return FrameClock(clock);
     }
+     */
 
     void Widget::set_listens_for_shortcut_actions(Action& action)
     {

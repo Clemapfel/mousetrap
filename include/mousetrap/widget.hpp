@@ -297,10 +297,6 @@ namespace mousetrap
             /// @return true if interactable, false otherwise
             bool get_can_respond_to_input() const;
 
-            /// @brief get a frame clock synched to the widget
-            /// @return frame clock
-            FrameClock get_frame_clock() const;
-
             /// @brief add a callback that is invoked every frame
             /// @tparam Function_t static function or lambda with signature <tt>(FrameClock, Data_t) -> TickCallbackResult</tt>
             /// @tparam Data_t arbitrary data type
