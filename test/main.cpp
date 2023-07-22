@@ -26,11 +26,30 @@ int main()
         {
             auto window = Window(app);
 
-            auto grid = ListView();
-            grid.connect_signal_activate_item([](ListView&, size_t index){
-                std::cout << index << std::endl;
+            static auto shape = Shape::Point({0, 0.5});
+
+            std::cout << shape.get_centroid().x << " " << shape.get_centroid().y << std::endl;
+            shape.rotate(degrees(77), shape.get_centroid());
+            std::cout << shape.get_centroid().x << " " << shape.get_centroid().y << std::endl;
+
+
+            static auto render_area = RenderArea();
+            render_area.add_render_task(RenderTask(shape));
+            auto frame = AspectFrame(1.0);
+            frame.set_child(render_area);
+            frame.set_size_request({300, 300});
+
+            render_area.set_tick_callback([](FrameClock){
+
+                shape.rotate(degrees(2), {0, 0});
+                render_area.queue_render();
+
+                //std::cout << shape.get_centroid().x << " " << shape.get_centroid().y << std::endl;
+
+                return TickCallbackResult::CONTINUE;
             });
 
+            window.set_child(frame);
             window.present();
         });
         app.run();

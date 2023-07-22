@@ -72,10 +72,11 @@ namespace mousetrap
 
         void shutdown_opengl()
         {
-            log::warning("TODO: Fix OpenGL shutdown", MOUSETRAP_DOMAIN);
+            while (GDK_IS_GL_CONTEXT(GL_CONTEXT))
+                g_object_unref(GL_CONTEXT);
 
-            //while (GDK_IS_GL_CONTEXT(GL_CONTEXT))
-              //  g_object_unref(GL_CONTEXT);
+            GL_CONTEXT = nullptr;
+            GL_INITIALIZED = false;
         }
     }
 

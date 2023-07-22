@@ -34,7 +34,7 @@ namespace mousetrap
             texture_internal_init(self);
 
             self->native_handle = 0;
-            self->wrap_mode = TextureWrapMode::STRETCH;
+            self->wrap_mode = TextureWrapMode::REPEAT;
             self->scale_mode = TextureScaleMode::NEAREST;
             self->size = new Vector2i(0, 0);
 

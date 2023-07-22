@@ -40,9 +40,9 @@ namespace mousetrap
 
     void GLTransform::rotate(Angle angle, Vector2f origin)
     {
-        transform = glm::translate(transform, Vector3f(-origin.x, -origin.y, 0));
-        transform = glm::rotate(transform, angle.as_radians(), glm::vec3(0, 0, 1));
         transform = glm::translate(transform, Vector3f(origin.x, origin.y, 0));
+        transform = glm::rotate(transform, angle.as_radians(), glm::vec3(0, 0, 1));
+        transform = glm::translate(transform, Vector3f(-origin.x, -origin.y, 0));
     }
 
     void GLTransform::scale(float x, float y)

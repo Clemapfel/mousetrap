@@ -661,12 +661,12 @@ namespace mousetrap
         }
         else if (type == ShapeType::POINT)
         {
-            log::warning("In Shape::as_outline: Creating outline of a point, which has an area of 0", MOUSETRAP_DOMAIN);
+            //log::warning("In Shape::as_outline: Creating outline of a point, which has an area of 0", MOUSETRAP_DOMAIN);
             positions = {{shape.get_vertex_position(0), shape.get_vertex_position(0)}};
         }
         else if (type == ShapeType::POINTS)
         {
-            log::warning("In Shape::as_outline: Creating outline of points, which have an area of 0", MOUSETRAP_DOMAIN);
+            //log::warning("In Shape::as_outline: Creating outline of points, which have an area of 0", MOUSETRAP_DOMAIN);
             for (size_t i = 0; i < shape.get_n_vertices(); ++i)
             {
                 positions.push_back({
@@ -677,7 +677,7 @@ namespace mousetrap
         }
         else if (type == ShapeType::LINE)
         {
-            log::warning("In Shape::as_outline: Creating outline of a line, which has an area of 0", MOUSETRAP_DOMAIN);
+            //log::warning("In Shape::as_outline: Creating outline of a line, which has an area of 0", MOUSETRAP_DOMAIN);
             positions.push_back({
                 shape.get_vertex_position(0),
                 shape.get_vertex_position(1)
@@ -685,7 +685,7 @@ namespace mousetrap
         }
         else if (type == ShapeType::LINES)
         {
-            log::warning("In Shape::as_outline: Creating outline of lines, which have an area of 0", MOUSETRAP_DOMAIN);
+            //log::warning("In Shape::as_outline: Creating outline of lines, which have an area of 0", MOUSETRAP_DOMAIN);
             for (size_t i = 0; i < shape.get_n_vertices()-1; i += 2)
             {
                 positions.push_back({
@@ -696,7 +696,7 @@ namespace mousetrap
         }
         else if (type == ShapeType::LINE_STRIP)
         {
-            log::warning("In Shape::as_outline: Creating outline of a line strip, which has an area of 0", MOUSETRAP_DOMAIN);
+            //log::warning("In Shape::as_outline: Creating outline of a line strip, which has an area of 0", MOUSETRAP_DOMAIN);
             for (size_t i = 0; i < shape.get_n_vertices()-1; ++i)
             {
                 positions.push_back({
@@ -707,7 +707,7 @@ namespace mousetrap
         }
         else if (type == ShapeType::WIREFRAME)
         {
-            log::warning("In Shape::as_outline: Creating outline of a wireframe, which has an area of 0", MOUSETRAP_DOMAIN);
+            //log::warning("In Shape::as_outline: Creating outline of a wireframe, which has an area of 0", MOUSETRAP_DOMAIN);
             for (size_t i = 0; i < shape.get_n_vertices()-1; ++i)
             {
                 positions.push_back({
@@ -723,7 +723,7 @@ namespace mousetrap
         }
         else if (type == ShapeType::OUTLINE)
         {
-            log::warning("In Shape::as_outline: Creating outline of an outline, which has an area of 0", MOUSETRAP_DOMAIN);
+            //log::warning("In Shape::as_outline: Creating outline of an outline, which has an area of 0", MOUSETRAP_DOMAIN);
             for (size_t i = 0; i < shape.get_n_vertices()-1; ++i)
             {
                 positions.push_back({
@@ -1077,17 +1077,14 @@ namespace mousetrap
     void Shape::rotate(Angle angle, Vector2f origin)
     {
         auto transform = GLTransform();
-        transform.translate({-1 * origin.x, -1 * origin.y});
-        transform.rotate(angle, to_gl_position(get_centroid()));
-        transform.translate({origin.x, origin.y});
+        //transform.translate({-1 * origin.x, -1 * origin.y});
+        transform.rotate(angle, origin);
+        //transform.translate({origin.x, origin.y});
 
         for (auto& v : *_internal->vertices)
         {
             auto pos = v.position;
-            pos = to_gl_position(pos);
-            pos = transform.apply_to(pos);
-            pos = from_gl_position(pos);
-            v.position = pos;
+            v.position = transform.apply_to(pos);
         }
 
         update_position();
