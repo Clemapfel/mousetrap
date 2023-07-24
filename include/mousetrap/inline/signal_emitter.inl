@@ -19,6 +19,10 @@ namespace mousetrap
     template<typename Function_t>
     void SignalEmitter::connect_signal(const std::string& signal_id, Function_t* function, void* data)
     {
-        this->connect_signal_implementation(signal_id, (void*) function, (void*) data);
+        initialize();
+        disconnect_signal(signal_id);
+
+        auto handler_id = g_signal_connect(operator GObject*(), signal_id.c_str(), G_CALLBACK(function), data);
+        _internal->signal_handlers->insert_or_assign(signal_id, detail::SignalHandler{handler_id});
     }
 }

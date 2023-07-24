@@ -33,58 +33,10 @@ int main()
         {
             auto window = Window(app);
 
-            /*
-            static auto button_01 = CheckButton();
-            static auto button_02 = CheckButton();
+            auto sw = Switch();
+            std::cout << G_IS_OBJECT(detail::has_signal_switched_internal_new(sw.operator NativeObject())) << std::endl;
 
-            button_01.connect_signal_toggled([](CheckButton& self){
-                std::cout << "01" << std::endl;
-                self.set_signal_toggled_blocked(true);
-                button_02.activate();
-                self.set_signal_toggled_blocked(false);
-            });
-
-            button_02.connect_signal_toggled([](CheckButton& self){
-                std::cout << "02" << std::endl;
-                self.set_signal_toggled_blocked(true);
-                button_01.activate();
-                self.set_signal_toggled_blocked(false);
-            });
-             */
-
-            static auto button_01 = Switch();
-            static auto button_02 = Switch();
-
-            //gtk_widget_class_set_activate_signal_from_name(GTK_WIDGET_GET_CLASS(button_01.operator NativeWidget()), "clicked");
-            std::cout << gtk_widget_class_get_activate_signal(GTK_WIDGET_GET_CLASS(button_02.operator NativeWidget())) << std::endl;
-            std::cout << gtk_widget_class_get_activate_signal(GTK_WIDGET_GET_CLASS(button_02.operator NativeWidget())) << std::endl;
-
-            //g_signal_handler_block(button_01.operator NativeWidget(), id_01);
-            //g_signal_handler_block(button_02.operator NativeWidget(), id_02);
-
-            button_01.connect_signal_switched([](Switch& self, void*){
-                std::cout << self.SignalEmitter::get_internal() << std::endl;
-
-                self.set_signal_switched_blocked(true);
-                button_02.set_is_active(not button_02.get_is_active());
-                self.set_signal_switched_blocked(false);
-            });
-
-            button_02.connect_signal_switched([](Switch& self, void*){
-                std::cout << self.SignalEmitter::get_internal() << std::endl;
-
-                self.set_signal_switched_blocked(true);
-                button_01.set_is_active(not button_01.get_is_active());
-                self.set_signal_switched_blocked(false);
-            });
-
-            button_02.set_is_active(not button_02.get_is_active());
-
-            auto box = Box(Orientation::HORIZONTAL);
-            box.push_back(button_01);
-            box.push_back(button_02);
-
-            window.set_child(box);
+            window.set_child(sw);
             window.present();
         });
         app.run();

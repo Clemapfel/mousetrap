@@ -34,11 +34,6 @@ namespace mousetrap
         }
     }
 
-    void temp(void*, void* ptr)
-    {
-        std::cout << "emit " << *((std::string*)  ptr) << std::endl;
-    }
-
     SignalEmitter::SignalEmitter()
         : _internal(nullptr)
     {}
@@ -66,21 +61,6 @@ namespace mousetrap
 
         g_object_ref(_internal);
     }
-
-    void SignalEmitter::connect_signal_implementation(const std::string& signal_id, void* function, void* data)
-    {
-        initialize();
-        disconnect_signal(signal_id);
-
-        std::cout << "connect " << _internal << " " << signal_id << std::endl;
-
-        auto handler_id = g_signal_connect(operator GObject*(), signal_id.c_str(), G_CALLBACK(function), data);
-        _internal->signal_handlers->insert_or_assign(signal_id, detail::SignalHandler{handler_id});
-
-        auto str = std::stringstream();
-        str << _internal << " " << signal_id;
-
-    }
     
     void SignalEmitter::set_signal_blocked(const std::string& signal_id, bool b)
     {
@@ -95,13 +75,11 @@ namespace mousetrap
 
         if (b)
         {
-            std::cout << "block " << _internal << " " << signal_id << " " << it->second.id << std::endl;
             g_signal_handler_block(operator GObject*(), it->second.id);
             it->second.is_blocked = true;
         }
         else
         {
-            std::cout << "unblock " << _internal << " " << signal_id << " " << it->second.id << std::endl;
             g_signal_handler_unblock(operator GObject*(), it->second.id);
             it->second.is_blocked = false;
         }

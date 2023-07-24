@@ -87,7 +87,6 @@ namespace mousetrap
 
         private:
             void initialize();
-            void connect_signal_implementation(const std::string& signal_id, void* function, void* data);
             detail::SignalEmitterInternal* _internal = nullptr;
     };
 }
