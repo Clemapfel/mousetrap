@@ -27,13 +27,11 @@ namespace mousetrap
     /// @brief toggle button, allows the user to manipulate a state
     /// \signals
     /// \signal_toggled{ToggleButton}
-    /// \signal_activate{ToggleButton}
     /// \signal_clicked{ToggleButton}
     /// \widget_signals{ToggleButton}
     class ToggleButton : public detail::notify_if_gtk_uninitialized,
         public Widget,
         HAS_SIGNAL(ToggleButton, toggled),
-        HAS_SIGNAL(ToggleButton, activate),
         HAS_SIGNAL(ToggleButton, clicked),
         HAS_SIGNAL(ToggleButton, realize),
         HAS_SIGNAL(ToggleButton, unrealize),

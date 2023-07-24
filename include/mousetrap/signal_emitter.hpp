@@ -52,6 +52,10 @@ namespace mousetrap
             /// @param b true if signal handler should not be invoked, false otherwise
             void set_signal_blocked(const std::string& signal_id, bool b);
 
+            /// @brief get whether a signal is currently blocked
+            /// @return bool
+            bool get_signal_blocked(const std::string& signal_id) const;
+
             /// @brief get list of possible signal ids \for_internal_use_only
             /// @return vector of signals names
             std::vector<std::string> get_all_signal_names();
@@ -75,11 +79,15 @@ namespace mousetrap
             virtual NativeObject get_internal() const;
 
         protected:
+            /// @brief ctor
+            SignalEmitter();
+
             /// @brief destructor
             ~SignalEmitter();
 
         private:
             void initialize();
+            void connect_signal_implementation(const std::string& signal_id, void* function, void* data);
             detail::SignalEmitterInternal* _internal = nullptr;
     };
 }

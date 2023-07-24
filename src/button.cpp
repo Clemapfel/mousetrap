@@ -10,7 +10,6 @@ namespace mousetrap
 {
     Button::Button()
         : Widget(gtk_button_new()),
-          CTOR_SIGNAL(Button, activate),
           CTOR_SIGNAL(Button, clicked),
           CTOR_SIGNAL(Button, realize),
           CTOR_SIGNAL(Button, unrealize),
@@ -20,13 +19,13 @@ namespace mousetrap
           CTOR_SIGNAL(Button, map),
           CTOR_SIGNAL(Button, unmap)
     {
-        _internal = GTK_BUTTON(operator NativeWidget());
+        gtk_widget_class_set_activate_signal_from_name(GTK_WIDGET_GET_CLASS(Widget::operator NativeWidget()), "clicked");
+        _internal = GTK_BUTTON(Widget::operator NativeWidget());
         g_object_ref(_internal);
     }
     
     Button::Button(detail::ButtonInternal* internal) 
         : Widget(GTK_WIDGET(internal)),
-          CTOR_SIGNAL(Button, activate),
           CTOR_SIGNAL(Button, clicked),
           CTOR_SIGNAL(Button, realize),
           CTOR_SIGNAL(Button, unrealize),

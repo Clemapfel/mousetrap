@@ -8,7 +8,7 @@ namespace mousetrap
 {
     Switch::Switch()
         : Widget(gtk_switch_new()),
-          CTOR_SIGNAL(Switch, activate),
+          CTOR_SIGNAL(Switch, switched),
           CTOR_SIGNAL(Switch, realize),
           CTOR_SIGNAL(Switch, unrealize),
           CTOR_SIGNAL(Switch, destroy),
@@ -23,7 +23,7 @@ namespace mousetrap
 
     Switch::Switch(detail::SwitchInternal* internal)
         : Widget(GTK_WIDGET(internal)),
-          CTOR_SIGNAL(Switch, activate),
+          CTOR_SIGNAL(Switch, switched),
           CTOR_SIGNAL(Switch, realize),
           CTOR_SIGNAL(Switch, unrealize),
           CTOR_SIGNAL(Switch, destroy),

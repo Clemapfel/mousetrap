@@ -25,11 +25,11 @@ namespace mousetrap
 
     /// @brief switch, can be click dragged or clicked to change a binary state
     /// \signals
-    /// \signal_activate{Switch}
+    /// \signal_switched{Switch}
     /// \widget_signals{Switch}
     class Switch : public detail::notify_if_gtk_uninitialized,
         public Widget,
-        HAS_SIGNAL(Switch, activate),
+        HAS_SIGNAL(Switch, switched),
         HAS_SIGNAL(Switch, realize),
         HAS_SIGNAL(Switch, unrealize),
         HAS_SIGNAL(Switch, destroy),

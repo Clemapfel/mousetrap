@@ -121,20 +121,19 @@ namespace mousetrap
             { \
                 initialize(); \
                 _internal->is_blocked = b; \
+                T((typename detail::InternalMapping<T>::value*) _internal->instance).set_signal_blocked(signal_id, b);\
             } \
             \
             bool get_signal_##snake_case##_blocked() const \
             { \
-                if (_internal == nullptr) \
-                    return true; \
-                \
-                return _internal->is_blocked; \
+                const_cast<SIGNAL_CLASS_NAME(snake_case)*>(this)->initialize();                                                                    \
+                return T((typename detail::InternalMapping<T>::value*) _internal->instance).get_signal_blocked(signal_id);\
             } \
             \
-            return_t emit_signal_##snake_case() \
+            void emit_signal_##snake_case() \
             { \
                 initialize(); \
-                return wrapper(nullptr, _internal); \
+                g_signal_emit_by_name(T((typename detail::InternalMapping<T>::value*) _internal->instance).operator GObject*(), signal_id); \
             } \
             \
             void disconnect_signal_##snake_case() \
@@ -218,6 +217,7 @@ namespace mousetrap
             { \
                 initialize(); \
                 _internal->is_blocked = b; \
+                T((typename detail::InternalMapping<T>::value*) _internal->instance).set_signal_blocked(signal_id, b);\
             } \
             \
             bool get_signal_##snake_case##_blocked() const \
@@ -837,6 +837,7 @@ namespace mousetrap
     ///
     /// @fn has_signal_toggled::has_signal_toggled
     /// \signal_ctor
+
 
     DECLARE_SIGNAL(TextChanged, text_changed, TEXT_CHANGED, "changed", void);
     /// @class has_signal_text_changed
@@ -2424,6 +2425,36 @@ namespace mousetrap
     /// \signal_disconnect
     ///
     /// @fn has_signal_revealed::has_signal_revealed
+    /// \signal_ctor
+
+    DECLARE_SIGNAL_MANUAL(Switched, switched, SWITCHED, "notify::active", void, UnusedArgument_t _, _);
+    /// @class has_signal_switched
+    /// @brief \signal_switched_brief
+    /// @tparam T instance type
+    ///
+    /// @fn void has_signal_switched::connect_signal_switched(Function_t)
+    /// \signal_connect{(T&, UnusedArgument_t) -> void}
+    ///
+    /// @fn void has_signal_switched::connect_signal_switched(Function_t, Data_t)
+    /// \signal_connect_data{(T&, UnusedArgument_t, Data_t) -> void}
+    ///
+    /// @fn void has_signal_switched::emit_signal_switched(UnusedArgument_t)
+    /// \signal_emit_brief
+    /// @param _ unused parameter, should be ignored
+    ///
+    /// @var has_signal_switched::signal_id
+    /// \signal_id{https://docs.gtk.org/gtk4/property.Revealer.reveal-child.html}
+    ///
+    /// @fn void has_signal_switched::set_signal_switched_blocked(bool)
+    /// \signal_set_blocked
+    ///
+    /// @fn bool has_signal_switched::get_signal_switched_blocked() const
+    /// \signal_get_blocked
+    ///
+    /// @fn void has_signal_switched::disconnect_signal_switched()
+    /// \signal_disconnect
+    ///
+    /// @fn has_signal_switched::has_signal_switched
     /// \signal_ctor
 
     DECLARE_SIGNAL_MANUAL(Activated, activated, ACTIVATED, "activate", void, UnusedArgument_t _, _);

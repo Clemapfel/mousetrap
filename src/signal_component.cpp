@@ -216,6 +216,7 @@ DEFINE_SIGNAL(Scroll, scroll, SCROLL, "scroll", bool,
     );
 
     DEFINE_SIGNAL(Revealed, revealed, REVEALED, "notify::reveal-child", void, UnusedArgument_t _, _);
+    DEFINE_SIGNAL(Switched, switched, SWITCHED, "notify::active", void, UnusedArgument_t _, _);
     DEFINE_SIGNAL(Activated, activated, ACTIVATED, "activate", void, UnusedArgument_t _, _);
 
     DEFINE_SIGNAL(ScrollChild, scroll_child, SCROLL_CHILD, "scroll-child", void,

@@ -12,7 +12,6 @@ namespace mousetrap
     ToggleButton::ToggleButton()
         : Widget(gtk_toggle_button_new()),
           CTOR_SIGNAL(ToggleButton, toggled),
-          CTOR_SIGNAL(ToggleButton, activate),
           CTOR_SIGNAL(ToggleButton, clicked),
           CTOR_SIGNAL(ToggleButton, realize),
           CTOR_SIGNAL(ToggleButton, unrealize),
@@ -22,13 +21,13 @@ namespace mousetrap
           CTOR_SIGNAL(ToggleButton, map),
           CTOR_SIGNAL(ToggleButton, unmap)
     {
-        _internal = g_object_ref(GTK_TOGGLE_BUTTON(ToggleButton::operator NativeWidget()));
+        gtk_widget_class_set_activate_signal_from_name(GTK_WIDGET_GET_CLASS(Widget::operator NativeWidget()), "toggled");
+        _internal = g_object_ref(GTK_TOGGLE_BUTTON(Widget::operator NativeWidget()));
     }
     
     ToggleButton::ToggleButton(detail::ToggleButtonInternal* internal)
         : Widget(GTK_WIDGET(internal)),
           CTOR_SIGNAL(ToggleButton, toggled),
-          CTOR_SIGNAL(ToggleButton, activate),
           CTOR_SIGNAL(ToggleButton, clicked),
           CTOR_SIGNAL(ToggleButton, realize),
           CTOR_SIGNAL(ToggleButton, unrealize),

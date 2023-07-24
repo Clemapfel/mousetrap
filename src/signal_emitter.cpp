@@ -34,25 +34,52 @@ namespace mousetrap
         }
     }
 
-    NativeObject SignalEmitter::get_internal() const
+    void temp(void*, void* ptr)
     {
-        return G_OBJECT(_internal);
+        std::cout << "emit " << *((std::string*)  ptr) << std::endl;
     }
 
-    void SignalEmitter::initialize()
-    {
-        if (_internal == nullptr)
-        {
-            _internal = detail::signal_emitter_internal_new();
-            //detail::attach_ref_to(operator NativeObject(), _internal);
-            g_object_ref(_internal);
-        }
-    }
+    SignalEmitter::SignalEmitter()
+        : _internal(nullptr)
+    {}
 
     SignalEmitter::~SignalEmitter()
     {
         if (_internal != nullptr)
             g_object_unref(_internal);
+    }
+
+    NativeObject SignalEmitter::get_internal() const
+    {
+        const_cast<SignalEmitter*>(this)->initialize();
+        return G_OBJECT(_internal);
+    }
+
+    void SignalEmitter::initialize()
+    {
+        _internal = detail::get_data<detail::SignalEmitterInternal>(operator GObject*(), "_signal_emitter_internal");
+        if (_internal == nullptr)
+        {
+            _internal = detail::signal_emitter_internal_new();
+            detail::set_data(operator GObject*(), "_signal_emitter_internal", _internal);
+        }
+
+        g_object_ref(_internal);
+    }
+
+    void SignalEmitter::connect_signal_implementation(const std::string& signal_id, void* function, void* data)
+    {
+        initialize();
+        disconnect_signal(signal_id);
+
+        std::cout << "connect " << _internal << " " << signal_id << std::endl;
+
+        auto handler_id = g_signal_connect(operator GObject*(), signal_id.c_str(), G_CALLBACK(function), data);
+        _internal->signal_handlers->insert_or_assign(signal_id, detail::SignalHandler{handler_id});
+
+        auto str = std::stringstream();
+        str << _internal << " " << signal_id;
+
     }
     
     void SignalEmitter::set_signal_blocked(const std::string& signal_id, bool b)
@@ -68,20 +95,28 @@ namespace mousetrap
 
         if (b)
         {
-            if (not it->second.is_blocked)
-            {
-                g_signal_handler_block(operator NativeObject(), it->second.id);
-                it->second.is_blocked = true;
-            }
+            std::cout << "block " << _internal << " " << signal_id << " " << it->second.id << std::endl;
+            g_signal_handler_block(operator GObject*(), it->second.id);
+            it->second.is_blocked = true;
         }
         else
         {
-            if (it->second.is_blocked)
-            {
-                g_signal_handler_unblock(operator NativeObject(), it->second.id);
-                it->second.is_blocked = false;
-            }
+            std::cout << "unblock " << _internal << " " << signal_id << " " << it->second.id << std::endl;
+            g_signal_handler_unblock(operator GObject*(), it->second.id);
+            it->second.is_blocked = false;
         }
+
+    }
+
+    bool SignalEmitter::get_signal_blocked(const std::string& signal_id) const
+    {
+        const_cast<SignalEmitter*>(this)->initialize();
+
+        auto it = _internal->signal_handlers->find(signal_id);
+        if (it == _internal->signal_handlers->end())
+            return true;
+
+        return it->second.is_blocked;
     }
 
     void SignalEmitter::disconnect_signal(const std::string& signal_id)
