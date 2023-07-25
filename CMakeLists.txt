@@ -268,7 +268,7 @@ if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
             include/mousetrap/texture_scale_mode.hpp
             include/mousetrap/texture_wrap_mode.hpp
         )
-    set(MOUSETRAP_HEADER_FILES "${MOUSETRAP_HEADER_FILES};${MOUSETRAP_OPENGL_HEADER_FILES}")
+    set(MOUSETRAP_HEADER_FILES "${MOUSETRAP_HEADER_FILES};${MOUSETRAP_OPENGL_HEADER_FILES}" include/mousetrap/theme.hpp)
 
     set(MOUSETRAP_OPENGL_SOURCE_FILES
             src/blend_mode.cpp
@@ -365,7 +365,6 @@ if(MOUSETRAP_BUILD_TESTS)
             add_test(NAME "${PROJECT_PREFIX}${TEST_PREFIX}${name}" COMMAND "${PROJECT_PREFIX}${TEST_PREFIX}${name}")
         endfunction()
 
-        declare_test(debug)
         declare_test(main)
     endif()
 endif()

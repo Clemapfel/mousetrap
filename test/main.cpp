@@ -20,28 +20,41 @@
 
 using namespace mousetrap;
 
-void on_activate(GtkButton*)
+static void on_css_provider_parsing_error(GtkCssProvider* self, GtkCssSection* section, GError* error, void*)
 {
-    std::cout << "activate called" << std::endl;
+    std::cout << gtk_css_section_to_string(section) << std::endl;
+
+    if (error != nullptr)
+        std::cout << error->message << std::endl;
 }
+
 
 int main()
 {
+    auto app = Application("test.id");
+    app.connect_signal_activate([](Application& app)
     {
-        auto app = Application("test.id");
-        app.connect_signal_activate([](Application& app)
-        {
-            auto window = Window(app);
+        auto* settings = gtk_settings_get_for_display(gdk_display_get_default());
 
-            auto scroll = ScrollEventController(true);
-            std::cout << scroll.get_allow_kinetic_scrolling() << std::endl;
-            scroll.set_allow_kinetic_scrolling(false);
-            std::cout << scroll.get_allow_kinetic_scrolling() << std::endl;
+        auto* provider = gtk_css_provider_new();
+        gtk_css_provider_load_named(provider, "Adwaita", "dark");
+        gtk_style_context_add_provider_for_display (gdk_display_get_default(), GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
-            window.present();
-        });
-        app.run();
-    }
+        /*
+        g_object_set(settings, "gtk-application-prefer-dark-theme", false, NULL);
+        g_object_set(settings, "gtk-theme-name", "Adwaita-light", NULL);
+
+        const char* theme = nullptr;
+        g_object_get(settings, "gtk-theme-name", &theme, NULL);
+        std::cout << theme << std::endl;
+        */
+        auto window = Window(app);
+
+        auto button = Button();
+        window.set_child(Scale(0, 1, 0.01));
+        window.present();
+    });
+    app.run();
 }
 
 #if FALSE
