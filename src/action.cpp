@@ -99,13 +99,7 @@ namespace mousetrap
 
     void Action::activate()
     {
-        if (_internal->stateless_f)
-            (_internal->stateless_f)(*this);
-        else if (_internal->stateful_f)
-            (_internal->stateful_f)(*this);
-
-        if (not _internal->stateful_f and not _internal->stateless_f)
-            log::warning("In Action::activate: Activating action with id " + get_id() + ", but set_function or setstateful_function has not been called yet", MOUSETRAP_DOMAIN);
+        g_action_activate(G_ACTION(_internal->g_action), nullptr);
     }
 
     void Action::set_state(bool b)

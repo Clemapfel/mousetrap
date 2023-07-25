@@ -33,34 +33,16 @@ int main()
         {
             auto window = Window(app);
 
-            Application::test();
-
-            auto button_01 = Button();
-            button_01.connect_signal_clicked([](Button&){
-
+            auto action = Action("test.action", app);
+            action.set_function([](Action&){
+                std::cout << "action callback" << std::endl;
             });
-            /*
-            auto button_02 = Button();
+            action.connect_signal_activated([](Action&, void*){
+                std::cout << "signal callback" << std::endl;
+            });
 
-            button_01.connect_signal_clicked([](Button& self, Button* other){
-                std::cout << "01 clicked" << std::endl;
-                self.set_signal_clicked_blocked(true);
-                //other->activate();
-                self.set_signal_clicked_blocked(false);
-            }, &button_02);
-
-            button_02.connect_signal_clicked([](Button& self, Button* other){
-                std::cout << "02 clicked" << std::endl;
-                self.set_signal_clicked_blocked(true);
-                //other->activate();
-                self.set_signal_clicked_blocked(false);
-            }, &button_01);
-
-            auto hbox = Box(Orientation::HORIZONTAL);
-            hbox.push_back(button_01);
-            hbox.push_back(button_02);
-            window.set_child(hbox);
-             */
+            //action.set_enabled(false);
+            action.activate();
 
             window.present();
         });

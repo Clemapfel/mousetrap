@@ -14,7 +14,7 @@ namespace mousetrap
 {
     void Application::test()
     {
-        std::cout << "test5" << std::endl;
+        std::cout << "7" << std::endl;
     }
 
     namespace detail

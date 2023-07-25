@@ -472,9 +472,8 @@ add_library(mousetrap_julia_binding SHARED
     ../mousetrap_julia_binding/cpp/gc_sentinel.cpp
     ../mousetrap_julia_binding/cpp/color_chooser.cpp
     ../mousetrap_julia_binding/cpp/alert_dialog.cpp
-        ${MOUSETRAP_SOURCE_FILES}
-
-        )
+    ${MOUSETRAP_SOURCE_FILES}
+)
 
 target_link_libraries(mousetrap_julia_binding PUBLIC
     JlCxx::cxxwrap_julia
