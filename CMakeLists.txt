@@ -58,6 +58,14 @@ configure_file(${CMAKE_SOURCE_DIR}/include/mousetrap/gl_common.hpp.in ${CMAKE_SO
 find_package(PkgConfig)
 pkg_check_modules(GTK REQUIRED gtk4)
 
+
+find_library(adwaita REQUIRED NAMES adwaita)
+set(GTK_LIBRARIES "${GTK_LIBRARIES};${adwaita}")
+set(GTK_INCLUDE_DIRS "${GTK_INCLUDE_DIRS};/usr/include/libadwaita-1")
+
+message(WARNING ${GTK_LIBRARIES})
+message(WARNING ${GTK_INCLUDE_DIRS})
+
 # Vector
 include(CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX(glm/glm.hpp GLM_FOUND)
