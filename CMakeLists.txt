@@ -374,3 +374,119 @@ endif()
 
 include(cmake/install-rules.cmake)
 
+### JULIA
+
+find_package(JlCxx REQUIRED)
+
+### LIBRARY ###
+
+add_library(mousetrap_julia_binding SHARED
+
+    ../mousetrap_julia_binding/mousetrap_julia_binding.hpp
+
+    ../mousetrap_julia_binding/cpp/action.cpp
+    ../mousetrap_julia_binding/cpp/adjustment.cpp
+    ../mousetrap_julia_binding/cpp/alignment.cpp
+    ../mousetrap_julia_binding/cpp/application.cpp
+    ../mousetrap_julia_binding/cpp/aspect_frame.cpp
+    ../mousetrap_julia_binding/cpp/blend_mode.cpp
+    ../mousetrap_julia_binding/cpp/box.cpp
+    ../mousetrap_julia_binding/cpp/button.cpp
+    ../mousetrap_julia_binding/cpp/center_box.cpp
+    ../mousetrap_julia_binding/cpp/check_button.cpp
+    ../mousetrap_julia_binding/cpp/click_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/clipboard.cpp
+    ../mousetrap_julia_binding/cpp/color.cpp
+    ../mousetrap_julia_binding/cpp/column_view.cpp
+    ../mousetrap_julia_binding/cpp/cursor_type.cpp
+    ../mousetrap_julia_binding/cpp/define_julia_module.cpp
+    ../mousetrap_julia_binding/cpp/drag_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/drop_down.cpp
+    ../mousetrap_julia_binding/cpp/entry.cpp
+    ../mousetrap_julia_binding/cpp/event_controller.cpp
+    ../mousetrap_julia_binding/cpp/expander.cpp
+    ../mousetrap_julia_binding/cpp/file_chooser.cpp
+    ../mousetrap_julia_binding/cpp/file_descriptor.cpp
+    ../mousetrap_julia_binding/cpp/file_monitor.cpp
+    ../mousetrap_julia_binding/cpp/file_system.cpp
+    ../mousetrap_julia_binding/cpp/fixed.cpp
+    ../mousetrap_julia_binding/cpp/focus_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/frame.cpp
+    ../mousetrap_julia_binding/cpp/frame_clock.cpp
+    ../mousetrap_julia_binding/cpp/gl_transform.cpp
+    ../mousetrap_julia_binding/cpp/grid.cpp
+    ../mousetrap_julia_binding/cpp/grid_view.cpp
+    ../mousetrap_julia_binding/cpp/header_bar.cpp
+    ../mousetrap_julia_binding/cpp/icon.cpp
+    ../mousetrap_julia_binding/cpp/image.cpp
+    ../mousetrap_julia_binding/cpp/image_display.cpp
+    ../mousetrap_julia_binding/cpp/implement_orientation.cpp
+    ../mousetrap_julia_binding/cpp/justify_mode.cpp
+    ../mousetrap_julia_binding/cpp/key_codes.cpp
+    ../mousetrap_julia_binding/cpp/key_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/key_file.cpp
+    ../mousetrap_julia_binding/cpp/label.cpp
+    ../mousetrap_julia_binding/cpp/level_bar.cpp
+    ../mousetrap_julia_binding/cpp/list_view.cpp
+    ../mousetrap_julia_binding/cpp/log.cpp
+    ../mousetrap_julia_binding/cpp/long_press_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/menu_bar.cpp
+    ../mousetrap_julia_binding/cpp/menu_model.cpp
+    ../mousetrap_julia_binding/cpp/motion_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/notebook.cpp
+    ../mousetrap_julia_binding/cpp/overlay.cpp
+    ../mousetrap_julia_binding/cpp/pan_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/paned.cpp
+    ../mousetrap_julia_binding/cpp/pinch_zoom_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/popover.cpp
+    ../mousetrap_julia_binding/cpp/popover_button.cpp
+    ../mousetrap_julia_binding/cpp/popover_menu.cpp
+    ../mousetrap_julia_binding/cpp/progress_bar.cpp
+    ../mousetrap_julia_binding/cpp/relative_position.cpp
+    ../mousetrap_julia_binding/cpp/render_area.cpp
+    ../mousetrap_julia_binding/cpp/render_task.cpp
+    ../mousetrap_julia_binding/cpp/revealer.cpp
+    ../mousetrap_julia_binding/cpp/rotate_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/scale.cpp
+    ../mousetrap_julia_binding/cpp/scroll_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/scrollbar.cpp
+    ../mousetrap_julia_binding/cpp/selection_model.cpp
+    ../mousetrap_julia_binding/cpp/separator.cpp
+    ../mousetrap_julia_binding/cpp/shader.cpp
+    ../mousetrap_julia_binding/cpp/shape.cpp
+    ../mousetrap_julia_binding/cpp/shortcut_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/spin_button.cpp
+    ../mousetrap_julia_binding/cpp/spinner.cpp
+    ../mousetrap_julia_binding/cpp/stack.cpp
+    ../mousetrap_julia_binding/cpp/stylus_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/swipe_event_controller.cpp
+    ../mousetrap_julia_binding/cpp/switch.cpp
+    ../mousetrap_julia_binding/cpp/text_view.cpp
+    ../mousetrap_julia_binding/cpp/texture.cpp
+    ../mousetrap_julia_binding/cpp/time.cpp
+    ../mousetrap_julia_binding/cpp/toggle_button.cpp
+    ../mousetrap_julia_binding/cpp/viewport.cpp
+    ../mousetrap_julia_binding/cpp/widget.cpp
+    ../mousetrap_julia_binding/cpp/window.cpp
+    ../mousetrap_julia_binding/cpp/box_unbox.cpp
+    ../mousetrap_julia_binding/cpp/gc_sentinel.cpp
+    ../mousetrap_julia_binding/cpp/color_chooser.cpp
+    ../mousetrap_julia_binding/cpp/alert_dialog.cpp
+        ${MOUSETRAP_SOURCE_FILES}
+
+        )
+
+target_link_libraries(mousetrap_julia_binding PUBLIC
+    JlCxx::cxxwrap_julia
+    mousetrap
+    ${GTK_LIBRARIES}
+    ${OpenGL}
+    ${GLEW}
+)
+
+target_include_directories(mousetrap_julia_binding PUBLIC
+    "${CMAKE_SOURCE_DIR}/include"
+    "${GTK_INCLUDE_DIRS}"
+    "${Julia_INCLUDE_DIRS}"
+)
+

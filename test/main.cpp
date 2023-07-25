@@ -33,10 +33,35 @@ int main()
         {
             auto window = Window(app);
 
-            auto sw = Switch();
-            std::cout << G_IS_OBJECT(detail::has_signal_switched_internal_new(sw.operator NativeObject())) << std::endl;
+            Application::test();
 
-            window.set_child(sw);
+            auto button_01 = Button();
+            button_01.connect_signal_clicked([](Button&){
+
+            });
+            /*
+            auto button_02 = Button();
+
+            button_01.connect_signal_clicked([](Button& self, Button* other){
+                std::cout << "01 clicked" << std::endl;
+                self.set_signal_clicked_blocked(true);
+                //other->activate();
+                self.set_signal_clicked_blocked(false);
+            }, &button_02);
+
+            button_02.connect_signal_clicked([](Button& self, Button* other){
+                std::cout << "02 clicked" << std::endl;
+                self.set_signal_clicked_blocked(true);
+                //other->activate();
+                self.set_signal_clicked_blocked(false);
+            }, &button_01);
+
+            auto hbox = Box(Orientation::HORIZONTAL);
+            hbox.push_back(button_01);
+            hbox.push_back(button_02);
+            window.set_child(hbox);
+             */
+
             window.present();
         });
         app.run();

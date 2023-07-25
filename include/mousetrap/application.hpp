@@ -51,6 +51,8 @@ namespace mousetrap
         HAS_SIGNAL(Application, shutdown)
     {
         public:
+            static void test();
+
             /// @brief construct new action
             /// @param id valid application id, see
             Application(const ApplicationID& id, bool allow_multiple_instances = false);
