@@ -35,9 +35,16 @@ namespace mousetrap
     {
         public:
             /// @brief construct, needs to be attached to a widget to start emitting events
-            /// @param emit_vertical should vertical scrolling trigger events
-            /// @param emit_horizontal should horizontal scrolling trigger evets
-            ScrollEventController(bool emit_vertical = true, bool emit_horizontal = true);
+            /// @param allow_kinetic should kinetic scroll be enabled
+            ScrollEventController(bool allow_kinetic = false);
+
+            /// @brief set whether kinetic scrolling should be enabled
+            /// @param b true if enabled, false otherwise
+            void set_kinetic_scrolling_enabled(bool b);
+
+            /// @brief get whether kinetic scrolling is enabled
+            /// @return true if enabled, false otherwise
+            bool get_kinetic_scrolling_enabled() const;
 
             /// @brief construct from internal
             ScrollEventController(detail::ScrollEventControllerInternal*);

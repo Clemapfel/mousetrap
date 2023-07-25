@@ -33,16 +33,10 @@ int main()
         {
             auto window = Window(app);
 
-            auto action = Action("test.action", app);
-            action.set_function([](Action&){
-                std::cout << "action callback" << std::endl;
-            });
-            action.connect_signal_activated([](Action&, void*){
-                std::cout << "signal callback" << std::endl;
-            });
-
-            //action.set_enabled(false);
-            action.activate();
+            auto scroll = ScrollEventController(true);
+            std::cout << scroll.get_allow_kinetic_scrolling() << std::endl;
+            scroll.set_allow_kinetic_scrolling(false);
+            std::cout << scroll.get_allow_kinetic_scrolling() << std::endl;
 
             window.present();
         });
