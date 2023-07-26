@@ -33,11 +33,10 @@ static void on_css_provider_parsing_error(GtkCssProvider* self, GtkCssSection* s
 int main()
 {
     {
-        auto app = Application("test.id");
+        static auto app = Application("test.id");
         app.connect_signal_activate([](Application& app)
         {
-            auto* settings = gtk_settings_get_for_display(gdk_display_get_default());
-
+            /*
             auto* provider = gtk_css_provider_new();
             //gtk_css_provider_load_named(provider, "Adwaita", "dark");
             gtk_css_provider_load_from_path(provider, "/home/clem/Workspace/gtk-gtk-4.0/gtk/theme/HighContrast/theme.css");
@@ -52,10 +51,19 @@ int main()
             g_object_get(settings, "gtk-theme-name", &theme, NULL);
             std::cout << theme << std::endl;
             */
-            auto window = Window(app);
 
-            gtk_window_set_child(GTK_WINDOW(window.operator NativeObject()), adw_avatar_new(64, "test", false));
-            window.present();
+            auto* window = adw_window_new();
+            gtk_window_set_application(GTK_WINDOW(window), app.operator GtkApplication*());
+
+            auto list_view = ListView(Orientation::VERTICAL, SelectionMode::SINGLE);
+            list_view.push_back(Label("Label 01"));
+            list_view.push_back(Label("Label 02"));
+            list_view.push_back(Label("Label 03"));
+
+            //gtk_widget_add_css_class(list_view.operator NativeWidget(), "navigation-sidebar");
+            gtk_widget_remove
+            adw_window_set_content(ADW_WINDOW(window), list_view.operator NativeWidget());
+            gtk_window_present(GTK_WINDOW(window));
         });
         app.run();
     }

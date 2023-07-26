@@ -57,14 +57,7 @@ configure_file(${CMAKE_SOURCE_DIR}/include/mousetrap/gl_common.hpp.in ${CMAKE_SO
 # GTK4
 find_package(PkgConfig)
 pkg_check_modules(GTK REQUIRED gtk4)
-
-
-find_library(adwaita REQUIRED NAMES adwaita)
-set(GTK_LIBRARIES "${GTK_LIBRARIES};${adwaita}")
-set(GTK_INCLUDE_DIRS "${GTK_INCLUDE_DIRS};/usr/include/libadwaita-1")
-
-message(WARNING ${GTK_LIBRARIES})
-message(WARNING ${GTK_INCLUDE_DIRS})
+pkg_check_modules(ADWAITA REQUIRED libadwaita-1)
 
 # Vector
 include(CheckIncludeFileCXX)
@@ -304,30 +297,30 @@ target_compile_features(mousetrap PUBLIC
 
 target_include_directories(mousetrap PUBLIC
     "${CMAKE_SOURCE_DIR}/include"
-    "${GTK_INCLUDE_DIRS}"
+    "${ADWAITA_INCLUDE_DIRS}"
 )
 
 if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
     target_link_libraries(mousetrap PUBLIC
-        ${GTK_LIBRARIES}
+        ${ADWAITA_LIBRARIES}
         ${OpenGL}
         ${GLEW}
     )
     set_target_properties(mousetrap PROPERTIES
         LINKER_LANGUAGE CXX
         POSITION_INDEPENDENT_CODE ON
-        INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
-        INTERFACE_LINK_LIBRARIES "${OpenGL};${GLEW};${GTK_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${ADWAITA_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${OpenGL};${GLEW};${ADWAITA_LIBRARIES}"
     )
 else()
     target_link_libraries(mousetrap PUBLIC
-        ${GTK_LIBRARIES}
+        ${ADWAITA_LIBRARIES}
     )
     set_target_properties(mousetrap PROPERTIES
         LINKER_LANGUAGE CXX
         POSITION_INDEPENDENT_CODE ON
-        INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
-        INTERFACE_LINK_LIBRARIES "${GTK_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${ADWAITA_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${ADWAITA_LIBRARIES}"
     )
 endif()
 
@@ -485,14 +478,14 @@ add_library(mousetrap_julia_binding SHARED
 target_link_libraries(mousetrap_julia_binding PUBLIC
     JlCxx::cxxwrap_julia
     mousetrap
-    ${GTK_LIBRARIES}
+    ${ADWAITA_LIBRARIES}
     ${OpenGL}
     ${GLEW}
 )
 
 target_include_directories(mousetrap_julia_binding PUBLIC
     "${CMAKE_SOURCE_DIR}/include"
-    "${GTK_INCLUDE_DIRS}"
+    "${ADWAITA_INCLUDE_DIRS}"
     "${Julia_INCLUDE_DIRS}"
 )
 

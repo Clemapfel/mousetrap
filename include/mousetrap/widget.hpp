@@ -330,6 +330,18 @@ namespace mousetrap
             /// @param action Action
             void set_listens_for_shortcut_actions(Action&);
 
+            /// @brief add css class, these have to be supported by GTK4 or Adwaita
+            /// @param class
+            void add_css_class(const std::string&);
+
+            /// @brief remove css class added via `add_css_class`
+            /// @param class
+            void remove_css_class(const std::string&);
+
+            /// @brief get all css classes that are applied to the widget
+            /// @return classes
+            std::vector<std::string> get_css_classes() const;
+
         protected:
             /// @brief ctor protected. Only inheriting classes should call this
             /// @param widget GtkWidget instance

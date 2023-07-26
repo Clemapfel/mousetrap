@@ -536,6 +536,34 @@ namespace mousetrap
         auto temp = ShortcutEventController((detail::ShortcutEventControllerInternal*) _internal->shortcut_controller_maybe);
         temp.add_action(action);
     }
+
+    void Widget::add_css_class(const std::string& css)
+    {
+        gtk_widget_add_css_class(operator NativeWidget(), css.c_str());
+    }
+
+    void Widget::remove_css_class(const std::string& css)
+    {
+        gtk_widget_remove_css_class(operator NativeWidget(), css.c_str());
+    }
+
+    std::vector<std::string> Widget::get_css_classes() const
+    {
+        char** classes = gtk_widget_get_css_classes(operator NativeWidget());
+        std::vector<std::string> out;
+
+        size_t i = 0;
+        char* current = classes[i];
+        while (current != nullptr)
+        {
+            out.emplace_back(current);
+            i += 1;
+            current = classes[i];
+        }
+
+        g_strfreev(classes);
+        return out;
+    }
 }
 
 namespace mousetrap::detail
