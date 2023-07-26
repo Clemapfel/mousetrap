@@ -10,4 +10,11 @@ namespace mousetrap::detail
             log::critical("In " + std::string(#scope) + ": Attempting to insert widget into itself. This would cause an infinite loop", MOUSETRAP_DOMAIN); \
             return; \
         }
+
+    #define WARN_IF_PARENT_EXISTS(scope, child) \
+        if (gtk_widget_get_parent(child.operator NativeWidget()) != nullptr) \
+        { \
+            log::critical("In " + std::string(#scope) + ": Attemping to insert widget into a container, but that widget already has a parent.", MOUSETRAP_DOMAIN);\
+            return; \
+        }
 }

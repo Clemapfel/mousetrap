@@ -48,6 +48,7 @@ namespace mousetrap
     {
         auto* ptr = &in;
         WARN_IF_SELF_INSERTION(Overlay::set_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(Overlay::set_child, in);
 
         gtk_overlay_set_child(GTK_OVERLAY(operator NativeWidget()), in.operator GtkWidget*());
     }
@@ -56,6 +57,7 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Overlay::add_overlay, this, ptr);
+        WARN_IF_PARENT_EXISTS(Overlay::add_overlay, widget);
 
         auto* gtk_widget = widget.operator GtkWidget*();
         gtk_overlay_add_overlay(GTK_OVERLAY(operator NativeWidget()), gtk_widget);

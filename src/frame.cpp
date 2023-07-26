@@ -49,6 +49,7 @@ namespace mousetrap
     {
         auto ptr = &in;
         WARN_IF_SELF_INSERTION(Frame::set_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(Frame::set_child, in);
 
         gtk_frame_set_child(GTK_FRAME(operator NativeWidget()), in.operator GtkWidget *());
     }
@@ -62,6 +63,7 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Frame::set_label_widget, this, ptr);
+        WARN_IF_PARENT_EXISTS(Frame::set_label_widget, widget);
 
         gtk_frame_set_label_widget(GTK_FRAME(operator NativeWidget()), widget.operator GtkWidget*());
     }

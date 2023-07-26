@@ -50,7 +50,8 @@ namespace mousetrap
     void CenterBox::set_start_child(const Widget& widget)
     {
         auto* ptr = &widget;
-        WARN_IF_SELF_INSERTION(CenterBox::set_start_widget, this, ptr);
+        WARN_IF_SELF_INSERTION(CenterBox::set_start_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(CenterBox::set_start_child, widget);
 
         gtk_center_box_set_start_widget(GTK_CENTER_BOX(operator NativeWidget()), widget.operator NativeWidget());
     }
@@ -63,7 +64,8 @@ namespace mousetrap
     void CenterBox::set_end_child(const Widget& widget)
     {
         auto* ptr = &widget;
-        WARN_IF_SELF_INSERTION(CenterBox::set_end_widget, this, ptr);
+        WARN_IF_SELF_INSERTION(CenterBox::set_end_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(CenterBox::set_end_child, widget);
 
         gtk_center_box_set_end_widget(GTK_CENTER_BOX(operator NativeWidget()), widget.operator NativeWidget());
     }
@@ -76,7 +78,8 @@ namespace mousetrap
     void CenterBox::set_center_child(const Widget& widget)
     {
         auto* ptr = &widget;
-        WARN_IF_SELF_INSERTION(CenterBox::set_center_widget, this, ptr);
+        WARN_IF_SELF_INSERTION(CenterBox::set_center_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(CenterBox::set_center_child, widget);
 
         gtk_center_box_set_center_widget(GTK_CENTER_BOX(operator NativeWidget()), widget.operator NativeWidget());
     }

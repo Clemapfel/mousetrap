@@ -62,6 +62,8 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Paned::set_start_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(Paned::set_start_child, widget);
+
         gtk_paned_set_start_child(GTK_PANED(operator NativeWidget()), widget.operator NativeWidget());
     }
 
@@ -94,6 +96,8 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Paned::set_end_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(Paned::set_end_child, widget);
+
         gtk_paned_set_end_child(GTK_PANED(operator NativeWidget()), widget.operator NativeWidget());
     }
 

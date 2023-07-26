@@ -102,6 +102,8 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Window::set_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(Window::set_child, widget);
+
         gtk_window_set_child(GTK_WINDOW(_internal), widget.operator GtkWidget*());
     }
 
@@ -145,6 +147,8 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Window::set_titlebar_widget, this, ptr);
+        WARN_IF_PARENT_EXISTS(Window::set_titlebar_widget, widget);
+
         gtk_window_set_titlebar(GTK_WINDOW(_internal), widget.operator NativeWidget());
     }
 
@@ -207,6 +211,8 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Window::set_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(Window::set_child, widget);
+
         gtk_window_set_default_widget(GTK_WINDOW(_internal), widget.operator GtkWidget*());
     }
 

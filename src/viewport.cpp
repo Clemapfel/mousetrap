@@ -143,6 +143,7 @@ namespace mousetrap
     {
         auto* ptr = &child;
         WARN_IF_SELF_INSERTION(Viewport::set_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(Viewport::set_child, child);
 
         gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(_internal), child.operator NativeWidget());
     }

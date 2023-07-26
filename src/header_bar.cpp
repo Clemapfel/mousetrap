@@ -64,6 +64,8 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(HeaderBar::set_title_widget, this, ptr);
+        WARN_IF_PARENT_EXISTS(HeaderBar::set_title_widget, widget);
+
         gtk_header_bar_set_title_widget(GTK_HEADER_BAR(operator NativeWidget()), widget.operator NativeWidget());
     }
 

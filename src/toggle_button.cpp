@@ -64,6 +64,8 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(ToggleButton::set_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(ToggleButton::set_child, widget);
+
         gtk_button_set_child(GTK_BUTTON(GTK_TOGGLE_BUTTON(_internal)), widget.operator GtkWidget*());
     }
 

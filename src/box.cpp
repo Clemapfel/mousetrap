@@ -52,20 +52,23 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Box::push_back, this, ptr);
+        WARN_IF_PARENT_EXISTS(Box::push_back, widget);
         gtk_box_append(GTK_BOX(operator NativeWidget()), widget.operator NativeWidget());
     }
 
     void Box::push_front(const Widget& widget)
     {
         auto* ptr = &widget;
-        WARN_IF_SELF_INSERTION(Box::push_back, this, ptr);
+        WARN_IF_SELF_INSERTION(Box::push_front, this, ptr);
+        WARN_IF_PARENT_EXISTS(Box::push_front, widget);
         gtk_box_prepend(GTK_BOX(operator NativeWidget()), widget.operator NativeWidget());
     }
 
     void Box::insert_after(const Widget& to_append, const Widget& after)
     {
         auto* ptr = &to_append;
-        WARN_IF_SELF_INSERTION(Box::push_back, this, ptr);
+        WARN_IF_SELF_INSERTION(Box::insert_after, this, ptr);
+        WARN_IF_PARENT_EXISTS(Box::insert_after, to_append);
         gtk_box_insert_child_after(
             GTK_BOX(operator NativeWidget()),
             to_append.operator NativeWidget(),

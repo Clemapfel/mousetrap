@@ -53,6 +53,7 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Revealer::set_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(Revealer::set_child, widget);
 
         gtk_revealer_set_child(GTK_REVEALER(operator NativeWidget()), widget.operator GtkWidget*());
     }

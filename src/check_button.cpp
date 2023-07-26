@@ -56,6 +56,7 @@ namespace mousetrap
     {
         auto* ptr = &child;
         WARN_IF_SELF_INSERTION(CheckButton::set_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(CheckButton::set_child, child);
 
         gtk_check_button_set_child(GTK_CHECK_BUTTON(operator NativeWidget()), child.operator GtkWidget*());
     }

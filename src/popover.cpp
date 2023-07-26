@@ -63,6 +63,8 @@ namespace mousetrap
     {
         auto* ptr = &child;
         WARN_IF_SELF_INSERTION(Popover::set_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(Popover::set_child, child);
+
         gtk_popover_set_child(GTK_POPOVER(operator NativeWidget()), child.operator NativeWidget());
     }
 

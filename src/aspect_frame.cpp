@@ -59,6 +59,7 @@ namespace mousetrap
     {
         const Widget* child_ptr = &child;
         WARN_IF_SELF_INSERTION(AspectFrame::set_child, this, child_ptr);
+        WARN_IF_PARENT_EXISTS(AspectFrame::set_child, child);
 
         gtk_aspect_frame_set_child(GTK_ASPECT_FRAME(operator NativeWidget()), child.operator NativeWidget());
     }

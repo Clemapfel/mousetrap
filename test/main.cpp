@@ -33,58 +33,64 @@ int main()
     {
         auto app = Application("test.id");
         app.connect_signal_activate([](Application& app)
-                                    {
-                                        auto* settings = gtk_settings_get_for_display(gdk_display_get_default());
+        {
+            auto* settings = gtk_settings_get_for_display(gdk_display_get_default());
 
-                                        auto* provider = gtk_css_provider_new();
-                                        //gtk_css_provider_load_named(provider, "Adwaita", "dark");
-                                        gtk_css_provider_load_from_path(provider, "/home/clem/Workspace/gtk-gtk-4.0/gtk/theme/HighContrast/theme.css");
-                                        gtk_style_context_add_provider_for_display(gdk_display_get_default(), GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-                                        g_signal_connect(provider, "parsing-error", G_CALLBACK(on_css_provider_parsing_error), nullptr);
+            auto* provider = gtk_css_provider_new();
+            //gtk_css_provider_load_named(provider, "Adwaita", "dark");
+            gtk_css_provider_load_from_path(provider, "/home/clem/Workspace/gtk-gtk-4.0/gtk/theme/HighContrast/theme.css");
+            gtk_style_context_add_provider_for_display(gdk_display_get_default(), GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+            g_signal_connect(provider, "parsing-error", G_CALLBACK(on_css_provider_parsing_error), nullptr);
 
-                                        /*
-                                        g_object_set(settings, "gtk-application-prefer-dark-theme", false, NULL);
-                                        g_object_set(settings, "gtk-theme-name", "Adwaita-light", NULL);
+            /*
+            g_object_set(settings, "gtk-application-prefer-dark-theme", false, NULL);
+            g_object_set(settings, "gtk-theme-name", "Adwaita-light", NULL);
 
-                                        const char* theme = nullptr;
-                                        g_object_get(settings, "gtk-theme-name", &theme, NULL);
-                                        std::cout << theme << std::endl;
-                                        */
-                                        auto window = Window(app);
+            const char* theme = nullptr;
+            g_object_get(settings, "gtk-theme-name", &theme, NULL);
+            std::cout << theme << std::endl;
+            */
+            auto window = Window(app);
 
-                                        auto button = Button();
-                                        window.set_child(Scale(0, 1, 0.01));
-                                        window.present();
-                                    });
+            auto box = Box(Orientation::HORIZONTAL);
+
+            auto button = Button();
+            box.push_back(button);
+            box.push_back(button);
+
+            window.set_child(button);
+            window.set_child(Scale(0, 1, 0.01));
+            window.present();
+        });
         app.run();
     }
 
     {
         auto app = Application("test.id");
         app.connect_signal_activate([](Application& app)
-                                    {
-                                        auto* settings = gtk_settings_get_for_display(gdk_display_get_default());
+        {
+            auto* settings = gtk_settings_get_for_display(gdk_display_get_default());
 
-                                        auto* provider = gtk_css_provider_new();
-                                        //gtk_css_provider_load_named(provider, "Adwaita", "dark");
-                                        gtk_css_provider_load_from_path(provider, "/home/clem/Workspace/gtk-gtk-4.0/gtk/theme/Adwaita/adwaita.css");
-                                        gtk_style_context_add_provider_for_display(gdk_display_get_default(), GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-                                        g_signal_connect(provider, "parsing-error", G_CALLBACK(on_css_provider_parsing_error), nullptr);
+            auto* provider = gtk_css_provider_new();
+            //gtk_css_provider_load_named(provider, "Adwaita", "dark");
+            gtk_css_provider_load_from_path(provider, "/home/clem/Workspace/gtk-gtk-4.0/gtk/theme/Adwaita/adwaita.css");
+            gtk_style_context_add_provider_for_display(gdk_display_get_default(), GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+            g_signal_connect(provider, "parsing-error", G_CALLBACK(on_css_provider_parsing_error), nullptr);
 
-                                        /*
-                                        g_object_set(settings, "gtk-application-prefer-dark-theme", false, NULL);
-                                        g_object_set(settings, "gtk-theme-name", "Adwaita-light", NULL);
+            /*
+            g_object_set(settings, "gtk-application-prefer-dark-theme", false, NULL);
+            g_object_set(settings, "gtk-theme-name", "Adwaita-light", NULL);
 
-                                        const char* theme = nullptr;
-                                        g_object_get(settings, "gtk-theme-name", &theme, NULL);
-                                        std::cout << theme << std::endl;
-                                        */
-                                        auto window = Window(app);
+            const char* theme = nullptr;
+            g_object_get(settings, "gtk-theme-name", &theme, NULL);
+            std::cout << theme << std::endl;
+            */
+            auto window = Window(app);
 
-                                        auto button = Button();
-                                        window.set_child(Scale(0, 1, 0.01));
-                                        window.present();
-                                    });
+            auto button = Button();
+            window.set_child(Scale(0, 1, 0.01));
+            window.present();
+        });
         app.run();
     }
 }

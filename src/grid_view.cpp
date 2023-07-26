@@ -170,6 +170,7 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(GridView::push_back, this, ptr);
+        WARN_IF_PARENT_EXISTS(GridView::push_back, widget);
 
         auto* item = detail::grid_view_item_new(ptr);
         g_list_store_append(G_LIST_STORE(_internal->list_store), item);
@@ -179,6 +180,7 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(GridView::push_front, this, ptr);
+        WARN_IF_PARENT_EXISTS(GridView::push_front, widget);
 
         auto* item = detail::grid_view_item_new(ptr);
         g_list_store_insert(G_LIST_STORE(_internal->list_store), 0, item);
@@ -188,6 +190,7 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(GridView::insert, this, ptr);
+        WARN_IF_PARENT_EXISTS(GridView::insert, widget);
 
         auto* item = detail::grid_view_item_new(&widget);
         g_list_store_insert(G_LIST_STORE(_internal->list_store), i, item);

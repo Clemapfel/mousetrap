@@ -47,6 +47,7 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Fixed::add_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(Fixed::add_child, widget);
 
         gtk_fixed_put(GTK_FIXED(operator NativeWidget()), widget.operator GtkWidget *(), pos.x, pos.y);
     }

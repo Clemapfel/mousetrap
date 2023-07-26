@@ -75,6 +75,7 @@ namespace mousetrap
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Button::push_back, this, ptr);
+        WARN_IF_PARENT_EXISTS(Button::set_child, widget);
         gtk_button_set_child(GTK_BUTTON(operator NativeWidget()), widget.operator GtkWidget*());
     }
 
