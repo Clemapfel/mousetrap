@@ -40,6 +40,7 @@ namespace mousetrap
             log::initialize();
 
             auto* native = gtk_application_new(id.c_str(), (GApplicationFlags) flags);
+            g_application_set_resource_base_path(G_APPLICATION(native), nullptr);
 
             auto* self = (ApplicationInternal*) g_object_new(application_internal_get_type(), nullptr);
             application_internal_init(self);

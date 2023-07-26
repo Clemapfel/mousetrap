@@ -51,16 +51,11 @@ int main()
             std::cout << theme << std::endl;
             */
             auto window = Window(app);
+            auto window_2 = Window(app);
+            window.set_child(window_2);
+            window_2.set_child(Label("test"));
 
-            auto box = Box(Orientation::HORIZONTAL);
-
-            auto button = Button();
-            box.push_back(button);
-            box.push_back(button);
-
-            window.set_child(button);
-            window.set_child(Scale(0, 1, 0.01));
-            window.present();
+            window_2.present();
         });
         app.run();
     }

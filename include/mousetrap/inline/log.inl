@@ -16,5 +16,9 @@ namespace mousetrap::detail
         { \
             log::critical("In " + std::string(#scope) + ": Attemping to insert widget into a container, but that widget already has a parent.", MOUSETRAP_DOMAIN);\
             return; \
+        }                                       \
+        if (GTK_IS_WINDOW(child.operator NativeWidget()))                    \
+        {                                       \
+            log::warning("In " + std::string(#scope) + ": Attempting to insert a window into a container. This is discouraged."); \
         }
 }

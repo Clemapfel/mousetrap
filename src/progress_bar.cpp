@@ -50,6 +50,9 @@ namespace mousetrap
 
     void ProgressBar::set_fraction(float v)
     {
+        if (v < 0 or v > 1)
+            log::critical("In ProgressBar::set_fraction: Value outside of [0, 1]", MOUSETRAP_DOMAIN);
+
         v = glm::clamp<float>(v, 0, 1);
         gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(operator NativeWidget()), v);
     }
