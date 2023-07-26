@@ -25,7 +25,7 @@ namespace mousetrap
             AdwWindow* native;
             AdwHeaderBar* header_bar;
             GtkBox* vbox;
-            GtkBox content_area
+            AdwBin* content_area;
         };
         using WindowInternal = _WindowInternal;
         DEFINE_INTERNAL_MAPPING(Window);

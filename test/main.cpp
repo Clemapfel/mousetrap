@@ -41,26 +41,22 @@ int main(int argc, char** argv)
         static auto app = Application("test.id");
         app.connect_signal_activate([](Application& app)
         {
-            static auto window = Window(app);
+            auto window = Window(app);
             auto button = Button();
             button.connect_signal_clicked([&](Button&){
-                auto* style_manager = adw_style_manager_get_for_display(gtk_widget_get_display(window));
-                if (adw_style_manager_get_dark(style_manager))
-                    adw_style_manager_set_color_scheme(style_manager, ADW_COLOR_SCHEME_FORCE_LIGHT);
-                else
-                    adw_style_manager_set_color_scheme(style_manager, ADW_COLOR_SCHEME_FORCE_DARK);
+               auto current_theme = app.get_current_theme();
+               if (current_theme == Theme::DEFAULT_DARK)
+                   app.set_current_theme(Theme::DEFAULT_LIGHT);
+               else
+                   app.set_current_theme(Theme::DEFAULT_DARK);
             });
-            window.set_is_decorated(false);
-            window.set_child(button);
-            window.present();
 
-            auto* other_window = adw_window_new();
-            gtk_window_set_application(GTK_WINDOW(other_window), app.operator GtkApplication *());
-            auto vbox = Box(Orientation::VERTICAL);
-            gtk_box_append(GTK_BOX(vbox.operator NativeWidget()), GTK_WIDGET(adw_header_bar_new()));
-            vbox.push_back(Separator());
-            adw_window_set_content(ADW_WINDOW(other_window), vbox);
-            gtk_window_present(GTK_WINDOW(other_window));
+            auto box = Box(Orientation::HORIZONTAL);
+            box.push_back(button);
+            box.push_back(Button());
+            box.push_back(HeaderBar());
+            window.set_child(box);
+            window.present();
         });
         app.run();
     }

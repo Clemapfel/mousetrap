@@ -7,7 +7,7 @@
 namespace mousetrap
 {
     HeaderBar::HeaderBar()
-        : Widget(gtk_header_bar_new()),
+        : Widget(adw_header_bar_new()),
           CTOR_SIGNAL(HeaderBar, realize),
           CTOR_SIGNAL(HeaderBar, unrealize),
           CTOR_SIGNAL(HeaderBar, destroy),
@@ -16,8 +16,8 @@ namespace mousetrap
           CTOR_SIGNAL(HeaderBar, map),
           CTOR_SIGNAL(HeaderBar, unmap)
     {
-        _internal = g_object_ref_sink(GTK_HEADER_BAR(Widget::operator NativeWidget()));
-        gtk_header_bar_set_title_widget(GTK_HEADER_BAR(Widget::operator NativeWidget()), nullptr);
+        _internal = g_object_ref_sink(ADW_HEADER_BAR(Widget::operator NativeWidget()));
+        adw_header_bar_set_title_widget(ADW_HEADER_BAR(Widget::operator NativeWidget()), nullptr);
     }
 
     HeaderBar::HeaderBar(const std::string& layout)
@@ -51,12 +51,12 @@ namespace mousetrap
 
     void HeaderBar::set_layout(const std::string& layout)
     {
-        gtk_header_bar_set_decoration_layout(GTK_HEADER_BAR(operator NativeWidget()), layout.c_str());
+        adw_header_bar_set_decoration_layout(ADW_HEADER_BAR(operator NativeWidget()), layout.c_str());
     }
 
     std::string HeaderBar::get_layout() const
     {
-        auto* layout = gtk_header_bar_get_decoration_layout(GTK_HEADER_BAR(operator NativeWidget()));
+        auto* layout = adw_header_bar_get_decoration_layout(ADW_HEADER_BAR(operator NativeWidget()));
         return layout != nullptr ? layout : "";
     }
 
@@ -66,36 +66,37 @@ namespace mousetrap
         WARN_IF_SELF_INSERTION(HeaderBar::set_title_widget, this, ptr);
         WARN_IF_PARENT_EXISTS(HeaderBar::set_title_widget, widget);
 
-        gtk_header_bar_set_title_widget(GTK_HEADER_BAR(operator NativeWidget()), widget.operator NativeWidget());
+        adw_header_bar_set_title_widget(ADW_HEADER_BAR(operator NativeWidget()), widget.operator NativeWidget());
     }
 
     void HeaderBar::remove_title_widget()
     {
-        gtk_header_bar_set_title_widget(GTK_HEADER_BAR(operator NativeWidget()), nullptr);
+        adw_header_bar_set_title_widget(ADW_HEADER_BAR(operator NativeWidget()), nullptr);
     }
 
     void HeaderBar::set_show_title_buttons(bool b)
     {
-        gtk_header_bar_set_show_title_buttons(GTK_HEADER_BAR(operator NativeWidget()), b);
+        adw_header_bar_set_show_start_title_buttons(ADW_HEADER_BAR(operator NativeWidget()), b);
+        adw_header_bar_set_show_end_title_buttons(ADW_HEADER_BAR(operator NativeWidget()), b);
     }
 
     bool HeaderBar::get_show_title_buttons() const
     {
-        return gtk_header_bar_get_show_title_buttons(GTK_HEADER_BAR(operator NativeWidget()));
+        return adw_header_bar_get_show_start_title_buttons(ADW_HEADER_BAR(operator NativeWidget())) or adw_header_bar_get_show_end_title_buttons(ADW_HEADER_BAR(operator NativeWidget()));
     }
 
     void HeaderBar::push_back(const Widget& widget)
     {
-        gtk_header_bar_pack_end(GTK_HEADER_BAR(operator NativeWidget()), widget.operator NativeWidget());
+        adw_header_bar_pack_end(ADW_HEADER_BAR(operator NativeWidget()), widget.operator NativeWidget());
     }
 
     void HeaderBar::push_front(const Widget& widget)
     {
-        gtk_header_bar_pack_start(GTK_HEADER_BAR(operator NativeWidget()), widget.operator NativeWidget());
+        adw_header_bar_pack_start(ADW_HEADER_BAR(operator NativeWidget()), widget.operator NativeWidget());
     }
 
     void HeaderBar::remove(const Widget& widget)
     {
-        gtk_header_bar_remove(GTK_HEADER_BAR(operator NativeWidget()), widget.operator NativeWidget());
+        adw_header_bar_remove(ADW_HEADER_BAR(operator NativeWidget()), widget.operator NativeWidget());
     }
 }

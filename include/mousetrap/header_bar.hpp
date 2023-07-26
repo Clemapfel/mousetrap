@@ -12,7 +12,7 @@ namespace mousetrap
     class HeaderBar;
     namespace detail
     {
-        using HeaderBarInternal = GtkHeaderBar;
+        using HeaderBarInternal = AdwHeaderBar;
         DEFINE_INTERNAL_MAPPING(HeaderBar);
     }
     #endif
