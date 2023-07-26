@@ -57,6 +57,7 @@ configure_file(${CMAKE_SOURCE_DIR}/include/mousetrap/gl_common.hpp.in ${CMAKE_SO
 # GTK4
 find_package(PkgConfig)
 pkg_check_modules(GTK REQUIRED gtk4)
+pkg_check_modules(Adwaita REQUIRED libadwaita-1)
 
 # Vector
 include(CheckIncludeFileCXX)
@@ -296,30 +297,30 @@ target_compile_features(mousetrap PUBLIC
 
 target_include_directories(mousetrap PUBLIC
     "${CMAKE_SOURCE_DIR}/include"
-    "${GTK_INCLUDE_DIRS}"
+    "${Adwaita_INCLUDE_DIRS}"
 )
 
 if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
     target_link_libraries(mousetrap PUBLIC
-        ${GTK_LIBRARIES}
+        ${Adwaita_LIBRARIES}
         ${OpenGL}
         ${GLEW}
     )
     set_target_properties(mousetrap PROPERTIES
         LINKER_LANGUAGE CXX
         POSITION_INDEPENDENT_CODE ON
-        INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
-        INTERFACE_LINK_LIBRARIES "${OpenGL};${GLEW};${GTK_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${Adwaita_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${OpenGL};${GLEW};${Adwaita_LIBRARIES}"
     )
 else()
     target_link_libraries(mousetrap PUBLIC
-        ${GTK_LIBRARIES}
+        ${Adwaita_LIBRARIES}
     )
     set_target_properties(mousetrap PROPERTIES
         LINKER_LANGUAGE CXX
         POSITION_INDEPENDENT_CODE ON
-        INTERFACE_INCLUDE_DIRECTORIES "${GTK_INCLUDE_DIRS}"
-        INTERFACE_LINK_LIBRARIES "${GTK_LIBRARIES}"
+        INTERFACE_INCLUDE_DIRECTORIES "${Adwaita_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${Adwaita_LIBRARIES}"
     )
 endif()
 
@@ -477,14 +478,14 @@ add_library(mousetrap_julia_binding SHARED
 target_link_libraries(mousetrap_julia_binding PUBLIC
     JlCxx::cxxwrap_julia
     mousetrap
-    ${GTK_LIBRARIES}
+    ${Adwaita_LIBRARIES}
     ${OpenGL}
     ${GLEW}
 )
 
 target_include_directories(mousetrap_julia_binding PUBLIC
     "${CMAKE_SOURCE_DIR}/include"
-    "${GTK_INCLUDE_DIRS}"
+    "${Adwaita_INCLUDE_DIRS}"
     "${Julia_INCLUDE_DIRS}"
 )
 

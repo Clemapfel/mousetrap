@@ -10,6 +10,7 @@
 #include <mousetrap/window.hpp>
 #include <mousetrap/action.hpp>
 #include <mousetrap/menu_model.hpp>
+#include <mousetrap/theme.hpp>
 
 #include <string>
 #include <map>
@@ -131,6 +132,14 @@ namespace mousetrap
             /// @param id
             /// @return true if action with id is registered, false otherwise
             bool has_action(const ActionID& id);
+
+            /// @brief set the current style theme, this will affect all windows
+            /// @param theme: theme to use
+            void set_current_theme(Theme);
+
+            /// @brief get current style theme
+            /// @return theme
+            Theme get_current_theme() const;
 
         private:
             detail::ApplicationInternal* _internal = nullptr;

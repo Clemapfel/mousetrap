@@ -18,7 +18,16 @@ namespace mousetrap
     class Window;
     namespace detail
     {
-        using WindowInternal = GtkWindow;
+        struct _WindowInternal
+        {
+            GObject parent_instance;
+
+            AdwWindow* native;
+            AdwHeaderBar* header_bar;
+            GtkBox* vbox;
+            GtkBox content_area
+        };
+        using WindowInternal = _WindowInternal;
         DEFINE_INTERNAL_MAPPING(Window);
     }
     #endif

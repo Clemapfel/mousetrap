@@ -6,5 +6,11 @@
 
 namespace mousetrap
 {
-
+    enum class Theme
+    {
+        DEFAULT_LIGHT,
+        DEFAULT_DARK,
+        HIGH_CONTRAST_LIGHT,
+        HIGH_CONTRAST_DARK
+    };
 }

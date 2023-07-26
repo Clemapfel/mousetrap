@@ -39,13 +39,13 @@ namespace mousetrap
         {
             log::initialize();
 
-            auto* native = gtk_application_new(id.c_str(), (GApplicationFlags) flags);
+            auto* native = adw_application_new(id.c_str(), (GApplicationFlags) flags);
             g_application_set_resource_base_path(G_APPLICATION(native), nullptr);
 
             auto* self = (ApplicationInternal*) g_object_new(application_internal_get_type(), nullptr);
             application_internal_init(self);
 
-            self->native = native;
+            self->native = GTK_APPLICATION(native);
             self->actions = new std::map<ActionID, detail::ActionInternal*>();
             self->holding = false;
             self->busy = false;
@@ -231,5 +231,45 @@ namespace mousetrap
         }
         else
             return Action(it->second);
+    }
+
+    void Application::set_current_theme(Theme theme)
+    {
+        auto* manager = adw_style_manager_get_default();
+        if (not ADW_IS_STYLE_MANAGER(manager))
+        {
+            log::critical("In Application::set_current_theme: Display not yet initialized, make sure to call this function after `activate` was emitted on this application instance", MOUSETRAP_DOMAIN);
+            return;
+        }
+
+        adw_style_manager_set_color_scheme(manager, theme == Theme::DEFAULT_DARK ? ADW_COLOR_SCHEME_FORCE_DARK : ADW_COLOR_SCHEME_FORCE_LIGHT);
+        if (theme == Theme::HIGH_CONTRAST_DARK || theme == Theme::HIGH_CONTRAST_LIGHT)
+            if (adw_style_manager_get_high_contrast(manager) == false)
+                log::warning("In Application::set_current_theme: High Contrast theme not supported, using default fallback instead.", MOUSETRAP_DOMAIN);
+    }
+
+    Theme Application::get_current_theme() const
+    {
+        auto* manager = adw_style_manager_get_default();
+        if (not ADW_IS_STYLE_MANAGER(manager))
+            return Theme::DEFAULT_DARK;
+
+        auto dark = adw_style_manager_get_dark(manager);
+        auto high_contrast = adw_style_manager_get_high_contrast(manager);
+
+        if (dark)
+        {
+            if (high_contrast)
+                return Theme::HIGH_CONTRAST_DARK;
+            else
+                return Theme::DEFAULT_DARK;
+        }
+        else
+        {
+            if (high_contrast)
+                return Theme::HIGH_CONTRAST_LIGHT;
+            else
+                return Theme::DEFAULT_LIGHT;
+        }
     }
 }

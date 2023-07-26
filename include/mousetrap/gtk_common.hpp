@@ -5,6 +5,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <adwaita.h>
 #include <string>
 
 #include <iostream> //TODO
