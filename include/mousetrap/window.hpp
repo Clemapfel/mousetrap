@@ -22,7 +22,7 @@ namespace mousetrap
         {
             GObject parent_instance;
 
-            AdwWindow* native;
+            AdwApplicationWindow* native;
             AdwHeaderBar* header_bar;
             GtkBox* vbox;
             AdwBin* content_area;

@@ -18,28 +18,33 @@ namespace mousetrap
         static void window_internal_finalize(GObject* object)
         {
             auto* self = MOUSETRAP_WINDOW_INTERNAL(object);
-
-
             G_OBJECT_CLASS(window_internal_parent_class)->finalize(object);
         }
 
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(WindowInternal, window_internal, WINDOW_INTERNAL)
 
-        static WindowInternal* window_internal_new()
+        void on_last_window_destroyed(void* self, GtkApplication* app)
+        {
+            g_application_release(G_APPLICATION(app));
+        }
+
+        static WindowInternal* window_internal_new(GtkApplication* app)
         {
             log::initialize();
 
             auto* self = (WindowInternal*) g_object_new(window_internal_get_type(), nullptr);
             window_internal_init(self);
 
-            self->native = ADW_WINDOW(adw_window_new());
+            self->native = ADW_APPLICATION_WINDOW(adw_application_window_new(app));
             self->header_bar = ADW_HEADER_BAR(adw_header_bar_new());
             self->vbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
             self->content_area = ADW_BIN(adw_bin_new());
 
+            gtk_application_add_window(app, GTK_WINDOW(self->native));
             gtk_window_set_focus_visible(GTK_WINDOW(self->native), true);
 
-            adw_window_set_content(self->native, GTK_WIDGET(self->vbox));
+            adw_application_window_set_content(self->native, GTK_WIDGET(self->vbox));
+
             gtk_box_append(self->vbox, GTK_WIDGET(self->header_bar));
             gtk_box_append(self->vbox, GTK_WIDGET(self->content_area));
 
@@ -48,12 +53,10 @@ namespace mousetrap
             gtk_widget_set_vexpand(GTK_WIDGET(self->content_area), true);
             gtk_widget_set_hexpand(GTK_WIDGET(self->content_area), true);
 
-            return self;
-        }
+            detail::attach_ref_to(G_OBJECT(self->native), self);
+            g_signal_connect(self->native, "destroy", G_CALLBACK(detail::on_last_window_destroyed), app);
 
-        void on_application_window_destroy(AdwWindow* window, GtkApplication* app)
-        {
-            g_application_release(G_APPLICATION(app));
+            return self;
         }
     }
     
@@ -70,12 +73,7 @@ namespace mousetrap
           CTOR_SIGNAL(Window, map),
           CTOR_SIGNAL(Window, unmap)
     {
-        _internal = g_object_ref(detail::window_internal_new());
-        detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
-        gtk_application_add_window(app.operator GtkApplication*(), GTK_WINDOW(_internal->native));
-        gtk_window_set_application(GTK_WINDOW(_internal->native), app.operator GtkApplication*());
-
-        g_signal_connect(_internal->native, "destroy", G_CALLBACK(detail::on_application_window_destroy), app.operator GtkApplication*());
+        _internal = g_object_ref(detail::window_internal_new(app.operator GtkApplication*()));
     }
 
     Window::Window(detail::WindowInternal* internal)

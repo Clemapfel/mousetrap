@@ -38,6 +38,11 @@ namespace mousetrap
         g_object_unref(_internal);
     }
 
+    NativeObject ClampFrame::get_internal() const
+    {
+        return G_OBJECT(_internal);
+    }
+
     void ClampFrame::set_orientation(Orientation orientation)
     {
         gtk_orientable_set_orientation(GTK_ORIENTABLE(Widget::operator NativeWidget()), (GtkOrientation) orientation);

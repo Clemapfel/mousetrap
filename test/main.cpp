@@ -41,6 +41,7 @@ int main(int argc, char** argv)
         static auto app = Application("test.id");
         app.connect_signal_activate([](Application& app)
         {
+            /*
             auto window = Window(app);
             auto button = Button();
             button.connect_signal_clicked([&](Button&){
@@ -57,6 +58,13 @@ int main(int argc, char** argv)
             box.push_back(HeaderBar());
             window.set_child(box);
             window.present();
+             */
+
+            for (size_t i = 0; i < 3; ++i)
+            {
+                auto window = Window(app);
+                window.present();
+            }
         });
         app.run();
     }
