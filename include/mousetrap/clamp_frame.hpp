@@ -30,6 +30,7 @@ namespace mousetrap
         HAS_SIGNAL(ClampFrame, show),
         HAS_SIGNAL(ClampFrame, map),
         HAS_SIGNAL(ClampFrame, unmap)
+
     {
         public:
             /// @brief construct
