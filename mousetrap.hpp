@@ -9,6 +9,7 @@
 #include <mousetrap/button.hpp>
 #include <mousetrap/center_box.hpp>
 #include <mousetrap/check_button.hpp>
+#include <mousetrap/clamp_frame.hpp>
 #include <mousetrap/click_event_controller.hpp>
 #include <mousetrap/clipboard.hpp>
 #include <mousetrap/color.hpp>
