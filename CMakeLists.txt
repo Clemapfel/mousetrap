@@ -1,26 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
 
-#
-# MOUSETRAP: GUI Library
-#
-# Dependencies:
-#   GTK4
-#   OpenGL
-#   GLEW
-#   GLM (OpenGL Math)
-#
-# Variables:
-#   MOUSETRAP_BUILD_TESTS: option
-#       Whether to build tests
-#
-#   MOUSETRAP_BUILD_DOCUMENTATION: option
-#       Whether to build the documentation.
-#       Additional Dependencies when using this option:
-#           Doxygen
-#
-#   MOUSETRAP_USE_OPENGL: boolean
-#       If true, all OpenGL-related parts of mousetrap will not be available
-
 ### PROJECT ###
 
 project(mousetrap
@@ -58,6 +37,9 @@ configure_file(${CMAKE_SOURCE_DIR}/include/mousetrap/gl_common.hpp.in ${CMAKE_SO
 find_package(PkgConfig)
 pkg_check_modules(GTK REQUIRED gtk4)
 pkg_check_modules(Adwaita REQUIRED libadwaita-1)
+
+message(WARNING ${Adwaita_INCLUDE_DIRS})
+message(WARNING ${Adwaita_LIBARIES})
 
 # Vector
 include(CheckIncludeFileCXX)
@@ -373,7 +355,3 @@ endif()
 ### INSTALL ###
 
 include(cmake/install-rules.cmake)
-
-### JULIA
-
-find_package(JlCxx REQUIRED)
