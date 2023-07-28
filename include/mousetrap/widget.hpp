@@ -330,6 +330,17 @@ namespace mousetrap
             /// @param action Action
             void set_listens_for_shortcut_actions(Action&);
 
+            /// @brief add css class
+            /// @param code
+            void add_css_class(const std::string& css);
+
+            /// @brief remove css class
+            void remove_css_class(const std::string& css);
+
+            /// @brief get all applied css classes
+            /// @return classes
+            std::vector<std::string> get_css_classes() const;
+
         protected:
             /// @brief ctor protected. Only inheriting classes should call this
             /// @param widget GtkWidget instance
