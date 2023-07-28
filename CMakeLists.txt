@@ -148,6 +148,7 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/inline/file_chooser.inl
     include/mousetrap/color_chooser.hpp
     include/mousetrap/alert_dialog.hpp
+    include/mousetrap/theme.hpp
 )
 
 set(MOUSETRAP_SOURCE_FILES
@@ -233,6 +234,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/color_chooser.cpp
     src/gtk_common.cpp
     src/alert_dialog.cpp
+    src/clamp_frame.cpp
 )
 
 if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
@@ -251,7 +253,8 @@ if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
             include/mousetrap/texture_scale_mode.hpp
             include/mousetrap/texture_wrap_mode.hpp
         )
-    set(MOUSETRAP_HEADER_FILES "${MOUSETRAP_HEADER_FILES};${MOUSETRAP_OPENGL_HEADER_FILES}" include/mousetrap/theme.hpp include/mousetrap/theme.hpp include/mousetrap/clamp_frame.hpp src/clamp_frame.cpp)
+
+    set(MOUSETRAP_HEADER_FILES "${MOUSETRAP_HEADER_FILES};${MOUSETRAP_OPENGL_HEADER_FILES}")
 
     set(MOUSETRAP_OPENGL_SOURCE_FILES
             src/blend_mode.cpp
