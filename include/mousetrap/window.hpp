@@ -16,6 +16,7 @@ namespace mousetrap
     #ifndef DOXYGEN
     class Application;
     class Window;
+    class HeaderBar;
     namespace detail
     {
         struct _WindowInternal
@@ -25,6 +26,7 @@ namespace mousetrap
             AdwApplicationWindow* native;
             AdwHeaderBar* header_bar;
             GtkBox* vbox;
+            AdwBin* header_bar_area;
             AdwBin* content_area;
         };
         using WindowInternal = _WindowInternal;
@@ -121,12 +123,9 @@ namespace mousetrap
             /// @return title
             std::string get_title() const;
 
-            /// @brief replace the titlebar with a custom widget, usually a mousetrap::HeaderBar
-            /// @param widget may be null
-            void set_titlebar_widget(const Widget&);
-
-            /// @brief replace the titlebar custom widget with the default
-            void remove_titlebar_widget();
+            /// @brief access the windows header bar widget
+            /// @return header abr
+            [[nodiscard]] HeaderBar get_header_bar() const;
 
             /// @brief set whether the window should be modal. A modal window prevents users from interacting with any other open application window
             /// @param b true if window should be modal, false otherwise

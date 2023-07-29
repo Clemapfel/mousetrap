@@ -41,8 +41,8 @@ int main(int argc, char** argv)
         static auto app = Application("test.id");
         app.connect_signal_activate([](Application& app)
         {
-            /*
             auto window = Window(app);
+            window.set_title("test");
             auto button = Button();
             button.connect_signal_clicked([&](Button&){
                auto current_theme = app.get_current_theme();
@@ -52,19 +52,8 @@ int main(int argc, char** argv)
                    app.set_current_theme(Theme::DEFAULT_DARK);
             });
 
-            auto box = Box(Orientation::HORIZONTAL);
-            box.push_back(button);
-            box.push_back(Button());
-            box.push_back(HeaderBar());
-            window.set_child(box);
+            window.get_header_bar().push_front(button);
             window.present();
-             */
-
-            for (size_t i = 0; i < 3; ++i)
-            {
-                auto window = Window(app);
-                window.present();
-            }
         });
         app.run();
     }

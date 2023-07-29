@@ -7,6 +7,7 @@
 #include <mousetrap/application.hpp>
 #include <mousetrap/log.hpp>
 #include <mousetrap/render_area.hpp>
+#include <mousetrap/header_bar.hpp>
 
 namespace mousetrap
 {
@@ -39,17 +40,19 @@ namespace mousetrap
             self->header_bar = ADW_HEADER_BAR(adw_header_bar_new());
             self->vbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
             self->content_area = ADW_BIN(adw_bin_new());
+            self->header_bar_area = ADW_BIN(adw_bin_new());
 
             gtk_application_add_window(app, GTK_WINDOW(self->native));
             gtk_window_set_focus_visible(GTK_WINDOW(self->native), true);
 
             adw_application_window_set_content(self->native, GTK_WIDGET(self->vbox));
+            adw_bin_set_child(self->header_bar_area, GTK_WIDGET(self->header_bar));
 
-            gtk_box_append(self->vbox, GTK_WIDGET(self->header_bar));
+            gtk_box_append(self->vbox, GTK_WIDGET(self->header_bar_area));
             gtk_box_append(self->vbox, GTK_WIDGET(self->content_area));
 
-            gtk_widget_set_vexpand(GTK_WIDGET(self->header_bar), false);
-            gtk_widget_set_valign(GTK_WIDGET(self->header_bar), GTK_ALIGN_START);
+            gtk_widget_set_vexpand(GTK_WIDGET(self->header_bar_area), false);
+            gtk_widget_set_valign(GTK_WIDGET(self->header_bar_area), GTK_ALIGN_START);
             gtk_widget_set_vexpand(GTK_WIDGET(self->content_area), true);
             gtk_widget_set_hexpand(GTK_WIDGET(self->content_area), true);
 
@@ -191,18 +194,9 @@ namespace mousetrap
         return gtk_window_get_destroy_with_parent(GTK_WINDOW(_internal->native));
     }
 
-    void Window::set_titlebar_widget(const Widget& widget)
+    HeaderBar Window::get_header_bar() const
     {
-        auto* ptr = &widget;
-        WARN_IF_SELF_INSERTION(Window::set_titlebar_widget, this, ptr);
-        WARN_IF_PARENT_EXISTS(Window::set_titlebar_widget, widget);
-
-        gtk_window_set_titlebar(GTK_WINDOW(_internal->native), widget.operator NativeWidget());
-    }
-
-    void Window::remove_titlebar_widget()
-    {
-        gtk_window_set_titlebar(GTK_WINDOW(_internal->native), nullptr);
+        return HeaderBar(_internal->header_bar);
     }
 
     void Window::set_is_modal(bool b)
@@ -222,12 +216,12 @@ namespace mousetrap
 
     void Window::set_is_decorated(bool b)
     {
-        gtk_window_set_decorated(GTK_WINDOW(_internal->native), b);
+        gtk_widget_set_visible(GTK_WIDGET(_internal->header_bar_area), b);
     }
 
     bool Window::get_is_decorated() const
     {
-        return gtk_window_get_decorated(GTK_WINDOW(_internal->native));
+        return gtk_widget_get_visible(GTK_WIDGET(_internal->header_bar_area));
     }
 
     void Window::set_has_close_button(bool b)
