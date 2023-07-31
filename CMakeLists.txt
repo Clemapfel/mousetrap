@@ -31,15 +31,10 @@ if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
     find_library(GLEW REQUIRED NAMES glew glew32 GLEW GLEW32)
 endif()
 
-configure_file(${CMAKE_SOURCE_DIR}/include/mousetrap/gl_common.hpp.in ${CMAKE_SOURCE_DIR}/include/mousetrap/gl_common.hpp @ONLY)
-
 # GTK4
 find_package(PkgConfig)
 pkg_check_modules(GTK REQUIRED gtk4)
 pkg_check_modules(Adwaita REQUIRED libadwaita-1)
-
-message(WARNING ${Adwaita_INCLUDE_DIRS})
-message(WARNING ${Adwaita_LIBARIES})
 
 # Vector
 include(CheckIncludeFileCXX)
@@ -279,6 +274,12 @@ add_library(mousetrap SHARED
 target_compile_features(mousetrap PUBLIC
     cxx_std_17
 )
+
+if(${MOUSETRAP_ENABLE_OPENGL_COMPONENT})
+    target_compile_definitions(mousetrap PUBLIC MOUSETRAP_ENABLE_OPENGL_COMPONENT=1)
+else()
+    target_compile_definitions(mousetrap PUBLIC MOUSETRAP_ENABLE_OPENGL_COMPONENT=0)
+endif()
 
 target_include_directories(mousetrap PUBLIC
     "${CMAKE_SOURCE_DIR}/include"

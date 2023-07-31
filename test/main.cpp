@@ -37,6 +37,11 @@ void temp()
 
 int main(int argc, char** argv)
 {
+    adw_init();
+    return 0;
+
+    std::cout << MOUSETRAP_ENABLE_OPENGL_COMPONENT << std::endl;
+
     {
         static auto app = Application("test.id");
         app.connect_signal_activate([](Application& app)
