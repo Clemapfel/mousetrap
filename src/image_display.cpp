@@ -127,13 +127,6 @@ namespace mousetrap
         return _internal->size;
     }
 
-    void ImageDisplay::create_from_image(const Image& image)
-    {
-        gtk_image_clear(GTK_IMAGE(operator NativeWidget()));
-        gtk_image_set_from_pixbuf(GTK_IMAGE(operator NativeWidget()), image.operator GdkPixbuf*());
-        _internal->size = image.get_size();
-    }
-
     bool ImageDisplay::create_from_file(const std::string& path)
     {
         gtk_image_clear(GTK_IMAGE(operator NativeWidget()));

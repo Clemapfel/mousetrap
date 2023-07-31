@@ -90,6 +90,8 @@ namespace mousetrap
             /// @param scale scale of the icon, or 1 for no scaling
             bool create_from_file(const std::string& path, size_t square_resolution, size_t scale = 1);
 
+            bool create_from_image(const Image&);
+
             /// @brief create icon from theme
             /// @param theme
             /// @param id id of an icon
