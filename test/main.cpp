@@ -26,8 +26,7 @@ int main(int argc, char** argv)
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
-        window.set_child(Button());
-        window.set_child(Button());
+        window.set_child(RenderArea());
         window.present();
     });
     return app.run();

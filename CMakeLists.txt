@@ -18,7 +18,7 @@ set(PROJECT_PREFIX "")#"mousetrap_") # TODO
 
 option(MOUSETRAP_ENABLE_OPENGL_COMPONENT ON)
 message("[mousetrap] OpenGL Component enabled: ${MOUSETRAP_ENABLE_OPENGL_COMPONENT}")
-if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
+if (${MOUSETRAP_ENABLE_OPENGL_COMPONENT})
     # OpenGL
     find_package(OpenGL)
     if (NOT ${OpenGL_FOUND}) # use library override
@@ -28,6 +28,13 @@ if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
     # GLEW
     find_library(GLEW REQUIRED NAMES glew glew32 GLEW GLEW32)
 endif()
+
+if (${MOUSETRAP_ENABLE_OPENGL_COMPONENT})
+    set(MOUSETRAP_ENABLE_OPENGL_COMPONENT_BOOL 1)
+else()
+    set(MOUSETRAP_ENABLE_OPENGL_COMPONENT_BOOL 0)
+endif()
+configure_file(${CMAKE_SOURCE_DIR}/include/mousetrap/gl_common.hpp.in ${CMAKE_SOURCE_DIR}/include/mousetrap/gl_common.hpp @ONLY)
 
 # GTK4
 find_package(PkgConfig)
@@ -272,12 +279,6 @@ add_library(mousetrap SHARED
 target_compile_features(mousetrap PUBLIC
     cxx_std_17
 )
-
-if(${MOUSETRAP_ENABLE_OPENGL_COMPONENT})
-    target_compile_definitions(mousetrap PUBLIC MOUSETRAP_ENABLE_OPENGL_COMPONENT=1)
-else()
-    target_compile_definitions(mousetrap PUBLIC MOUSETRAP_ENABLE_OPENGL_COMPONENT=0)
-endif()
 
 target_include_directories(mousetrap PUBLIC
     "${CMAKE_SOURCE_DIR}/include"

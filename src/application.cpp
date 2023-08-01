@@ -69,7 +69,7 @@ namespace mousetrap
 
         g_signal_connect(_internal->native, "startup", G_CALLBACK(detail::mark_gtk_initialized), nullptr);
 
-        #if MOUSETRAP_ENABLE_OPENGL
+        #if MOUSETRAP_ENABLE_OPENGL_COMPONENT
         g_signal_connect(_internal->native, "startup", G_CALLBACK(detail::initialize_opengl), nullptr);
         g_signal_connect(_internal->native, "shutdown", G_CALLBACK(detail::shutdown_opengl), nullptr);
         #endif
