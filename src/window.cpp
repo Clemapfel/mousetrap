@@ -80,7 +80,7 @@ namespace mousetrap
     }
 
     Window::Window(detail::WindowInternal* internal)
-        : Widget(GTK_WIDGET(internal)),
+        : Widget(GTK_WIDGET(internal->native)),
           CTOR_SIGNAL(Window, close_request),
           CTOR_SIGNAL(Window, activate_default_widget),
           CTOR_SIGNAL(Window, activate_focused_widget),
@@ -251,10 +251,6 @@ namespace mousetrap
 
     void Window::set_default_widget(const Widget& widget)
     {
-        auto* ptr = &widget;
-        WARN_IF_SELF_INSERTION(Window::set_child, this, ptr);
-        WARN_IF_PARENT_EXISTS(Window::set_child, widget);
-
         gtk_window_set_default_widget(GTK_WINDOW(_internal->native), widget.operator GtkWidget*());
     }
 

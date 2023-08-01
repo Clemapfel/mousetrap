@@ -176,11 +176,17 @@ namespace mousetrap
             \
             void initialize() \
             { \
-                if (_internal == nullptr) \
-                { \
+                auto* internal_maybe = detail::get_data<detail::SIGNAL_INTERNAL_CLASS_NAME(CamelCase)>(_instance->get_internal(), g_signal_id); \
+                if (internal_maybe == nullptr)                                  \
+                {\
                     _internal = detail::has_signal_##snake_case##_internal_new(_instance->get_internal()); \
-                    detail::attach_ref_to(_internal->instance, _internal); \
-                } \
+                    detail::attach_ref_to(_internal->instance, _internal);     \
+                    detail::set_data<detail::SIGNAL_INTERNAL_CLASS_NAME(CamelCase)>(_instance->get_internal(), g_signal_id, _internal);                                                           \
+                }                                                               \
+                else                                                            \
+                    _internal = internal_maybe;                                 \
+                                                                                \
+                g_object_ref(_internal);\
             } \
         \
         protected: \

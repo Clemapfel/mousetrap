@@ -26,12 +26,8 @@ int main(int argc, char** argv)
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
-        window.connect_signal_close_request([](Window&){
-            return WindowCloseRequestResult::ALLOW_CLOSE;
-        });
-
-        std::cout << GTK_IS_WIDGET(window.operator NativeObject()) << std::endl;
-        std::cout << GTK_IS_WIDGET(window.operator NativeWidget()) << std::endl;
+        window.set_child(Button());
+        window.set_child(Button());
         window.present();
     });
     return app.run();
