@@ -58,7 +58,9 @@ namespace mousetrap
             { \
                 auto temp = T((typename detail::InternalMapping<T>::value*) internal->instance); \
                 if (internal->function and not internal->is_blocked) \
-                    return internal->function((void*) &temp); \
+                    return internal->function((void*) &temp);                       \
+                else                                                                \
+                    return return_t();\
             } \
             \
             void initialize() \
@@ -168,6 +170,8 @@ namespace mousetrap
                 auto temp = T((typename detail::InternalMapping<T>::value*) internal->instance); \
                 if (internal->function and not internal->is_blocked) \
                     return internal->function((void*) &temp, arg_name_only_list); \
+                else \
+                    return return_t(); \
             } \
             \
             void initialize() \

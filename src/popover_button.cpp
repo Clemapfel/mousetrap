@@ -106,6 +106,11 @@ namespace mousetrap
             PopoverMenu(_internal->menu).refresh_widgets();
     }
 
+    void PopoverButton::set_icon(const Icon& icon)
+    {
+        gtk_menu_button_set_child(_internal->native, gtk_image_new_from_gicon(icon.operator GIcon*()));
+    }
+
     void PopoverButton::remove_child()
     {
         gtk_menu_button_set_child(_internal->native, nullptr);

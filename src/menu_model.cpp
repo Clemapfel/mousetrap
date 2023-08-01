@@ -101,8 +101,18 @@ namespace mousetrap
     {
         auto* item = g_menu_item_new(nullptr, ("app." + action.get_id()).c_str());
 
-        g_menu_item_set_attribute_value(item, "verb-icon", g_icon_serialize(icon.operator GIcon*()));
-        g_menu_item_set_attribute_value(item, "icon", g_icon_serialize(icon.operator GIcon*()));
+        if (icon.operator GIcon*() == nullptr)
+        {
+            //log::warning("In MenuModel::add_icon: Icon was not yet initialized, this will cause the menu item to appear empty");
+            g_menu_item_set_attribute_value(item, "verb-icon", nullptr);
+            g_menu_item_set_attribute_value(item, "icon", nullptr);
+        }
+        else
+        {
+            g_menu_item_set_attribute_value(item, "verb-icon", g_icon_serialize(icon.operator GIcon*()));
+            g_menu_item_set_attribute_value(item, "icon", g_icon_serialize(icon.operator GIcon*()));
+        }
+
         g_menu_append_item(_internal->native, item);
         g_object_unref(item);
     }

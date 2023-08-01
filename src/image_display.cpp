@@ -150,6 +150,13 @@ namespace mousetrap
         return true;
     }
 
+    void ImageDisplay::create_from_image(const Image& image)
+    {
+        gtk_image_clear(GTK_IMAGE(operator NativeWidget()));
+        gtk_image_set_from_pixbuf(GTK_IMAGE(operator NativeWidget()), image.operator GdkPixbuf*());
+        _internal->size = image.get_size();
+    }
+
     void ImageDisplay::create_from_icon(const Icon& icon)
     {
         auto size = icon.get_size() * Vector2ui(icon.get_scale());

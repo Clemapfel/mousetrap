@@ -107,7 +107,7 @@ namespace mousetrap
 
     Window::operator NativeObject() const
     {
-        return get_internal();
+        return G_OBJECT(_internal->native);
     }
 
     void Window::set_application(Application& app)
@@ -175,7 +175,7 @@ namespace mousetrap
 
     void Window::set_title(const std::string& str)
     {
-        adw_header_bar_set_title_widget(_internal->header_bar, gtk_label_new(str.c_str()));
+        gtk_window_set_title(GTK_WINDOW(_internal->native), str.c_str());
     }
 
     std::string Window::get_title() const
@@ -211,7 +211,7 @@ namespace mousetrap
 
     void Window::set_transient_for(Window& partner)
     {
-        gtk_window_set_transient_for(GTK_WINDOW(_internal->native), GTK_WINDOW(partner._internal));
+        gtk_window_set_transient_for(GTK_WINDOW(_internal->native), GTK_WINDOW(partner._internal->native));
     }
 
     void Window::set_is_decorated(bool b)

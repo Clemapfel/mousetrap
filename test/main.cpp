@@ -20,46 +20,19 @@
 
 using namespace mousetrap;
 
-static void on_css_provider_parsing_error(GtkCssProvider* self, GtkCssSection* section, GError* error, void*)
-{
-    std::cout << gtk_css_section_to_string(section) << std::endl;
-
-    if (error != nullptr)
-        std::cout << error->message << std::endl;
-}
-
-void temp()
-{
-    auto* settings = gtk_settings_get_for_display(gdk_display_get_default());
-    //gtk_settings_reset_property(settings, "gtk-application-prefer-dark-theme");
-    g_object_set(settings, "gtk-application-prefer-dark-theme", nullptr);
-}
-
 int main(int argc, char** argv)
 {
-    adw_init();
-    return 0;
-
-    std::cout << MOUSETRAP_ENABLE_OPENGL_COMPONENT << std::endl;
-
+    auto app = Application("test.app");
+    app.connect_signal_activate([](Application& app)
     {
-        static auto app = Application("test.id");
-        app.connect_signal_activate([](Application& app)
-        {
-            auto window = Window(app);
-            window.set_title("test");
-            auto button = Button();
-            button.connect_signal_clicked([&](Button&){
-               auto current_theme = app.get_current_theme();
-               if (current_theme == Theme::DEFAULT_DARK)
-                   app.set_current_theme(Theme::DEFAULT_LIGHT);
-               else
-                   app.set_current_theme(Theme::DEFAULT_DARK);
-            });
-
-            window.get_header_bar().push_front(button);
-            window.present();
+        auto window = Window(app);
+        window.connect_signal_close_request([](Window&){
+            return WindowCloseRequestResult::ALLOW_CLOSE;
         });
-        app.run();
-    }
+
+        std::cout << GTK_IS_WIDGET(window.operator NativeObject()) << std::endl;
+        std::cout << GTK_IS_WIDGET(window.operator NativeWidget()) << std::endl;
+        window.present();
+    });
+    return app.run();
 }

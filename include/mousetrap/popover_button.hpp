@@ -67,6 +67,10 @@ namespace mousetrap
             /// @param widget can be nullptr
             void set_child(const Widget& widget);
 
+            /// @brief set the label widget child from icon
+            /// @param icon
+            void set_icon(const Icon&);
+
             /// @brief remove child
             void remove_child();
 
