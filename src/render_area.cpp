@@ -115,10 +115,34 @@ namespace mousetrap
             if (self->apply_msaa)
             {
                 self->render_texture = new MultisampledRenderTexture(msaa_samples);
+
                 self->render_texture_shape = new Shape();
                 self->render_texture_shape->as_rectangle({-1, 1}, {2, 2});
                 self->render_texture_shape->set_texture(self->render_texture);
-                self->render_texture_shape_task = new RenderTask(*self->render_texture_shape);
+
+                static const std::string RENDER_TEXTURE_SHADER_SOURCE = R"(
+                    #version 130
+
+                    in vec4 _vertex_color;
+                    in vec2 _texture_coordinates;
+                    in vec3 _vertex_position;
+
+                    out vec4 _fragment_color;
+
+                    uniform int _texture_set;
+                    uniform sampler2D _texture;
+
+                    void main()
+                    {
+                        // flip horizontally to correct render texture inversion
+                        _fragment_color = texture2D(_texture, vec2(_texture_coordinates.x, 1 - _texture_coordinates.y)) * _vertex_color;
+                    }
+                )";
+
+                self->render_texture_shader = new Shader();
+                self->render_texture_shader->create_from_string(ShaderType::FRAGMENT, RENDER_TEXTURE_SHADER_SOURCE);
+
+                self->render_texture_shape_task = new RenderTask(*self->render_texture_shape, self->render_texture_shader);
             }
             else
             {

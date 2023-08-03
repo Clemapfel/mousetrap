@@ -44,6 +44,7 @@ namespace mousetrap
             MultisampledRenderTexture* render_texture;
             Shape* render_texture_shape;
             RenderTask* render_texture_shape_task;
+            Shader* render_texture_shader;
         };
         using RenderAreaInternal = _RenderAreaInternal;
         DEFINE_INTERNAL_MAPPING(RenderArea);
