@@ -31,6 +31,7 @@ namespace mousetrap
 
     #ifndef DOXYGEN
     class RenderArea;
+    class MultisampledRenderTexture;
     namespace detail
     {
         struct _RenderAreaInternal
@@ -38,6 +39,11 @@ namespace mousetrap
             GObject parent;
             GtkGLArea* native;
             std::vector<detail::RenderTaskInternal*>* tasks;
+
+            bool apply_msaa;
+            MultisampledRenderTexture* render_texture;
+            Shape* render_texture_shape;
+            RenderTask* render_texture_shape_task;
         };
         using RenderAreaInternal = _RenderAreaInternal;
         DEFINE_INTERNAL_MAPPING(RenderArea);
@@ -45,6 +51,25 @@ namespace mousetrap
     #endif
 
     class RenderTask;
+
+    /// @brief quality of MSAA aliasing applied to render area
+    enum class AntiAliasingQuality
+    {
+        /// @brief no anti aliasing
+        OFF = 0,
+
+        /// @brief MSAA with 2 samples per fragment
+        MINIMAL = 2,
+
+        /// @brief MSAA with 4 samples per fragment
+        GOOD = 4,
+
+        /// @brief MSAA with 8 samples per fragment
+        BETTER = 8,
+
+        /// @brief MSAA with 16 samples per fragment
+        BEST = 16,
+    };
 
     /// @brief area that allows OpenGL primitives to be rendered
     /// \signals
@@ -67,7 +92,8 @@ namespace mousetrap
     {
         public:
             /// @brief constrcut
-            RenderArea();
+            /// @param msaa_samples
+            RenderArea(AntiAliasingQuality msaa_samples = AntiAliasingQuality::OFF);
 
             /// @brief destructor
             ~RenderArea();

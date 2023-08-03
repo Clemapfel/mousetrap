@@ -26,7 +26,20 @@ int main(int argc, char** argv)
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
-        window.set_child(RenderArea());
+
+        static auto render_area = RenderArea(AntiAliasingQuality::GOOD);
+        static auto shape = Shape::Circle({0, 0}, 0.75, 3);
+
+        render_area.add_render_task(RenderTask(shape));
+        render_area.set_tick_callback([](FrameClock){
+            shape.rotate(degrees(1), shape.get_centroid());
+            render_area.queue_render();
+            return TickCallbackResult::CONTINUE;
+        });
+
+        auto frame = AspectFrame(1);
+        frame.set_child(render_area);
+        window.set_child(frame);
         window.present();
     });
     return app.run();

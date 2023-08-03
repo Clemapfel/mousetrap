@@ -8,6 +8,8 @@
 
 #include <mousetrap/render_area.hpp>
 #include <mousetrap/render_task.hpp>
+#include <mousetrap/msaa_render_texture.hpp>
+#include <mousetrap/shape.hpp>
 
 namespace mousetrap
 {
@@ -93,23 +95,43 @@ namespace mousetrap
                 g_object_unref(task);
 
             delete self->tasks;
+            delete self->render_texture;
+            delete self->render_texture_shape;
+            delete self->render_texture_shape_task;
         }
 
         DEFINE_NEW_TYPE_TRIVIAL_INIT(RenderAreaInternal, render_area_internal, RENDER_AREA_INTERNAL)
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(RenderAreaInternal, render_area_internal, RENDER_AREA_INTERNAL)
 
-        static RenderAreaInternal* render_area_internal_new(GtkGLArea* area)
+        static RenderAreaInternal* render_area_internal_new(GtkGLArea* area, int32_t msaa_samples)
         {
             auto* self = (RenderAreaInternal*) g_object_new(render_area_internal_get_type(), nullptr);
             render_area_internal_init(self);
 
             self->native = area;
             self->tasks = new std::vector<detail::RenderTaskInternal*>();
+            self->apply_msaa = msaa_samples > 0;
+
+            if (self->apply_msaa)
+            {
+                self->render_texture = new MultisampledRenderTexture(msaa_samples);
+                self->render_texture_shape = new Shape();
+                self->render_texture_shape->as_rectangle({-1, 1}, {2, 2});
+                self->render_texture_shape->set_texture(self->render_texture);
+                self->render_texture_shape_task = new RenderTask(*self->render_texture_shape);
+            }
+            else
+            {
+                self->render_texture = nullptr;
+                self->render_texture_shape = nullptr;
+                self->render_texture_shape_task = nullptr;
+            }
+
             return self;
         }
     }
 
-    RenderArea::RenderArea()
+    RenderArea::RenderArea(AntiAliasingQuality msaa_samples)
         : Widget(gtk_gl_area_new()),
           CTOR_SIGNAL(RenderArea, render),
           CTOR_SIGNAL(RenderArea, resize),
@@ -121,7 +143,7 @@ namespace mousetrap
           CTOR_SIGNAL(RenderArea, map),
           CTOR_SIGNAL(RenderArea, unmap)
     {
-        _internal = detail::render_area_internal_new(GTK_GL_AREA(operator NativeWidget()));
+        _internal = detail::render_area_internal_new(GTK_GL_AREA(operator NativeWidget()), (int) msaa_samples);
         detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
 
         gtk_gl_area_set_auto_render(GTK_GL_AREA(operator NativeWidget()), TRUE);
@@ -202,6 +224,10 @@ namespace mousetrap
     void RenderArea::on_resize(GtkGLArea* area, gint width, gint height, detail::RenderAreaInternal* internal)
     {
         assert(GDK_IS_GL_CONTEXT(detail::GL_CONTEXT));
+
+        if (internal->apply_msaa)
+            internal->render_texture->create(width, height);
+
         gtk_gl_area_make_current(area);
         gtk_gl_area_queue_render(area);
     }
@@ -211,18 +237,41 @@ namespace mousetrap
         assert(GDK_IS_GL_CONTEXT(detail::GL_CONTEXT));
         gtk_gl_area_make_current(area);
 
-        RenderArea::clear();
-
-        glEnable(GL_BLEND);
-        set_current_blend_mode(BlendMode::NORMAL);
-
-        for (auto* internal : *(internal->tasks))
+        if (internal->apply_msaa)
         {
-            auto task = RenderTask(internal);
-            task.render();
+            internal->render_texture->bind_as_render_target();
+
+            RenderArea::clear();
+            glEnable(GL_BLEND);
+            set_current_blend_mode(BlendMode::NORMAL);
+
+            for (auto* internal:*(internal->tasks))
+                RenderTask(internal).render();
+
+            RenderArea::flush();
+
+            internal->render_texture->unbind_as_render_target();
+
+            RenderArea::clear();
+            glEnable(GL_BLEND);
+            set_current_blend_mode(BlendMode::NORMAL);
+
+            internal->render_texture_shape_task->render();
+            RenderArea::flush();
+        }
+        else
+        {
+            RenderArea::clear();
+
+            glEnable(GL_BLEND);
+            set_current_blend_mode(BlendMode::NORMAL);
+
+            for (auto* internal:*(internal->tasks))
+                RenderTask(internal).render();
+
+            RenderArea::flush();
         }
 
-        RenderArea::flush();
         return TRUE;
     }
 
