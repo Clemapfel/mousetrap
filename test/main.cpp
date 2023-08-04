@@ -27,33 +27,42 @@ int main(int argc, char** argv)
     {
         auto window = Window(app);
 
-        static auto render_area_off = RenderArea(AntiAliasingQuality::OFF);
-        static auto render_area_on = RenderArea(AntiAliasingQuality::BEST);
-        static auto shape = Shape::Circle({0, 0}, 0.75, 3);
+        auto list = ListView(Orientation::VERTICAL, SelectionMode::MULTIPLE);
+        list.push_back(Label("01"));
+        list.push_back(Label("02"));
+        list.push_back(Label("03"));
+        list.push_back(Label("04"));
+        list.push_back(Label("05"));
 
-        render_area_off.add_render_task(RenderTask(shape));
-        render_area_on.add_render_task(RenderTask(shape));
-
-        render_area_off.set_tick_callback([](FrameClock){
-            shape.rotate(degrees(1), shape.get_centroid());
-            render_area_off.queue_render();
-            render_area_on.queue_render();
-            return TickCallbackResult::CONTINUE;
+        list.get_selection_model()->connect_signal_selection_changed([](SelectionModel&, int32_t i, int32_t n){
+            std::cout << i << " " << n << std::endl;
         });
 
-        auto frame_left = AspectFrame(1);
-        frame_left.set_child(render_area_off);
-        frame_left.set_size_request({150, 150});
+        static auto render_area = RenderArea();
+        render_area.set_expand(true);
+        render_area.set_size_request({150, 150});
 
-        auto frame_right = AspectFrame(1);
-        frame_right.set_child(render_area_on);
-        frame_right.set_size_request({150, 150});
+        // create shape
+        // recall that an ellipse for whom equal x- and y-radius is identical to a circle
+        static auto circle = Shape::Ellipse({0, 0}, 0.5, 0.5, 32);
+        render_area.add_render_task(RenderTask(circle));
 
-        auto paned = Paned(Orientation::HORIZONTAL);
-        paned.set_start_child(frame_left);
-        paned.set_end_child(frame_right);
+        // react to render area changing size
+        render_area.connect_signal_resize([](RenderArea& area, int32_t width, int32_t height)
+          {
+            std::cout << width << " " << height << std::endl;
 
-        window.set_child(paned);
+              // calculate y-to-x-ratio
+              float new_ratio = float(height) / width;
+
+              // multiply x-radius to normalize it. Then reformat the `circle` shape
+              circle.as_ellipse({0, 0}, 0.5 * new_ratio,  0.5, 32);
+
+              // force an update
+              area.queue_render();
+          });
+
+        window.set_child(render_area);
         window.present();
     });
     return app.run();

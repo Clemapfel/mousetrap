@@ -165,7 +165,7 @@ namespace mousetrap
         }
         else if (_internal->wrap_mode == TextureWrapMode::ONE)
         {
-            static float one_border[] = {0.f, 0.f, 0.f, 0.f};
+            static float one_border[] = {1.f, 1.f, 1.f, 1.f};
             glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, one_border);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
