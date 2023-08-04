@@ -93,7 +93,7 @@ namespace mousetrap
             } \
         \
         public: \
-            const char* signal_id = g_signal_id; \
+            static inline const char* signal_id = g_signal_id; \
             \
             template <typename Function_t, typename Data_t> \
             void connect_signal_##snake_case(Function_t f, Data_t data) \
@@ -197,7 +197,7 @@ namespace mousetrap
             ~SIGNAL_CLASS_NAME(snake_case)() = default; \
         \
         public: \
-            const char* signal_id = g_signal_id; \
+            static inline const char* signal_id = g_signal_id; \
             \
             template <typename Function_t, typename Data_t> \
             void connect_signal_##snake_case(Function_t f, Data_t data) \

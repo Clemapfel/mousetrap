@@ -173,10 +173,10 @@ namespace mousetrap
         gtk_gl_area_set_auto_render(GTK_GL_AREA(operator NativeWidget()), TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(GTK_GL_AREA(operator NativeWidget())), 1, 1);
 
-        connect_signal("realize", on_realize, _internal);
-        connect_signal("render", on_render, _internal);
-        connect_signal("resize", on_resize, _internal);
-        connect_signal("create-context", on_create_context, _internal);
+        g_signal_connect(_internal->native, "realize", G_CALLBACK(on_realize), _internal);
+        g_signal_connect(_internal->native, "resize", G_CALLBACK(on_resize), _internal);
+        g_signal_connect(_internal->native, "render", G_CALLBACK(on_render), _internal);
+        g_signal_connect(_internal->native, "create-context", G_CALLBACK(on_create_context), _internal);
     }
 
     RenderArea::~RenderArea()
@@ -199,10 +199,10 @@ namespace mousetrap
         gtk_gl_area_set_auto_render(GTK_GL_AREA(operator NativeWidget()), TRUE);
         gtk_widget_set_size_request(GTK_WIDGET(GTK_GL_AREA(operator NativeWidget())), 1, 1);
 
-        connect_signal("realize", on_realize, _internal);
-        connect_signal("render", on_render, _internal);
-        connect_signal("resize", on_resize, _internal);
-        connect_signal("create-context", on_create_context, _internal);
+        g_signal_connect(_internal->native, "realize", G_CALLBACK(on_realize), _internal);
+        g_signal_connect(_internal->native, "resize", G_CALLBACK(on_resize), _internal);
+        g_signal_connect(_internal->native, "render", G_CALLBACK(on_render), _internal);
+        g_signal_connect(_internal->native, "create-context", G_CALLBACK(on_create_context), _internal);
     }
 
     void RenderArea::add_render_task(RenderTask task)
@@ -229,7 +229,6 @@ namespace mousetrap
     {
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0, 0, 0, 0);
-
     }
 
     GdkGLContext* RenderArea::on_create_context(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal* internal)
