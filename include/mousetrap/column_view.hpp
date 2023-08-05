@@ -176,7 +176,7 @@ namespace mousetrap
             /// @param i row index, table is backfilled if current number of rows is less than i
             /// @param widget_by_column
             template<typename... WidgetRef_ts>
-            void insert_row(size_t i, WidgetRef_ts... widget_by_column);
+            void insert_row_at(size_t i, WidgetRef_ts... widget_by_column);
 
             /// @brief set whether the user is able to selecte multiple items by click-dragging
             /// @param b true if this type of selection should be enabled, false otherwise
