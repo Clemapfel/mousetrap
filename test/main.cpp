@@ -34,6 +34,7 @@ int main(int argc, char** argv)
         dialog.on_selection([](AlertDialog& self, int response){
             std::cout << self.get_button_label(response) << std::endl;
         });
+        dialog.set_default_button(0);
 
         button.connect_signal_clicked([](Button&){
             dialog.present();

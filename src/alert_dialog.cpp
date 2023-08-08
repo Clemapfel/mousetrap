@@ -74,7 +74,7 @@ namespace mousetrap
 
     AlertDialog::ButtonID AlertDialog::add_button(const std::string& label)
     {
-        size_t i = _internal->button_labels->size();
+        int i = _internal->button_labels->size();
         std::string id = std::to_string(i);
         adw_message_dialog_add_response(_internal->native, id.c_str(), label.c_str());
         _internal->button_labels->push_back(label);
@@ -91,7 +91,18 @@ namespace mousetrap
             return "";
         }
 
-        return _internal->button_labels->at(index);
+        return adw_message_dialog_get_response_label(_internal->native, std::to_string(index).c_str());
+    }
+
+    void AlertDialog::set_button_label(ButtonID index, const std::string& new_label)
+    {
+        if (index < 0 or index >= _internal->button_labels->size()) {
+            log::critical("In AlertDialog::set_button_label: Index " + std::to_string(index) + " is out of range for an AlertDialog with " + std::to_string(_internal->button_labels->size()) + " buttons.");
+            return;
+        }
+
+        auto old_title = get_button_label(index);
+        adw_message_dialog_set_response_label(_internal->native, std::to_string(index).c_str(), old_title.c_str());
     }
 
     size_t AlertDialog::get_n_buttons() const
@@ -107,6 +118,18 @@ namespace mousetrap
     void AlertDialog::remove_extra_widget()
     {
         adw_message_dialog_set_extra_child(_internal->native, nullptr);
+    }
+
+    void AlertDialog::set_default_button(ButtonID id, bool color_as_suggested)
+    {
+        auto gid = std::to_string(id);
+        adw_message_dialog_set_default_response(_internal->native, gid.c_str());
+
+        for (size_t i = 0; i < _internal->button_labels->size(); ++i)
+            adw_message_dialog_set_response_appearance(_internal->native, std::to_string(i).c_str(), ADW_RESPONSE_DEFAULT);
+
+        if (color_as_suggested)
+            adw_message_dialog_set_response_appearance(_internal->native, gid.c_str(), ADW_RESPONSE_SUGGESTED);
     }
 
     std::string AlertDialog::get_message() const
@@ -151,7 +174,7 @@ namespace mousetrap
         auto id = std::stoi(response);
         auto temp = AlertDialog(internal);
 
-        if (*internal->on_selection)
+        if (internal->on_selection != nullptr and *(internal->on_selection))
             (*internal->on_selection)(temp, id);
     }
 }

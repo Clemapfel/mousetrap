@@ -44,7 +44,7 @@ namespace mousetrap
             /// @brief dtor
             ~AlertDialog();
 
-            using ButtonID = size_t;
+            using ButtonID = int;
 
             /// @param append a button to the end of the button row
             /// @param label button label
@@ -53,7 +53,12 @@ namespace mousetrap
 
             /// @brief make it so button with given ID is activated when the user presses enter
             /// @param button id, obtained from `add_button`
-            void set_default_button(ButtonID);
+            void set_default_button(ButtonID, bool color_as_suggested = false);
+
+            /// @brief set the label of a button
+            /// @param id
+            /// @param new_label
+            void set_button_label(ButtonID, const std::string& new_label);
 
             /// @brief get the ID of the button at given position, from left to right
             /// @param position
