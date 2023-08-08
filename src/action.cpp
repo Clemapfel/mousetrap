@@ -127,8 +127,7 @@ namespace mousetrap
         if (trigger == nullptr)
         {
             auto str = std::stringstream();
-            str << "In Action::add_shortcut: Unable to parse shortcut trigger `" << shortcut
-                      << "`. Ignoring this shortcut binding" << std::endl;
+            str << "In Action::add_shortcut: Unable to parse shortcut trigger `" << shortcut << "`";
             log::critical(str.str(), MOUSETRAP_DOMAIN);
             return;
         }
