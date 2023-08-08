@@ -6,6 +6,7 @@
 
 #include <mousetrap/gtk_common.hpp>
 #include <mousetrap/signal_emitter.hpp>
+#include <mousetrap/window.hpp>
 
 #include <map>
 #include <functional>
@@ -22,9 +23,9 @@ namespace mousetrap
         {
             GObject parent;
 
-            GtkAlertDialog* native;
+            AdwMessageDialog* native;
             std::vector<std::string>* button_labels;
-            std::function<void(AlertDialog&, int)>* on_selection;
+            std::function<void(AlertDialog&, int id)>* on_selection;
         };
         using AlertDialogInternal = _AlertDialogInternal;
         DEFINE_INTERNAL_MAPPING(AlertDialog);
@@ -35,7 +36,7 @@ namespace mousetrap
     {
         public:
             /// @brief construct
-            AlertDialog(const std::vector<std::string>& button_labels, const std::string& message, const std::string& detailed_message = "");
+            AlertDialog(const std::string& message, const std::string& detailed_message = "");
 
             /// @brief construct from internal
             AlertDialog(detail::AlertDialogInternal*);
@@ -43,29 +44,35 @@ namespace mousetrap
             /// @brief dtor
             ~AlertDialog();
 
-            /// @brief expose internal
-            NativeObject get_internal() const;
+            using ButtonID = size_t;
 
-            /// @brief add button at specific position
-            /// @param index index after which to insert, -1 for start
-            /// @param label
-            void add_button(int index, const std::string& label);
+            /// @param append a button to the end of the button row
+            /// @param label button label
+            /// @returns buttons internal ID
+            ButtonID add_button(const std::string&);
 
-            /// @brief remove button at specific position
-            void remove_button(size_t index);
+            /// @brief make it so button with given ID is activated when the user presses enter
+            /// @param button id, obtained from `add_button`
+            void set_default_button(ButtonID);
 
-            /// @brief set label of button at index
-            /// @param index button index
-            /// @param label
-            void set_button_label(size_t index, const std::string&);
-
-            /// @brief get label of button at index
-            /// @return string
-            std::string get_button_label(int index) const;
+            /// @brief get the ID of the button at given position, from left to right
+            /// @param position
+            /// @return button id
+            std::string get_button_label(int) const;
 
             /// @brief get number of buttons
-            /// @return number
+            /// @return size_t
             size_t get_n_buttons() const;
+
+            /// @brief add a widget underneath the message body
+            /// @param widget
+            void set_extra_widget(const Widget&);
+
+            /// @brief remove the widget underneath the message body
+            void remove_extra_widget();
+
+            /// @brief expose internal
+            NativeObject get_internal() const;
 
             /// @brief get dialogs main message
             /// @return string
@@ -106,8 +113,7 @@ namespace mousetrap
 
         private:
             detail::AlertDialogInternal* _internal = nullptr;
-            void update_buttons();
-            static void on_choose_callback(GObject* source, GAsyncResult*, void* data);
+            static void on_response(AdwMessageDialog*, gchar* id, detail::AlertDialogInternal* internal);
     };
 
     //#endif
@@ -116,8 +122,8 @@ namespace mousetrap
     void AlertDialog::on_selection(Function_t f_in, Data_t data_in)
     {
         delete _internal->on_selection;
-        _internal->on_selection = new std::function<void(AlertDialog&, int)>([f = f_in, data = data_in](AlertDialog& dialog, int index){
-            f(dialog, index, data);
+        _internal->on_selection = new std::function<void(AlertDialog&, int)>([f = f_in, data = data_in](AlertDialog& dialog, int id){
+            f(dialog, id, data);
         });
     }
 
@@ -125,8 +131,8 @@ namespace mousetrap
     void AlertDialog::on_selection(Function_t f_in)
     {
         delete _internal->on_selection;
-        _internal->on_selection = new std::function<void(AlertDialog&, int)>([f = f_in](AlertDialog& dialog, int index){
-            f(dialog, index);
+        _internal->on_selection = new std::function<void(AlertDialog&, int)>([f = f_in](AlertDialog& dialog, int id){
+            f(dialog, id);
         });
     }
 }

@@ -28,15 +28,18 @@ int main(int argc, char** argv)
         auto window = Window(app);
         auto button = Button();
 
-        auto center_box = ActionBar();
-        center_box.add_css_class("linked");
-        center_box.push_back(Entry());
-        center_box.push_back(button);
+        static auto dialog = AlertDialog("test", "body");
+        dialog.add_button("OK");
+        dialog.add_button("Cancel");
+        dialog.on_selection([](AlertDialog& self, int response){
+            std::cout << self.get_button_label(response) << std::endl;
+        });
 
-        auto label = Label("<b>BUTTON</b>");
-        button.set_child(label);
+        button.connect_signal_clicked([](Button&){
+            dialog.present();
+        });
 
-        window.set_child(center_box);
+        window.set_child(button);
         window.present();
     });
     return app.run();
