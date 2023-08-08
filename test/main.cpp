@@ -26,19 +26,17 @@ int main(int argc, char** argv)
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
-
-        static auto dialog = AlertDialog({"ok", "cancel"}, "Heading", "body <b>body</b> body");
-        dialog.on_selection([](AlertDialog& dialog, size_t button){
-            std::cout << button << std::endl;
-            dialog.present();
-        });
-
         auto button = Button();
-        button.connect_signal_clicked([](Button&){
-            dialog.present();
-        });
 
-        window.set_child(button);
+        auto center_box = ActionBar();
+        center_box.add_css_class("linked");
+        center_box.push_back(Entry());
+        center_box.push_back(button);
+
+        auto label = Label("<b>BUTTON</b>");
+        button.set_child(label);
+
+        window.set_child(center_box);
         window.present();
     });
     return app.run();

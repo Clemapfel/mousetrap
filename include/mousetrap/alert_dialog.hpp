@@ -22,7 +22,7 @@ namespace mousetrap
         {
             GObject parent;
 
-            AdwMessageDialog* native;
+            GtkAlertDialog* native;
             std::vector<std::string>* button_labels;
             std::function<void(AlertDialog&, int)>* on_selection;
         };
@@ -108,7 +108,6 @@ namespace mousetrap
             detail::AlertDialogInternal* _internal = nullptr;
             void update_buttons();
             static void on_choose_callback(GObject* source, GAsyncResult*, void* data);
-            static void on_resonse(AdwMessageDialog*, gchar* response, detail::AlertDialogInternal*);
     };
 
     //#endif

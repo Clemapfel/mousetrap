@@ -1,4 +1,5 @@
 #include <mousetrap/action.hpp>
+#include <mousetrap/action_bar.hpp>
 #include <mousetrap/adjustment.hpp>
 #include <mousetrap/alignment.hpp>
 #include <mousetrap/angle.hpp>

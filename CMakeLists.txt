@@ -235,7 +235,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/gtk_common.cpp
     src/alert_dialog.cpp
     src/clamp_frame.cpp
-)
+        src/action_bar.cpp)
 
 if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
 
@@ -268,7 +268,7 @@ if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
             src/texture.cpp
             src/shape.cpp
         )
-    set(MOUSETRAP_SOURCE_FILES "${MOUSETRAP_SOURCE_FILES};${MOUSETRAP_OPENGL_SOURCE_FILES}")
+    set(MOUSETRAP_SOURCE_FILES "${MOUSETRAP_SOURCE_FILES};${MOUSETRAP_OPENGL_SOURCE_FILES}" include/mousetrap/action_bar.hpp src/action_bar.cpp)
 endif()
 
 add_library(mousetrap SHARED

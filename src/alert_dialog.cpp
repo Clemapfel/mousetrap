@@ -27,19 +27,11 @@ namespace mousetrap::detail
         auto* self = (AlertDialogInternal*) g_object_new(alert_dialog_internal_get_type(), nullptr);
         alert_dialog_internal_init(self);
 
-        auto* window = adw_window_new();
-        gtk_window_set_hide_on_close(GTK_WINDOW(window), false);
-        self->native = ADW_MESSAGE_DIALOG(adw_message_dialog_new(GTK_WINDOW(window), "", ""));
-
-        adw_message_dialog_set_heading_use_markup(self->native, true);
-        adw_message_dialog_set_body_use_markup(self->native, true);
-        adw_message_dialog_set_close_response(self->native, "-1");
-
-        gtk_window_set_modal(GTK_WINDOW(self->native), true);
+        self->native = gtk_alert_dialog_new("");
+        gtk_alert_dialog_set_modal(self->native, true);
 
         self->button_labels = new std::vector<std::string>();
         self->on_selection = nullptr;
-
         detail::attach_ref_to(G_OBJECT(self->native), self);
         return self;
     }
@@ -49,25 +41,29 @@ namespace mousetrap
 {
     void AlertDialog::update_buttons()
     {
-        for (size_t i = 0; i < _internal->button_labels->size(); ++i)
-            adw_message_dialog_add_response(_internal->native, std::to_string(i).c_str(), _internal->button_labels->at(i).c_str());
+        std::vector<const char*> c_str_labels;
+        for (auto& label : *_internal->button_labels)
+            c_str_labels.push_back(label.c_str());
+
+        c_str_labels.push_back(nullptr);
+        gtk_alert_dialog_set_buttons(_internal->native, c_str_labels.data());
     }
 
     AlertDialog::AlertDialog(const std::vector<std::string>& button_labels, const std::string& message, const std::string& detailed_message)
-        : _internal(detail::alert_dialog_internal_new())
+    : _internal(detail::alert_dialog_internal_new())
     {
-        adw_message_dialog_set_heading(_internal->native, message.c_str());
-        adw_message_dialog_set_body(_internal->native, detailed_message.c_str());
-        g_signal_connect(_internal->native, "response", G_CALLBACK(on_resonse), _internal);
+        g_object_ref(_internal);
+        gtk_alert_dialog_set_message(_internal->native, message.c_str());
+        gtk_alert_dialog_set_detail(_internal->native, detailed_message.c_str());
 
         *_internal->button_labels = button_labels;
         update_buttons();
     }
 
     AlertDialog::AlertDialog(detail::AlertDialogInternal* internal)
-        : _internal(internal)
+    : _internal(internal)
     {
-        g_object_ref(_internal);
+        g_object_ref(internal);
     }
 
     AlertDialog::~AlertDialog()
@@ -135,45 +131,45 @@ namespace mousetrap
 
     std::string AlertDialog::get_message() const
     {
-        auto* c_str = adw_message_dialog_get_heading(_internal->native);
+        auto* c_str = gtk_alert_dialog_get_message(_internal->native);
         return (c_str == nullptr ? "" : std::string(c_str));
     }
 
     void AlertDialog::set_message(const std::string& message)
     {
-        adw_message_dialog_set_heading(_internal->native, message.c_str());
+        gtk_alert_dialog_set_message(_internal->native, message.c_str());
     }
 
     std::string AlertDialog::get_detailed_description() const
     {
-        auto* c_str = adw_message_dialog_get_body(_internal->native);
+        auto* c_str = gtk_alert_dialog_get_detail(_internal->native);
         return (c_str == nullptr ? "" : std::string(c_str));
     }
 
     void AlertDialog::set_detailed_description(const std::string& message)
     {
-        adw_message_dialog_set_body(_internal->native, message.c_str());
+        gtk_alert_dialog_set_detail(_internal->native, message.c_str());
     }
 
     void AlertDialog::set_is_modal(bool b)
     {
-        gtk_window_set_modal(GTK_WINDOW(_internal->native), b);
+        gtk_alert_dialog_set_modal(_internal->native, b);
     }
 
     bool AlertDialog::get_is_modal() const
     {
-        return gtk_window_get_modal(GTK_WINDOW(_internal->native));
+        return gtk_alert_dialog_get_modal(_internal->native);
     }
 
     void AlertDialog::present() const
     {
-        gtk_window_present(GTK_WINDOW(_internal->native));
+        gtk_alert_dialog_choose(_internal->native, GTK_WINDOW(gtk_window_new()), nullptr, on_choose_callback, _internal);
     }
 
     void AlertDialog::on_choose_callback(GObject* source, GAsyncResult* result, void* data)
     {
         GError* error = nullptr;
-        const char* id = adw_message_dialog_choose_finish(ADW_MESSAGE_DIALOG(source), result);
+        int id = gtk_alert_dialog_choose_finish(GTK_ALERT_DIALOG(source), result, &error);
 
         auto* internal = detail::MOUSETRAP_ALERT_DIALOG_INTERNAL(data);
         auto temp = AlertDialog(internal);
@@ -193,11 +189,6 @@ namespace mousetrap
         }
 
         if (internal->on_selection != nullptr)
-            (*internal->on_selection)(temp, std::stoi(id));
-    }
-
-    void AlertDialog::on_resonse(AdwMessageDialog*, gchar* response, detail::AlertDialogInternal*)
-    {
-        std::cout << response << std::endl;
+            (*internal->on_selection)(temp, id);
     }
 }
