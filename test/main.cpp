@@ -27,12 +27,18 @@ int main(int argc, char** argv)
     {
         auto window = Window(app);
 
-        auto dialog = AlertDialog({"ok", "cancel"}, "Heading", "body body body");
+        static auto dialog = AlertDialog({"ok", "cancel"}, "Heading", "body <b>body</b> body");
         dialog.on_selection([](AlertDialog& dialog, size_t button){
             std::cout << button << std::endl;
             dialog.present();
         });
-        dialog.present();
+
+        auto button = Button();
+        button.connect_signal_clicked([](Button&){
+            dialog.present();
+        });
+
+        window.set_child(button);
         window.present();
     });
     return app.run();
