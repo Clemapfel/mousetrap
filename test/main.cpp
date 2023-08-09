@@ -31,6 +31,11 @@ int main(int argc, char** argv)
         static auto dialog = AlertDialog("test", "body");
         dialog.add_button("OK");
         dialog.add_button("Cancel");
+
+        std::cout << dialog.get_button_label(0) << std::endl;
+        dialog.set_button_label(0, "new label");
+        std::cout << dialog.get_button_label(0) << std::endl;
+
         dialog.on_selection([](AlertDialog& self, int response){
             std::cout << self.get_button_label(response) << std::endl;
         });

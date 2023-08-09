@@ -100,9 +100,7 @@ namespace mousetrap
             log::critical("In AlertDialog::set_button_label: Index " + std::to_string(index) + " is out of range for an AlertDialog with " + std::to_string(_internal->button_labels->size()) + " buttons.");
             return;
         }
-
-        auto old_title = get_button_label(index);
-        adw_message_dialog_set_response_label(_internal->native, std::to_string(index).c_str(), old_title.c_str());
+        adw_message_dialog_set_response_label(_internal->native, std::to_string(index).c_str(), new_label.c_str());
     }
 
     size_t AlertDialog::get_n_buttons() const
@@ -167,6 +165,11 @@ namespace mousetrap
     void AlertDialog::present() const
     {
         gtk_window_present(GTK_WINDOW(_internal->native));
+    }
+
+    void AlertDialog::close() const
+    {
+        gtk_window_close(GTK_WINDOW(_internal->native));
     }
 
     void AlertDialog::on_response(AdwMessageDialog*, gchar* response, detail::AlertDialogInternal* internal)

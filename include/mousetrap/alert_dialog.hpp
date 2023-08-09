@@ -116,6 +116,9 @@ namespace mousetrap
             /// @brief show the dialog to the user
             void present() const;
 
+            /// @brief hide the window
+            void close() const;
+
         private:
             detail::AlertDialogInternal* _internal = nullptr;
             static void on_response(AdwMessageDialog*, gchar* id, detail::AlertDialogInternal* internal);
