@@ -150,6 +150,12 @@ Auto-generated documentation is available [here](https://clemens-cords.com/mouse
 
 ---
 
+## License
+
+Mousetrap is licensed under [GNU Lesser General Public License 3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text).
+
+---
+
 ## Credits
 
 This library was created by [C.Cords](https://clemens-cords.com). 

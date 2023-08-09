@@ -52,7 +52,6 @@ namespace mousetrap
 
             /// @brief set current position of the draggable separator bar
             /// @param v position in local window space, in pixels
-            /// \bug position does not seem to use the coordinate system stated in GTK4,
             void set_position(int);
 
             /// @brief set start child
