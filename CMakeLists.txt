@@ -97,7 +97,6 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/menu_model.hpp
     include/mousetrap/menu_bar.hpp
     include/mousetrap/motion_event_controller.hpp
-    include/mousetrap/music.hpp
     include/mousetrap/notebook.hpp
     include/mousetrap/orientation.hpp
     include/mousetrap/overlay.hpp
@@ -119,8 +118,6 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/shortcut_event_controller.hpp
     include/mousetrap/signal_component.hpp
     include/mousetrap/signal_emitter.hpp
-    include/mousetrap/sound.hpp
-    include/mousetrap/sound_buffer.hpp
     include/mousetrap/spin_button.hpp
     include/mousetrap/spinner.hpp
     include/mousetrap/stack.hpp
@@ -195,8 +192,6 @@ set(MOUSETRAP_SOURCE_FILES
     src/menu_bar.cpp
     src/menu_model.cpp
     src/motion_event_controller.cpp
-    src/music.cpp
-    src/music.cpp
     src/notebook.cpp
     src/overlay.cpp
     src/pan_event_controller.cpp
@@ -216,8 +211,6 @@ set(MOUSETRAP_SOURCE_FILES
     src/shortcut_event_controller.cpp
     src/signal_component.cpp
     src/signal_emitter.cpp
-    src/sound.cpp
-    src/sound_buffer.cpp
     src/spin_button.cpp
     src/spinner.cpp
     src/stack.cpp
