@@ -51,7 +51,6 @@
 #include <mousetrap/menu_bar.hpp>
 #include <mousetrap/motion_event_controller.hpp>
 #include <mousetrap/msaa_render_texture.hpp>
-#include <mousetrap/music.hpp>
 #include <mousetrap/notebook.hpp>
 #include <mousetrap/orientation.hpp>
 #include <mousetrap/orientation.hpp>
@@ -82,8 +81,6 @@
 #include <mousetrap/shortcut_event_controller.hpp>
 #include <mousetrap/signal_component.hpp>
 #include <mousetrap/signal_emitter.hpp>
-#include <mousetrap/sound.hpp>
-#include <mousetrap/sound_buffer.hpp>
 #include <mousetrap/spin_button.hpp>
 #include <mousetrap/spinner.hpp>
 #include <mousetrap/stack.hpp>
