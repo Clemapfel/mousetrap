@@ -1,5 +1,6 @@
 /build*
-/cmake-build-debug/
+/cmake-build-debug*/
 /libmousetrap.*
 /docs/Doxyfile
 /docs/out/
+/example/build
