@@ -1,3 +1,46 @@
+#
+# Mousetrap GUI Engine
+#
+# Author: C. Cords (mail@clemens-cords.com)
+# GitHub: https://github.com/clemapfel/mousetrap.jl
+# Documentation: https://clemens-cords.com/mousetrap
+#
+# Copyright © 2023, Licensed under lGPL-3.0
+#
+# Installation:
+#   git clone https://github.com/clemapfel/mousetrap
+#   cd mousetrap
+#   mkdir build
+#   cd build
+#   cmake .. -DMOUSETRAP_ENABLE_OPENGL_COMPONENT=ON
+#   make install -j 8
+#
+# Usage:
+#   See mousetrap/example for a hello world project
+#
+# Dependencies:
+#       libadwaita-1
+#       GTK4
+#       GLM (OpenGL Math)
+#       GLEW
+#       OpenGL
+#
+# Options
+#   MOUSETRAP_ENABLE_OPENGL_COMPONENT
+#       boolean
+#       if `FALSE`, all OpenGL-reated functions will be disabled and no longer compiled
+#       This is necessary for systems that do not have access to GLEW and OpenGL, such as macOS
+#
+#   MOUSETRAP_BUILD_DOCUMENTATION
+#       boolean
+#       if `TRUE`, add doxygen output as one of the build targets
+#
+#   MOUSETRAP_BUILD_TESTS
+#       boolean
+#       if `TRUE`, also build tests. Note that the test suite is minimal, because all testing is
+#       done downstream by the Julia binding
+#
+
 cmake_minimum_required(VERSION 3.18)
 
 ### PROJECT ###
@@ -12,7 +55,7 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-set(PROJECT_PREFIX "")#"mousetrap_") # TODO
+set(PROJECT_PREFIX "")#"mousetrap_")
 
 ### DEPENDENCIES ###
 
@@ -21,7 +64,8 @@ message("[mousetrap] OpenGL Component enabled: ${MOUSETRAP_ENABLE_OPENGL_COMPONE
 if (${MOUSETRAP_ENABLE_OPENGL_COMPONENT})
     # OpenGL
     find_package(OpenGL)
-    if (NOT ${OpenGL_FOUND}) # use library override
+    if (NOT ${OpenGL_FOUND})
+        # use library override
         find_library(OpenGL REQUIRED NAMES OpenGL GL opengl32 OPENGL32 OpenGL32)
     endif()
 
