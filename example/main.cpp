@@ -7,13 +7,13 @@ int main()
     auto app = Application("test.app");
 
     // initialization
-    app.connect_signal_activate([](Application* app)
+    app.connect_signal_activate([](Application& app)
     {
         // create window
-        auto window = Window(*app);
+        auto window = Window(app);
 
         // create label
-        label.set_margin(75);
+        auto label = Label("Hello World!");
 
         // add label to window
         window.set_child(label);
