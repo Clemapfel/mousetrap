@@ -33,7 +33,7 @@ namespace mousetrap
     {
         struct SignalHandler
         {
-            size_t id;
+            uint64_t id;
             bool is_blocked = false;
         };
 

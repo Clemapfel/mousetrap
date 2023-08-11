@@ -299,7 +299,7 @@ namespace mousetrap
 
         std::vector<int> as_hex;
         as_hex.reserve(6);
-        for (size_t i = 1; i < text.size(); ++i)
+        for (uint64_t i = 1; i < text.size(); ++i)
         {
             as_hex.push_back(hex_char_to_int(text.at(i)));
             if (as_hex.back() == -1)
@@ -380,7 +380,7 @@ namespace mousetrap
 
         std::vector<int> as_hex;
         as_hex.reserve(6);
-        for (size_t i = 1; i < text.size(); ++i)
+        for (uint64_t i = 1; i < text.size(); ++i)
         {
             as_hex.push_back(hex_char_to_int(text.at(i)));
             if (as_hex.back() == -1)
@@ -406,7 +406,7 @@ namespace mousetrap
         {
             std::string text = "#";
 
-            size_t start = 0;
+            uint64_t start = 0;
             if (in.size() == 6)
                 start = 0;
             else if (in.size() == 7)
@@ -414,7 +414,7 @@ namespace mousetrap
             else
                 return false;
 
-            for (size_t i = start; i < 6 + start; ++i)
+            for (uint64_t i = start; i < 6 + start; ++i)
             {
                 auto c = in.at(i);
                 if (c == 'a')
@@ -470,12 +470,12 @@ namespace mousetrap
         return out;
     }
 
-    void quantize(RGBA&, size_t n_values_per_component)
+    void quantize(RGBA&, uint64_t n_values_per_component)
     {
         std::cerr << "[ERROR] In Color::quantize: TODO" << std::endl;
     }
 
-    RGBA quantize(RGBA in, size_t n_values_per_component)
+    RGBA quantize(RGBA in, uint64_t n_values_per_component)
     {
         RGBA out;
         out.r = (int(in.r * n_values_per_component) / float(n_values_per_component));
@@ -486,7 +486,7 @@ namespace mousetrap
         return out;
     }
 
-    HSVA quantize(HSVA in, size_t n_values_per_component)
+    HSVA quantize(HSVA in, uint64_t n_values_per_component)
     {
         HSVA out;
         out.h = (int(in.h * n_values_per_component) / float(n_values_per_component));

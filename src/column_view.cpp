@@ -211,7 +211,7 @@ namespace mousetrap
         return Column(column);
     }
 
-    ColumnView::Column ColumnView::insert_column(size_t i, const std::string& title)
+    ColumnView::Column ColumnView::insert_column(uint64_t i, const std::string& title)
     {
         auto* column = new_column(title);
         gtk_column_view_insert_column(GTK_COLUMN_VIEW(operator NativeWidget()), i, column);
@@ -223,7 +223,7 @@ namespace mousetrap
         gtk_column_view_remove_column(GTK_COLUMN_VIEW(operator NativeWidget()), column._native);
     }
 
-    ColumnView::Column ColumnView::get_column_at(size_t column_i)
+    ColumnView::Column ColumnView::get_column_at(uint64_t column_i)
     {
         auto* model = gtk_column_view_get_columns(GTK_COLUMN_VIEW(operator NativeWidget()));
         if (column_i > g_list_model_get_n_items(model))
@@ -235,7 +235,7 @@ namespace mousetrap
     ColumnView::Column ColumnView::get_column_with_title(const std::string& title)
     {
         auto* model = gtk_column_view_get_columns(GTK_COLUMN_VIEW(operator NativeWidget()));
-        for (size_t i = 0; i < g_list_model_get_n_items(model); ++i)
+        for (uint64_t i = 0; i < g_list_model_get_n_items(model); ++i)
         {
             auto* out = GTK_COLUMN_VIEW_COLUMN(g_list_model_get_item(model, i));
             if (gtk_column_view_column_get_title(out) == title)
@@ -249,7 +249,7 @@ namespace mousetrap
     bool ColumnView::has_column_with_title(const std::string& title)
     {
         auto* model = gtk_column_view_get_columns(GTK_COLUMN_VIEW(operator NativeWidget()));
-        for (size_t i = 0; i < g_list_model_get_n_items(model); ++i)
+        for (uint64_t i = 0; i < g_list_model_get_n_items(model); ++i)
         {
             if (gtk_column_view_column_get_title(GTK_COLUMN_VIEW_COLUMN(g_list_model_get_item(model, i))) == title)
                 return true;
@@ -258,12 +258,12 @@ namespace mousetrap
         return false;
     }
 
-    size_t ColumnView::get_n_columns() const
+    uint64_t ColumnView::get_n_columns() const
     {
         return g_list_model_get_n_items(gtk_column_view_get_columns(GTK_COLUMN_VIEW(operator NativeWidget())));
     }
 
-    void ColumnView::set_widget_at(const Column& column, size_t row_i, const Widget& widget)
+    void ColumnView::set_widget_at(const Column& column, uint64_t row_i, const Widget& widget)
     {
         if (column._native == nullptr)
         {
@@ -320,7 +320,7 @@ namespace mousetrap
         return _internal->selection_model;
     }
 
-    size_t ColumnView::get_n_rows() const
+    uint64_t ColumnView::get_n_rows() const
     {
         return g_list_model_get_n_items(G_LIST_MODEL(_internal->list_store));
     }

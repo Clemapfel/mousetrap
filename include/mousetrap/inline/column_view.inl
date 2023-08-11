@@ -15,8 +15,8 @@ namespace mousetrap
         if (refs.size() > get_n_columns())
             log::warning("In ColumnView::push_back_rows: Attempt to push " + std::to_string(refs.size()) + " widgets, but ColumnView only has " + std::to_string(get_n_columns()) + " columns");
 
-        size_t insert_i = get_n_rows();
-        for (size_t i = 0; i < get_n_columns(); ++i)
+        uint64_t insert_i = get_n_rows();
+        for (uint64_t i = 0; i < get_n_columns(); ++i)
         {
             if (i >= refs.size())
                 continue;
@@ -36,8 +36,8 @@ namespace mousetrap
         if (refs.size() > get_n_columns())
             log::warning("In ColumnView::push_front_row: Attempt to push " + std::to_string(refs.size()) + " widgets, but ColumnView only has " + std::to_string(get_n_columns()) + " columns");
 
-        size_t insert_i = 0;
-        for (size_t i = 0; i < get_n_columns(); ++i)
+        uint64_t insert_i = 0;
+        for (uint64_t i = 0; i < get_n_columns(); ++i)
         {
             if (i >= refs.size())
                 continue;
@@ -48,7 +48,7 @@ namespace mousetrap
     }
 
     template<typename... Ts>
-    void ColumnView::insert_row_at(size_t i, Ts... widgets)
+    void ColumnView::insert_row_at(uint64_t i, Ts... widgets)
     {
         std::vector<std::reference_wrapper<Widget>> refs = {
         std::ref(widgets)...
@@ -57,8 +57,8 @@ namespace mousetrap
         if (refs.size() > get_n_columns())
             log::warning("In ColumnView::insert_row_at: Attempt to push " + std::to_string(refs.size()) + " widgets, but ColumnView only has " + std::to_string(get_n_columns()) + " columns");
 
-        size_t insert_i = i;
-        for (size_t i = 0; i < get_n_columns(); ++i)
+        uint64_t insert_i = i;
+        for (uint64_t i = 0; i < get_n_columns(); ++i)
         {
             if (i >= refs.size())
                 continue;

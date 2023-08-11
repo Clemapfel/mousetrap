@@ -136,7 +136,7 @@ namespace mousetrap
             auto format = cairo_image_surface_get_format(surface);
 
             image.create(size.x, size.y);
-            for (size_t i = 0; i < size.x * size.y * 4; i = i + 4)
+            for (uint64_t i = 0; i < size.x * size.y * 4; i = i + 4)
             {
                 guchar b = data[i + 0];
                 guchar g = data[i + 1];

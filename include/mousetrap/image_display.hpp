@@ -97,7 +97,7 @@ namespace mousetrap
         private:
             detail::ImageDisplayInternal* _internal = nullptr;
 
-            void update_size(size_t, size_t);
+            void update_size(uint64_t, uint64_t);
             void initialize();
     };
 }

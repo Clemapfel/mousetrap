@@ -81,7 +81,7 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
-    void Texture::create(size_t width, size_t height)
+    void Texture::create(uint64_t width, uint64_t height)
     {
         glActiveTexture(GL_TEXTURE0 + 0);
         glBindTexture(GL_TEXTURE_2D, _internal->native_handle);
@@ -151,7 +151,7 @@ namespace mousetrap
         *_internal->size = image.get_size();
     }
 
-    void Texture::bind(size_t texture_unit) const
+    void Texture::bind(uint64_t texture_unit) const
     {
         glActiveTexture(GL_TEXTURE0 + texture_unit);
         glBindTexture(GL_TEXTURE_2D, _internal->native_handle);

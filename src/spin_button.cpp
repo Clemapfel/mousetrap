@@ -79,12 +79,12 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
-    void SpinButton::set_n_digits(size_t n)
+    void SpinButton::set_n_digits(uint64_t n)
     {
         gtk_spin_button_set_digits(_internal->native, n);
     }
 
-    size_t SpinButton::get_n_digits() const
+    uint64_t SpinButton::get_n_digits() const
     {
         return gtk_spin_button_get_digits(_internal->native);
     }

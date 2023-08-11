@@ -45,7 +45,7 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
-    void Grid::insert(const Widget& widget, Vector2i row_column_index, size_t n_horizontal_cells, size_t n_vertical_cells)
+    void Grid::insert(const Widget& widget, Vector2i row_column_index, uint64_t n_horizontal_cells, uint64_t n_vertical_cells)
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(Grid::insert, this, ptr);
@@ -53,7 +53,7 @@ namespace mousetrap
         gtk_grid_attach(GTK_GRID(_internal), widget.operator GtkWidget*(), row_column_index.x, row_column_index.y, n_horizontal_cells, n_vertical_cells);
     }
 
-    void Grid::insert_next_to(const Widget& to_insert, const Widget& already_in_grid, RelativePosition position, size_t n_horizontal_cells, size_t n_vertical_cells)
+    void Grid::insert_next_to(const Widget& to_insert, const Widget& already_in_grid, RelativePosition position, uint64_t n_horizontal_cells, uint64_t n_vertical_cells)
     {
         auto* ptr = &to_insert;
         WARN_IF_SELF_INSERTION(Grid::insert_next_to, this, ptr);

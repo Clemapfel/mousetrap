@@ -138,7 +138,7 @@ namespace mousetrap
         std::string microseconds = g_date_time_format(time, "%f");
         std::string out = g_date_time_format(time, "%y-%m-%d %H:%M:%S,");
 
-        for (size_t i = 0; i < 3; ++i)
+        for (uint64_t i = 0; i < 3; ++i)
             out.push_back(microseconds.at(i));
 
         return out;

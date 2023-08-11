@@ -397,7 +397,7 @@ namespace mousetrap
         {
             std::vector<FileDescriptor> files;
             auto* list = gtk_file_chooser_get_files(GTK_FILE_CHOOSER(internal->native));
-            for (size_t i = 0; i < g_list_model_get_n_items(list); ++i)
+            for (uint64_t i = 0; i < g_list_model_get_n_items(list); ++i)
                 files.emplace_back(G_FILE(g_list_model_get_item(list, i)));
 
             if (*internal->on_accept)
@@ -421,7 +421,7 @@ namespace mousetrap
         else if (internal->action == FileChooserAction::OPEN_MULTIPLE_FILES)
         {
             auto* list = gtk_file_dialog_open_multiple_finish(self, result, &error);
-            for (size_t i = 0; G_IS_LIST_MODEL(list) and i < g_list_model_get_n_items(list); ++i)
+            for (uint64_t i = 0; G_IS_LIST_MODEL(list) and i < g_list_model_get_n_items(list); ++i)
                 files.emplace_back(G_FILE(g_list_model_get_item(list, i)));
         }
         else if (internal->action == FileChooserAction::SAVE)
@@ -435,7 +435,7 @@ namespace mousetrap
         else if (internal->action == FileChooserAction::SELECT_MULTIPLE_FOLDERS)
         {
             auto* list = gtk_file_dialog_select_multiple_folders_finish(self, result, &error);
-            for (size_t i = 0; G_IS_LIST_MODEL(list) and i < g_list_model_get_n_items(list); ++i)
+            for (uint64_t i = 0; G_IS_LIST_MODEL(list) and i < g_list_model_get_n_items(list); ++i)
                 files.emplace_back(G_FILE(g_list_model_get_item(list, i)));
         }
 
@@ -562,7 +562,7 @@ namespace mousetrap
     {
         std::vector<FileDescriptor> out;
         auto* list = gtk_file_chooser_get_files(GTK_FILE_CHOOSER(GTK_FILE_CHOOSER_NATIVE(operator NativeWidget())));
-        for (size_t i = 0; i < g_list_model_get_n_items(list); ++i)
+        for (uint64_t i = 0; i < g_list_model_get_n_items(list); ++i)
             out.emplace_back(G_FILE(g_list_model_get_item(list, i)));
 
         return out;
@@ -724,7 +724,7 @@ namespace mousetrap
     {
         std::vector<FileDescriptor> out;
         auto* list = gtk_file_chooser_get_files(GTK_FILE_CHOOSER(GTK_FILE_DIALOG(operator NativeWidget())));
-        for (size_t i = 0; i < g_list_model_get_n_items(list); ++i)
+        for (uint64_t i = 0; i < g_list_model_get_n_items(list); ++i)
             out.emplace_back(G_FILE(g_list_model_get_item(list, i)));
 
         return out;

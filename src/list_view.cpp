@@ -20,7 +20,7 @@ namespace mousetrap::detail
         GtkTreeExpander* expander;
         GtkWidget* widget;
         GListStore* children;
-        size_t depth;
+        uint64_t depth;
     };
 
     struct _ListViewItemClass
@@ -146,7 +146,7 @@ namespace mousetrap::detail
 
         auto* out = g_object_ref(g_list_store_new(G_TYPE_OBJECT));
 
-        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(tree_list_view_item->children)); ++i)
+        for (uint64_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(tree_list_view_item->children)); ++i)
             g_list_store_append(out, g_list_model_get_item(G_LIST_MODEL(tree_list_view_item->children), i));
 
         return G_LIST_MODEL(out);
@@ -266,7 +266,7 @@ namespace mousetrap
         return insert(widget, 0, it);
     }
 
-    ListView::Iterator ListView::insert(const Widget& widget, size_t i, Iterator it)
+    ListView::Iterator ListView::insert(const Widget& widget, uint64_t i, Iterator it)
     {
         if (widget.operator GtkWidget*() == this->operator GtkWidget*())
         {
@@ -294,7 +294,7 @@ namespace mousetrap
         return detail::G_TREE_VIEW_ITEM(g_list_model_get_item(to_append_to, g_list_model_get_n_items(to_append_to) - 1));
     }
 
-    void ListView::remove(size_t i, Iterator it)
+    void ListView::remove(uint64_t i, Iterator it)
     {
         GListStore* list;
         if (it == nullptr)
@@ -318,7 +318,7 @@ namespace mousetrap
     }
 
     /*
-    Widget* ListView::get_widget_at(size_t i, Iterator it)
+    Widget* ListView::get_widget_at(uint64_t i, Iterator it)
     {
         GListModel* list;
         if (it == nullptr)
@@ -331,7 +331,7 @@ namespace mousetrap
     }
      */
 
-    void ListView::set_widget_at(size_t i, const Widget& widget, Iterator it)
+    void ListView::set_widget_at(uint64_t i, const Widget& widget, Iterator it)
     {
         if (widget.operator GtkWidget*() == this->operator GtkWidget*())
         {
@@ -404,7 +404,7 @@ namespace mousetrap
         return _internal->selection_model;
     }
 
-    size_t ListView::get_n_items() const
+    uint64_t ListView::get_n_items() const
     {
         return g_list_model_get_n_items(G_LIST_MODEL(_internal->root));
     }

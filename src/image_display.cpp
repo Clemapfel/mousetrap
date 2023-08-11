@@ -67,7 +67,7 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
     
-    void ImageDisplay::update_size(size_t width, size_t height)
+    void ImageDisplay::update_size(uint64_t width, uint64_t height)
     {
         _internal->size.x = width;
         _internal->size.y = height;

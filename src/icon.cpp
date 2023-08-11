@@ -19,8 +19,8 @@ namespace mousetrap
             GIcon* native = nullptr;
             GtkIconPaintable* paintable = nullptr;
 
-            size_t resolution = 0;
-            size_t scale = 1;
+            uint64_t resolution = 0;
+            uint64_t scale = 1;
         };
 
         DECLARE_NEW_TYPE(IconInternal, icon_internal, ICON_INTERNAL)
@@ -68,7 +68,7 @@ namespace mousetrap
         return _internal->paintable;
     }
 
-    size_t Icon::get_scale() const
+    uint64_t Icon::get_scale() const
     {
         return _internal->scale;
     }
@@ -78,7 +78,7 @@ namespace mousetrap
         return Vector2ui(_internal->resolution);
     }
 
-    bool Icon::create_from_file(const std::string& path, size_t square_resolution, size_t scale)
+    bool Icon::create_from_file(const std::string& path, uint64_t square_resolution, uint64_t scale)
     {
         if (_internal->scale == 0)
             _internal->scale = 1;
@@ -104,7 +104,7 @@ namespace mousetrap
         return true;
     }
 
-    bool Icon::create_from_theme(const IconTheme& theme, const IconID& id, size_t square_resolution, size_t scale)
+    bool Icon::create_from_theme(const IconTheme& theme, const IconID& id, uint64_t square_resolution, uint64_t scale)
     {
         _internal->resolution = square_resolution;
         _internal->scale = scale;
@@ -170,7 +170,7 @@ namespace mousetrap
     {
         std::vector<std::string> out;
         char** list = gtk_icon_theme_get_icon_names(_native);
-        size_t i = 0;
+        uint64_t i = 0;
         while (list[i] != nullptr)
         {
             out.push_back(list[i]);

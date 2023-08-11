@@ -49,7 +49,7 @@ namespace mousetrap
             using Iterator = detail::_ListViewItem*;
 
             /// @brief number of pixels a nested list item should be offset to the right
-            static inline const size_t indent_per_depth = 20;
+            static inline const uint64_t indent_per_depth = 20;
 
             /// @brief ctor list view
             /// @param orientation Orientation, horizontal for left to right, vertical for top to bottom
@@ -82,12 +82,12 @@ namespace mousetrap
             /// @param index
             /// @param iterator iterator to sub-list, or nullptr to add to the toplevel list
             /// @return iterator to list the widget was inserted in
-            Iterator insert(const Widget& widget, size_t index, Iterator iterator = nullptr);
+            Iterator insert(const Widget& widget, uint64_t index, Iterator iterator = nullptr);
 
             /// @brief remove n-th element from list specified by iterator
             /// @param index
             /// @param iterator iterator to list to remove from, or nullptr to remove from toplevel list
-            void remove(size_t index, Iterator iterator = nullptr);
+            void remove(uint64_t index, Iterator iterator = nullptr);
 
             /// @brief clear list at iterator
             /// @param iterator iterator to list to clear, or nullptr to clear the toplevel list
@@ -98,7 +98,7 @@ namespace mousetrap
 
             /// @param widget
             /// @param iterator iterator to list, or nullptr to set widget in toplevel list
-            void set_widget_at(size_t i, const Widget& widget, Iterator iterator = nullptr);
+            void set_widget_at(uint64_t i, const Widget& widget, Iterator iterator = nullptr);
 
             /// @brief get index of widget, or -1 if widget is not in list
             /// @param widget
@@ -135,7 +135,7 @@ namespace mousetrap
 
             /// @brief get number of itmes in list and all sub lists
             /// @return n items
-            size_t get_n_items() const;
+            uint64_t get_n_items() const;
 
             /// @copydoc mousetrap::Orientable::set_orientation
             void set_orientation(Orientation);

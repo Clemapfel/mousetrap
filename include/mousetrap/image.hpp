@@ -46,7 +46,7 @@ namespace mousetrap
             /// @param width
             /// @param height
             /// @param rgba default color for all pixels
-            Image(size_t width, size_t height, RGBA rgba = RGBA(0, 0, 0, 0));
+            Image(uint64_t width, uint64_t height, RGBA rgba = RGBA(0, 0, 0, 0));
 
             /// @brief destruct, frees data
             ~Image();
@@ -76,7 +76,7 @@ namespace mousetrap
             /// @param width new x-dimension
             /// @param height new y-dimension
             /// @param default_color color of all pixels after initialization
-            void create(size_t width, size_t height, RGBA default_color = RGBA(0, 0, 0, 1));
+            void create(uint64_t width, uint64_t height, RGBA default_color = RGBA(0, 0, 0, 1));
 
             /// @brief create an image by reading a file
             /// @param path
@@ -95,11 +95,11 @@ namespace mousetrap
 
             /// @brief get length of linear data
             /// @return n
-            size_t get_data_size() const;
+            uint64_t get_data_size() const;
 
             /// @brief get number of pixels
             /// @return n, equal to width * height
-            size_t get_n_pixels() const;
+            uint64_t get_n_pixels() const;
 
             /// @brief get dimensions
             /// @return size
@@ -110,7 +110,7 @@ namespace mousetrap
             /// @param size_y new height
             /// @param interpolation_type interpolation algorithm to use
             /// @return newly allocated image
-            [[nodiscard]] Image as_scaled(size_t size_x, size_t size_y, InterpolationType interpolation_type = InterpolationType::TILES) const;
+            [[nodiscard]] Image as_scaled(uint64_t size_x, uint64_t size_y, InterpolationType interpolation_type = InterpolationType::TILES) const;
 
             /// @brief create a new image, cropped
             /// @param offset_x left most anchor of the newly cropped image, may be negative
@@ -119,7 +119,7 @@ namespace mousetrap
             /// @param new_height new height
             /// @return newly allocated image
             /// @note pixels outside the original image bounds will be set to RBGA(0, 0, 0, 0)
-            [[nodiscard]] Image as_cropped(int offset_x, int offset_y, size_t new_width, size_t new_height) const;
+            [[nodiscard]] Image as_cropped(int offset_x, int offset_y, uint64_t new_width, uint64_t new_height) const;
 
             /// @brief create a new image, flipped
             /// @param flip_horizontally flip along the x-axis
@@ -131,37 +131,37 @@ namespace mousetrap
             /// @param x row-index
             /// @param y column-index
             /// @param new_color RGBA
-            void set_pixel(size_t x, size_t y, RGBA new_color);
+            void set_pixel(uint64_t x, uint64_t y, RGBA new_color);
 
             /// @brief set value of individual pixel, prints soft warning if indices out of bounds
             /// @param x row-index
             /// @param y column-index
             /// @param new_color HSVA
-            void set_pixel(size_t x, size_t y, HSVA new_color);
+            void set_pixel(uint64_t x, uint64_t y, HSVA new_color);
 
             /// @brief get value of individual pixel, prints soft warning if indices out of bounds
             /// @param x row-index
             /// @param y column-index
             /// @returns pixel if indices in bounds, RGBA(0, 0, 0, 0) otherwise
-            RGBA get_pixel(size_t x, size_t y) const;
+            RGBA get_pixel(uint64_t x, uint64_t y) const;
 
             /// @brief set value of individual pixel, linear indexing. Prints soft warning if index out of bounds
             /// @param linear_index
             /// @param new_color RBGA
             /// \not_available_in_julia_binding
-            void set_pixel(size_t linear_index, RGBA new_color);
+            void set_pixel(uint64_t linear_index, RGBA new_color);
 
             /// @brief set value of individual pixel, linear indexing. Prints soft warning if index out of bounds
             /// @param linear_index
             /// @param new_color HSVA
             /// \not_available_in_julia_binding
-            void set_pixel(size_t linear_index, HSVA new_color);
+            void set_pixel(uint64_t linear_index, HSVA new_color);
 
             /// @brief get value of individual pixel, linear indexing.
             /// @param linear_index
             /// @return RGBA
             /// \not_available_in_julia_binding
-            RGBA get_pixel(size_t linear_index) const;
+            RGBA get_pixel(uint64_t linear_index) const;
 
         private:
             Image(GdkPixbuf* pixbuf);
@@ -169,6 +169,6 @@ namespace mousetrap
             Vector2i _size = {0, 0};
             GdkPixbuf* _data = nullptr;
 
-            size_t to_linear_index(size_t, size_t) const;
+            uint64_t to_linear_index(uint64_t, uint64_t) const;
     };
 }

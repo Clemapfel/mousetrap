@@ -78,7 +78,7 @@ namespace mousetrap
 
         std::map<std::string, std::string> values;
 
-        for (size_t i = 0; i < n_fields; ++i)
+        for (uint64_t i = 0; i < n_fields; ++i)
         {
             if (not level_read and std::string(fields[i].key) == std::string(detail::mousetrap_level_field))
             {

@@ -66,8 +66,8 @@ namespace mousetrap
             std::string get_button_label(int) const;
 
             /// @brief get number of buttons
-            /// @return size_t
-            size_t get_n_buttons() const;
+            /// @return uint64_t
+            uint64_t get_n_buttons() const;
 
             /// @brief add a widget underneath the message body
             /// @param widget

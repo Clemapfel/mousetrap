@@ -103,7 +103,7 @@ namespace mousetrap
         adw_message_dialog_set_response_label(_internal->native, std::to_string(index).c_str(), new_label.c_str());
     }
 
-    size_t AlertDialog::get_n_buttons() const
+    uint64_t AlertDialog::get_n_buttons() const
     {
         return _internal->button_labels->size();
     }
@@ -123,7 +123,7 @@ namespace mousetrap
         auto gid = std::to_string(id);
         adw_message_dialog_set_default_response(_internal->native, gid.c_str());
 
-        for (size_t i = 0; i < _internal->button_labels->size(); ++i)
+        for (uint64_t i = 0; i < _internal->button_labels->size(); ++i)
             adw_message_dialog_set_response_appearance(_internal->native, std::to_string(i).c_str(), ADW_RESPONSE_DEFAULT);
 
         if (color_as_suggested)

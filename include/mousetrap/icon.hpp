@@ -88,14 +88,14 @@ namespace mousetrap
             /// @param path
             /// @param square_resolution target size of the icon, icons are always square. If the file is not a .svg file and the native resolution of the image is different from the requested resolution, performss linear scaling
             /// @param scale scale of the icon, or 1 for no scaling
-            bool create_from_file(const std::string& path, size_t square_resolution, size_t scale = 1);
+            bool create_from_file(const std::string& path, uint64_t square_resolution, uint64_t scale = 1);
 
             /// @brief create icon from theme
             /// @param theme
             /// @param id id of an icon
             /// @param square_resolution target size of the icon, icons are always square. If the file is not a .svg file and the native resolution of the image is different from the requested resolution, performss linear scaling
             /// @param scale scale of the icon, or 1 for no scaling
-            bool create_from_theme(const IconTheme& theme, const IconID&, size_t square_resolution, size_t scale = 1);
+            bool create_from_theme(const IconTheme& theme, const IconID&, uint64_t square_resolution, uint64_t scale = 1);
 
             /// @brief get the identifier of the icon
             /// @return id
@@ -113,7 +113,7 @@ namespace mousetrap
 
             /// @brief get icon scale
             /// @return scale
-            size_t get_scale() const;
+            uint64_t get_scale() const;
 
             /// @brief get icon resolution, this is the resolution requested during create_from, not the resources native resolution
             /// @return resolution

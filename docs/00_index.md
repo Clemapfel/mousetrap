@@ -266,8 +266,8 @@ int main()
         image.create(300, 300, RGBA(0, 0, 0, 0));
 
         auto hue_step = 1.f / 300;
-        for (size_t i = 0; i < image.get_size().x; ++i)
-            for (size_t j = 0; j < image.get_size().y; ++j)
+        for (uint64_t i = 0; i < image.get_size().x; ++i)
+            for (uint64_t j = 0; j < image.get_size().y; ++j)
                 image.set_pixel(i, j, HSVA(i * hue_step, 1, 1, 1));
 
         auto image_view = ImageDisplay();
@@ -334,7 +334,7 @@ int main()
         root.push_back(Switch(), item_02_it);
 
         // monitor when selection changed
-        root.get_selection_model()->connect_signal_selection_changed([](SelectionModel&, size_t item_index, size_t item_count){
+        root.get_selection_model()->connect_signal_selection_changed([](SelectionModel&, uint64_t item_index, uint64_t item_count){
             std::cout << "Selected item is now: " << item_index << std::endl;
         });
 

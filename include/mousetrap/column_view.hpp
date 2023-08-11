@@ -132,7 +132,7 @@ namespace mousetrap
             /// @param index index of column to insert a new column after
             /// @param title header name for the column
             /// @returns pointer to newly created column iterator
-            [[nodiscard]] Column insert_column(size_t index, const std::string& title);
+            [[nodiscard]] Column insert_column(uint64_t index, const std::string& title);
 
             /// @brief remove a column from the column view
             /// @param column
@@ -141,7 +141,7 @@ namespace mousetrap
             /// @brief get column at specified position
             /// @param column_i index
             /// @returns column, may be a wrapped nullptr if column_i out of bounds
-            [[nodiscard]] Column get_column_at(size_t column_i);
+            [[nodiscard]] Column get_column_at(uint64_t column_i);
 
             /// @brief get column with given title
             /// @param title current title of the column
@@ -157,7 +157,7 @@ namespace mousetrap
             /// @param column column
             /// @param row_i row index
             /// @param widget widget to insert
-            void set_widget_at(const Column& column, size_t row_i, const Widget& widget);
+            void set_widget_at(const Column& column, uint64_t row_i, const Widget& widget);
 
             /// @brief convenience function that maps widgets to columns and appends them as a new row at end of the list
             /// @tparam WidgetRef_ts has to be Widget, Widget& or const Widget&
@@ -176,7 +176,7 @@ namespace mousetrap
             /// @param i row index, table is backfilled if current number of rows is less than i
             /// @param widget_by_column
             template<typename... WidgetRef_ts>
-            void insert_row_at(size_t i, WidgetRef_ts... widget_by_column);
+            void insert_row_at(uint64_t i, WidgetRef_ts... widget_by_column);
 
             /// @brief set whether the user is able to selecte multiple items by click-dragging
             /// @param b true if this type of selection should be enabled, false otherwise
@@ -223,12 +223,12 @@ namespace mousetrap
             SelectionModel* get_selection_model();
 
             /// @brief get number of rows
-            /// @return size_t
-            size_t get_n_rows() const;
+            /// @return uint64_t
+            uint64_t get_n_rows() const;
 
             /// @brief get number of columns
-            /// @return size_t
-            size_t get_n_columns() const;
+            /// @return uint64_t
+            uint64_t get_n_columns() const;
 
         private:
             static GtkColumnViewColumn* new_column(const std::string& title);

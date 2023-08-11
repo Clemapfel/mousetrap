@@ -253,7 +253,7 @@ namespace mousetrap
 
     void Shape::update_position() const
     {
-        for (size_t i = 0; i < _internal->vertices->size(); ++i)
+        for (uint64_t i = 0; i < _internal->vertices->size(); ++i)
         {
             auto& v = _internal->vertices->at(i);
             auto& data = _internal->vertex_data->at(i);
@@ -270,7 +270,7 @@ namespace mousetrap
 
     void Shape::update_color() const
     {
-        for (size_t i = 0; i < _internal->vertices->size(); ++i)
+        for (uint64_t i = 0; i < _internal->vertices->size(); ++i)
         {
             auto& v = _internal->vertices->at(i);
             auto& data = _internal->vertex_data->at(i);
@@ -286,7 +286,7 @@ namespace mousetrap
 
     void Shape::update_texture_coordinate() const
     {
-        for (size_t i = 0; i < _internal->vertices->size(); ++i)
+        for (uint64_t i = 0; i < _internal->vertices->size(); ++i)
         {
             auto& v = _internal->vertices->at(i);
             auto& data = _internal->vertex_data->at(i);
@@ -327,7 +327,7 @@ namespace mousetrap
         for (const auto& pos : in)
             center += pos;
 
-        size_t n = in.size();
+        uint64_t n = in.size();
         center /= Vector2f(n, n);
 
         std::vector<std::pair<Vector2f, Angle>> by_angle;
@@ -366,7 +366,7 @@ namespace mousetrap
         _internal->vertices->clear();
         _internal->indices->clear();
 
-        for (size_t i = 0; i < points.size(); ++i)
+        for (uint64_t i = 0; i < points.size(); ++i)
         {
             auto p = points.at(i);
             _internal->vertices->push_back(Vertex(p.x, p.y, *_internal->color));
@@ -483,7 +483,7 @@ namespace mousetrap
         }
 
         _internal->indices->clear();
-        for (size_t i = 0; i < _internal->vertices->size(); ++i)
+        for (uint64_t i = 0; i < _internal->vertices->size(); ++i)
             _internal->indices->push_back(i);
 
         _internal->render_type = GL_LINES;
@@ -491,7 +491,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_circle(Vector2f center, float radius, size_t n_outer_vertices)
+    void Shape::as_circle(Vector2f center, float radius, uint64_t n_outer_vertices)
     {
         if (n_outer_vertices < 3)
         {
@@ -503,7 +503,7 @@ namespace mousetrap
         _internal->shape_type = detail::ShapeType::CIRCLE;
     }
 
-    void Shape::as_ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices)
+    void Shape::as_ellipse(Vector2f center, float x_radius, float y_radius, uint64_t n_outer_vertices)
     {
         if (n_outer_vertices < 3)
         {
@@ -527,7 +527,7 @@ namespace mousetrap
         }
 
         _internal->indices->clear();
-        for (size_t i = 0; i < _internal->vertices->size(); ++i)
+        for (uint64_t i = 0; i < _internal->vertices->size(); ++i)
             _internal->indices->push_back(i);
 
         _internal->indices->push_back(1);
@@ -537,13 +537,13 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::as_circular_ring(Vector2f center, float outer_radius, float thickness, size_t n_outer_vertices)
+    void Shape::as_circular_ring(Vector2f center, float outer_radius, float thickness, uint64_t n_outer_vertices)
     {
         as_elliptical_ring(center, outer_radius, outer_radius, thickness, thickness, n_outer_vertices);
         _internal->shape_type = detail::ShapeType::CIRCULAR_RING;
     }
 
-    void Shape::as_elliptical_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices)
+    void Shape::as_elliptical_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, uint64_t n_outer_vertices)
     {
         const float step = 360.f / n_outer_vertices;
         _internal->vertices->clear();
@@ -568,7 +568,7 @@ namespace mousetrap
         _internal->shape_type = detail::ShapeType::ELLIPTICAL_RING;
 
         _internal->indices->clear();
-        for (size_t i = 0; i < n_outer_vertices - 1; ++i)
+        for (uint64_t i = 0; i < n_outer_vertices - 1; ++i)
         {
             auto a = i * 2;
             _internal->indices->push_back(a);
@@ -596,7 +596,7 @@ namespace mousetrap
         _internal->vertices->clear();
         _internal->indices->clear();
 
-        size_t i = 0;
+        uint64_t i = 0;
         for (auto& position : positions)
         {
             _internal->vertices->emplace_back(position.x, position.y, *_internal->color);
@@ -615,7 +615,7 @@ namespace mousetrap
 
         auto positions = sort_by_angle(positions_in);
 
-        size_t i = 0;
+        uint64_t i = 0;
         for (auto& position : positions)
         {
             _internal->vertices->emplace_back(position.x, position.y, *_internal->color);
@@ -634,7 +634,7 @@ namespace mousetrap
 
         auto positions = sort_by_angle(positions_in);
 
-        size_t i = 0;
+        uint64_t i = 0;
         for (auto& position : positions)
         {
             _internal->vertices->emplace_back(position.x, position.y, *_internal->color);
@@ -667,7 +667,7 @@ namespace mousetrap
         else if (type == ShapeType::POINTS)
         {
             //log::warning("In Shape::as_outline: Creating outline of points, which have an area of 0", MOUSETRAP_DOMAIN);
-            for (size_t i = 0; i < shape.get_n_vertices(); ++i)
+            for (uint64_t i = 0; i < shape.get_n_vertices(); ++i)
             {
                 positions.push_back({
                     shape.get_vertex_position(i),
@@ -686,7 +686,7 @@ namespace mousetrap
         else if (type == ShapeType::LINES)
         {
             //log::warning("In Shape::as_outline: Creating outline of lines, which have an area of 0", MOUSETRAP_DOMAIN);
-            for (size_t i = 0; i < shape.get_n_vertices()-1; i += 2)
+            for (uint64_t i = 0; i < shape.get_n_vertices()-1; i += 2)
             {
                 positions.push_back({
                     shape.get_vertex_position(i),
@@ -697,7 +697,7 @@ namespace mousetrap
         else if (type == ShapeType::LINE_STRIP)
         {
             //log::warning("In Shape::as_outline: Creating outline of a line strip, which has an area of 0", MOUSETRAP_DOMAIN);
-            for (size_t i = 0; i < shape.get_n_vertices()-1; ++i)
+            for (uint64_t i = 0; i < shape.get_n_vertices()-1; ++i)
             {
                 positions.push_back({
                     shape.get_vertex_position(i),
@@ -708,7 +708,7 @@ namespace mousetrap
         else if (type == ShapeType::WIREFRAME)
         {
             //log::warning("In Shape::as_outline: Creating outline of a wireframe, which has an area of 0", MOUSETRAP_DOMAIN);
-            for (size_t i = 0; i < shape.get_n_vertices()-1; ++i)
+            for (uint64_t i = 0; i < shape.get_n_vertices()-1; ++i)
             {
                 positions.push_back({
                     shape.get_vertex_position(i),
@@ -724,7 +724,7 @@ namespace mousetrap
         else if (type == ShapeType::OUTLINE)
         {
             //log::warning("In Shape::as_outline: Creating outline of an outline, which has an area of 0", MOUSETRAP_DOMAIN);
-            for (size_t i = 0; i < shape.get_n_vertices()-1; ++i)
+            for (uint64_t i = 0; i < shape.get_n_vertices()-1; ++i)
             {
                 positions.push_back({
                     shape.get_vertex_position(i),
@@ -766,7 +766,7 @@ namespace mousetrap
         }
         else if (type == ShapeType::CIRCLE or type == ShapeType::ELLIPSE)
         {
-            for (size_t i = 1; i < shape.get_n_vertices() - 2; ++i)
+            for (uint64_t i = 1; i < shape.get_n_vertices() - 2; ++i)
                 positions.push_back({
                     shape.get_vertex_position(i),
                     shape.get_vertex_position(i+1)
@@ -779,7 +779,7 @@ namespace mousetrap
         }
         else if (type == ShapeType::POLYGON)
         {
-            for (size_t i = 0; i < shape.get_n_vertices() - 1; ++i)
+            for (uint64_t i = 0; i < shape.get_n_vertices() - 1; ++i)
             {
                 positions.push_back({
                 shape.get_vertex_position(i),
@@ -840,7 +840,7 @@ namespace mousetrap
         }
         else if (type == ShapeType::CIRCULAR_RING or type == ShapeType::ELLIPTICAL_RING)
         {
-            for (size_t i = 0; i < shape.get_n_vertices() - 2; i++)
+            for (uint64_t i = 0; i < shape.get_n_vertices() - 2; i++)
             {
                 positions.push_back({
                     shape.get_vertex_position(i),
@@ -871,7 +871,7 @@ namespace mousetrap
         }
 
         _internal->indices->clear();
-        for (size_t i = 0; i < _internal->vertices->size(); ++i)
+        for (uint64_t i = 0; i < _internal->vertices->size(); ++i)
             _internal->indices->push_back(i);
 
         _internal->render_type = GL_LINES;
@@ -879,7 +879,7 @@ namespace mousetrap
         initialize();
     }
 
-    void Shape::set_vertex_color(size_t i, RGBA color)
+    void Shape::set_vertex_color(uint64_t i, RGBA color)
     {
         if (i > _internal->vertices->size())
         {
@@ -894,7 +894,7 @@ namespace mousetrap
         update_data(false, true, false);
     }
 
-    RGBA Shape::get_vertex_color(size_t index) const
+    RGBA Shape::get_vertex_color(uint64_t index) const
     {
         if (index > _internal->vertices->size())
         {
@@ -907,7 +907,7 @@ namespace mousetrap
         return RGBA(_internal->vertices->at(index).color);
     }
 
-    void Shape::set_vertex_position(size_t i, Vector3f position)
+    void Shape::set_vertex_position(uint64_t i, Vector3f position)
     {
         if (i > _internal->vertices->size())
         {
@@ -922,7 +922,7 @@ namespace mousetrap
         update_data(true, false, false);
     }
 
-    Vector3f Shape::get_vertex_position(size_t i) const
+    Vector3f Shape::get_vertex_position(uint64_t i) const
     {
         if (i > _internal->vertices->size())
         {
@@ -935,7 +935,7 @@ namespace mousetrap
         return _internal->vertices->at(i).position;
     }
 
-    void Shape::set_vertex_texture_coordinate(size_t i, Vector2f coordinates)
+    void Shape::set_vertex_texture_coordinate(uint64_t i, Vector2f coordinates)
     {
         if (i > _internal->vertices->size())
         {
@@ -950,7 +950,7 @@ namespace mousetrap
         update_data(false, false, true);
     }
 
-    Vector2f Shape::get_vertex_texture_coordinate(size_t i) const
+    Vector2f Shape::get_vertex_texture_coordinate(uint64_t i) const
     {
         if (i > _internal->vertices->size())
         {
@@ -961,7 +961,7 @@ namespace mousetrap
         return _internal->vertices->at(i).texture_coordinates;
     }
 
-    size_t Shape::get_n_vertices() const
+    uint64_t Shape::get_n_vertices() const
     {
         return _internal->vertices->size();
     }
@@ -1137,14 +1137,14 @@ namespace mousetrap
         return out;
     }
 
-    Shape Shape::Circle(Vector2f center, float radius, size_t n_outer_vertices)
+    Shape Shape::Circle(Vector2f center, float radius, uint64_t n_outer_vertices)
     {
         auto out = Shape();
         out.as_circle(center, radius, n_outer_vertices);
         return out;
     }
 
-    Shape Shape::Ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices)
+    Shape Shape::Ellipse(Vector2f center, float x_radius, float y_radius, uint64_t n_outer_vertices)
     {
         auto out = Shape();
         out.as_ellipse(center, x_radius, y_radius, n_outer_vertices);
@@ -1186,14 +1186,14 @@ namespace mousetrap
         return out;
     }
 
-    Shape Shape::CircularRing(Vector2f center, float outer_radius, float thickness, size_t n_outer_vertices)
+    Shape Shape::CircularRing(Vector2f center, float outer_radius, float thickness, uint64_t n_outer_vertices)
     {
         auto out = Shape();
         out.as_circular_ring(center, outer_radius, thickness, n_outer_vertices);
         return out;
     }
 
-    Shape Shape::EllipticalRing(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices)
+    Shape Shape::EllipticalRing(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, uint64_t n_outer_vertices)
     {
         auto out = Shape();
         out.as_elliptical_ring(center, x_radius, y_radius, x_thickness, y_thickness, n_outer_vertices);

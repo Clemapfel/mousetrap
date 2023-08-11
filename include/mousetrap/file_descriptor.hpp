@@ -141,7 +141,7 @@ namespace mousetrap
 
             /// @brief get unique hash for the self
             /// @return hash
-            size_t hash() const;
+            uint64_t hash() const;
 
             /// @brief create a file monitor, monitoring self
             /// @return monitor to self,

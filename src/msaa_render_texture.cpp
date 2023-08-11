@@ -50,7 +50,7 @@ namespace mousetrap
         }
     }
     
-    MultisampledRenderTexture::MultisampledRenderTexture(size_t n_samples)
+    MultisampledRenderTexture::MultisampledRenderTexture(uint64_t n_samples)
     {
         _internal = detail::multisampled_render_texture_internal_new();
         _internal->n_samples = n_samples;
@@ -71,7 +71,7 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
-    void MultisampledRenderTexture::create(size_t width, size_t height)
+    void MultisampledRenderTexture::create(uint64_t width, uint64_t height)
     {
         free();
 

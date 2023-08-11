@@ -89,10 +89,10 @@ namespace mousetrap
 
             /// @brief get number of children
             /// @return n
-            size_t get_n_children() const;
+            uint64_t get_n_children() const;
 
             /// @brief get id of child at given position
-            Stack::ID get_child_at(size_t) const;
+            Stack::ID get_child_at(uint64_t) const;
 
             /// @brief get id of page that is currently displayed
             /// @return id

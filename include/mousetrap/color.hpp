@@ -149,12 +149,12 @@ namespace mousetrap
     /// @brief round all color components to the nearest fraction
     /// @param in color in rgba
     /// @param n_values_per_component denominator of the fraction
-    RGBA quantize(RGBA in, size_t n_values_per_component);
+    RGBA quantize(RGBA in, uint64_t n_values_per_component);
 
     /// @brief round all color components to the nearest fraction
     /// @param in color in hsva
     /// @param n_values_per_component denominator of the fraction
-    HSVA quantize(HSVA in, size_t n_values_per_component);
+    HSVA quantize(HSVA in, uint64_t n_values_per_component);
 
     /// @brief invert a color, non-mutating
     /// @param in color in rgba

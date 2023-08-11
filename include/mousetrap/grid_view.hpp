@@ -66,18 +66,18 @@ namespace mousetrap
             /// @brief insert widget at index
             /// @param widget
             /// @param index
-            void insert(const Widget& widget, size_t index);
+            void insert(const Widget& widget, uint64_t index);
 
             /// @brief remove all widgets
             void clear();
 
             /// @brief remove widget
             /// @param index
-            void remove(size_t);
+            void remove(uint64_t);
 
             /// @brief get number of widgets
             /// @return n
-            size_t get_n_items() const;
+            uint64_t get_n_items() const;
 
             /// @brief get position of widget, or -1 if widget is not part of grid view
             /// @param window
@@ -94,19 +94,19 @@ namespace mousetrap
 
             /// @brief set maximum number of columns
             /// @param n
-            void set_max_n_columns(size_t n);
+            void set_max_n_columns(uint64_t n);
 
             /// @brief get maximum number of columns
             /// @return n
-            size_t get_max_n_columns() const;
+            uint64_t get_max_n_columns() const;
 
             /// @brief set minimum number of columns
             /// @param n
-            void set_min_n_columns(size_t n);
+            void set_min_n_columns(uint64_t n);
 
             /// @brief get minimum number of columns
             /// @return n
-            size_t get_min_n_columns() const;
+            uint64_t get_min_n_columns() const;
 
             /// @brief get selection model
             /// @return pointer to selection model

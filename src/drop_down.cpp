@@ -19,7 +19,7 @@ namespace mousetrap
         {
             GObject parent_instance;
 
-            size_t id;
+            uint64_t id;
 
             GtkWidget* list_widget;
             GtkWidget* label_widget;
@@ -36,7 +36,7 @@ namespace mousetrap
 
         static void drop_down_item_init(DropDownItem* item)
         {
-            item->id = size_t(-1);
+            item->id = uint64_t(-1);
             item->list_widget = nullptr;
             item->label_widget = nullptr;
             item->function = nullptr;
@@ -59,7 +59,7 @@ namespace mousetrap
         }
 
         // sic, not static because forward declared in dropdown.inl
-        DropDownItem* drop_down_item_new(size_t id, const Widget* in, const Widget* label, std::function<void(DropDown&)> f)
+        DropDownItem* drop_down_item_new(uint64_t id, const Widget* in, const Widget* label, std::function<void(DropDown&)> f)
         {
             auto* item = (DropDownItem*) g_object_new(G_TYPE_DROP_DOWN_ITEM, nullptr);
             drop_down_item_init(item);
@@ -198,7 +198,7 @@ namespace mousetrap
 
     void DropDown::remove(ItemID id)
     {
-        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_internal->model)); ++i)
+        for (uint64_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_internal->model)); ++i)
         {
             auto* item = detail::G_DROP_DOWN_ITEM(g_list_model_get_item(G_LIST_MODEL(_internal->model), i));
             if (item->id == id)
@@ -221,7 +221,7 @@ namespace mousetrap
 
     void DropDown::set_selected(DropDown::ItemID id)
     {
-        for (size_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_internal->model)); ++i)
+        for (uint64_t i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_internal->model)); ++i)
         {
             auto* item = detail::G_DROP_DOWN_ITEM(g_list_model_get_item(G_LIST_MODEL(_internal->model), i));
             if (item->id == id)
@@ -238,16 +238,16 @@ namespace mousetrap
     {
         auto* item = g_list_model_get_item(G_LIST_MODEL(_internal->model), gtk_drop_down_get_selected(_internal->native));
         if (item == nullptr)
-            return DropDown::ItemID{size_t(-1)};
+            return DropDown::ItemID{uint64_t(-1)};
         else
             return DropDown::ItemID{detail::G_DROP_DOWN_ITEM(item)->id};
     }
 
-    DropDown::ItemID DropDown::get_item_at(size_t index) const
+    DropDown::ItemID DropDown::get_item_at(uint64_t index) const
     {
         auto* item = g_list_model_get_item(G_LIST_MODEL(_internal->model), index);
         if (item == nullptr)
-            return DropDown::ItemID{size_t(-1)};
+            return DropDown::ItemID{uint64_t(-1)};
         else
             return DropDown::ItemID{detail::G_DROP_DOWN_ITEM(item)->id};
     }

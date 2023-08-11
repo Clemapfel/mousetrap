@@ -552,7 +552,7 @@ namespace mousetrap
         auto* list = gtk_widget_get_css_classes(operator NativeWidget());
 
         auto out = std::vector<std::string>();
-        size_t i = 0;
+        uint64_t i = 0;
         while (list[i] != nullptr)
         {
             out.emplace_back(list[i]);

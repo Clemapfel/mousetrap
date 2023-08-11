@@ -127,7 +127,7 @@ namespace mousetrap
             void set_max_width_chars(int32_t n_chars);
 
             /// @brief get maximum allowed number of characters in one line
-            /// @return size_t
+            /// @return uint64_t
             int32_t get_max_width_chars() const;
 
             /// @brief set horizontal offset of text

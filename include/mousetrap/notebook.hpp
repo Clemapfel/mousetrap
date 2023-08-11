@@ -68,36 +68,36 @@ namespace mousetrap
             /// @param child_widget widget to display as the pages content, may be nullptr
             /// @param label_widget widget to use for the lable in the pages tab, may be nullptr
             /// @return index of the newly inserted page
-            size_t push_front(const Widget& child_widget, const Widget& label_widget);
+            uint64_t push_front(const Widget& child_widget, const Widget& label_widget);
 
             /// @brief add a page to end of the notebook
             /// @param child_widget widget to display as the pages content, may be nullptr
             /// @param label_widget widget to use for the lable in the pages tab, may be nullptr
             /// @return index of the newly inserted page
-            size_t push_back(const Widget& child_widget, const Widget& label_widget);
+            uint64_t push_back(const Widget& child_widget, const Widget& label_widget);
 
             /// @brief add a page at a specific position in the notebook
             /// @param new_position
             /// @param child_widget widget to display as the pages content, may be nullptr
             /// @param label_widget widget to use for the lable in the pages tab, may be nullptr
             /// @return index of the newly inserted page
-            size_t insert(size_t new_position, const Widget& child_widget, const Widget& label_widget);
+            uint64_t insert(uint64_t new_position, const Widget& child_widget, const Widget& label_widget);
 
             /// @brief move page that has child as widget to given position
             /// @param child
             /// @param new position
-            void move_page_to(size_t current_position, size_t new_position);
+            void move_page_to(uint64_t current_position, uint64_t new_position);
 
             /// @brief remove page at given position, removes last page if position is out of bounds
             /// @param position
-            void remove(size_t position);
+            void remove(uint64_t position);
 
             /// @brief make active the page after the current one, does nothing if current page is the last
             void next_page();
 
             /// @brief switch to page with the given index, or the last page if index is out of bounds
             /// @param index
-            void goto_page(size_t index);
+            void goto_page(uint64_t index);
 
             /// @brief make active the page before the current one, does nothing if current page is the first
             void previous_page();
@@ -107,8 +107,8 @@ namespace mousetrap
             int64_t get_current_page() const;
 
             /// @brief get number of pages
-            /// @return size_t
-            size_t get_n_pages() const;
+            /// @return uint64_t
+            uint64_t get_n_pages() const;
 
             /// @brief set pages can be changed with a scroll motion
             /// @param b true if scroll motion allowed, false otherwise

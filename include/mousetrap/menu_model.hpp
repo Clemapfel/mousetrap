@@ -122,7 +122,7 @@ namespace mousetrap
             [[nodiscard]] std::map<std::string, GtkWidget*> get_widgets() const;
 
         private:
-            static inline size_t current_id = 1;
+            static inline uint64_t current_id = 1;
             detail::MenuModelInternal* _internal = nullptr;
     };
 }

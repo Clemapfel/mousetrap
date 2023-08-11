@@ -20,10 +20,10 @@ namespace mousetrap
         {
             GObject parent;
 
-            size_t n_samples;
+            uint64_t n_samples;
 
-            size_t width = 0;
-            size_t height = 0;
+            uint64_t width = 0;
+            uint64_t height = 0;
 
             mutable GLint before_buffer = 0;
 
@@ -46,7 +46,7 @@ namespace mousetrap
         public:
             /// @brief construct
             /// @param n_samples number of MSAA samples, usually 2, 4, 8 or 16
-            MultisampledRenderTexture(size_t n_samples = 8);
+            MultisampledRenderTexture(uint64_t n_samples = 8);
 
             /// @brief construct from internal
             MultisampledRenderTexture(detail::MultisampledRenderTextureInternal*);
@@ -72,7 +72,7 @@ namespace mousetrap
             /// @brief create as texture of given size with all pixels set to RGBA(0, 0, 0, 0)
             /// @param width x-dimension
             /// @param height y-dimensino
-            void create(size_t width, size_t height);
+            void create(uint64_t width, uint64_t height);
 
             /// @brief expose a gobject
             operator GObject*() const override;

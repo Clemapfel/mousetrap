@@ -9,7 +9,7 @@ namespace mousetrap
     namespace detail
     {
         struct _DropDownItem;
-        _DropDownItem* drop_down_item_new(size_t id, const Widget* in, const Widget* label, std::function<void(DropDown&)> f);
+        _DropDownItem* drop_down_item_new(uint64_t id, const Widget* in, const Widget* label, std::function<void(DropDown&)> f);
     }
 
     template<typename Function_t, typename Data_t>
@@ -85,7 +85,7 @@ namespace mousetrap
     }
 
     template<typename Function_t, typename Data_t>
-    DropDown::ItemID DropDown::insert(size_t i, const Widget& list_widget, const Widget& label_widget, Function_t f_in, Data_t data_in)
+    DropDown::ItemID DropDown::insert(uint64_t i, const Widget& list_widget, const Widget& label_widget, Function_t f_in, Data_t data_in)
     {
         assert_label_is_not_self("insert", list_widget, label_widget);
 
@@ -106,7 +106,7 @@ namespace mousetrap
     }
 
     template<typename Function_t>
-    DropDown::ItemID DropDown::insert(size_t i, const Widget& list_widget, const Widget& label_widget, Function_t f_in)
+    DropDown::ItemID DropDown::insert(uint64_t i, const Widget& list_widget, const Widget& label_widget, Function_t f_in)
     {
         assert_label_is_not_self("insert", list_widget, label_widget);
 

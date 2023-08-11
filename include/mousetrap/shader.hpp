@@ -36,9 +36,9 @@ namespace mousetrap
             GLNativeHandle fragment_shader_id;
             GLNativeHandle vertex_shader_id;
 
-            static inline size_t noop_program_id;
-            static inline size_t noop_fragment_shader_id;
-            static inline size_t noop_vertex_shader_id;
+            static inline uint64_t noop_program_id;
+            static inline uint64_t noop_fragment_shader_id;
+            static inline uint64_t noop_vertex_shader_id;
         };
         using ShaderInternal = _ShaderInternal;
         DEFINE_INTERNAL_MAPPING(Shader);

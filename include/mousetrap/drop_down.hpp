@@ -47,7 +47,7 @@ namespace mousetrap
     {
         public:
             /// @brief id of an item, keep track of this to refer to items after initialization
-            using ItemID = size_t;
+            using ItemID = uint64_t;
 
             /// @brief construct as empty
             DropDown();
@@ -112,7 +112,7 @@ namespace mousetrap
             /// @param data
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t, typename Data_t>
-            [[nodiscard]] ItemID insert(size_t i, const Widget& list_widget, const Widget& label_widget, Function_t function, Data_t data);
+            [[nodiscard]] ItemID insert(uint64_t i, const Widget& list_widget, const Widget& label_widget, Function_t function, Data_t data);
 
             /// @brief add an item with an accompanying action to a specified position in the drop down
             /// @tparam Function_t function or lambda with signature `(DropDown&) -> void`
@@ -122,7 +122,7 @@ namespace mousetrap
             /// @param function function to trigger when the item is selected
             /// @return item id, keep track of this to be able to refer to the item later
             template <typename Function_t>
-            [[nodiscard]] ItemID insert(size_t i, const Widget& list_widget, const Widget& label_widget, Function_t function);
+            [[nodiscard]] ItemID insert(uint64_t i, const Widget& list_widget, const Widget& label_widget, Function_t function);
 
             /// @brief remove an item from the drop down
             /// @param id
@@ -147,7 +147,7 @@ namespace mousetrap
             /// @brief get the id of the item at specified position in the drop down
             /// @param index
             /// @return id
-            ItemID get_item_at(size_t index) const;
+            ItemID get_item_at(uint64_t index) const;
 
         private:
             static void on_list_factory_bind(GtkSignalListItemFactory* self, void* object, detail::DropDownInternal*);
@@ -160,7 +160,7 @@ namespace mousetrap
 
             detail::DropDownInternal* _internal = nullptr;
 
-            static inline size_t _current_id = 0;
+            static inline uint64_t _current_id = 0;
             bool assert_label_is_not_self(const std::string& scope, const Widget&, const Widget&);
     };
 }

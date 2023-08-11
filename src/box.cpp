@@ -100,9 +100,9 @@ namespace mousetrap
         gtk_box_set_homogeneous(GTK_BOX(operator NativeWidget()), b);
     }
 
-    size_t Box::get_n_items()
+    uint64_t Box::get_n_items()
     {
-        size_t i = 0;
+        uint64_t i = 0;
         auto* child = gtk_widget_get_first_child(GTK_WIDGET(operator NativeWidget()));
         while(child != nullptr)
         {

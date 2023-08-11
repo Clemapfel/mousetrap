@@ -23,7 +23,7 @@ namespace mousetrap
           CTOR_SIGNAL(StylusEventController, motion)
     {}
 
-    size_t StylusEventController::get_hardware_id() const
+    uint64_t StylusEventController::get_hardware_id() const
     {
         auto* device = gtk_gesture_stylus_get_device_tool(GTK_GESTURE_STYLUS(get_internal()));
         if (device == nullptr)

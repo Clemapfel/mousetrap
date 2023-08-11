@@ -108,7 +108,7 @@ namespace mousetrap
 
             /// @brief get hardware id of stylus
             /// @return id, or 0 if ID is unknown
-            size_t get_hardware_id() const;
+            uint64_t get_hardware_id() const;
 
             /// @brief get current tool type the stylus
             /// @return tool type

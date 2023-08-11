@@ -18,8 +18,8 @@ namespace mousetrap
     /// @brief vector of 2 floats
     using Vector2f = glm::vec<2, float>;
 
-    /// @brief vector of 2 size_t
-    using Vector2ui = glm::vec<2, size_t>;
+    /// @brief vector of 2 uint64_t
+    using Vector2ui = glm::vec<2, uint64_t>;
 
     /// @brief vector of 2 int64_t
     using Vector2i = glm::vec<2, int64_t>;
@@ -32,8 +32,8 @@ namespace mousetrap
     /// @brief vector of 3 float
     using Vector3f = glm::vec<3, float>;
 
-    /// @brief vector of 3 size_t
-    using Vector3ui = glm::vec<3, size_t>;
+    /// @brief vector of 3 uint64_t
+    using Vector3ui = glm::vec<3, uint64_t>;
 
     /// @brief vector of 3 int64_t
     using Vector3i = glm::vec<3, int64_t>;
@@ -46,8 +46,8 @@ namespace mousetrap
     /// @brief vector of 4 float
     using Vector4f = glm::vec<4, float>;
 
-    /// @brief vector of 4 size_t
-    using Vector4ui = glm::vec<4, size_t>;
+    /// @brief vector of 4 uint64_t
+    using Vector4ui = glm::vec<4, uint64_t>;
 
     /// @brief vector of 4 int
     using Vector4i = glm::vec<4, int64_t>;
@@ -188,7 +188,7 @@ namespace mousetrap
     using Vector2iSet = Vector2Set<int64_t>;
 
     /// @brief set of Vector2ui
-    using Vector2uiSet = Vector2Set<size_t>;
+    using Vector2uiSet = Vector2Set<uint64_t>;
 
     /// @brief set of Vector2
     /// @tparam number type
@@ -202,7 +202,7 @@ namespace mousetrap
     using Vector3iSet = Vector3Set<int64_t>;
 
     /// @brief set of Vector3ui
-    using Vector3uiSet = Vector3Set<size_t>;
+    using Vector3uiSet = Vector3Set<uint64_t>;
 
     /// @brief set of Vector2
     /// @tparam number type
@@ -216,6 +216,6 @@ namespace mousetrap
     using Vector4iSet = Vector4Set<int64_t>;
 
     /// @brief set of Vector4ui
-    using Vector4uiSet = Vector4Set<size_t>;
+    using Vector4uiSet = Vector4Set<uint64_t>;
      */
 }

@@ -118,11 +118,11 @@ namespace mousetrap
 
             /// @brief set number of digits after the decimal point that should be displayed
             /// @param n
-            void set_n_digits(size_t n);
+            void set_n_digits(uint64_t n);
 
             /// @brief get number of digits after the decimal point that should be displayed
             /// @return number of digits
-            size_t get_n_digits() const;
+            uint64_t get_n_digits() const;
 
             /// @brief set whether incrementing while the value is equal to upper bound should wrap around such that the value is now equal to the lower bound, or vice versa
             /// @param b true if wrapping enabled, false otherwise

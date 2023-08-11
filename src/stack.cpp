@@ -207,16 +207,16 @@ namespace mousetrap
         return gtk_stack_get_visible_child_name(_internal->native);
     }
 
-    size_t Stack::get_n_children() const
+    uint64_t Stack::get_n_children() const
     {
         return g_list_model_get_n_items(G_LIST_MODEL(gtk_stack_get_pages(_internal->native)));
     }
 
-    Stack::ID Stack::get_child_at(size_t index) const
+    Stack::ID Stack::get_child_at(uint64_t index) const
     {
         auto* pages = G_LIST_MODEL(gtk_stack_get_pages(_internal->native));
 
-        size_t n_pages = g_list_model_get_n_items(pages);
+        uint64_t n_pages = g_list_model_get_n_items(pages);
         if (index >= n_pages)
         {
             log::critical("In Stack::get_child_at: Index " + std::to_string(index) + " is out of bounds for a Stack with " + std::to_string(n_pages) + " pages.");

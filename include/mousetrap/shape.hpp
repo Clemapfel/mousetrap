@@ -173,20 +173,20 @@ namespace mousetrap
             /// @param center point in gl coordinates
             /// @param radius distance in gl coordinates
             /// @param n_outer_vertices number of equally spaced vertices on the perimeter of the circle
-            void as_circle(Vector2f center, float radius, size_t n_outer_vertices);
+            void as_circle(Vector2f center, float radius, uint64_t n_outer_vertices);
 
             /// @copydoc Shape::as_circle
-            static Shape Circle(Vector2f center, float radius, size_t n_outer_vertices);
+            static Shape Circle(Vector2f center, float radius, uint64_t n_outer_vertices);
 
             /// @brief construct as ellipse
             /// @param center point in gl coordinates
             /// @param x_radius radius along the x-axis, normalized distance in 2d space
             /// @param y_radius radius along the y-axis, normalized distance in 2d space
             /// @param n_outer_vertices number of equally spaced vertices on the perimeter of the circle
-            void as_ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices);
+            void as_ellipse(Vector2f center, float x_radius, float y_radius, uint64_t n_outer_vertices);
 
             /// @copydoc Shape::as_ellipse
-            static Shape Ellipse(Vector2f center, float x_radius, float y_radius, size_t n_outer_vertices);
+            static Shape Ellipse(Vector2f center, float x_radius, float y_radius, uint64_t n_outer_vertices);
 
             /// @brief construct as line, has a width of 1 fragment exactly
             /// @param a point in gl coordinates
@@ -232,10 +232,10 @@ namespace mousetrap
             /// @param outer_radius radius from the center to the outer perimeter of the ring
             /// @param thickness width of the rings inner bounds along all axis
             /// @param n_outer_vertices number of vertices on the outer perimeter of the ring
-            void as_circular_ring(Vector2f center, float outer_radius, float thickness, size_t n_outer_vertices);
+            void as_circular_ring(Vector2f center, float outer_radius, float thickness, uint64_t n_outer_vertices);
 
             /// @copydoc Shape::as_circular_ring
-            static Shape CircularRing(Vector2f center, float outer_radius, float thickness, size_t n_outer_vertices);
+            static Shape CircularRing(Vector2f center, float outer_radius, float thickness, uint64_t n_outer_vertices);
 
             /// @brief construct as elliptic ring, a "2d elliptic donut"
             /// @param center center in 2d space
@@ -244,10 +244,10 @@ namespace mousetrap
             /// @param x_thickness width of the inner bound of the ellipse along the x-axis
             /// @param y_thickness height of the inner bounds of the ellipse along the y-axis
             /// @param n_outer_vertices number of vertices on the outer perimeter of the ellipse
-            void as_elliptical_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices);
+            void as_elliptical_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, uint64_t n_outer_vertices);
 
             /// @copydoc Shape::as_elliptic_ring
-            static Shape EllipticalRing(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, size_t n_outer_vertices);
+            static Shape EllipticalRing(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, uint64_t n_outer_vertices);
 
             /// @brief construct as a closed loop linesegment
             /// @param points {a1, a2, ..., an} will result in line segments {a1, a2}, {a2, a3}, ..., {an-1, an}, {an, a1}
@@ -271,37 +271,37 @@ namespace mousetrap
             /// @brief get color of n-th vertex, returns RGBA(0, 0, 0, 0) and prints a warning if vertex index out of bounds
             /// @param index vertex index
             /// @returns color as RGBA
-            RGBA get_vertex_color(size_t index) const;
+            RGBA get_vertex_color(uint64_t index) const;
 
             /// @brief set color of n-th vertex, does nothing if vertex index out of bounds
             /// @param index vertex index
             /// @param new_color
-            void set_vertex_color(size_t index, RGBA new_color);
+            void set_vertex_color(uint64_t index, RGBA new_color);
 
             /// @brief set texture coordinate of vertex, does nothing if vertex index out of bounds
             /// @param index vertex index
             /// @param coordinate new texture coordinate, {0, 0} for top left, {1, 1} for bottom right of texture
-            void set_vertex_texture_coordinate(size_t index, Vector2f coordinate);
+            void set_vertex_texture_coordinate(uint64_t index, Vector2f coordinate);
 
             /// @brief get vertex texture coordinate, returns Vector2f() if index out of bounds
             /// @param index vertex index
             /// @return texture coordinate, {0, 0} for top left, {1, 1} for bottom right of texture
-            Vector2f get_vertex_texture_coordinate(size_t index) const;
+            Vector2f get_vertex_texture_coordinate(uint64_t index) const;
 
             /// @brief set vertex position in 3d space, does nothing if index out of bounds
             /// @param index vertex index
             /// @param position position in 3d space
             /// @note if multiple vertex positions change at the same time, use mousetrap::Vertex::as_rectangle (or other appropriate shape) to update all of them at once in a more performant manned
-            void set_vertex_position(size_t index, Vector3f position);
+            void set_vertex_position(uint64_t index, Vector3f position);
 
             /// @brief get vertex position in 3d space, return Vector3f() if out of bounds
             /// @param index vertex index
             /// @return position in 3d space
-            Vector3f get_vertex_position(size_t index) const;
+            Vector3f get_vertex_position(uint64_t index) const;
 
             /// @brief get number of vertices, the number depends on the shape and may be larger than intuitive
             /// @return number of vertices
-            size_t get_n_vertices() const;
+            uint64_t get_n_vertices() const;
 
             /// @brief set color of all vertices at once
             /// @param rgba color in RGBA

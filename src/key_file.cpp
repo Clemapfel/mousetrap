@@ -49,7 +49,7 @@ namespace mousetrap
     KeyFile::operator std::string()
     {
         GError* error_maybe = nullptr;
-        size_t length;
+        uint64_t length;
 
         auto* data = g_key_file_to_data(_native, &length, &error_maybe);
         if (error_maybe != nullptr)
@@ -61,7 +61,7 @@ namespace mousetrap
         std::string out;
         out.reserve(length);
 
-        for (size_t i = 0; i < length; ++i)
+        for (uint64_t i = 0; i < length; ++i)
             out.push_back(data[i]);
 
         return out;
@@ -146,7 +146,7 @@ namespace mousetrap
         }
 
         std::vector<KeyFile::KeyID> out;
-        for (size_t i = 0; i < length; ++i)
+        for (uint64_t i = 0; i < length; ++i)
             out.emplace_back(keys[i]);
 
         return out;
@@ -172,7 +172,7 @@ namespace mousetrap
         auto* groups = g_key_file_get_groups(_native, &length);
 
         std::vector<KeyFile::GroupID> out;
-        for (size_t i = 0; i < length; ++i)
+        for (uint64_t i = 0; i < length; ++i)
             out.emplace_back(groups[i]);
 
         return out;
@@ -300,7 +300,7 @@ namespace mousetrap
         }
 
         std::vector<bool> out;
-        for (size_t i = 0; i < length; ++i)
+        for (uint64_t i = 0; i < length; ++i)
             out.push_back(value_list[i]);
 
         return out;
@@ -341,14 +341,14 @@ namespace mousetrap
         }
 
         std::vector<int> out;
-        for (size_t i = 0; i < length; ++i)
+        for (uint64_t i = 0; i < length; ++i)
             out.push_back(value_list[i]);
 
         return out;
     }
 
     template<>
-    size_t KeyFile::get_value_as(GroupID group, KeyID key)
+    uint64_t KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         int value = g_key_file_get_uint64(_native, group.c_str(), key.c_str(), &error);
@@ -356,7 +356,7 @@ namespace mousetrap
         if (error != nullptr)
         {
             std::stringstream str;
-            str << "In KeyFile::get_value_as<size_t>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message;
+            str << "In KeyFile::get_value_as<uint64_t>: Unable to retrieve value for key `" << key << "` in group `" << group << "`: " << error->message;
             log::critical(str.str(), MOUSETRAP_DOMAIN);
             g_error_free(error);
             return -1;
@@ -366,7 +366,7 @@ namespace mousetrap
     }
 
     template<>
-    std::vector<size_t> KeyFile::get_value_as(GroupID group, KeyID key)
+    std::vector<uint64_t> KeyFile::get_value_as(GroupID group, KeyID key)
     {
         GError* error = nullptr;
         gsize length;
@@ -381,8 +381,8 @@ namespace mousetrap
             return {};
         }
 
-        std::vector<size_t> out;
-        for (size_t i = 0; i < length; ++i)
+        std::vector<uint64_t> out;
+        for (uint64_t i = 0; i < length; ++i)
             out.push_back(value_list[i]);
 
         return out;
@@ -423,7 +423,7 @@ namespace mousetrap
         }
 
         std::vector<double> out;
-        for (size_t i = 0; i < length; ++i)
+        for (uint64_t i = 0; i < length; ++i)
             out.push_back(value_list[i]);
 
         return out;
@@ -452,7 +452,7 @@ namespace mousetrap
         }
 
         std::vector<float> out;
-        for (size_t i = 0; i < length; ++i)
+        for (uint64_t i = 0; i < length; ++i)
             out.push_back(value_list[i]);
 
         return out;
@@ -499,7 +499,7 @@ namespace mousetrap
         }
 
         std::vector<std::string> out;
-        for (size_t i = 0; i < length; ++i)
+        for (uint64_t i = 0; i < length; ++i)
         {
             auto string = std::string(value_list[i]);
             std::string to_push = "";
@@ -577,7 +577,7 @@ namespace mousetrap
 
         std::vector<RGBA> colors;
 
-        for (size_t i = 2; i < serialized.size(); i += 4)
+        for (uint64_t i = 2; i < serialized.size(); i += 4)
         {
             RGBA color;
             color.r = serialized.at(i + 0);
@@ -652,12 +652,12 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupID group, KeyID key, size_t value)
+    void KeyFile::set_value_as(GroupID group, KeyID key, uint64_t value)
     {
         if (value > std::numeric_limits<gint64>::max())
         {
             std::stringstream str;
-            str << "[WARNING] In KeyFile::set_value_as<size_t>: Value " << value << " is too large to be stored as int";
+            str << "[WARNING] In KeyFile::set_value_as<uint64_t>: Value " << value << " is too large to be stored as int";
             log::critical(str.str(), MOUSETRAP_DOMAIN);
         }
 
@@ -665,7 +665,7 @@ namespace mousetrap
     }
 
     template<>
-    void KeyFile::set_value_as(GroupID group, KeyID key, std::vector<size_t> value)
+    void KeyFile::set_value_as(GroupID group, KeyID key, std::vector<uint64_t> value)
     {
         std::vector<int> converted;
         converted.reserve(value.size());
@@ -676,7 +676,7 @@ namespace mousetrap
             if (i > std::numeric_limits<int>::max() and once)
             {
                 std::stringstream str;
-                str << "In KeyFile::set_value_as<std::vector<size_t>>: Value " << i << " is too large to be stored as int";
+                str << "In KeyFile::set_value_as<std::vector<uint64_t>>: Value " << i << " is too large to be stored as int";
                 log::critical(str.str(), MOUSETRAP_DOMAIN);
                 once = false;
             }
@@ -737,7 +737,7 @@ namespace mousetrap
         serialized.push_back((float) image.get_size().x);
         serialized.push_back((float) image.get_size().y);
 
-        for (size_t i = 0; i < n_pixels; ++i)
+        for (uint64_t i = 0; i < n_pixels; ++i)
         {
             auto color = image.get_pixel(i);
             serialized.push_back(color.r);

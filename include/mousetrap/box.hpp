@@ -84,8 +84,8 @@ namespace mousetrap
             float get_spacing() const;
 
             /// @brief get number of children
-            /// @return size_t
-            size_t get_n_items();
+            /// @return uint64_t
+            uint64_t get_n_items();
 
             /// @brief get orientation
             /// @return orientation

@@ -115,7 +115,7 @@ namespace mousetrap
         std::vector<std::string> out;
         guint n;
         auto* ids = g_signal_list_ids(gtk_file_chooser_get_type(), &n);
-        for (size_t i = 0; i < n; ++i)
+        for (uint64_t i = 0; i < n; ++i)
             out.emplace_back(g_signal_name(ids[i]));
 
         g_free(ids);

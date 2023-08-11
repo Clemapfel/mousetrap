@@ -186,7 +186,7 @@ namespace mousetrap
         g_list_store_insert(G_LIST_STORE(_internal->list_store), 0, item);
     }
 
-    void GridView::insert(const Widget& widget, size_t i)
+    void GridView::insert(const Widget& widget, uint64_t i)
     {
         auto* ptr = &widget;
         WARN_IF_SELF_INSERTION(GridView::insert, this, ptr);
@@ -214,7 +214,7 @@ namespace mousetrap
         return -1;
     }
 
-    void GridView::remove(size_t i)
+    void GridView::remove(uint64_t i)
     {
         g_list_store_remove(G_LIST_STORE(_internal->list_store), i);
     }
@@ -229,7 +229,7 @@ namespace mousetrap
         return gtk_grid_view_get_enable_rubberband(_internal->native);
     }
 
-    void GridView::set_max_n_columns(size_t n)
+    void GridView::set_max_n_columns(uint64_t n)
     {
         auto min = get_min_n_columns();
         if (min > n)
@@ -241,12 +241,12 @@ namespace mousetrap
         gtk_grid_view_set_max_columns(_internal->native, n);
     }
 
-    size_t GridView::get_max_n_columns() const
+    uint64_t GridView::get_max_n_columns() const
     {
         return gtk_grid_view_get_max_columns(_internal->native);
     }
 
-    void GridView::set_min_n_columns(size_t n)
+    void GridView::set_min_n_columns(uint64_t n)
     {
         if (n == 0)
         {
@@ -257,7 +257,7 @@ namespace mousetrap
         gtk_grid_view_set_min_columns(_internal->native, n);
     }
 
-    size_t GridView::get_min_n_columns() const
+    uint64_t GridView::get_min_n_columns() const
     {
         return gtk_grid_view_get_min_columns(_internal->native);
     }
@@ -267,7 +267,7 @@ namespace mousetrap
         return _internal->selection_model;
     }
 
-    size_t GridView::get_n_items() const
+    uint64_t GridView::get_n_items() const
     {
         return g_list_model_get_n_items(G_LIST_MODEL(_internal->selection_model->operator GtkSelectionModel*()));
     }

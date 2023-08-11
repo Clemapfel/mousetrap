@@ -34,7 +34,7 @@ namespace mousetrap
         create_from_file(path);
     }
 
-    Image::Image(size_t width, size_t height, RGBA rgba)
+    Image::Image(uint64_t width, uint64_t height, RGBA rgba)
     {
         create(width, height, rgba);
     }
@@ -81,7 +81,7 @@ namespace mousetrap
         return _data;
     }
 
-    void Image::create(size_t width, size_t height, RGBA default_color)
+    void Image::create(uint64_t width, uint64_t height, RGBA default_color)
     {
         if (G_IS_OBJECT(_data))
             g_object_unref(_data);
@@ -90,8 +90,8 @@ namespace mousetrap
         _size = {width, height};
 
         if (default_color.r != 0 or default_color.g != 0 or default_color.b != 0 or default_color.a != 0)
-            for (size_t x = 0; x < width; ++x)
-                for (size_t y = 0; y < height; ++y)
+            for (uint64_t x = 0; x < width; ++x)
+                for (uint64_t y = 0; y < height; ++y)
                     set_pixel(x, y, default_color);
     }
 
@@ -147,22 +147,22 @@ namespace mousetrap
         return gdk_pixbuf_get_pixels(_data);
     }
 
-    size_t Image::get_data_size() const
+    uint64_t Image::get_data_size() const
     {
         return _size.x * _size.y * 4;
     }
 
-    size_t Image::get_n_pixels() const
+    uint64_t Image::get_n_pixels() const
     {
         return get_size().x * get_size().y;
     }
 
-    size_t Image::to_linear_index(size_t x, size_t y) const
+    uint64_t Image::to_linear_index(uint64_t x, uint64_t y) const
     {
         return y * (_size.x * 4) + (x * 4);
     }
 
-    void Image::set_pixel(size_t x, size_t y, RGBA color)
+    void Image::set_pixel(uint64_t x, uint64_t y, RGBA color)
     {
         auto i = to_linear_index(x, y);
 
@@ -179,12 +179,12 @@ namespace mousetrap
         data[i+3] = color.a * 255;
     }
 
-    void Image::set_pixel(size_t x, size_t y, HSVA color)
+    void Image::set_pixel(uint64_t x, uint64_t y, HSVA color)
     {
         set_pixel(x, y, color.operator RGBA());
     }
 
-    RGBA Image::get_pixel(size_t x, size_t y) const
+    RGBA Image::get_pixel(uint64_t x, uint64_t y) const
     {
         auto i = to_linear_index(x, y);
 
@@ -207,7 +207,7 @@ namespace mousetrap
         );
     }
 
-    void Image::set_pixel(size_t i, RGBA color)
+    void Image::set_pixel(uint64_t i, RGBA color)
     {
         i *= 4;
 
@@ -227,12 +227,12 @@ namespace mousetrap
         data[i+3] = color.a * 255;
     }
 
-    void Image::set_pixel(size_t i, HSVA color_hsva)
+    void Image::set_pixel(uint64_t i, HSVA color_hsva)
     {
         set_pixel(i, color_hsva.operator RGBA());
     }
 
-    RGBA Image::get_pixel(size_t i) const
+    RGBA Image::get_pixel(uint64_t i) const
     {
         i *= 4;
 
@@ -246,14 +246,14 @@ namespace mousetrap
         );
     }
 
-    Image Image::as_cropped(int offset_x, int offset_y, size_t size_x, size_t size_y) const
+    Image Image::as_cropped(int offset_x, int offset_y, uint64_t size_x, uint64_t size_y) const
     {
         auto out = Image();
         out.create(size_x, size_y);
 
-        for (size_t y = 0; y < size_y; ++y)
+        for (uint64_t y = 0; y < size_y; ++y)
         {
-            for (size_t x = 0; x < size_x; ++x)
+            for (uint64_t x = 0; x < size_x; ++x)
             {
                 Vector2i pos = {x - offset_x, y - offset_y};
 
@@ -267,15 +267,15 @@ namespace mousetrap
         return out;
     }
 
-    Image Image::as_scaled(size_t size_x, size_t size_y, InterpolationType type) const
+    Image Image::as_scaled(uint64_t size_x, uint64_t size_y, InterpolationType type) const
     {
         if (int(size_x) == _size.x and int(size_y) == _size.y)
             return *this;
 
-        if (size_x == size_t(0))
+        if (size_x == uint64_t(0))
             size_x = 1;
 
-        if (size_y == size_t(0))
+        if (size_y == uint64_t(0))
             size_y = 1;
 
         GdkInterpType gdk_interpolation_type;
@@ -288,9 +288,9 @@ namespace mousetrap
         auto out = Image();
         out.create(_size.x, _size.y);
 
-        for (size_t x = 0; x < _size.x; ++x)
+        for (uint64_t x = 0; x < _size.x; ++x)
         {
-            for (size_t y = 0; y < _size.y; ++y)
+            for (uint64_t y = 0; y < _size.y; ++y)
             {
                 Vector2ui pos = {x, y};
 

@@ -73,7 +73,7 @@ namespace mousetrap
 
             /// @brief bind the texture for rendering
             /// @param texture_unit texture unit to bind to, usually <tt>GL_TEXTURE0 + n</tt> where n = 0, 1, ...
-            void bind(size_t texture_unit) const;
+            void bind(uint64_t texture_unit) const;
 
             /// @brief bind the texture for rendering, bound to GL_TEXTURE0
             void bind() const override;
@@ -84,7 +84,7 @@ namespace mousetrap
             /// @brief create texture as an image of given size with all pixels set to RGBA(0, 0, 0, 0)
             /// @param width
             /// @param height
-            void create(size_t width, size_t height);
+            void create(uint64_t width, uint64_t height);
 
             /// @brief create texture from an image on disk
             /// @param path absolute path

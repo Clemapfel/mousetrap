@@ -182,7 +182,7 @@ namespace mousetrap
 
         auto name = get_name();
 
-        size_t i = name.size()-1;
+        uint64_t i = name.size()-1;
         while (i > 0 and name.at(i) != '.')
             i -= 1;
 
@@ -228,7 +228,7 @@ namespace mousetrap
         return not this->operator==(other);
     }
 
-    size_t FileDescriptor::hash() const
+    uint64_t FileDescriptor::hash() const
     {
         return g_file_hash(_native);
     }
