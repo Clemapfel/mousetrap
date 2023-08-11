@@ -7,7 +7,7 @@
 
 namespace mousetrap
 {
-    Separator::Separator(float opacity, Orientation orientation)
+    Separator::Separator(Orientation orientation)
         : Widget(gtk_separator_new((GtkOrientation) orientation)),
           CTOR_SIGNAL(Separator, realize),
           CTOR_SIGNAL(Separator, unrealize),
@@ -23,8 +23,6 @@ namespace mousetrap
             set_expand_horizontally(true);
         else
             set_expand_vertically(true);
-
-        set_opacity(opacity);
     }
     
     Separator::Separator(detail::SeparatorInternal* internal)
