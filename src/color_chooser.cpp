@@ -135,6 +135,17 @@ namespace mousetrap
     {
         gtk_color_dialog_set_modal(_internal->native, b);
     }
+
+    void ColorChooser::set_title(const std::string& title)
+    {
+        gtk_color_dialog_set_title(_internal->native, title.c_str());
+    }
+
+    std::string ColorChooser::get_title() const
+    {
+        auto* title = gtk_color_dialog_get_title(_internal->native);
+        return title == nullptr ? "" : std::string(title);
+    }
 }
 
 #endif

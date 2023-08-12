@@ -86,6 +86,14 @@ namespace mousetrap
             /// @return model
             bool get_is_modal() const;
 
+            /// @brief set the dialog windows title
+            /// @param title
+            void set_title(const std::string&);
+
+            /// @brief get window title
+            /// @return title
+            std::string get_title() const;
+
         private:
             detail::ColorChooserInternal* _internal = nullptr;
             static void on_color_selected_callback(GObject* source, GAsyncResult* result, void* data);
