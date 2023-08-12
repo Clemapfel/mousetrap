@@ -17,7 +17,6 @@ namespace mousetrap
     {
         GError* error = nullptr;
         auto out = FileMonitor(g_file_monitor(_native, (GFileMonitorFlags) (G_FILE_MONITOR_NONE | G_FILE_MONITOR_WATCH_MOVES), nullptr, &error));
-
         if (error != nullptr)
         {
             log::critical(std::string("In FileDescriptor::create_monitor: ") + error->message, MOUSETRAP_DOMAIN);

@@ -207,6 +207,14 @@ namespace mousetrap
             /// @brief set initial name, only applies for FileChooserAction::SAVE
             void set_initial_name(const std::string&);
 
+            /// @brief set the dialog windows title
+            /// @param title
+            void set_title(const std::string&);
+
+            /// @brief get window title
+            /// @return title
+            std::string get_title() const;
+
         private:
             detail::FileChooserInternal* _internal = nullptr;
 

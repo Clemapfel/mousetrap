@@ -324,6 +324,26 @@ namespace mousetrap
         #endif
     }
 
+    void FileChooser::set_title(const std::string& title)
+    {
+        #if USE_NATIVE_FILE_CHOOSER
+            gtk_native_dialog_set_title(_internal->native, title.c_str());
+        #else
+            gtk_file_dialog_set_title(_internal->native, title.c_str());
+        #endif
+    }
+
+    std::string FileChooser::get_title() const
+    {
+        #if USE_NATIVE_FILE_CHOOSER
+            auto* title = gtk_native_dialog_get_title(_internal->native);
+            return title == nullptr ? "" : std::string(title);
+        #else
+            auto* title = gtk_file_dialog_get_title(_internal->native);
+            return title == nullptr ? "" : std::string(title);
+        #endif
+    }
+
     void FileChooser::set_file_chooser_action(FileChooserAction action)
     {
         if (_internal->currently_shown)
@@ -463,6 +483,8 @@ namespace mousetrap
         }
     }
     #endif
+
+
 }
 
 /*
