@@ -58,11 +58,6 @@ namespace mousetrap
             /// @param position top left corner, in pixels
             void set_child_position(const Widget& widget, Vector2f position);
 
-            /// @brief get current child position
-            /// @param widget
-            /// @return position top left corner, in pixels
-            Vector2f get_child_position(const Widget& widget);
-
         private:
             detail::FixedInternal* _internal = nullptr;
     };

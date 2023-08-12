@@ -62,10 +62,12 @@ namespace mousetrap
         gtk_fixed_move(GTK_FIXED(operator NativeWidget()), widget.operator GtkWidget*(), pos.x, pos.y);
     }
 
+    /*
     Vector2f Fixed::get_child_position(const Widget& widget)
     {
         double x, y;
         gtk_fixed_get_child_position(GTK_FIXED(operator NativeWidget()), widget.operator GtkWidget*(), &x, &y);
         return Vector2f(x, y);
     }
+     */
 }
