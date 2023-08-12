@@ -49,7 +49,7 @@ namespace mousetrap
     KeyFile::operator std::string()
     {
         GError* error_maybe = nullptr;
-        uint64_t length;
+        gsize length;
 
         auto* data = g_key_file_to_data(_native, &length, &error_maybe);
         if (error_maybe != nullptr)
