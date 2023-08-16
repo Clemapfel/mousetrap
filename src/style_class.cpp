@@ -5,6 +5,8 @@
 #include <mousetrap/style_class.hpp>
 #include <mousetrap/log.hpp>
 
+#include <cctype>
+
 namespace mousetrap
 {
     namespace detail
@@ -78,11 +80,22 @@ namespace mousetrap
         }
     }
 
+    void StyleManager::register_named_color(const std::string& name, RGBA color)
+    {
+
+    }
+
+    void StyleManager::register_named_color(const std::string& name, HSVA color)
+    {
+        register_named_color(name, color.operator RGBA());
+    }
+
     // ###
 
     StyleClass::StyleClass(const std::string& name)
         : _internal(detail::style_class_internal_new(name))
     {
+        validate_name(name);
         g_object_ref(_internal);
     }
 
@@ -105,21 +118,30 @@ namespace mousetrap
     std::string StyleClass::serialize() const
     {
         std::stringstream str;
-        str << *_internal->name << " {\n";
+        str << "." << *_internal->name << " {\n";
         for (auto& pair : *_internal->values)
             str << pair.first << ": " << pair.second << ";\n";
         str << "}" << std::endl;
         return str.str();
     }
 
+    bool StyleClass::validate_name(const std::string& name)
+    {
+        for (char c : name)
+        {
+            if (not (std::isalpha(c) or c == '-' or c == '_'))
+            {
+                log::critical("In StyleClass::validate_name: Name `" + name + "` is invalid, as it contains a non-alphabetic character", MOUSETRAP_DOMAIN);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     std::string StyleClass::get_name() const
     {
         return *_internal->name;
-    }
-
-    void StyleClass::set_property(const std::string& property_name, const std::string& property_value)
-    {
-        _internal->values->insert_or_assign(property_name, property_value);
     }
 
     std::string StyleClass::get_property(const std::string& property_name)
@@ -133,5 +155,11 @@ namespace mousetrap
         else
             return it->second;
     }
+
+    void StyleClass::set_property(const std::string& property_name, const std::string& property_value)
+    {
+        _internal->values->insert_or_assign(property_name, property_value);
+    }
+
 }
 

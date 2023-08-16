@@ -398,33 +398,19 @@ int main()
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
     {
-        auto* window = adw_window_new();
-        auto* child = gtk_label_new("test");
-        auto* bin = transform_bin_new();
+        auto window = Window(app);
+        auto child = Label("TEST");
 
-        auto* animation_target = adw_callback_animation_target_new(on_animation_callback, bin, nullptr);
-        static auto* animation = adw_timed_animation_new(window, 0, 1, 1000, animation_target);
-        adw_timed_animation_set_alternate(ADW_TIMED_ANIMATION(animation), true);
+        app.register_named_color("newgenta", RGBA(1, 0, 1, 1));
 
-        adw_bin_set_child(ADW_BIN(bin), child);
+        auto style_class = StyleClass("test_class");
+        style_class.set_property(STYLE_PROPERTY_COLOR, "@newgenta");
 
-        auto* header_bar = adw_header_bar_new();
-        auto button = Button();
-        button.connect_signal_clicked([](Button&){
-            adw_animation_play(animation);
-        });
-        adw_header_bar_pack_start(ADW_HEADER_BAR(header_bar), button.operator NativeWidget());
+        app.add_style_class(style_class);
+        child.add_css_class(style_class.get_name());
 
-        auto* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-        gtk_box_append(GTK_BOX(vbox), header_bar);
-        gtk_box_append(GTK_BOX(vbox), GTK_WIDGET(bin));
-        adw_window_set_content(ADW_WINDOW(window), vbox);
-
-        gtk_widget_set_vexpand(GTK_WIDGET(bin), true);
-        gtk_widget_set_vexpand(header_bar, false);
-
-        gtk_window_set_application(GTK_WINDOW(window), app.operator GtkApplication*());
-        gtk_window_present(GTK_WINDOW(window));
+        window.set_child(child);
+        window.present();
     });
     return app.run();
 }
