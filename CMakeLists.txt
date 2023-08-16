@@ -190,6 +190,7 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/color_chooser.hpp
     include/mousetrap/alert_dialog.hpp
     include/mousetrap/theme.hpp
+    include/mousetrap/style_class.hpp
 )
 
 set(MOUSETRAP_SOURCE_FILES
@@ -272,7 +273,9 @@ set(MOUSETRAP_SOURCE_FILES
     src/gtk_common.cpp
     src/alert_dialog.cpp
     src/clamp_frame.cpp
-        src/action_bar.cpp)
+    src/action_bar.cpp
+    src/style_class.cpp
+)
 
 if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
 
@@ -291,7 +294,7 @@ if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
             include/mousetrap/texture_wrap_mode.hpp
         )
 
-    set(MOUSETRAP_HEADER_FILES "${MOUSETRAP_HEADER_FILES};${MOUSETRAP_OPENGL_HEADER_FILES}" include/mousetrap/transform_bin.hpp)
+    set(MOUSETRAP_HEADER_FILES "${MOUSETRAP_HEADER_FILES};${MOUSETRAP_OPENGL_HEADER_FILES}")
 
     set(MOUSETRAP_OPENGL_SOURCE_FILES
             src/blend_mode.cpp
@@ -305,7 +308,7 @@ if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
             src/texture.cpp
             src/shape.cpp
         )
-    set(MOUSETRAP_SOURCE_FILES "${MOUSETRAP_SOURCE_FILES};${MOUSETRAP_OPENGL_SOURCE_FILES}" include/mousetrap/action_bar.hpp src/action_bar.cpp src/transform_bin.cpp)
+    set(MOUSETRAP_SOURCE_FILES "${MOUSETRAP_SOURCE_FILES};${MOUSETRAP_OPENGL_SOURCE_FILES}" include/mousetrap/action_bar.hpp src/action_bar.cpp src/transform_bin.cpp src/style_class.cpp)
 endif()
 
 add_library(mousetrap SHARED

@@ -299,7 +299,7 @@ gpointer klass_data)
 {
     transform_bin_parent_class = g_type_class_peek_parent (klass);
     g_type_class_adjust_private_offset (klass, &TransformBin_private_offset);
-    ((GtkWidgetClass *) klass)->measure = (void (*) (GtkWidget*, GtkOrientation, gint, gint*, gint*, gint*, gint*)) transform_bin_real_measure;
+    ((GtkWidgetClass *) klass)-> measure = (void (*) (GtkWidget*, GtkOrientation, gint, gint*, gint*, gint*, gint*)) transform_bin_real_measure;
     ((GtkWidgetClass *) klass)->size_allocate = (void (*) (GtkWidget*, gint, gint, gint)) transform_bin_real_size_allocate;
     G_OBJECT_CLASS (klass)->get_property = _vala_transform_bin_get_property;
     G_OBJECT_CLASS (klass)->set_property = _vala_transform_bin_set_property;

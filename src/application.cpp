@@ -12,11 +12,6 @@
 
 namespace mousetrap
 {
-    void Application::test()
-    {
-        std::cout << "7" << std::endl;
-    }
-
     namespace detail
     {
         DECLARE_NEW_TYPE(ApplicationInternal, application_internal, APPLICATION_INTERNAL)
