@@ -165,12 +165,12 @@ namespace mousetrap
         return adw_timed_animation_get_reverse(_internal->native);
     }
 
-    Animation::TweeningMode Animation::get_tweening_mode() const
+    Animation::TweeningCurve Animation::get_tweening_mode() const
     {
-        return (Animation::TweeningMode) adw_timed_animation_get_easing(_internal->native);
+        return (Animation::TweeningCurve) adw_timed_animation_get_easing(_internal->native);
     }
 
-    void Animation::set_tweening_mode(Animation::TweeningMode mode)
+    void Animation::set_tweening_mode(Animation::TweeningCurve mode)
     {
         adw_timed_animation_set_easing(_internal->native, (AdwEasing) mode);
     }

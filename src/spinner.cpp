@@ -17,6 +17,7 @@ namespace mousetrap
           CTOR_SIGNAL(Spinner, unmap)
     {
         _internal = GTK_SPINNER(Widget::operator NativeWidget());
+        set_is_spinning(true);
         g_object_ref_sink(_internal);
     }
     

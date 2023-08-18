@@ -45,10 +45,52 @@ namespace mousetrap
             };
 
             /// @brief tweening mode
-            enum TweeningMode
+            enum TweeningCurve
             {
                 /// @brief linear tweening
                 LINEAR = ADW_LINEAR,
+
+                /// @brief ease in cubic 
+                EXPONENTIAL = ADW_EASE_IN_EXPO,
+                /// @brief ease out cubic
+                EXPONENTIAL_REVERSE = ADW_EASE_OUT_EXPO,
+                /// @brief symmetrical cubic
+                EXPONENTIAL_SIGMOID = ADW_EASE_IN_OUT_EXPO,
+
+                /// @brief ease in sine
+                SINE = ADW_EASE_IN_SINE,
+                /// @brief ease out sine
+                SINE_REVERSE = ADW_EASE_OUT_SINE,
+                /// @brief symmetrical sine
+                SINE_SIGMOID = ADW_EASE_IN_OUT_SINE,
+
+                /// @brief ease in circular
+                CIRCULAR = ADW_EASE_IN_CIRC,
+                /// @brief ease out circular
+                CIRCULAR_REVERSE = ADW_EASE_OUT_CIRC,
+                /// @brief symmetrical circular
+                CIRCULAR_SIGMOID = ADW_EASE_IN_OUT_CIRC,
+
+                /// @brief undershoot, the cubic
+                OVERSHOOT = ADW_EASE_IN_BACK,
+                /// @brief cubic, then overshoot
+                OVERSHOOT_REVERSE = ADW_EASE_OUT_BACK,
+                /// @brief under- / over-shoot symmetrical
+                OVERSHOOT_SIGMOID = ADW_EASE_IN_OUT_BACK,
+
+                /// @brief ease in elastic
+                ELASTIC = ADW_EASE_IN_ELASTIC,
+                /// @brief ease out elastic
+                ELASTIC_REVERSE = ADW_EASE_OUT_ELASTIC,
+                /// @brief symmetrical elastic
+                ELASTIC_SIGMOID = ADW_EASE_IN_OUT_ELASTIC,
+
+                /// @brief ease in bounce
+                BOUNCE = ADW_EASE_IN_BOUNCE,
+                /// @brief ease out bounce
+                BOUNCE_REVERSE = ADW_EASE_OUT_BOUNCE,
+                /// @brief symmetrical bounce
+                BOUNCE_SIGMOID = ADW_EASE_IN_OUT_BOUNCE
             };
 
 
@@ -127,11 +169,11 @@ namespace mousetrap
 
             /// @brief choose tweening mode, governs the curse of the `value` during animation
             /// @param mode
-            void set_tweening_mode(TweeningMode);
+            void set_tweening_mode(TweeningCurve);
 
             /// @brief get tweening mode, governs the curser of the `value` during animation
             /// @return mode
-            TweeningMode get_tweening_mode() const;
+            TweeningCurve get_tweening_mode() const;
 
             /// @brief register a callback called once per frame
             /// @param f function with signature `(Animation&, double, Data_t) -> void`
