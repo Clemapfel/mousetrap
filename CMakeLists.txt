@@ -308,7 +308,7 @@ if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
             src/texture.cpp
             src/shape.cpp
         )
-    set(MOUSETRAP_SOURCE_FILES "${MOUSETRAP_SOURCE_FILES};${MOUSETRAP_OPENGL_SOURCE_FILES}" include/mousetrap/action_bar.hpp src/action_bar.cpp src/transform_bin.cpp src/style_class.cpp src/flow_box.cpp)
+    set(MOUSETRAP_SOURCE_FILES "${MOUSETRAP_SOURCE_FILES};${MOUSETRAP_OPENGL_SOURCE_FILES}" include/mousetrap/action_bar.hpp src/action_bar.cpp src/transform_bin.cpp src/style_class.cpp src/flow_box.cpp src/animation.cpp)
 endif()
 
 add_library(mousetrap SHARED
