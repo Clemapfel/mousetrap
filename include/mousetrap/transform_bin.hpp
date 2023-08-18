@@ -49,9 +49,26 @@ namespace mousetrap
             /// @brief remove singular child
             void remove_child();
 
+            /// @brief reset the transform
             void reset();
-            void translate(Vector2f offset);
+
+            /// @brief rotate transform
+            /// @param angle
             void rotate(Angle);
+
+            /// @brief translation in 2D
+            /// @param offset
+            void translate(Vector2f);
+
+            /// @brief scale along x- / y-axis
+            /// @param x scale
+            /// @param y scale
+            void scale(float x, float y);
+
+            /// @brief skew along x- / y-axis
+            /// @param x skew
+            /// @param y skew
+            void skew(float x_skew, float y_skew);
 
         private:
             detail::TransformBinInternal* _internal = nullptr;

@@ -6,35 +6,140 @@
 
 namespace mousetrap::detail 
 {
-    // SOURCE: transpiled from vala at https://gitlab.gnome.org/World/elastic/-/blob/main/src/transforms-view.vala
-    
-    #if !defined(VALA_EXTERN)
-    #if defined(_MSC_VER)
-    #define VALA_EXTERN __declspec(dllexport) extern
-    #elif __GNUC__ >= 4
-    #define VALA_EXTERN __attribute__((visibility("default"))) extern
-    #else
-    #define VALA_EXTERN extern
-    #endif
-    #endif
-    
-    #define TYPE_TRANSFORM_BIN_INTERNAL (transform_bin_internal_get_type ())
-    #define TRANSFORM_BIN_INTERNAL(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_TRANSFORM_BIN_INTERNAL, TransformBinInternal))
-    #define TRANSFORM_BIN_INTERNAL_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_TRANSFORM_BIN_INTERNAL, TransformBinInternalClass))
-    #define IS_TRANSFORM_BIN_INTERNAL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_TRANSFORM_BIN_INTERNAL))
-    #define IS_TRANSFORM_BIN_INTERNAL_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_TRANSFORM_BIN_INTERNAL))
-    #define TRANSFORM_BIN_INTERNAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_TRANSFORM_BIN_INTERNAL, TransformBinInternalClass))
-    
-        typedef struct _TransformBinInternal TransformBinInternal;
-        typedef struct _TransformBinInternalClass TransformBinInternalClass;
-        typedef struct _TransformBinInternalPrivate TransformBinInternalPrivate;
-        enum  {
-            TRANSFORM_BIN_INTERNAL_0_PROPERTY,
-            TRANSFORM_BIN_INTERNAL_TRANSFORM_PROPERTY,
-            TRANSFORM_BIN_INTERNAL_NUM_PROPERTIES
-        };
-        static GParamSpec* transform_bin_internal_properties[TRANSFORM_BIN_INTERNAL_NUM_PROPERTIES];
-    #define _gsk_transform_unref0(var) ((var == NULL) ? NULL : (var = (GskTransform*) (gsk_transform_unref(var), NULL)))
+    // Transpiled from Vala, cf: https://gitlab.gnome.org/World/elastic/-/blob/main/src/transforms-view.vala
+
+    /* using Gtk;
+    using Adw;
+
+    public class TransformBinInternal : Adw.Bin {
+
+        public Gsk.Transform transform { get; set; }
+
+        construct {
+            layout_manager = null;
+            transform = new Gsk.Transform();
+            notify["transform"].connect(queue_allocate);
+        }
+
+        static construct {
+            set_css_name ("transform-bin-internal");
+        }
+
+        public void rotate(float dg) {
+            var transform = this.transform;
+            transform = transform.rotate(dg);
+            this.transform = transform;
+        }
+
+        public void reset() {
+            this.transform = new Gsk.Transform();
+        }
+
+        public void translate(float x, float y) {
+            var transform = this.transform;
+            var point = Graphene.Point();
+            point.x = x;
+            point.y = y;
+            transform = transform.translate(point);
+            this.transform = transform;
+        }
+
+        public void translate_3d(float x, float y, float z) {
+            var transform = this.transform;
+            var point = Graphene.Point3D();
+            point.x = x;
+            point.y = y;
+            point.z = z;
+            transform = transform.translate_3d(point);
+            this.transform = transform;
+        }
+
+        public void perspective(float x) {
+            var transform = this.transform;
+            transform = transform.perspective(x);
+            this.transform = transform;
+        }
+
+        public void scale(float x_factor, float y_factor) {
+            var transform = this.transform;
+            transform = transform.scale(x_factor, y_factor);
+            this.transform = transform;
+        }
+
+        public void skew(float x_skew, float y_skew) {
+            var transform = this.transform;
+            transform = transform.skew(x_skew, y_skew);
+            this.transform = transform;
+        }
+
+        protected override void measure (
+            Gtk.Orientation orientation,
+            int for_size,
+            out int minimum,
+            out int natural,
+            out int minimum_baseline,
+            out int natural_baseline
+        ) {
+            if (child == null) {
+                minimum = 0;
+                natural = 0;
+                minimum_baseline = -1;
+                natural_baseline = -1;
+                return;
+            }
+
+            child.measure (
+                orientation, for_size,
+                out minimum, out natural,
+                out minimum_baseline, out natural_baseline
+            );
+        }
+
+        protected override void size_allocate (int width, int height, int baseline) {
+            if (child == null)
+                return;
+
+            var t = new Gsk.Transform();
+            t = t.translate({ width / 2, height / 2});
+
+            if (transform != null)
+                t = t.transform(transform);
+
+            t = t.translate({ -width / 2, -height / 2 });
+            child.allocate(width, height, baseline, t);
+        }
+    }
+     */
+
+
+
+#if !defined(VALA_EXTERN)
+#if defined(_MSC_VER)
+#define VALA_EXTERN __declspec(dllexport) extern
+#elif __GNUC__ >= 4
+#define VALA_EXTERN __attribute__((visibility("default"))) extern
+#else
+#define VALA_EXTERN extern
+#endif
+#endif
+
+#define TYPE_TRANSFORM_BIN_INTERNAL (transform_bin_internal_get_type ())
+#define TRANSFORM_BIN_INTERNAL(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_TRANSFORM_BIN_INTERNAL, TransformBinInternal))
+#define TRANSFORM_BIN_INTERNAL_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_TRANSFORM_BIN_INTERNAL, TransformBinInternalClass))
+#define IS_TRANSFORM_BIN_INTERNAL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_TRANSFORM_BIN_INTERNAL))
+#define IS_TRANSFORM_BIN_INTERNAL_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_TRANSFORM_BIN_INTERNAL))
+#define TRANSFORM_BIN_INTERNAL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_TRANSFORM_BIN_INTERNAL, TransformBinInternalClass))
+
+    typedef struct _TransformBinInternal TransformBinInternal;
+    typedef struct _TransformBinInternalClass TransformBinInternalClass;
+    typedef struct _TransformBinInternalPrivate TransformBinInternalPrivate;
+    enum  {
+        TRANSFORM_BIN_INTERNAL_0_PROPERTY,
+        TRANSFORM_BIN_INTERNAL_TRANSFORM_PROPERTY,
+        TRANSFORM_BIN_INTERNAL_NUM_PROPERTIES
+    };
+    static GParamSpec* transform_bin_internal_properties[TRANSFORM_BIN_INTERNAL_NUM_PROPERTIES];
+#define _gsk_transform_unref0(var) ((var == NULL) ? NULL : (var = (GskTransform*) (gsk_transform_unref (var), NULL)))
 
     struct _TransformBinInternal {
         AdwBin parent_instance;
@@ -54,6 +159,27 @@ namespace mousetrap::detail
 
     VALA_EXTERN GType transform_bin_internal_get_type (void) G_GNUC_CONST ;
     G_DEFINE_AUTOPTR_CLEANUP_FUNC (TransformBinInternal, g_object_unref)
+    VALA_EXTERN void transform_bin_internal_rotate (TransformBinInternal* self,
+    gfloat dg);
+    VALA_EXTERN GskTransform* transform_bin_internal_get_transform (TransformBinInternal* self);
+    VALA_EXTERN void transform_bin_internal_set_transform (TransformBinInternal* self,
+    GskTransform* value);
+    VALA_EXTERN void transform_bin_internal_reset (TransformBinInternal* self);
+    VALA_EXTERN void transform_bin_internal_translate (TransformBinInternal* self,
+    gfloat x,
+    gfloat y);
+    VALA_EXTERN void transform_bin_internal_translate_3d (TransformBinInternal* self,
+    gfloat x,
+    gfloat y,
+    gfloat z);
+    VALA_EXTERN void transform_bin_internal_perspective (TransformBinInternal* self,
+    gfloat x);
+    VALA_EXTERN void transform_bin_internal_scale (TransformBinInternal* self,
+    gfloat x_factor,
+    gfloat y_factor);
+    VALA_EXTERN void transform_bin_internal_skew (TransformBinInternal* self,
+    gfloat x_skew,
+    gfloat y_skew);
     static void transform_bin_internal_real_measure (GtkWidget* base,
     GtkOrientation orientation,
     gint for_size,
@@ -65,11 +191,8 @@ namespace mousetrap::detail
     gint width,
     gint height,
     gint baseline);
-    VALA_EXTERN GskTransform* transform_bin_internal_get_transform (TransformBinInternal* self);
     VALA_EXTERN TransformBinInternal* transform_bin_internal_new (void);
     VALA_EXTERN TransformBinInternal* transform_bin_internal_construct (GType object_type);
-    VALA_EXTERN void transform_bin_internal_set_transform (TransformBinInternal* self,
-    GskTransform* value);
     static GObject * transform_bin_internal_constructor (GType type,
     guint n_construct_properties,
     GObjectConstructParam * construct_properties);
@@ -91,6 +214,186 @@ namespace mousetrap::detail
     transform_bin_internal_get_instance_private (TransformBinInternal* self)
     {
         return G_STRUCT_MEMBER_P (self, TransformBinInternal_private_offset);
+    }
+
+    static GskTransform*
+    _gsk_transform_ref0 (gpointer self)
+    {
+        return self ? gsk_transform_ref ((GskTransform*) self) : NULL;
+    }
+
+    void
+    transform_bin_internal_rotate (TransformBinInternal* self,
+    gfloat dg)
+    {
+        GskTransform* transform = NULL;
+        GskTransform* _tmp0_;
+        GskTransform* _tmp1_;
+        GskTransform* _tmp2_;
+        GskTransform* _tmp3_;
+        GskTransform* _tmp4_;
+        g_return_if_fail (self != NULL);
+        _tmp0_ = self->priv->_transform;
+        _tmp1_ = _gsk_transform_ref0 (_tmp0_);
+        transform = _tmp1_;
+        _tmp2_ = transform;
+        transform = NULL;
+        _tmp3_ = gsk_transform_rotate (_tmp2_, dg);
+        _gsk_transform_unref0 (transform);
+        transform = _tmp3_;
+        _tmp4_ = transform;
+        transform_bin_internal_set_transform (self, _tmp4_);
+        _gsk_transform_unref0 (transform);
+    }
+
+    void
+    transform_bin_internal_reset (TransformBinInternal* self)
+    {
+        GskTransform* _tmp0_;
+        GskTransform* _tmp1_;
+        g_return_if_fail (self != NULL);
+        _tmp0_ = gsk_transform_new ();
+        _tmp1_ = _tmp0_;
+        transform_bin_internal_set_transform (self, _tmp1_);
+        _gsk_transform_unref0 (_tmp1_);
+    }
+
+    void
+    transform_bin_internal_translate (TransformBinInternal* self,
+    gfloat x,
+    gfloat y)
+    {
+        GskTransform* transform = NULL;
+        GskTransform* _tmp0_;
+        GskTransform* _tmp1_;
+        graphene_point_t point = {0};
+        GskTransform* _tmp2_;
+        graphene_point_t _tmp3_;
+        GskTransform* _tmp4_;
+        GskTransform* _tmp5_;
+        g_return_if_fail (self != NULL);
+        _tmp0_ = self->priv->_transform;
+        _tmp1_ = _gsk_transform_ref0 (_tmp0_);
+        transform = _tmp1_;
+        memset (&point, 0, sizeof (graphene_point_t));
+        point.x = x;
+        point.y = y;
+        _tmp2_ = transform;
+        transform = NULL;
+        _tmp3_ = point;
+        _tmp4_ = gsk_transform_translate (_tmp2_, &_tmp3_);
+        _gsk_transform_unref0 (transform);
+        transform = _tmp4_;
+        _tmp5_ = transform;
+        transform_bin_internal_set_transform (self, _tmp5_);
+        _gsk_transform_unref0 (transform);
+    }
+
+    void
+    transform_bin_internal_translate_3d (TransformBinInternal* self,
+    gfloat x,
+    gfloat y,
+    gfloat z)
+    {
+        GskTransform* transform = NULL;
+        GskTransform* _tmp0_;
+        GskTransform* _tmp1_;
+        graphene_point3d_t point = {0};
+        GskTransform* _tmp2_;
+        graphene_point3d_t _tmp3_;
+        GskTransform* _tmp4_;
+        GskTransform* _tmp5_;
+        g_return_if_fail (self != NULL);
+        _tmp0_ = self->priv->_transform;
+        _tmp1_ = _gsk_transform_ref0 (_tmp0_);
+        transform = _tmp1_;
+        memset (&point, 0, sizeof (graphene_point3d_t));
+        point.x = x;
+        point.y = y;
+        point.z = z;
+        _tmp2_ = transform;
+        transform = NULL;
+        _tmp3_ = point;
+        _tmp4_ = gsk_transform_translate_3d (_tmp2_, &_tmp3_);
+        _gsk_transform_unref0 (transform);
+        transform = _tmp4_;
+        _tmp5_ = transform;
+        transform_bin_internal_set_transform (self, _tmp5_);
+        _gsk_transform_unref0 (transform);
+    }
+
+    void
+    transform_bin_internal_perspective (TransformBinInternal* self,
+    gfloat x)
+    {
+        GskTransform* transform = NULL;
+        GskTransform* _tmp0_;
+        GskTransform* _tmp1_;
+        GskTransform* _tmp2_;
+        GskTransform* _tmp3_;
+        GskTransform* _tmp4_;
+        g_return_if_fail (self != NULL);
+        _tmp0_ = self->priv->_transform;
+        _tmp1_ = _gsk_transform_ref0 (_tmp0_);
+        transform = _tmp1_;
+        _tmp2_ = transform;
+        transform = NULL;
+        _tmp3_ = gsk_transform_perspective (_tmp2_, x);
+        _gsk_transform_unref0 (transform);
+        transform = _tmp3_;
+        _tmp4_ = transform;
+        transform_bin_internal_set_transform (self, _tmp4_);
+        _gsk_transform_unref0 (transform);
+    }
+
+    void
+    transform_bin_internal_scale (TransformBinInternal* self,
+    gfloat x_factor,
+    gfloat y_factor)
+    {
+        GskTransform* transform = NULL;
+        GskTransform* _tmp0_;
+        GskTransform* _tmp1_;
+        GskTransform* _tmp2_;
+        GskTransform* _tmp3_;
+        GskTransform* _tmp4_;
+        g_return_if_fail (self != NULL);
+        _tmp0_ = self->priv->_transform;
+        _tmp1_ = _gsk_transform_ref0 (_tmp0_);
+        transform = _tmp1_;
+        _tmp2_ = transform;
+        transform = NULL;
+        _tmp3_ = gsk_transform_scale (_tmp2_, x_factor, y_factor);
+        _gsk_transform_unref0 (transform);
+        transform = _tmp3_;
+        _tmp4_ = transform;
+        transform_bin_internal_set_transform (self, _tmp4_);
+        _gsk_transform_unref0 (transform);
+    }
+
+    void
+    transform_bin_internal_skew (TransformBinInternal* self,
+    gfloat x_skew,
+    gfloat y_skew)
+    {
+        GskTransform* transform = NULL;
+        GskTransform* _tmp0_;
+        GskTransform* _tmp1_;
+        GskTransform* _tmp2_;
+        GskTransform* _tmp3_;
+        GskTransform* _tmp4_;
+        g_return_if_fail (self != NULL);
+        _tmp0_ = self->priv->_transform;
+        _tmp1_ = _gsk_transform_ref0 (_tmp0_);
+        transform = _tmp1_;
+        _tmp2_ = transform;
+        transform = NULL;
+        _tmp3_ = gsk_transform_skew (_tmp2_, x_skew, y_skew);
+        _gsk_transform_unref0 (transform);
+        transform = _tmp3_;
+        _tmp4_ = transform;
+        transform_bin_internal_set_transform (self, _tmp4_);
+        _gsk_transform_unref0 (transform);
     }
 
     static void
@@ -158,12 +461,6 @@ namespace mousetrap::detail
         }
     }
 
-    static gpointer
-    _gsk_transform_ref0 (gpointer self)
-    {
-        return self ? gsk_transform_ref((GskTransform*) self) : NULL;
-    }
-
     static void
     transform_bin_internal_real_size_allocate (GtkWidget* base,
     gint width,
@@ -223,7 +520,7 @@ namespace mousetrap::detail
         _tmp13_ = adw_bin_get_child ((AdwBin*) self);
         _tmp14_ = _tmp13_;
         _tmp15_ = t;
-        _tmp16_ = (GskTransform*) _gsk_transform_ref0 (_tmp15_);
+        _tmp16_ = _gsk_transform_ref0 (_tmp15_);
         gtk_widget_allocate (_tmp14_, width, height, baseline, _tmp16_);
         _gsk_transform_unref0 (t);
     }
@@ -262,7 +559,7 @@ namespace mousetrap::detail
         old_value = transform_bin_internal_get_transform (self);
         if (old_value != value) {
             GskTransform* _tmp0_;
-            _tmp0_ = (GskTransform*) _gsk_transform_ref0 (value);
+            _tmp0_ = _gsk_transform_ref0 (value);
             _gsk_transform_unref0 (self->priv->_transform);
             self->priv->_transform = _tmp0_;
             g_object_notify_by_pspec ((GObject *) self, transform_bin_internal_properties[TRANSFORM_BIN_INTERNAL_TRANSFORM_PROPERTY]);
@@ -295,7 +592,7 @@ namespace mousetrap::detail
         _tmp1_ = _tmp0_;
         transform_bin_internal_set_transform (self, _tmp1_);
         _gsk_transform_unref0 (_tmp1_);
-        g_signal_connect_object ((GObject*) self, "notify::transform", G_CALLBACK(_gtk_widget_queue_allocate_g_object_notify), (GtkWidget*) self, (GConnectFlags) 0);
+        g_signal_connect_object ((GObject*) self, "notify::transform", (GCallback) _gtk_widget_queue_allocate_g_object_notify, (GtkWidget*) self, (GConnectFlags) 0);
         return obj;
     }
 
@@ -305,14 +602,14 @@ namespace mousetrap::detail
     {
         transform_bin_internal_parent_class = g_type_class_peek_parent (klass);
         g_type_class_adjust_private_offset (klass, &TransformBinInternal_private_offset);
-        ((GtkWidgetClass *) klass)-> measure = (void (*) (GtkWidget*, GtkOrientation, gint, gint*, gint*, gint*, gint*)) transform_bin_internal_real_measure;
+        ((GtkWidgetClass *) klass)->measure = (void (*) (GtkWidget*, GtkOrientation, gint, gint*, gint*, gint*, gint*)) transform_bin_internal_real_measure;
         ((GtkWidgetClass *) klass)->size_allocate = (void (*) (GtkWidget*, gint, gint, gint)) transform_bin_internal_real_size_allocate;
         G_OBJECT_CLASS (klass)->get_property = _vala_transform_bin_internal_get_property;
         G_OBJECT_CLASS (klass)->set_property = _vala_transform_bin_internal_set_property;
         G_OBJECT_CLASS (klass)->constructor = transform_bin_internal_constructor;
         G_OBJECT_CLASS (klass)->finalize = transform_bin_internal_finalize;
         g_object_class_install_property (G_OBJECT_CLASS (klass), TRANSFORM_BIN_INTERNAL_TRANSFORM_PROPERTY, transform_bin_internal_properties[TRANSFORM_BIN_INTERNAL_TRANSFORM_PROPERTY] = g_param_spec_boxed ("transform", "transform", "transform", gsk_transform_get_type (), (GParamFlags) (G_PARAM_STATIC_STRINGS | G_PARAM_READABLE | G_PARAM_WRITABLE)));
-        gtk_widget_class_set_css_name (GTK_WIDGET_CLASS (klass), "transform-bin");
+        gtk_widget_class_set_css_name (GTK_WIDGET_CLASS (klass), "transform-bin-internal");
     }
 
     static void
@@ -442,25 +739,26 @@ namespace mousetrap
 
     void TransformBin::reset()
     {
-        detail::transform_bin_internal_set_transform(_internal, gsk_transform_new());
+        detail::transform_bin_internal_reset(_internal);
     }
 
     void TransformBin::rotate(Angle angle)
     {
-        auto* current = detail::transform_bin_internal_get_transform(_internal);
-        auto* next = gsk_transform_rotate(current, angle.as_degrees());
-        detail::transform_bin_internal_set_transform(_internal, next);
+        detail::transform_bin_internal_rotate(_internal, angle.as_degrees());
     }
 
     void TransformBin::translate(Vector2f offset)
     {
-        auto* current = gsk_transform_ref(detail::transform_bin_internal_get_transform(_internal));
-        auto* point = graphene_point_alloc();
-        point->x = offset.x;
-        point->y = offset.y;
+        detail::transform_bin_internal_translate(_internal, offset.x, offset.y);
+    }
 
-        auto* next = gsk_transform_translate(current, point);
-        detail::transform_bin_internal_set_transform(_internal, next);
-        graphene_point_free(point);
+    void TransformBin::scale(float x, float y)
+    {
+        detail::transform_bin_internal_scale(_internal, x, y);
+    }
+
+    void TransformBin::skew(float x_skew, float y_skew)
+    {
+        detail::transform_bin_internal_skew(_internal, x_skew, y_skew);
     }
 }
