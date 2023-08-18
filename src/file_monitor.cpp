@@ -28,7 +28,7 @@ namespace mousetrap
             file_monitor_internal_init(self);
 
             self->native = native;
-            self->f = new std::function<void(FileMonitor&, FileMonitorEvent event, FileDescriptor self, FileDescriptor other)>();
+            self->f = new std::function<void(FileMonitor&, FileMonitorEvent event, const FileDescriptor& self, const FileDescriptor& other)>();
             return self;
         }
     }

@@ -28,7 +28,7 @@ namespace mousetrap
         {
             auto* instance = detail::MOUSETRAP_ANIMATION_INTERNAL(data);
             auto temp = Animation(instance);
-            if (instance->on_tick_callback)
+            if (*instance->on_tick_callback)
                 (*instance->on_tick_callback)(temp, value);
         }
 
@@ -36,9 +36,10 @@ namespace mousetrap
         {
             auto* instance = detail::MOUSETRAP_ANIMATION_INTERNAL(data);
             auto temp = Animation(instance);
-            if (instance->on_done_callback)
+            if (*instance->on_done_callback)
                 (*instance->on_done_callback)(temp);
         }
+
         static AnimationInternal* animation_internal_new(GtkWidget* widget, size_t time_ms)
         {
             log::initialize();
@@ -52,9 +53,8 @@ namespace mousetrap
             g_signal_connect(self->native, "done", G_CALLBACK(animation_on_done_wrapper), self);
             g_object_ref(self->native);
 
-            self->on_tick_callback = nullptr;
-            self->on_done_callback = nullptr;
-
+            self->on_tick_callback = new std::function<void(Animation&, double)>();
+            self->on_done_callback = new std::function<void(Animation&)>();
             return self;
         }
     }
@@ -127,7 +127,7 @@ namespace mousetrap
 
     double Animation::get_lower() const
     {
-        adw_timed_animation_get_value_from(_internal->native);
+        return adw_timed_animation_get_value_from(_internal->native);
     }
 
     void Animation::set_upper(double value)

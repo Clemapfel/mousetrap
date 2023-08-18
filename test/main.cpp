@@ -393,16 +393,6 @@ void on_animation_callback(double x, void* data)
     transform_bin_set_transform(bin, gsk_transform_rotate(transform, r));
 }
 
-void on_animation(double value, void* data)
-{
-    std::cout << (double) value << " " << data << std::endl;
-}
-
-void on_done()
-{
-    //std::cout << "done" << std::endl;
-}
-
 int main()
 {
     auto app = Application("test.app");
@@ -419,30 +409,18 @@ int main()
         app.add_style_class(style_class);
         child.add_css_class(style_class.get_name());
 
-        static auto* target = adw_callback_animation_target_new(on_animation, nullptr, (GDestroyNotify) nullptr);
-        static auto* animation = adw_timed_animation_new(
-            child.operator NativeWidget(),
-            0, 100, 10000,
-            ADW_ANIMATION_TARGET(target)
-        );
-        adw_animation_set_follow_enable_animations_setting(ADW_ANIMATION(animation), false);
-        g_signal_connect(animation, "done", G_CALLBACK(on_done), nullptr);
 
-        auto* settings = gtk_settings_get_default();
-
-        auto* value = new GValue();
-        g_value_init(value, G_TYPE_STRING);
-        g_object_get_property(G_OBJECT(settings), "gtk-enable-animations", value);
-
-        std::cout << g_value_get_string(value) << std::endl;
+        static auto animation = Animation(child, seconds(1));
+        animation.on_tick([](Animation& self, double value) {
+            std::cout << self.get_state() << " " << value << std::endl;
+        });
+        animation.on_done([](Animation& self){
+            std::cout << "done" << std::endl;
+        });
 
         auto button = Button();
         button.connect_signal_clicked([](Button&){
-            //adw_animation_reset(ADW_ANIMATION(animation));
-
-            std::cout << adw_animation_get_value(animation) << std::endl;
-            adw_animation_play(ADW_ANIMATION(animation));
-            std::cout << adw_animation_get_value(animation) << std::endl;
+            animation.play();
         });
 
         auto box = Box(Orientation::HORIZONTAL);

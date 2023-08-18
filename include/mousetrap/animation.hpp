@@ -148,7 +148,9 @@ namespace mousetrap
     template <typename Function_t, typename Data_t>
     void Animation::on_tick(Function_t f_in, Data_t data_in)
     {
-        delete _internal->on_tick_callback;
+        if (*_internal->on_tick_callback)
+            delete _internal->on_tick_callback;
+
         (*_internal->on_tick_callback) = [f = f_in, data = data_in](Animation& self, double value){
             f(self, value, data);
         };
@@ -157,7 +159,9 @@ namespace mousetrap
     template <typename Function_t>
     void Animation::on_tick(Function_t f_in)
     {
-        delete _internal->on_tick_callback;
+        if (*_internal->on_tick_callback)
+            delete _internal->on_tick_callback;
+
         (*_internal->on_tick_callback) = [f = f_in](Animation& self, double value){
             f(self, value);
         };
@@ -166,7 +170,9 @@ namespace mousetrap
     template <typename Function_t, typename Data_t>
     void Animation::on_done(Function_t f_in, Data_t data_in)
     {
-        delete _internal->on_done_callback;
+        if (*_internal->on_done_callback)
+            delete _internal->on_done_callback;
+
         (*_internal->on_done_callback) = [f = f_in, data = data_in](Animation& self){
             f(self, data);
         };
@@ -175,7 +181,9 @@ namespace mousetrap
     template <typename Function_t>
     void Animation::on_done(Function_t f_in)
     {
-        delete _internal->on_done_callback;
+        if (*_internal->on_done_callback)
+            delete _internal->on_done_callback;
+
         (*_internal->on_done_callback) = [f = f_in](Animation& self){
             f(self);
         };

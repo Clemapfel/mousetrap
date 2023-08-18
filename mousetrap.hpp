@@ -99,3 +99,4 @@
 #include <mousetrap/texture_wrap_mode.hpp>
 #include <mousetrap/key_codes.hpp>
 #include <mousetrap/flow_box.hpp>
+#include <mousetrap/animation.hpp>
