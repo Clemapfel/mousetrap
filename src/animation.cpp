@@ -105,9 +105,9 @@ namespace mousetrap
         adw_animation_reset(ADW_ANIMATION(_internal->native));
     }
 
-    AnimationState Animation::get_state() const
+    Animation::State Animation::get_state() const
     {
-        return (AnimationState) adw_animation_get_state(ADW_ANIMATION(_internal->native));
+        return (Animation::State) adw_animation_get_state(ADW_ANIMATION(_internal->native));
     }
 
     Time Animation::get_duration() const
@@ -163,5 +163,15 @@ namespace mousetrap
     bool Animation::get_is_reversed() const
     {
         return adw_timed_animation_get_reverse(_internal->native);
+    }
+
+    Animation::TweeningMode Animation::get_tweening_mode() const
+    {
+        return (Animation::TweeningMode) adw_timed_animation_get_easing(_internal->native);
+    }
+
+    void Animation::set_tweening_mode(Animation::TweeningMode mode)
+    {
+        adw_timed_animation_set_easing(_internal->native, (AdwEasing) mode);
     }
 }

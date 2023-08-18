@@ -27,23 +27,31 @@ namespace mousetrap
     }
     #endif
 
-    /// @brief current state of an animation
-    enum AnimationState
-    {
-        /// @brief default state of the animation, not yet started
-        IDLE = ADW_ANIMATION_IDLE,
-        /// @brief animation currently paused
-        PAUSED = ADW_ANIMATION_PAUSED,
-        /// @brief animation actively playing
-        PLAYING = ADW_ANIMATION_PLAYING,
-        /// @brief animation is done playing
-        DONE = ADW_ANIMATION_FINISHED,
-    };
-
     /// @brief steady clock that can be used to trigger animations
     class Animation : public SignalEmitter, public detail::notify_if_gtk_uninitialized
     {
         public:
+            /// @brief current state of an animation
+            enum State
+            {
+                /// @brief default state of the animation, not yet started
+                IDLE = ADW_ANIMATION_IDLE,
+                /// @brief animation currently paused
+                PAUSED = ADW_ANIMATION_PAUSED,
+                /// @brief animation actively playing
+                PLAYING = ADW_ANIMATION_PLAYING,
+                /// @brief animation is done playing
+                DONE = ADW_ANIMATION_FINISHED,
+            };
+
+            /// @brief tweening mode
+            enum TweeningMode
+            {
+                /// @brief linear tweening
+                LINEAR = ADW_LINEAR,
+            };
+
+
             /// @brief construct
             /// @param target widget to animate
             /// @param duration
@@ -63,7 +71,7 @@ namespace mousetrap
 
             /// @brief get state
             /// @return state
-            AnimationState get_state() const;
+            State get_state() const;
 
             /// @brief move to state PLAYING
             void play();
@@ -116,6 +124,14 @@ namespace mousetrap
             /// @brief get whether animation is playing in reverse
             /// @return b
             bool get_is_reversed() const;
+
+            /// @brief choose tweening mode, governs the curse of the `value` during animation
+            /// @param mode
+            void set_tweening_mode(TweeningMode);
+
+            /// @brief get tweening mode, governs the curser of the `value` during animation
+            /// @return mode
+            TweeningMode get_tweening_mode() const;
 
             /// @brief register a callback called once per frame
             /// @param f function with signature `(Animation&, double, Data_t) -> void`
