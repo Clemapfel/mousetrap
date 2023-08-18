@@ -17,7 +17,7 @@ namespace mousetrap
     RGBA::operator std::string() const
     {
         std::stringstream out;
-        out << "RGBA(" << r << ", " << g << ", " << b << ", " << a << ")";
+        out << "rgba(" << r << ", " << g << ", " << b << ", " << a << ")";
 
         return out.str();
     }
@@ -65,7 +65,7 @@ namespace mousetrap
     HSVA::operator std::string() const
     {
         auto str = std::stringstream();
-        str << "HSVA(" << h << ", " << s << ", " << v << ", " << a << ")";
+        str << "hsva(" << h << ", " << s << ", " << v << ", " << a << ")";
         return str.str();
     }
 

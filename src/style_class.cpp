@@ -80,16 +80,6 @@ namespace mousetrap
         }
     }
 
-    void StyleManager::register_named_color(const std::string& name, RGBA color)
-    {
-
-    }
-
-    void StyleManager::register_named_color(const std::string& name, HSVA color)
-    {
-        register_named_color(name, color.operator RGBA());
-    }
-
     // ###
 
     StyleClass::StyleClass(const std::string& name)
@@ -160,6 +150,5 @@ namespace mousetrap
     {
         _internal->values->insert_or_assign(property_name, property_value);
     }
-
 }
 

@@ -4,8 +4,8 @@
 
 #pragma once
 
-/*
 #include <mousetrap/widget.hpp>
+#include <mousetrap/angle.hpp>
 
 namespace mousetrap
 {
@@ -13,7 +13,8 @@ namespace mousetrap
     class TransformBin;
     namespace detail
     {
-        using TransformBinInternal = AdwBin;
+        struct _TransformBinInternal;
+        using TransformBinInternal = _TransformBinInternal;
         DEFINE_INTERNAL_MAPPING(TransformBin);
     }
     #endif
@@ -48,8 +49,11 @@ namespace mousetrap
             /// @brief remove singular child
             void remove_child();
 
+            void reset();
+            void translate(Vector2f offset);
+            void rotate(Angle);
+
         private:
             detail::TransformBinInternal* _internal = nullptr;
     };
 }
-*/

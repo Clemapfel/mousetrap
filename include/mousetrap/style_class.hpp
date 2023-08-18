@@ -45,16 +45,6 @@ namespace mousetrap
             /// @return style class
             StyleClass get_style_class(const std::string&) const;
 
-            /// @brief give color a name that can be used for style class properties, colors like that need to be prefixed with '@`
-            /// @param name
-            /// @param color
-            void register_named_color(const std::string& name, RGBA color);
-
-            /// @brief give color a name that can be used for style class properties, colors like that need to be prefixed with '@`
-            /// @param name
-            /// @param color
-            void register_named_color(const std::string& name, HSVA color);
-
         private:
             static inline std::vector<std::string> _named_colors = std::vector<std::string>();
             static inline GtkCssProvider* _named_color_provider = nullptr;
