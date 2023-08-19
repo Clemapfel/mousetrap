@@ -43,7 +43,11 @@ namespace mousetrap
             /// @brief retrieve style class
             /// @param name
             /// @return style class
-            StyleClass get_style_class(const std::string&) const;
+            static StyleClass get_style_class(const std::string&);
+
+            /// @brief run arbitrary css code
+            /// @param css
+            static void add_css(const std::string&);
 
         private:
             static inline std::vector<std::string> _named_colors = std::vector<std::string>();

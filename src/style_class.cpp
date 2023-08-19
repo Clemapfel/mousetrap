@@ -66,7 +66,7 @@ namespace mousetrap
         g_object_unref(internal);
     }
 
-    StyleClass StyleManager::get_style_class(const std::string& name) const
+    StyleClass StyleManager::get_style_class(const std::string& name)
     {
         auto it = _style_classes.find(name);
         if (it == _style_classes.end())
@@ -78,6 +78,18 @@ namespace mousetrap
         {
             return StyleClass(it->second);
         }
+    }
+
+    void StyleManager::add_css(const std::string& css)
+    {
+        auto* css_provider = gtk_css_provider_new();
+        gtk_css_provider_load_from_data(css_provider, css.data(), css.size());
+
+        gtk_style_context_add_provider_for_display(
+        gdk_display_get_default(),
+        GTK_STYLE_PROVIDER(css_provider),
+        GTK_STYLE_PROVIDER_PRIORITY_USER
+        );
     }
 
     // ###
