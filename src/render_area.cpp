@@ -31,7 +31,7 @@ namespace mousetrap
                     return nullptr;
                 }
 
-                detail::GL_CONTEXT = gdk_display_create_gl_context(nullptr, &create_context_error);
+                detail::GL_CONTEXT = gdk_display_create_gl_context(gdk_display_get_default(), &create_context_error);
 
                 if (create_context_error != nullptr)
                 {
