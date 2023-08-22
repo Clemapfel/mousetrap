@@ -25,6 +25,9 @@ namespace mousetrap
             auto* self = MOUSETRAP_SHAPE_INTERNAL(object);
             G_OBJECT_CLASS(shape_internal_parent_class)->finalize(object);
 
+            if (detail::is_opengl_disabled())
+                return;
+
             if (self->vertex_array_id != 0)
                 glDeleteVertexArrays(1, &self->vertex_array_id);
 
@@ -44,6 +47,9 @@ namespace mousetrap
         {
             auto* self = (ShapeInternal*) g_object_new(shape_internal_get_type(), nullptr);
             shape_internal_init(self);
+
+            if (detail::is_opengl_disabled())
+                return self;
 
             gdk_gl_context_make_current(detail::GL_CONTEXT);
 
@@ -65,16 +71,28 @@ namespace mousetrap
     
     Shape::Shape()
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
         _internal = detail::shape_internal_new();
     }
 
     Shape::~Shape()
     {
-        g_object_unref(_internal);
+        if (not detail::is_opengl_disabled())
+            g_object_unref(_internal);
     }
 
     Shape::Shape(detail::ShapeInternal* internal)
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         if (G_IS_OBJECT(_internal))
             g_object_unref(_internal);
 
@@ -85,6 +103,12 @@ namespace mousetrap
     Shape::Shape(const Shape& other)
         : Shape()
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         glGenVertexArrays(1, &_internal->vertex_array_id);
         glGenBuffers(1, &_internal->vertex_buffer_id);
 
@@ -101,6 +125,12 @@ namespace mousetrap
 
     Shape& Shape::operator=(const Shape& other)
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return *this;
+        }
+
         if (&other == this)
             return *this;
 
@@ -124,6 +154,11 @@ namespace mousetrap
     Shape::Shape(Shape&& other) noexcept
         : Shape()
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
 
         _internal->vertex_array_id = other._internal->vertex_array_id;
         _internal->vertex_buffer_id = other._internal->vertex_buffer_id;
@@ -145,6 +180,12 @@ namespace mousetrap
 
     Shape& Shape::operator=(Shape&& other) noexcept
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return *this;
+        }
+
         g_object_ref(other._internal);
 
         _internal->vertex_array_id = other._internal->vertex_array_id;
@@ -166,16 +207,25 @@ namespace mousetrap
 
     GLNativeHandle Shape::get_native_handle() const
     {
+        if (detail::is_opengl_disabled())
+            return 0;
+
         return _internal->vertex_array_id;
     }
 
     NativeObject Shape::get_internal() const
     {
+        if (detail::is_opengl_disabled())
+            return nullptr;
+
         return G_OBJECT(_internal);
     }
 
     void Shape::initialize()
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->vertex_data->clear();
         _internal->vertex_data->reserve(_internal->vertices->size());
 
@@ -204,6 +254,9 @@ namespace mousetrap
 
     void Shape::update_data(bool update_position, bool update_color, bool update_tex_coords) const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glBindVertexArray(_internal->vertex_array_id);
         glBindBuffer(GL_ARRAY_BUFFER, _internal->vertex_buffer_id);
         glBufferData(GL_ARRAY_BUFFER, _internal->vertex_data->size() * sizeof(struct detail::VertexInfo), _internal->vertex_data->data(), GL_STATIC_DRAW);
@@ -253,6 +306,9 @@ namespace mousetrap
 
     void Shape::update_position() const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         for (uint64_t i = 0; i < _internal->vertices->size(); ++i)
         {
             auto& v = _internal->vertices->at(i);
@@ -270,6 +326,9 @@ namespace mousetrap
 
     void Shape::update_color() const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         for (uint64_t i = 0; i < _internal->vertices->size(); ++i)
         {
             auto& v = _internal->vertices->at(i);
@@ -286,6 +345,9 @@ namespace mousetrap
 
     void Shape::update_texture_coordinate() const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         for (uint64_t i = 0; i < _internal->vertices->size(); ++i)
         {
             auto& v = _internal->vertices->at(i);
@@ -300,6 +362,9 @@ namespace mousetrap
 
     void Shape::render(const Shader& shader, GLTransform transform) const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         if (not _internal->is_visible)
             return;
 
@@ -323,6 +388,9 @@ namespace mousetrap
 
     std::vector<Vector2f> Shape::sort_by_angle(const std::vector<Vector2f>& in)
     {
+        if (detail::is_opengl_disabled())
+            return {};
+
         auto center = Vector2f(0, 0);
         for (const auto& pos : in)
             center += pos;
@@ -350,6 +418,9 @@ namespace mousetrap
 
     void Shape::as_point(Vector2f p)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->vertices->clear();
         _internal->indices->clear();
 
@@ -363,6 +434,9 @@ namespace mousetrap
 
     void Shape::as_points(const std::vector<Vector2f>& points)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->vertices->clear();
         _internal->indices->clear();
 
@@ -380,6 +454,9 @@ namespace mousetrap
 
     void Shape::as_triangle(Vector2f a, Vector2f b, Vector2f c)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         *_internal->vertices =
         {
             Vertex(a.x, a.y, *_internal->color),
@@ -395,6 +472,9 @@ namespace mousetrap
 
     void Shape::as_rectangle(Vector2f top_left, Vector2f size)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         *_internal->vertices =
         {
             Vertex(top_left.x, top_left.y, *_internal->color),
@@ -416,6 +496,9 @@ namespace mousetrap
 
     void Shape::as_rectangular_frame(Vector2f top_left, Vector2f outer_size, float x_width, float y_height)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         float x = top_left.x;
         float y = top_left.y;
         float w = outer_size.x;
@@ -461,6 +544,9 @@ namespace mousetrap
 
     void Shape::as_line(Vector2f a, Vector2f b)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         *_internal->vertices =
         {
             Vertex(a.x, a.y, *_internal->color),
@@ -475,6 +561,9 @@ namespace mousetrap
 
     void Shape::as_lines(const std::vector<std::pair<Vector2f, Vector2f>>& in)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->vertices->clear();
         for (const auto& pair : in)
         {
@@ -493,6 +582,9 @@ namespace mousetrap
 
     void Shape::as_circle(Vector2f center, float radius, uint64_t n_outer_vertices)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         if (n_outer_vertices < 3)
         {
             log::critical("In Shape::as_circle: n_outer_vertices < 3");
@@ -505,6 +597,9 @@ namespace mousetrap
 
     void Shape::as_ellipse(Vector2f center, float x_radius, float y_radius, uint64_t n_outer_vertices)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         if (n_outer_vertices < 3)
         {
             log::critical("In Shape::as_ellipse: n_outer_vertices < 3");
@@ -539,12 +634,18 @@ namespace mousetrap
 
     void Shape::as_circular_ring(Vector2f center, float outer_radius, float thickness, uint64_t n_outer_vertices)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         as_elliptical_ring(center, outer_radius, outer_radius, thickness, thickness, n_outer_vertices);
         _internal->shape_type = detail::ShapeType::CIRCULAR_RING;
     }
 
     void Shape::as_elliptical_ring(Vector2f center, float x_radius, float y_radius, float x_thickness, float y_thickness, uint64_t n_outer_vertices)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         const float step = 360.f / n_outer_vertices;
         _internal->vertices->clear();
 
@@ -593,6 +694,9 @@ namespace mousetrap
 
     void Shape::as_line_strip(const std::vector<Vector2f>& positions)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->vertices->clear();
         _internal->indices->clear();
 
@@ -610,6 +714,9 @@ namespace mousetrap
 
     void Shape::as_wireframe(const std::vector<Vector2f>& positions_in)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->vertices->clear();
         _internal->indices->clear();
 
@@ -629,6 +736,9 @@ namespace mousetrap
 
     void Shape::as_polygon(const std::vector<Vector2f>& positions_in)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->vertices->clear();
         _internal->indices->clear();
 
@@ -648,6 +758,9 @@ namespace mousetrap
 
     void Shape::as_outline(const Shape& shape, RGBA color)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->vertices->clear();
         _internal->indices->clear();
 
@@ -881,6 +994,9 @@ namespace mousetrap
 
     void Shape::set_vertex_color(uint64_t i, RGBA color)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         if (i > _internal->vertices->size())
         {
             std::stringstream str;
@@ -896,6 +1012,9 @@ namespace mousetrap
 
     RGBA Shape::get_vertex_color(uint64_t index) const
     {
+        if (detail::is_opengl_disabled())
+            return RGBA(0, 0, 0, 0);
+
         if (index > _internal->vertices->size())
         {
             std::stringstream str;
@@ -909,6 +1028,9 @@ namespace mousetrap
 
     void Shape::set_vertex_position(uint64_t i, Vector3f position)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         if (i > _internal->vertices->size())
         {
             std::stringstream str;
@@ -924,6 +1046,9 @@ namespace mousetrap
 
     Vector3f Shape::get_vertex_position(uint64_t i) const
     {
+        if (detail::is_opengl_disabled())
+            return Vector3f(0, 0, 0);
+
         if (i > _internal->vertices->size())
         {
             std::stringstream str;
@@ -937,6 +1062,9 @@ namespace mousetrap
 
     void Shape::set_vertex_texture_coordinate(uint64_t i, Vector2f coordinates)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         if (i > _internal->vertices->size())
         {
             std::stringstream str;
@@ -952,6 +1080,9 @@ namespace mousetrap
 
     Vector2f Shape::get_vertex_texture_coordinate(uint64_t i) const
     {
+        if (detail::is_opengl_disabled())
+            return Vector2f(0, 0);
+
         if (i > _internal->vertices->size())
         {
             std::cerr << "[ERROR] In mousetrap::Shape::get_vertex_position: index " << i << " out of bounds for an object with " << _internal->vertices->size() << " vertices" <<  std::endl;
@@ -963,11 +1094,17 @@ namespace mousetrap
 
     uint64_t Shape::get_n_vertices() const
     {
+        if (detail::is_opengl_disabled())
+            return 0;
+
         return _internal->vertices->size();
     }
 
     void Shape::set_color(RGBA color)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         *_internal->color = color;
 
         for (auto& v : *_internal->vertices)
@@ -978,16 +1115,25 @@ namespace mousetrap
 
     void Shape::set_is_visible(bool b)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->is_visible = b;
     }
 
     bool Shape::get_is_visible() const
     {
+        if (detail::is_opengl_disabled())
+            return false;
+
         return _internal->is_visible;
     }
 
     Vector2f Shape::get_centroid() const
     {
+        if (detail::is_opengl_disabled())
+            return Vector2f(0, 0);
+
         static const auto negative_infinity = std::numeric_limits<float>::min();
         static const auto positive_infinity = std::numeric_limits<float>::max();
 
@@ -1013,6 +1159,9 @@ namespace mousetrap
 
     void Shape::set_centroid(Vector2f position)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         auto delta = position - get_centroid();
         for (auto& v : *_internal->vertices)
         {
@@ -1026,6 +1175,9 @@ namespace mousetrap
 
     Rectangle Shape::get_bounding_box() const
     {
+        if (detail::is_opengl_disabled())
+            return mousetrap::Rectangle{{0, 0}, {0, 0}};
+
         float min_x = std::numeric_limits<float>::max();
         float min_y = std::numeric_limits<float>::max();
         float min_z = std::numeric_limits<float>::max();
@@ -1053,16 +1205,25 @@ namespace mousetrap
 
     Vector2f Shape::get_top_left() const
     {
+        if (detail::is_opengl_disabled())
+            return {0, 0};
+
         return get_bounding_box().top_left;
     }
 
     Vector2f Shape::get_size() const
     {
+        if (detail::is_opengl_disabled())
+            return {0, 0};
+
         return get_bounding_box().size;
     }
 
     void Shape::set_top_left(Vector2f position)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         auto delta = position - get_bounding_box().top_left;
         for (auto& v : *_internal->vertices)
         {
@@ -1076,6 +1237,9 @@ namespace mousetrap
 
     void Shape::rotate(Angle angle, Vector2f origin)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         auto transform = GLTransform();
         //transform.translate({-1 * origin.x, -1 * origin.y});
         transform.rotate(angle, origin);
@@ -1093,16 +1257,25 @@ namespace mousetrap
 
     const TextureObject* Shape::get_texture() const
     {
+        if (detail::is_opengl_disabled())
+            return nullptr;
+
         return _internal->texture;
     }
 
     void Shape::set_texture(const TextureObject* texture)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->texture = texture;
     }
 
     Shape::operator GObject*() const
     {
+        if (detail::is_opengl_disabled())
+            return nullptr;
+
         return G_OBJECT(_internal);
     }
 }

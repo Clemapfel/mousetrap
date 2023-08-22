@@ -17,59 +17,73 @@ namespace mousetrap
     {
         GdkGLContext* initialize_opengl()
         {
-            if (not GDK_IS_GL_CONTEXT(detail::GL_CONTEXT))
+            if (not mousetrap::GL_INITIALIZED)
             {
-                bool failed = false;
-                GError *error_maybe = nullptr;
-                detail::GL_CONTEXT = gdk_display_create_gl_context(gdk_display_get_default(), &error_maybe);
-                auto* context = detail::GL_CONTEXT;
+                GError* create_context_error = nullptr;
+                GError* realize_context_error = nullptr;
+                GLenum glew_error = 0;
 
-                if (error_maybe != nullptr)
+                mousetrap::GL_INITIALIZED = true;
+                if (mousetrap::FORCE_GL_DISABLED)
                 {
-                    failed = true;
-                    log::critical("In gdk_window_create_gl_context: " +  std::string(error_maybe->message));
-                    g_error_free(error_maybe);
+                    detail::GL_CONTEXT = nullptr;
+                    log::warning("In initialize_opengl: `FORCE_GL_DISABLED` set to `true`. OpenGL component was disabled.", MOUSETRAP_DOMAIN);
+                    return nullptr;
                 }
 
-                gdk_gl_context_set_required_version(context, 3, 3);
-                gdk_gl_context_realize(context, &error_maybe);
+                detail::GL_CONTEXT = gdk_display_create_gl_context(nullptr, &create_context_error);
 
-                if (error_maybe != nullptr)
+                if (create_context_error != nullptr)
                 {
-                    failed = true;
-                    log::critical("In gdk_gl_context_realize: " +  std::string(error_maybe->message));
-                    g_error_free(error_maybe);
+                    auto message = create_context_error->message;
+                    log::warning(std::string("In gdk_window_create_gl_context:") + (message == nullptr ? "(unknown error)" : message), MOUSETRAP_DOMAIN);
+                    g_error_free(create_context_error);
+                    goto failed;
                 }
 
-                gdk_gl_context_make_current(context);
+                gdk_gl_context_set_required_version(detail::GL_CONTEXT, 3, 3);
+                gdk_gl_context_realize(detail::GL_CONTEXT, &realize_context_error);
 
+                if (realize_context_error != nullptr)
+                {
+                    auto message = realize_context_error->message;
+                    log::warning(std::string("In gdk_gl_context_realize:") + (message == nullptr ? "(unknown error)" : message), MOUSETRAP_DOMAIN);
+                    g_error_free(realize_context_error);
+                    goto failed;
+                }
+
+                gdk_gl_context_make_current(detail::GL_CONTEXT);
                 glewExperimental = GL_FALSE;
-                GLenum glewError = glewInit();
-                if (glewError != GLEW_NO_ERROR)
+                glew_error = glewInit();
+
+                if (glew_error != GLEW_NO_ERROR)
                 {
                     std::stringstream str;
-                    str << "In glewInit: Unable to initialize glew " << "(" << glewError << ") ";
+                    str << "In glewInit: Unable to initialize glew " << "(" << glew_error << ") ";
 
-                    if (glewError == GLEW_ERROR_NO_GL_VERSION)
+                    if (glew_error == GLEW_ERROR_NO_GL_VERSION)
                         str << "Missing GL version";
-                    else if (glewError == GLEW_ERROR_GL_VERSION_10_ONLY)
+                    else if (glew_error == GLEW_ERROR_GL_VERSION_10_ONLY)
                         str << "Need at least OpenGL 1.1";
-                    else if (glewError == GLEW_ERROR_GLX_VERSION_11_ONLY)
+                    else if (glew_error == GLEW_ERROR_GLX_VERSION_11_ONLY)
                         str << "Need at least GLX 1.2";
-                    else if (glewError == GLEW_ERROR_NO_GLX_DISPLAY)
+                    else if (glew_error == GLEW_ERROR_NO_GLX_DISPLAY)
                         str << "Need GLX Display for GLX support";
 
-                    log::warning(str.str());
+                    log::warning(str.str(), MOUSETRAP_DOMAIN);
+                    goto failed;
                 }
 
-                if (g_object_is_floating(GL_CONTEXT))
-                    g_object_ref_sink(GL_CONTEXT);
-
+                g_object_ref_sink(GL_CONTEXT);
                 g_object_ref(GL_CONTEXT);
-                detail::mark_gl_initialized();
+                return detail::GL_CONTEXT;
+
+                failed:
+                log::critical("In initialize_opengl: Unable to create OpenGL context, disabling the OpenGL component.", MOUSETRAP_DOMAIN);
+                detail::GL_CONTEXT = nullptr;
             }
 
-            return GL_CONTEXT; // intentional memory leak, should persist until end of runtime
+            return detail::GL_CONTEXT;
         }
 
         void shutdown_opengl()
@@ -79,6 +93,11 @@ namespace mousetrap
 
             GL_CONTEXT = nullptr;
             GL_INITIALIZED = false;
+        }
+
+        bool is_opengl_disabled()
+        {
+            return mousetrap::GL_INITIALIZED == false or detail::GL_CONTEXT == nullptr;
         }
     }
 
@@ -90,6 +109,9 @@ namespace mousetrap
         {
             auto* self = MOUSETRAP_RENDER_AREA_INTERNAL(object);
             G_OBJECT_CLASS(render_area_internal_parent_class)->finalize(object);
+
+            if (detail::is_opengl_disabled())
+                return;
 
             for (auto* task : *self->tasks)
                 g_object_unref(task);
@@ -107,6 +129,9 @@ namespace mousetrap
         {
             auto* self = (RenderAreaInternal*) g_object_new(render_area_internal_get_type(), nullptr);
             render_area_internal_init(self);
+
+            if (detail::is_opengl_disabled())
+                return self;
 
             self->native = area;
             self->tasks = new std::vector<detail::RenderTaskInternal*>();
@@ -167,6 +192,12 @@ namespace mousetrap
           CTOR_SIGNAL(RenderArea, map),
           CTOR_SIGNAL(RenderArea, unmap)
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         _internal = detail::render_area_internal_new(GTK_GL_AREA(operator NativeWidget()), (int) msaa_samples);
         detail::attach_ref_to(G_OBJECT(_internal->native), _internal);
 
@@ -194,6 +225,12 @@ namespace mousetrap
           CTOR_SIGNAL(RenderArea, map),
           CTOR_SIGNAL(RenderArea, unmap)
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         _internal = g_object_ref(internal);
 
         gtk_gl_area_set_auto_render(GTK_GL_AREA(operator NativeWidget()), TRUE);
@@ -207,6 +244,9 @@ namespace mousetrap
 
     void RenderArea::add_render_task(RenderTask task)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         auto* task_internal = (detail::RenderTaskInternal*) task.operator GObject*();
         _internal->tasks->push_back(task_internal);
         g_object_ref(task_internal);
@@ -214,6 +254,9 @@ namespace mousetrap
 
     void RenderArea::clear_render_tasks()
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         for (auto& task : *_internal->tasks)
             g_object_unref(task);
 
@@ -222,17 +265,26 @@ namespace mousetrap
 
     void RenderArea::flush()
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glFlush();
     }
 
     void RenderArea::clear()
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0, 0, 0, 0);
     }
 
     GdkGLContext* RenderArea::on_create_context(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal* internal)
     {
+        if (detail::is_opengl_disabled())
+            return nullptr;
+
         detail::initialize_opengl();
         g_object_ref(detail::GL_CONTEXT);
         gdk_gl_context_make_current(detail::GL_CONTEXT);
@@ -241,11 +293,17 @@ namespace mousetrap
 
     void RenderArea::on_realize(GtkWidget* area, detail::RenderAreaInternal* internal)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         gtk_gl_area_queue_render(GTK_GL_AREA(area));
     }
 
     void RenderArea::on_resize(GtkGLArea* area, gint width, gint height, detail::RenderAreaInternal* internal)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         assert(GDK_IS_GL_CONTEXT(detail::GL_CONTEXT));
 
         if (internal->apply_msaa)
@@ -257,6 +315,9 @@ namespace mousetrap
 
     gboolean RenderArea::on_render(GtkGLArea* area, GdkGLContext* context, detail::RenderAreaInternal* internal)
     {
+        if (detail::is_opengl_disabled())
+            return FALSE;
+
         assert(GDK_IS_GL_CONTEXT(detail::GL_CONTEXT));
         gtk_gl_area_make_current(area);
 
@@ -300,6 +361,9 @@ namespace mousetrap
 
     void RenderArea::render_render_tasks()
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         for (auto* internal : *(_internal->tasks))
         {
             auto task = RenderTask(internal);
@@ -309,17 +373,26 @@ namespace mousetrap
 
     void RenderArea::queue_render()
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         gtk_gl_area_queue_render(GTK_GL_AREA(operator NativeWidget()));
         gtk_widget_queue_draw(GTK_WIDGET(GTK_GL_AREA(operator NativeWidget())));
     }
 
     void RenderArea::make_current()
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         gtk_gl_area_make_current(GTK_GL_AREA(operator NativeWidget()));
     }
 
     Vector2f RenderArea::from_gl_coordinates(Vector2f in)
     {
+        if (detail::is_opengl_disabled())
+            return {0, 0};
+
         auto out = in;
         out /= 2;
         out += 0.5;
@@ -331,6 +404,9 @@ namespace mousetrap
 
     Vector2f RenderArea::to_gl_coordinates(Vector2f in)
     {
+        if (detail::is_opengl_disabled())
+            return {0, 0};
+
         auto out = in;
 
         auto size = this->get_allocated_size();
@@ -346,6 +422,9 @@ namespace mousetrap
 
     GObject* RenderArea::get_internal() const
     {
+        if (detail::is_opengl_disabled())
+            return nullptr;
+
         return G_OBJECT(_internal);
     }
 }

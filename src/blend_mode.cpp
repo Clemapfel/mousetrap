@@ -8,14 +8,12 @@
 
 #include <mousetrap/log.hpp>
 #include <mousetrap/blend_mode.hpp>
-
+#include <mousetrap/render_area.hpp>
 
 namespace mousetrap
 {
     void set_current_blend_mode(BlendMode mode, bool allow_alpha_blend)
     {
-        detail::throw_if_gl_is_uninitialized();
-
         // source: [1] https://github.com/SFML/SFML/blob/master/src/SFML/Graphics/BlendMode.cpp#L36
 
         //
@@ -35,6 +33,9 @@ namespace mousetrap
         // O.a = f_a(sigma_a * S.a, delta_a * D.a)
         //
         //
+
+        if (detail::is_opengl_disabled())
+            return;
 
         glEnable(GL_BLEND);
 

@@ -3,22 +3,25 @@ using namespace mousetrap;
 
 int main()
 {
+    mousetrap::FORCE_GL_DISABLED = true;
+
     // declare application
     auto app = Application("test.app");
 
     // initialization
     app.connect_signal_activate([](Application& app)
     {
-        // create window
         auto window = Window(app);
 
-        // create label
-        auto label = Label("Hello World!");
+        auto area = RenderArea(AntiAliasingQuality::GOOD);
+        auto shape = Shape::Rectangle({-0.5, 0.5}, {1, 1});
+        auto shader = Shader();
+        auto blend_mode = BlendMode::MAX;
+        auto transform = GLTransform();
+        auto task = RenderTask(shape, &shader, transform, blend_mode);
+        area.add_render_task(task);
 
-        // add label to window
-        window.set_child(label);
-
-        // show window
+        window.set_child(area);
         window.present();
     });
 
