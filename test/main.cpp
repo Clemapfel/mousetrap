@@ -13,40 +13,9 @@ int main()
     {
         auto window = Window(app);
 
-        /*
-        StyleManager::add_css(R"(
-            @keyframes example {
-              from {background-color: red;}
-              to {background-color: yellow;}
-            }
-
-            .animated {
-                color: blue;
-                animation-name: example;
-                animation-duration: 4s;
-            }
-
-            .custom levelbar>trough>block.low {
-                background-color: red;
-            }
-
-            .custom levelbar>trough>block.high {
-                background-color: blue;
-            }
-
-            .custom levelbar>trough>block.full {
-                background-color: green;
-            }
-        )");
-         */
-
-        auto widget = window.get_header_bar();
-
+        window.get_header_bar().apply_style_class(mousetrap::STYLE_CLASS_BUTTON_FLAT);
         auto style = StyleClass("custom");
-        style.set_property("headerbar>windowhandle>box>widget", "color", "green");
-
-        StyleManager::add_style_class(style);
-        std::cout << style.serialize() << std::endl;
+        style.set_property("headerbar", "color", "green");
 
         auto bin = TransformBin();
         //bin.set_child(widget);
@@ -57,6 +26,12 @@ int main()
 
         window.set_child(box);
         window.present();
+
+        window.add_css_class("osd");
+
+        auto chooser = ColorChooser();
+        chooser.present();
+
     });
     return app.run();
 }

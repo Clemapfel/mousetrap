@@ -136,7 +136,7 @@ namespace mousetrap
     {
         for (char c : name)
         {
-            if (not (std::isalpha(c) or c == '-' or c == '_'))
+            if (not (std::isalpha(c) or std::isdigit(c) or c == '-' or c == '_'))
             {
                 log::critical("In StyleClass::validate_name: Name `" + name + "` is invalid because contains non-alphabetic characters", MOUSETRAP_DOMAIN);
                 return false;
