@@ -5,18 +5,6 @@ using namespace mousetrap;
 #include <thread>
 #include <chrono>
 
-void task_cb(GObject* self, GAsyncResult*, void* data)
-{
-    std::cout << "task called" << std::endl;
-    //g_application_run(G_APPLICATION(self), 0, nullptr);
-}
-
-void task_thread_cb(GTask* task, GObject* self, gpointer data, GCancellable*)
-{
-    std::cout << "thread called" << std::endl;
-    //g_task_return_boolean(task, true);
-}
-
 int main()
 {
     mousetrap::FORCE_GL_DISABLED = true;
@@ -25,6 +13,8 @@ int main()
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
     {
+        auto window = Window(app);
+
         StyleManager::add_css(R"(
             @keyframes example {
               from {background-color: red;}
@@ -49,6 +39,10 @@ int main()
                 background-color: green;
             }
         )");
+
+        auto child = LevelBar(0, 1);
+        auto scale = Scale(0, 1, 0.1);
+
         auto bin = TransformBin();
         bin.set_child(child);
         bin.add_css_class("custom");
