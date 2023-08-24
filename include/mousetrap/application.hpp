@@ -11,7 +11,7 @@
 #include <mousetrap/action.hpp>
 #include <mousetrap/menu_model.hpp>
 #include <mousetrap/theme.hpp>
-#include <mousetrap/style_class.hpp>
+#include <mousetrap/style_manager.hpp>
 
 #include <string>
 #include <map>

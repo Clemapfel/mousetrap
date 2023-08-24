@@ -22,7 +22,7 @@ namespace mousetrap
 
             GtkCssProvider* provider;
             std::string* name;
-            std::map<std::string, std::string>* values;
+            std::map<std::string, std::map<std::string, std::string>>* target_to_properties;
         };
         using StyleClassInternal = _StyleClassInternal;
     }
@@ -55,6 +55,8 @@ namespace mousetrap
             static inline std::map<std::string, detail::StyleClassInternal*> _style_classes = std::map<std::string, detail::StyleClassInternal*>();
     };
 
+    using StyleClassTarget = const std::string&;
+
     /// @brief class that collects css information
     class StyleClass
     {
@@ -77,27 +79,71 @@ namespace mousetrap
             /// @return name
             std::string get_name() const;
 
-            /// @brief set css property with raw value
-            /// @param property_name
-            /// @param value
-            void set_property(const std::string& property_name, const std::string& property_value);
-
-            /// @brief get raw css property value
-            /// @param property_name
-            /// @return value as string
-            std::string get_property(const std::string& property_name);
-
             /// @brief export as string
             /// @return valid css class definition
             std::string serialize() const;
+
+            /// @brief set property of target
+            /// @param target
+            /// @param property css property name
+            /// @param value css property value
+            void set_property(StyleClassTarget target, const std::string& property, const std::string& css_value);
+
+            /// @brief get property of target
+            /// @param target
+            /// @param property css property name
+            /// @return css property value as string, or ""
+            std::string get_property(StyleClassTarget target, const std::string& property) const;
 
         private:
             static bool validate_name(const std::string&);
             detail::StyleClassInternal* _internal = nullptr;
     };
 
-    #define DEFINE_CSS_PROPERTY(NAME, value) constexpr const char* STYLE_PROPERTY_##NAME = value;
+    #define DEFINE_STYLE_CLASS_TARGET(NAME, value) constexpr const char* STYLE_TARGET_##NAME = value;
+    DEFINE_STYLE_CLASS_TARGET(SELF, "")
 
+    // ActionBar
+
+    DEFINE_STYLE_CLASS_TARGET(ACTION_BAR, "actionbar")
+    DEFINE_STYLE_CLASS_TARGET(ACTION_BAR_BOX_START, "actionbar>revealer>box>box.start")
+    DEFINE_STYLE_CLASS_TARGET(ACTION_BAR_BOX_END, "actionbar>revealer>box>box.end")
+
+    // AspectFrame
+
+    DEFINE_STYLE_CLASS_TARGET(ASPECT_FRAME, "aspectframe");
+
+    // Box
+
+    DEFINE_STYLE_CLASS_TARGET(BOX, "box");
+
+    // Button
+
+    DEFINE_STYLE_CLASS_TARGET(BUTTON, "button");
+    DEFINE_STYLE_CLASS_TARGET(BUTTON_PRESSED, "button:active");
+
+    // CenterBox
+
+    DEFINE_STYLE_CLASS_TARGET(CENTER_BOX, "box");
+
+    // CheckButton
+
+    DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON, "checkbutton");
+    DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_ACTIVE, "check:checked")
+    DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_INCONSISTENT, "check::indeterminate")
+    DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_INACTIVE, "check::indeterminate")
+
+    // LevelBar
+
+    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR, "levelbar")
+    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_TROUGH, "levelbar>trough")
+    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_BLOCK_LOW, "levelbar>trough>block.low")
+    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_BLOCK_HIGH, "levelbar>trough>block.high")
+    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_BLOCK_FULL, "levelbar>trough>block.full")
+
+    // ###
+
+    #define DEFINE_CSS_PROPERTY(NAME, value) constexpr const char* STYLE_PROPERTY_##NAME = value;
     DEFINE_CSS_PROPERTY(FOREGROUND_COLOR, "color")
     DEFINE_CSS_PROPERTY(COLOR, "color")
     DEFINE_CSS_PROPERTY(BACKGROUND_COLOR, "background-color")

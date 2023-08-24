@@ -7,14 +7,13 @@ using namespace mousetrap;
 
 int main()
 {
-    mousetrap::FORCE_GL_DISABLED = true;
-
     // declare application
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
 
+        /*
         StyleManager::add_css(R"(
             @keyframes example {
               from {background-color: red;}
@@ -39,20 +38,23 @@ int main()
                 background-color: green;
             }
         )");
+         */
 
-        auto child = LevelBar(0, 1);
-        auto scale = Scale(0, 1, 0.1);
+        auto widget = CheckButton();
+        widget.set_state(CheckButtonState::INACTIVE);
+
+        auto style = StyleClass("custom");
+        style.set_property("check:not(:checked):not(:indeterminate)", "background-color", "green");
+
+        StyleManager::add_style_class(style);
+        std::cout << style.serialize() << std::endl;
 
         auto bin = TransformBin();
-        bin.set_child(child);
+        bin.set_child(widget);
         bin.add_css_class("custom");
 
         auto box = Box(Orientation::VERTICAL);
         box.push_back(bin);
-        box.push_back(scale);
-
-        child.set_expand_vertically(true);
-        scale.set_expand_vertically(false);
 
         window.set_child(box);
         window.present();

@@ -2,7 +2,7 @@
 // Created by clem on 8/16/23.
 //
 
-#include <mousetrap/style_class.hpp>
+#include <mousetrap/style_manager.hpp>
 #include <mousetrap/log.hpp>
 
 #include <cctype>
@@ -18,7 +18,7 @@ namespace mousetrap
         {
             auto* self = MOUSETRAP_STYLE_CLASS_INTERNAL(object);
             g_object_unref(self->provider);
-            delete self->values;
+            delete self->target_to_properties;
             G_OBJECT_CLASS(style_class_internal_parent_class)->finalize(object);
         }
 
@@ -30,7 +30,7 @@ namespace mousetrap
             style_class_internal_init(self);
 
             self->provider = gtk_css_provider_new();
-            self->values = new std::map<std::string, std::string>();
+            self->target_to_properties = new std::map<std::string, std::map<std::string, std::string>>();
             self->name = new std::string(name);
             return self;
         }
@@ -120,10 +120,15 @@ namespace mousetrap
     std::string StyleClass::serialize() const
     {
         std::stringstream str;
-        str << "." << *_internal->name << " {\n";
-        for (auto& pair : *_internal->values)
-            str << pair.first << ": " << pair.second << ";\n";
-        str << "}" << std::endl;
+        
+        for (auto& target_to_properties : *_internal->target_to_properties)
+        {
+            str << "." << *_internal->name << " " << target_to_properties.first << " {\n";
+            for (auto& pair : target_to_properties.second)
+                str << "    " << pair.first << ": " << pair.second << ";\n";
+            str << "}" << std::endl;
+        }
+        
         return str.str();
     }
 
@@ -133,7 +138,7 @@ namespace mousetrap
         {
             if (not (std::isalpha(c) or c == '-' or c == '_'))
             {
-                log::critical("In StyleClass::validate_name: Name `" + name + "` is invalid, as it contains a non-alphabetic character", MOUSETRAP_DOMAIN);
+                log::critical("In StyleClass::validate_name: Name `" + name + "` is invalid because contains non-alphabetic characters", MOUSETRAP_DOMAIN);
                 return false;
             }
         }
@@ -146,21 +151,26 @@ namespace mousetrap
         return *_internal->name;
     }
 
-    std::string StyleClass::get_property(const std::string& property_name)
+    void StyleClass::set_property(StyleClassTarget target, const std::string& property, const std::string& css_value)
     {
-        auto it = _internal->values->find(property_name);
-        if (it == _internal->values->end())
-        {
-            log::critical("In StyleClass::get_property: No property with name `" + property_name + "` registered");
-            return "";
-        }
-        else
-            return it->second;
+        auto it = _internal->target_to_properties->find(target);
+        if (it == _internal->target_to_properties->end())
+            _internal->target_to_properties->insert({target, std::map<std::string, std::string>()});
+
+        (*_internal->target_to_properties)[target].insert_or_assign(property, css_value);
     }
 
-    void StyleClass::set_property(const std::string& property_name, const std::string& property_value)
+    std::string StyleClass::get_property(StyleClassTarget target, const std::string& property) const
     {
-        _internal->values->insert_or_assign(property_name, property_value);
+        auto it = _internal->target_to_properties->find(target);
+        if (it == _internal->target_to_properties->end())
+            return "";
+
+        auto target_it = it->second.find(property);
+        if (target_it == it->second.end())
+            return "";
+        else
+            return target_it->second;
     }
 }
 
