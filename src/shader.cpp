@@ -8,6 +8,7 @@
 
 #include <mousetrap/shader.hpp>
 #include <mousetrap/log.hpp>
+#include <mousetrap/render_area.hpp>
 
 #include <iostream>
 #include <vector>
@@ -24,6 +25,9 @@ namespace mousetrap
         {
             auto* self = MOUSETRAP_SHADER_INTERNAL(object);
             G_OBJECT_CLASS(shader_internal_parent_class)->finalize(object);
+
+            if (detail::is_opengl_disabled())
+                return;
 
             if (self->fragment_shader_id != 0 and self->fragment_shader_id != ShaderInternal::noop_fragment_shader_id)
                 glDeleteShader(self->fragment_shader_id);
@@ -44,6 +48,9 @@ namespace mousetrap
             auto* self = (ShaderInternal*) g_object_new(shader_internal_get_type(), nullptr);
             shader_internal_init(self);
 
+            if (detail::is_opengl_disabled())
+                return self;
+
             self->program_id = detail::ShaderInternal::noop_program_id;
             self->fragment_shader_id = detail::ShaderInternal::noop_fragment_shader_id;
             self->vertex_shader_id = detail::ShaderInternal::noop_vertex_shader_id;
@@ -55,6 +62,12 @@ namespace mousetrap
     Shader::Shader()
     {
         using namespace detail;
+
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
 
         if (ShaderInternal::noop_program_id == 0)
         {
@@ -69,21 +82,36 @@ namespace mousetrap
 
     Shader::Shader(detail::ShaderInternal* internal)
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         _internal = g_object_ref(internal);
     }
 
     Shader::~Shader()
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         g_object_unref(_internal);
     }
 
     NativeObject Shader::get_internal() const
     {
+        if (detail::is_opengl_disabled())
+            return nullptr;
+
         return G_OBJECT(_internal);
     }
 
     bool Shader::create_from_string(ShaderType type, const std::string& code)
     {
+        if (detail::is_opengl_disabled())
+            return false;
+
         if (type == ShaderType::FRAGMENT)
             _internal->fragment_shader_id = compile_shader(code, type);
         else
@@ -103,6 +131,9 @@ namespace mousetrap
 
     bool Shader::create_from_file(ShaderType type, const std::string& path)
     {
+        if (detail::is_opengl_disabled())
+            return false;
+
         auto file = std::ifstream();
 
         file.open(path);
@@ -121,6 +152,9 @@ namespace mousetrap
 
     GLNativeHandle Shader::get_program_id() const
     {
+        if (detail::is_opengl_disabled())
+            return -1;
+
         if (not detail::MOUSETRAP_IS_SHADER_INTERNAL(_internal))
             return -1;
 
@@ -129,6 +163,9 @@ namespace mousetrap
 
     GLNativeHandle Shader::get_vertex_shader_id() const
     {
+        if (detail::is_opengl_disabled())
+            return -1;
+
         if (not detail::MOUSETRAP_IS_SHADER_INTERNAL(_internal))
             return -1;
 
@@ -137,6 +174,9 @@ namespace mousetrap
 
     GLNativeHandle Shader::get_fragment_shader_id() const
     {
+        if (detail::is_opengl_disabled())
+            return -1;
+
         if (not detail::MOUSETRAP_IS_SHADER_INTERNAL(_internal))
             return -1;
 
@@ -145,6 +185,9 @@ namespace mousetrap
 
     GLNativeHandle Shader::compile_shader(const std::string& source, ShaderType shader_type)
     {
+        if (detail::is_opengl_disabled())
+            return 0;
+
         GLNativeHandle id = glCreateShader(static_cast<GLenum>(shader_type));
 
         const char* source_ptr = source.c_str();
@@ -183,6 +226,9 @@ namespace mousetrap
 
     GLNativeHandle Shader::link_program(GLNativeHandle fragment_id, GLNativeHandle vertex_id)
     {
+        if (detail::is_opengl_disabled())
+            return 0;
+
         GLNativeHandle id = glCreateProgram();
         glAttachShader(id, fragment_id);
         glAttachShader(id, vertex_id);
@@ -219,48 +265,72 @@ namespace mousetrap
 
     void Shader::set_uniform_float(const std::string& uniform_name, float value) const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glUseProgram(get_program_id());
         glUniform1f(get_uniform_location(uniform_name), value);
     }
 
     void Shader::set_uniform_int(const std::string& uniform_name, int value) const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glUseProgram(get_program_id());
         glUniform1i(get_uniform_location(uniform_name), value);
     }
 
     void Shader::set_uniform_uint(const std::string& uniform_name, glm::uint value) const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glUseProgram(get_program_id());
         glUniform1ui(get_uniform_location(uniform_name), value);
     }
 
     void Shader::set_uniform_vec2(const std::string& uniform_name, Vector2f value) const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glUseProgram(get_program_id());
         glUniform2f(get_uniform_location(uniform_name), value.x, value.y);
     }
 
     void Shader::set_uniform_vec3(const std::string& uniform_name, Vector3f value) const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glUseProgram(get_program_id());
         glUniform3f(get_uniform_location(uniform_name), value.x, value.y, value.z);
     }
 
     void Shader::set_uniform_vec4(const std::string& uniform_name, Vector4f value) const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glUseProgram(get_program_id());
         glUniform4f(get_uniform_location(uniform_name), value.x, value.y, value.z, value.w);
     }
 
     void Shader::set_uniform_transform(const std::string& uniform_name, GLTransform value) const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glUseProgram(get_program_id());
         glUniformMatrix4fv(get_uniform_location(uniform_name), 1, false, &value.transform[0][0]);
     }
 
     int Shader::get_uniform_location(const std::string& str) const
     {
+        if (detail::is_opengl_disabled())
+            return 0;
+
         glUseProgram(get_program_id());
         return glGetUniformLocation(_internal->program_id, str.c_str());
     }
@@ -282,6 +352,9 @@ namespace mousetrap
 
     Shader::operator NativeObject() const
     {
+        if (detail::is_opengl_disabled())
+            return nullptr;
+
         return G_OBJECT(_internal);
     }
 }

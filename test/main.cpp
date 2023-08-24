@@ -2,19 +2,29 @@
 
 using namespace mousetrap;
 
+#include <thread>
+#include <chrono>
+
+void task_cb(GObject* self, GAsyncResult*, void* data)
+{
+    std::cout << "task called" << std::endl;
+    //g_application_run(G_APPLICATION(self), 0, nullptr);
+}
+
+void task_thread_cb(GTask* task, GObject* self, gpointer data, GCancellable*)
+{
+    std::cout << "thread called" << std::endl;
+    //g_task_return_boolean(task, true);
+}
+
 int main()
 {
+    mousetrap::FORCE_GL_DISABLED = true;
+
+    // declare application
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
     {
-        auto window = Window(app);
-        static auto child = LevelBar(0, 1);
-        auto scale = Scale(0, 1, 0.01);
-        scale.connect_signal_value_changed([](Scale& self){
-            child.set_value(self.get_value());
-        });
-        child.set_value(scale.get_value());
-
         StyleManager::add_css(R"(
             @keyframes example {
               from {background-color: red;}

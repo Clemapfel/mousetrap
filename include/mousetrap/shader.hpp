@@ -46,8 +46,7 @@ namespace mousetrap
     #endif
 
     /// @brief shader, holds the OpenGL shader program, a vertex and a fragment shader
-    class Shader : public detail::notify_if_gl_uninitialized,
-        public SignalEmitter
+    class Shader : public SignalEmitter
     {
         public:
             /// @brief construct, holds default shader program for both fragment and vertex
