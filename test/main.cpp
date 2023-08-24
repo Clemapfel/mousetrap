@@ -40,17 +40,16 @@ int main()
         )");
          */
 
-        auto widget = CheckButton();
-        widget.set_state(CheckButtonState::INACTIVE);
+        auto widget = window.get_header_bar();
 
         auto style = StyleClass("custom");
-        style.set_property("check:not(:checked):not(:indeterminate)", "background-color", "green");
+        style.set_property("headerbar>windowhandle>box>widget", "color", "green");
 
         StyleManager::add_style_class(style);
         std::cout << style.serialize() << std::endl;
 
         auto bin = TransformBin();
-        bin.set_child(widget);
+        //bin.set_child(widget);
         bin.add_css_class("custom");
 
         auto box = Box(Orientation::VERTICAL);

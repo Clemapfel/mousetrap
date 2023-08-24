@@ -29,6 +29,7 @@ namespace mousetrap
         HAS_SIGNAL(FlowBox, map),
         HAS_SIGNAL(FlowBox, unmap)
     {
+        public:
             /// @brief construct
             /// @param orientation orientation, if horizontal, widgets will be arranged left to right, if vertical, widgets will be arranged top to bottom
             FlowBox(Orientation = Orientation::HORIZONTAL);

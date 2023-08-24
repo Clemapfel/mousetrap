@@ -131,7 +131,54 @@ namespace mousetrap
     DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON, "checkbutton");
     DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_ACTIVE, "check:checked")
     DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_INCONSISTENT, "check::indeterminate")
-    DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_INACTIVE, "check::indeterminate")
+    DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_INACTIVE, "check:not(:checked):not(:indeterminate)")
+
+    // ClampFrame
+
+    DEFINE_STYLE_CLASS_TARGET(CLAMP_FRAME, "clamp");
+
+    // ColumnView
+
+    DEFINE_STYLE_CLASS_TARGET(COLUMN_VIEW, "columnview");
+
+    // DropDown
+
+    DEFINE_STYLE_CLASS_TARGET(DROP_DOWN, "dropdown");
+
+    // Entry
+
+    DEFINE_STYLE_CLASS_TARGET(ENTRY, "entry");
+    DEFINE_STYLE_CLASS_TARGET(ENTRY_TEXT, "entry>text");
+
+    // Expander
+
+    DEFINE_STYLE_CLASS_TARGET(EXPANDER, "expander-widget");
+    DEFINE_STYLE_CLASS_TARGET(EXPANDER_TITLE, "expander-widget>box>title");
+    DEFINE_STYLE_CLASS_TARGET(EXPANDER_TITLE_ARROW, "expander-widget>box>title>expander");
+
+    // Fixed
+    // no css targets
+
+    // FlowBox
+
+    DEFINE_STYLE_CLASS_TARGET(FLOW_BOX, "flowbox");
+    DEFINE_STYLE_CLASS_TARGET(FLOW_BOX_CHILD, "flowbox>flowboxchild");
+
+    // Frame
+
+    DEFINE_STYLE_CLASS_TARGET(FRAME, "frame");
+
+    // Grid
+
+    DEFINE_STYLE_CLASS_TARGET(GRID, "grid");
+
+    // GridView
+
+    DEFINE_STYLE_CLASS_TARGET(GRID_VIEW, "gridview");
+
+    // HeaderBar
+
+    DEFINE_STYLE_CLASS_TARGET(HEADER_BAR, "headerbar");
 
     // LevelBar
 

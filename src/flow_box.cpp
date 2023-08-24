@@ -19,6 +19,7 @@ namespace mousetrap
         _internal = GTK_FLOW_BOX(operator NativeWidget());
         g_object_ref_sink(_internal);
 
+        gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(operator NativeWidget()), GTK_SELECTION_NONE);
         set_orientation(orientation);
     }
 
