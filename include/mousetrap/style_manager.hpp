@@ -201,8 +201,8 @@ namespace mousetrap
     // ActionBar
 
     DEFINE_STYLE_CLASS_TARGET(ACTION_BAR, "actionbar")
-    DEFINE_STYLE_CLASS_TARGET(ACTION_BAR_BOX_START, "actionbar>revealer>box>box.start")
-    DEFINE_STYLE_CLASS_TARGET(ACTION_BAR_BOX_END, "actionbar>revealer>box>box.end")
+    DEFINE_STYLE_CLASS_TARGET(ACTION_BAR_BOX_START, "actionbar>revealer>box>box.start") // widgets added via `push_front`
+    DEFINE_STYLE_CLASS_TARGET(ACTION_BAR_BOX_END, "actionbar>revealer>box>box.end")     // widgets added via `push_back`
 
     // AspectFrame
 
@@ -215,7 +215,7 @@ namespace mousetrap
     // Button
 
     DEFINE_STYLE_CLASS_TARGET(BUTTON, "button");
-    DEFINE_STYLE_CLASS_TARGET(BUTTON_PRESSED, "button:active");
+    DEFINE_STYLE_CLASS_TARGET(BUTTON_PRESSED, "button:active"); // while click animation is playing
 
     // CenterBox
 
@@ -224,9 +224,9 @@ namespace mousetrap
     // CheckButton
 
     DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON, "checkbutton");
-    DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_ACTIVE, "check:checked")
-    DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_INCONSISTENT, "check::indeterminate")
-    DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_INACTIVE, "check:not(:checked):not(:indeterminate)")
+    DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_ACTIVE, "check:checked")  // state is `ACTIVE`
+    DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_INCONSISTENT, "check::indeterminate") // state is `INCONSISTENT`
+    DEFINE_STYLE_CLASS_TARGET(CHECK_BUTTON_CHECK_MARK_INACTIVE, "check:not(:checked):not(:indeterminate)") // state is `INACTIVE`
 
     // ClampFrame
 
@@ -243,14 +243,14 @@ namespace mousetrap
     // Entry
 
     DEFINE_STYLE_CLASS_TARGET(ENTRY, "entry");
-    DEFINE_STYLE_CLASS_TARGET(ENTRY_TEXT, "entry>text");
-    DEFINE_STYLE_CLASS_TARGET(ENTRY_TEXT_SELECTION, "entry>text>selection");
+    DEFINE_STYLE_CLASS_TARGET(ENTRY_TEXT, "entry>text");    // letters of entries text
+    DEFINE_STYLE_CLASS_TARGET(ENTRY_TEXT_SELECTION, "entry>text>selection");    // selection indicator when selecting letters using cursor
 
     // Expander
 
     DEFINE_STYLE_CLASS_TARGET(EXPANDER, "expander-widget");
-    DEFINE_STYLE_CLASS_TARGET(EXPANDER_TITLE, "expander-widget>box>title");
-    DEFINE_STYLE_CLASS_TARGET(EXPANDER_TITLE_ARROW, "expander-widget>box>title>expander");
+    DEFINE_STYLE_CLASS_TARGET(EXPANDER_TITLE, "expander-widget>box>title"); // label widget
+    DEFINE_STYLE_CLASS_TARGET(EXPANDER_TITLE_ARROW, "expander-widget>box>title>expander");  // arrow indicator next to label
 
     // Fixed
     // no css targets
@@ -258,7 +258,7 @@ namespace mousetrap
     // FlowBox
 
     DEFINE_STYLE_CLASS_TARGET(FLOW_BOX, "flowbox");
-    DEFINE_STYLE_CLASS_TARGET(FLOW_BOX_CHILD, "flowbox>flowboxchild");
+    DEFINE_STYLE_CLASS_TARGET(FLOW_BOX_CHILD, "flowbox>flowboxchild");  // any child
 
     // Frame
 
@@ -271,8 +271,9 @@ namespace mousetrap
     // GridView
 
     DEFINE_STYLE_CLASS_TARGET(GRID_VIEW, "gridview");
-    DEFINE_STYLE_CLASS_TARGET(GRID_VIEW_CHILDREN, "gridview>child");
-    DEFINE_STYLE_CLASS_TARGET(GRID_VIEW_SELECTED, "gridview>child:selected");
+    DEFINE_STYLE_CLASS_TARGET(GRID_VIEW_CHILDREN, "gridview>child");    // any child
+    DEFINE_STYLE_CLASS_TARGET(GRID_VIEW_SELECTED, "gridview>child:selected");   // child that is currently selected
+    DEFINE_STYLE_CLASS_TARGET(GRID_VIEW_NOT_SELECTED, "gridview>child:not(:selected)");   // child that is not currently selected
 
     // HeaderBar
 
@@ -285,28 +286,29 @@ namespace mousetrap
     // Label
 
     DEFINE_STYLE_CLASS_TARGET(LABEL, "label");
-    DEFINE_STYLE_CLASS_TARGET(LABEL_SELECTION, "label>selection");
+    DEFINE_STYLE_CLASS_TARGET(LABEL_SELECTION, "label>selection"); // selection indicator area when `set_is_selectable` is set to `true`
 
     // LevelBar
 
-    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR, "levelbar")
-    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_TROUGH, "levelbar>trough")
-    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_BLOCK_LOW, "levelbar>trough>block.low")
-    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_BLOCK_HIGH, "levelbar>trough>block.high")
-    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_BLOCK_FULL, "levelbar>trough>block.full")
+    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR, "levelbar");
+    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_TROUGH, "levelbar>trough");  // background of level bar, does not change with level bar value
+    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_BLOCK_LOW, "levelbar>trough>block.low");  // block area with value in [0%, 25%]
+    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_BLOCK_HIGH, "levelbar>trough>block.high"); // block area with value in [25%, 75%]
+    DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_BLOCK_FULL, "levelbar>trough>block.full"); // block area with value in [75%, 100%]
 
     // ListView
 
     DEFINE_STYLE_CLASS_TARGET(LIST_VIEW, "listview");
-    DEFINE_STYLE_CLASS_TARGET(LIST_VIEW_CHILDREN, "listview>row");
-    DEFINE_STYLE_CLASS_TARGET(LIST_VIEW_SELECTED, "listview>row:selected");
+    DEFINE_STYLE_CLASS_TARGET(LIST_VIEW_CHILDREN, "listview>row");  // any child
+    DEFINE_STYLE_CLASS_TARGET(LIST_VIEW_SELECTED, "listview>row:selected"); // child that is selected
+    DEFINE_STYLE_CLASS_TARGET(LIST_VIEW_NOT_SELECTED, "listview>row:not(:selected)"); // child that is not selected
 
     // MenuBar
 
     DEFINE_STYLE_CLASS_TARGET(MENU_BAR, "menubar");
-    DEFINE_STYLE_CLASS_TARGET(MENU_BAR_ITEM, "menubar>item")
-    DEFINE_STYLE_CLASS_TARGET(MENU_BAR_DISABLED_ITEM, "menubar>item:disabled")
-    DEFINE_STYLE_CLASS_TARGET(MENU_BAR_SELECTED_ITEM, "menubar>item:selected")
+    DEFINE_STYLE_CLASS_TARGET(MENU_BAR_ITEM, "menubar>item"); // item in outermost menu model
+    DEFINE_STYLE_CLASS_TARGET(MENU_BAR_DISABLED_ITEM, "menubar>item:disabled"); // item in outermost menu mode
+    DEFINE_STYLE_CLASS_TARGET(MENU_BAR_SELECTED_ITEM, "menubar>item:selected");
 
     // Notebook
 

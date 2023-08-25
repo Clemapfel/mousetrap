@@ -46,6 +46,7 @@ int main()
         window.get_header_bar().set_layout(":close");
         window.set_title("how");
         window.add_css_class(style.get_name());
+        window.add_css_class(STYLE_CLASS_CARD.get_name());
 
         auto widget = Button();
         auto child = Label("<span size='400%'>WHY</span>");
