@@ -11,33 +11,52 @@ int main()
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
     {
-
         auto window = Window(app);
+
+        StyleManager::add_css(R"(
+        @keyframes spin {
+          to {
+            transform: rotate(1turn);
+          }
+        }
+        @keyframes glow {
+            from {
+                box-shadow: 0px 0px 0px gold;
+            }
+            to {
+                box-shadow: 0px 0px 50px gold;
+            }
+        }
+        )");
+
         auto style = StyleClass("custom");
-        auto target = "notebook>header.bottom>tabs>tab";
-        style.set_property(target, STYLE_PROPERTY_COLOR, "lightgreen");
-        style.set_property(target, STYLE_PROPERTY_BACKGROUND_COLOR, "green");
+        auto target = "widget";
+        style.set_property(target, STYLE_PROPERTY_ANIMATION_NAME, "spin");
+        style.set_property(target, STYLE_PROPERTY_ANIMATION_DURATION, "1s");
+        style.set_property(target, STYLE_PROPERTY_ANIMATION_ITERATION_COUNT, "infinite");
+
+        style.set_property("", STYLE_PROPERTY_ANIMATION_NAME, "glow");
+        style.set_property("", STYLE_PROPERTY_ANIMATION_DURATION, "5s");
+        style.set_property("", STYLE_PROPERTY_ANIMATION_TIMING_FUNCTION, "ease-in-out");
+        style.set_property("", STYLE_PROPERTY_ANIMATION_ITERATION_COUNT, "infinite");
+        style.set_property("", STYLE_PROPERTY_BORDER_RADIUS, "100%");
+        style.set_property("", STYLE_PROPERTY_BOX_SHADOW, "0px 0px 20px gold");
         StyleManager::add_style_class(style);
 
-        auto widget = Notebook();
-        widget.push_back(Button(), Label("01"));
-        widget.push_back(Button(), Label("02"));
-        widget.push_back(Button(), Label("03"));
+        window.get_header_bar().set_layout(":close");
+        window.set_title("how");
+        window.add_css_class(style.get_name());
+
+        auto widget = Button();
+        auto child = Label("<span size='400%'>WHY</span>");
+        widget.set_child(child);
 
         auto bin = TransformBin();
-        widget.add_css_class(style.get_name());
-        widget.set_expand(true);
         widget.set_margin(10);
         bin.set_child(widget);
-        bin.add_css_class("custom");
 
-        auto box = Box(Orientation::VERTICAL);
-        box.push_back(bin);
-
-        window.set_child(box);
+        window.set_child(bin);
         window.present();
-
-        window.add_css_class("osd");
     });
     return app.run();
 }

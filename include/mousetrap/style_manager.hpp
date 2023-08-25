@@ -119,6 +119,7 @@ namespace mousetrap
     DEFINE_CSS_PROPERTY(FONT_STYLE, "font-style")
     DEFINE_CSS_PROPERTY(FONT_WEIGHT, "font-weight")
     DEFINE_CSS_PROPERTY(FONT_TRANSFORM, "font-transform")
+    DEFINE_CSS_PROPERTY(CARET_COLOR, "caret-color")
     DEFINE_CSS_PROPERTY(TEXT_DECORATION, "text-decoration")
     DEFINE_CSS_PROPERTY(TEXT_DECORATION_COLOR, "text-decoration-color")
     DEFINE_CSS_PROPERTY(TEXT_SHADOW, "text-shadow")
@@ -134,6 +135,7 @@ namespace mousetrap
     DEFINE_CSS_PROPERTY(OUTLINE_COLOR, "outline-color")
     DEFINE_CSS_PROPERTY(OUTLINE_WIDTH, "outline-width")
     DEFINE_CSS_PROPERTY(BOX_SHADOW, "box-shadow")
+    DEFINE_CSS_PROPERTY(BACKGROUND_CLIP, "background-clip")
     DEFINE_CSS_PROPERTY(TRANSITION, "transition")
     DEFINE_CSS_PROPERTY(ANIMATION, "animation")
     DEFINE_CSS_PROPERTY(ANIMATION_NAME, "animation-name")
@@ -242,6 +244,7 @@ namespace mousetrap
 
     DEFINE_STYLE_CLASS_TARGET(ENTRY, "entry");
     DEFINE_STYLE_CLASS_TARGET(ENTRY_TEXT, "entry>text");
+    DEFINE_STYLE_CLASS_TARGET(ENTRY_TEXT_SELECTION, "entry>text>selection");
 
     // Expander
 
@@ -270,7 +273,6 @@ namespace mousetrap
     DEFINE_STYLE_CLASS_TARGET(GRID_VIEW, "gridview");
     DEFINE_STYLE_CLASS_TARGET(GRID_VIEW_CHILDREN, "gridview>child");
     DEFINE_STYLE_CLASS_TARGET(GRID_VIEW_SELECTED, "gridview>child:selected");
-
 
     // HeaderBar
 
@@ -312,4 +314,126 @@ namespace mousetrap
     DEFINE_STYLE_CLASS_TARGET(NOTEBOOK_TABS, "notebook>header>tabs>tab")
     DEFINE_STYLE_CLASS_TARGET(NOTEBOOK_SELECTED_TAB, "notebook>header>tabs>tab:checked")
 
+    // Overlay
+
+    DEFINE_STYLE_CLASS_TARGET(OVERLAY, "overlay");
+
+    // Paned
+
+    DEFINE_STYLE_CLASS_TARGET(PANED, "paned");
+    DEFINE_STYLE_CLASS_TARGET(PANED_HANDLE, "paned>separator");
+    DEFINE_STYLE_CLASS_TARGET(PANED_START_CHILD, "paned>*:first-child");
+    DEFINE_STYLE_CLASS_TARGET(PANED_END_CHILD, "paned>*:last-child");
+
+    // Popover
+
+    DEFINE_STYLE_CLASS_TARGET(POPOVER, "popover>contents");
+    DEFINE_STYLE_CLASS_TARGET(POPOVER_ARROW, "popover>arrow");
+
+    // PopoverButton
+
+    DEFINE_STYLE_CLASS_TARGET(POPOVER_BUTTON, "menubutton");
+    DEFINE_STYLE_CLASS_TARGET(POPOVER_BUTTON_INDICATOR, "menubutton>button arrow");
+
+    // PopoverMenu
+
+    DEFINE_STYLE_CLASS_TARGET(POPOVER_MENU, "popover.menu>contents");
+    DEFINE_STYLE_CLASS_TARGET(POPOVER_MENU_ARROW, "popover.menu>arrow");
+
+    // ProgressBar
+
+    DEFINE_STYLE_CLASS_TARGET(PROGRESS_BAR, "progressbar>trough>progress");
+    DEFINE_STYLE_CLASS_TARGET(PROGRESS_BAR_EMPTY, "progressbar>trough.empty");
+    DEFINE_STYLE_CLASS_TARGET(PROGRESS_BAR_FULL, "progressbar>trough.full>progress");
+    DEFINE_STYLE_CLASS_TARGET(PROGRESS_BAR_TROUGH, "progressbar>trough");
+    DEFINE_STYLE_CLASS_TARGET(PROGRESS_BAR_TEXT, "progressbar>text");
+    DEFINE_STYLE_CLASS_TARGET(PROGRESS_BAR_DURING_PULSE, "progressbar>progressbar progress.pulse");
+
+    // RenderArea
+
+    // no css targets
+
+    // Revealer
+
+    DEFINE_STYLE_CLASS_TARGET(REVEALER, "revealer");
+
+    // Scale
+
+    DEFINE_STYLE_CLASS_TARGET(SCALE, "scale");
+    DEFINE_STYLE_CLASS_TARGET(SCALE_TROUGH, "scale>trough");
+    DEFINE_STYLE_CLASS_TARGET(SCALE_TROUGH_FILL, "scale>trough>highlight");
+    DEFINE_STYLE_CLASS_TARGET(SCALE_SLIDER, "scale>trough>slider");
+    DEFINE_STYLE_CLASS_TARGET(SCALE_VALUE_TEXT, "scale>value");
+
+    // ScrollBar
+
+    DEFINE_STYLE_CLASS_TARGET(SCROLLBAR, "scrollbar");
+    DEFINE_STYLE_CLASS_TARGET(SCROLLBAR_TROUGH, "scrollbar>range>trough");
+    DEFINE_STYLE_CLASS_TARGET(SCOLLBAR_SLIDER, "scrollbar>range>trough>slider");
+
+    // SpinButton
+
+    DEFINE_STYLE_CLASS_TARGET(SPINBUTTON, "spinbutton");
+    DEFINE_STYLE_CLASS_TARGET(SPINBUTTON_TEXT, "spinbutton>text");
+    DEFINE_STYLE_CLASS_TARGET(SPINBUTTON_TEXT_SELECTION, "spinbutton>text>selection");
+    DEFINE_STYLE_CLASS_TARGET(SPINBUTTON_BUTTON_INCREASE, "spinbutton>button.up");
+    DEFINE_STYLE_CLASS_TARGET(SPINBUTTON_BUTTON_DECREASE, "spinbutton>button.down");
+
+    // Spinner
+
+    DEFINE_STYLE_CLASS_TARGET(SPINNER, "spinner:checked"); // only applied if set_is_spinning is true
+
+    // Stack
+
+    DEFINE_STYLE_CLASS_TARGET(STACK, "stack");
+
+    // StackSwitcher
+
+    DEFINE_STYLE_CLASS_TARGET(STACK_SWITCHER, "stackswitcher");
+
+    // StackSidebar
+
+    DEFINE_STYLE_CLASS_TARGET(STACK_SIDEBAR, "stacksidebar");
+
+    // Switch
+
+    DEFINE_STYLE_CLASS_TARGET(SWITCH, "switch");
+    DEFINE_STYLE_CLASS_TARGET(SWITCH_SLIDER, "switch>slider");
+    DEFINE_STYLE_CLASS_TARGET(SWITCH_NOT_ACTIVE, "switch:not(:checked)");
+    DEFINE_STYLE_CLASS_TARGET(SWITCH_ACTIVE, "switch:checked");
+
+    // TextView
+
+    DEFINE_STYLE_CLASS_TARGET(TEXTVIEW, "textview");
+    DEFINE_STYLE_CLASS_TARGET(TEXTVIEW_TEXT, "textview>text");
+    DEFINE_STYLE_CLASS_TARGET(TEXTVIEW_TEXT_SELECTION, "textview>text>selection");
+    /// \bug textview subnodes don't apply css correctly
+
+    // TransformBin
+
+    DEFINE_STYLE_CLASS_TARGET(TRANSFORM_BIN, "transformbin");
+
+    // ToggleButton
+
+    DEFINE_STYLE_CLASS_TARGET(TOGGLE_BUTTON, "button.toggle");
+    DEFINE_STYLE_CLASS_TARGET(TOGGLE_BUTTON_ACTIVE, "button.toggle:checked");
+    DEFINE_STYLE_CLASS_TARGET(TOGGLE_BUTTON_NOT_ACTIVE, "button.toggle:not(:checked)");
+
+    // Viewport
+
+    DEFINE_STYLE_CLASS_TARGET(VIEWPORT, "scrolledwindow");
+    DEFINE_STYLE_CLASS_TARGET(VIEWPORT_HORIZONTAL_SCROLLBAR, "scrolledwindow>scrollbar.horizontal");
+    DEFINE_STYLE_CLASS_TARGET(VIEWPORT_HORIZONTAL_SCROLLBAR_TROUGH, "scrolledwindow>scrollbar.horizontal>range>trough");
+    DEFINE_STYLE_CLASS_TARGET(VIEWPORT_HORIZONTAL_SCOLLBAR_SLIDER, "scrolledwindow>scrollbar.horizontal>range>trough>slider");
+    DEFINE_STYLE_CLASS_TARGET(VIEWPORT_VERTICAL_SCROLLBAR, "scrolledwindow>scrollbar.vertical");
+    DEFINE_STYLE_CLASS_TARGET(VIEWPORT_VERTICAL_SCROLLBAR_TROUGH, "scrolledwindow>scrollbar.vertical>range>trough");
+    DEFINE_STYLE_CLASS_TARGET(VIEWPORT_VERTICAL_SCOLLBAR_SLIDER, "scrolledwindow>scrollbar.vertical>range>trough>slider");
+
+    // Window
+
+    DEFINE_STYLE_CLASS_TARGET(WINDOW, "window");
+
+    // Widget
+
+    DEFINE_STYLE_CLASS_TARGET(WIDGET, "widget");
 }

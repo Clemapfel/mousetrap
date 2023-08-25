@@ -609,7 +609,7 @@ namespace mousetrap::detail
         G_OBJECT_CLASS (klass)->constructor = transform_bin_internal_constructor;
         G_OBJECT_CLASS (klass)->finalize = transform_bin_internal_finalize;
         g_object_class_install_property (G_OBJECT_CLASS (klass), TRANSFORM_BIN_INTERNAL_TRANSFORM_PROPERTY, transform_bin_internal_properties[TRANSFORM_BIN_INTERNAL_TRANSFORM_PROPERTY] = g_param_spec_boxed ("transform", "transform", "transform", gsk_transform_get_type (), (GParamFlags) (G_PARAM_STATIC_STRINGS | G_PARAM_READABLE | G_PARAM_WRITABLE)));
-        gtk_widget_class_set_css_name (GTK_WIDGET_CLASS (klass), "transform-bin-internal");
+        gtk_widget_class_set_css_name (GTK_WIDGET_CLASS (klass), "transformbin");
     }
 
     static void
