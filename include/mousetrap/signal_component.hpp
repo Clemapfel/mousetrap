@@ -2424,7 +2424,7 @@ namespace mousetrap
     /// @fn has_signal_dismissed::has_signal_dismissed
     /// \signal_ctor
 
-    DECLARE_SIGNAL(ButtonClicked, button_clicked, BUTTON_CLICKED, "dismissed", void);
+    DECLARE_SIGNAL(ButtonClicked, button_clicked, BUTTON_CLICKED, "button-clicked", void);
     /// @class has_signal_dismissed
     /// @brief \signal_dismissed_brief
     /// @tparam T instance type

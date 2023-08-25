@@ -101,3 +101,4 @@
 #include <mousetrap/flow_box.hpp>
 #include <mousetrap/animation.hpp>
 #include <mousetrap/transform_bin.hpp>
+#include <mousetrap/popup_message.hpp>

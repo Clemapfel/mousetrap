@@ -13,25 +13,32 @@ int main()
     {
         auto window = Window(app);
 
-        static auto action = Action("test.app", app);
+        static auto action = Action("test.action", app);
         action.set_function([](Action&){
-            std::cout << "called" << std::endl;
+           std::cout << "called" << std::endl;
         });
 
-        static auto* toast = adw_toast_overlay_new();
+        static auto overlay = PopupMessageOverlay();
         auto button = Button();
         button.connect_signal_clicked([](Button&){
 
             static size_t i = 0;
-            auto* msg = adw_toast_new((std::to_string(i++) + " Test").c_str());
-            adw_toast_set_action_name(ADW_TOAST(msg), ("app." + action.get_id()).c_str());
-            adw_toast_set_button_label(ADW_TOAST(msg), "Test");
-            adw_toast_overlay_add_toast(ADW_TOAST_OVERLAY(toast), msg);
+
+            auto message = PopupMessage(std::to_string(i) + " title", "button_label");
+            message.connect_signal_dismissed([](PopupMessage& message){
+               std::cout << "dismissed " <<  message.get_title() << std::endl;
+            });
+            message.connect_signal_button_clicked([](PopupMessage& message){
+               std::cout << "clicked " << message.get_title() << std::endl;
+            });
+            message.set_button_action(action);
+            std::cout << message.get_button_action_id() << std::endl;
+
+            overlay.show_message(message);
         });
 
-        adw_toast_overlay_set_child(ADW_TOAST_OVERLAY(toast), button.operator NativeWidget());
-        adw_bin_set_child(((detail::WindowInternal*) window.get_internal())->content_area, toast);
-
+        overlay.set_child(button);
+        window.set_child(overlay);
         window.present();
     });
     return app.run();

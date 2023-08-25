@@ -55,6 +55,13 @@ namespace mousetrap
             /// @brief get title string
             std::string get_button_label() const;
 
+            /// @brief set action triggered when button is clicked
+            /// @param action
+            void set_button_action(const Action&);
+
+            /// @brief get id of action set via `set_button_action`, or "" if no action was set
+            std::string get_button_action_id() const;
+
         private:
             detail::PopupMessageInternal* _internal = nullptr;
     };
@@ -73,10 +80,6 @@ namespace mousetrap
         public:
             /// @brief construct as empty
             PopupMessageOverlay();
-
-            /// @brief construct from string
-            /// @param formatted_string
-            PopupMessageOverlay(const std::string& formatted_string);
 
             /// @brief create from internal
             PopupMessageOverlay(detail::PopupMessageOverlayInternal*);

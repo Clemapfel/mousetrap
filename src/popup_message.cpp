@@ -8,8 +8,8 @@ namespace mousetrap
 {
     // OVERLAY
     
-    PopupMessageOverlay::PopupMessageOverlay(const std::string& str)
-        : Widget(gtk_label_new(str.c_str())),
+    PopupMessageOverlay::PopupMessageOverlay()
+        : Widget(adw_toast_overlay_new()),
           CTOR_SIGNAL(PopupMessageOverlay, realize),
           CTOR_SIGNAL(PopupMessageOverlay, unrealize),
           CTOR_SIGNAL(PopupMessageOverlay, destroy),
@@ -85,6 +85,11 @@ namespace mousetrap
         return G_OBJECT(_internal);
     }
 
+    PopupMessage::operator NativeObject() const
+    {
+        return get_internal();
+    }
+
     void PopupMessage::set_title(const std::string& title)
     {
         adw_toast_set_title(_internal, title.c_str());
@@ -105,5 +110,20 @@ namespace mousetrap
     {
         auto* label = adw_toast_get_button_label(_internal);
         return label == nullptr ? "" : label;
+    }
+
+    void PopupMessage::set_button_action(const Action& action)
+    {
+        adw_toast_set_action_name(_internal, (("app.") + action.get_id()).c_str());
+    }
+
+    std::string PopupMessage::get_button_action_id() const
+    {
+        auto* id = adw_toast_get_action_name(_internal);
+        if (id == nullptr)
+            return "";
+
+        auto as_string = std::string(id);
+        return std::string(as_string.begin() + 4, as_string.end());
     }
 }
