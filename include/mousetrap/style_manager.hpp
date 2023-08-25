@@ -373,6 +373,10 @@ namespace mousetrap
     DEFINE_STYLE_CLASS_TARGET(SCROLLBAR_TROUGH, "scrollbar>range>trough");
     DEFINE_STYLE_CLASS_TARGET(SCOLLBAR_SLIDER, "scrollbar>range>trough>slider");
 
+    // Separator
+
+    DEFINE_STYLE_CLASS_TARGET(SEPARATOR, "separator");
+
     // SpinButton
 
     DEFINE_STYLE_CLASS_TARGET(SPINBUTTON, "spinbutton");

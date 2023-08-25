@@ -35,12 +35,12 @@ int main()
         style.set_property(target, STYLE_PROPERTY_ANIMATION_DURATION, "1s");
         style.set_property(target, STYLE_PROPERTY_ANIMATION_ITERATION_COUNT, "infinite");
 
-        style.set_property("", STYLE_PROPERTY_ANIMATION_NAME, "glow");
-        style.set_property("", STYLE_PROPERTY_ANIMATION_DURATION, "5s");
-        style.set_property("", STYLE_PROPERTY_ANIMATION_TIMING_FUNCTION, "ease-in-out");
-        style.set_property("", STYLE_PROPERTY_ANIMATION_ITERATION_COUNT, "infinite");
-        style.set_property("", STYLE_PROPERTY_BORDER_RADIUS, "100%");
-        style.set_property("", STYLE_PROPERTY_BOX_SHADOW, "0px 0px 20px gold");
+        style.set_property("separator", STYLE_PROPERTY_ANIMATION_NAME, "glow");
+        style.set_property("separator", STYLE_PROPERTY_ANIMATION_DURATION, "5s");
+        style.set_property("separator", STYLE_PROPERTY_ANIMATION_TIMING_FUNCTION, "ease-in-out");
+        style.set_property("separator", STYLE_PROPERTY_ANIMATION_ITERATION_COUNT, "infinite");
+        style.set_property("separator", STYLE_PROPERTY_BORDER_RADIUS, "100%");
+        style.set_property("separator", STYLE_PROPERTY_BOX_SHADOW, "0px 0px 20px gold");
         StyleManager::add_style_class(style);
 
         window.get_header_bar().set_layout(":close");
@@ -49,7 +49,7 @@ int main()
         window.add_css_class(STYLE_CLASS_CARD.get_name());
 
         auto widget = Button();
-        auto child = Label("<span size='400%'>WHY</span>");
+        auto child = Separator();
         widget.set_child(child);
 
         auto bin = TransformBin();
