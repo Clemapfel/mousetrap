@@ -160,6 +160,11 @@ namespace mousetrap
         (*_internal->target_to_properties)[target].insert_or_assign(property, css_value);
     }
 
+    void StyleClass::set_property(const std::string& property, const std::string& value)
+    {
+        set_property(STYLE_TARGET_SELF, property, value);
+    }
+
     std::string StyleClass::get_property(StyleClassTarget target, const std::string& property) const
     {
         auto it = _internal->target_to_properties->find(target);

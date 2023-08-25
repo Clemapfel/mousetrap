@@ -15,7 +15,7 @@
 #include <mousetrap/alignment.hpp>
 #include <mousetrap/image.hpp>
 #include <mousetrap/action.hpp>
-#include <mousetrap/style_manager.hpp>
+//#include <mousetrap/style_manager.hpp>
 
 #include <map>
 #include <string>
@@ -333,7 +333,7 @@ namespace mousetrap
 
             /// @brief apply style class to widget and its children
             /// @param style class
-            void apply_style_class(const StyleClass&);
+            // void apply_style_class(const StyleClass&);
 
             /// @brief add css class
             /// @param code

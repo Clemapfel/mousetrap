@@ -11,14 +11,24 @@ int main()
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
     {
-        auto window = Window(app);
 
-        window.get_header_bar().apply_style_class(mousetrap::STYLE_CLASS_BUTTON_FLAT);
+        auto window = Window(app);
         auto style = StyleClass("custom");
-        style.set_property("headerbar", "color", "green");
+        auto target = "notebook>header.bottom>tabs>tab";
+        style.set_property(target, STYLE_PROPERTY_COLOR, "lightgreen");
+        style.set_property(target, STYLE_PROPERTY_BACKGROUND_COLOR, "green");
+        StyleManager::add_style_class(style);
+
+        auto widget = Notebook();
+        widget.push_back(Button(), Label("01"));
+        widget.push_back(Button(), Label("02"));
+        widget.push_back(Button(), Label("03"));
 
         auto bin = TransformBin();
-        //bin.set_child(widget);
+        widget.add_css_class(style.get_name());
+        widget.set_expand(true);
+        widget.set_margin(10);
+        bin.set_child(widget);
         bin.add_css_class("custom");
 
         auto box = Box(Orientation::VERTICAL);
@@ -28,10 +38,6 @@ int main()
         window.present();
 
         window.add_css_class("osd");
-
-        auto chooser = ColorChooser();
-        chooser.present();
-
     });
     return app.run();
 }

@@ -547,11 +547,13 @@ namespace mousetrap
         gtk_widget_remove_css_class(operator NativeWidget(), css.c_str());
     }
 
+    /*
     void Widget::apply_style_class(const StyleClass& c)
     {
         StyleManager::add_style_class(c);
         add_css_class(c.get_name());
     }
+    */
 
     std::vector<std::string> Widget::get_css_classes() const
     {

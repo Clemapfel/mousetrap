@@ -87,7 +87,12 @@ namespace mousetrap
             /// @param target
             /// @param property css property name
             /// @param value css property value
-            void set_property(StyleClassTarget target, const std::string& property, const std::string& css_value);
+            void set_property(StyleClassTarget target, const std::string& property, const std::string& value);
+
+            /// @brief set property of self
+            /// @param property css property name
+            /// @param value css property value
+            void set_property(const std::string& property, const std::string& value);
 
             /// @brief get property of target
             /// @param target
@@ -99,6 +104,48 @@ namespace mousetrap
             static bool validate_name(const std::string&);
             detail::StyleClassInternal* _internal = nullptr;
     };
+
+    // CSS PROPERTIES
+
+    #define DEFINE_CSS_PROPERTY(NAME, value) constexpr const char* STYLE_PROPERTY_##NAME = value;
+    DEFINE_CSS_PROPERTY(FOREGROUND_COLOR, "color")
+    DEFINE_CSS_PROPERTY(COLOR, "color")
+    DEFINE_CSS_PROPERTY(BACKGROUND_COLOR, "background-color")
+    DEFINE_CSS_PROPERTY(OPACITY, "opacity")
+    DEFINE_CSS_PROPERTY(FILTER, "filter")
+    DEFINE_CSS_PROPERTY(FONT, "font")
+    DEFINE_CSS_PROPERTY(FONT_FAMILY, "font-familiy")
+    DEFINE_CSS_PROPERTY(FONT_SIZE, "font-size")
+    DEFINE_CSS_PROPERTY(FONT_STYLE, "font-style")
+    DEFINE_CSS_PROPERTY(FONT_WEIGHT, "font-weight")
+    DEFINE_CSS_PROPERTY(FONT_TRANSFORM, "font-transform")
+    DEFINE_CSS_PROPERTY(TEXT_DECORATION, "text-decoration")
+    DEFINE_CSS_PROPERTY(TEXT_DECORATION_COLOR, "text-decoration-color")
+    DEFINE_CSS_PROPERTY(TEXT_SHADOW, "text-shadow")
+    DEFINE_CSS_PROPERTY(ICON_SIZE, "-gtk-icon-size")
+    DEFINE_CSS_PROPERTY(TRANSFORM, "transform")
+    DEFINE_CSS_PROPERTY(BORDER, "border")
+    DEFINE_CSS_PROPERTY(BORDER_STYLE, "border-style")
+    DEFINE_CSS_PROPERTY(BORDER_COLOR, "border-color")
+    DEFINE_CSS_PROPERTY(BORDER_WIDTH, "border-width")
+    DEFINE_CSS_PROPERTY(BORDER_RADIUS, "border-radius")
+    DEFINE_CSS_PROPERTY(OUTLINE, "outline")
+    DEFINE_CSS_PROPERTY(OUTLINE_STYLE, "outline-style")
+    DEFINE_CSS_PROPERTY(OUTLINE_COLOR, "outline-color")
+    DEFINE_CSS_PROPERTY(OUTLINE_WIDTH, "outline-width")
+    DEFINE_CSS_PROPERTY(BOX_SHADOW, "box-shadow")
+    DEFINE_CSS_PROPERTY(TRANSITION, "transition")
+    DEFINE_CSS_PROPERTY(ANIMATION, "animation")
+    DEFINE_CSS_PROPERTY(ANIMATION_NAME, "animation-name")
+    DEFINE_CSS_PROPERTY(ANIMATION_DURATION, "animation-duration")
+    DEFINE_CSS_PROPERTY(ANIMATION_TIMING_FUNCTION, "animation-timing-function")
+    DEFINE_CSS_PROPERTY(ANIMATION_ITERATION_COUNT, "animation-iteration-count")
+    DEFINE_CSS_PROPERTY(ANIMATION_DIRECTION, "animation-direction")
+    DEFINE_CSS_PROPERTY(ANIMATION_PLAY_STATE, "animation-play-state")
+    DEFINE_CSS_PROPERTY(ANIMATION_DELAY, "animation-delay")
+    DEFINE_CSS_PROPERTY(ANIMATION_FILL_MODE, "animation-fill-mode")
+
+    // PRE-MADE STYLE CLASSES
 
     #define DEFINE_PRE_MADE_STYLE_CLASS(NAME, css_name) static inline const StyleClass STYLE_CLASS_##NAME = StyleClass(css_name);
     DEFINE_PRE_MADE_STYLE_CLASS(SUGGESTED_ACTION, "suggested-action");
@@ -132,6 +179,8 @@ namespace mousetrap
     DEFINE_PRE_MADE_STYLE_CLASS(CARD, "card");
 
     DEFINE_PRE_MADE_STYLE_CLASS(LIST_VIEW_SIDEBAR, "navigation-sidebar");
+    DEFINE_PRE_MADE_STYLE_CLASS(LIST_VIEW_RICH_LIST, "rich-list");
+    DEFINE_PRE_MADE_STYLE_CLASS(LIST_VIEW_DATA_TABLE, "data-table");
     DEFINE_PRE_MADE_STYLE_CLASS(LIST_VIEW_MENUBAR, "menu");
 
     DEFINE_PRE_MADE_STYLE_CLASS(ICON_DROPSHADOW, "icon-dropshadow");
@@ -219,10 +268,22 @@ namespace mousetrap
     // GridView
 
     DEFINE_STYLE_CLASS_TARGET(GRID_VIEW, "gridview");
+    DEFINE_STYLE_CLASS_TARGET(GRID_VIEW_CHILDREN, "gridview>child");
+    DEFINE_STYLE_CLASS_TARGET(GRID_VIEW_SELECTED, "gridview>child:selected");
+
 
     // HeaderBar
 
     DEFINE_STYLE_CLASS_TARGET(HEADER_BAR, "headerbar");
+
+    // ImageDisplay
+
+    DEFINE_STYLE_CLASS_TARGET(IMAGE_DISPLAY, "image");
+
+    // Label
+
+    DEFINE_STYLE_CLASS_TARGET(LABEL, "label");
+    DEFINE_STYLE_CLASS_TARGET(LABEL_SELECTION, "label>selection");
 
     // LevelBar
 
@@ -232,33 +293,23 @@ namespace mousetrap
     DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_BLOCK_HIGH, "levelbar>trough>block.high")
     DEFINE_STYLE_CLASS_TARGET(LEVEL_BAR_BLOCK_FULL, "levelbar>trough>block.full")
 
-    // ###
+    // ListView
 
-    #define DEFINE_CSS_PROPERTY(NAME, value) constexpr const char* STYLE_PROPERTY_##NAME = value;
-    DEFINE_CSS_PROPERTY(FOREGROUND_COLOR, "color")
-    DEFINE_CSS_PROPERTY(COLOR, "color")
-    DEFINE_CSS_PROPERTY(BACKGROUND_COLOR, "background-color")
-    DEFINE_CSS_PROPERTY(OPACITY, "opacity")
-    DEFINE_CSS_PROPERTY(FILTER, "filter")
-    DEFINE_CSS_PROPERTY(FONT, "font")
-    DEFINE_CSS_PROPERTY(FONT_FAMILY, "font-familiy")
-    DEFINE_CSS_PROPERTY(FONT_SIZE, "font-size")
-    DEFINE_CSS_PROPERTY(FONT_STYLE, "font-style")
-    DEFINE_CSS_PROPERTY(FONT_WEIGHT, "font-weight")
-    DEFINE_CSS_PROPERTY(FONT_TRANSFORM, "font-transform")
-    DEFINE_CSS_PROPERTY(TEXT_DECORATION, "text-decoration")
-    DEFINE_CSS_PROPERTY(TEXT_DECORATION_COLOR, "text-decoration-color")
-    DEFINE_CSS_PROPERTY(TEXT_SHADOW, "text-shadow")
-    DEFINE_CSS_PROPERTY(ICON_SIZE, "-gtk-icon-size")
-    DEFINE_CSS_PROPERTY(TRANSFORM, "transform")
-    DEFINE_CSS_PROPERTY(BORDER, "border")
-    DEFINE_CSS_PROPERTY(BORDER_STYLE, "border-style")
-    DEFINE_CSS_PROPERTY(BORDER_COLOR, "border-color")
-    DEFINE_CSS_PROPERTY(BORDER_WIDTH, "border-width")
-    DEFINE_CSS_PROPERTY(BORDER_RADIUS, "border-radius")
-    DEFINE_CSS_PROPERTY(OUTLINE, "outline")
-    DEFINE_CSS_PROPERTY(OUTLINE_STYLE, "outline-style")
-    DEFINE_CSS_PROPERTY(OUTLINE_COLOR, "outline-color")
-    DEFINE_CSS_PROPERTY(OUTLINE_WIDTH, "outline-width")
-    DEFINE_CSS_PROPERTY(BOX_SHADOW, "box-shadow")
+    DEFINE_STYLE_CLASS_TARGET(LIST_VIEW, "listview");
+    DEFINE_STYLE_CLASS_TARGET(LIST_VIEW_CHILDREN, "listview>row");
+    DEFINE_STYLE_CLASS_TARGET(LIST_VIEW_SELECTED, "listview>row:selected");
+
+    // MenuBar
+
+    DEFINE_STYLE_CLASS_TARGET(MENU_BAR, "menubar");
+    DEFINE_STYLE_CLASS_TARGET(MENU_BAR_ITEM, "menubar>item")
+    DEFINE_STYLE_CLASS_TARGET(MENU_BAR_DISABLED_ITEM, "menubar>item:disabled")
+    DEFINE_STYLE_CLASS_TARGET(MENU_BAR_SELECTED_ITEM, "menubar>item:selected")
+
+    // Notebook
+
+    DEFINE_STYLE_CLASS_TARGET(NOTEBOOK, "notebook");
+    DEFINE_STYLE_CLASS_TARGET(NOTEBOOK_TABS, "notebook>header>tabs>tab")
+    DEFINE_STYLE_CLASS_TARGET(NOTEBOOK_SELECTED_TAB, "notebook>header>tabs>tab:checked")
+
 }
