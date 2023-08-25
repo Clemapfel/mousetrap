@@ -294,7 +294,7 @@ if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
             include/mousetrap/texture_wrap_mode.hpp
         )
 
-    set(MOUSETRAP_HEADER_FILES "${MOUSETRAP_HEADER_FILES};${MOUSETRAP_OPENGL_HEADER_FILES}" include/mousetrap/flow_box.hpp)
+    set(MOUSETRAP_HEADER_FILES "${MOUSETRAP_HEADER_FILES};${MOUSETRAP_OPENGL_HEADER_FILES}" include/mousetrap/flow_box.hpp include/mousetrap/popup_message.hpp)
 
     set(MOUSETRAP_OPENGL_SOURCE_FILES
             src/blend_mode.cpp
@@ -308,7 +308,7 @@ if (MOUSETRAP_ENABLE_OPENGL_COMPONENT)
             src/texture.cpp
             src/shape.cpp
         )
-    set(MOUSETRAP_SOURCE_FILES "${MOUSETRAP_SOURCE_FILES};${MOUSETRAP_OPENGL_SOURCE_FILES}" include/mousetrap/action_bar.hpp src/action_bar.cpp src/transform_bin.cpp src/style_manager.cpp src/flow_box.cpp src/animation.cpp)
+    set(MOUSETRAP_SOURCE_FILES "${MOUSETRAP_SOURCE_FILES};${MOUSETRAP_OPENGL_SOURCE_FILES}" include/mousetrap/action_bar.hpp src/action_bar.cpp src/transform_bin.cpp src/style_manager.cpp src/flow_box.cpp src/animation.cpp src/popup_message.cpp)
 endif()
 
 add_library(mousetrap SHARED

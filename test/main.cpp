@@ -13,50 +13,25 @@ int main()
     {
         auto window = Window(app);
 
-        StyleManager::add_css(R"(
-        @keyframes spin {
-          to {
-            transform: rotate(1turn);
-          }
-        }
-        @keyframes glow {
-            from {
-                box-shadow: 0px 0px 0px gold;
-            }
-            to {
-                box-shadow: 0px 0px 50px gold;
-            }
-        }
-        )");
+        static auto action = Action("test.app", app);
+        action.set_function([](Action&){
+            std::cout << "called" << std::endl;
+        });
 
-        auto style = StyleClass("custom");
-        auto target = "widget";
-        style.set_property(target, STYLE_PROPERTY_ANIMATION_NAME, "spin");
-        style.set_property(target, STYLE_PROPERTY_ANIMATION_DURATION, "1s");
-        style.set_property(target, STYLE_PROPERTY_ANIMATION_ITERATION_COUNT, "infinite");
+        static auto* toast = adw_toast_overlay_new();
+        auto button = Button();
+        button.connect_signal_clicked([](Button&){
 
-        style.set_property("separator", STYLE_PROPERTY_ANIMATION_NAME, "glow");
-        style.set_property("separator", STYLE_PROPERTY_ANIMATION_DURATION, "5s");
-        style.set_property("separator", STYLE_PROPERTY_ANIMATION_TIMING_FUNCTION, "ease-in-out");
-        style.set_property("separator", STYLE_PROPERTY_ANIMATION_ITERATION_COUNT, "infinite");
-        style.set_property("separator", STYLE_PROPERTY_BORDER_RADIUS, "100%");
-        style.set_property("separator", STYLE_PROPERTY_BOX_SHADOW, "0px 0px 20px gold");
-        StyleManager::add_style_class(style);
+            static size_t i = 0;
+            auto* msg = adw_toast_new((std::to_string(i++) + " Test").c_str());
+            adw_toast_set_action_name(ADW_TOAST(msg), ("app." + action.get_id()).c_str());
+            adw_toast_set_button_label(ADW_TOAST(msg), "Test");
+            adw_toast_overlay_add_toast(ADW_TOAST_OVERLAY(toast), msg);
+        });
 
-        window.get_header_bar().set_layout(":close");
-        window.set_title("how");
-        window.add_css_class(style.get_name());
-        window.add_css_class(STYLE_CLASS_CARD.get_name());
+        adw_toast_overlay_set_child(ADW_TOAST_OVERLAY(toast), button.operator NativeWidget());
+        adw_bin_set_child(((detail::WindowInternal*) window.get_internal())->content_area, toast);
 
-        auto widget = Button();
-        auto child = Separator();
-        widget.set_child(child);
-
-        auto bin = TransformBin();
-        widget.set_margin(10);
-        bin.set_child(widget);
-
-        window.set_child(bin);
         window.present();
     });
     return app.run();
