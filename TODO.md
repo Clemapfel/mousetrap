@@ -5,3 +5,7 @@ Port to Julia:
 + TransformBin
 + StyleClass / StyleManager
 + PopupMessage
+
+validate popup message doc example
+validate animation type example
+validate on_tick! and on_done! example

@@ -63,6 +63,7 @@ namespace mousetrap
         : _internal(detail::animation_internal_new(target.operator NativeWidget(), duration.as_milliseconds()))
     {
         g_object_ref(_internal);
+        set_timing_function(Animation::TimingFunction::LINEAR);
     }
 
     Animation::Animation(detail::AnimationInternal* internal)
@@ -165,12 +166,12 @@ namespace mousetrap
         return adw_timed_animation_get_reverse(_internal->native);
     }
 
-    Animation::TweeningCurve Animation::get_tweening_mode() const
+    Animation::TimingFunction Animation::get_timing_function() const
     {
-        return (Animation::TweeningCurve) adw_timed_animation_get_easing(_internal->native);
+        return (Animation::TimingFunction) adw_timed_animation_get_easing(_internal->native);
     }
 
-    void Animation::set_tweening_mode(Animation::TweeningCurve mode)
+    void Animation::set_timing_function(Animation::TimingFunction mode)
     {
         adw_timed_animation_set_easing(_internal->native, (AdwEasing) mode);
     }

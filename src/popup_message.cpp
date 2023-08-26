@@ -50,6 +50,11 @@ namespace mousetrap
         adw_toast_overlay_set_child(_internal, widget.operator NativeWidget());
     }
 
+    void PopupMessageOverlay::remove_child()
+    {
+        adw_toast_overlay_set_child(_internal, nullptr);
+    }
+
     void PopupMessageOverlay::show_message(const PopupMessage& message) 
     {
         adw_toast_overlay_add_toast(_internal, ADW_TOAST(message.operator NativeObject()));
@@ -63,6 +68,11 @@ namespace mousetrap
           CTOR_SIGNAL(PopupMessage, button_clicked)
     {
         g_object_ref(_internal);
+
+        #if ADW_MINOR_VERSION >= 4
+            adw_toast_set_use_markup(_internal, true);
+        #endif
+
         if (not button_label.empty())
             set_button_label(button_label);
     }

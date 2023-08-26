@@ -93,6 +93,9 @@ namespace mousetrap
             /// @brief set child
             void set_child(const Widget&);
 
+            /// @brief remove child
+            void remove_child();
+
             /// @brief Present a popup message
             void show_message(const PopupMessage&);
 

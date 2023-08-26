@@ -45,7 +45,7 @@ namespace mousetrap
             };
 
             /// @brief tweening mode
-            enum TweeningCurve
+            enum TimingFunction
             {
                 /// @brief linear tweening
                 LINEAR = ADW_LINEAR,
@@ -169,11 +169,11 @@ namespace mousetrap
 
             /// @brief choose tweening mode, governs the curse of the `value` during animation
             /// @param mode
-            void set_tweening_mode(TweeningCurve);
+            void set_timing_function(TimingFunction);
 
             /// @brief get tweening mode, governs the curser of the `value` during animation
             /// @return mode
-            TweeningCurve get_tweening_mode() const;
+            TimingFunction get_timing_function() const;
 
             /// @brief register a callback called once per frame
             /// @param f function with signature `(Animation&, double, Data_t) -> void`
