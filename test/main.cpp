@@ -5,6 +5,10 @@ using namespace mousetrap;
 #include <thread>
 #include <chrono>
 
+void changed() {
+    std::cout << "called" << std::endl;
+}
+
 int main()
 {
     // declare application
@@ -13,31 +17,13 @@ int main()
     {
         auto window = Window(app);
 
-        static auto action = Action("test.action", app);
-        action.set_function([](Action&){
-           std::cout << "called" << std::endl;
-        });
+        auto overlay = PopupMessageOverlay();
+        overlay.set_child(Separator());
+        overlay.set_size_request({300, 300});
+        auto message = PopupMessage("message");
+        message.set_timeout(microseconds(1));
+        overlay.show_message(message);
 
-        static auto overlay = PopupMessageOverlay();
-        auto button = Button();
-        button.connect_signal_clicked([](Button&){
-
-            static size_t i = 0;
-
-            auto message = PopupMessage(std::to_string(i) + " title", "button_label");
-            message.connect_signal_dismissed([](PopupMessage& message){
-               std::cout << "dismissed " <<  message.get_title() << std::endl;
-            });
-            message.connect_signal_button_clicked([](PopupMessage& message){
-               std::cout << "clicked " << message.get_title() << std::endl;
-            });
-            message.set_button_action(action);
-            std::cout << message.get_button_action_id() << std::endl;
-
-            overlay.show_message(message);
-        });
-
-        overlay.set_child(button);
         window.set_child(overlay);
         window.present();
     });

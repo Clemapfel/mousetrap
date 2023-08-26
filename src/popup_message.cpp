@@ -136,4 +136,27 @@ namespace mousetrap
         auto as_string = std::string(id);
         return std::string(as_string.begin() + 4, as_string.end());
     }
+
+    void PopupMessage::set_is_high_priority(bool b)
+    {
+        if (b)
+            adw_toast_set_priority(_internal, ADW_TOAST_PRIORITY_HIGH);
+        else
+            adw_toast_set_priority(_internal, ADW_TOAST_PRIORITY_NORMAL);
+    }
+
+    bool PopupMessage::get_is_high_priority() const
+    {
+        return adw_toast_get_priority(_internal) == ADW_TOAST_PRIORITY_HIGH;
+    }
+
+    void PopupMessage::set_timeout(Time duration)
+    {
+        adw_toast_set_timeout(_internal, duration.as_microseconds());
+    }
+
+    Time PopupMessage::get_timeout() const
+    {
+        return microseconds(adw_toast_get_timeout(_internal));
+    }
 }

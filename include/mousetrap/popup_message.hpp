@@ -49,6 +49,22 @@ namespace mousetrap
             /// @brief get title string
             std::string get_title() const;
 
+            /// @brief set whether this message has elevated priority
+            /// @param b true if high priority, false otherwise
+            void set_is_high_priority(bool);
+
+            /// @brief get whether this message has elevated priority
+            /// @return true if high priority, false otherwise
+            bool get_is_high_priority() const;
+
+            /// @brief set time limit after which the message will dissapear
+            /// @param duration time, or 0 for inifinite (default)
+            void set_timeout(Time duration);
+
+            /// @brief set time limit after which the message will dissapear
+            /// @return time, or 0 for inifinite (default)
+            Time get_timeout() const;
+
             /// @brief set button label, or "" to hide button
             void set_button_label(const std::string&);
 
@@ -61,6 +77,8 @@ namespace mousetrap
 
             /// @brief get id of action set via `set_button_action`, or "" if no action was set
             std::string get_button_action_id() const;
+
+
 
         private:
             detail::PopupMessageInternal* _internal = nullptr;
