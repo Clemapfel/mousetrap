@@ -15,9 +15,11 @@ namespace mousetrap
     #ifndef DOXYGEN
     namespace detail
     {
+        #if GTK_MINOR_VERSION >= 10
         void open_uri_callback(GObject* source, GAsyncResult* result, void* data);
         void open_file_callback(GObject* source, GAsyncResult* result, void* data);
         void show_in_file_explorer_callback(GObject* source, GAsyncResult* result, void* data);
+        #endif
     }
     #endif
 
@@ -74,6 +76,7 @@ namespace mousetrap
         /// @param file target file to move
         static bool move_to_trash(const FileDescriptor& file);
 
+        #if GTK_MINOR_VERSION >= 10
         /// @brief open a file or folder, this may present the user with an app selection
         /// @param file
         static void open_file(const FileDescriptor& file);
@@ -85,6 +88,7 @@ namespace mousetrap
         /// @brief open an url such as link to a website, or a URI
         /// @param url
         static void open_url(const std::string& url);
+        #endif
     };
 
 }

@@ -162,6 +162,8 @@ namespace mousetrap
         return out;
     }
 
+    #if GTK_MINOR_VERSION >= 10
+
     void detail::open_file_callback(GObject* source, GAsyncResult* result, void* data)
     {
         GError* error_maybe = nullptr;
@@ -262,4 +264,6 @@ namespace mousetrap
             new std::string(url)
         );
     }
+
+    #endif
 }

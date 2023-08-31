@@ -327,7 +327,7 @@ namespace mousetrap
     void FileChooser::set_title(const std::string& title)
     {
         #if USE_NATIVE_FILE_CHOOSER
-            gtk_native_dialog_set_title(_internal->native, title.c_str());
+            gtk_native_dialog_set_title(GTK_NATIVE_DIALOG(_internal->native), title.c_str());
         #else
             gtk_file_dialog_set_title(_internal->native, title.c_str());
         #endif
@@ -336,7 +336,7 @@ namespace mousetrap
     std::string FileChooser::get_title() const
     {
         #if USE_NATIVE_FILE_CHOOSER
-            auto* title = gtk_native_dialog_get_title(_internal->native);
+            auto* title = gtk_native_dialog_get_title(GTK_NATIVE_DIALOG(_internal->native));
             return title == nullptr ? "" : std::string(title);
         #else
             auto* title = gtk_file_dialog_get_title(_internal->native);
@@ -420,13 +420,15 @@ namespace mousetrap
             for (uint64_t i = 0; i < g_list_model_get_n_items(list); ++i)
                 files.emplace_back(G_FILE(g_list_model_get_item(list, i)));
 
+            auto self = FileChooser(internal);
             if (*internal->on_accept)
-                (*internal->on_accept)(files);
+                (*internal->on_accept)(self, files);
         }
         else if (internal->on_cancel != nullptr)
         {
+            auto self = FileChooser(internal);
             if (*internal->on_cancel)
-                (*internal->on_cancel)();
+                (*internal->on_cancel)(self);
         }
     }
     #else

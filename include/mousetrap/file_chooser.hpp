@@ -79,7 +79,7 @@ namespace mousetrap
     class FileChooser;
     namespace detail
     {
-        #define USE_NATIVE_FILE_CHOOSER false //GTK_MINOR_VERSION < 10
+        #define USE_NATIVE_FILE_CHOOSER GTK_MINOR_VERSION < 10
 
         struct _FileChooserInternal
         {
