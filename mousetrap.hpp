@@ -102,3 +102,4 @@
 #include <mousetrap/animation.hpp>
 #include <mousetrap/transform_bin.hpp>
 #include <mousetrap/popup_message.hpp>
+#include <mousetrap/style_manager.hpp>
