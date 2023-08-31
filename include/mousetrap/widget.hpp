@@ -15,7 +15,7 @@
 #include <mousetrap/alignment.hpp>
 #include <mousetrap/image.hpp>
 #include <mousetrap/action.hpp>
-//#include <mousetrap/style_manager.hpp>
+#include <mousetrap/style_manager.hpp>
 
 #include <map>
 #include <string>
