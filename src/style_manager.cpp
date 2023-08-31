@@ -34,6 +34,32 @@ namespace mousetrap
             self->name = new std::string(name);
             return self;
         }
+
+        bool validate_css_name(const std::string& name)
+        {
+            if (name.empty())
+            {
+                log::critical("In StyleManager::validate_css_name: Name `\"\"` is not a valid identifier", MOUSETRAP_DOMAIN);
+                return false;
+            }
+
+            if (name.at(0) == '@')
+            {
+                log::critical("In StyleManager::validate_css_name: Name `" + name + "` is invalid because it starts with `@`", MOUSETRAP_DOMAIN);
+                return false;
+            }
+
+            for (char c : name)
+            {
+                if (not (std::isalpha(c) or std::isdigit(c) or c == '-' or c == '_'))
+                {
+                    log::critical("In StyleManager::validate_css_name: Name `" + name + "` is invalid because contains non-alphabetic characters", MOUSETRAP_DOMAIN);
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
     
     void StyleManager::add_style_class(const StyleClass& style)
@@ -92,12 +118,42 @@ namespace mousetrap
         );
     }
 
+    std::string StyleManager::color_to_css(RGBA color)
+    {
+        std::stringstream expression;
+        expression << "rgba("
+                   << int(std::round(color.r * 255)) << ", "
+                   << int(std::round(color.g * 255)) << ", "
+                   << int(std::round(color.b * 255)) << ", "
+                   << int(std::round(color.a * 255)) << ")"
+        ;
+        return expression.str();
+    }
+
+    std::string StyleManager::color_to_css(HSVA color)
+    {
+        return StyleManager::color_to_css(color.operator RGBA());
+    }
+
+    std::string StyleManager::define_color(const std::string& name, RGBA color)
+    {
+        std::stringstream expression;
+        expression << "@define-color " << name << StyleManager::color_to_css(color) << ";";
+        StyleManager::add_css(expression.str());
+        return "@" + name;
+    }
+
+    std::string StyleManager::define_color(const std::string& name, HSVA color)
+    {
+        return define_color(name, color.operator RGBA());
+    }
+
     // ###
 
     StyleClass::StyleClass(const std::string& name)
         : _internal(detail::style_class_internal_new(name))
     {
-        validate_name(name);
+        detail::validate_css_name(name);
         g_object_ref(_internal);
     }
 
@@ -132,20 +188,6 @@ namespace mousetrap
         return str.str();
     }
 
-    bool StyleClass::validate_name(const std::string& name)
-    {
-        for (char c : name)
-        {
-            if (not (std::isalpha(c) or std::isdigit(c) or c == '-' or c == '_'))
-            {
-                log::critical("In StyleClass::validate_name: Name `" + name + "` is invalid because contains non-alphabetic characters", MOUSETRAP_DOMAIN);
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     std::string StyleClass::get_name() const
     {
         return *_internal->name;
@@ -176,6 +218,11 @@ namespace mousetrap
             return "";
         else
             return target_it->second;
+    }
+
+    std::string StyleClass::get_property(const std::string& property) const
+    {
+        return get_property(STYLE_TARGET_SELF, property);
     }
 }
 

@@ -25,6 +25,8 @@ namespace mousetrap
             std::map<std::string, std::map<std::string, std::string>>* target_to_properties;
         };
         using StyleClassInternal = _StyleClassInternal;
+
+        static bool validate_css_name(const std::string&);
     }
     #endif
 
@@ -48,6 +50,26 @@ namespace mousetrap
             /// @brief run arbitrary css code
             /// @param css
             static void add_css(const std::string&);
+
+            /// @brief define a color, can be used by prefixing the given name with `@`
+            /// @param name
+            /// @param value
+            static std::string define_color(const std::string& name, RGBA color);
+
+            /// @brief define a color, can be used by prefixing the given name with `@`
+            /// @param name
+            /// @param value
+            static std::string define_color(const std::string& name, HSVA color);
+
+            /// @brief convert mousetrap color to css
+            /// @param color RGBA
+            /// @return css string
+            static std::string color_to_css(RGBA);
+
+            /// @brief convert mousetrap color to css
+            /// @param color HSVA
+            /// @return css string
+            static std::string color_to_css(HSVA);
 
         private:
             static inline std::vector<std::string> _named_colors = std::vector<std::string>();
@@ -100,8 +122,13 @@ namespace mousetrap
             /// @return css property value as string, or ""
             std::string get_property(StyleClassTarget target, const std::string& property) const;
 
+            /// @brief get property of target
+            /// @param target
+            /// @param property css property name
+            /// @return css property value as string, or ""
+            std::string get_property(const std::string& property) const;
+
         private:
-            static bool validate_name(const std::string&);
             detail::StyleClassInternal* _internal = nullptr;
     };
 
@@ -115,6 +142,7 @@ namespace mousetrap
     DEFINE_CSS_PROPERTY(FILTER, "filter")
     DEFINE_CSS_PROPERTY(FONT, "font")
     DEFINE_CSS_PROPERTY(FONT_FAMILY, "font-familiy")
+    DEFINE_CSS_PROPERTY(FONT_VARIANT, "font-variant")
     DEFINE_CSS_PROPERTY(FONT_SIZE, "font-size")
     DEFINE_CSS_PROPERTY(FONT_STYLE, "font-style")
     DEFINE_CSS_PROPERTY(FONT_WEIGHT, "font-weight")
@@ -122,21 +150,32 @@ namespace mousetrap
     DEFINE_CSS_PROPERTY(CARET_COLOR, "caret-color")
     DEFINE_CSS_PROPERTY(TEXT_DECORATION, "text-decoration")
     DEFINE_CSS_PROPERTY(TEXT_DECORATION_COLOR, "text-decoration-color")
+    DEFINE_CSS_PROPERTY(TEXT_DECORATION_STYLE, "text-decoration-style")
     DEFINE_CSS_PROPERTY(TEXT_SHADOW, "text-shadow")
     DEFINE_CSS_PROPERTY(ICON_SIZE, "-gtk-icon-size")
     DEFINE_CSS_PROPERTY(TRANSFORM, "transform")
+    DEFINE_CSS_PROPERTY(TRANSFORM_ORIGIN, "transform-origin")
     DEFINE_CSS_PROPERTY(BORDER, "border")
     DEFINE_CSS_PROPERTY(BORDER_STYLE, "border-style")
     DEFINE_CSS_PROPERTY(BORDER_COLOR, "border-color")
     DEFINE_CSS_PROPERTY(BORDER_WIDTH, "border-width")
     DEFINE_CSS_PROPERTY(BORDER_RADIUS, "border-radius")
+    DEFINE_CSS_PROPERTY(BORDER_SPACING, "border-spacing")
     DEFINE_CSS_PROPERTY(OUTLINE, "outline")
     DEFINE_CSS_PROPERTY(OUTLINE_STYLE, "outline-style")
     DEFINE_CSS_PROPERTY(OUTLINE_COLOR, "outline-color")
     DEFINE_CSS_PROPERTY(OUTLINE_WIDTH, "outline-width")
     DEFINE_CSS_PROPERTY(BOX_SHADOW, "box-shadow")
     DEFINE_CSS_PROPERTY(BACKGROUND_CLIP, "background-clip")
+    DEFINE_CSS_PROPERTY(BACKGROUND_ORIGIN, "background-origin")
+    DEFINE_CSS_PROPERTY(BACKGROUND_SIZE, "background-size")
+    DEFINE_CSS_PROPERTY(BACKGROUND_POSITION, "background-position")
+    DEFINE_CSS_PROPERTY(BACKGROUND_REPEAT, "background-repeat")
     DEFINE_CSS_PROPERTY(TRANSITION, "transition")
+    DEFINE_CSS_PROPERTY(TRANSITION_PROPERTY, "transition-property")
+    DEFINE_CSS_PROPERTY(TRANSITION_DURATION, "transition-duration")
+    DEFINE_CSS_PROPERTY(TRANSITION_TIMING_FUNCTION, "transition-timing-function")
+    DEFINE_CSS_PROPERTY(TRANSITION_DELAY, "transition-delay")
     DEFINE_CSS_PROPERTY(ANIMATION, "animation")
     DEFINE_CSS_PROPERTY(ANIMATION_NAME, "animation-name")
     DEFINE_CSS_PROPERTY(ANIMATION_DURATION, "animation-duration")
@@ -194,6 +233,7 @@ namespace mousetrap
     DEFINE_PRE_MADE_STYLE_CLASS(BACKGROUND, "background");
     DEFINE_PRE_MADE_STYLE_CLASS(VIEW, "view");
 
+    // STYLE TARGETS
 
     #define DEFINE_STYLE_CLASS_TARGET(NAME, value) constexpr const char* STYLE_TARGET_##NAME = value;
     DEFINE_STYLE_CLASS_TARGET(SELF, "")
@@ -244,7 +284,6 @@ namespace mousetrap
 
     DEFINE_STYLE_CLASS_TARGET(ENTRY, "entry");
     DEFINE_STYLE_CLASS_TARGET(ENTRY_TEXT, "entry>text");    // letters of entries text
-    DEFINE_STYLE_CLASS_TARGET(ENTRY_TEXT_SELECTION, "entry>text>selection");    // selection indicator when selecting letters using cursor
 
     // Expander
 
@@ -258,7 +297,7 @@ namespace mousetrap
     // FlowBox
 
     DEFINE_STYLE_CLASS_TARGET(FLOW_BOX, "flowbox");
-    DEFINE_STYLE_CLASS_TARGET(FLOW_BOX_CHILD, "flowbox>flowboxchild");  // any child
+    DEFINE_STYLE_CLASS_TARGET(FLOW_BOX_CHILD, "flowbox>flowboxchild,flowboxchild");  // any child
 
     // Frame
 
@@ -286,7 +325,6 @@ namespace mousetrap
     // Label
 
     DEFINE_STYLE_CLASS_TARGET(LABEL, "label");
-    DEFINE_STYLE_CLASS_TARGET(LABEL_SELECTION, "label>selection"); // selection indicator area when `set_is_selectable` is set to `true`
 
     // LevelBar
 
@@ -342,6 +380,14 @@ namespace mousetrap
     DEFINE_STYLE_CLASS_TARGET(POPOVER_MENU, "popover.menu>contents");
     DEFINE_STYLE_CLASS_TARGET(POPOVER_MENU_ARROW, "popover.menu>arrow");
 
+    // PopupMessageOverlay
+
+    DEFINE_STYLE_CLASS_TARGET(POPUP_MESSAGE_OVERLAY, "toastoverlay");
+    DEFINE_STYLE_CLASS_TARGET(POPUP_MESSAGE_OVERLAY_POPUP_MESSAGE, "toastoverlay>toast")
+    DEFINE_STYLE_CLASS_TARGET(POPUP_MESSAGE_OVERLAY_POPUP_MESSAGE_CONTENT, "toastoverlay>toast>widget")
+    DEFINE_STYLE_CLASS_TARGET(POPUP_MESSAGE_OVERLAY_POPUP_MESSAGE_ACTION_BUTTON, "toastoverlay>toast>button")
+    DEFINE_STYLE_CLASS_TARGET(POPUP_MESSAGE_OVERLAY_POPUP_MESSAGE_CLOSE_BUTTON, "toastoverlay>toast>button.circular.float")
+
     // ProgressBar
 
     DEFINE_STYLE_CLASS_TARGET(PROGRESS_BAR, "progressbar>trough>progress");
@@ -379,11 +425,10 @@ namespace mousetrap
 
     // SpinButton
 
-    DEFINE_STYLE_CLASS_TARGET(SPINBUTTON, "spinbutton");
-    DEFINE_STYLE_CLASS_TARGET(SPINBUTTON_TEXT, "spinbutton>text");
-    DEFINE_STYLE_CLASS_TARGET(SPINBUTTON_TEXT_SELECTION, "spinbutton>text>selection");
-    DEFINE_STYLE_CLASS_TARGET(SPINBUTTON_BUTTON_INCREASE, "spinbutton>button.up");
-    DEFINE_STYLE_CLASS_TARGET(SPINBUTTON_BUTTON_DECREASE, "spinbutton>button.down");
+    DEFINE_STYLE_CLASS_TARGET(SPIN_BUTTON, "spinbutton");
+    DEFINE_STYLE_CLASS_TARGET(SPIN_BUTTON_TEXT, "spinbutton>text");
+    DEFINE_STYLE_CLASS_TARGET(SPIN_BUTTON_BUTTON_INCREASE, "spinbutton>button.up");
+    DEFINE_STYLE_CLASS_TARGET(SPIN_BUTTON_BUTTON_DECREASE, "spinbutton>button.down");
 
     // Spinner
 
@@ -410,9 +455,8 @@ namespace mousetrap
 
     // TextView
 
-    DEFINE_STYLE_CLASS_TARGET(TEXTVIEW, "textview");
-    DEFINE_STYLE_CLASS_TARGET(TEXTVIEW_TEXT, "textview>text");
-    DEFINE_STYLE_CLASS_TARGET(TEXTVIEW_TEXT_SELECTION, "textview>text>selection");
+    DEFINE_STYLE_CLASS_TARGET(TEXT_VIEW, "textview");
+    DEFINE_STYLE_CLASS_TARGET(TEXT_VIEW_TEXT, "textview>text");
     /// \bug textview subnodes don't apply css correctly
 
     // TransformBin
@@ -430,10 +474,10 @@ namespace mousetrap
     DEFINE_STYLE_CLASS_TARGET(VIEWPORT, "scrolledwindow");
     DEFINE_STYLE_CLASS_TARGET(VIEWPORT_HORIZONTAL_SCROLLBAR, "scrolledwindow>scrollbar.horizontal");
     DEFINE_STYLE_CLASS_TARGET(VIEWPORT_HORIZONTAL_SCROLLBAR_TROUGH, "scrolledwindow>scrollbar.horizontal>range>trough");
-    DEFINE_STYLE_CLASS_TARGET(VIEWPORT_HORIZONTAL_SCOLLBAR_SLIDER, "scrolledwindow>scrollbar.horizontal>range>trough>slider");
+    DEFINE_STYLE_CLASS_TARGET(VIEWPORT_HORIZONTAL_SCROLLBAR_SLIDER, "scrolledwindow>scrollbar.horizontal>range>trough>slider");
     DEFINE_STYLE_CLASS_TARGET(VIEWPORT_VERTICAL_SCROLLBAR, "scrolledwindow>scrollbar.vertical");
     DEFINE_STYLE_CLASS_TARGET(VIEWPORT_VERTICAL_SCROLLBAR_TROUGH, "scrolledwindow>scrollbar.vertical>range>trough");
-    DEFINE_STYLE_CLASS_TARGET(VIEWPORT_VERTICAL_SCOLLBAR_SLIDER, "scrolledwindow>scrollbar.vertical>range>trough>slider");
+    DEFINE_STYLE_CLASS_TARGET(VIEWPORT_VERTICAL_SCROLLBAR_SLIDER, "scrolledwindow>scrollbar.vertical>range>trough>slider");
 
     // Window
 
@@ -442,4 +486,8 @@ namespace mousetrap
     // Widget
 
     DEFINE_STYLE_CLASS_TARGET(WIDGET, "widget");
+
+    // General
+    DEFINE_STYLE_CLASS_TARGET(TEXT_ENTRY, "text");
+    DEFINE_STYLE_CLASS_TARGET(TEXT_SELECTION, "selection");
 }
