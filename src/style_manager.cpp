@@ -67,7 +67,12 @@ namespace mousetrap
         auto it = _style_classes.find(style.get_name());
         auto* internal = detail::MOUSETRAP_STYLE_CLASS_INTERNAL(style.operator NativeObject());
         auto serialized = style.serialize();
-        gtk_css_provider_load_from_data(internal->provider, serialized.data(), serialized.size());
+
+        #if GTK_MINOR_VERSION >= 12
+            gtk_css_provider_load_from_string(internal->provider, serialized.c_str());
+        #else
+            gtk_css_provider_load_from_data(internal->provider, serialized.data(), serialized.size());
+        #endif
 
         if (it != _style_classes.end())
             remove_style_class(style);
