@@ -11,6 +11,8 @@ void changed() {
 
 int main()
 {
+    std::ios_base::Init();
+
     // declare application
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
