@@ -19,7 +19,7 @@ namespace mousetrap
           CTOR_SIGNAL(Button, map),
           CTOR_SIGNAL(Button, unmap)
     {
-        gtk_widget_class_set_activate_signal_from_name(GTK_WIDGET_GET_CLASS(Widget::operator NativeWidget()), "clicked");
+        //gtk_widget_class_set_activate_signal_from_name(GTK_WIDGET_GET_CLASS(Widget::operator NativeWidget()), "clicked");
         _internal = GTK_BUTTON(Widget::operator NativeWidget());
         g_object_ref(_internal);
     }

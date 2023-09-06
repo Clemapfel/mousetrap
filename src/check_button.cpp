@@ -20,7 +20,7 @@ namespace mousetrap
           CTOR_SIGNAL(CheckButton, map),
           CTOR_SIGNAL(CheckButton, unmap)
     {
-        gtk_widget_class_set_activate_signal_from_name(GTK_WIDGET_GET_CLASS(Widget::operator NativeWidget()), "toggled");
+        //gtk_widget_class_set_activate_signal_from_name(GTK_WIDGET_GET_CLASS(Widget::operator NativeWidget()), "toggled");
         _internal = GTK_CHECK_BUTTON(operator NativeWidget());
         g_object_ref_sink(_internal);
     }

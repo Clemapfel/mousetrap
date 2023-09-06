@@ -75,7 +75,6 @@ namespace mousetrap
     void FileMonitor::cancel()
     {
         g_file_monitor_cancel(_internal->native);
-        g_object_unref(_internal->native);
     }
 
     bool FileMonitor::is_cancelled() const
