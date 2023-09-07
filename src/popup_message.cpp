@@ -47,6 +47,10 @@ namespace mousetrap
 
     void PopupMessageOverlay::set_child(const Widget& widget) 
     {
+        auto* ptr = &widget;
+        WARN_IF_SELF_INSERTION(Overlay::set_child, this, ptr);
+        WARN_IF_PARENT_EXISTS(Overlay::set_child, widget);
+
         adw_toast_overlay_set_child(_internal, widget.operator NativeWidget());
     }
 
