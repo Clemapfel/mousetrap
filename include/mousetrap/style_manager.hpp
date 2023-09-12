@@ -141,7 +141,7 @@ namespace mousetrap
     DEFINE_CSS_PROPERTY(OPACITY, "opacity")
     DEFINE_CSS_PROPERTY(FILTER, "filter")
     DEFINE_CSS_PROPERTY(FONT, "font")
-    DEFINE_CSS_PROPERTY(FONT_FAMILY, "font-familiy")
+    DEFINE_CSS_PROPERTY(FONT_FAMILY, "font-family")
     DEFINE_CSS_PROPERTY(FONT_VARIANT, "font-variant")
     DEFINE_CSS_PROPERTY(FONT_SIZE, "font-size")
     DEFINE_CSS_PROPERTY(FONT_STYLE, "font-style")

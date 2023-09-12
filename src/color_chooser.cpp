@@ -93,7 +93,6 @@ namespace mousetrap
 
     void ColorChooser::on_color_selected_callback(GObject* self, GAsyncResult* result, void* data)
     {
-        std::cout << "cb called" << std::endl;
         GError* error_maybe = nullptr;
         auto* result_rgba = gtk_color_dialog_choose_rgba_finish(GTK_COLOR_DIALOG(self), result, &error_maybe);
 

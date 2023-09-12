@@ -140,7 +140,6 @@ namespace mousetrap
             \
             void disconnect_signal_##snake_case() \
             { \
-                std::cout << G_IS_OBJECT(_internal->instance) << std::endl; \
                 T((typename detail::InternalMapping<T>::value*) _internal->instance).disconnect_signal(signal_id); \
             } \
     };

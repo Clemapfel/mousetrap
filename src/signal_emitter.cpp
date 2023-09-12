@@ -105,7 +105,6 @@ namespace mousetrap
         if (it == _internal->signal_handlers->end())
             return;
 
-        std::cout << it->second.id << std::endl;
         g_signal_handler_disconnect(operator NativeObject(), it->second.id);
     }
 
