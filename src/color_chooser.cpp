@@ -15,10 +15,11 @@ namespace mousetrap::detail
     static void color_chooser_internal_finalize(GObject* object)
     {
         auto* self = MOUSETRAP_COLOR_CHOOSER_INTERNAL(object);
+        G_OBJECT_CLASS(color_chooser_internal_parent_class)->finalize(object);
+
         delete self->on_accept;
         delete self->on_cancel;
         gdk_rgba_free(self->last_color);
-        G_OBJECT_CLASS(color_chooser_internal_parent_class)->finalize(object);
     }
 
     DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(ColorChooserInternal,color_chooser_internal, COLOR_CHOOSER_INTERNAL)
@@ -69,11 +70,11 @@ namespace mousetrap
 
     void ColorChooser::present()
     {
-        gtk_color_dialog_choose_rgba(
+       gtk_color_dialog_choose_rgba(
             _internal->native,
             GTK_WINDOW(gtk_window_new()),
             _internal->last_color,
-            (GCancellable*) nullptr,
+            g_cancellable_new(),
             on_color_selected_callback,
             _internal
         );

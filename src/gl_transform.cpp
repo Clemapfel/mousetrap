@@ -11,7 +11,7 @@
 namespace mousetrap
 {
     GLTransform::GLTransform()
-    : transform(1)
+        : transform(1)
     {}
 
     Vector2f GLTransform::apply_to(Vector2f point)

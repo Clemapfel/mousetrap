@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <mousetrap/texture.hpp>
+#include <mousetrap/render_area.hpp>
 
 namespace mousetrap
 {
@@ -19,6 +20,10 @@ namespace mousetrap
         {
             auto* self = MOUSETRAP_TEXTURE_INTERNAL(object);
             G_OBJECT_CLASS(texture_internal_parent_class)->finalize(object);
+
+            if (detail::is_opengl_disabled())
+                return;
+
             delete self->size;
 
             if (self->native_handle != 0)
@@ -33,6 +38,9 @@ namespace mousetrap
             auto* self = (TextureInternal*) g_object_new(texture_internal_get_type(), nullptr);
             texture_internal_init(self);
 
+            if (detail::is_opengl_disabled())
+                return self;
+
             self->native_handle = 0;
             self->wrap_mode = TextureWrapMode::REPEAT;
             self->scale_mode = TextureScaleMode::NEAREST;
@@ -44,6 +52,12 @@ namespace mousetrap
     
     Texture::Texture()
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         _internal = detail::texture_internal_new();
         g_object_ref(_internal);
         glGenTextures(1, &_internal->native_handle);
@@ -51,6 +65,12 @@ namespace mousetrap
 
     Texture::Texture(GLNativeHandle handle)
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         _internal = detail::texture_internal_new();
         g_object_ref(_internal);
 
@@ -68,21 +88,36 @@ namespace mousetrap
 
     Texture::Texture(detail::TextureInternal* internal)
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         _internal = g_object_ref(internal);
     }
 
     Texture::~Texture()
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         g_object_unref(_internal);
     }
 
     NativeObject Texture::get_internal() const
     {
+        if (detail::is_opengl_disabled())
+            return nullptr;
+
         return G_OBJECT(_internal);
     }
 
     void Texture::create(uint64_t width, uint64_t height)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glActiveTexture(GL_TEXTURE0 + 0);
         glBindTexture(GL_TEXTURE_2D, _internal->native_handle);
 
@@ -101,16 +136,26 @@ namespace mousetrap
         *_internal->size = {width, height};
     }
 
-    void Texture::create_from_file(const std::string& path)
+    bool Texture::create_from_file(const std::string& path)
     {
+        if (detail::is_opengl_disabled())
+            return false;
+
         auto image = Image();
-        image.create_from_file(path);
+        auto out = image.create_from_file(path);
 
         create_from_image(image);
+        return out;
     }
 
     Texture::Texture(Texture&& other) noexcept
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         _internal->native_handle = other._internal->native_handle;
         _internal->size = other._internal->size;
         _internal->wrap_mode = other._internal->wrap_mode;
@@ -121,6 +166,12 @@ namespace mousetrap
 
     Texture& Texture::operator=(Texture&& other) noexcept
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return *this;
+        }
+
         _internal->native_handle = other._internal->native_handle;
         _internal->size = other._internal->size;
         _internal->wrap_mode = other._internal->wrap_mode;
@@ -133,6 +184,9 @@ namespace mousetrap
 
     void Texture::create_from_image(const Image& image)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glActiveTexture(GL_TEXTURE0 + 0);
         glBindTexture(GL_TEXTURE_2D, _internal->native_handle);
 
@@ -153,6 +207,9 @@ namespace mousetrap
 
     void Texture::bind(uint64_t texture_unit) const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glActiveTexture(GL_TEXTURE0 + texture_unit);
         glBindTexture(GL_TEXTURE_2D, _internal->native_handle);
 
@@ -182,46 +239,73 @@ namespace mousetrap
 
     void Texture::bind() const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         bind(0);
     }
 
     void Texture::unbind() const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     void Texture::set_wrap_mode(TextureWrapMode wrap_mode)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->wrap_mode = wrap_mode;
     }
 
     TextureWrapMode Texture::get_wrap_mode()
     {
+        if (detail::is_opengl_disabled())
+            return TextureWrapMode::ZERO;
+
         return _internal->wrap_mode;
     }
 
     Vector2i Texture::get_size() const
     {
+        if (detail::is_opengl_disabled())
+            return {0, 0};
+
         return *_internal->size;
     }
 
     GLNativeHandle Texture::get_native_handle() const
     {
+        if (detail::is_opengl_disabled())
+            return 0;
+
         return _internal->native_handle;
     }
 
     void Texture::set_scale_mode(TextureScaleMode mode)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->scale_mode = mode;
     }
 
     TextureScaleMode Texture::get_scale_mode()
     {
+        if (detail::is_opengl_disabled())
+            return TextureScaleMode::NEAREST;
+
         return _internal->scale_mode;
     }
 
     Image Texture::download() const
     {
+        if (detail::is_opengl_disabled())
+            return Image();
+
         auto out = Image();
         out.create(_internal->size->x, _internal->size->y);
 
@@ -234,6 +318,9 @@ namespace mousetrap
 
     Texture::operator GObject*() const
     {
+        if (detail::is_opengl_disabled())
+            return nullptr;
+
         return G_OBJECT(_internal);
     }
 }

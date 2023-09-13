@@ -43,8 +43,7 @@ namespace mousetrap
     #endif
 
     /// @brief bundles a shape in a render task that can be invoked more conveniently during the render cycle
-    class RenderTask : public detail::notify_if_gl_uninitialized,
-        public SignalEmitter
+    class RenderTask : public SignalEmitter
     {
         public:
             /// @brief construct the render task

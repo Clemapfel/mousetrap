@@ -10,23 +10,6 @@
 #include <mousetrap/log.hpp>
 #include <iostream>
 
-namespace mousetrap::detail
-{
-    void mark_gl_initialized()
-    {
-        if (not mousetrap::GL_INITIALIZED)
-            mousetrap::GL_INITIALIZED = true;
-    }
-
-    void throw_if_gl_is_uninitialized()
-    {
-        if (mousetrap::GL_INITIALIZED)
-            return;
-
-        log::fatal(notify_if_gl_uninitialized::message, MOUSETRAP_DOMAIN);
-    }
-}
-
 namespace mousetrap
 {
     Vector2f to_gl_position(Vector2f in)

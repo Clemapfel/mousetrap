@@ -27,6 +27,9 @@ namespace mousetrap
 
         /// @brief free the global OpenGL context
         void shutdown_opengl();
+
+        /// @brief get whether gl context is disabled
+        bool is_opengl_disabled();
     }
 
     #ifndef DOXYGEN
@@ -79,7 +82,6 @@ namespace mousetrap
     /// \widget_signals{RenderArea}
     class RenderArea :
         public detail::notify_if_gtk_uninitialized,
-        public detail::notify_if_gl_uninitialized,
         public Widget,
         HAS_SIGNAL(RenderArea, render),
         HAS_SIGNAL(RenderArea, resize),

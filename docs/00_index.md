@@ -2,7 +2,7 @@
 
 Welcome to the document of mousetrap, the stand-alone C++ component of the [mousetrap.jl GUI engine](https://github.com/Clemapfel/mousetrap.jl). If you are here because you want to use mousetrap in Julia, you are in the wrong place. Visit the [mousetrap.jl documentation](https://clemens-cords.com/mousetrap) instead.
 
-This documentation is a stub, [most of the documentation efforts were focused on the Julia component](https://clemens-cords.com/mousetrap). This also includes testing, which is preformed by having the Julia wrapper call downstream C++ functions from Julia, as opposed to doing the testing C++-side.
+This documentation is a stub, [most of the documentation efforts were focused on the Julia component](https://clemens-cords.com/mousetrap). This also includes testing, which is performed by having the Julia wrapper call downstream C++ functions from Julia, as opposed to doing the testing C++-side.
 
 ---
 
@@ -14,9 +14,9 @@ See [here](https://github.com/Clemapfel/mousetrap#dependencies) for how to insta
 
 ## Credits
 
-Both this C++ component, as well as the C++-Julia interface, and the Julia component of mousetrap were created by [C. Cords](https://clemens-cords.com).
+Both this C++ component, the C++-Julia interface, and the Julia component of mousetrap were created by [C. Cords](https://clemens-cords.com).
 
-C++ documentation was generated using [doxygen](https://www.doxygen.nl/), styled with a custom [doxygen-awesome theme](https://jothepro.github.io/doxygen-awesome-css/). 
+C++ documentation was generated using [doxygen](https://www.doxygen.nl/), styled with a custom [doxygen-awesome theme](https://jothepro.github.io/doxygen-awesome-css/).
 
 ---
 
@@ -24,7 +24,7 @@ C++ documentation was generated using [doxygen](https://www.doxygen.nl/), styled
 
 Most likely, you're here because you want to contribute to `mousetrap.jl` by modifying its back-end, so this page will focus on how to use the C++ component **after already having read the entire mousetrap.jl manual**.
 
-Syntax is directly translatable as one would expect:
+Syntax is directly translatable, as one would expect:
 
 ```julia
 # in Julia:
@@ -44,7 +44,9 @@ button.connect_signal_clicked([](Button& self){
 });
 ```
 
-With the exception that some signals have additional unused arguments or slightly different signatures. Furthermore, C++ mousetrap does not have Julia mousetraps `main`, in C++ we need to connect to the apps signal and `run` it manually.
+With the exception that some signals have additional unused arguments or slightly different signatures. Furthermore, C++ mousetrap does not have Julia mousetraps `main`, in C++ we need to connect to the apps' signal and `run` it manually.
+
+
 
 ## Examples
 

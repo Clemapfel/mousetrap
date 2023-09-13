@@ -98,3 +98,8 @@
 #include <mousetrap/window.hpp>
 #include <mousetrap/texture_wrap_mode.hpp>
 #include <mousetrap/key_codes.hpp>
+#include <mousetrap/flow_box.hpp>
+#include <mousetrap/animation.hpp>
+#include <mousetrap/transform_bin.hpp>
+#include <mousetrap/popup_message.hpp>
+#include <mousetrap/style_manager.hpp>

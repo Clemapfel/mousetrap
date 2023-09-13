@@ -34,8 +34,7 @@ namespace mousetrap
     #endif
 
     /// @brief texture object, image living GPU-side, immutable
-    class Texture : public detail::notify_if_gl_uninitialized, 
-        public TextureObject, public SignalEmitter
+    class Texture : public TextureObject, public SignalEmitter
     {
         public:
             /// @brief construct as texture of size 0x0
@@ -88,7 +87,8 @@ namespace mousetrap
 
             /// @brief create texture from an image on disk
             /// @param path absolute path
-            void create_from_file(const std::string& path);
+            /// @return true if operation was succesful, false otherwise
+            bool create_from_file(const std::string& path);
 
             /// @brief create from image
             /// @param image

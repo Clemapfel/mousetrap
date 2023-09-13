@@ -4,3 +4,5 @@
 /docs/Doxyfile
 /docs/out/
 /example/build
+include/mousetrap/gl_common.hpp
+/.idea

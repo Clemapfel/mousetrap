@@ -11,6 +11,7 @@
 #include <mousetrap/action.hpp>
 #include <mousetrap/menu_model.hpp>
 #include <mousetrap/theme.hpp>
+#include <mousetrap/style_manager.hpp>
 
 #include <string>
 #include <map>
@@ -47,7 +48,7 @@ namespace mousetrap
     /// \signals
     /// \signal_activate{Application}
     /// \signal_shutdown{Application}
-    class Application : public SignalEmitter,
+    class Application : public SignalEmitter, public StyleManager,
         HAS_SIGNAL(Application, activate),
         HAS_SIGNAL(Application, shutdown)
     {

@@ -5,6 +5,7 @@
 #include <mousetrap/gl_common.hpp>
 #if MOUSETRAP_ENABLE_OPENGL_COMPONENT
 
+#include <mousetrap/render_area.hpp>
 #include <mousetrap/msaa_render_texture.hpp>
 #include <mousetrap/log.hpp>
 
@@ -16,6 +17,9 @@ namespace mousetrap
     {
         static void multisampled_render_texture_internal_free(MultisampledRenderTextureInternal* internal)
         {
+            if (detail::is_opengl_disabled())
+                return;
+
             if (internal->buffer != 0)
                 glDeleteFramebuffers(1, &internal->buffer);
 
@@ -52,27 +56,51 @@ namespace mousetrap
     
     MultisampledRenderTexture::MultisampledRenderTexture(uint64_t n_samples)
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         _internal = detail::multisampled_render_texture_internal_new();
         _internal->n_samples = n_samples;
     }
 
     MultisampledRenderTexture::MultisampledRenderTexture(detail::MultisampledRenderTextureInternal* internal)
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         _internal = g_object_ref(_internal);
     }
 
     MultisampledRenderTexture::~MultisampledRenderTexture()
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         g_object_unref(_internal);
     }
 
     NativeObject MultisampledRenderTexture::get_internal() const
     {
+        if (detail::is_opengl_disabled())
+            return nullptr;
+
         return G_OBJECT(_internal);
     }
 
     void MultisampledRenderTexture::create(uint64_t width, uint64_t height)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         free();
 
         _internal->width = width;
@@ -107,6 +135,9 @@ namespace mousetrap
 
     void MultisampledRenderTexture::bind_as_render_target() const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         if (_internal->width == 0 or _internal->height == 0)
         {
             log::critical("In MultisampledRenderTexture::bind_as_rendertarget: Framebuffes uninitialized, call `MultisampledRenderTexture::create` first", MOUSETRAP_DOMAIN);
@@ -118,6 +149,9 @@ namespace mousetrap
 
     void MultisampledRenderTexture::unbind_as_render_target() const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glBindFramebuffer(GL_READ_FRAMEBUFFER, _internal->buffer);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _internal->intermediate_buffer);
         glBlitFramebuffer(0, 0, _internal->width, _internal->height, 0, 0, _internal->width, _internal->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -126,22 +160,34 @@ namespace mousetrap
 
     void MultisampledRenderTexture::bind() const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, _internal->screen_texture);
     }
 
     void MultisampledRenderTexture::unbind() const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     MultisampledRenderTexture::operator GObject*() const
     {
+        if (detail::is_opengl_disabled())
+            return nullptr;
+
         return G_OBJECT(_internal);
     }
 
     void MultisampledRenderTexture::free()
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         if (_internal->buffer != 0)
             glDeleteFramebuffers(1, &_internal->buffer);
 

@@ -7,6 +7,8 @@
 
 namespace mousetrap::detail
 {
+    #if ADW_MINOR_VERSION >= 2
+
     DECLARE_NEW_TYPE(AlertDialogInternal, alert_dialog_internal, ALERT_DIALOG_INTERNAL)
     DEFINE_NEW_TYPE_TRIVIAL_INIT(AlertDialogInternal,alert_dialog_internal, ALERT_DIALOG_INTERNAL)
 
@@ -180,4 +182,6 @@ namespace mousetrap
         if (internal->on_selection != nullptr and *(internal->on_selection))
             (*internal->on_selection)(temp, id);
     }
+
+    #endif // ADW_MINOR_VERSION >= 2
 }

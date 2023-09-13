@@ -6,6 +6,7 @@
 #include <mousetrap/gl_common.hpp>
 #if MOUSETRAP_ENABLE_OPENGL_COMPONENT
 
+#include <mousetrap/render_area.hpp>
 #include <mousetrap/render_task.hpp>
 #include <mousetrap/log.hpp>
 #include <iostream>
@@ -20,6 +21,9 @@ namespace mousetrap
         {
             auto* self = MOUSETRAP_RENDER_TASK_INTERNAL(object);
             G_OBJECT_CLASS(render_task_internal_parent_class)->finalize(object);
+
+            if (detail::is_opengl_disabled())
+                return;
 
             delete self->_floats;
             delete self->_ints;
@@ -40,6 +44,9 @@ namespace mousetrap
         {
             auto* self = (RenderTaskInternal*) g_object_new(render_task_internal_get_type(), nullptr);
             render_task_internal_init(self);
+
+            if (detail::is_opengl_disabled())
+                return self;
 
             self->_shape = (detail::ShapeInternal*) shape.operator GObject*();
 
@@ -71,22 +78,37 @@ namespace mousetrap
 
     RenderTask::RenderTask(const Shape& shape, const Shader* shader, const GLTransform& transform, BlendMode blend_mode)
     {
+        if (detail::is_opengl_disabled())
+        {
+            _internal = nullptr;
+            return;
+        }
+
         _internal = detail::render_task_internal_new(shape, shader, transform, blend_mode);
         g_object_ref(_internal);
     }
 
     RenderTask::RenderTask(detail::RenderTaskInternal* internal)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal = g_object_ref(internal);
     }
 
     RenderTask::~RenderTask()
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         g_object_unref(_internal);
     }
 
     void RenderTask::render() const
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         auto shader = Shader(_internal->_shader);
 
         glUseProgram(shader.get_program_id());
@@ -123,51 +145,81 @@ namespace mousetrap
 
     void RenderTask::set_uniform_float(const std::string& uniform_name, float value)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->_floats->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_int(const std::string& uniform_name, int value)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->_ints->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_uint(const std::string& uniform_name, glm::uint value)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->_uints->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_vec2(const std::string& uniform_name, Vector2f value)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->_vec2s->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_vec3(const std::string& uniform_name, Vector3f value)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->_vec3s->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_vec4(const std::string& uniform_name, Vector4f value)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->_vec4s->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_transform(const std::string& uniform_name, GLTransform value)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         _internal->_transforms->insert({uniform_name, value});
     }
 
     void RenderTask::set_uniform_rgba(const std::string& uniform_name, RGBA value)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         set_uniform_vec4(uniform_name, value.operator glm::vec4());
     }
 
     void RenderTask::set_uniform_hsva(const std::string& uniform_name, HSVA value)
     {
+        if (detail::is_opengl_disabled())
+            return;
+
         set_uniform_vec4(uniform_name, value.operator glm::vec4());
     }
 
     float RenderTask::get_uniform_float(const std::string& uniform_name) const
     {
+        if (detail::is_opengl_disabled())
+            return 0;
+
         auto it = _internal->_floats->find(uniform_name);
         if (it == _internal->_floats->end())
         {
@@ -179,6 +231,9 @@ namespace mousetrap
 
     glm::int32_t RenderTask::get_uniform_int(const std::string& uniform_name) const
     {
+        if (detail::is_opengl_disabled())
+            return 0;
+
         auto it = _internal->_ints->find(uniform_name);
         if (it == _internal->_ints->end())
         {
@@ -190,6 +245,9 @@ namespace mousetrap
 
     glm::uint RenderTask::get_uniform_uint(const std::string& uniform_name) const
     {
+        if (detail::is_opengl_disabled())
+            return 0;
+
         auto it = _internal->_uints->find(uniform_name);
         if (it == _internal->_uints->end())
         {
@@ -201,6 +259,9 @@ namespace mousetrap
 
     Vector2f RenderTask::get_uniform_vec2(const std::string& uniform_name) const
     {
+        if (detail::is_opengl_disabled())
+            return {0, 0};
+
         auto it = _internal->_vec2s->find(uniform_name);
         if (it == _internal->_vec2s->end())
         {
@@ -212,6 +273,9 @@ namespace mousetrap
 
     Vector3f RenderTask::get_uniform_vec3(const std::string& uniform_name) const
     {
+        if (detail::is_opengl_disabled())
+            return {0, 0, 0};
+
         auto it = _internal->_vec3s->find(uniform_name);
         if (it == _internal->_vec3s->end())
         {
@@ -223,6 +287,9 @@ namespace mousetrap
 
     Vector4f RenderTask::get_uniform_vec4(const std::string& uniform_name) const
     {
+        if (detail::is_opengl_disabled())
+            return {0, 0, 0, 0};
+
         auto it = _internal->_vec4s->find(uniform_name);
         if (it == _internal->_vec4s->end())
         {
@@ -234,6 +301,9 @@ namespace mousetrap
 
     RGBA RenderTask::get_uniform_rgba(const std::string& uniform_name) const
     {
+        if (detail::is_opengl_disabled())
+            return RGBA(0, 0, 0, 0);
+
         auto it = _internal->_vec4s->find(uniform_name);
         if (it == _internal->_vec4s->end())
         {
@@ -246,6 +316,9 @@ namespace mousetrap
 
     HSVA RenderTask::get_uniform_hsva(const std::string& uniform_name) const
     {
+        if (detail::is_opengl_disabled())
+            return HSVA(0, 0, 0, 0);
+
         auto it = _internal->_vec4s->find(uniform_name);
         if (it == _internal->_vec4s->end())
         {
@@ -258,6 +331,9 @@ namespace mousetrap
 
     GLTransform RenderTask::get_uniform_transform(const std::string& uniform_name) const
     {
+        if (detail::is_opengl_disabled())
+            return GLTransform();
+
         auto it = _internal->_transforms->find(uniform_name);
         if (it == _internal->_transforms->end())
         {
@@ -269,6 +345,9 @@ namespace mousetrap
 
     RenderTask::operator GObject*() const
     {
+        if (detail::is_opengl_disabled())
+            return nullptr;
+
         return G_OBJECT(_internal);
     }
 }

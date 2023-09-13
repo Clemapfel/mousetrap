@@ -13,7 +13,7 @@
 
 namespace mousetrap
 {
-    //#if GTK_MINOR_VERSION >= 10
+    #if ADW_MINOR_VERSION >= 2
 
     #ifndef DOXYGEN
     class AlertDialog;
@@ -124,8 +124,6 @@ namespace mousetrap
             static void on_response(AdwMessageDialog*, gchar* id, detail::AlertDialogInternal* internal);
     };
 
-    //#endif
-
     template<typename Function_t, typename Data_t>
     void AlertDialog::on_selection(Function_t f_in, Data_t data_in)
     {
@@ -143,4 +141,6 @@ namespace mousetrap
             f(dialog, id);
         });
     }
+
+    #endif // GTK_MINOR_VERSION >= 10
 }

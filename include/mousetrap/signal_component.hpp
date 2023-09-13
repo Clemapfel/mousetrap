@@ -2393,4 +2393,62 @@ namespace mousetrap
     ///
     /// @fn has_signal_activated::has_signal_activated
     /// \signal_ctor
+
+    DECLARE_SIGNAL(Dismissed, dismissed, DISMISSED, "dismissed", void);
+    /// @class has_signal_dismissed
+    /// @brief \signal_dismissed_brief
+    /// @tparam T instance type
+    ///
+    /// @fn void has_signal_dismissed::connect_signal_dismissed(Function_t)
+    /// \signal_connect{(T&) -> void}
+    ///
+    /// @fn void has_signal_dismissed::connect_signal_dismissed(Function_t, Data_t)
+    /// \signal_connect_data{(T&, Data_t) -> void}
+    ///
+    /// @fn void has_signal_dismissed::emit_signal_dismissed()
+    /// \signal_emit_brief
+    ///
+    /// @var has_signal_dismissed::signal_id
+    /// \signal_id{dismissed}
+    ///
+    /// @fn void has_signal_dismissed::set_signal_dismissed_blocked(bool)
+    /// \signal_set_blocked
+    ///
+    /// @fn bool has_signal_dismissed::get_signal_dismissed_blocked() const
+    /// \signal_get_blocked
+    ///
+    /// @fn void has_signal_dismissed::disconnect_signal_dismissed()
+    /// \signal_disconnect
+    ///
+    /// @fn has_signal_dismissed::has_signal_dismissed
+    /// \signal_ctor
+
+    DECLARE_SIGNAL(ButtonClicked, button_clicked, BUTTON_CLICKED, "button-clicked", void);
+    /// @class has_signal_dismissed
+    /// @brief \signal_dismissed_brief
+    /// @tparam T instance type
+    ///
+    /// @fn void has_signal_dismissed::connect_signal_dismissed(Function_t)
+    /// \signal_connect{(T&) -> void}
+    ///
+    /// @fn void has_signal_dismissed::connect_signal_dismissed(Function_t, Data_t)
+    /// \signal_connect_data{(T&, Data_t) -> void}
+    ///
+    /// @fn void has_signal_dismissed::emit_signal_dismissed()
+    /// \signal_emit_brief
+    ///
+    /// @var has_signal_dismissed::signal_id
+    /// \signal_id{dismissed}
+    ///
+    /// @fn void has_signal_dismissed::set_signal_dismissed_blocked(bool)
+    /// \signal_set_blocked
+    ///
+    /// @fn bool has_signal_dismissed::get_signal_dismissed_blocked() const
+    /// \signal_get_blocked
+    ///
+    /// @fn void has_signal_dismissed::disconnect_signal_dismissed()
+    /// \signal_disconnect
+    ///
+    /// @fn has_signal_dismissed::has_signal_dismissed
+    /// \signal_ctor
 }

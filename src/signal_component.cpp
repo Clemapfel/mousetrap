@@ -223,4 +223,7 @@ DEFINE_SIGNAL(Scroll, scroll, SCROLL, "scroll", bool,
       SPLAT(ScrollType scroll_type, bool is_horizontal),
       SPLAT(scroll_type, is_horizontal)
     );
+
+    DEFINE_SIGNAL(Dismissed, dismissed, DISMISSED, "dismissed", void);
+    DEFINE_SIGNAL(ButtonClicked, button_clicked, BUTTON_CLICKED, "dismissed", void);
 }

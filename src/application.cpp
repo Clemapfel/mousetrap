@@ -12,11 +12,6 @@
 
 namespace mousetrap
 {
-    void Application::test()
-    {
-        std::cout << "7" << std::endl;
-    }
-
     namespace detail
     {
         DECLARE_NEW_TYPE(ApplicationInternal, application_internal, APPLICATION_INTERNAL)
@@ -61,7 +56,12 @@ namespace mousetrap
         if (not g_application_id_is_valid(id.c_str()))
             log::critical("In Application::Application: id " + id + " is not a valid application id", MOUSETRAP_DOMAIN);
 
+        #if GLIB_MINOR_VERSION > 74
         int32_t flags = G_APPLICATION_DEFAULT_FLAGS;
+        #else
+        int32_t flags = G_APPLICATION_FLAGS_NONE;
+        #endif
+
         if (allow_multiple_instances)
             flags |= G_APPLICATION_NON_UNIQUE;
 

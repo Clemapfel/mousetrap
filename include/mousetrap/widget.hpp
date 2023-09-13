@@ -15,6 +15,7 @@
 #include <mousetrap/alignment.hpp>
 #include <mousetrap/image.hpp>
 #include <mousetrap/action.hpp>
+#include <mousetrap/style_manager.hpp>
 
 #include <map>
 #include <string>
@@ -329,6 +330,10 @@ namespace mousetrap
             /// @brief Convenience function that automatically adds the action to a shortcut controller of this widget
             /// @param action Action
             void set_listens_for_shortcut_actions(Action&);
+
+            /// @brief apply style class to widget and its children
+            /// @param style class
+            void apply_style_class(const StyleClass&);
 
             /// @brief add css class
             /// @param code

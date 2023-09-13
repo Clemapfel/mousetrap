@@ -24,19 +24,15 @@ namespace mousetrap
 
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(WindowInternal, window_internal, WINDOW_INTERNAL)
 
-        void on_last_window_destroyed(void* self, GtkApplication* app)
-        {
-            g_application_release(G_APPLICATION(app));
-        }
 
-        static WindowInternal* window_internal_new(GtkApplication* app)
+        static WindowInternal* window_internal_new(AdwApplicationWindow* window, GtkApplication* app)
         {
             log::initialize();
 
             auto* self = (WindowInternal*) g_object_new(window_internal_get_type(), nullptr);
             window_internal_init(self);
 
-            self->native = ADW_APPLICATION_WINDOW(adw_application_window_new(app));
+            self->native = ADW_APPLICATION_WINDOW(window);
             self->header_bar = ADW_HEADER_BAR(adw_header_bar_new());
             self->vbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
             self->content_area = ADW_BIN(adw_bin_new());
@@ -57,14 +53,12 @@ namespace mousetrap
             gtk_widget_set_hexpand(GTK_WIDGET(self->content_area), true);
 
             detail::attach_ref_to(G_OBJECT(self->native), self);
-            g_signal_connect(self->native, "destroy", G_CALLBACK(detail::on_last_window_destroyed), app);
-
             return self;
         }
     }
     
     Window::Window(Application& app)
-        : Widget(gtk_application_window_new(app.operator GtkApplication*())),
+        : Widget(adw_application_window_new(app.operator GtkApplication*())),
           CTOR_SIGNAL(Window, close_request),
           CTOR_SIGNAL(Window, activate_default_widget),
           CTOR_SIGNAL(Window, activate_focused_widget),
@@ -76,7 +70,7 @@ namespace mousetrap
           CTOR_SIGNAL(Window, map),
           CTOR_SIGNAL(Window, unmap)
     {
-        _internal = g_object_ref(detail::window_internal_new(app.operator GtkApplication*()));
+        _internal = g_object_ref(detail::window_internal_new(ADW_APPLICATION_WINDOW(Widget::operator NativeWidget()), app.operator GtkApplication*()));
     }
 
     Window::Window(detail::WindowInternal* internal)

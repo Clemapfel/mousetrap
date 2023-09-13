@@ -52,7 +52,7 @@ namespace mousetrap
         {
             GObject parent;
             GFileMonitor* native;
-            std::function<void(FileMonitor&, FileMonitorEvent event, FileDescriptor self, FileDescriptor other)>* f;
+            std::function<void(FileMonitor&, FileMonitorEvent event, const FileDescriptor& self, const FileDescriptor& other)>* f;
         };
         using FileMonitorInternal = _FileMonitorInternal;
         DEFINE_INTERNAL_MAPPING(FileMonitor);
