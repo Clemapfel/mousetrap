@@ -58,9 +58,6 @@ namespace mousetrap
             /// @param application
             Window(Application& application);
 
-            /// @brief construct without application
-            Window();
-
             /// @brief construct from internal
             Window(detail::WindowInternal*);
 
