@@ -1,4 +1,4 @@
-# mousetrap {#mainpage}
+# mousetrap (v0.2.0) {#mainpage}
 
 Welcome to the document of mousetrap, the stand-alone C++ component of the [mousetrap.jl GUI engine](https://github.com/Clemapfel/mousetrap.jl). If you are here because you want to use mousetrap in Julia, you are in the wrong place. Visit the [mousetrap.jl documentation](https://clemens-cords.com/mousetrap) instead.
 

@@ -356,6 +356,7 @@ else()
     )
 endif()
 
+message(WARNING ${Adwaita_LIBRARIES})
 
 ### DOCUMENTATION ###
 
