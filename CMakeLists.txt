@@ -356,8 +356,6 @@ else()
     )
 endif()
 
-message(WARNING ${Adwaita_LIBRARIES})
-
 ### DOCUMENTATION ###
 
 option(MOUSETRAP_BUILD_DOCUMENTATION OFF)
