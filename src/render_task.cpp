@@ -46,10 +46,7 @@ namespace mousetrap
             render_task_internal_init(self);
 
             if (detail::is_opengl_disabled())
-            {
-                log::critical("In render_task_internal_new: Trying to instantiate mousetrap::RenderTask, but the OpenGL component is disabled", MOUSETRAP_DOMAIN);
                 return self;
-            }
 
             self->_shape = (detail::ShapeInternal*) shape.operator GObject*();
 

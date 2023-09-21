@@ -41,7 +41,7 @@ namespace mousetrap
             NativeObject get_internal() const override;
 
             /// @brief expose a GObject
-            operator NativeObject() const override;
+            operator NativeObject() const;
 
             /// @brief set title string
             void set_title(const std::string&);

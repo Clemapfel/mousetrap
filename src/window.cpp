@@ -24,6 +24,7 @@ namespace mousetrap
 
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(WindowInternal, window_internal, WINDOW_INTERNAL)
 
+
         static WindowInternal* window_internal_new(AdwApplicationWindow* window, GtkApplication* app)
         {
             log::initialize();

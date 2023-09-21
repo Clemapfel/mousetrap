@@ -84,54 +84,36 @@ You have most likely attempted to construct a widget outside of the `activate` s
     template<typename T>
     static void attach_pointer_to(GObject* parent, T* attachment)
     {
-        if (not G_IS_OBJECT(parent))
-            return;
-
         g_object_add_toggle_ref(parent, (GToggleNotify) toggle_notify_pointer<T>, attachment);
     }
 
     template<typename T>
     static void detach_pointer_from(GObject* parent, T* attachment)
     {
-        if (not G_IS_OBJECT(parent))
-            return;
-
         g_object_remove_toggle_ref(parent, (GToggleNotify) toggle_notify_pointer<T>, attachment);
     }
 
     template<typename T>
     static void attach_ref_to(GObject* parent, T* attachment)
     {
-        if (not G_IS_OBJECT(parent))
-            return;
-
         g_object_add_toggle_ref(parent, (GToggleNotify) toggle_notify_ref<T>, attachment);
     }
 
     template<typename T>
     static void detach_ref_from(GObject* parent, T* attachment)
     {
-        if (not G_IS_OBJECT(parent))
-            return;
-
         g_object_remove_toggle_ref(parent, (GToggleNotify) toggle_notify_ref<T>, attachment);
     }
 
     template<typename T>
     static void set_data(GObject* object, const std::string& key, T* data)
     {
-        if (not G_IS_OBJECT(object))
-            return;
-
         g_object_set_qdata_full(object, g_quark_from_string(key.c_str()), data, nullptr);
     }
 
     template<typename T>
     static T* get_data(GObject* object, const std::string& key)
     {
-        if (not G_IS_OBJECT(object))
-            return nullptr;
-
         return (T*) g_object_get_qdata(object, g_quark_from_string(key.c_str()));
     }
 

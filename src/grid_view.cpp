@@ -203,7 +203,8 @@ namespace mousetrap
 
     int GridView::find(const Widget& widget) const
     {
-        for (int i = 0; i < g_list_model_get_n_items(G_LIST_MODEL(_internal->list_store)); ++i)
+        int i = 0;
+        for (i; i < g_list_model_get_n_items(G_LIST_MODEL(_internal->list_store)); ++i)
         {
             auto* item = detail::G_GRID_VIEW_ITEM(g_list_model_get_item(G_LIST_MODEL(_internal->list_store), i));
             if (item->widget == widget.operator NativeWidget())
