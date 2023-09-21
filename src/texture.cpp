@@ -39,7 +39,10 @@ namespace mousetrap
             texture_internal_init(self);
 
             if (detail::is_opengl_disabled())
+            {
+                log::critical("In render_area_internal_new: Trying to instantiate mousetrap::RenderArea, but the OpenGL component is disabled", MOUSETRAP_DOMAIN);
                 return self;
+            }
 
             self->native_handle = 0;
             self->wrap_mode = TextureWrapMode::REPEAT;

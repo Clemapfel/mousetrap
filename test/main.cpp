@@ -11,22 +11,39 @@ void changed() {
 
 int main()
 {
-    std::ios_base::Init();
-
-    // declare application
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
     {
         auto window = Window(app);
+        window.set_title("mousetrap");
 
-        auto overlay = PopupMessageOverlay();
-        overlay.set_child(Separator());
-        overlay.set_size_request({300, 300});
-        auto message = PopupMessage("message");
-        message.set_timeout(microseconds(1));
-        overlay.show_message(message);
+        static auto area = RenderArea(AntiAliasingQuality::BEST);
+        static auto shape = Shape::Rectangle({-0.5, 0.5}, {1, 1});
+        shape.set_vertex_color(0, HSVA(0.1, 1, 1, 1));
+        shape.set_vertex_color(1, HSVA(0.3, 1, 1, 1));
+        shape.set_vertex_color(2, HSVA(0.6, 1, 1, 1));
+        shape.set_vertex_color(3, HSVA(0.9, 1, 1, 1));
 
-        window.set_child(overlay);
+        area.add_render_task(RenderTask(shape));
+        auto frame = AspectFrame(1.0);
+        frame.set_child(area);
+        frame.set_size_request({150, 150});
+
+        static auto animation = Animation(area, seconds(3));
+        animation.set_repeat_count(0);
+        animation.on_tick([](Animation&, double value){
+            static auto current = 0;
+            shape.rotate(degrees(-1 * current), shape.get_centroid());
+            shape.rotate(degrees(value * 360), shape.get_centroid());
+            current = value * 360;
+            area.queue_render();
+        });
+
+        area.connect_signal_map([](RenderArea& self){
+           animation.play();
+        });
+
+        window.set_child(frame);
         window.present();
     });
     return app.run();

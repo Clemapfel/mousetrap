@@ -49,7 +49,10 @@ namespace mousetrap
             shader_internal_init(self);
 
             if (detail::is_opengl_disabled())
+            {
+                log::critical("In shader_internal_new: Trying to instantiate mousetrap::Shader, but the OpenGL component is disabled", MOUSETRAP_DOMAIN);
                 return self;
+            }
 
             self->program_id = detail::ShaderInternal::noop_program_id;
             self->fragment_shader_id = detail::ShaderInternal::noop_fragment_shader_id;
