@@ -32,12 +32,11 @@ namespace mousetrap
                     if (gl_disabled == "1" or gl_disabled == "true" or gl_disabled == "TRUE" or gl_disabled == "yes" or gl_disabled == "YES" or gl_disabled == "on" or gl_disabled == "ON")
                     {
                         detail::GL_CONTEXT = nullptr;
-                        log::warning("In initialize_opengl: OpenGL component disabled because `MOUSETRAP_DISABLED_OPENGL_COMPONENT` was set to `" + gl_disabled + "`", MOUSETRAP_DOMAIN);
                         return nullptr;
                     }
-                    else if (not (gl_disabled == "0" or gl_disabled == "false" or gl_disabled == "FALSE" or gl_disabled == "no" or gl_disabled == "NO" or gl_disabled == "ON" or gl_disabled == "OFF"))
+                    else if (not (gl_disabled == "0" or gl_disabled == "false" or gl_disabled == "FALSE" or gl_disabled == "no" or gl_disabled == "NO" or gl_disabled == "off" or gl_disabled == "OFF"))
                     {
-                        log::critical("In initialize_opengl: ignoring value of environment variable `MOUSETRAP_DISABLED_OPENGL_COMPONENT`, because it is malformed. Expected `TRUE` or `FALSE`, got `" + gl_disabled + "`", MOUSETRAP_DOMAIN);
+                        log::critical("In initialize_opengl: ignoring value of environment variable `MOUSETRAP_DISABLE_OPENGL_COMPONENT`, because it is malformed. Expected `TRUE` or `FALSE`, got `" + gl_disabled + "`", MOUSETRAP_DOMAIN);
                     }
                 }
 
@@ -220,6 +219,7 @@ namespace mousetrap
     {
         if (detail::is_opengl_disabled())
         {
+            log::critical("In RenderArea(): trying to instantiate RenderArea, but the OpenGL component is disabled.", MOUSETRAP_DOMAIN);
             _internal = nullptr;
             return;
         }
