@@ -49,7 +49,10 @@ namespace mousetrap
             shape_internal_init(self);
 
             if (detail::is_opengl_disabled())
+            {
+                log::critical("In shape_internal_new: Trying to instantiate mousetrap::Shape, but the OpenGL component is disabled", MOUSETRAP_DOMAIN);
                 return self;
+            }
 
             gdk_gl_context_make_current(detail::GL_CONTEXT);
 

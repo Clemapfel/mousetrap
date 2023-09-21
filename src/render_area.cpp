@@ -24,20 +24,43 @@ namespace mousetrap
                 GLenum glew_error = 0;
 
                 mousetrap::GL_INITIALIZED = true;
-                if (mousetrap::FORCE_GL_DISABLED)
+
+                auto* MOUSETRAP_DISABLE_OPENGL_COMPONENT = std::getenv("MOUSETRAP_DISABLE_OPENGL_COMPONENT");
+                if (MOUSETRAP_DISABLE_OPENGL_COMPONENT != nullptr)
                 {
-                    detail::GL_CONTEXT = nullptr;
-                    log::warning("In initialize_opengl: `FORCE_GL_DISABLED` set to `true`. OpenGL component was disabled.", MOUSETRAP_DOMAIN);
-                    return nullptr;
+                    auto gl_disabled = std::string(MOUSETRAP_DISABLE_OPENGL_COMPONENT);
+                    if (gl_disabled == "1" or gl_disabled == "true" or gl_disabled == "TRUE" or gl_disabled == "yes" or gl_disabled == "YES" or gl_disabled == "on" or gl_disabled == "ON")
+                    {
+                        detail::GL_CONTEXT = nullptr;
+                        log::warning("In initialize_opengl: OpenGL component disabled because `MOUSETRAP_DISABLED_OPENGL_COMPONENT` was set to `" + gl_disabled + "`", MOUSETRAP_DOMAIN);
+                        return nullptr;
+                    }
+                    else if (not (gl_disabled == "0" or gl_disabled == "false" or gl_disabled == "FALSE" or gl_disabled == "no" or gl_disabled == "NO" or gl_disabled == "ON" or gl_disabled == "OFF"))
+                    {
+                        log::critical("In initialize_opengl: ignoring value of environment variable `MOUSETRAP_DISABLED_OPENGL_COMPONENT`, because it is malformed. Expected `TRUE` or `FALSE`, got `" + gl_disabled + "`", MOUSETRAP_DOMAIN);
+                    }
                 }
 
-                detail::GL_CONTEXT = gdk_display_create_gl_context(gdk_display_get_default(), &create_context_error);
+                auto* display = gdk_display_get_default();
+                if (display == nullptr)
+                {
+                    log::warning("In gdk_display_get_default: Unable to access default dispay.", MOUSETRAP_DOMAIN);
+                    goto failed;
+                }
+
+                detail::GL_CONTEXT = gdk_display_create_gl_context(display, &create_context_error);
 
                 if (create_context_error != nullptr)
                 {
                     auto message = create_context_error->message;
                     log::warning(std::string("In gdk_window_create_gl_context:") + (message == nullptr ? "(unknown error)" : message), MOUSETRAP_DOMAIN);
                     g_error_free(create_context_error);
+                    goto failed;
+                }
+
+                if (detail::GL_CONTEXT == nullptr)
+                {
+                    log::warning("In initialize_opengl: Unable to create an OpenGL context.", MOUSETRAP_DOMAIN);
                     goto failed;
                 }
 
@@ -97,7 +120,7 @@ namespace mousetrap
 
         bool is_opengl_disabled()
         {
-            return mousetrap::GL_INITIALIZED == false or detail::GL_CONTEXT == nullptr;
+            return (mousetrap::GL_INITIALIZED == false or detail::GL_CONTEXT == nullptr);
         }
     }
 
@@ -131,7 +154,10 @@ namespace mousetrap
             render_area_internal_init(self);
 
             if (detail::is_opengl_disabled())
+            {
+                log::critical("In render_area_internal_new: Trying to instantiate mousetrap::RenderArea, but the OpenGL component is disabled", MOUSETRAP_DOMAIN);
                 return self;
+            }
 
             self->native = area;
             self->tasks = new std::vector<detail::RenderTaskInternal*>();
@@ -214,7 +240,7 @@ namespace mousetrap
     {}
 
     RenderArea::RenderArea(detail::RenderAreaInternal* internal)
-        : Widget(GTK_WIDGET(internal->native)),
+        : Widget(internal == nullptr ? gtk_gl_area_new() : GTK_WIDGET(internal->native)),
           CTOR_SIGNAL(RenderArea, render),
           CTOR_SIGNAL(RenderArea, resize),
           CTOR_SIGNAL(RenderArea, realize),
