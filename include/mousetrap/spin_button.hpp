@@ -10,7 +10,7 @@
 #include <mousetrap/orientation.hpp>
 
 #ifdef DOXYGEN
-    #include "../../docs/doxygen.inl"
+    #include "../../docs/doxygen.hpp"
 #endif
 
 namespace mousetrap
@@ -197,4 +197,4 @@ namespace mousetrap
     };
 }
 
-#include "inline/spin_button.inl"
+#include "inline/spin_button.hpp"

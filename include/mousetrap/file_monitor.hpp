@@ -11,7 +11,7 @@
 #include <functional>
 
 #ifdef DOXYGEN
-    #include "../../docs/doxygen.inl"
+    #include "../../docs/doxygen.hpp"
 #endif
 
 namespace mousetrap
@@ -113,5 +113,5 @@ namespace mousetrap
     };
 }
 
-#include "inline/file_monitor.inl"
+#include "inline/file_monitor.hpp"
 

@@ -165,4 +165,4 @@ namespace mousetrap
     };
 }
 
-#include "inline/drop_down.inl"
+#include "inline/drop_down.hpp"

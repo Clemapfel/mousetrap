@@ -10,7 +10,7 @@
 #include <mousetrap/file_descriptor.hpp>
 
 #ifdef DOXYGEN
-    #include "../../docs/doxygen.inl"
+    #include "../../docs/doxygen.hpp"
 #endif
 
 namespace mousetrap
@@ -226,4 +226,4 @@ namespace mousetrap
     };
 }
 
-#include "inline/file_chooser.inl"
+#include "inline/file_chooser.hpp"

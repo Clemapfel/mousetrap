@@ -10,7 +10,7 @@
 #include <mousetrap/selection_model.hpp>
 
 #ifdef DOXYGEN
-    #include "../../docs/doxygen.inl"
+    #include "../../docs/doxygen.hpp"
 #endif
 
 namespace mousetrap

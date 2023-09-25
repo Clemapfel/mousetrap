@@ -13,7 +13,7 @@
 #include <mousetrap/relative_position.hpp>
 
 #ifdef DOXYGEN
-    #include "../../docs/doxygen.inl"
+    #include "../../docs/doxygen.hpp"
 #endif
 
 namespace mousetrap
@@ -156,4 +156,4 @@ namespace mousetrap
     };
 }
 
-#include "inline/scale.inl"
+#include "inline/scale.hpp"

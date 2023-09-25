@@ -184,16 +184,16 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/viewport.hpp
     include/mousetrap/widget.hpp
     include/mousetrap/window.hpp
-    include/mousetrap/inline/action.inl
-    include/mousetrap/inline/clipboard.inl
-    include/mousetrap/inline/column_view.inl
-    include/mousetrap/inline/drop_down.inl
-    include/mousetrap/inline/file_chooser.inl
-    include/mousetrap/inline/log.inl
-    include/mousetrap/inline/scale.inl
-    include/mousetrap/inline/signal_emitter.inl
-    include/mousetrap/inline/spin_button.inl
-    include/mousetrap/inline/widget.inl
+    include/mousetrap/inline/action.hpp
+    include/mousetrap/inline/clipboard.hpp
+    include/mousetrap/inline/column_view.hpp
+    include/mousetrap/inline/drop_down.hpp
+    include/mousetrap/inline/file_chooser.hpp
+    include/mousetrap/inline/log.hpp
+    include/mousetrap/inline/scale.hpp
+    include/mousetrap/inline/signal_emitter.hpp
+    include/mousetrap/inline/spin_button.hpp
+    include/mousetrap/inline/widget.hpp
 )
 
 set(MOUSETRAP_SOURCE_FILES

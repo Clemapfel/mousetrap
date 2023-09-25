@@ -10,7 +10,7 @@
 #include <mousetrap/icon.hpp>
 
 #ifdef DOXYGEN
-    #include "../../docs/doxygen.inl"
+    #include "../../docs/doxygen.hpp"
 #endif
 
 namespace mousetrap

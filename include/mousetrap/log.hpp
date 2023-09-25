@@ -130,4 +130,4 @@ namespace mousetrap
     };
 }
 
-#include "inline/log.inl"
+#include "inline/log.hpp"

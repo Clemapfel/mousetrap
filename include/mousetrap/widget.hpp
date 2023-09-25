@@ -22,7 +22,7 @@
 #include <exception>
 
 #ifdef DOXYGEN
-    #include "../../docs/doxygen.inl"
+    #include "../../docs/doxygen.hpp"
 #endif
 
 namespace mousetrap
@@ -386,4 +386,4 @@ namespace mousetrap
     };
 };
 
-#include "inline/widget.inl"
+#include "inline/widget.hpp"

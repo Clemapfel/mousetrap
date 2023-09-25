@@ -239,4 +239,4 @@ namespace mousetrap
     };
 }
 
-#include "inline/column_view.inl"
+#include "inline/column_view.hpp"
