@@ -26,7 +26,7 @@ endif
 
 ### MOUSETRAP ###
 
-subdir('include/mousetrap')
+subdir('include/mousetrap') # configure gl_common.hpp.in
 
 MOUSETRAP_HEADER_FILES = [
     'include/mousetrap/action.hpp',
@@ -118,16 +118,16 @@ MOUSETRAP_HEADER_FILES = [
     'include/mousetrap/viewport.hpp',
     'include/mousetrap/widget.hpp',
     'include/mousetrap/window.hpp',
-    'include/mousetrap/inline/action.inl',
-    'include/mousetrap/inline/clipboard.inl',
-    'include/mousetrap/inline/column_view.inl',
-    'include/mousetrap/inline/drop_down.inl',
-    'include/mousetrap/inline/file_chooser.inl',
-    'include/mousetrap/inline/log.inl',
-    'include/mousetrap/inline/scale.inl',
-    'include/mousetrap/inline/signal_emitter.inl',
-    'include/mousetrap/inline/spin_button.inl',
-    'include/mousetrap/inline/widget.inl',
+    'include/mousetrap/inline/action.hpp',
+    'include/mousetrap/inline/clipboard.hpp',
+    'include/mousetrap/inline/column_view.hpp',
+    'include/mousetrap/inline/drop_down.hpp',
+    'include/mousetrap/inline/file_chooser.hpp',
+    'include/mousetrap/inline/log.hpp',
+    'include/mousetrap/inline/scale.hpp',
+    'include/mousetrap/inline/signal_emitter.hpp',
+    'include/mousetrap/inline/spin_button.hpp',
+    'include/mousetrap/inline/widget.hpp',
     'include/mousetrap/blend_mode.hpp',
     'include/mousetrap/shape.hpp',
     'include/mousetrap/gl_transform.hpp',
@@ -139,7 +139,7 @@ MOUSETRAP_HEADER_FILES = [
     'include/mousetrap/texture_object.hpp',
     'include/mousetrap/shader.hpp',
     'include/mousetrap/texture_scale_mode.hpp',
-    'include/mousetrap/texture_wrap_mode.hpp',
+    'include/mousetrap/texture_wrap_mode.hpp'
 ]
 
 MOUSETRAP_SOURCE_FILES = [
@@ -237,10 +237,10 @@ MOUSETRAP_SOURCE_FILES = [
     'src/render_texture.cpp',
     'src/shader.cpp',
     'src/texture.cpp',
-    'src/shape.cpp',
+    'src/shape.cpp'
 ]
 
-library('mousetrap',
+MOUSETRAP_LIBRARY = library('mousetrap',
     sources: [MOUSETRAP_HEADER_FILES, MOUSETRAP_SOURCE_FILES],
     dependencies: [OPENGL, GLEW, ADWAITA],
     cpp_args: '-DMOUSETRAP_ENABLE_OPENGL_COMPONENT=ON',
@@ -248,4 +248,12 @@ library('mousetrap',
     include_directories: ['include'],
     install: true,
     install_dir: meson.source_root()
+)
+
+MOUSETRAP_TEST = executable('test_main',
+    sources: 'test/main.cpp',
+    dependencies: [OPENGL, GLEW, ADWAITA],
+    include_directories: ['include'],
+    link_with: MOUSETRAP_LIBRARY,
+    install: false
 )
