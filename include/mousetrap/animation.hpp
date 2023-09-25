@@ -108,7 +108,7 @@ namespace mousetrap
             operator NativeObject() const;
 
             /// @brief expose internal
-            NativeObject get_internal();
+            NativeObject get_internal() override;
 
             /// @brief get state
             /// @return state
