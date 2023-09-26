@@ -226,4 +226,4 @@ namespace mousetrap
     };
 }
 
-#include "inline/file_chooser.inl"
+#include "inline/file_chooser.hpp"

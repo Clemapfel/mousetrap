@@ -167,4 +167,4 @@ namespace mousetrap
     };
 }
 
-#include "inline/action.inl"
+#include "inline/action.hpp"

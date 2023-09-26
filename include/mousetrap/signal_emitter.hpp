@@ -91,4 +91,4 @@ namespace mousetrap
     };
 }
 
-#include "inline/signal_emitter.inl"
+#include "inline/signal_emitter.hpp"

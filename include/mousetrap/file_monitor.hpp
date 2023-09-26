@@ -113,5 +113,5 @@ namespace mousetrap
     };
 }
 
-#include "inline/file_monitor.inl"
+#include "inline/file_monitor.hpp"
 

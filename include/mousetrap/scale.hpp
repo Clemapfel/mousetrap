@@ -156,4 +156,4 @@ namespace mousetrap
     };
 }
 
-#include "inline/scale.inl"
+#include "inline/scale.hpp"
