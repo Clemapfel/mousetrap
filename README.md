@@ -78,7 +78,17 @@ cd mousetrap
 mkdir build
 cd build
 cmake .. -DMOUSETRAP_ENABLE_OPENGL_COMPONENT=ON
-make install -j 8
+sudo make install -j 8
+```
+
+If you would like to use meson instead of CMake, do:
+
+```shell
+git clone https://github.com/Clemapfel/mousetrap.git
+cd mousetrap
+meson setup build
+cd build
+sudo meson install
 ```
 
 After which you can include mousetrap in your own `CMakeLists.txt` files likes so:
