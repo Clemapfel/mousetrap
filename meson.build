@@ -3,7 +3,7 @@ project('mousetrap', 'cpp', version: '0.2.1')
 ### DEPENDENCIES ###
 
 OPENGL = dependency(['OpenGL', 'GL', 'opengl32', 'OPENGL32', 'OpenGL32'],
-    required: true
+    required: false
 )
 
 GLEW = dependency(['GLEW', 'glew', 'glew32', 'GLEW32'],
@@ -17,7 +17,7 @@ GTK4 = dependency(['gtk4', 'gtk-4.0'],
 
 ADWAITA = dependency('libadwaita-1',
     required: true,
-    version: '>=1.3'
+    version: '>=1.2'
 )
 
 if not meson.get_compiler('cpp').has_header('glm/glm.hpp')
@@ -62,7 +62,7 @@ MOUSETRAP_HEADER_FILES = [
     'include/mousetrap/frame.hpp',
     'include/mousetrap/frame_clock.hpp',
     'include/mousetrap/geometry.hpp',
-    'include/mousetrap/gl_common.hpp',
+    #'include/mousetrap/gl_common.hpp',
     'include/mousetrap/grid.hpp',
     'include/mousetrap/grid_view.hpp',
     'include/mousetrap/header_bar.hpp',
