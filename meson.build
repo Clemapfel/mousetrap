@@ -265,8 +265,7 @@ MOUSETRAP_LIBRARY = library('mousetrap',
     dependencies: [OPENGL, GLEW, ADWAITA],
     version: '0.3.0',
     include_directories: ['include'],
-    install: true,
-    install_dir: meson.source_root()
+    install: true
 )
 install_headers('mousetrap.hpp')
 install_headers(MOUSETRAP_HEADER_FILES, subdir: 'mousetrap')
