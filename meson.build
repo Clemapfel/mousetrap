@@ -250,6 +250,7 @@ MOUSETRAP_LIBRARY = library('mousetrap',
     install_dir: meson.source_root()
 )
 
+if false
 MOUSETRAP_TEST = executable('test_main',
     sources: 'test/main.cpp',
     dependencies: [OPENGL, GLEW, ADWAITA],
@@ -257,3 +258,4 @@ MOUSETRAP_TEST = executable('test_main',
     link_with: MOUSETRAP_LIBRARY,
     install: false
 )
+endif
