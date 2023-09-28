@@ -1,3 +1,2 @@
 option('MOUSETRAP_BUILD_TESTS', type: 'boolean', value: false)
 option('MOUSETRAP_BUILD_DOCUMENTATION', type : 'boolean', value: false)
-option('someoption', type : 'string', value : 'optval', description : 'An option')
