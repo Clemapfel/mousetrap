@@ -26,7 +26,12 @@ endif
 
 ### MOUSETRAP ###
 
-subdir('include/mousetrap') # configure gl_common.hpp.in
+# configure gl_common.hpp.in, then move it to include/mousetrap
+subdir('include/mousetrap')
+error_maybe = run_command('cp', meson.build_root() + '/include/mousetrap/gl_common.hpp', meson.source_root() + '/include/mousetrap', check: false).stderr().strip()
+if error_maybe != ''
+    error(error_maybe)
+endif
 
 MOUSETRAP_HEADER_FILES = [
     'include/mousetrap/action.hpp',
