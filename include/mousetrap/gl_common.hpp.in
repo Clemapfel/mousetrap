@@ -9,8 +9,13 @@
 
 #if MOUSETRAP_ENABLE_OPENGL_COMPONENT
 
+
 #include <GL/glew.h>
-#include <GL/gl.h>
+#if __APPLE__
+    #include <gl.h> // uses apple .framework
+#else
+    #include <GL/gl.h>
+#endif
 #include <glm/glm.hpp>
 
 #include <mousetrap/vector.hpp>
