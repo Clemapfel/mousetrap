@@ -1,20 +1,29 @@
-project('mousetrap', 'cpp', version: '0.2.1')
+project('mousetrap', 'cpp',
+    version: '0.3.0',
+    default_options : ['cpp_std=c++17']
+)
 add_project_arguments([
     '-Wno-unused-variable',
     '-Wno-unused-function',
     '-Wno-unused-but-set-variable',
-    '-std=c++17'
 ], language: 'cpp')
 
 ### DEPENDENCIES ###
 
-OPENGL = dependency(['OpenGL', 'GL', 'opengl32', 'OPENGL32', 'OpenGL32'],
+OPENGL = dependency(['gl', 'opengl', 'opengl32'],
     required: false
 )
 
-GLEW = dependency(['GLEW', 'glew', 'glew32', 'GLEW32'],
-    required: OPENGL.found()
+GLEW = dependency(['glew', 'glew32'],
+    required: false
 )
+
+if not GLEW.found()
+  GLEW = meson.get_compiler('cpp').find_library(['glew32', 'glew'])
+  if not GLEW.found() and OPENGL.found()
+     error('Missing dependency: glew')
+  endif
+endif
 
 GTK4 = dependency(['gtk4', 'gtk-4.0'],
     required: true,
