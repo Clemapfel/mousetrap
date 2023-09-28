@@ -13,7 +13,7 @@ namespace mousetrap
 
     Angle degrees(float dg)
     {
-        return Angle(dg * (M_PI / 180.f));
+        return Angle(dg * (3.141592 / 180.f));
     }
 
     Angle radians(float rad)
@@ -23,7 +23,7 @@ namespace mousetrap
 
     float Angle::as_degrees() const
     {
-        return _rads * (180.f / M_PI);
+        return _rads * (180.f / 3.141592);
     }
 
     float Angle::as_radians() const

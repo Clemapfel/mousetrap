@@ -616,7 +616,7 @@ namespace mousetrap
 
         for (float angle = 0; angle < 360; angle += step)
         {
-            auto as_radians = angle * M_PI / 180.f;
+            auto as_radians = angle * 3.141592 / 180.f;
             _internal->vertices->emplace_back(
                 center.x + cos(as_radians) * x_radius,
                 center.y + sin(as_radians) * y_radius,
@@ -654,7 +654,7 @@ namespace mousetrap
 
         for (float angle = 0; angle < 360; angle += step)
         {
-            auto as_radians = angle * M_PI / 180.f;
+            auto as_radians = angle * 3.141592 / 180.f;
             _internal->vertices->emplace_back(
                 center.x + cos(as_radians) * x_radius,
                 center.y + sin(as_radians) * y_radius,
