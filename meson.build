@@ -1,4 +1,8 @@
 project('mousetrap', 'cpp', version: '0.2.1')
+add_project_argument([
+    '-Wno-unused-variable',
+    '-Wno-unused-function'
+], language: 'cpp')
 
 ### DEPENDENCIES ###
 
@@ -248,7 +252,6 @@ MOUSETRAP_SOURCE_FILES = [
 MOUSETRAP_LIBRARY = library('mousetrap',
     sources: [MOUSETRAP_HEADER_FILES, MOUSETRAP_SOURCE_FILES],
     dependencies: [OPENGL, GLEW, ADWAITA],
-    cpp_args: '-Wno-unused-variable -Wno-unused-function',
     version: '0.3.0',
     include_directories: ['include'],
     install: true
