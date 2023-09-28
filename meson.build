@@ -1,7 +1,8 @@
 project('mousetrap', 'cpp', version: '0.2.1')
-add_project_argument([
+add_project_arguments([
     '-Wno-unused-variable',
-    '-Wno-unused-function'
+    '-Wno-unused-function',
+    '-Wno-unused-but-set-variable'
 ], language: 'cpp')
 
 ### DEPENDENCIES ###
