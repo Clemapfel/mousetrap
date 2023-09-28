@@ -2,15 +2,15 @@ project('mousetrap', 'cpp', version: '0.2.1')
 
 ### DEPENDENCIES ###
 
-OPENGL = dependency('OpenGL',
+OPENGL = dependency(['OpenGL', 'GL', 'opengl32', 'OPENGL32', 'OpenGL32'],
     required: true
 )
 
-GLEW = dependency('GLEW',
+GLEW = dependency(['GLEW', 'glew', 'glew32', 'GLEW32'],
     required: true
 )
 
-GTK4 = dependency('gtk4',
+GTK4 = dependency(['gtk4', 'gtk-4.0'],
     required: true,
     version: '>=4.8'
 )
