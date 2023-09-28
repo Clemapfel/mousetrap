@@ -13,7 +13,7 @@ OPENGL = dependency(['OpenGL', 'GL', 'opengl32', 'OPENGL32', 'OpenGL32'],
 )
 
 GLEW = dependency(['GLEW', 'glew', 'glew32', 'GLEW32'],
-    required: true
+    required: OPENGL.found()
 )
 
 GTK4 = dependency(['gtk4', 'gtk-4.0'],
