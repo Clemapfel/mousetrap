@@ -3,7 +3,7 @@ project('mousetrap', 'cpp', version: '0.2.1')
 ### DEPENDENCIES ###
 
 OPENGL = dependency(['OpenGL', 'GL', 'opengl32', 'OPENGL32', 'OpenGL32'],
-    required: true
+    required: false
 )
 
 GLEW = dependency(['GLEW', 'glew', 'glew32', 'GLEW32'],
@@ -17,7 +17,7 @@ GTK4 = dependency(['gtk4', 'gtk-4.0'],
 
 ADWAITA = dependency('libadwaita-1',
     required: true,
-    version: '>=1.3'
+    version: '>=1.2'
 )
 
 if not meson.get_compiler('cpp').has_header('glm/glm.hpp')
@@ -26,7 +26,12 @@ endif
 
 ### MOUSETRAP ###
 
-subdir('include/mousetrap') # configure gl_common.hpp.in
+# configure gl_common.hpp.in, then move it to include/mousetrap
+subdir('include/mousetrap')
+error_maybe = run_command('cp', meson.build_root() + '/include/mousetrap/gl_common.hpp', meson.source_root() + '/include/mousetrap', check: false).stderr().strip()
+if error_maybe != ''
+    error(error_maybe)
+endif
 
 MOUSETRAP_HEADER_FILES = [
     'include/mousetrap/action.hpp',
@@ -243,17 +248,24 @@ MOUSETRAP_SOURCE_FILES = [
 MOUSETRAP_LIBRARY = library('mousetrap',
     sources: [MOUSETRAP_HEADER_FILES, MOUSETRAP_SOURCE_FILES],
     dependencies: [OPENGL, GLEW, ADWAITA],
-    cpp_args: '-DMOUSETRAP_ENABLE_OPENGL_COMPONENT=ON',
-    version: '0.2.0',
+    cpp_args: '-Wno-unused-variable -Wno-unused-function',
+    version: '0.3.0',
     include_directories: ['include'],
-    install: true,
-    install_dir: meson.source_root()
+    install: true
 )
 
-MOUSETRAP_TEST = executable('test_main',
-    sources: 'test/main.cpp',
-    dependencies: [OPENGL, GLEW, ADWAITA],
-    include_directories: ['include'],
-    link_with: MOUSETRAP_LIBRARY,
-    install: false
-)
+if get_option('MOUSETRAP_BUILD_TESTS')
+    MOUSETRAP_TEST = executable('test_main',
+        sources: 'test/main.cpp',
+        dependencies: [OPENGL, GLEW, ADWAITA],
+        include_directories: ['include'],
+        link_with: MOUSETRAP_LIBRARY,
+        install: false
+    )
+endif
+
+if get_option('MOUSETRAP_BUILD_DOCUMENTATION')
+    message('Building Docs...')
+    run_command('doxygen', 'docs', check: true)
+    message('Done.')
+endif
