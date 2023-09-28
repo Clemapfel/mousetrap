@@ -25,7 +25,6 @@ namespace mousetrap
 {
     /// @brief whether OpenGL has been succesfully initialized yet
     inline bool GL_INITIALIZED = false;
-    inline bool FORCE_GL_DISABLED = false;
 
     /// @brief convert relative widget space pos to OpenGL coordinates
     /// @param pos position in 2d space
