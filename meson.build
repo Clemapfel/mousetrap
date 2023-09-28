@@ -1,8 +1,4 @@
 project('mousetrap', 'cpp', version: '0.2.1')
-add_global_arguments([
-    '-Wno-unused-variable',
-    '-Wno-unused-function'
-], language: cpp)
 
 ### DEPENDENCIES ###
 
@@ -252,25 +248,24 @@ MOUSETRAP_SOURCE_FILES = [
 MOUSETRAP_LIBRARY = library('mousetrap',
     sources: [MOUSETRAP_HEADER_FILES, MOUSETRAP_SOURCE_FILES],
     dependencies: [OPENGL, GLEW, ADWAITA],
-    cpp_args: '-DMOUSETRAP_ENABLE_OPENGL_COMPONENT=ON',
-    version: '0.2.0',
+    cpp_args: '-Wno-unused-variable -Wno-unused-function',
+    version: '0.3.0',
     include_directories: ['include'],
-    install: true,
-    install_dir: meson.source_root()
+    install: true
 )
 
 if get_option('MOUSETRAP_BUILD_TESTS')
-MOUSETRAP_TEST = executable('test_main',
-    sources: 'test/main.cpp',
-    dependencies: [OPENGL, GLEW, ADWAITA],
-    include_directories: ['include'],
-    link_with: MOUSETRAP_LIBRARY,
-    install: false
-)
+    MOUSETRAP_TEST = executable('test_main',
+        sources: 'test/main.cpp',
+        dependencies: [OPENGL, GLEW, ADWAITA],
+        include_directories: ['include'],
+        link_with: MOUSETRAP_LIBRARY,
+        install: false
+    )
 endif
 
 if get_option('MOUSETRAP_BUILD_DOCUMENTATION')
-message('Building Docs...')
-run_command('doxygen', 'docs', check: true)
-message('Done.')
+    message('Building Docs...')
+    run_command('doxygen', 'docs', check: true)
+    message('Done.')
 endif
