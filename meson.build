@@ -62,7 +62,7 @@ MOUSETRAP_HEADER_FILES = [
     'include/mousetrap/frame.hpp',
     'include/mousetrap/frame_clock.hpp',
     'include/mousetrap/geometry.hpp',
-    #'include/mousetrap/gl_common.hpp',
+    'include/mousetrap/gl_common.hpp',
     'include/mousetrap/grid.hpp',
     'include/mousetrap/grid_view.hpp',
     'include/mousetrap/header_bar.hpp',
