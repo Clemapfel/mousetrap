@@ -19,9 +19,9 @@ GLEW = dependency(['glew', 'glew32'],
 )
 
 if not GLEW.found()
-    GLEW = meson.get_compiler('cpp').find_library('glew')
+    GLEW = meson.get_compiler('cpp').find_library('glew', required: false)
     if not GLEW.found()
-        GLEW = meson.get_compiler('cpp').find_library('glew32')
+        GLEW = meson.get_compiler('cpp').find_library('glew32', required: false)
         if not GLEW.found() and OPENGL.found()
             error('Missing dependency: glew')
         endif
