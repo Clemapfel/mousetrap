@@ -46,7 +46,7 @@ cmake_minimum_required(VERSION 3.18)
 ### PROJECT ###
 
 project(mousetrap
-    VERSION 0.2.1
+    VERSION 0.3.0
     LANGUAGES CXX
 )
 
@@ -95,22 +95,25 @@ endif()
 ### MOUSETRAP ##
 
 set(MOUSETRAP_HEADER_FILES
-    include/mousetrap/action.hpp
     include/mousetrap/action_bar.hpp
+    include/mousetrap/action.hpp
     include/mousetrap/adjustment.hpp
     include/mousetrap/alert_dialog.hpp
     include/mousetrap/alignment.hpp
     include/mousetrap/angle.hpp
+    include/mousetrap/animation.hpp
     include/mousetrap/application.hpp
     include/mousetrap/aspect_frame.hpp
+    include/mousetrap/blend_mode.hpp
     include/mousetrap/box.hpp
     include/mousetrap/button.hpp
     include/mousetrap/center_box.hpp
     include/mousetrap/check_button.hpp
+    include/mousetrap/clamp_frame.hpp
     include/mousetrap/click_event_controller.hpp
     include/mousetrap/clipboard.hpp
-    include/mousetrap/color.hpp
     include/mousetrap/color_chooser.hpp
+    include/mousetrap/color.hpp
     include/mousetrap/column_view.hpp
     include/mousetrap/cursor_type.hpp
     include/mousetrap/drag_event_controller.hpp
@@ -125,16 +128,18 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/fixed.hpp
     include/mousetrap/flow_box.hpp
     include/mousetrap/focus_event_controller.hpp
-    include/mousetrap/frame.hpp
     include/mousetrap/frame_clock.hpp
+    include/mousetrap/frame.hpp
     include/mousetrap/geometry.hpp
     include/mousetrap/gl_common.hpp
+    include/mousetrap/gl_transform.hpp
     include/mousetrap/grid.hpp
     include/mousetrap/grid_view.hpp
+    include/mousetrap/gtk_common.hpp
     include/mousetrap/header_bar.hpp
     include/mousetrap/icon.hpp
-    include/mousetrap/image.hpp
     include/mousetrap/image_display.hpp
+    include/mousetrap/image.hpp
     include/mousetrap/justify_mode.hpp
     include/mousetrap/key_codes.hpp
     include/mousetrap/key_event_controller.hpp
@@ -147,24 +152,31 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/menu_bar.hpp
     include/mousetrap/menu_model.hpp
     include/mousetrap/motion_event_controller.hpp
+    include/mousetrap/msaa_render_texture.hpp
     include/mousetrap/notebook.hpp
     include/mousetrap/orientation.hpp
     include/mousetrap/overlay.hpp
-    include/mousetrap/pan_event_controller.hpp
     include/mousetrap/paned.hpp
+    include/mousetrap/pan_event_controller.hpp
     include/mousetrap/pinch_zoom_event_controller.hpp
-    include/mousetrap/popover.hpp
     include/mousetrap/popover_button.hpp
+    include/mousetrap/popover.hpp
+    include/mousetrap/popover_menu.hpp
     include/mousetrap/popup_message.hpp
     include/mousetrap/progress_bar.hpp
     include/mousetrap/relative_position.hpp
+    include/mousetrap/render_area.hpp
+    include/mousetrap/render_task.hpp
+    include/mousetrap/render_texture.hpp
     include/mousetrap/revealer.hpp
     include/mousetrap/rotate_event_controller.hpp
     include/mousetrap/scale.hpp
-    include/mousetrap/scroll_event_controller.hpp
     include/mousetrap/scrollbar.hpp
+    include/mousetrap/scroll_event_controller.hpp
     include/mousetrap/selection_model.hpp
     include/mousetrap/separator.hpp
+    include/mousetrap/shader.hpp
+    include/mousetrap/shape.hpp
     include/mousetrap/shortcut_event_controller.hpp
     include/mousetrap/signal_component.hpp
     include/mousetrap/signal_emitter.hpp
@@ -175,10 +187,15 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/stylus_event_controller.hpp
     include/mousetrap/swipe_event_controller.hpp
     include/mousetrap/switch.hpp
+    include/mousetrap/texture.hpp
+    include/mousetrap/texture_object.hpp
+    include/mousetrap/texture_scale_mode.hpp
+    include/mousetrap/texture_wrap_mode.hpp
     include/mousetrap/text_view.hpp
     include/mousetrap/theme.hpp
     include/mousetrap/time.hpp
     include/mousetrap/toggle_button.hpp
+    include/mousetrap/transform_bin.hpp
     include/mousetrap/transition_type.hpp
     include/mousetrap/vector.hpp
     include/mousetrap/viewport.hpp
@@ -189,6 +206,7 @@ set(MOUSETRAP_HEADER_FILES
     include/mousetrap/inline/column_view.hpp
     include/mousetrap/inline/drop_down.hpp
     include/mousetrap/inline/file_chooser.hpp
+    include/mousetrap/inline/file_monitor.hpp
     include/mousetrap/inline/log.hpp
     include/mousetrap/inline/scale.hpp
     include/mousetrap/inline/signal_emitter.hpp
@@ -197,14 +215,15 @@ set(MOUSETRAP_HEADER_FILES
 )
 
 set(MOUSETRAP_SOURCE_FILES
-    src/action.cpp
     src/action_bar.cpp
+    src/action.cpp
     src/adjustment.cpp
     src/alert_dialog.cpp
     src/angle.cpp
     src/animation.cpp
     src/application.cpp
     src/aspect_frame.cpp
+    src/blend_mode.cpp
     src/box.cpp
     src/button.cpp
     src/center_box.cpp
@@ -212,8 +231,8 @@ set(MOUSETRAP_SOURCE_FILES
     src/clamp_frame.cpp
     src/click_event_controller.cpp
     src/clipboard.cpp
-    src/color.cpp
     src/color_chooser.cpp
+    src/color.cpp
     src/column_view.cpp
     src/drag_event_controller.cpp
     src/drop_down.cpp
@@ -221,16 +240,17 @@ set(MOUSETRAP_SOURCE_FILES
     src/event_controller.cpp
     src/expander.cpp
     src/file_chooser.cpp
-    src/file_chooser.cpp
     src/file_descriptor.cpp
     src/file_monitor.cpp
     src/file_system.cpp
     src/fixed.cpp
     src/flow_box.cpp
     src/focus_event_controller.cpp
-    src/frame.cpp
     src/frame_clock.cpp
+    src/frame.cpp
     src/geometry.cpp
+    src/gl_common.cpp
+    src/gl_transform.cpp
     src/grid.cpp
     src/grid_view.cpp
     src/gtk_common.cpp
@@ -248,23 +268,29 @@ set(MOUSETRAP_SOURCE_FILES
     src/menu_bar.cpp
     src/menu_model.cpp
     src/motion_event_controller.cpp
+    src/msaa_render_texture.cpp
     src/notebook.cpp
     src/overlay.cpp
-    src/pan_event_controller.cpp
     src/paned.cpp
+    src/pan_event_controller.cpp
     src/pinch_zoom_event_controller.cpp
-    src/popover.cpp
     src/popover_button.cpp
+    src/popover.cpp
     src/popover_menu.cpp
     src/popup_message.cpp
     src/progress_bar.cpp
+    src/render_area.cpp
+    src/render_task.cpp
+    src/render_texture.cpp
     src/revealer.cpp
     src/rotate_event_controller.cpp
     src/scale.cpp
-    src/scroll_event_controller.cpp
     src/scrollbar.cpp
+    src/scroll_event_controller.cpp
     src/selection_model.cpp
     src/separator.cpp
+    src/shader.cpp
+    src/shape.cpp
     src/shortcut_event_controller.cpp
     src/signal_component.cpp
     src/signal_emitter.cpp
@@ -275,6 +301,7 @@ set(MOUSETRAP_SOURCE_FILES
     src/stylus_event_controller.cpp
     src/swipe_event_controller.cpp
     src/switch.cpp
+    src/texture.cpp
     src/text_view.cpp
     src/time.cpp
     src/toggle_button.cpp
