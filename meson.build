@@ -19,10 +19,13 @@ GLEW = dependency(['glew', 'glew32'],
 )
 
 if not GLEW.found()
-  GLEW = meson.get_compiler('cpp').find_library(['glew32', 'glew'])
-  if not GLEW.found() and OPENGL.found()
-     error('Missing dependency: glew')
-  endif
+    GLEW = meson.get_compiler('cpp').find_library('glew')
+    if not GLEW.found()
+        GLEW = meson.get_compiler('cpp').find_library('glew32')
+        if not GLEW.found() and OPENGL.found()
+            error('Missing dependency: glew')
+        endif
+    endif
 endif
 
 GTK4 = dependency(['gtk4', 'gtk-4.0'],
