@@ -286,8 +286,8 @@ pkgconfig.generate(
     name: 'libmousetrap',
     filebase: 'mousetrap',
     description: 'GTK4-based GUI library, backend of Mousetrap.jl',
-    url: 'https://github.com/clemapfel/mousetrap',
-    requires: [OPENGL.name(), GLEW.name(), GTK4.name(), ADWAITA.name()]
+    url: 'https://github.com/clemapfel/mousetrap'#,
+    #requires: [OPENGL.name(), GLEW.name(), GTK4.name(), ADWAITA.name()]
 )
 
 if get_option('MOUSETRAP_BUILD_TESTS')
