@@ -293,7 +293,7 @@ pkgconfig.generate(
 if get_option('MOUSETRAP_BUILD_TESTS')
     MOUSETRAP_TEST = executable('test_main',
         sources: 'test/main.cpp',
-        dependencies: [OPENGL, GLEW, GTK4, ADWAITA],
+        dependencies: [OPENGL.name(), GLEW.name(), GTK4.name(), ADWAITA.name()],
         include_directories: ['include'],
         link_with: MOUSETRAP_LIBRARY,
         install: false
