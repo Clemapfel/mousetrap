@@ -271,12 +271,22 @@ MOUSETRAP_SOURCE_FILES = [
 MOUSETRAP_LIBRARY = library('mousetrap',
     sources: [MOUSETRAP_HEADER_FILES, MOUSETRAP_SOURCE_FILES],
     dependencies: [OPENGL, GLEW, ADWAITA],
-    version: '0.3.0',
+    version: meson.project_version(),
     include_directories: ['include'],
     install: true
 )
 install_headers('mousetrap.hpp')
 install_subdir('include/mousetrap', install_dir: 'include')
+
+pkgconfig = import('pkgconfig')
+pkgconfig.generate(
+    libraries: MOUSETRAP_LIBRARY,
+    subdirs: ['.', 'include/mousetrap'],
+    version: meson.project_version(),
+    name: 'libmousetrap',
+    filebase: 'mousetrap',
+    description: 'https://github.com/clemapfel/mousetrap'
+)
 
 if get_option('MOUSETRAP_BUILD_TESTS')
     MOUSETRAP_TEST = executable('test_main',
