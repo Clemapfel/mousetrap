@@ -287,13 +287,13 @@ pkgconfig.generate(
     filebase: 'mousetrap',
     description: 'GTK4-based GUI library, backend of Mousetrap.jl',
     url: 'https://github.com/clemapfel/mousetrap',
-    requires: [OPENGL, GLEW, GTK4, ADWAITA]
+    requires: [OPENGL.name(), GLEW.name(), GTK4.name(), ADWAITA.name()]
 )
 
 if get_option('MOUSETRAP_BUILD_TESTS')
     MOUSETRAP_TEST = executable('test_main',
         sources: 'test/main.cpp',
-        dependencies: [OPENGL.name(), GLEW.name(), GTK4.name(), ADWAITA.name()],
+        dependencies: [OPENGL, GLEW, GTK4, ADWAITA],
         include_directories: ['include'],
         link_with: MOUSETRAP_LIBRARY,
         install: false
