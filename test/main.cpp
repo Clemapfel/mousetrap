@@ -18,7 +18,7 @@ int main()
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
     {
-        auto window = Window(app);
+        static auto window = Window(app);
         window.set_title("mousetrap");
 
         static auto area = RenderArea(AntiAliasingQuality::BEST);
@@ -49,6 +49,16 @@ int main()
 
         window.set_child(frame);
         window.present();
+
+        std::cout << window.get_scale_factor() << std::endl;
+
+        static auto other_window = Window(app);
+        auto button = Button();
+        button.connect_signal_clicked([](Button& button){
+            std::cout << window.get_is_closed() << std::endl;
+        });
+        other_window.set_child(button);
+        other_window.present();
     });
     return app.run();
 }

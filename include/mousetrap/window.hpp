@@ -174,6 +174,10 @@ namespace mousetrap
             /// @brief free all internal references
             void destroy();
 
+            /// @brief get whether the window was closed
+            /// @return false if the window is currently shown, true otherwise
+            bool get_is_closed() const;
+
         private:
             detail::WindowInternal* _internal = nullptr;
     };

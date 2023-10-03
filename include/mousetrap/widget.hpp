@@ -346,6 +346,11 @@ namespace mousetrap
             /// @return classes
             std::vector<std::string> get_css_classes() const;
 
+            /// @brief get scale factor
+            /// @return float
+            /// @see https://docs.gtk.org/gtk4/method.Widget.get_scale_factor.html
+            float get_scale_factor() const;
+
         protected:
             /// @brief ctor protected. Only inheriting classes should call this
             /// @param widget GtkWidget instance

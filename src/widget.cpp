@@ -567,6 +567,11 @@ namespace mousetrap
         g_strfreev(list);
         return out;
     }
+
+    float Widget::get_scale_factor() const
+    {
+        return gtk_widget_get_scale_factor(operator NativeWidget());
+    }
 }
 
 namespace mousetrap::detail

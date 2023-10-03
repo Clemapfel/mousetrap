@@ -251,4 +251,14 @@ namespace mousetrap
     {
         gtk_window_destroy(GTK_WINDOW(_internal->native));
     }
+
+    bool Window::get_is_closed() const
+    {
+        auto* toplevels = gtk_window_get_toplevels();
+        for (size_t i = 0; i < g_list_model_get_n_items(toplevels); ++i)
+            if (g_list_model_get_item(toplevels, i) == _internal->native)
+                return false;
+
+        return true;
+    }
 }
