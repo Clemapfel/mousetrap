@@ -50,8 +50,6 @@ int main()
         window.set_child(frame);
         window.present();
 
-        std::cout << window.get_scale_factor() << std::endl;
-
         static auto other_window = Window(app);
         auto button = Button();
         button.connect_signal_clicked([](Button& button){
