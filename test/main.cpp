@@ -41,16 +41,7 @@ int main()
         });
 
         window.set_child(frame);
-
-        static auto other_window = Window(app);
-        auto button = Button();
-        button.connect_signal_clicked([](Button& button){
-            std::cout << window.get_is_closed() << std::endl;
-            window.present();
-        });
-        window.set_hide_on_close(true);
-        other_window.set_child(button);
-        other_window.present();
+        window.present();
     });
     return app.run();
 }
