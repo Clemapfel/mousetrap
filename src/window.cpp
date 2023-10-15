@@ -269,7 +269,7 @@ namespace mousetrap
     bool Window::get_is_closed() const
     {
         if (G_IS_OBJECT(_internal))
-            return _internal->is_shown;
+            return not _internal->is_shown;
         else
             return true;
     }
