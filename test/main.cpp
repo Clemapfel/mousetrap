@@ -2,16 +2,9 @@
 
 using namespace mousetrap;
 
-#include <mousetrap.hpp>
-
-using namespace mousetrap;
-
 #include <thread>
 #include <chrono>
 
-void changed() {
-    std::cout << "called" << std::endl;
-}
 
 int main()
 {
@@ -48,12 +41,12 @@ int main()
         });
 
         window.set_child(frame);
-        window.present();
 
         static auto other_window = Window(app);
         auto button = Button();
         button.connect_signal_clicked([](Button& button){
             std::cout << window.get_is_closed() << std::endl;
+            window.present();
         });
         other_window.set_child(button);
         other_window.present();

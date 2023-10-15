@@ -24,6 +24,16 @@ namespace mousetrap
 
         DEFINE_NEW_TYPE_TRIVIAL_CLASS_INIT(WindowInternal, window_internal, WINDOW_INTERNAL)
 
+        static void window_internal_mark_shown(void*, void* internal)
+        {
+            MOUSETRAP_WINDOW_INTERNAL(internal)->is_shown = true;
+        }
+
+        static void window_internal_mark_hidden(void*, void* internal)
+        {
+            MOUSETRAP_WINDOW_INTERNAL(internal)->is_shown = false;
+        }
+
         static WindowInternal* window_internal_new(AdwApplicationWindow* window, GtkApplication* app)
         {
             log::initialize();
@@ -36,6 +46,7 @@ namespace mousetrap
             self->vbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
             self->content_area = ADW_BIN(adw_bin_new());
             self->header_bar_area = ADW_BIN(adw_bin_new());
+            self->is_shown = false;
 
             gtk_application_add_window(app, GTK_WINDOW(self->native));
             gtk_window_set_focus_visible(GTK_WINDOW(self->native), true);
@@ -50,6 +61,8 @@ namespace mousetrap
             gtk_widget_set_valign(GTK_WIDGET(self->header_bar_area), GTK_ALIGN_START);
             gtk_widget_set_vexpand(GTK_WIDGET(self->content_area), true);
             gtk_widget_set_hexpand(GTK_WIDGET(self->content_area), true);
+
+            g_signal_connect(self->native)
 
             detail::attach_ref_to(G_OBJECT(self->native), self);
             return self;

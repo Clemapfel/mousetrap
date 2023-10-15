@@ -28,6 +28,7 @@ namespace mousetrap
             GtkBox* vbox;
             AdwBin* header_bar_area;
             AdwBin* content_area;
+            bool is_shown;
         };
         using WindowInternal = _WindowInternal;
         DEFINE_INTERNAL_MAPPING(Window);
