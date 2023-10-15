@@ -48,6 +48,7 @@ int main()
             std::cout << window.get_is_closed() << std::endl;
             window.present();
         });
+        window.set_hide_on_close(true);
         other_window.set_child(button);
         other_window.present();
     });

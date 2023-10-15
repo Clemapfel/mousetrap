@@ -62,7 +62,8 @@ namespace mousetrap
             gtk_widget_set_vexpand(GTK_WIDGET(self->content_area), true);
             gtk_widget_set_hexpand(GTK_WIDGET(self->content_area), true);
 
-            g_signal_connect(self->native)
+            g_signal_connect(self->native, "show", G_CALLBACK(detail::window_internal_mark_shown), self);
+            g_signal_connect(self->native, "hide", G_CALLBACK(detail::window_internal_mark_hidden), self);
 
             detail::attach_ref_to(G_OBJECT(self->native), self);
             return self;
@@ -267,11 +268,9 @@ namespace mousetrap
 
     bool Window::get_is_closed() const
     {
-        auto* toplevels = gtk_window_get_toplevels();
-        for (size_t i = 0; i < g_list_model_get_n_items(toplevels); ++i)
-            if (g_list_model_get_item(toplevels, i) == _internal->native)
-                return false;
-
-        return true;
+        if (G_IS_OBJECT(_internal))
+            return _internal->is_shown;
+        else
+            return true;
     }
 }
