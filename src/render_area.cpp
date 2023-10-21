@@ -59,7 +59,7 @@ namespace mousetrap
 
                 if (detail::GL_CONTEXT == nullptr)
                 {
-                    log::warning("In initialize_opengl: Unable to create an OpenGL context.", MOUSETRAP_DOMAIN);
+                    log::warning("In initialize_opengl: Unable to create global OpenGL context for `RenderArea`", MOUSETRAP_DOMAIN);
                     goto failed;
                 }
 
@@ -101,7 +101,7 @@ namespace mousetrap
                 return detail::GL_CONTEXT;
 
                 failed:
-                log::critical("In initialize_opengl: Unable to create OpenGL context, disabling the OpenGL component.", MOUSETRAP_DOMAIN);
+                log::critical("In initialize_opengl: Unable to create global OpenGL context, disabling the `RenderArea` widget", MOUSETRAP_DOMAIN);
                 detail::GL_CONTEXT = nullptr;
             }
 

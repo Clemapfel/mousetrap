@@ -12,6 +12,9 @@ int main()
     app.connect_signal_activate([](Application& app)
     {
         static auto window = Window(app);
+        std::cout << window.get_is_closed() << std::endl;
+        window.present();
+        std::cout << window.get_is_closed() << std::endl;
         window.set_title("mousetrap");
 
         static auto area = RenderArea(AntiAliasingQuality::BEST);
