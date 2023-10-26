@@ -53,7 +53,6 @@ void on_startup(void*, Application* app_ptr)
 {
     auto& app = *app_ptr;
     main_window = new Window(app);
-    std::cout << "startup: " << main_window << std::endl;
 
     // create window
     Window& window = *main_window;
