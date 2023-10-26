@@ -35,7 +35,7 @@ std::string gtk_settings_get_string(const std::string& setting_id)
     auto* settings = gtk_settings_get_default();
     gchar* out = nullptr;
     g_object_get(G_OBJECT(settings), setting_id.c_str(), &out, NULL);
-    return std::string(out);
+    return std::string(out == nullptr ? "" : out);
 }
 
 // convenience function to access GtkSettings value, number
