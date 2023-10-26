@@ -6,7 +6,7 @@ add_project_arguments([
     '-Wno-unused-variable',
     '-Wno-unused-function',
     '-Wno-unused-but-set-variable',
-    '-Wnone'
+    '-w'
 ], language: 'cpp')
 
 ### DEPENDENCIES ###
