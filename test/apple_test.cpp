@@ -6,9 +6,9 @@ using namespace mousetrap;
 template<typename... Arg_ts>
 void println(Arg_ts... args)
 {
-    for (auto arg : {args...})
-        std::cout << arg;
-
+    // don't bother trying to understand how this works, C++ is awful like that
+    auto print = [](auto x){ std::cout << x; };
+    (print(args), ...);
     std::cout << std::endl;
 }
 
@@ -51,9 +51,9 @@ int64_t gtk_settings_get_number(const std::string& setting_id)
 int main()
 {
     // create application
-    auto app = Application("test.app");
+    auto app = Application("com.mousetrap.apple_test");
 
-    // `define` equivalent of Julias `main` loop
+    // equivalent of Julia `Mousetrap.main` loop
     app.connect_signal_activate([](Application& app)
     {
         // create window
@@ -76,7 +76,7 @@ int main()
         action_01.add_shortcut("<Control>1");
         action_02.add_shortcut("<Control>2");
 
-        // create out menu model
+        // create outer menu model
         auto outer = MenuModel();
 
         // create inner menu models with one action each, cf. Julia `add_action!`
@@ -101,15 +101,20 @@ int main()
             // get native window object, cf. https://docs.gtk.org/gtk4/class.ApplicationWindow.html
             GtkApplicationWindow* window_native_ptr = GTK_APPLICATION_WINDOW(window.operator GObject*());
 
-            // set menubar-related settings to `true`
-            gtk_settings_set("gtk-shell-shows-app-menu", true);
-            gtk_settings_set("gtk-shell-shows-menubar", true);
-
             // associate a menu model with the applications default menu
             gtk_application_set_menubar(app_native_ptr, outer_native_ptr);
 
-            // make sure the default menu is displayed
+            // set menubar-related settings, try changing these to different values
+            gtk_settings_set("gtk-shell-shows-app-menu", true);
+            gtk_settings_set("gtk-shell-shows-menubar", false);
+
+            // set whether the menubar should be displayed by the window
             gtk_application_window_set_show_menubar(window_native_ptr, true);
+
+            // print variables for debugging, be sure to write these down when the menu ends up being displayed properly
+            println("`gtk-shell-shows-app-menu`:\t", gtk_settings_get_bool("gtk-shell-shows-app-menu"));
+            println("`gtk-shell-shows-menubar`:\t", gtk_settings_get_bool("gtk-shell-shows-menubar"));
+            println("`Application.show_menubar`:\t", gtk_application_window_get_show_menubar(window_native_ptr));
         }
         // GTK4 CODE END
 
