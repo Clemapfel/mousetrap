@@ -47,79 +47,86 @@ int64_t gtk_settings_get_number(const std::string& setting_id)
     return int64_t(out);
 }
 
+static Window* main_window = nullptr;
+
+void on_startup(void*, Application* app_ptr)
+{
+    auto& app = *app_ptr;
+    main_window = new Window(app);
+    std::cout << "startup: " << main_window << std::endl;
+
+    // create window
+    Window& window = *main_window;
+
+    // create dummy actions
+    auto action_01 = Action("dummy.action_01", app);
+    auto action_02 = Action("dummy.action_02", app);
+
+    // action behavior, cf. Julia `set_function!`
+    action_01.set_function([](Action& self){
+        println("called 01");
+    });
+
+    action_02.set_function([](Action& self){
+        println("called 02");
+    });
+
+    // action shortcut, cf. Julia `add_shortcut!`
+    action_01.add_shortcut("<Control>1");
+    action_02.add_shortcut("<Control>2");
+
+    // create outer menu model
+    auto outer = MenuModel();
+
+    // create inner menu models with one action each, cf. Julia `add_action!`
+    auto inner_01 = MenuModel();
+    inner_01.add_action("Action 01", action_01);
+
+    auto inner_02 = MenuModel();
+    inner_02.add_action("Action 02", action_02);
+
+    // add inner models as submenus, cf. Julia `add_submenu!`
+    outer.add_submenu("Inner 01", inner_01);
+    outer.add_submenu("Inner 02", inner_02);
+
+    // GTK4 CODE BEGIN
+    {
+        // get native menu model, cf. https://docs.gtk.org/gio/class.MenuModel.html
+        GMenuModel* outer_native_ptr = G_MENU_MODEL(outer.operator GObject*());
+
+        // get native application object, cf. https://docs.gtk.org/gtk4/class.Application.html
+        GtkApplication* app_native_ptr = GTK_APPLICATION(app.operator GObject*());
+
+        // get native window object, cf. https://docs.gtk.org/gtk4/class.ApplicationWindow.html
+        GtkApplicationWindow* window_native_ptr = GTK_APPLICATION_WINDOW(window.operator GObject*());
+
+        // associate a menu model with the applications default menu
+        gtk_application_set_menubar(app_native_ptr, outer_native_ptr);
+
+        // set menubar-related settings, try changing these to different values
+        gtk_settings_set("gtk-shell-shows-app-menu", true);
+        gtk_settings_set("gtk-shell-shows-menubar", true);
+
+        // set whether the menubar should be displayed by the window
+        gtk_application_window_set_show_menubar(window_native_ptr, true);
+
+        // print variables for debugging, be sure to write these down when the menu ends up being displayed properly
+        println("`gtk-shell-shows-app-menu`:\t", gtk_settings_get_bool("gtk-shell-shows-app-menu"));
+        println("`gtk-shell-shows-menubar`:\t", gtk_settings_get_bool("gtk-shell-shows-menubar"));
+        println("`Application.show_menubar`:\t", gtk_application_window_get_show_menubar(window_native_ptr));
+    }
+    // GTK4 CODE END
+}
+
 // C main loop
 int main()
 {
     // create application
     auto app = Application("com.mousetrap.apple_test");
 
-    // equivalent of Julia `Mousetrap.main` loop
-    app.connect_signal_activate([](Application& app)
-    {
-        // create window
-        auto window = Window(app);
-
-        // create dummy actions
-        auto action_01 = Action("dummy.action_01", app);
-        auto action_02 = Action("dummy.action_02", app);
-
-        // action behavior, cf. Julia `set_function!`
-        action_01.set_function([](Action& self){
-            println("called 01");
-        });
-
-        action_02.set_function([](Action& self){
-            println("called 02");
-        });
-
-        // action shortcut, cf. Julia `add_shortcut!`
-        action_01.add_shortcut("<Control>1");
-        action_02.add_shortcut("<Control>2");
-
-        // create outer menu model
-        auto outer = MenuModel();
-
-        // create inner menu models with one action each, cf. Julia `add_action!`
-        auto inner_01 = MenuModel();
-        inner_01.add_action("Action 01", action_01);
-
-        auto inner_02 = MenuModel();
-        inner_02.add_action("Action 02", action_02);
-
-        // add inner models as submenus, cf. Julia `add_submenu!`
-        outer.add_submenu("Inner 01", inner_01);
-        outer.add_submenu("Inner 02", inner_02);
-
-        // GTK4 CODE BEGIN
-        {
-            // get native menu model, cf. https://docs.gtk.org/gio/class.MenuModel.html
-            GMenuModel* outer_native_ptr = G_MENU_MODEL(outer.operator GObject*());
-
-            // get native application object, cf. https://docs.gtk.org/gtk4/class.Application.html
-            GtkApplication* app_native_ptr = GTK_APPLICATION(app.operator GObject*());
-
-            // get native window object, cf. https://docs.gtk.org/gtk4/class.ApplicationWindow.html
-            GtkApplicationWindow* window_native_ptr = GTK_APPLICATION_WINDOW(window.operator GObject*());
-
-            // associate a menu model with the applications default menu
-            gtk_application_set_menubar(app_native_ptr, outer_native_ptr);
-
-            // set menubar-related settings, try changing these to different values
-            gtk_settings_set("gtk-shell-shows-app-menu", true);
-            gtk_settings_set("gtk-shell-shows-menubar", false);
-
-            // set whether the menubar should be displayed by the window
-            gtk_application_window_set_show_menubar(window_native_ptr, true);
-
-            // print variables for debugging, be sure to write these down when the menu ends up being displayed properly
-            println("`gtk-shell-shows-app-menu`:\t", gtk_settings_get_bool("gtk-shell-shows-app-menu"));
-            println("`gtk-shell-shows-menubar`:\t", gtk_settings_get_bool("gtk-shell-shows-menubar"));
-            println("`Application.show_menubar`:\t", gtk_application_window_get_show_menubar(window_native_ptr));
-        }
-        // GTK4 CODE END
-
-        // show window, cf. Julia `present!`
-        window.present();
+    app.connect_signal("startup", on_startup, &app);
+    app.connect_signal_activate([](Application& app){
+        main_window->present();
     });
 
     // start application
