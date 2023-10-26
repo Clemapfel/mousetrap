@@ -3,6 +3,7 @@
 2. Open terminal, then:
    ```shell
    sudo brew install meson
+   sudo brew install ninja
    sudo brew install glew
    sudo brew install gtk4
    sudo brew install libadwaita
