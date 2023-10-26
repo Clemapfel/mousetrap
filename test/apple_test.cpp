@@ -104,8 +104,8 @@ void on_startup(void*, Application* app_ptr)
         gtk_application_set_menubar(app_native_ptr, outer_native_ptr);
 
         // set menubar-related settings, try changing these to different values
-        gtk_settings_set("gtk-shell-shows-app-menu", true);
-        gtk_settings_set("gtk-shell-shows-menubar", true);
+        //gtk_settings_set("gtk-shell-shows-app-menu", true);
+        //gtk_settings_set("gtk-shell-shows-menubar", true);
 
         // set whether the menubar should be displayed by the window
         gtk_application_window_set_show_menubar(window_native_ptr, true);
