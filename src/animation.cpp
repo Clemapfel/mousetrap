@@ -40,7 +40,7 @@ namespace mousetrap
                 (*instance->on_done_callback)(temp);
         }
 
-        static AnimationInternal* animation_internal_new(GtkWidget* widget, size_t time_ms)
+        static AnimationInternal* animation_internal_new(GtkWidget* widget, gsize time_ms)
         {
             log::initialize();
 

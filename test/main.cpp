@@ -6,16 +6,28 @@ using namespace mousetrap;
 #include <chrono>
 
 
+static void to_call(void* self, Application* app)
+{
+    std::cout << "called startup" << std::endl;
+    auto action = Action("test.action", *app);
+    auto model = MenuModel();
+    auto sub = MenuModel();
+    model.add_submenu("sub", sub);
+    sub.add_action("test", action);
+    gtk_application_set_menubar(GTK_APPLICATION(self), model.operator GMenuModel*());
+
+    auto* window = gtk_application_window_new(app->operator GtkApplication *());
+    gtk_window_present(GTK_WINDOW(window));
+    gtk_application_window_set_show_menubar(GTK_APPLICATION_WINDOW(window), true);
+}
+
 int main()
 {
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app)
     {
+        std::cout << "called activate" << std::endl;
         static auto window = Window(app);
-        std::cout << window.get_is_closed() << std::endl;
-        window.present();
-        std::cout << window.get_is_closed() << std::endl;
-        window.set_title("mousetrap");
 
         static auto area = RenderArea(AntiAliasingQuality::BEST);
         static auto shape = Shape::Rectangle({-0.5, 0.5}, {1, 1});
@@ -43,9 +55,31 @@ int main()
             animation.play();
         });
 
+
+        auto* settings = gtk_settings_get_default();
+        auto* x = new GValue();
+        g_value_init(x, G_TYPE_BOOLEAN);
+        auto* y = new GValue();
+        g_value_init(y, G_TYPE_BOOLEAN);
+
+        g_object_get(G_OBJECT(settings),"gtk-shell-shows-app-menu", &x, "gtk-shell-shows-menubar", &y, NULL);
+        std::cout << x << " " << y << std::endl;
+
+        g_object_set(G_OBJECT(settings), "gtk-shell-shows-app-menu", true);
+        g_object_set(G_OBJECT(settings), "gtk-shell-shows-menubar", true);
+
         window.set_child(frame);
+
+        auto* label = gtk_shortcut_label_new("<Control>f");
+        adw_application_window_set_content(ADW_APPLICATION_WINDOW(window.operator NativeWidget()), GTK_WIDGET(label));
+
         window.present();
+
+        gtk_application_window_set_show_menubar(GTK_APPLICATION_WINDOW(window.operator GObject*()), true);
     });
+
+    g_signal_connect(app.operator GObject*(), "startup", G_CALLBACK(to_call), &app);
+
     return app.run();
 }
 

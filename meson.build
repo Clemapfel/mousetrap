@@ -290,6 +290,14 @@ pkgconfig.generate(
     #requires: [OPENGL.name(), GLEW.name(), GTK4.name(), ADWAITA.name()]
 )
 
+APPLE_TEST = executable('apple_test',
+    sources: 'test/apple_test.cpp',
+    dependencies: [OPENGL, GLEW, GTK4, ADWAITA],
+    include_directories: ['include'],
+    link_with: MOUSETRAP_LIBRARY,
+    install: false
+)
+
 if get_option('MOUSETRAP_BUILD_TESTS')
     MOUSETRAP_TEST = executable('test_main',
         sources: 'test/main.cpp',

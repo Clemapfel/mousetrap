@@ -408,6 +408,10 @@ endif()
 
 ### TEST ###
 
+add_executable("apple_test" "${CMAKE_SOURCE_DIR}/test/apple_test.cpp")
+target_link_libraries("apple_test" PRIVATE mousetrap)
+target_include_directories("apple_test" PRIVATE "${CMAKE_SOURCE_DIR}/include" "${CMAKE_SOURCE_DIR}")
+
 option(MOUSETRAP_BUILD_TESTS ON)
 if(MOUSETRAP_BUILD_TESTS)
     if (NOT EXISTS "${CMAKE_SOURCE_DIR}/test")
