@@ -96,7 +96,7 @@ int main()
             GMenuModel* outer_native_ptr = G_MENU_MODEL(outer.operator GObject*());
 
             // get native application object, cf. https://docs.gtk.org/gtk4/class.Application.html
-            GtkApplication* app_native_ptr = (GtkApplication*) GTK_APPLICATION(app.operator GObject*());
+            GtkApplication* app_native_ptr = GTK_APPLICATION(app.operator GObject*());
 
             // get native window object, cf. https://docs.gtk.org/gtk4/class.ApplicationWindow.html
             GtkApplicationWindow* window_native_ptr = GTK_APPLICATION_WINDOW(window.operator GObject*());
