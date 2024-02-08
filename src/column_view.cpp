@@ -100,6 +100,11 @@ namespace mousetrap
         return G_OBJECT(_native);
     }
 
+    ColumnView::Column::operator NativeObject() const
+    {
+        return this->get_internal();
+    }
+
     void ColumnView::Column::set_title(const std::string& title)
     {
         gtk_column_view_column_set_title(_native, title.c_str());

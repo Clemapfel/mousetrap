@@ -46,6 +46,7 @@ namespace mousetrap
         g_signal_connect(G_OBJECT(_internal->g_action), "activate", G_CALLBACK(on_action_activate), _internal);
         set_enabled(_internal->enabled);
 
+        // attach lifecycle and ref count of _internal to native gobject, which is managed by the application
         detail::attach_ref_to(G_OBJECT(_internal->g_action), _internal);
         update_application();
     }

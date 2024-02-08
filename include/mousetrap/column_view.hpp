@@ -49,7 +49,7 @@ namespace mousetrap
         HAS_SIGNAL(ColumnView, unmap)
     {
         public:
-            class Column
+        class Column : public SignalEmitter
             {
                 friend class ColumnView;
 
@@ -98,7 +98,10 @@ namespace mousetrap
                     Column(detail::ColumnViewColumnInternal*);
 
                     /// @brief expose internal
-                    NativeObject get_internal() const;
+                    NativeObject get_internal() const override;
+
+                    /// @brief overload signalemitter
+                    operator NativeObject() const override;
 
                 private:
                     GtkColumnViewColumn* _native = nullptr;
