@@ -193,14 +193,19 @@ namespace mousetrap
         glActiveTexture(GL_TEXTURE0 + 0);
         glBindTexture(GL_TEXTURE_2D, _internal->native_handle);
 
+        if (image.get_size().x == 0 or image.get_size().y == 0)
+            log::critical(MOUSETRAP_DOMAIN, "In Texture::create_from_image: image has invalid size, make sure the image is initialized correctly before creating a texture");
+
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+        glPixelStorei(GL_PACK_ALIGNMENT, 4);
+
         glTexImage2D(GL_TEXTURE_2D,
              0,
              GL_RGBA16F,
              image.get_size().x,
-             image.get_size().y,
+            image.get_size().y,
              0,
-             GL_RGBA,
+             gdk_pixbuf_get_has_alpha(image.operator GdkPixbuf *()) ? GL_RGBA : GL_RGB,
              GL_UNSIGNED_BYTE,
              image.data()
         );
