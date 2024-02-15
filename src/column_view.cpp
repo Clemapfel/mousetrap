@@ -115,6 +115,16 @@ namespace mousetrap
         return gtk_column_view_column_get_title(_native);
     }
 
+    void ColumnView::Column::set_expand(bool expand)
+    {
+        gtk_column_view_column_set_expand(_native, expand);
+    }
+
+    bool ColumnView::Column:get_expand() const
+    {
+        return gtk_column_view_column_get_expand(_native);
+    }
+
     void ColumnView::Column::set_fixed_width(float width)
     {
         gtk_column_view_column_set_fixed_width(_native, width);

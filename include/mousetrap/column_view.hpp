@@ -65,6 +65,14 @@ namespace mousetrap
                     /// @return title
                     std::string get_title() const;
 
+                    /// @brief set whether column should fill space
+                    /// @param b
+                    void set_expand(bool expand);
+
+                    /// @brief get whether column should fill space
+                    /// @return boolean
+                    bool get_expand() const;
+
                     /// @brief set fixed width of column
                     /// @param width
                     void set_fixed_width(float width);
