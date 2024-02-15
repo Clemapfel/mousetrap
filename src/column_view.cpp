@@ -120,7 +120,7 @@ namespace mousetrap
         gtk_column_view_column_set_expand(_native, expand);
     }
 
-    bool ColumnView::Column:get_expand() const
+    bool ColumnView::Column::get_expand() const
     {
         return gtk_column_view_column_get_expand(_native);
     }
