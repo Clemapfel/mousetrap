@@ -10,14 +10,28 @@ int main()
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app){
         auto window = Window(app);
-        auto window_b = Window(app);
 
-        auto image = Image("/home/clem/Desktop/temp.jpg");
-        auto texture = Texture();
-        texture.create_from_image(image);
+        auto dropdown = DropDown();
+        dropdown.push_back(Label("test"), Label("test"), [](DropDown&){});
+        dropdown.push_back(Label("test"), Label("test"), [](DropDown&){});
+        window.set_child(dropdown);
 
+        static auto texture = Texture();
+        texture.create_from_file("/home/clem/Downloads/PXL_20230908_092017150.jpg");
+
+        auto canvas = RenderArea();
+        auto shape = Shape::Rectangle({-1, 1}, {2, 2});
+        shape.set_texture(&texture);
+        texture.set_scale_mode(TextureScaleMode::NEAREST);
+
+        auto task = RenderTask(shape);
+        canvas.add_render_task(task);
+
+        auto frame = AspectFrame(1.0);
+        frame.set_child(canvas);
+        frame.set_size_request({150, 150});
+        window.set_child(frame);
         window.present();
-        window_b.present();
     });
     app.run();
 }
