@@ -49,7 +49,7 @@ namespace mousetrap
         HAS_SIGNAL(ColumnView, unmap)
     {
         public:
-            class Column
+        class Column : public SignalEmitter
             {
                 friend class ColumnView;
 
@@ -64,6 +64,14 @@ namespace mousetrap
                     /// @brief get title of column
                     /// @return title
                     std::string get_title() const;
+
+                    /// @brief set whether column should fill space
+                    /// @param b
+                    void set_expand(bool expand);
+
+                    /// @brief get whether column should fill space
+                    /// @return boolean
+                    bool get_expand() const;
 
                     /// @brief set fixed width of column
                     /// @param width
@@ -98,7 +106,10 @@ namespace mousetrap
                     Column(detail::ColumnViewColumnInternal*);
 
                     /// @brief expose internal
-                    NativeObject get_internal() const;
+                    NativeObject get_internal() const override;
+
+                    /// @brief overload signalemitter
+                    operator NativeObject() const override;
 
                 private:
                     GtkColumnViewColumn* _native = nullptr;

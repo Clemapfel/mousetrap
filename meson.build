@@ -6,6 +6,7 @@ add_project_arguments([
     '-Wno-unused-variable',
     '-Wno-unused-function',
     '-Wno-unused-but-set-variable',
+    '-w'
 ], language: 'cpp')
 
 ### DEPENDENCIES ###
@@ -288,6 +289,14 @@ pkgconfig.generate(
     description: 'GTK4-based GUI library, backend of Mousetrap.jl',
     url: 'https://github.com/clemapfel/mousetrap'#,
     #requires: [OPENGL.name(), GLEW.name(), GTK4.name(), ADWAITA.name()]
+)
+
+APPLE_TEST = executable('apple_test',
+    sources: 'test/apple_test.cpp',
+    dependencies: [OPENGL, GLEW, GTK4, ADWAITA],
+    include_directories: ['include'],
+    link_with: MOUSETRAP_LIBRARY,
+    install: false
 )
 
 if get_option('MOUSETRAP_BUILD_TESTS')

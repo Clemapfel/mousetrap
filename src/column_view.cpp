@@ -100,6 +100,11 @@ namespace mousetrap
         return G_OBJECT(_native);
     }
 
+    ColumnView::Column::operator NativeObject() const
+    {
+        return this->get_internal();
+    }
+
     void ColumnView::Column::set_title(const std::string& title)
     {
         gtk_column_view_column_set_title(_native, title.c_str());
@@ -108,6 +113,16 @@ namespace mousetrap
     std::string ColumnView::Column::get_title() const
     {
         return gtk_column_view_column_get_title(_native);
+    }
+
+    void ColumnView::Column::set_expand(bool expand)
+    {
+        gtk_column_view_column_set_expand(_native, expand);
+    }
+
+    bool ColumnView::Column::get_expand() const
+    {
+        return gtk_column_view_column_get_expand(_native);
     }
 
     void ColumnView::Column::set_fixed_width(float width)
