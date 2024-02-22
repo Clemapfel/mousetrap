@@ -1,5 +1,5 @@
 project('mousetrap', 'cpp',
-    version: '0.3.0',
+    version: '0.3.2',
     default_options : ['cpp_std=c++17']
 )
 add_project_arguments([

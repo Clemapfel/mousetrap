@@ -10,7 +10,6 @@ int main()
     auto app = Application("test.app");
     app.connect_signal_activate([](Application& app){
         auto window = Window(app);
-
         auto dropdown = DropDown();
         dropdown.push_back(Label("test"), Label("test"), [](DropDown&){});
         dropdown.push_back(Label("test"), Label("test"), [](DropDown&){});
